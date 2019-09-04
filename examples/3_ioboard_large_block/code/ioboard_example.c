@@ -1,0 +1,149 @@
+/**
+
+  @file    ioboard_example.c
+  @brief   IO board example 3_ioboard_large_block.
+  @author  Pekka Lehtikoski
+  @version 1.1
+  @date    11.7.2019
+
+  3_ioboard_large_block example is to test IO board communication performance with large
+  block transfers. I use it with wireshark to make sure that TCP_NODELAY/TCP_CORK options
+  provice desired TCP block size and transfer timing.
+
+  Example features:
+  - No multithreading - single thread model used.
+  - No dynamic memory allocation - static memory pool ioboard_pool used.
+  - IO board connects to control computer through TCP socket - control computer listens for
+    connections.
+  - Data transfer synchronized precisely by ioc_receive() and ioc_send() calls - no
+    "prm.auto_synchronization = OS_TRUE" -> IOC_AUTO_SEND or IOC_AUTO_RECEIVE flags not set.
+  - Relatively large 10k memory blocks and input memory block ioboard_fc is changed as quickly
+    as computer can change it.
+  - Unnanamed device, device name is empty string and device number is 0.
+
+  Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+  modified, and distributed under the terms of the project licensing. By continuing to use, modify,
+  or distribute this file you indicate that you have read the license and understand and accept 
+  it fully.
+
+****************************************************************************************************
+*/
+#include "iocom.h"
+#include <stdlib.h> /* for rand() */
+
+/* How this IO device and the control computer connect together. One of IOBOARD_CTRL_LISTEN_SOCKET,
+   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL or IOBOARD_CTRL_CONNECT_SERIAL.
+ */
+#define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
+
+/* Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
+ */
+#define IOBOARD_STEAM_IFACE OSAL_SOCKET_IFACE
+
+/* Maximum number of connections. Basically we need a single connection between IO board
+   and control computer. We may want to allow two connections to listen for TCP socket
+   for extra debugging connection. There are also other special cases when we need
+   to have more than one connection.
+ */
+#define IOBOARD_MAX_CONNECTIONS (IOBOARD_CTRL_CON == IOBOARD_CTRL_LISTEN_SOCKET ? 2 : 1)
+
+/* IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
+   and sets size for ioboard_tc "IN" memory block. Similarly "FC" stands for "from controller"
+   and ioboard_fc "OUT" memory block.
+   Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
+   imposed by static memory pool memory allocation.
+ */
+#define IOBOARD_TC_BLOCK_SZ 10000
+#define IOBOARD_FC_BLOCK_SZ 10000
+
+/* Allocate static memory pool for the IO board. We can do this even if we would be running
+   on system with dynamic memory allocation, which is useful for testing micro-controller
+   software in PC computer.
+ */
+static os_uchar
+    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
+        IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
+
+
+/**
+****************************************************************************************************
+
+  @brief IO board example.
+
+  Send a lot to test data to evaluate communication trough-output.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+os_int osal_main(
+    os_int argc,
+    os_char *argv[])
+{
+    int
+        i,
+        j,
+        k;
+
+    ioboardParams
+        prm;
+
+    /* Initialize the socket library.
+     */
+    osal_socket_initialize();
+
+    /* Set up parameters for the IO board. To connect multiple devices,
+       either device number or name must differ.
+     */
+    os_memclear(&prm, sizeof(prm));
+    prm.iface = IOBOARD_STEAM_IFACE;
+    prm.ctrl_type = IOBOARD_CTRL_CON;
+    prm.socket_con_str = "127.0.0.1:" IOC_DEFAULT_SOCKET_PORT_STR; /**************** SET IP ADDRESS HERE ***************/
+    prm.max_connections = IOBOARD_MAX_CONNECTIONS;
+    prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;
+    prm.receive_block_sz = IOBOARD_FC_BLOCK_SZ;
+    prm.auto_synchronization = OS_FALSE;
+    prm.pool = ioboard_pool;
+    prm.pool_sz = sizeof(ioboard_pool);
+
+    /* Start communication.
+     */
+    ioboard_start_communication(&prm);
+
+    /* IO board main loop, repeat forever (this example has no terminate condition).
+     */
+    while (OS_TRUE)
+    {
+        /* Keep the communication alive. The IO board uses one thread model, thus
+           we need to call this function repeatedly.
+         */
+        ioc_run(&ioboard_communication);
+
+        /* Received data fame up to date.
+         */
+        ioc_receive(&ioboard_fc);
+
+        /* Write lot of random stuff to simulate vast number of inputs changing
+           very quickly.
+         */
+        k = rand();
+        for (i = 0; i<IOBOARD_TC_BLOCK_SZ/2; i++)
+        {
+            j = rand() % IOBOARD_TC_BLOCK_SZ;
+            ioc_set16(&ioboard_tc, j, k);
+            k += 7;
+        }
+
+        /* Send changes trough communication.
+         */
+        ioc_send(&ioboard_tc);
+    }
+
+    /* End IO board communication, clean up and finsh with the socket library.
+       On real IO device we may not need to take care about this, since these
+       are often shut down only by turning or power or by microcontroller reset.
+     */
+    ioboard_end_communication();
+    osal_socket_shutdown();
+    return 0;
+}
