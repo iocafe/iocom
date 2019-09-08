@@ -39,7 +39,7 @@
 
 /* Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
  */
-#define IOBOARD_STEAM_IFACE OSAL_TLS_IFACE
+#define IOBOARD_STEAM_IFACE OSAL_SOCKET_IFACE
 
 /* Maximum number of connections. Basically we need a single connection between IO board
    and control computer. We may want to allow two connections to listen for TCP socket
@@ -144,6 +144,7 @@ os_int osal_main(
 //    prm.socket_con_str = "127.0.0.1:" IOC_DEFAULT_SOCKET_PORT_STR;
 //    prm.socket_con_str = "192.168.1.221:" IOC_DEFAULT_SOCKET_PORT_STR;
     prm.socket_con_str = "192.168.1.220:55555";
+    prm.socket_con_str = "45.26.154.177:55555";
     //prm.serial_con_str = "COM5,baud=115200";
     //prm.serial_con_str = "ttyS31,baud=115200";
     prm.serial_con_str = "COM3,baud=115200";
