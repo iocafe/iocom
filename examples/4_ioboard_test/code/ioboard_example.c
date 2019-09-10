@@ -39,7 +39,7 @@
 
 /* Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
  */
-#define IOBOARD_STEAM_IFACE OSAL_SOCKET_IFACE
+#define IOBOARD_STEAM_IFACE OSAL_TLS_IFACE
 
 /* Maximum number of connections. Basically we need a single connection between IO board
    and control computer. We may want to allow two connections to listen for TCP socket
