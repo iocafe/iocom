@@ -1,0 +1,91 @@
+[
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_checksum.c.o   -c /coderoot/iocom/code/ioc_checksum.c",
+  "file": "/coderoot/iocom/code/ioc_checksum.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_com_status.c.o   -c /coderoot/iocom/code/ioc_com_status.c",
+  "file": "/coderoot/iocom/code/ioc_com_status.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_compress.c.o   -c /coderoot/iocom/code/ioc_compress.c",
+  "file": "/coderoot/iocom/code/ioc_compress.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_connection.c.o   -c /coderoot/iocom/code/ioc_connection.c",
+  "file": "/coderoot/iocom/code/ioc_connection.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_connection_receive.c.o   -c /coderoot/iocom/code/ioc_connection_receive.c",
+  "file": "/coderoot/iocom/code/ioc_connection_receive.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_connection_send.c.o   -c /coderoot/iocom/code/ioc_connection_send.c",
+  "file": "/coderoot/iocom/code/ioc_connection_send.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_end_point.c.o   -c /coderoot/iocom/code/ioc_end_point.c",
+  "file": "/coderoot/iocom/code/ioc_end_point.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_establish_serial_connection.c.o   -c /coderoot/iocom/code/ioc_establish_serial_connection.c",
+  "file": "/coderoot/iocom/code/ioc_establish_serial_connection.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_ioboard.c.o   -c /coderoot/iocom/code/ioc_ioboard.c",
+  "file": "/coderoot/iocom/code/ioc_ioboard.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_memory.c.o   -c /coderoot/iocom/code/ioc_memory.c",
+  "file": "/coderoot/iocom/code/ioc_memory.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_memory_block.c.o   -c /coderoot/iocom/code/ioc_memory_block.c",
+  "file": "/coderoot/iocom/code/ioc_memory_block.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_memory_block_info.c.o   -c /coderoot/iocom/code/ioc_memory_block_info.c",
+  "file": "/coderoot/iocom/code/ioc_memory_block_info.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_root.c.o   -c /coderoot/iocom/code/ioc_root.c",
+  "file": "/coderoot/iocom/code/ioc_root.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_source_buffer.c.o   -c /coderoot/iocom/code/ioc_source_buffer.c",
+  "file": "/coderoot/iocom/code/ioc_source_buffer.c"
+},
+
+{
+  "directory": "/coderoot/iocom/build",
+  "command": "/bin/gcc-6 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I../   -Wall -g   -o CMakeFiles/iocomd.dir/code/ioc_target_buffer.c.o   -c /coderoot/iocom/code/ioc_target_buffer.c",
+  "file": "/coderoot/iocom/code/ioc_target_buffer.c"
+}
+]
