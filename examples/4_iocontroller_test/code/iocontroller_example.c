@@ -22,6 +22,46 @@
 */
 #include "iocom.h"
 
+
+/* Connection types.
+ */
+#define EXAMPLE_USE_TCP_SOCKET 0
+#define EXAMPLE_USE_TLS_SOCKET 1
+#define EXAMPLE_USE_SERIAL_PORT 2
+
+/* Select how to connect: TCP socket, TLS socket (OpenSSL, etc) or serial port.
+ * EXAMPLE_USE_TCP_SOCKET, EXAMPLE_USE_TLS_SOCKET or EXAMPLE_USE_SERIAL_PORT
+ */
+#define MY_TRANSPORT EXAMPLE_USE_TLS_SOCKET
+
+/* Modify connection parameters here: These apply to different communication types
+   EXAMPLE_USE_TCP_SOCKET: Define EXAMPLE_TCP_SOCKET_PORT sets unsecured TCP socket port number
+   to listen.
+   EXAMPLE_USE_TLS_SOCKET: Define EXAMPLE_TLS_SOCKET_PORT sets secured TCP socket port number
+   to listen.
+   EXAMPLE_USE_TLS_SOCKET: Defines EXAMPLE_TLS_SERVER_CERT and EXAMPLE_TLS_SERVER_KEY set path
+   to cerver certificate and key files.
+   EXAMPLE_USE_SERIAL_PORT, define EXAMPLE_SERIAL_PORT: Serial port can be selected using Windows
+   style using "COM1", "COM2"... These are mapped to hardware/operating system in device specific
+   manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
+ */
+#define EXAMPLE_IP_ADDRESS "192.168.1.220"
+#define EXAMPLE_TCP_SOCKET_PORT "6368"
+#define EXAMPLE_TLS_SOCKET_PORT "6369"
+#define EXAMPLE_TLS_SERVER_CERT "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/server.crt"
+#define EXAMPLE_TLS_SERVER_KEY "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/server.key"
+#define EXAMPLE_SERIAL_PORT "COM3,baud=115200"
+
+/* List of connection roles. Either listen for or connect socket.
+ */
+#define EXAMPLE_LISTEN 0
+#define EXAMPLE_CONNECT 1
+
+/* Select connect role here
+ */
+#define MY_ROLE EXAMPLE_LISTEN
+
+
 typedef struct
 {
     volatile int
@@ -51,7 +91,6 @@ typedef struct
 }
 ioControllerContext;
 
-#define CONNECT_ROLE 0
 
 
 /* Forward referred static functions.
@@ -93,8 +132,10 @@ os_int osal_main(
     iocRoot root;
     ioControllerContext c;
     iocMemoryBlockParams blockprm;
+    osalStreamInterface *iface;
+    os_char *c_parameters, *l_parameters;
 
-#if CONNECT_ROLE
+#if MY_ROLE==EXAMPLE_CONNECT
     iocConnection *con = 0;
     iocConnectionParams conprm;
 #else
@@ -102,21 +143,46 @@ os_int osal_main(
     iocEndPointParams epprm;
 #endif
 
-    const int
+    const os_int
         input_block_sz = 1000,
         output_block_sz = 1000;
 
-    int 
+    os_int
         countdown = 10,
         spinner = -1,
         count = 0,
-        slow = 1;
+        slow = 1,
+        flags;
 
-    /* Initialize the socket and serial port libraries. Never call boath osal_socket_initialize()
-       and osal_tls_initialize(). These use the same underlying library
+    /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
+       and osal_tls_initialize(). These use the same underlying library.
+       Set up iface to point correct transport interface and set parameters to configure it.
+       Set also flags for communication protocol.
      */
-    osal_tls_initialize(0);
+#if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
+    osal_socket_initialize();
+    iface = OSAL_SOCKET_IFACE;
+    c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TCP_SOCKET_PORT;
+    l_parameters = ":" EXAMPLE_TCP_SOCKET_PORT;
+    flags = IOC_SOCKET|IOC_CREATE_THREAD;
+#endif
+
+#if MY_TRANSPORT==EXAMPLE_USE_TLS_SOCKET
+    static osalTLSParam prm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
+    osal_tls_initialize(&prm);
+    iface = OSAL_TLS_IFACE;
+    c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TLS_SOCKET_PORT;
+    l_parameters = ":" EXAMPLE_TLS_SOCKET_PORT;
+    flags = IOC_SOCKET|IOC_CREATE_THREAD;
+#endif
+
+#if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
     osal_serial_initialize();
+    iface = OSAL_SERIAL_IFACE;
+    c_parameters = EXAMPLE_SERIAL_PORT;
+    l_parameters = EXAMPLE_SERIAL_PORT;
+    flags = IOC_SERIAL | IOC_CREATE_THREAD;
+#endif
 
     ioc_initialize_root(&root);
     os_memclear(&c, sizeof(c));
@@ -138,31 +204,21 @@ os_int osal_main(
      */
     ioc_add_callback(c.inputs, iocontroller_callback, &c);
 
-#if CONNECT_ROLE
+#if MY_ROLE==EXAMPLE_CONNECT
     /* Connect to an "IO board".
      */
     con  = ioc_initialize_connection(OS_NULL, &root);
     os_memclear(&conprm, sizeof(conprm));
-//    conprm.parameters = "COM8,baud=115200";
-//    conprm.parameters = "ttyS30,baud=115200";
-//  conprm.parameters = "ttyUSB0,baud=115200";
-//    conprm.flags = IOC_SERIAL | IOC_CREATE_THREAD;
-//    conprm.iface = OSAL_SERIAL_IFACE;
-
-    conprm.parameters = "192.168.1.201" ":" IOC_DEFAULT_SOCKET_PORT_STR;
-    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD;
-    conprm.iface = OSAL_SOCKET_IFACE;
-
-//    conprm.parameters = "127.0.0.1" ":" IOC_DEFAULT_TLS_PORT_STR;
-//    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD;
-//    conprm.iface = OSAL_TLS_IFACE;
-
+    conprm.parameters = c_parameters;
+    conprm.flags = flags;
+    conprm.iface = iface;
     ioc_connect(con, &conprm);
 #else
     ep = ioc_initialize_end_point(OS_NULL, &root);
     os_memclear(&epprm, sizeof(epprm));
-    epprm.iface = OSAL_SOCKET_IFACE;
-    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD;
+    epprm.iface = iface;
+    epprm.flags = flags;
+    epprm.parameters = l_parameters;
     ioc_listen(ep, &epprm);
 #endif
 
@@ -194,8 +250,16 @@ os_int osal_main(
     /* End IO board communication, clean up and finsh with the socket and serial port libraries.
      */
     ioc_release_root(&root);
-    osal_serial_shutdown();
+
+#if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
+    osal_socket_shutdown();
+#endif
+#if MY_TRANSPORT==EXAMPLE_USE_TLS_SOCKET
     osal_tls_shutdown();
+#endif
+#if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
+    osal_serial_shutdown();
+#endif
     return 0;
 }
 
