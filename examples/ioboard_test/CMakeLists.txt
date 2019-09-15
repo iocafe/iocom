@@ -1,8 +1,8 @@
-# iocom/examples/ioboard2/CmakeLists.txt - Cmake build for IO board example.
+# iocom/examples/ioboard_test/CmakeLists.txt - Cmake build for one IO board example.
 cmake_minimum_required(VERSION 2.8.11)
 
 # Set project name (= project root folder name).
-set(E_PROJECT "4_ioboard_test")
+set(E_PROJECT "ioboard_test")
 project(${E_PROJECT})
 
 # include build information common to all projects.

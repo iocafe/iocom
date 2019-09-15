@@ -1,4 +1,5 @@
-#include <Arduino.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <eosalx.h>
 
 /*
@@ -14,22 +15,19 @@ void setup()
      */
     Serial.begin(115200);
     while (!Serial) {}
-    Serial.println("Arduino starting...");
+    Serial.println("Arduino IO board starting...");
 
    /* Initialize the eosal library.
     */
     osal_initialize(OSAL_INIT_DEFAULT);
+    osal_main(0, 0);
 }
 
 /* The loop routine runs over and over again forever.
  */
 void loop() 
 {
-    /* Start included application.
+    /* Forward loop call to osal_loop(). Reboot if osal_loop returns "no success".
      */
-    osal_main(0,0);
+    if (osal_loop(osal_application_context)) osal_reboot(0);
 }
-
-/* Include code for the application 
- */
-#include "/coderoot/iocom/examples/4_ioboard_test/code/ioboard_example.c"
