@@ -85,6 +85,10 @@ typedef struct iocEndPoint
      */
     IOC_DEBUG_ID
 
+    /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
+     */
+    osalStreamInterface *iface;
+
     /** Flags as given to ioc_listen()
      */
     int flags;

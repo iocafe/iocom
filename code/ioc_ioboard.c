@@ -100,7 +100,7 @@ void ioboard_start_communication(
 	 */
     os_memclear(&conprm, sizeof(conprm));
     conprm.iface = prm->iface;
-    switch (prm->ctrl_type & (IOBOARD_CTRL_IS_SOCKET|IOBOARD_CTRL_IS_SERVER))
+    switch (prm->ctrl_type & IOBOARD_CTRL_BASIC_MASK)
 	{
 		default:
 		case IOBOARD_CTRL_LISTEN_SOCKET:

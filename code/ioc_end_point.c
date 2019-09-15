@@ -226,6 +226,7 @@ osalStatus ioc_listen(
 
     flags = prm->flags;
     epoint->flags = flags;
+    epoint->iface = prm->iface;
 
 #if OSAL_MULTITHREAD_SUPPORT==0
     /* If we have no multithread support, make sure that
@@ -382,7 +383,7 @@ static osalStatus ioc_try_to_open_endpoint(
 
     /* Try to open listening socket port.
      */
-    epoint->socket = osal_socket_open(epoint->parameters, OS_NULL, &status,
+    epoint->socket = osal_stream_open(epoint->iface, epoint->parameters, OS_NULL, &status,
         OSAL_STREAM_LISTEN /* |OSAL_STREAM_NO_REUSEADDR */);
     if (epoint->socket == OS_NULL)
     {
@@ -443,14 +444,14 @@ static osalStatus ioc_try_accept_new_sockets(
 
     /* Try to accept an incoming socket connection.
      */
-    newsocket = osal_socket_accept(epoint->socket, &status, OSAL_STREAM_TCP_NODELAY);
+    newsocket = osal_stream_accept(epoint->socket, &status, OSAL_STREAM_TCP_NODELAY);
     switch (status)
     {
         case OSAL_SUCCESS:
             osal_trace("end point: connection accepted");
             if (!ioc_establish_connection(epoint, newsocket)) break;
             osal_debug_error("Out of connection pool");
-            osal_socket_close(epoint->socket);
+            osal_stream_close(epoint->socket);
             epoint->socket = OS_NULL;
             break;
 
@@ -459,7 +460,7 @@ static osalStatus ioc_try_accept_new_sockets(
 
         default: /* failed, close the listening socket */
             osal_debug_error("Listening socket broken");
-            osal_socket_close(epoint->socket);
+            osal_stream_close(epoint->socket);
             epoint->socket = OS_NULL;
             return status;
     }
@@ -564,13 +565,13 @@ static void ioc_endpoint_thread(
 
         if (epoint->socket && (epoint->flags & IOC_DISABLE_SELECT) == 0)
         {
-            status = osal_socket_select(&epoint->socket, 1, epoint->trig,
+            status = osal_stream_select(&epoint->socket, 1, epoint->trig,
                 &selectdata, 0, OSAL_STREAM_DEFAULT);
 
             if (status)
             {
                 osal_debug_error("osal_stream_select failed");
-                osal_socket_close(epoint->socket);
+                osal_stream_close(epoint->socket);
                 epoint->socket = OS_NULL;
             }
         }

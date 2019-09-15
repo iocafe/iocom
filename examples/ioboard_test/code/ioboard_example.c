@@ -31,62 +31,29 @@
 */
 #include "iocom.h"
 
-/* Connection types.
+/* How this IO device and the control computer connect together. One of IOBOARD_CTRL_LISTEN_SOCKET,
+   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL, IOBOARD_CTRL_LISTEN_TLS.
+   IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
  */
-#define EXAMPLE_USE_TCP_SOCKET 0
-#define EXAMPLE_USE_TLS_SOCKET 1
-#define EXAMPLE_USE_SERIAL_PORT 2
-
-/****************************** MODIFY THE NEXT LINE **********************************************/
-/* Select how to connect: TCP socket, TLS socket (OpenSSL, etc) or serial port.
- * EXAMPLE_USE_TCP_SOCKET, EXAMPLE_USE_TLS_SOCKET or EXAMPLE_USE_SERIAL_PORT
- */
-#define MY_TRANSPORT EXAMPLE_USE_TLS_SOCKET
+#define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
 
 /* Modify connection parameters here: These apply to different communication types
-   EXAMPLE_USE_TCP_SOCKET: Define EXAMPLE_TCP_SOCKET_PORT sets unsecured TCP socket port number
+   Define EXAMPLE_TCP_SOCKET_PORT sets unsecured TCP socket port number
    to listen.
-   EXAMPLE_USE_TLS_SOCKET: Define EXAMPLE_TLS_SOCKET_PORT sets secured TCP socket port number
+   Define EXAMPLE_TLS_SOCKET_PORT sets secured TCP socket port number
    to listen.
-   EXAMPLE_USE_TLS_SOCKET: Defines EXAMPLE_TLS_SERVER_CERT and EXAMPLE_TLS_SERVER_KEY set path
+   Defines EXAMPLE_TLS_SERVER_CERT and EXAMPLE_TLS_SERVER_KEY set path
    to cerver certificate and key files.
-   EXAMPLE_USE_SERIAL_PORT, define EXAMPLE_SERIAL_PORT: Serial port can be selected using Windows
+   Define EXAMPLE_SERIAL_PORT: Serial port can be selected using Windows
    style using "COM1", "COM2"... These are mapped to hardware/operating system in device specific
    manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
  */
 #define EXAMPLE_IP_ADDRESS "192.168.1.220"
-#define EXAMPLE_TCP_SOCKET_PORT "6368"
-#define EXAMPLE_TLS_SOCKET_PORT "6369"
+#define EXAMPLE_TCP_SOCKET_PORT IOC_DEFAULT_SOCKET_PORT_STR
+#define EXAMPLE_TLS_SOCKET_PORT IOC_DEFAULT_TLS_PORT_STR
 #define EXAMPLE_TLS_SERVER_CERT "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/server.crt"
 #define EXAMPLE_TLS_SERVER_KEY "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/server.key"
 #define EXAMPLE_SERIAL_PORT "COM3,baud=115200"
-
-/* List of connection roles. Either listen for or connect socket.
- */
-#define EXAMPLE_LISTEN 0
-#define EXAMPLE_CONNECT 1
-
-/****************************** MODIFY THE NEXT LINE **********************************************/
-/* Select connect role here
- */
-#define MY_ROLE EXAMPLE_CONNECT
-
-/* How this IO device and the control computer connect together. One of IOBOARD_CTRL_LISTEN_SOCKET,
-   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL or IOBOARD_CTRL_CONNECT_SERIAL.
- */
-#if MY_ROLE==EXAMPLE_LISTEN
-  #if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
-    #define IOBOARD_CTRL_CON IOBOARD_CTRL_LISTEN_SERIAL
-  #else
-    #define IOBOARD_CTRL_CON IOBOARD_CTRL_LISTEN_SOCKET
-  #endif
-#else
-  #if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
-    #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SERIAL
-  #else
-    #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
-  #endif
-#endif
 
 /* Maximum number of connections. Basically we need a single connection between IO board
    and control computer. We may want to allow two connections to listen for TCP socket
@@ -162,18 +129,16 @@ os_int osal_main(
        Set up iface to point correct transport interface and set parameters to configure it.
        Set also flags for communication protocol.
      */
-#if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
-    osal_socket_initialize();
-    iface = OSAL_SOCKET_IFACE;
-#endif
-
-#if MY_TRANSPORT==EXAMPLE_USE_TLS_SOCKET
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
+  #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     static osalTLSParam tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
     osal_tls_initialize(&tlsprm);
     iface = OSAL_TLS_IFACE;
-#endif
-
-#if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
+  #else
+    osal_socket_initialize();
+    iface = OSAL_SOCKET_IFACE;
+  #endif
+#else
     osal_serial_initialize();
     iface = OSAL_SERIAL_IFACE;
 #endif
@@ -190,11 +155,11 @@ os_int osal_main(
     prm.iface = iface;
     prm.ctrl_type = IOBOARD_CTRL_CON;
 
-#if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
-    prm.socket_con_str = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TCP_SOCKET_PORT;
-#else
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     prm.socket_con_str = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TLS_SOCKET_PORT;
-#endif    
+#else
+    prm.socket_con_str = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TCP_SOCKET_PORT;
+#endif
     prm.serial_con_str = EXAMPLE_SERIAL_PORT;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;

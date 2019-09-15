@@ -46,8 +46,8 @@
    manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
  */
 #define EXAMPLE_IP_ADDRESS "192.168.1.220"
-#define EXAMPLE_TCP_SOCKET_PORT "6368"
-#define EXAMPLE_TLS_SOCKET_PORT "6369"
+#define EXAMPLE_TCP_SOCKET_PORT IOC_DEFAULT_SOCKET_PORT_STR
+#define EXAMPLE_TLS_SOCKET_PORT IOC_DEFAULT_TLS_PORT_STR
 #define EXAMPLE_TLS_SERVER_CERT "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/server.crt"
 #define EXAMPLE_TLS_SERVER_KEY "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/server.key"
 #define EXAMPLE_SERIAL_PORT "COM3,baud=115200"
