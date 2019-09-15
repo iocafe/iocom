@@ -143,7 +143,7 @@ os_int osal_main(
     prm.ctrl_type = IOBOARD_CTRL_CON;
 //    prm.socket_con_str = "127.0.0.1:" IOC_DEFAULT_SOCKET_PORT_STR;
 //    prm.socket_con_str = "192.168.1.220:" IOC_DEFAULT_SOCKET_PORT_STR;
-//    prm.socket_con_str = "192.168.1.220:55555";
+//    prm.socket_con_str = "192.168.1.220:6369";
     prm.socket_con_str = "45.26.154.177:" IOC_DEFAULT_SOCKET_PORT_STR;
     //prm.serial_con_str = "COM5,baud=115200";
     //prm.serial_con_str = "ttyS31,baud=115200";

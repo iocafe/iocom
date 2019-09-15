@@ -112,9 +112,9 @@ os_int osal_main(
         count = 0,
         slow = 1;
 
-    /* Initialize the socket and serial port libraries.
+    /* Initialize the socket and serial port libraries. Never call boath osal_socket_initialize()
+       and osal_tls_initialize(). These use the same underlying library
      */
-    osal_socket_initialize();
     osal_tls_initialize(0);
     osal_serial_initialize();
 
@@ -196,7 +196,6 @@ os_int osal_main(
     ioc_release_root(&root);
     osal_serial_shutdown();
     osal_tls_shutdown();
-    osal_socket_shutdown();
     return 0;
 }
 

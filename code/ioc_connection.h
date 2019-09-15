@@ -26,7 +26,7 @@
 
 /** Default iocom library SSL socket port as string. This can be appended to IP address.
  */
-#define IOC_DEFAULT_TLS_PORT_STR "7369"
+#define IOC_DEFAULT_TLS_PORT_STR "6369"
 
 /** Frame sizes for socket and serial connections. These can never be modified, otherwise
  *  communication compatibility will break. Notice that socket frame size is not same as
