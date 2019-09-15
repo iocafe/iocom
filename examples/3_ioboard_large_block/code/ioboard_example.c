@@ -80,13 +80,7 @@ os_int osal_main(
     os_int argc,
     os_char *argv[])
 {
-    int
-        i,
-        j,
-        k;
-
-    ioboardParams
-        prm;
+    ioboardParams prm;
 
     /* Initialize the socket library.
      */
@@ -110,40 +104,83 @@ os_int osal_main(
      */
     ioboard_start_communication(&prm);
 
-    /* IO board main loop, repeat forever (this example has no terminate condition).
+    /* When emulating micro-controller on PC, run loop. Just save context pointer on
+       real micro-controller.
      */
-    while (OS_TRUE)
+    osal_simulated_loop(OS_NULL);
+    return 0;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Loop function to be called repeatedly.
+
+  The osal_loop() function...
+  IO board main loop, repeat forever (this example has no terminate condition).
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  The function returns OSAL_SUCCESS to continue running. Other return values are
+           to be interprened as reboot on micro-controller or quit the program on PC computer.
+
+****************************************************************************************************
+*/
+osalStatus osal_loop(
+    void *app_context)
+{
+    int
+        i,
+        j,
+        k;
+
+    /* Keep the communication alive. The IO board uses one thread model, thus
+       we need to call this function repeatedly.
+     */
+    ioc_run(&ioboard_communication);
+
+    /* Received data fame up to date.
+     */
+    ioc_receive(&ioboard_fc);
+
+    /* Write lot of random stuff to simulate vast number of inputs changing
+       very quickly.
+     */
+    k = rand();
+    for (i = 0; i<IOBOARD_TC_BLOCK_SZ/2; i++)
     {
-        /* Keep the communication alive. The IO board uses one thread model, thus
-           we need to call this function repeatedly.
-         */
-        ioc_run(&ioboard_communication);
-
-        /* Received data fame up to date.
-         */
-        ioc_receive(&ioboard_fc);
-
-        /* Write lot of random stuff to simulate vast number of inputs changing
-           very quickly.
-         */
-        k = rand();
-        for (i = 0; i<IOBOARD_TC_BLOCK_SZ/2; i++)
-        {
-            j = rand() % IOBOARD_TC_BLOCK_SZ;
-            ioc_set16(&ioboard_tc, j, k);
-            k += 7;
-        }
-
-        /* Send changes trough communication.
-         */
-        ioc_send(&ioboard_tc);
+        j = rand() % IOBOARD_TC_BLOCK_SZ;
+        ioc_set16(&ioboard_tc, j, k);
+        k += 7;
     }
 
-    /* End IO board communication, clean up and finsh with the socket library.
-       On real IO device we may not need to take care about this, since these
-       are often shut down only by turning or power or by microcontroller reset.
+    /* Send changes trough communication.
      */
+    ioc_send(&ioboard_tc);
+
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Finished with the application, clean up.
+
+  The osal_main_cleanup() function ends IO board communication, cleans up and finshes with the
+  socket and serial port libraries.
+
+  On real IO device we may not need to take care about this, since these are often shut down
+  only by turning or power or by microcontroller reset.
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  None.
+
+****************************************************************************************************
+*/
+void osal_main_cleanup(
+    void *app_context)
+{
     ioboard_end_communication();
     osal_socket_shutdown();
-    return 0;
 }

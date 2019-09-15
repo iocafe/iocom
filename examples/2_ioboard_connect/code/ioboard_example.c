@@ -3,7 +3,7 @@
   @file    ioboard_example.c
   @brief   IO board example 2.
   @author  Pekka Lehtikoski
-  @version 1.1
+  @version 1.2
   @date    11.7.2019
 
   ioboard2 example demonstrates basic IO board with network communication. This example is
@@ -65,6 +65,9 @@ static os_uchar
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
         IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
 
+static os_int
+        prev_command;
+
 
 /**
 ****************************************************************************************************
@@ -81,12 +84,7 @@ os_int osal_main(
     os_int argc,
     os_char *argv[])
 {
-    int
-        command,
-        prev_command;
-
-    ioboardParams
-        prm;
+    ioboardParams prm;
 
     /* Initialize the socket and serial communication libraries.
      */
@@ -114,46 +112,80 @@ os_int osal_main(
      */
     ioboard_start_communication(&prm);
 
-    /* IO board main loop, repeat forever (this example has no terminate condition).
+    /* Clear globals
      */
     prev_command = 0x10000;
-    while (OS_TRUE)
-    {
-        /* Keep the communication alive. The IO board uses single thread model, thus
-           we need to call this function repeatedly.
-         */
-        ioc_run(&ioboard_communication);
 
-        /* If we receive a "command" as 16 bit value in address 2. The command could start 
-           some operation of IO board. The command is eached back in address 2 to allow 
-           controller to know that command has been regognized.
-         */
-        command = ioc_get16(&ioboard_fc, 2);
-        if (command != prev_command)
-        {
-            if (command == 1)
-            {
-                osal_console_write("Command 1, working on it.\n");
-            }
-            prev_command = command;
-            ioc_set16(&ioboard_tc, 2, command);
-        }
-
-        /* Sleep short time (1ms or so) in systems supporting multi-threading.
-           This is not strictly necessary, but without this the loop here will eat
-           up 100% of time of one processor core.
-         */
-        os_timeslice();
-    }
-
-    /* End IO board communication, clean up and finsh with the socket and serial libraries.
-       On real IO device we may not need to take care about this, since these are often shut
-       down only by turning or power or by microcontroller reset.
+    /* When emulating micro-controller on PC, run loop. Just save context pointer on
+       real micro-controller.
      */
-    ioboard_end_communication();
-    osal_socket_shutdown();
-    osal_serial_shutdown();
+    osal_simulated_loop(OS_NULL);
     return 0;
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Loop function to be called repeatedly.
+
+  The osal_loop() function...
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  The function returns OSAL_SUCCESS to continue running. Other return values are
+           to be interprened as reboot on micro-controller or quit the program on PC computer.
+
+****************************************************************************************************
+*/
+osalStatus osal_loop(
+    void *app_context)
+{
+    os_int command;
+
+    /* Keep the communication alive. The IO board uses single thread model, thus
+       we need to call this function repeatedly.
+     */
+    ioc_run(&ioboard_communication);
+
+    /* If we receive a "command" as 16 bit value in address 2. The command could start
+       some operation of IO board. The command is eached back in address 2 to allow
+       controller to know that command has been regognized.
+     */
+    command = ioc_get16(&ioboard_fc, 2);
+    if (command != prev_command)
+    {
+        if (command == 1)
+        {
+            osal_console_write("Command 1, working on it.\n");
+        }
+        prev_command = command;
+        ioc_set16(&ioboard_tc, 2, command);
+    }
+
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Finished with the application, clean up.
+
+  The osal_main_cleanup() function ends IO board communication, cleans up and finshes with the
+  socket and serial port libraries.
+
+  On real IO device we may not need to take care about this, since these are often shut down
+  only by turning or power or by microcontroller reset.
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  None.
+
+****************************************************************************************************
+*/
+void osal_main_cleanup(
+    void *app_context)
+{
+    ioboard_end_communication();
+    osal_socket_shutdown();
+    osal_serial_shutdown();
+}

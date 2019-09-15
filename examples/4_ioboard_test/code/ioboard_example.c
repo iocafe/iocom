@@ -3,7 +3,7 @@
   @file    ioboard_example.c
   @brief   IO board example 4_ioboard_test.
   @author  Pekka Lehtikoski
-  @version 1.1
+  @version 1.2
   @date    11.7.2019
 
   The 4_ioboard_test example demonstrates basic IO board with network communication.
@@ -65,43 +65,32 @@ static os_uchar
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
 		IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
 
-static int
-    prev_nro_connections,
-    prev_drop_count;
+typedef struct
+{
+    os_int
+        prev_nro_connections,
+        prev_drop_count,
+        prev_command;
+}
+MyAppContext;
+
+/* Application context. This needs to exist as long as application runs.
+ */
+static MyAppContext ioboard_app_context;
+
 
 /* Static function prototypes.
  */
-static void ioboard_show_communication_status(void);
-
-#define N_LEDS 8
-
 static void ioboard_callback(
     struct iocMemoryBlock *mblk,
     int start_addr,
     int end_addr,
     os_ushort flags,
-    void *context)
-{
-    int s, e, i, n;
-    os_uchar buf[N_LEDS];
+    void *context);
 
-    /* Get connection status changes.
-     */
-    if (end_addr >= 0 && start_addr < N_LEDS)
-    {
-        s = start_addr;
-        e = end_addr;
-        if (s < 0) s = 0;
-        if (e >= N_LEDS) e = N_LEDS - 1;
-        n = e - s + 1;
+static void ioboard_show_communication_status(
+    MyAppContext *acontext);
 
-        ioc_read(mblk, s, buf, n);
-        for (i = 0; i<n; i++)
-        {
-          // digitalWrite(leds[s + i], buf[i] ? HIGH : LOW);
-        }
-    }
-}
 
 /**
 ****************************************************************************************************
@@ -118,10 +107,6 @@ os_int osal_main(
     os_int argc,
     os_char *argv[])
 {
-    os_int
-        command,
-        prev_command;
-
     ioboardParams
         prm;
 
@@ -132,8 +117,8 @@ os_int osal_main(
 
     /** Clear global variables.
      */
-    prev_nro_connections = 0;
-    prev_drop_count = 0;
+    os_memclear(&ioboard_app_context, sizeof(ioboard_app_context));
+    ioboard_app_context.prev_command = 0x10000;
 
     /* Set up parameters for the IO board. This is necessary since
        we are using static memory pool.
@@ -173,42 +158,123 @@ os_int osal_main(
      */
     ioc_add_callback(&ioboard_fc, ioboard_callback, OS_NULL);
 
-    /* IO board main loop, repeat forever (this example has no terminate condition).
+    /* When emulating micro-controller on PC, run loop. Just save context pointer on
+       real micro-controller.
      */
-    prev_command = 0x10000;
-    while (!osal_console_read())
-    {
-        /* Keep the communication alive. The IO board uses one thread model, thus
-           we need to call this function repeatedly.
-         */
-        ioc_run(&ioboard_communication);
+    osal_simulated_loop(&ioboard_app_context);
+    return 0;
+}
 
-        /* If we receive a "command" as 16 bit value in address 2. The command could start 
-           some operation of IO board. The command is eached back in address 2 to allow 
-           controller to know that command has been regognized.
-         */
-        command = ioc_get16(&ioboard_fc, 2);
-// command = 0;
-        if (command != prev_command) {
-            if (command == 1) {
-                osal_console_write("Command 1, working on it.\n");
-            }
-            prev_command = command;
-            ioc_set16(&ioboard_tc, 2, command);
+
+/**
+****************************************************************************************************
+
+  @brief Loop function to be called repeatedly.
+
+  The osal_loop() function...
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  The function returns OSAL_SUCCESS to continue running. Other return values are
+           to be interprened as reboot on micro-controller or quit the program on PC computer.
+
+****************************************************************************************************
+*/
+osalStatus osal_loop(
+    void *app_context)
+{
+    os_int
+        command;
+
+    MyAppContext
+        *acontext = (MyAppContext*)app_context;
+
+    /* Keep the communication alive. The IO board uses one thread model, thus
+       we need to call this function repeatedly.
+     */
+    ioc_run(&ioboard_communication);
+
+    /* If we receive a "command" as 16 bit value in address 2. The command could start
+       some operation of IO board. The command is eached back in address 2 to allow
+       controller to know that command has been regognized.
+     */
+    command = ioc_get16(&ioboard_fc, 2);
+    if (command != acontext->prev_command) {
+        if (command == 1) {
+            osal_console_write("Command 1, working on it.\n");
         }
-
-        ioboard_show_communication_status();
+        acontext->prev_command = command;
+        ioc_set16(&ioboard_tc, 2, command);
     }
 
-    /* End IO board communication, clean up and finsh with the socket and serial port libraries.
-       On real IO device we may not need to take care about this, since these are often shut down
-       only by turning or power or by microcontroller reset.
-     */
+    ioboard_show_communication_status(acontext);
 
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Finished with the application, clean up.
+
+  The osal_main_cleanup() function ends IO board communication, cleans up and finshes with the
+  socket and serial port libraries.
+
+  On real IO device we may not need to take care about this, since these are often shut down
+  only by turning or power or by microcontroller reset.
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  None.
+
+****************************************************************************************************
+*/
+void osal_main_cleanup(
+    void *app_context)
+{
     ioboard_end_communication();
     osal_socket_shutdown();
     osal_serial_shutdown();
-    return 0;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Callback function when some communication data has changed.
+
+  The ioboard_callback function...
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioboard_callback(
+    struct iocMemoryBlock *mblk,
+    int start_addr,
+    int end_addr,
+    os_ushort flags,
+    void *context)
+{
+    int s, e, i, n;
+    const int N_LEDS = 8;
+    os_uchar buf[N_LEDS];
+
+    /* Get connection status changes.
+     */
+    if (end_addr >= 0 && start_addr < N_LEDS)
+    {
+        s = start_addr;
+        e = end_addr;
+        if (s < 0) s = 0;
+        if (e >= N_LEDS) e = N_LEDS - 1;
+        n = e - s + 1;
+
+        ioc_read(mblk, s, buf, n);
+        for (i = 0; i<n; i++)
+        {
+          // digitalWrite(leds[s + i], buf[i] ? HIGH : LOW);
+        }
+    }
 }
 
 
@@ -220,23 +286,25 @@ os_int osal_main(
   Every time a socket connects or disconnects to this "IO board", this function prints number
   of connected sockets and how many times a socket has been dropped (global count).
 
+  @param   app_context Void pointer, to pass application context structure, etc.
   @return  None.
 
 ****************************************************************************************************
 */
-static void ioboard_show_communication_status(void)
+static void ioboard_show_communication_status(
+    MyAppContext *acontext)
 {
-    int
+    os_int
         nro_connections,
         drop_count;
 
-    char
+    os_char
         nbuf[32];
 
     nro_connections = ioc_get16(&ioboard_fc, IOC_NRO_CONNECTED_STREAMS);
     drop_count = ioc_get32(&ioboard_fc, IOC_CONNECTION_DROP_COUNT);
-    if (nro_connections != prev_nro_connections ||
-        drop_count != prev_drop_count)
+    if (nro_connections != acontext->prev_nro_connections ||
+        drop_count != acontext->prev_drop_count)
     {
         osal_console_write("nro connections = ");
         osal_int_to_string(nbuf, sizeof(nbuf), nro_connections);
@@ -246,7 +314,7 @@ static void ioboard_show_communication_status(void)
         osal_console_write(nbuf);
         osal_console_write("\n");
 
-        prev_nro_connections = nro_connections;
-        prev_drop_count = drop_count;
+        acontext->prev_nro_connections = nro_connections;
+        acontext->prev_drop_count = drop_count;
     }
 }
