@@ -1648,7 +1648,7 @@ static int ioc_get_unique_mblk_id(
      */
     for (i = 1; i < sizeof(mark); i++)
     {
-        if (mark[i] == 255) continue;
+        if ((os_uchar)mark[i] == 255) continue;
         for (j = 0; j < 8; j++)
         {
             if ((mark[i] & (1 << j)) == 0)
