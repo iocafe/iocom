@@ -1,24 +1,24 @@
 /**
 
-  @file    iocomx.h
-  @brief   Main iocom header with extensions.
+  @file    iocdomain.h
+  @brief   IO domain controller library.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    29.7.2018
+  @date    19.9.2019
 
-  This iocom main header file with extensions. If further iocom base and extension headers.
+  Library for implementing IO domain controller functionality.
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
 */
-#ifndef IOCOMX_INCLUDED
-#define IOCOMX_INCLUDED
+#ifndef IODOMAIN_INCLUDED
+#define IODOMAIN_INCLUDED
 
-/* Include iocom base.
+/* Include operating system abstraction layer with extension headers.
  */
 #include "iocom.h"
 
@@ -27,9 +27,9 @@
  */
 OSAL_C_HEADER_BEGINS
 
-/* Include extension headers.
+/* Include all iodomain headers.
  */
-/* #include "iocom/extensions/ioc_ssl/ioc_ssl.h" */
+#include "applications/iodomain/code/iodomain_main.h"
 
 /* If C++ compilation, end the undecorated code.
  */
