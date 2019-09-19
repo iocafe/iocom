@@ -19,7 +19,7 @@
 #include "iodomain.h"
 
 
-IODOMAIN BINDS DATA. OF TWO ITEMS DO HAVE SAME GLOBAL NAME THEY ARE BIUND TOGETHER???
+// IODOMAIN BINDS DATA. OF TWO ITEMS DO HAVE SAME GLOBAL NAME THEY ARE BIUND TOGETHER???
 
 
 /* Forward referred static functions.
@@ -42,9 +42,9 @@ static void info_callback(
 /**
 ****************************************************************************************************
 
-  @brief Set up IO domain.
+  @brief Set up and start IO domain.
 
-  The iodomain_setup() startus the IO domain listening for TLS socket connections.
+  The iodomain_start() starts the IO domain listening for TLS socket connections.
 
   The iofomain function listens for socket connections and dynamically creates memory blocks
   according to information received from the device.
@@ -53,42 +53,41 @@ static void info_callback(
 
 ****************************************************************************************************
 */
-void iodomain_setup(
+void iodomain_start(
+    iodomainClass *iodomain,
     iodomainParams *prm)
 {
-    iocRoot root;
     iocEndPoint *ep;
     iocEndPointParams epprm;
 
-    /* Initialize the socket library and root structure.
+    /* Initialize the root structure.
      */
-    osal_socket_initialize();
-    ioc_initialize_root(&root);
+    ioc_initialize_root(&iodomain->root);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
-    ioc_set_root_callback(&root, root_callback, OS_NULL);
+    ioc_set_root_callback(&iodomain->root, root_callback, OS_NULL);
 
     /* Listen to socket port.
      */
-    ep = ioc_initialize_end_point(OS_NULL, &root);
+    ep = ioc_initialize_end_point(OS_NULL, &iodomain->root);
     os_memclear(&epprm, sizeof(epprm));
     epprm.iface = OSAL_SOCKET_IFACE;
     epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
     ioc_listen(ep, &epprm);
+}
 
-    /* Do something else.
-     */
-    while (OS_TRUE)
-    {
-        os_sleep(100);
-    }
 
+/** Finished with IO domain. Clean up.
+*/
+void iodomain_stop(
+    iodomainClass *iodomain)
+{
     /* End IO board communication, clean up and finsh with the socket library.
      */
-    ioc_release_root(&root);
-    osal_socket_shutdown();
+    ioc_release_root(&iodomain->root);
 }
+
 
 
 /**

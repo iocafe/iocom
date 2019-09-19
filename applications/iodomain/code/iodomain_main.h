@@ -19,7 +19,7 @@
 
 /**
 ****************************************************************************************************
-    Parameters for iodomain_setup() function.
+    Parameters for The iodomain_start() function.
 ****************************************************************************************************
 */
 typedef struct
@@ -30,21 +30,26 @@ typedef struct
 iodomainParams;
 
 
-
 /**
 ****************************************************************************************************
-
-  @brief Set up IO domain.
-
-  The iodomain_setup() startus the IO domain listening for TLS socket connections.
-
-  The iofomain function listens for socket connections and dynamically creates memory blocks
-  according to information received from the device.
-
-  @return  None.
-
+    IO domain class structure.
 ****************************************************************************************************
 */
-void iodomain_setup(
+typedef struct
+{
+    iocRoot root;
+}
+iodomainClass;
+
+
+
+/** Set up and start IO domain.
+*/
+void iodomain_start(
+    iodomainClass *iodomain,
     iodomainParams *prm);
 
+/** Finished with IO domain. Clean up.
+*/
+void iodomain_stop(
+    iodomainClass *iodomain);
