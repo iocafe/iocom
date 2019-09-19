@@ -18,6 +18,10 @@
 */
 #include "iodomain.h"
 
+
+IODOMAIN BINDS DATA. OF TWO ITEMS DO HAVE SAME GLOBAL NAME THEY ARE BIUND TOGETHER???
+
+
 /* Forward referred static functions.
  */
 static void root_callback(
