@@ -66,7 +66,7 @@ void iodomain_start(
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
-    ioc_set_root_callback(&iodomain->root, root_callback, OS_NULL);
+    ioc_set_root_callback(&iodomain->root, root_callback, iodomain);
 
     /* Listen to socket port.
      */
@@ -78,7 +78,15 @@ void iodomain_start(
 }
 
 
-/** Finished with IO domain. Clean up.
+/**
+****************************************************************************************************
+
+  @brief Finished with IO domain. Clean up.
+
+  The root_callback() function is used to detect new dynamically allocated memory blocks.
+  @return  None.
+
+****************************************************************************************************
 */
 void iodomain_stop(
     iodomainClass *iodomain)
@@ -87,7 +95,6 @@ void iodomain_stop(
      */
     ioc_release_root(&iodomain->root);
 }
-
 
 
 /**
@@ -114,7 +121,7 @@ static void root_callback(
         /* Process "new dynamic memory block" callback.
          */
         case IOC_NEW_DYNAMIC_MBLK:
-             ioc_get_memory_block_param(mblk, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
+            ioc_get_memory_block_param(mblk, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
 
             os_strncpy(text, "Memory block ", sizeof(text));
             os_strncat(text, mblk_name, sizeof(text));
