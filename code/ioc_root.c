@@ -46,10 +46,10 @@ void ioc_initialize_root(
      */
     IOC_SET_DEBUG_ID(root, 'R')
 
-#if IOC_CHECKSUM_TEST
+#if OSAL_CHECKSUM_TEST
     /* Test the checksum code.
      */
-    ioc_test_checksum();
+    osal_test_checksum();
 #endif
 }
 

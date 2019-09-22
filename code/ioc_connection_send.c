@@ -302,7 +302,7 @@ static void ioc_make_data_frame(
      */
     if (ptrs.checksum_low)
     {
-        crc = ioc_checksum(con->frame_out.buf, con->frame_out.used);
+        crc = os_checksum(con->frame_out.buf, con->frame_out.used);
         *ptrs.checksum_low = (os_uchar)crc;
         *ptrs.checksum_high = (os_uchar)(crc >> 8);
     }
@@ -406,7 +406,7 @@ static void ioc_make_mblk_info_frame(
      */
     if (ptrs.checksum_low)
     {
-        crc = ioc_checksum(con->frame_out.buf, con->frame_out.used);
+        crc = os_checksum(con->frame_out.buf, con->frame_out.used);
         *ptrs.checksum_low = (os_uchar)crc;
         *ptrs.checksum_high = (os_uchar)(crc >> 8);
     }
