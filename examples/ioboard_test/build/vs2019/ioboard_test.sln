@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iocom", "..\..\..\..\build\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eosal", "..\..\..\..\..\eosal\build\vs2019\eosal.vcxproj", "{E4A3C5EC-5D37-4EEF-8DE1-E2D597A0E31F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "4_ioboard_test", "4_ioboard_test.vcxproj", "{723B258A-51C6-4B40-9CB9-B1D122AE157E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ioboard_test", "ioboard_test.vcxproj", "{723B258A-51C6-4B40-9CB9-B1D122AE157E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{19FB0104-F92B-4FF2-BD45-577449621E88} = {19FB0104-F92B-4FF2-BD45-577449621E88}
 		{E4A3C5EC-5D37-4EEF-8DE1-E2D597A0E31F} = {E4A3C5EC-5D37-4EEF-8DE1-E2D597A0E31F}

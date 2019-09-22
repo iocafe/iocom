@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\ioc_checksum.h" />
     <ClInclude Include="..\..\code\ioc_compress.h" />
     <ClInclude Include="..\..\code\ioc_com_status.h" />
     <ClInclude Include="..\..\code\ioc_connection.h" />
@@ -38,7 +37,6 @@
     <ClInclude Include="..\..\iocomx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\ioc_checksum.c" />
     <ClCompile Include="..\..\code\ioc_compress.c" />
     <ClCompile Include="..\..\code\ioc_com_status.c" />
     <ClCompile Include="..\..\code\ioc_connection.c" />

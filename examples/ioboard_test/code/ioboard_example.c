@@ -284,7 +284,7 @@ static void ioboard_callback(
     void *context)
 {
     int s, e, i, n;
-    const int N_LEDS = 8;
+    #define N_LEDS 8
     os_uchar buf[N_LEDS];
 
     /* Get connection status changes.
