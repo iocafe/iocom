@@ -23,25 +23,15 @@ set(BACKBONE "$ENV{E_ROOT}/${E_PROJECT}/code")
 set(EXTENSIONS "$ENV{E_ROOT}/${E_PROJECT}/extensions")
 
 # Add main headers.
-set(MAIN_HEADERS "${E_PROJECT}.h" "${E_PROJECT}x.h")
+set(MAIN_HEADERS "${E_PROJECT}.h")
 
 # Add source files common to all operating systems.
 file(GLOB BB_CM_SOURCES RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${BACKBONE}/*.c")
 file(GLOB BB_CM_HEADERS RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${BACKBONE}/*.h")
-# file(GLOB EX_CM_SOURCES RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${EXTENSIONS}/*/common/*.c")
-# file(GLOB EX_CM_HEADERS RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${EXTENSIONS}/*/common/*.h")
-
-# Add operating system specific files.
-# file(GLOB BB_OS_SOURCES RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${BACKBONE}/*/$ENV{E_OS}/*.c" "${BACKBONE}/*/$ENV{E_OS}/*.cpp")
-# file(GLOB BB_OS_HEADERS RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${BACKBONE}/*/$ENV{E_OS}/*.h")
-# file(GLOB EX_OS_SOURCES RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${EXTENSIONS}/*/$ENV{E_OS}/*.c" "${EXTENSIONS}/*/$ENV{E_OS}/*.cpp")
-# file(GLOB EX_OS_HEADERS RELATIVE $ENV{E_ROOT}/${E_PROJECT} "${EXTENSIONS}/*/$ENV{E_OS}/*.h")
 
 # Generate file lists with relative paths.
 set (E_FILE_LIST ${BB_CM_SOURCES})
 set (E_HDR_FILE_LIST ${MAIN_HEADERS} ${BB_CM_HEADERS})
-# set (E_FILE_LIST ${BB_CM_SOURCES} ${BB_OS_SOURCES} ${EX_CM_SOURCES} ${EX_OS_SOURCES})
-# set (E_HDR_FILE_LIST ${MAIN_HEADERS} ${BB_CM_HEADERS} ${EX_CM_HEADERS})
 
 # Generate file list with absolute paths.
 set(E_ABS_FILE_LIST)
