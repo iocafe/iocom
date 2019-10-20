@@ -46,7 +46,7 @@ static void info_callback(
 
   The iodomain_start() starts the IO domain listening for TLS socket connections.
 
-  The iofomain function listens for socket connections and dynamically creates memory blocks
+  Listens for socket connections and dynamically creates memory blocks
   according to information received from the device.
 
   @return  None.

@@ -18,8 +18,7 @@
 /** X
 */
 void iotopology_load_node_configuration(
-    iocNode *node,
-    oe_char8 *filename_dummy);
+    iotopologyNode *node);
 
 void iotopology_save_node_configuration(
-    iocNode *node);
+    iotopologyNode *node);

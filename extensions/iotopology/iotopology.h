@@ -31,7 +31,8 @@ OSAL_C_HEADER_BEGINS
 /* Include all iotopology headers.
  */
 #include "extensions/iotopology/code/iotopology_types.h"
-#include "extensions/iotopology/code/iotopology_access.h"
+#include "extensions/iotopology/code/iotopology_conf.h"
+#include "extensions/iotopology/code/iotopology_persistent.h"
 
 /* If C++ compilation, end the undecorated code.
  */

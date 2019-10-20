@@ -26,10 +26,7 @@
 
   @brief Set up and start IO domain.
 
-  The iodomain_start() starts the IO domain listening for TLS socket connections.
-
-  The iofomain function listens for socket connections and dynamically creates memory blocks
-  according to information received from the device.
+  The iodomain_start()
 
   @return  None.
 

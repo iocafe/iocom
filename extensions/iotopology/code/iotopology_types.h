@@ -13,29 +13,26 @@
 
 ****************************************************************************************************
 */
-#ifndef IOTOPOLOGY_INCLUDED
-#define IOTOPOLOGY_INCLUDED
-
 
 typedef struct
 {
 }
-iocCertificate;
+iotopologyCertificate;
 
 typedef struct
 {
 
 }
-iocKey;
+iotopologyKey;
 
 
 typedef struct iocAuthority
 {
     struct iocAuthority *next;
 }
-iocAuthority;
+iotopologyAuthority;
 
-typedef struct iocAuthentication
+typedef struct iotopologyAuthorization
 {
     /** Name of authenticated node, for example GRUMPYBORG.
         If asterix "*", then all node names are accepted.
@@ -47,18 +44,18 @@ typedef struct iocAuthentication
      */
     os_char *network_name;
 
-    struct iocAuthentication *next;
+    struct iotopologyAuthorization *next;
 }
-iocAuthentication;
+iotopologyAuthorization;
 
 typedef struct iocNetworkConnection
 {
-    os_int protocol;
+    os_int flags;
     os_char *parameters;
 
-    struct iocNetworkConnection *next;
+    struct iotopologyNetworkConnection *next;
 }
-iocNetworkConnection;
+iotopologyNetworkConnection;
 
 
 /**
@@ -70,9 +67,10 @@ typedef struct
 {
     /** Name of this node, for example GRUMPYBORG.
      */
-    os_char *none_name;
+    os_char *node_name;
 
-    /** Name of this IO device network, for example PEKKA.
+    /** Name of this IO device network, for example PEKKA. This can be also in two parts,
+        like VARKAUS.MIGHTYCORP.
      */
     os_char *network_name;
 
@@ -80,39 +78,43 @@ typedef struct
         is one connection, but list presentation is used to allow redundant connections
         in future.
      */
-    iocNetworkConnection *connect;
+    iotopologyNetworkConnection *connect;
 
     /** Private key of the node.
      */
-    iocKey *private_key;
+    iotopologyKey *private_key;
 
     /** Public key of the node.
      */
-    iocKey *public_key;
+    iotopologyKey *public_key;
 
     /** Client certificate. Used to identify this device (or controller) upwards to IO domain
-       controller.
+        controller.
      */
-    iocCertificate *client_cert;
+    iotopologyCertificate *client_cert;
 
     /** Linked list of authorities (a certificate signed by authority is accepted)
      */
-    struct iocAuthority *authorities;
+    iotopologyAuthority *authorities;
 
     /** Controller only: Linked list of IP protocols/addressess/socket ports to listen.
         There may be more than one, for example if our controller listens for both TLS and serial
         communication.
       */
-    iocNetworkConnection *listen;
+    iotopologyNetworkConnection *listen;
 
-    /** Controller only: Linked list of nodes authenticated to connect to this one. Basically
-     *  we can do security without this: If an IO device is breached and we need to
-     *  revoke it's access rights we could maintain revokation list.
+    /** Controller only: Linked list of nodes authorized to connect to this one. Basically
+        we could do security without this: Alternatively if an IO device is breached and we
+        need to revoke it's access rights we could maintain revokation list.
      */
-    iocAuthentication *authentication;
+    iotopologyAuthorization *authorizations;
 
-}
-iocNode;
-
-
+#if OSAL_MULTITHREAD_SUPPORT
+    /** Mutex to synchronize access and modifications to node configuration, needed for
+        multithread mode.
+     */
+    osalMutex lock;
 #endif
+}
+iotopologyNode;
+
