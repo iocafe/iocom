@@ -1,8 +1,8 @@
-# iocom/extensions/iodomain/CmakeLists.txt - Cmake build for iodomain library.
+# iocom/extensions/iotopology/CmakeLists.txt - Cmake build for iotopology library.
 cmake_minimum_required(VERSION 2.8.11)
 
 # Set project name (= project root folder name).
-set(E_PROJECT "iodomain")
+set(E_PROJECT "iotopology")
 project(${E_PROJECT})
 
 # include build environment setting common to all projects.

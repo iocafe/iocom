@@ -29,7 +29,7 @@ OSAL_C_HEADER_BEGINS
 
 /* Include all iodomain headers.
  */
-#include "applications/iodomain/code/iodomain_main.h"
+#include "extensions/iodomain/code/iodomain_main.h"
 
 /* If C++ compilation, end the undecorated code.
  */

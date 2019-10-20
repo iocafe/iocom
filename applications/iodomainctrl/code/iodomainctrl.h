@@ -20,7 +20,7 @@
 
 /* Include iodomain headers. This further includes iocom and eosal.
  */
-#include "iodomain.h"
+#include "extensions/iodomain/iodomain.h"
 
 /* String buffer sizes.
  */

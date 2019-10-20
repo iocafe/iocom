@@ -1,11 +1,10 @@
 /**
 
   @file    iotopology.h
-  @brief   Data structures and defines for managing network topology and security.
+  @brief   Data structures, defines and functions for managing network topology and security.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    20.10.2019
-
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,

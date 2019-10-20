@@ -11,7 +11,7 @@ include(../../../eosal/build/cmakedefs/eosal-defs.txt)
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
 add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
-add_subdirectory($ENV{E_ROOT}/iocom/applications/iodomain "${CMAKE_CURRENT_BINARY_DIR}/iocom/applications/iodomain")
+add_subdirectory($ENV{E_ROOT}/iocom/extensions/iodomain "${CMAKE_CURRENT_BINARY_DIR}/iocom/applications/iodomain")
 
 # Set path to where to keep libraries.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
