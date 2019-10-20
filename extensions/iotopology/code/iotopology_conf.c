@@ -19,15 +19,8 @@
 /* Prototyped for forward referred static functions.
  */
 static void iotopology_set_string(
-    iotopologyNode *node,
     os_char **pstr,
     const os_char *x);
-
-static void iotopology_get_string(
-    iotopologyNode *node,
-    os_char **pstr,
-    os_char *buf,
-    os_memsz buf_sz);
 
 static void iotopology_release_string(
     os_char **pstr);
@@ -79,8 +72,8 @@ void iotopology_release_node_configuration(
     osal_mutex_lock(lock);
 #endif
 
-    iotopology_release_string(&node->node_name);
-    iotopology_release_string(&node->network_name);
+//    iotopology_release_string(&node->node_name);
+//    iotopology_release_string(&node->network_name);
 
     os_memclear(node, sizeof(iotopologyNode));
 
@@ -95,17 +88,31 @@ void iotopology_set_node_name(
     iotopologyNode *node,
     const os_char *node_name)
 {
-    iotopology_set_string(node, &node->node_name, node_name);
+    os_strncpy(node->node_name, node_name, IOTOPOLOGY_NODE_NAME_SZ);
 }
 
 
-void iotopology_get_node_name(
-    iotopologyNode *node,
-    os_char *node_name,
-    os_memsz node_name_sz)
+const os_char *iotopology_get_node_name(
+    iotopologyNode *node)
 {
-    iotopology_get_string(node, &node->node_name, node_name, node_name_sz);
+    return node->node_name;
 }
+
+void iotopology_set_network_name(
+    iotopologyNode *node,
+    const os_char *network_name)
+
+{
+    os_strncpy(node->network_name, network_name, IOTOPOLOGY_NETWORK_NAME_SZ);
+}
+
+os_char *iotopology_get_network_name(
+    iotopologyNode *node)
+{
+    return node->network_name;
+}
+
+
 
 
 /**
@@ -124,13 +131,10 @@ void iotopology_get_node_name(
 ****************************************************************************************************
 */
 static void iotopology_set_string(
-    iotopologyNode *node,
     os_char **pstr,
     const os_char *x)
 {
     os_memsz sz;
-
-    iotopology_lock_node_configuration(node);
 
     /* If we have old string value, release memory allocated for it.
      */
@@ -146,35 +150,6 @@ static void iotopology_set_string(
         *pstr = os_malloc(sz, OS_NULL);
         os_memcpy(*pstr, x, sz);
     }
-
-    iotopology_unlock_node_configuration(node);
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Store copy of string in newly allocated memory.
-
-  The iotopology_set_string() strores copy of string x and sets pstr to point it.
-
-  @param   pstr Pointer to string pointer used to hold copy. This must be initialized before
-           calling this function either to OS_NULL or set by earlier iotopology_set_string()
-           function call.
-  @param   x Pointer to new string value. If OS_NULL, the pstr pointer is set to OS_NULL.
-  @return  None.
-
-****************************************************************************************************
-*/
-static void iotopology_get_string(
-    iotopologyNode *node,
-    os_char **pstr,
-    os_char *buf,
-    os_memsz buf_sz)
-{
-    iotopology_lock_node_configuration(node);
-    os_strncpy(buf, *pstr, buf_sz);
-    iotopology_unlock_node_configuration(node);
 }
 
 

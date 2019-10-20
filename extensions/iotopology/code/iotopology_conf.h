@@ -35,19 +35,15 @@ void iotopology_set_node_name(
     iotopologyNode *node,
     const os_char *node_name);
 
-void iotopology_get_node_name(
-    iotopologyNode *node,
-    os_char *node_name,
-    os_memsz node_name_sz);
+const os_char *iotopology_get_node_name(
+    iotopologyNode *node);
 
 void iotopology_set_network_name(
     iotopologyNode *node,
     const os_char *network_name);
 
-void iotopology_get_network_name(
-    iotopologyNode *node,
-    os_char *network_name,
-    os_memsz network_name_sz);
+os_char *iotopology_get_network_name(
+    iotopologyNode *node);
 
 void iotopology_set_connection(
     iotopologyNode *node,
