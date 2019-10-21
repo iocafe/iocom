@@ -1,6 +1,6 @@
 /**
 
-  @file    iotopology_access.h
+  @file    iotopology_persistent.h
   @brief   Data structures, defines and functions for managing network topology and security.
   @author  Pekka Lehtikoski
   @version 1.0

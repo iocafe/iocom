@@ -14,6 +14,16 @@
 ****************************************************************************************************
 */
 
+/* Enumeration of features to check.
+ */
+typedef enum
+{
+    IOTOPOLOGY_TCP,
+    IOTOPOLOGY_TLS,
+    IOTOPOLOGY_SERIAL
+}
+iotopologyFeatureEnum;
+
 
 /** X
 */
@@ -30,6 +40,10 @@ void iotopology_release_node_configuration(
     #define iotopology_lock_node_configuration(node)
     #define iotopology_unlock_node_configuration(node)
 #endif
+
+os_boolean iotopology_is_feature_used(
+    iotopologyNode *node,
+    iotopologyFeatureEnum feature);
 
 void iotopology_set_node_name(
     iotopologyNode *node,

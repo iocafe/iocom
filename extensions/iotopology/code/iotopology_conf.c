@@ -18,14 +18,14 @@
 
 /* Prototyped for forward referred static functions.
  */
-static void iotopology_set_string(
+/* static void iotopology_set_string(
     os_char **pstr,
     const os_char *x);
 
 static void iotopology_release_string(
     os_char **pstr);
 
-
+*/
 
 
 /**
@@ -84,6 +84,14 @@ void iotopology_release_node_configuration(
 }
 
 
+os_boolean iotopology_is_feature_used(
+    iotopologyNode *node,
+    iotopologyFeatureEnum feature)
+{
+    return OS_TRUE; // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+}
+
+
 void iotopology_set_node_name(
     iotopologyNode *node,
     const os_char *node_name)
@@ -113,6 +121,7 @@ os_char *iotopology_get_network_name(
 }
 
 
+#if 0
 /**
 ****************************************************************************************************
 
@@ -174,3 +183,4 @@ static void iotopology_release_string(
         *pstr = OS_NULL;
     }
 }
+#endif

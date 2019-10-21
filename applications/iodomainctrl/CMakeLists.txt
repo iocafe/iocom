@@ -11,7 +11,8 @@ include(../../../eosal/build/cmakedefs/eosal-defs.txt)
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
 add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
-add_subdirectory($ENV{E_ROOT}/iocom/extensions/iodomain "${CMAKE_CURRENT_BINARY_DIR}/iocom/applications/iodomain")
+add_subdirectory($ENV{E_ROOT}/iocom/extensions/iodomain "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/iodomain")
+add_subdirectory($ENV{E_ROOT}/iocom/extensions/iotopology "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/iotopology")
 
 # Set path to where to keep libraries.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
@@ -31,4 +32,4 @@ file(GLOB_RECURSE SOURCES "${E_SOURCE_PATH}/*.c")
 # Build executable. Set library folder and libraries to link with
 link_directories($ENV{E_LIB})
 add_executable(${E_PROJECT}${E_POSTFIX} ${SOURCES})
-target_link_libraries(${E_PROJECT}${E_POSTFIX} iodomain${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})
+target_link_libraries(${E_PROJECT}${E_POSTFIX} iodomain${E_POSTFIX};iotopology${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})

@@ -42,14 +42,18 @@ typedef struct
 iodomainClass;
 
 
+/* Initialize the IO domain data structure.
+ */
+void iodomain_initialize(
+    iodomainClass *iodomain);
 
-/** Set up and start IO domain.
+/* Finished with IO domain. Clean up.
+*/
+void iodomain_shutdown(
+    iodomainClass *iodomain);
+
+/* Set up and start IO domain.
 */
 void iodomain_start(
     iodomainClass *iodomain,
     iodomainParams *prm);
-
-/** Finished with IO domain. Clean up.
-*/
-void iodomain_stop(
-    iodomainClass *iodomain);

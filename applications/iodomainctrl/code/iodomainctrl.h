@@ -18,8 +18,9 @@
 #ifndef IODOMAINCTRL_INCLUDED
 #define IODOMAINCTRL_INCLUDED
 
-/* Include iodomain headers. This further includes iocom and eosal.
+/* Include iotopology and iodomain headers. This further includes iocom and eosal.
  */
+#include "extensions/iotopology/iotopology.h"
 #include "extensions/iodomain/iodomain.h"
 
 /* String buffer sizes.

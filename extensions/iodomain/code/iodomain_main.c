@@ -42,6 +42,47 @@ static void info_callback(
 /**
 ****************************************************************************************************
 
+  @brief Initialize the IO domain data structure.
+
+  The iodomain_initialize() initializes empty IO domain data structure.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+void iodomain_initialize(
+    iodomainClass *iodomain)
+{
+    os_memclear(iodomain, sizeof(iodomainClass));
+
+    /* Initialize the root structure.
+     */
+    ioc_initialize_root(&iodomain->root);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Finished with IO domain. Clean up.
+
+  The iodomain_shutdown() function releases all resources allocated for the IO domain.
+  @return  None.
+
+****************************************************************************************************
+*/
+void iodomain_shutdown(
+    iodomainClass *iodomain)
+{
+    /* End IO board communication, clean up and finsh with the socket library.
+     */
+    ioc_release_root(&iodomain->root);
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Set up and start IO domain.
 
   The iodomain_start() starts the IO domain listening for TLS socket connections.
@@ -60,10 +101,6 @@ void iodomain_start(
     iocEndPoint *ep;
     iocEndPointParams epprm;
 
-    /* Initialize the root structure.
-     */
-    ioc_initialize_root(&iodomain->root);
-
     /* Set callback function to receive information about new dynamic memory blocks.
      */
     ioc_set_root_callback(&iodomain->root, root_callback, iodomain);
@@ -77,24 +114,6 @@ void iodomain_start(
     ioc_listen(ep, &epprm);
 }
 
-
-/**
-****************************************************************************************************
-
-  @brief Finished with IO domain. Clean up.
-
-  The root_callback() function is used to detect new dynamically allocated memory blocks.
-  @return  None.
-
-****************************************************************************************************
-*/
-void iodomain_stop(
-    iodomainClass *iodomain)
-{
-    /* End IO board communication, clean up and finsh with the socket library.
-     */
-    ioc_release_root(&iodomain->root);
-}
 
 
 /**

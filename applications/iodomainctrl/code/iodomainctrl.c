@@ -25,9 +25,9 @@
 
 /* Which communications we do listen to?
  */
-os_boolean iodomain_listen_tls = OS_TRUE;
+/* os_boolean iodomain_listen_tls = OS_TRUE;
 os_boolean iodomain_listen_plain_tcp = OS_FALSE;
-os_boolean iodomain_listen_serial = OS_FALSE;
+os_boolean iodomain_listen_serial = OS_FALSE; */
 
 /* Communication ports.
    iodomain_tls_port: Secured TCP socket port number to listen for TLS connections.
@@ -50,13 +50,13 @@ os_char iodomain_server_key[IODOMAIN_PATH_SZ]
     = "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/alice.key";
 
 
+/* Network node configuration for this controller.
+ */
+static iotopologyNode nodeconf;
+
 /* IO domain class structure. Holds state of the IO domain.
  */
 static iodomainClass iodomain;
-
-/* Handles for listening connected stream, and for the stream listening for connections.
- */
-//static osalStream stream, mystream;
 
 
 /* Forward referred static functions.
@@ -64,7 +64,6 @@ static iodomainClass iodomain;
 static osalStatus iodomainctrl_parse_command_line(
     os_int argc,
     os_char *argv[]);
-
 
 
 /**
@@ -87,45 +86,50 @@ os_int osal_main(
     os_int argc,
     os_char *argv[])
 {
+    osPersistentParams persistentprm;
     osalTLSParam tlsprm;
-    iodomainParams prm;
+    iodomainParams domainprm;
 
-    /* Parse command line arguments.
+    /* Parse peristent storage path from command line arguments.
+    if (iodomainctrl_parse_command_line(argc, argv) != OSAL_SUCCESS) { return 1;} */
+
+    /* Initialize persistent storage.
      */
-    if (iodomainctrl_parse_command_line(argc, argv) != OSAL_SUCCESS)
-    {
-        return 1;
-    }
+    os_memclear(&persistentprm, sizeof(persistentprm));
+    persistentprm.path = "iodomainctrl";
+    os_persistent_initialze(&persistentprm);
+
+    /* Initialize and load network node configuration from persistent storage.
+     */
+    iotopology_initialize_node_configuration(&nodeconf);
+    iotopology_load_node_configuration(&nodeconf);
+
+    /* Parse peristent storage path from command line arguments. */
 
     /* Initialize the underlying transport libraries.
      */
-    if (iodomain_listen_tls)
+    if (iotopology_is_feature_used(&nodeconf, IOTOPOLOGY_TLS))
     {
         os_memclear(&tlsprm, sizeof(tlsprm));
         tlsprm.certfile = iodomain_server_cert;
         tlsprm.keyfile = iodomain_server_key;
         osal_tls_initialize(&tlsprm);
     }
-    else if (iodomain_listen_plain_tcp)
+    else if (iotopology_is_feature_used(&nodeconf, IOTOPOLOGY_TCP))
     {
         osal_socket_initialize();
     }
 
-    if (iodomain_listen_serial)
+    else if (iotopology_is_feature_used(&nodeconf, IOTOPOLOGY_SERIAL))
     {
         osal_serial_initialize();
     }
 
-    /* All microcontroller do not clear memory at soft reboot.
+    /* Initiaize and start the IO domain controller.
      */
-    os_memclear(&iodomain, sizeof(iodomain));
-    os_memclear(&prm, sizeof(prm));
-//    stream = OS_NULL;
-
-    /* Set up the domain controller.
-     */
-    iodomain_start(&iodomain, &prm);
-
+    iodomain_initialize(&iodomain);
+    os_memclear(&domainprm, sizeof(domainprm));
+    iodomain_start(&iodomain, &domainprm);
 
     /* When emulating micro-controller on PC, run loop. Does nothing on real micro-controller.
      */
@@ -184,25 +188,17 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    /* We are finished with the IO domain.
+    /* We are finished with the IO domain, topology and persistent storage.
      */
-    iodomain_stop(&iodomain);
+    iodomain_shutdown(&iodomain);
+    iotopology_release_node_configuration(&nodeconf);
+    os_persistent_shutdown();
 
     /* Shut down underlying transports.
      */
-    if (iodomain_listen_tls)
-    {
-        osal_tls_shutdown();
-    }
-    else if (iodomain_listen_plain_tcp)
-    {
-        osal_socket_shutdown();
-    }
-
-    if (iodomain_listen_serial)
-    {
-        osal_serial_shutdown();
-    }
+    osal_tls_shutdown();
+    osal_socket_shutdown();
+    osal_serial_shutdown();
 }
 
 
