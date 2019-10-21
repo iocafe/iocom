@@ -84,7 +84,7 @@ os_int osal_main(
 
     /* Initialize the socket library.
      */
-    osal_socket_initialize();
+    osal_socket_initialize(OS_NULL, 0);
 
     /* Set up parameters for the IO board. To connect multiple devices,
        either device number or name must differ.

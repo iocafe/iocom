@@ -124,7 +124,7 @@ os_int osal_main(
 
     /* Initialize the socket and serial port libraries.
      */
-    osal_socket_initialize();
+    osal_socket_initialize(OS_NULL, 0);
     osal_serial_initialize();
 
     /* Set up parameters for the IO board. This is necessary since

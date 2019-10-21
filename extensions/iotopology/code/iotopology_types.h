@@ -23,6 +23,7 @@
 #define IOTOPOLOGY_IPADDR_SZ 40
 #define IOTOPOLOGY_MAC_SZ 24
 #define IOTOPOLOGY_OPTIONS_SZ 16
+#define IOTOPOLOGY_WIFI_PRM_SZ 16
 
 #define IOTOPOLOGY_MAX_NICS 2
 #define IOTOPOLOGY_MAX_CONNECTIONS 2
@@ -144,6 +145,9 @@ typedef struct
     */
     os_char mac[IOTOPOLOGY_MAC_SZ];
     os_char options[IOTOPOLOGY_OPTIONS_SZ]; /* dhcp, etc */
+
+    os_char wifi_net_name[IOTOPOLOGY_WIFI_PRM_SZ];
+    os_char wifi_net_password[IOTOPOLOGY_WIFI_PRM_SZ];
 }
 iotopologyNIC;
 

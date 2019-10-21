@@ -36,6 +36,7 @@ static void iotopology_release_string(
   The iotopology_initialize_node_configuration() function initalizes iotopologyNode structure
   and creates mutex to synchronize access to node configuration information.
 
+  @param   node Pointer to node's network topology configuration to initialize.
   @return  None.
 
 ****************************************************************************************************
@@ -59,6 +60,7 @@ void iotopology_initialize_node_configuration(
   The iotopology_release_node_configuration() function releases all memory allocated for
   IO node configuration structure.
 
+  @param   node Pointer to node's network topology configuration to release.
   @return  None.
 
 ****************************************************************************************************
@@ -81,6 +83,31 @@ void iotopology_release_node_configuration(
     osal_mutex_unlock(lock);
     osal_mutex_delete(lock);
 #endif
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Get network interface configuration from node's topology data.
+
+  The iotopology_get_nic_conf() function fills in the network interface structure NIC by
+  information in the topology configuration.
+
+  @param   node Pointer to node's network topology configuration.
+  @param   nic Pointer to array of network interface structure to fill in.
+  @param   n_nics Number of network interfaces in nic array.
+  @return  None.
+
+****************************************************************************************************
+*/
+void iotopology_get_nic_conf(
+    iotopologyNode *node,
+    osalNetworkInterface *nic,
+    os_int n_nics)
+{
+    os_memclear(&nic, n_nics * sizeof(osalNetworkInterface));
+
 }
 
 

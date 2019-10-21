@@ -68,7 +68,7 @@ os_int osal_main(
 
     /* Initialize the socket library and root structure.
      */
-    osal_socket_initialize();
+    osal_socket_initialize(OS_NULL, 0);
     ioc_initialize_root(&root);
 
     /* Set callback function to receive information about new dynamic memory blocks.

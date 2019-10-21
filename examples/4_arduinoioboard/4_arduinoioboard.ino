@@ -95,7 +95,7 @@ void setup()
 
     // Initialize OS abtraction layer and start flashes on socket.
     osal_initialize(OSAL_INIT_DEFAULT);
-    osal_socket_initialize();
+    osal_socket_initialize(OS_NULL, 0);
 
     /* Set up parameters for the IO board. This is necessary since
        we are using static memory pool.

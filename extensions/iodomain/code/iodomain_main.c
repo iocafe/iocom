@@ -46,6 +46,7 @@ static void info_callback(
 
   The iodomain_initialize() initializes empty IO domain data structure.
 
+  @param   iodomain Pointer to IO domain class structure to initialize.
   @return  None.
 
 ****************************************************************************************************
@@ -83,20 +84,20 @@ void iodomain_shutdown(
 /**
 ****************************************************************************************************
 
-  @brief Set up and start IO domain.
+  @brief Start the IO domain.
 
-  The iodomain_start() starts the IO domain listening for TLS socket connections.
+  The iodomain_start() starts the listening for incoming connections from the IO devices according
+  to node configuration information.
 
-  Listens for socket connections and dynamically creates memory blocks
-  according to information received from the device.
-
+  @param   iodomain Pointer to IO domain class structure.
+  @param   node Pointer to network topology configuration for the node.
   @return  None.
 
 ****************************************************************************************************
 */
 void iodomain_start(
     iodomainClass *iodomain,
-    iodomainParams *prm)
+    iotopologyNode *node)
 {
     iocEndPoint *ep;
     iocEndPointParams epprm;
@@ -113,7 +114,6 @@ void iodomain_start(
     epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
     ioc_listen(ep, &epprm);
 }
-
 
 
 /**

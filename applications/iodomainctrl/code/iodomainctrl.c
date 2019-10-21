@@ -61,9 +61,9 @@ static iodomainClass iodomain;
 
 /* Forward referred static functions.
  */
-static osalStatus iodomainctrl_parse_command_line(
+/* static osalStatus iodomainctrl_parse_command_line(
     os_int argc,
-    os_char *argv[]);
+    os_char *argv[]); */
 
 
 /**
@@ -88,7 +88,7 @@ os_int osal_main(
 {
     osPersistentParams persistentprm;
     osalTLSParam tlsprm;
-    iodomainParams domainprm;
+    osalNetworkInterface nic[OSAL_DEFAULT_NRO_NICS];
 
     /* Parse peristent storage path from command line arguments.
     if (iodomainctrl_parse_command_line(argc, argv) != OSAL_SUCCESS) { return 1;} */
@@ -108,16 +108,17 @@ os_int osal_main(
 
     /* Initialize the underlying transport libraries.
      */
+    iotopology_get_nic_conf(&nodeconf, nic, OSAL_DEFAULT_NRO_NICS);
     if (iotopology_is_feature_used(&nodeconf, IOTOPOLOGY_TLS))
     {
         os_memclear(&tlsprm, sizeof(tlsprm));
         tlsprm.certfile = iodomain_server_cert;
         tlsprm.keyfile = iodomain_server_key;
-        osal_tls_initialize(&tlsprm);
+        osal_tls_initialize(nic, OSAL_DEFAULT_NRO_NICS, &tlsprm);
     }
     else if (iotopology_is_feature_used(&nodeconf, IOTOPOLOGY_TCP))
     {
-        osal_socket_initialize();
+        osal_socket_initialize(nic, OSAL_DEFAULT_NRO_NICS);
     }
 
     else if (iotopology_is_feature_used(&nodeconf, IOTOPOLOGY_SERIAL))
@@ -128,8 +129,7 @@ os_int osal_main(
     /* Initiaize and start the IO domain controller.
      */
     iodomain_initialize(&iodomain);
-    os_memclear(&domainprm, sizeof(domainprm));
-    iodomain_start(&iodomain, &domainprm);
+    iodomain_start(&iodomain, &nodeconf);
 
     /* When emulating micro-controller on PC, run loop. Does nothing on real micro-controller.
      */
@@ -221,7 +221,7 @@ void osal_main_cleanup(
 
 ****************************************************************************************************
 */
-static osalStatus iodomainctrl_parse_command_line(
+/* static osalStatus iodomainctrl_parse_command_line(
     os_int argc,
     os_char *argv[])
 {
@@ -229,3 +229,4 @@ static osalStatus iodomainctrl_parse_command_line(
 
     return OSAL_SUCCESS;
 }
+*/

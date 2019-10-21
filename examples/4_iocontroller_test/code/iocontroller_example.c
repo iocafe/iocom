@@ -160,7 +160,7 @@ os_int osal_main(
        Set also flags for communication protocol.
      */
 #if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
-    osal_socket_initialize();
+    osal_socket_initialize(OS_NULL, 0);
     iface = OSAL_SOCKET_IFACE;
     c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TCP_SOCKET_PORT;
     l_parameters = ":" EXAMPLE_TCP_SOCKET_PORT;
@@ -169,7 +169,7 @@ os_int osal_main(
 
 #if MY_TRANSPORT==EXAMPLE_USE_TLS_SOCKET
     static osalTLSParam prm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
-    osal_tls_initialize(&prm);
+    osal_tls_initialize(OS_NULL, 0, &prm);
     iface = OSAL_TLS_IFACE;
     c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TLS_SOCKET_PORT;
     l_parameters = ":" EXAMPLE_TLS_SOCKET_PORT;

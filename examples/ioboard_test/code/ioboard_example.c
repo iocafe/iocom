@@ -132,10 +132,10 @@ os_int osal_main(
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
   #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     static osalTLSParam tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
-    osal_tls_initialize(&tlsprm);
+    osal_tls_initialize(OS_NULL, 0, &tlsprm);
     iface = OSAL_TLS_IFACE;
   #else
-    osal_socket_initialize();
+    osal_socket_initialize(OS_NULL, 0);
     iface = OSAL_SOCKET_IFACE;
   #endif
 #else

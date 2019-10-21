@@ -41,6 +41,13 @@ void iotopology_release_node_configuration(
     #define iotopology_unlock_node_configuration(node)
 #endif
 
+/* Get network interface configuration from node's topology data.
+ */
+void iotopology_get_nic_conf(
+    iotopologyNode *node,
+    osalNetworkInterface *nic,
+    os_int n_nics);
+
 os_boolean iotopology_is_feature_used(
     iotopologyNode *node,
     iotopologyFeatureEnum feature);

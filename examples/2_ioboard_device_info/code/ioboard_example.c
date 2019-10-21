@@ -102,7 +102,7 @@ os_int osal_main(
 
     /* Initialize the socket library.
      */
-    osal_socket_initialize();
+    osal_socket_initialize(OS_NULL, 0);
 
     /* Clear globals.
      */
