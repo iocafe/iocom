@@ -106,8 +106,42 @@ void iotopology_get_nic_conf(
     osalNetworkInterface *nic,
     os_int n_nics)
 {
+    iotopologyNIC *src;
+    os_char *p;
+    os_int i;
+
     os_memclear(&nic, n_nics * sizeof(osalNetworkInterface));
 
+    if (n_nics > IOTOPOLOGY_MAX_NICS)
+    {
+        n_nics = IOTOPOLOGY_MAX_NICS;
+    }
+
+    src = node->config.nic;
+    for (i = 0; i < n_nics; i++)
+    {
+        os_strncpy(nic->host_name, node->config.node_name, OSAL_IPADDR_SZ);
+        os_strncpy(nic->ip_address, src->ip_address, OSAL_IPADDR_SZ);
+
+        p = src->subnet_mask;
+        if (*p == '\0') p = "255.255.255.0";
+        os_strncpy(nic->subnet_mask, p, OSAL_IPADDR_SZ);
+
+        os_strncpy(nic->gateway_address, src->gateway_address, OSAL_IPADDR_SZ);
+        os_strncpy(nic->dns_address, src->dns_address, OSAL_IPADDR_SZ);
+        os_strncpy(nic->mac, src->mac, OSAL_MAC_SZ);
+
+        if (osal_string_get_item_value(src->options, "dhcp", OS_NULL, OSAL_STRING_DEFAULT))
+        {
+            nic->dhcp = OS_TRUE;
+        }
+
+        os_strncpy(nic->wifi_net_name, src->wifi_net_name, OSAL_WIFI_PRM_SZ);
+        os_strncpy(nic->wifi_net_password, src->wifi_net_password, OSAL_WIFI_PRM_SZ);
+
+        src++;
+        nic++;
+    }
 }
 
 
