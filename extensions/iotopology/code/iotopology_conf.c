@@ -88,14 +88,14 @@ void iotopology_set_node_name(
     iotopologyNode *node,
     const os_char *node_name)
 {
-    os_strncpy(node->node_name, node_name, IOTOPOLOGY_NODE_NAME_SZ);
+    os_strncpy(node->config.node_name, node_name, IOTOPOLOGY_NODE_NAME_SZ);
 }
 
 
 const os_char *iotopology_get_node_name(
     iotopologyNode *node)
 {
-    return node->node_name;
+    return node->config.node_name;
 }
 
 void iotopology_set_network_name(
@@ -103,16 +103,14 @@ void iotopology_set_network_name(
     const os_char *network_name)
 
 {
-    os_strncpy(node->network_name, network_name, IOTOPOLOGY_NETWORK_NAME_SZ);
+    os_strncpy(node->config.network_name, network_name, IOTOPOLOGY_NETWORK_NAME_SZ);
 }
 
 os_char *iotopology_get_network_name(
     iotopologyNode *node)
 {
-    return node->network_name;
+    return node->config.network_name;
 }
-
-
 
 
 /**
