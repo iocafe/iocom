@@ -89,6 +89,32 @@ void iotopology_release_node_configuration(
 /**
 ****************************************************************************************************
 
+  @brief Set application name and version.
+
+  The iotopology_set_application_name() function stores application name and version into node
+  configuration. Application name and version are used to identify the software which the
+  IO device or controller runs.
+
+  @param   node Pointer to node's network topology configuration.
+  @param   app_name Name of the application.
+  @param   app_version Application version string.
+  @return  None.
+
+****************************************************************************************************
+*/
+void iotopology_set_application_name(
+    iotopologyNode *node,
+    const os_char *app_name,
+    const os_char *app_version)
+{
+    os_strncpy(node->app_name, app_name, IOTOPOLOGY_APP_NAME_SZ);
+    os_strncpy(node->app_version, app_version, IOTOPOLOGY_APP_VERSION_SZ);
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Get network interface configuration from node's topology data.
 
   The iotopology_get_nic_conf() function fills in the network interface structure NIC by

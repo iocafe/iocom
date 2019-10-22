@@ -102,6 +102,7 @@ os_int osal_main(
     /* Initialize and load network node configuration from persistent storage.
      */
     iotopology_initialize_node_configuration(&nodeconf);
+    iotopology_set_application_name(&nodeconf, "IO-DOMAIN-CTRL", "1.0");
     iotopology_load_node_configuration(&nodeconf);
 
     /* Parse peristent storage path from command line arguments. */

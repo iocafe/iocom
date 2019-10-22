@@ -41,6 +41,13 @@ void iotopology_release_node_configuration(
     #define iotopology_unlock_node_configuration(node)
 #endif
 
+/* Set application name and version.
+ */
+void iotopology_set_application_name(
+    iotopologyNode *node,
+    const os_char *app_name,
+    const os_char *app_version);
+
 /* Get network interface configuration from node's topology data.
  */
 void iotopology_get_nic_conf(

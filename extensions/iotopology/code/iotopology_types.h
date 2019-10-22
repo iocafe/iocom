@@ -14,6 +14,8 @@
 ****************************************************************************************************
 */
 
+#define IOTOPOLOGY_APP_NAME_SZ 16
+#define IOTOPOLOGY_APP_VERSION_SZ 8
 #define IOTOPOLOGY_VERSION_SZ  8
 #define IOTOPOLOGY_NODE_NAME_SZ 16
 #define IOTOPOLOGY_NETWORK_NAME_SZ 32
@@ -239,6 +241,14 @@ typedef struct
     /** Extra information for IO controller (not flat)
      */
     iotopologyNodeExts *extconfig;
+
+    /** Application name
+     */
+    os_char app_name[IOTOPOLOGY_APP_NAME_SZ];
+
+    /** Application version
+     */
+    os_char app_version[IOTOPOLOGY_APP_VERSION_SZ];
 
 #if OSAL_MULTITHREAD_SUPPORT
 
