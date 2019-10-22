@@ -1,7 +1,6 @@
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <EEPROM.h>
+#include <Arduino.h>
 #include <eosalx.h>
+#include <iocom.h>
 
 /*
   4_ioboard_test.ino

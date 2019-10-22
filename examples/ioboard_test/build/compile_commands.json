@@ -391,12 +391,6 @@
 
 {
   "directory": "/coderoot/iocom/examples/ioboard_test/build",
-  "command": "/home/john/.espressif/tools/xtensa-esp32-elf/esp32-2019r1-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc-8.2.0 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I/coderoot/ioboard_test -I../../../   -Wall -g   -o iocom/CMakeFiles/iocomd.dir/code/ioc_checksum.c.o   -c /coderoot/iocom/code/ioc_checksum.c",
-  "file": "/coderoot/iocom/code/ioc_checksum.c"
-},
-
-{
-  "directory": "/coderoot/iocom/examples/ioboard_test/build",
   "command": "/home/john/.espressif/tools/xtensa-esp32-elf/esp32-2019r1-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc-8.2.0 -DE_OSVER_linux -DE_OS_linux -I/coderoot/eosal -I/coderoot/ioboard_test -I../../../   -Wall -g   -o iocom/CMakeFiles/iocomd.dir/code/ioc_com_status.c.o   -c /coderoot/iocom/code/ioc_com_status.c",
   "file": "/coderoot/iocom/code/ioc_com_status.c"
 },
