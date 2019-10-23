@@ -15,12 +15,20 @@
 */
 #include "extensions/iocompython/iocompython.h"
 
+static struct PyModuleDef spammodule;
+
+PyObject *SpamError;
+
 
 /* Prototyped for forward referred static functions.
  */
 
 
-#if 0
+
+
+
+
+
 
 /**
 ****************************************************************************************************
@@ -29,21 +37,38 @@
 
   The iotopology_initialize_node_configuration() function initalizes iotopologyNode structure
   and creates mutex to synchronize access to node configuration information.
+and initialize it in your module’s initialization function (PyInit_spam()) with an exception object:
 
   @param   node Pointer to node's network topology configuration to initialize.
   @return  None.
 
 ****************************************************************************************************
 */
-void iotopology_initialize_node_configuration(
-    iotopologyNode *node)
+PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 {
-    os_memclear(node, sizeof(iotopologyNode));
+    PyObject *m;
 
-#if OSAL_MULTITHREAD_SUPPORT
-    node->lock = osal_mutex_create();
-#endif
+//     node->lock = osal_mutex_create();
+
+
+    m = PyModule_Create(&spammodule);
+    if (m == NULL)
+        return NULL;
+
+    SpamError = PyErr_NewException(IOCOMPYTHON_NAME ".error", NULL, NULL);
+    Py_XINCREF(SpamError);
+    if (PyModule_AddObject(m, "error", SpamError) < 0) {
+        Py_XDECREF(SpamError);
+        Py_CLEAR(SpamError);
+        Py_DECREF(m);
+        return NULL;
+    }
+
+    return m;
 }
+
+
+
 
 
 /**
@@ -59,26 +84,26 @@ void iotopology_initialize_node_configuration(
 
 ****************************************************************************************************
 */
-void iotopology_release_node_configuration(
-    iotopologyNode *node)
+
+
+
+
+
+static PyObject *
+spam_system(PyObject *self, PyObject *args)
 {
-#if OSAL_MULTITHREAD_SUPPORT
-    osalMutex lock;
-    lock = node->lock;
-    osal_mutex_lock(lock);
-#endif
+    const char *command;
+    int sts;
 
-//    iotopology_release_string(&node->node_name);
-//    iotopology_release_string(&node->network_name);
-
-    os_memclear(node, sizeof(iotopologyNode));
-
-#if OSAL_MULTITHREAD_SUPPORT
-    osal_mutex_unlock(lock);
-    osal_mutex_delete(lock);
-#endif
+    if (!PyArg_ParseTuple(args, "s", &command))
+        return NULL;
+    sts = system(command);
+    if (sts < 0) {
+        PyErr_SetString(SpamError, "System command failed");
+        return NULL;
+    }
+    return PyLong_FromLong(sts);
 }
-
 
 /**
 ****************************************************************************************************
@@ -96,14 +121,22 @@ void iotopology_release_node_configuration(
 
 ****************************************************************************************************
 */
-void iotopology_set_application_name(
-    iotopologyNode *node,
-    const os_char *app_name,
-    const os_char *app_version)
+void iotopology_set_application_name(void)
 {
-    os_strncpy(node->app_name, app_name, IOTOPOLOGY_APP_NAME_SZ);
-    os_strncpy(node->app_version, app_version, IOTOPOLOGY_APP_VERSION_SZ);
 }
 
 
-#endif
+static PyMethodDef SpamMethods[] = {
+    {"system",  spam_system, METH_VARARGS,
+     "Execute a shell command."},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
+static struct PyModuleDef spammodule = {
+    PyModuleDef_HEAD_INIT,
+    IOCOMPYTHON_NAME,   /* name of module */
+    NULL, // spam_doc, /* module documentation, may be NULL */
+    -1,       /* size of per-interpreter state of the module,
+                 or -1 if the module keeps state in global variables. */
+    SpamMethods
+};

@@ -15,6 +15,9 @@
 */
 #include "extensions/iocompython/iocompython.h"
 
+
+extern PyObject *SpamError;
+
 #if 0
 /** X
 */

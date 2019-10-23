@@ -16,9 +16,22 @@
 #ifndef IOCOMPYTHON_INCLUDED
 #define IOCOMPYTHON_INCLUDED
 
+#define PY_SSIZE_T_CLEAN
+#include <python3.5m/Python.h>
+
 /* Include iocom and operating system abstraction layer.
  */
 #include "iocom.h"
+
+/* Select different python extension name depending if we are building release or debug version.
+ */
+#if OSAL_CC_DEBUG
+  #define IOCOMPYTHON_NAME "iocompythond"
+  #define IOCOMPYTHON_INIT_FUNC PyInit_iocompythond
+#else
+  #define IOCOMPYTHON_NAME "iocompython"
+  #define IOCOMPYTHON_INIT_FUNC PyInit_iocompython
+#endif
 
 /* If C++ compilation, all functions, etc. from this point on in included headers are
    plain C and must be left undecorated.

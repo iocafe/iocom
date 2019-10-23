@@ -8,8 +8,12 @@ project(${E_PROJECT})
 # include build environment setting common to all projects.
 include(../../../eosal/build/cmakedefs/eosal-defs.txt)
 
+find_package(PythonInterp 3.5 REQUIRED)
+find_package(PythonLibs 3.5 REQUIRED)
+
 # Set path to where to keep libraries.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIB})
+# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIB})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_BIN})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIB})
 
 # Set path to source files.
@@ -26,4 +30,12 @@ file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
 file(GLOB BB_CM_HEADERS "${BACKBONE}/*.h")
 
 # Generate the static library.
-add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_CM_HEADERS} ${BB_CM_SOURCES})
+add_library(${E_PROJECT}${E_POSTFIX} SHARED ${MAIN_HEADERS} ${BB_CM_HEADERS} ${BB_CM_SOURCES})
+
+set_target_properties(
+    ${E_PROJECT}${E_POSTFIX}
+    PROPERTIES
+        PREFIX ""
+        OUTPUT_NAME ${E_PROJECT}${E_POSTFIX}
+        LINKER_LANGUAGE C
+    )
