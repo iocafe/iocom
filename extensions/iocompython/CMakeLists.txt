@@ -11,6 +11,10 @@ include(../../../eosal/build/cmakedefs/eosal-defs.txt)
 find_package(PythonInterp 3.5 REQUIRED)
 find_package(PythonLibs 3.5 REQUIRED)
 
+# Build individual library projects.
+add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
+add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
+
 # Set path to where to keep libraries.
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIB})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_BIN})
@@ -30,7 +34,9 @@ file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
 file(GLOB BB_CM_HEADERS "${BACKBONE}/*.h")
 
 # Generate the static library.
+link_directories($ENV{E_LIB})
 add_library(${E_PROJECT}${E_POSTFIX} SHARED ${MAIN_HEADERS} ${BB_CM_HEADERS} ${BB_CM_SOURCES})
+target_link_libraries(${E_PROJECT}${E_POSTFIX} iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})
 
 set_target_properties(
     ${E_PROJECT}${E_POSTFIX}

@@ -64,10 +64,12 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
         return NULL;
     }
 
+    /* Initialize OSAL library for use.
+     */
+    osal_initialize(OSAL_INIT_NO_LINUX_SIGNAL_INIT);
+
     return m;
 }
-
-
 
 
 
@@ -84,7 +86,10 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 
 ****************************************************************************************************
 */
-
+void xxx_release()
+{
+    osal_shutdown();
+}
 
 
 
