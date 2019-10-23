@@ -178,6 +178,11 @@ typedef struct
      */
     os_char network_name[IOTOPOLOGY_NETWORK_NAME_SZ];
 
+    /** The an IO device is identified by node name, network name and password.
+        One directional hash by server?
+     */
+    os_char password[IOTOPOLOGY_PASSWORD_SZ];
+
     /** Array of IP addressess/ports of IO domain controllers to connect. In simple cases
         there is one connection upwards, but two are reserved for future redundant connection
         support.
@@ -246,11 +251,6 @@ typedef struct
     os_char app_version[IOTOPOLOGY_APP_VERSION_SZ];
 
 #if OSAL_MULTITHREAD_SUPPORT
-
-    /** The an IO device is identified by node name, network name and password.
-        One directional hash by server?
-     */
-    os_char password[IOTOPOLOGY_PASSWORD_SZ];
 
     /** Mutex to synchronize access and modifications to node configuration, needed for
         multithread mode.

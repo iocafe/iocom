@@ -18,7 +18,7 @@
 #ifndef IODOMAIN_INCLUDED
 #define IODOMAIN_INCLUDED
 
-/* Include operating system abstraction layer with extension headers.
+/* Include iocom and operating system abstraction layer.
  */
 #include "iocom.h"
 
