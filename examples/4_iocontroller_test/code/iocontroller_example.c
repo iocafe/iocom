@@ -132,7 +132,7 @@ os_int osal_main(
     iocRoot root;
     ioControllerContext c;
     iocMemoryBlockParams blockprm;
-    osalStreamInterface *iface;
+    const osalStreamInterface *iface;
     os_char *c_parameters, *l_parameters;
 
 #if MY_ROLE==EXAMPLE_CONNECT

@@ -150,7 +150,7 @@ typedef struct
 {
     /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
      */
-    osalStreamInterface *iface;
+    const osalStreamInterface *iface;
 
     /** Depending on connection type, can be "127.0.0.1:8817" for TCP socket.
      */
@@ -416,7 +416,7 @@ typedef struct iocConnection
     /** Stream interface pointer, one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE
         or OSAL_TLS_IFACE.
      */
-    osalStreamInterface *iface;
+    const osalStreamInterface *iface;
 
     /** Timer to measure how long since last failed stream open try.
         Zero if stream has not been tried or it has succeeded the

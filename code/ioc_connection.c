@@ -626,7 +626,7 @@ static osalStatus ioc_try_to_connect(
     osalStatus
         status;
 
-    osalStreamInterface
+    const osalStreamInterface
         *iface;
 
     os_int

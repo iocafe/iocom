@@ -68,7 +68,7 @@ typedef struct
 {
     /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
      */
-    osalStreamInterface *iface;
+    const osalStreamInterface *iface;
 
     /** Device name, max 11 upper case characters from 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL". 

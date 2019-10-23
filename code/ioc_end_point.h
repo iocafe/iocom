@@ -32,7 +32,7 @@ typedef struct
 {
     /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
      */
-    osalStreamInterface *iface;
+    const osalStreamInterface *iface;
 
     /** Parameters For example ":8817" or "127.0.0.1:8817" for TCP socket.
      */
@@ -87,7 +87,7 @@ typedef struct iocEndPoint
 
     /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
      */
-    osalStreamInterface *iface;
+    const osalStreamInterface *iface;
 
     /** Flags as given to ioc_listen()
      */
