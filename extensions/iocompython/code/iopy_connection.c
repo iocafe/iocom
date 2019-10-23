@@ -1,6 +1,6 @@
 /**
 
-  @file    io_py_connect.h
+  @file    iopy_connection.c
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -16,23 +16,19 @@
 #include "extensions/iocompython/iocompython.h"
 
 
-extern PyObject *SpamError;
+/**
+****************************************************************************************************
 
-#if 0
-/** X
+  @brief Load node's network topology from persistent storage.
+
+  The iotopology_load_node_configuration()
+
+  @return  None.
+
+****************************************************************************************************
 */
-void iotopology_initialize_node_configuration(
-    iotopologyNode *node);
+void zzxxiotopology_load_xxnode_configuration(
+    void  *node)
+{
+}
 
-void iotopology_release_node_configuration(
-    iotopologyNode *node);
-
-/* Set application name and version.
- */
-void iotopology_set_application_name(
-    iotopologyNode *node,
-    const os_char *app_name,
-    const os_char *app_version);
-
-
-#endif

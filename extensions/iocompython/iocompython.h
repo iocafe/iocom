@@ -40,8 +40,10 @@ OSAL_C_HEADER_BEGINS
 
 /* Include all iocompythony headers.
  */
-#include "extensions/iocompython/code/io_py_connect.h"
-#include "extensions/iocompython/code/io_py_memblk.h"
+#include "extensions/iocompython/code/iopy_module.h"
+#include "extensions/iocompython/code/iopy_root.h"
+#include "extensions/iocompython/code/iopy_memory_block.h"
+#include "extensions/iocompython/code/iopy_connection.h"
 
 /* If C++ compilation, end the undecorated code.
  */

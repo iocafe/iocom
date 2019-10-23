@@ -1,6 +1,6 @@
 /**
 
-  @file    io_py_memblk.h
+  @file    iopy_memory_block.c
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,10 +13,22 @@
 
 ****************************************************************************************************
 */
+#include "extensions/iocompython/iocompython.h"
 
 
-/** X
+/**
+****************************************************************************************************
+
+  @brief Load node's network topology from persistent storage.
+
+  The iotopology_load_node_configuration()
+
+  @return  None.
+
+****************************************************************************************************
 */
 void xxiotopology_load_node_configuration(
-    void *node);
+    void  *node)
+{
+}
 

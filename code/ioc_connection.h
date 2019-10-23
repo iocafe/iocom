@@ -148,7 +148,8 @@ iocSystemFrameType;
 */
 typedef struct
 {
-    /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_SOCKET_IFACE or OSAL_TLS_IFACE defines.
+    /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_BLUETOOTH_IFACE, OSAL_SOCKET_IFACE
+        or OSAL_TLS_IFACE defines.
      */
     const osalStreamInterface *iface;
 

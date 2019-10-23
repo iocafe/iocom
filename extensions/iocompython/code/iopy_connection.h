@@ -1,6 +1,6 @@
 /**
 
-  @file    io_py_memblk.c
+  @file    iopy_connection.h
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,22 +13,21 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iocompython/iocompython.h"
 
 
-/**
-****************************************************************************************************
+/* Initialize connection object.
+ */
+iocConnection *ioc_initialize_connection(
+    iocConnection *con,
+    iocRoot *root);
 
-  @brief Load node's network topology from persistent storage.
+/* Release connection object.
+ */
+void ioc_release_connection(
+    iocConnection *con);
 
-  The iotopology_load_node_configuration()
-
-  @return  None.
-
-****************************************************************************************************
-*/
-void xxiotopology_load_node_configuration(
-    void  *node)
-{
-}
-
+/* Start or prepare the connection.
+ */
+osalStatus ioc_connect(
+    iocConnection *con,
+    iocConnectionParams *prm);

@@ -1,10 +1,12 @@
 /**
 
-  @file    io_py_connect.c
+  @file    iopy_module.c
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    22.10.2019
+
+  Explose Python module interface.
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -22,11 +24,6 @@ PyObject *SpamError;
 
 /* Prototyped for forward referred static functions.
  */
-
-
-
-
-
 
 
 
@@ -70,7 +67,6 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 
     return m;
 }
-
 
 
 /**
@@ -126,9 +122,9 @@ spam_system(PyObject *self, PyObject *args)
 
 ****************************************************************************************************
 */
-void iotopology_set_application_name(void)
+/* void iotopology_set_application_name(void)
 {
-}
+} */
 
 
 static PyMethodDef SpamMethods[] = {
