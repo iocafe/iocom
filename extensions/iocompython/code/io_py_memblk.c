@@ -1,10 +1,10 @@
 /**
 
-  @file    iotopology_persistent.c
-  @brief   Data structures, defines and functions for managing network topology and security.
+  @file    io_py_memblk.c
+  @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    20.10.2019
+  @date    22.10.2019
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iotopology/iotopology.h"
+#include "extensions/iocompython/iocompython.h"
 
 
 /**
@@ -27,13 +27,8 @@
 
 ****************************************************************************************************
 */
-void iotopology_load_node_configuration(
-    iotopologyNode *node)
-{
-}
-
-void iotopology_save_node_configuration(
-    iotopologyNode *node)
+void xxiotopology_load_node_configuration(
+    void  *node)
 {
 }
 
