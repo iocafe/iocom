@@ -70,7 +70,7 @@ typedef struct
      */
     const osalStreamInterface *iface;
 
-    /** Device name, max 11 upper case characters from 'A' - 'Z'. This
+    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL". 
      */
     const os_char *device_name;

@@ -1,8 +1,8 @@
 from iocompython import Root, MemoryBlock, Connection
 
-r = Root()
-q = r;
-m = MemoryBlock(r)
+root = Root('TESTDEVICE', network_name='TESTNET')
+myinputs = MemoryBlock(root, 'source,auto', 'MYINPUTS', nbytes=256)
 
-s = MemoryBlock(q)
+r.delete()
+
 

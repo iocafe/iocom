@@ -29,9 +29,13 @@
 #endif
 
 
+/* Python module definition
+ */
+extern struct PyModuleDef iocompythonmodule;
 
-extern PyObject *SpamError;
-
+/* Python module rrror string
+ */
+extern PyObject *iocomError;
 
 /* Initialize operating system abstraction layer and communication transport libraries.
  */

@@ -46,7 +46,7 @@ static int ioc_get_unique_mblk_id(
 
   @param   prm Parameter structure. Clear parameter structure using os_memclear() and
            set the members needed. Members:
-           - device_name Device name, max 11 upper case characters from 'A' - 'Z'. This
+           - device_name Device name, max 15 upper case characters from 'A' - 'Z'. This
              identifies IO device type, like "TEMPCTRL".
            - device_nr If there are multiple devices of same type (same device name),
              this identifies the device. This number is often written in

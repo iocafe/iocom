@@ -33,16 +33,47 @@ static PyObject *Root_new(
 {
     Root *self;
 
-    self = (Root *)type->tp_alloc(type, 0);
-    if (self != NULL)
+    const char
+        *device_name = NULL,
+        *network_name = NULL;
+
+    int
+        device_nr = 0;
+
+    static char *kwlist[] = {
+        "device_name",
+        "device_nr",
+        "network_name",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|is",
+         kwlist, &device_name, &device_nr, &network_name))
     {
-        iocom_python_initialize();
-        self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
-        ioc_initialize_root(self->root);
-        self->number = 1;
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
     }
 
-    PySys_WriteStdout("Root.new()\n");
+    self = (Root *)type->tp_alloc(type, 0);
+    if (self == NULL)
+    {
+        return PyErr_NoMemory();
+    }
+
+    iocom_python_initialize();
+    self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
+    ioc_initialize_root(self->root);
+
+    os_strncpy(self->network_name, network_name, IOC_NETWORK_NAME_SZ);
+    os_strncpy(self->device_name, device_name, IOC_NAME_SZ);
+    self->device_nr = device_nr;
+
+    self->number = 1;
+
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("Root.new(%s%d.%s)\n",
+        self->device_name, self->device_nr, self->network_name);
+#endif
 
     return (PyObject *)self;
 }
@@ -53,9 +84,10 @@ static PyObject *Root_new(
 
   @brief Destructor.
 
-  The Root_dealloc function releases all resources allocated for the root object. This function
-  gets called when reference count to puthon object drops to zero.
-  @param   self Pointer to the python object.
+  The Root_dealloc function releases the associated Python object. It doesn't do anything
+  for the actual IOCOM connection.
+
+  @param   self Pointer to the Python object.
   @return  None.
 
 ****************************************************************************************************
@@ -65,7 +97,9 @@ static void Root_dealloc(
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 
-    PySys_WriteStdout("Root.destroy()\n");
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("Root.dealloc()\n");
+#endif
 }
 
 
@@ -87,7 +121,9 @@ static int Root_init(
     PyObject *args,
     PyObject *kwds)
 {
+#if IOPYTHON_TRACE
     PySys_WriteStdout("Root.init()\n");
+#endif
     return 0;
 }
 

@@ -31,6 +31,10 @@
  */
 OSAL_C_HEADER_BEGINS
 
+/* Trace prints.
+ */
+#define IOPYTHON_TRACE 1
+
 /* Include all iocompythony headers.
  */
 #include "extensions/iocompython/code/iopy_module.h"

@@ -157,7 +157,7 @@ void iotopology_get_nic_conf(
         os_strncpy(nic->dns_address, src->dns_address, OSAL_IPADDR_SZ);
         os_strncpy(nic->mac, src->mac, OSAL_MAC_SZ);
 
-        if (osal_string_get_item_value(src->options, "dhcp", OS_NULL, OSAL_STRING_DEFAULT))
+        if (os_strstr(src->options, "dhcp", OSAL_STRING_SEARCH_ITEM_NAME))
         {
             nic->dhcp = OS_TRUE;
         }

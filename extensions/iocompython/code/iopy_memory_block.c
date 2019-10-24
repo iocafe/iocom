@@ -33,11 +33,29 @@ static PyObject *MemoryBlock_new(
 {
     MemoryBlock *self;
     iocMemoryBlockParams prm;
-    PyObject *pyRoot = NULL;
-    int nbytes = 128;
+    PyObject *pyroot = NULL;
+    Root *root;
+    iocRoot *iocroot;
+
+    const char
+        *mblk_name = NULL,
+        *device_name = NULL,
+        *network_name = NULL,
+        *flags = NULL;
+
+    int
+        mblk_nr = 0,
+        nbytes = 128,
+        device_nr = 0;
 
     static char *kwlist[] = {
         "root",
+        "flags",
+        "mblk_name",
+        "mblk_nr",
+        "device_name",
+        "device_nr",
+        "network_name",
         "nbytes",
         NULL
     };
@@ -45,43 +63,101 @@ static PyObject *MemoryBlock_new(
     self = (MemoryBlock *)type->tp_alloc(type, 0);
     if (self == NULL)
     {
-        goto getout;
+        return PyErr_NoMemory();
     }
 
-    self->mblk = OS_NULL;
     os_memclear(&prm, sizeof(prm));
 
-    if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|i",
-                                      kwlist, &pyRoot, &nbytes))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ssisisi",
+         kwlist, &pyroot, &flags, &mblk_name, &mblk_nr, &device_name, &device_nr, &network_name, &nbytes))
     {
-        PySys_WriteStdout("KUKU ERROR\n");
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        goto failed;
     }
 
-
-    if (pyRoot == OS_NULL)
+    if (pyroot == OS_NULL)
     {
-        PySys_WriteStdout("MemoryBlock.new(NULL) - No root object\n");
-        goto getout;
+        PyErr_SetString(iocomError, "A root object is not given as argument");
+        goto failed;
     }
 
-    if (!PyObject_IsInstance(pyRoot, (PyObject *)&RootType))
+    if (!PyObject_IsInstance(pyroot, (PyObject *)&RootType))
     {
-        PySys_WriteStdout("MemoryBlock.new(?) - The argument is not instance of Root class.\n");
-        goto getout;
+        PyErr_SetString(iocomError, "The root argument is not an instance of the Root class");
+        goto failed;
     }
 
-    PyObject_Print(pyRoot, stdout, 0);
+    root = (Root*)pyroot;
+    iocroot = root->root;
+    if (iocroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        goto failed;
+    }
+
+    if (os_strstr(flags, "source", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        prm.flags |= IOC_SOURCE;
+    }
+    if (os_strstr(flags, "target", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        prm.flags |= IOC_TARGET;
+    }
+    if (prm.flags == 0)
+    {
+        PyErr_SetString(iocomError, "Memory block must have either target or source flag");
+        goto failed;
+    }
+    if (os_strstr(flags, "auto", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        if (prm.flags & IOC_TARGET) prm.flags |= IOC_AUTO_RECEIVE;
+        if (prm.flags & IOC_SOURCE) prm.flags |= IOC_AUTO_SEND;
+    }
+    if (os_strstr(flags, "resize", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        prm.flags |= IOC_ALLOW_RESIZE;
+    }
+    if (os_strstr(flags, "static", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        prm.flags |= IOC_STATIC;
+    }
+
+    prm.mblk_name = mblk_name;
+    prm.mblk_nr = mblk_nr;
+
+    prm.device_name = root->device_name;
+    prm.device_nr = root->device_nr;
+    prm.network_name = root->network_name;
+
+    if (device_name)
+    {
+        prm.device_name = device_name;
+    }
+    if (device_nr)
+    {
+        prm.device_nr = device_nr;
+    }
+    if (network_name)
+    {
+        prm.network_name = network_name;
+    }
 
     if (nbytes < 24) nbytes = 24;
-        prm.nbytes = nbytes;
+    prm.nbytes = nbytes;
 
-    self->mblk = ioc_initialize_memory_block(OS_NULL, ((Root*)pyRoot)->root, &prm);
+    self->mblk = ioc_initialize_memory_block(OS_NULL, iocroot, &prm);
     self->number = 1;
 
-    PySys_WriteStdout("MemoryBlock.new()\n");
-
-getout:
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("MemoryBlock.new(%s%d.%s%d.%s)\n",
+        prm.mblk_name, prm.mblk_nr,
+        prm.device_name, prm.device_nr, prm.network_name);
+#endif
     return (PyObject *)self;
+
+failed:
+    Py_TYPE(self)->tp_free((PyObject *)self);
+    return NULL;
 }
 
 
@@ -90,8 +166,9 @@ getout:
 
   @brief Destructor.
 
-  The MemoryBlock_dealloc function releases all resources allocated for the root object. This function
-  gets called when reference count to puthon object drops to zero.
+  The MemoryBlock_dealloc function releases the associated Python object. It doesn't do anything
+  for the actual IOCOM memory block.
+
   @param   self Pointer to the python object.
   @return  None.
 
@@ -102,7 +179,9 @@ static void MemoryBlock_dealloc(
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 
-    PySys_WriteStdout("MemoryBlock.destroy\n");
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("MemoryBlock.dealloc()\n");
+#endif
 }
 
 
@@ -124,7 +203,9 @@ static int MemoryBlock_init(
     PyObject *args,
     PyObject *kwds)
 {
+#if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.init()\n");
+#endif
     return 0;
 }
 
@@ -145,10 +226,16 @@ static int MemoryBlock_init(
 static PyObject *MemoryBlock_delete(
     MemoryBlock *self)
 {
-    ioc_release_memory_block(self->mblk);
+    if (self->mblk)
+    {
+        ioc_release_memory_block(self->mblk);
+        self->mblk = NULL;
+    }
     self->number = 0;
 
+#if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.delete()\n");
+#endif
     return PyLong_FromLong((long)self->number);
 }
 

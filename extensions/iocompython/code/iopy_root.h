@@ -16,13 +16,28 @@
 
 typedef struct
 {
-  PyObject_HEAD
+    PyObject_HEAD
 
-  /* IOCOM root object pointer.
-   */
-  iocRoot *root;
+    /** IOCOM root object pointer.
+     */
+    iocRoot *root;
 
-  int number;
+    /** Network name.
+     */
+    os_char network_name[IOC_NETWORK_NAME_SZ];
+
+    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
+        identifies IO device type, like "TEMPCTRL".
+     */
+    os_char device_name[IOC_NAME_SZ];
+
+    /** If there are multiple devices of same type (same device name),
+        this identifies the device. This number is often written in
+        context as device name, like "TEMPCTRL1".
+     */
+    int device_nr;
+
+    int number;
 }
 Root;
 

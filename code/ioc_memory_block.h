@@ -69,7 +69,7 @@
 */
 typedef struct
 {
-    /** Device name, max 11 upper case characters from 'A' - 'Z'. This
+    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL". 
      */
     const os_char *device_name;
@@ -86,9 +86,13 @@ typedef struct
      */
     int mblk_nr; 
 
-    /** Memory block name, max 11 characters.
+    /** Memory block name, max 15 characters.
      */
     const os_char *mblk_name;
+
+    /** Network name.
+     */
+    const os_char *network_name;
 
     /** Buffer for memory block content. If dynamic memory allocation is supported,
         this argument can be OS_NULL, and the buffer will be allcated by the function.
@@ -233,7 +237,11 @@ typedef struct iocMemoryBlock
      */
     int nbytes;
 
-    /** Device name, max 11 upper case characters from 'A' - 'Z'. This
+    /** Network name.
+     */
+    os_char network_name[IOC_NETWORK_NAME_SZ];
+
+    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL". 
      */
     os_char device_name[IOC_NAME_SZ];
@@ -253,7 +261,7 @@ typedef struct iocMemoryBlock
      */
     int mblk_id;
 
-    /** Memory block name, max 11 characters
+    /** Memory block name, max 15 characters
      */
     os_char mblk_name[IOC_NAME_SZ];
 

@@ -17,9 +17,8 @@
 */
 #include "extensions/iocompython/iocompython.h"
 
-static struct PyModuleDef iocompythonmodule;
 
-PyObject *SpamError;
+PyObject *iocomError;
 
 /* Counter for iocom_python_initialize() and iocom_python_release() calls.
  */
@@ -44,16 +43,18 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 {
     PyObject *m;
 
+
     Py_Initialize(); // ????????
 
     m = PyModule_Create(&iocompythonmodule);
     if (m == NULL) return NULL;
 
-    SpamError = PyErr_NewException(IOCOMPYTHON_NAME ".error", NULL, NULL);
-    Py_XINCREF(SpamError);
-    if (PyModule_AddObject(m, "error", SpamError) < 0) {
-        Py_XDECREF(SpamError);
-        Py_CLEAR(SpamError);
+    iocomError = PyErr_NewException(IOCOMPYTHON_NAME ".error", NULL, NULL);
+    Py_XINCREF(iocomError);
+    if (PyModule_AddObject(m, "error", iocomError) < 0)
+    {
+        Py_XDECREF(iocomError);
+        Py_CLEAR(iocomError);
         Py_DECREF(m);
         return NULL;
     }
@@ -91,7 +92,7 @@ spam_system(PyObject *self, PyObject *args)
         return NULL;
     sts = system(command);
     if (sts < 0) {
-        PyErr_SetString(SpamError, "System command failed");
+        PyErr_SetString(iocomError, "System command failed");
         return NULL;
     }
     return PyLong_FromLong(sts);
@@ -180,7 +181,7 @@ static PyMethodDef iocomPythonMethods[] = {
   Python module definition.
 ****************************************************************************************************
 */
-static struct PyModuleDef iocompythonmodule = {
+struct PyModuleDef iocompythonmodule = {
     PyModuleDef_HEAD_INIT,
     IOCOMPYTHON_NAME,   /* name of module */
     NULL,               /* module documentation, may be NULL */

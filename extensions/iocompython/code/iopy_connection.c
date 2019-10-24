@@ -21,7 +21,7 @@
 
   @brief Constructor.
 
-  The Connection_new function generates a new root object.
+  The Connection_new function generates a new connection.
   @return  Pointer to the new Python object.
 
 ****************************************************************************************************
@@ -32,18 +32,71 @@ static PyObject *Connection_new(
     PyObject *kwds)
 {
     Connection *self;
-    iocRoot *root;
+    iocConnectionParams prm;
+    PyObject *pyroot = NULL;
+    Root *root;
+    iocRoot *iocroot;
+
+    const char
+        *parameters = NULL,
+        *flags = NULL;
+
+    static char *kwlist[] = {
+        "root",
+        "parameters",
+        "flags",
+        NULL
+    };
 
     self = (Connection *)type->tp_alloc(type, 0);
-    if (self != NULL)
+    if (self == NULL)
     {
-        self->con = ioc_initialize_connection(OS_NULL, root);
-        self->number = 1;
+        return PyErr_NoMemory();
     }
+
+    os_memclear(&prm, sizeof(prm));
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ss",
+         kwlist, &pyroot, &parameters, &flags))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        goto failed;
+    }
+
+
+    if (pyroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "A root object is not given as argument");
+        goto failed;
+    }
+
+    if (!PyObject_IsInstance(pyroot, (PyObject *)&RootType))
+    {
+        PyErr_SetString(iocomError, "The root argument is not an instance of the Root class");
+        goto failed;
+    }
+
+    root = (Root*)pyroot;
+    iocroot = root->root;
+    if (iocroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        goto failed;
+    }
+
+    self->con = ioc_initialize_connection(OS_NULL, iocroot);
+    self->number = 1;
+
+//    prm.flags = ??
+// prm.iface
 
     PySys_WriteStdout("new\n");
 
     return (PyObject *)self;
+
+failed:
+    Py_TYPE(self)->tp_free((PyObject *)self);
+    return NULL;
 }
 
 
@@ -52,8 +105,9 @@ static PyObject *Connection_new(
 
   @brief Destructor.
 
-  The Connection_dealloc function releases all resources allocated for the root object. This function
-  gets called when reference count to puthon object drops to zero.
+  The Connection_dealloc function releases the associated Python object. It doesn't do anything
+  for the actual IOCOM connection.
+
   @param   self Pointer to the python object.
   @return  None.
 
@@ -64,7 +118,9 @@ static void Connection_dealloc(
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 
-    PySys_WriteStdout("del\n");
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("Connection.dealloc()\n");
+#endif
 }
 
 
@@ -86,7 +142,9 @@ static int Connection_init(
     PyObject *args,
     PyObject *kwds)
 {
-    PySys_WriteStdout("init\n");
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("Connection.init()\n");
+#endif
     return 0;
 }
 
@@ -96,7 +154,10 @@ static int Connection_init(
 
   @brief Delete an IOCOM connection.
 
-  The Connection_delete function...
+  The Connection_delete function closes the connection and releases any ressources for it.
+  The connection must be explisitly closed by calling .delete() function, or by calling
+  .delete() on the root object. But not both.
+
   @param   self Pointer to the python object.
   @return  ?.
 
@@ -105,10 +166,16 @@ static int Connection_init(
 static PyObject *Connection_delete(
     Connection *self)
 {
-    ioc_release_connection(self->con);
+    if (self->con)
+    {
+        ioc_release_connection(self->con);
+        self->con = OS_NULL;
+    }
     self->number = 0;
 
+#if IOPYTHON_TRACE
     PySys_WriteStdout("Connection.delete()\n");
+#endif
     return PyLong_FromLong((long)self->number);
 }
 

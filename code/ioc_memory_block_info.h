@@ -24,7 +24,11 @@
 
 /** Maximum device name string length.
  */
-#define IOC_NAME_SZ 12
+#define IOC_NAME_SZ 16
+
+/** Maximum network name string length.
+ */
+#define IOC_NETWORK_NAME_SZ 24
 
 struct iocMemoryBlock;
 struct iocConnection;
@@ -40,6 +44,7 @@ typedef struct
 {
     os_char device_name[IOC_NAME_SZ];
     os_ushort device_nr;
+    os_char network_name[IOC_NETWORK_NAME_SZ];
     os_char mblk_name[IOC_NAME_SZ];
     os_ushort mblk_nr;
     os_ushort mblk_id;
