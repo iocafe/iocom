@@ -15,6 +15,14 @@
 */
 
 
+typedef struct {
+  PyObject_HEAD // no semicolon
+  int number;
+} Connection;
+
+extern PyTypeObject ConnectionType;
+
+#if 0
 /* Initialize connection object.
  */
 iocConnection *ioc_initialize_connection(
@@ -31,3 +39,4 @@ void ioc_release_connection(
 osalStatus ioc_connect(
     iocConnection *con,
     iocConnectionParams *prm);
+#endif

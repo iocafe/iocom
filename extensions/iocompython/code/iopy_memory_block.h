@@ -15,6 +15,14 @@
 */
 
 
+typedef struct {
+  PyObject_HEAD // no semicolon
+  int number;
+} MemoryBlock;
+
+extern PyTypeObject MemoryBlockType;
+
+#if 0
 /* Initialize memory block object.
  */
 iocMemoryBlock *ioc_initialize_memory_block(
@@ -74,3 +82,4 @@ void ioc_add_callback(
     iocMemoryBlock *mblk,
     ioc_callback func,
     void *context);
+#endif

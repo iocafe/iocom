@@ -19,79 +19,158 @@
 /**
 ****************************************************************************************************
 
-  @brief Load node's network topology from persistent storage.
+  @brief Constructor.
 
-  The iotopology_load_node_configuration()
+  The Root_new function generates a new root object.
+  @return  Pointer to the new Python object.
 
+****************************************************************************************************
+*/
+static PyObject *Root_new(
+    PyTypeObject *type,
+    PyObject *args,
+    PyObject *kwds)
+{
+    Root *self;
+
+    self = (Root *)type->tp_alloc(type, 0);
+    if (self != NULL) {
+    self->number = 8;
+    }
+
+    PySys_WriteStdout("new\n");
+
+    return (PyObject *)self;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Destructor.
+
+  The Root_dealloc function releases all resources allocated for the root object. This function
+  gets called when reference count to puthon object drops to zero.
+  @param   self Pointer to the python object.
   @return  None.
 
 ****************************************************************************************************
 */
+static void Root_dealloc(
+    Root *self)
+{
+    Py_TYPE(self)->tp_free((PyObject *)self);
 
-static PyObject *Classy_new(PyTypeObject *type, PyObject *args,
-                            PyObject *kwds) {
-  Classy *self;
-
-  self = (Classy *)type->tp_alloc(type, 0);
-  if (self != NULL) {
-    self->number = 0;
-  }
-
-  PySys_WriteStdout("new\n");
-
-  return (PyObject *)self;
+    PySys_WriteStdout("del\n");
 }
 
 
-static void Classy_dealloc(Classy *self) {
-  Py_TYPE(self)->tp_free((PyObject *)self);
+/**
+****************************************************************************************************
 
-  PySys_WriteStdout("del\n");
+  @brief Initialize.
+
+  I do not think this is needed
+
+  The Root_init function initializes an object.
+  @param   self Pointer to the python object.
+  @return  ?.
+
+****************************************************************************************************
+*/
+static int Root_init(
+    Root *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    self->number = 1;
+
+    PySys_WriteStdout("init\n");
+    return 0;
 }
 
 
-static int Classy_init(Classy *self, PyObject *args, PyObject *kwds) {
-  self->number = 1;
+/**
+****************************************************************************************************
 
-  PySys_WriteStdout("init\n");
-  return 0;
-}
+  @brief Initialize.
 
+  X...
 
-static PyObject *Classy_miami(Classy *self) {
-  if (self->number > 1)
+  The Root_init function initializes an object.
+  @param   self Pointer to the python object.
+  @return  ?.
+
+****************************************************************************************************
+*/
+static PyObject *Root_miami(
+    Root *self)
+{
+    if (self->number > 1)
     self->number /= 2;
 
-PySys_WriteStdout("in miami\n");
-  return PyLong_FromLong((long)self->number);
+    PySys_WriteStdout("in miami\n");
+    return PyLong_FromLong((long)self->number);
 }
 
-static PyObject *Classy_new_york(Classy *self) {
-  if (self->number < 1024 * 1024)
+
+/**
+****************************************************************************************************
+
+  @brief Initialize.
+
+  X...
+
+  The Root_init function initializes an object.
+  @param   self Pointer to the python object.
+  @return  ?.
+
+****************************************************************************************************
+*/
+static PyObject *Root_new_york(
+    Root *self)
+{
+    if (self->number < 1024 * 1024)
     self->number *= 2;
 
-PySys_WriteStdout("in newest york\n");
-  return PyLong_FromLong((long)self->number);
+    PySys_WriteStdout("in newest york\n");
+    return PyLong_FromLong((long)self->number);
 }
 
 
-static PyMemberDef Classy_members[] = {
-    {(char*)"number", T_INT, offsetof(Classy, number), 0, (char*)"classy number"},
+/**
+****************************************************************************************************
+  Member variables.
+****************************************************************************************************
+*/
+static PyMemberDef Root_members[] = {
+    {(char*)"number", T_INT, offsetof(Root, number), 0, (char*)"classy number"},
     {NULL} /* Sentinel */
 };
 
-static PyMethodDef Classy_methods[] = {
-    {"miami", (PyCFunction)Classy_miami, METH_NOARGS, "Divides number by 2"},
-    {"new_york", (PyCFunction)Classy_new_york, METH_NOARGS, "Doubles number"},
+
+/**
+****************************************************************************************************
+  Member functions.
+****************************************************************************************************
+*/
+static PyMethodDef Root_methods[] = {
+    {"miami", (PyCFunction)Root_miami, METH_NOARGS, "Divides number by 2"},
+    {"new_york", (PyCFunction)Root_new_york, METH_NOARGS, "Doubles number"},
     {NULL} /* Sentinel */
 };
 
 
-PyTypeObject ClassyType = {
-    PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".Classy",  /* tp_name */
-    sizeof(Classy),                           /* tp_basicsize */
+/**
+****************************************************************************************************
+  Class type setup.
+****************************************************************************************************
+*/
+PyTypeObject RootType = {
+    PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".Root",  /* tp_name */
+    sizeof(Root),                           /* tp_basicsize */
     0,                                        /* tp_itemsize */
-    (destructor)Classy_dealloc,               /* tp_dealloc */
+    (destructor)Root_dealloc,               /* tp_dealloc */
     0,                                        /* tp_print */
     0,                                        /* tp_getattr */
     0,                                        /* tp_setattr */
@@ -107,26 +186,22 @@ PyTypeObject ClassyType = {
     0,                                        /* tp_setattro */
     0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    "Classy objects",                         /* tp_doc */
+    "Root objects",                         /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
     0,                                        /* tp_richcompare */
     0,                                        /* tp_weaklistoffset */
     0,                                        /* tp_iter */
     0,                                        /* tp_iternext */
-    Classy_methods,                           /* tp_methods */
-    Classy_members,                           /* tp_members */
+    Root_methods,                           /* tp_methods */
+    Root_members,                           /* tp_members */
     0,                                        /* tp_getset */
     0,                                        /* tp_base */
     0,                                        /* tp_dict */
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-    (initproc)Classy_init,                    /* tp_init */
+    (initproc)Root_init,                    /* tp_init */
     0,                                        /* tp_alloc */
-    Classy_new,                               /* tp_new */
+    Root_new,                               /* tp_new */
 };
-
-
-
-

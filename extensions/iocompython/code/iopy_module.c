@@ -45,7 +45,7 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 {
     PyObject *m;
 
-Py_Initialize();
+Py_Initialize(); // ????????
 //     node->lock = osal_mutex_create();
 
 
@@ -62,11 +62,21 @@ Py_Initialize();
         return NULL;
     }
 
-  if (PyType_Ready(&ClassyType) < 0)
-    return NULL;
+    if (PyType_Ready(&RootType) < 0)
+        return NULL;
 
-  Py_INCREF(&ClassyType);
-  PyModule_AddObject(m, "Classy", (PyObject *)&ClassyType);
+    if (PyType_Ready(&MemoryBlockType) < 0)
+        return NULL;
+
+    if (PyType_Ready(&ConnectionType) < 0)
+        return NULL;
+
+    Py_INCREF(&RootType);
+    PyModule_AddObject(m, "Root", (PyObject *)&RootType);
+    Py_INCREF(&MemoryBlockType);
+    PyModule_AddObject(m, "MemoryBlock", (PyObject *)&MemoryBlockType);
+    Py_INCREF(&ConnectionType);
+    PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
 
     /* Initialize OSAL library for use.
      */
@@ -74,20 +84,6 @@ Py_Initialize();
 
     return m;
 }
-
-
-/* PyMODINIT_FUNC PyInit_example(void) {
-  Py_Initialize();
-  PyObject *m = PyModule_Create(&example_definition);
-
-  if (PyType_Ready(&ClassyType) < 0)
-    return NULL;
-
-  Py_INCREF(&ClassyType);
-  PyModule_AddObject(m, "Classy", (PyObject *)&ClassyType);
-
-  return m;
-} */
 
 
 /**
