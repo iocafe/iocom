@@ -32,19 +32,55 @@ static PyObject *MemoryBlock_new(
     PyObject *kwds)
 {
     MemoryBlock *self;
-    iocRoot *root;
     iocMemoryBlockParams prm;
+    PyObject *pyRoot = NULL;
+    int nbytes = 128;
+
+    static char *kwlist[] = {
+        "root",
+        "nbytes",
+        NULL
+    };
 
     self = (MemoryBlock *)type->tp_alloc(type, 0);
-    if (self != NULL)
+    if (self == NULL)
     {
-        os_memclear(&prm, sizeof(prm));
-        self->mblk = ioc_initialize_memory_block(OS_NULL, root, &prm);
-        self->number = 1;
+        goto getout;
     }
 
-    PySys_WriteStdout("MemoryBlock.new\n");
+    self->mblk = OS_NULL;
+    os_memclear(&prm, sizeof(prm));
 
+    if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|i",
+                                      kwlist, &pyRoot, &nbytes))
+    {
+        PySys_WriteStdout("KUKU ERROR\n");
+    }
+
+
+    if (pyRoot == OS_NULL)
+    {
+        PySys_WriteStdout("MemoryBlock.new(NULL) - No root object\n");
+        goto getout;
+    }
+
+    if (!PyObject_IsInstance(pyRoot, (PyObject *)&RootType))
+    {
+        PySys_WriteStdout("MemoryBlock.new(?) - The argument is not instance of Root class.\n");
+        goto getout;
+    }
+
+    PyObject_Print(pyRoot, stdout, 0);
+
+    if (nbytes < 24) nbytes = 24;
+        prm.nbytes = nbytes;
+
+    self->mblk = ioc_initialize_memory_block(OS_NULL, ((Root*)pyRoot)->root, &prm);
+    self->number = 1;
+
+    PySys_WriteStdout("MemoryBlock.new()\n");
+
+getout:
     return (PyObject *)self;
 }
 
