@@ -32,10 +32,13 @@ static PyObject *Connection_new(
     PyObject *kwds)
 {
     Connection *self;
+    iocRoot *root;
 
     self = (Connection *)type->tp_alloc(type, 0);
-    if (self != NULL) {
-    self->number = 8;
+    if (self != NULL)
+    {
+        self->con = ioc_initialize_connection(OS_NULL, root);
+        self->number = 1;
     }
 
     PySys_WriteStdout("new\n");
@@ -83,8 +86,6 @@ static int Connection_init(
     PyObject *args,
     PyObject *kwds)
 {
-    self->number = 1;
-
     PySys_WriteStdout("init\n");
     return 0;
 }
@@ -93,23 +94,21 @@ static int Connection_init(
 /**
 ****************************************************************************************************
 
-  @brief Initialize.
+  @brief Delete an IOCOM connection.
 
-  X...
-
-  The Connection_init function initializes an object.
+  The Connection_delete function...
   @param   self Pointer to the python object.
   @return  ?.
 
 ****************************************************************************************************
 */
-static PyObject *Connection_miami(
+static PyObject *Connection_delete(
     Connection *self)
 {
-    if (self->number > 1)
-    self->number /= 2;
+    ioc_release_connection(self->con);
+    self->number = 0;
 
-    PySys_WriteStdout("in miami\n");
+    PySys_WriteStdout("Connection.delete()\n");
     return PyLong_FromLong((long)self->number);
 }
 
@@ -127,14 +126,25 @@ static PyObject *Connection_miami(
 
 ****************************************************************************************************
 */
-static PyObject *Connection_delete(
+static PyObject *Connection_connect(
     Connection *self)
 {
-    if (self->number < 1024 * 1024)
-    self->number *= 2;
+    osalStatus s;
+    iocConnectionParams prm;
 
-    PySys_WriteStdout("in newest york\n");
-    return PyLong_FromLong((long)self->number);
+    if (self->con)
+    {
+        os_memclear(&prm, sizeof(prm));
+        s = ioc_connect(self->con, &prm);
+        self->number = 2;
+    }
+    else
+    {
+        s = OSAL_STATUS_FAILED;
+    }
+
+    PySys_WriteStdout("Connection.delete()\n");
+    return PyLong_FromLong(s);
 }
 
 
@@ -155,8 +165,8 @@ static PyMemberDef Connection_members[] = {
 ****************************************************************************************************
 */
 static PyMethodDef Connection_methods[] = {
-    {"miami", (PyCFunction)Connection_miami, METH_NOARGS, "Divides number by 2"},
-    {"delete", (PyCFunction)Connection_delete, METH_NOARGS, "Deletes underlying memory block"},
+    {"delete", (PyCFunction)Connection_delete, METH_NOARGS, "Deletes IOCOM connection"},
+    {"connect", (PyCFunction)Connection_connect, METH_NOARGS, "Initiate IOCOM connection"},
     {NULL} /* Sentinel */
 };
 
@@ -168,9 +178,9 @@ static PyMethodDef Connection_methods[] = {
 */
 PyTypeObject ConnectionType = {
     PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".Connection",  /* tp_name */
-    sizeof(Connection),                           /* tp_basicsize */
+    sizeof(Connection),                       /* tp_basicsize */
     0,                                        /* tp_itemsize */
-    (destructor)Connection_dealloc,               /* tp_dealloc */
+    (destructor)Connection_dealloc,           /* tp_dealloc */
     0,                                        /* tp_print */
     0,                                        /* tp_getattr */
     0,                                        /* tp_setattr */
@@ -186,22 +196,22 @@ PyTypeObject ConnectionType = {
     0,                                        /* tp_setattro */
     0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    "Connection objects",                         /* tp_doc */
+    "Connection objects",                     /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
     0,                                        /* tp_richcompare */
     0,                                        /* tp_weaklistoffset */
     0,                                        /* tp_iter */
     0,                                        /* tp_iternext */
-    Connection_methods,                           /* tp_methods */
-    Connection_members,                           /* tp_members */
+    Connection_methods,                       /* tp_methods */
+    Connection_members,                       /* tp_members */
     0,                                        /* tp_getset */
     0,                                        /* tp_base */
     0,                                        /* tp_dict */
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-    (initproc)Connection_init,                    /* tp_init */
+    (initproc)Connection_init,                /* tp_init */
     0,                                        /* tp_alloc */
-    Connection_new,                               /* tp_new */
+    Connection_new,                           /* tp_new */
 };

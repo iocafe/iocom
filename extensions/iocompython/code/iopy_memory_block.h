@@ -15,10 +15,15 @@
 */
 
 
-typedef struct {
-  PyObject_HEAD // no semicolon
+typedef struct
+{
+  PyObject_HEAD
+
+  iocMemoryBlock *mblk;
+
   int number;
-} MemoryBlock;
+}
+MemoryBlock;
 
 extern PyTypeObject MemoryBlockType;
 

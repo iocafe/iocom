@@ -34,11 +34,15 @@ static PyObject *Root_new(
     Root *self;
 
     self = (Root *)type->tp_alloc(type, 0);
-    if (self != NULL) {
-    self->number = 8;
+    if (self != NULL)
+    {
+        iocom_python_initialize();
+        self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
+        ioc_initialize_root(self->root);
+        self->number = 1;
     }
 
-    PySys_WriteStdout("new\n");
+    PySys_WriteStdout("Root.new()\n");
 
     return (PyObject *)self;
 }
@@ -61,7 +65,7 @@ static void Root_dealloc(
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 
-    PySys_WriteStdout("del\n");
+    PySys_WriteStdout("Root.destroy()\n");
 }
 
 
@@ -83,9 +87,7 @@ static int Root_init(
     PyObject *args,
     PyObject *kwds)
 {
-    self->number = 1;
-
-    PySys_WriteStdout("init\n");
+    PySys_WriteStdout("Root.init()\n");
     return 0;
 }
 
@@ -93,24 +95,35 @@ static int Root_init(
 /**
 ****************************************************************************************************
 
-  @brief Initialize.
+  @brief Delete IOCOM root object.
 
-  X...
-
-  The Root_init function initializes an object.
+  The Root_delete() function...
   @param   self Pointer to the python object.
   @return  ?.
 
 ****************************************************************************************************
 */
-static PyObject *Root_miami(
+static PyObject *Root_delete(
     Root *self)
 {
-    if (self->number > 1)
-    self->number /= 2;
+    osalStatus s;
 
-    PySys_WriteStdout("in miami\n");
-    return PyLong_FromLong((long)self->number);
+    if (self->root)
+    {
+        ioc_release_root(self->root);
+        self->root = OS_NULL;
+        self->number = 0;
+        PySys_WriteStdout("Root.delete()\n");
+        s = OSAL_SUCCESS;
+        iocom_python_release();
+    }
+    else
+    {
+        PySys_WriteStdout("Root.delete() called, IOCOM root is NULL\n");
+        s = OSAL_STATUS_FAILED;
+    }
+
+    return PyLong_FromLong(s);
 }
 
 
@@ -127,14 +140,24 @@ static PyObject *Root_miami(
 
 ****************************************************************************************************
 */
-static PyObject *Root_new_york(
+static PyObject *Root_set_callback(
     Root *self)
 {
-    if (self->number < 1024 * 1024)
-    self->number *= 2;
+    osalStatus s;
 
-    PySys_WriteStdout("in newest york\n");
-    return PyLong_FromLong((long)self->number);
+    if (self->root)
+    {
+        ioc_set_root_callback(self->root, OS_NULL /* ioc_root_callback func*/, OS_NULL /* context */);
+        s = OSAL_SUCCESS;
+        PySys_WriteStdout("Root.set_callback\n");
+    }
+    else
+    {
+        s = OSAL_STATUS_FAILED;
+        PySys_WriteStdout("Root.set_callback() called, IOCOM root is NULL\n");
+    }
+
+    return PyLong_FromLong(s);
 }
 
 
@@ -155,8 +178,8 @@ static PyMemberDef Root_members[] = {
 ****************************************************************************************************
 */
 static PyMethodDef Root_methods[] = {
-    {"miami", (PyCFunction)Root_miami, METH_NOARGS, "Divides number by 2"},
-    {"new_york", (PyCFunction)Root_new_york, METH_NOARGS, "Doubles number"},
+    {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
+    {"set_callback", (PyCFunction)Root_set_callback, METH_NOARGS, "Set IOCOM root callback function"},
     {NULL} /* Sentinel */
 };
 
@@ -168,9 +191,9 @@ static PyMethodDef Root_methods[] = {
 */
 PyTypeObject RootType = {
     PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".Root",  /* tp_name */
-    sizeof(Root),                           /* tp_basicsize */
+    sizeof(Root),                             /* tp_basicsize */
     0,                                        /* tp_itemsize */
-    (destructor)Root_dealloc,               /* tp_dealloc */
+    (destructor)Root_dealloc,                 /* tp_dealloc */
     0,                                        /* tp_print */
     0,                                        /* tp_getattr */
     0,                                        /* tp_setattr */
@@ -186,22 +209,22 @@ PyTypeObject RootType = {
     0,                                        /* tp_setattro */
     0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    "Root objects",                         /* tp_doc */
+    "Root objects",                           /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
     0,                                        /* tp_richcompare */
     0,                                        /* tp_weaklistoffset */
     0,                                        /* tp_iter */
     0,                                        /* tp_iternext */
-    Root_methods,                           /* tp_methods */
-    Root_members,                           /* tp_members */
+    Root_methods,                             /* tp_methods */
+    Root_members,                             /* tp_members */
     0,                                        /* tp_getset */
     0,                                        /* tp_base */
     0,                                        /* tp_dict */
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-    (initproc)Root_init,                    /* tp_init */
+    (initproc)Root_init,                      /* tp_init */
     0,                                        /* tp_alloc */
-    Root_new,                               /* tp_new */
+    Root_new,                                 /* tp_new */
 };

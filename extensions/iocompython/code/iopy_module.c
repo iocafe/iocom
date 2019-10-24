@@ -17,14 +17,13 @@
 */
 #include "extensions/iocompython/iocompython.h"
 
-static struct PyModuleDef spammodule;
+static struct PyModuleDef iocompythonmodule;
 
 PyObject *SpamError;
 
-
-/* Prototyped for forward referred static functions.
+/* Counter for iocom_python_initialize() and iocom_python_release() calls.
  */
-
+static os_int module_init_count;
 
 
 /**
@@ -45,13 +44,10 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 {
     PyObject *m;
 
-Py_Initialize(); // ????????
-//     node->lock = osal_mutex_create();
+    Py_Initialize(); // ????????
 
-
-    m = PyModule_Create(&spammodule);
-    if (m == NULL)
-        return NULL;
+    m = PyModule_Create(&iocompythonmodule);
+    if (m == NULL) return NULL;
 
     SpamError = PyErr_NewException(IOCOMPYTHON_NAME ".error", NULL, NULL);
     Py_XINCREF(SpamError);
@@ -78,32 +74,10 @@ Py_Initialize(); // ????????
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
 
-    /* Initialize OSAL library for use.
-     */
-    osal_initialize(OSAL_INIT_NO_LINUX_SIGNAL_INIT);
+    module_init_count = 0;
 
     return m;
 }
-
-
-/**
-****************************************************************************************************
-
-  @brief Release all memory allocated for node configuration structure.
-
-  The iotopology_release_node_configuration() function releases all memory allocated for
-  IO node configuration structure.
-
-  @param   node Pointer to node's network topology configuration to release.
-  @return  None.
-
-****************************************************************************************************
-*/
-void xxx_release()
-{
-    osal_shutdown();
-}
-
 
 
 
@@ -123,38 +97,94 @@ spam_system(PyObject *self, PyObject *args)
     return PyLong_FromLong(sts);
 }
 
+
 /**
 ****************************************************************************************************
 
-  @brief Set application name and version.
+  @brief Initialize operating system abstraction layer and communication transport libraries.
 
-  The iotopology_set_application_name() function stores application name and version into node
-  configuration. Application name and version are used to identify the software which the
-  IO device or controller runs.
-
-  @param   node Pointer to node's network topology configuration.
-  @param   app_name Name of the application.
-  @param   app_version Application version string.
+  The iocom_python_initialize() function...
   @return  None.
 
 ****************************************************************************************************
 */
-/* void iotopology_set_application_name(void)
+void iocom_python_initialize(void)
 {
-} */
+    if (module_init_count++) return;
+
+    osal_initialize(OSAL_INIT_NO_LINUX_SIGNAL_INIT);
+
+#if OSAL_TLS_SUPPORT
+    osal_tls_initialize(OS_NULL, 0, OS_NULL);
+#else
+  #if OSAL_SOCKET_SUPPORT
+    osal_socket_initialize(OS_NULL, 0);
+  #endif
+#endif
+
+#if OSAL_SERIAL_SUPPORT
+    osal_serial_initialize();
+#endif
+
+#if OSAL_BLUETOOTH_SUPPORT
+    osal_bluetooth_initialize();
+#endif
+}
 
 
-static PyMethodDef SpamMethods[] = {
-    {"system",  spam_system, METH_VARARGS,
-     "Execute a shell command."},
+/**
+****************************************************************************************************
+
+  @brief Shut down operating system abstraction layer and communication transport libraries.
+
+  The iocom_python_release() function...
+  @return  None.
+
+****************************************************************************************************
+*/
+void iocom_python_release(void)
+{
+    if (--module_init_count) return;
+
+#if OSAL_TLS_SUPPORT
+    osal_tls_shutdown();
+#else
+  #if OSAL_SOCKET_SUPPORT
+    osal_socket_shutdown();
+  #endif
+#endif
+
+#if OSAL_SERIAL_SUPPORT
+    osal_serial_shutdown();
+#endif
+
+#if OSAL_BLUETOOTH_SUPPORT
+    osal_bluetooth_shutdown();
+#endif
+}
+
+
+/**
+****************************************************************************************************
+  Module's global functions.
+****************************************************************************************************
+*/
+static PyMethodDef iocomPythonMethods[] = {
+    {"system",  spam_system, METH_VARARGS, "Execute a shell command."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-static struct PyModuleDef spammodule = {
+
+/**
+****************************************************************************************************
+  Python module definition.
+****************************************************************************************************
+*/
+static struct PyModuleDef iocompythonmodule = {
     PyModuleDef_HEAD_INIT,
     IOCOMPYTHON_NAME,   /* name of module */
-    NULL, // spam_doc, /* module documentation, may be NULL */
-    -1,       /* size of per-interpreter state of the module,
-                 or -1 if the module keeps state in global variables. */
-    SpamMethods
+    NULL,               /* module documentation, may be NULL */
+    -1,                 /* size of per-interpreter state of the module,
+                           or -1 if the module keeps state in global variables. */
+    iocomPythonMethods
 };

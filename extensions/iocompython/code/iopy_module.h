@@ -32,3 +32,11 @@
 
 extern PyObject *SpamError;
 
+
+/* Initialize operating system abstraction layer and communication transport libraries.
+ */
+void iocom_python_initialize(void);
+
+/* Shut down operating system abstraction layer and communication transport libraries.
+ */
+void iocom_python_release(void);

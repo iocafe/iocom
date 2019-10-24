@@ -32,13 +32,18 @@ static PyObject *MemoryBlock_new(
     PyObject *kwds)
 {
     MemoryBlock *self;
+    iocRoot *root;
+    iocMemoryBlockParams prm;
 
     self = (MemoryBlock *)type->tp_alloc(type, 0);
-    if (self != NULL) {
-    self->number = 8;
+    if (self != NULL)
+    {
+        os_memclear(&prm, sizeof(prm));
+        self->mblk = ioc_initialize_memory_block(OS_NULL, root, &prm);
+        self->number = 1;
     }
 
-    PySys_WriteStdout("new\n");
+    PySys_WriteStdout("MemoryBlock.new\n");
 
     return (PyObject *)self;
 }
@@ -61,7 +66,7 @@ static void MemoryBlock_dealloc(
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 
-    PySys_WriteStdout("del\n");
+    PySys_WriteStdout("MemoryBlock.destroy\n");
 }
 
 
@@ -83,34 +88,8 @@ static int MemoryBlock_init(
     PyObject *args,
     PyObject *kwds)
 {
-    self->number = 1;
-
-    PySys_WriteStdout("init\n");
+    PySys_WriteStdout("MemoryBlock.init()\n");
     return 0;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Initialize.
-
-  X...
-
-  The MemoryBlock_init function initializes an object.
-  @param   self Pointer to the python object.
-  @return  ?.
-
-****************************************************************************************************
-*/
-static PyObject *MemoryBlock_miami(
-    MemoryBlock *self)
-{
-    if (self->number > 1)
-    self->number /= 2;
-
-    PySys_WriteStdout("in miami\n");
-    return PyLong_FromLong((long)self->number);
 }
 
 
@@ -130,10 +109,38 @@ static PyObject *MemoryBlock_miami(
 static PyObject *MemoryBlock_delete(
     MemoryBlock *self)
 {
-    if (self->number < 1024 * 1024)
-    self->number *= 2;
+    ioc_release_memory_block(self->mblk);
+    self->number = 0;
 
-    PySys_WriteStdout("in newest york\n");
+    PySys_WriteStdout("MemoryBlock.delete()\n");
+    return PyLong_FromLong((long)self->number);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Initialize.
+
+  X...
+
+  The MemoryBlock_init function initializes an object.
+  @param   self Pointer to the python object.
+  @return  ?.
+
+****************************************************************************************************
+*/
+static PyObject *MemoryBlock_get_param(
+    MemoryBlock *self)
+{
+
+/* os_int ioc_get_memory_block_param(
+    self->mblk,
+    iocMemoryBlockParamIx param_ix,
+    os_char *buf,
+    os_memsz buf_sz); */
+
+    PySys_WriteStdout("MemoryBlock.getParam()\n");
     return PyLong_FromLong((long)self->number);
 }
 
@@ -144,7 +151,7 @@ static PyObject *MemoryBlock_delete(
 ****************************************************************************************************
 */
 static PyMemberDef MemoryBlock_members[] = {
-    {(char*)"number", T_INT, offsetof(MemoryBlock, number), 0, (char*)"classy number"},
+    {"number", T_INT, offsetof(MemoryBlock, number), 0, "classy number"},
     {NULL} /* Sentinel */
 };
 
@@ -155,8 +162,8 @@ static PyMemberDef MemoryBlock_members[] = {
 ****************************************************************************************************
 */
 static PyMethodDef MemoryBlock_methods[] = {
-    {"miami", (PyCFunction)MemoryBlock_miami, METH_NOARGS, "Divides number by 2"},
-    {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes underlying memory block"},
+    {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
+    {"get_param", (PyCFunction)MemoryBlock_get_param, METH_NOARGS, "Get memory block parameter"},
     {NULL} /* Sentinel */
 };
 
@@ -168,9 +175,9 @@ static PyMethodDef MemoryBlock_methods[] = {
 */
 PyTypeObject MemoryBlockType = {
     PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".MemoryBlock",  /* tp_name */
-    sizeof(MemoryBlock),                           /* tp_basicsize */
+    sizeof(MemoryBlock),                      /* tp_basicsize */
     0,                                        /* tp_itemsize */
-    (destructor)MemoryBlock_dealloc,               /* tp_dealloc */
+    (destructor)MemoryBlock_dealloc,          /* tp_dealloc */
     0,                                        /* tp_print */
     0,                                        /* tp_getattr */
     0,                                        /* tp_setattr */
@@ -186,22 +193,22 @@ PyTypeObject MemoryBlockType = {
     0,                                        /* tp_setattro */
     0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    "MemoryBlock objects",                         /* tp_doc */
+    "MemoryBlock objects",                    /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
     0,                                        /* tp_richcompare */
     0,                                        /* tp_weaklistoffset */
     0,                                        /* tp_iter */
     0,                                        /* tp_iternext */
-    MemoryBlock_methods,                           /* tp_methods */
-    MemoryBlock_members,                           /* tp_members */
+    MemoryBlock_methods,                      /* tp_methods */
+    MemoryBlock_members,                      /* tp_members */
     0,                                        /* tp_getset */
     0,                                        /* tp_base */
     0,                                        /* tp_dict */
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-    (initproc)MemoryBlock_init,                    /* tp_init */
+    (initproc)MemoryBlock_init,               /* tp_init */
     0,                                        /* tp_alloc */
-    MemoryBlock_new,                               /* tp_new */
+    MemoryBlock_new,                          /* tp_new */
 };

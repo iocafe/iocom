@@ -15,8 +15,12 @@
 */
 
 
-typedef struct {
-  PyObject_HEAD // no semicolon
+typedef struct
+{
+  PyObject_HEAD
+
+  iocConnection *con;
+
   int number;
 } Connection;
 

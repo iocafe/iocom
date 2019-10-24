@@ -14,10 +14,17 @@
 ****************************************************************************************************
 */
 
-typedef struct {
-  PyObject_HEAD // no semicolon
+typedef struct
+{
+  PyObject_HEAD
+
+  /* IOCOM root object pointer.
+   */
+  iocRoot *root;
+
   int number;
-} Root;
+}
+Root;
 
 extern PyTypeObject RootType;
 
