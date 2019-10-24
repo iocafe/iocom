@@ -14,6 +14,12 @@
 ****************************************************************************************************
 */
 
+typedef struct {
+  PyObject_HEAD // no semicolon
+  int number;
+} Classy;
+
+
 
 /* Initialize communication root object.
  */
@@ -31,3 +37,6 @@ void ioc_set_root_callback(
     iocRoot *root,
     ioc_root_callback func,
     void *context);
+
+
+extern PyTypeObject ClassyType;

@@ -45,6 +45,7 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 {
     PyObject *m;
 
+Py_Initialize();
 //     node->lock = osal_mutex_create();
 
 
@@ -61,12 +62,32 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
         return NULL;
     }
 
+  if (PyType_Ready(&ClassyType) < 0)
+    return NULL;
+
+  Py_INCREF(&ClassyType);
+  PyModule_AddObject(m, "Classy", (PyObject *)&ClassyType);
+
     /* Initialize OSAL library for use.
      */
     osal_initialize(OSAL_INIT_NO_LINUX_SIGNAL_INIT);
 
     return m;
 }
+
+
+/* PyMODINIT_FUNC PyInit_example(void) {
+  Py_Initialize();
+  PyObject *m = PyModule_Create(&example_definition);
+
+  if (PyType_Ready(&ClassyType) < 0)
+    return NULL;
+
+  Py_INCREF(&ClassyType);
+  PyModule_AddObject(m, "Classy", (PyObject *)&ClassyType);
+
+  return m;
+} */
 
 
 /**
