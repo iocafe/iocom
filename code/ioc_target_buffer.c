@@ -368,7 +368,7 @@ void ioc_tbuf_synchronize(
 
     /* If auto receive selected.
      */
-    if (tbuf->mlink.mblk->flags & IOC_AUTO_RECEIVE)
+    if (tbuf->mlink.mblk->flags & IOC_AUTO_SYNC)
     {
         ioc_receive(tbuf->mlink.mblk);
     }

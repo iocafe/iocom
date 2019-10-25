@@ -58,7 +58,7 @@ static int ioc_get_unique_mblk_id(
              If buf argument is given, it must be pointer to buffer which can hold nro_bytes
              data.
            - nbytes. Memory block size in bytes (data size).
-           - flags IOC_TARGET, IOC_SOURCE, IOC_AUTO_RECEIVE, IOC_AUTO_SEND.
+           - flags IOC_TARGET, IOC_SOURCE, IOC_AUTO_SYNC.
 
   @return  Pointer to initialized memory block object. OS_NULL if memory allocation failed.
 
@@ -257,31 +257,91 @@ void ioc_release_memory_block(
 /**
 ****************************************************************************************************
 
-  @brief Modify auto receive or auto send at run time.
-  @anchor ioc_set_flag
+  @brief Set memory block parameter at run time.
+  @anchor ioc_memory_block_set_int_param
 
-  The ioc_set_flag() function modify memory block's IOC_AUTO_RECEIVE or IOC_AUTO_SEND flag
-  at run time. This can be used to synchronize specific transfers. If flag is enabled either
-  ioc_send() or ioc_receive() is called by this function.
+  The ioc_memory_block_set_int_param() function modifies memory block parameter. At the moment,
+  the only supported parameter is IOC_MBLK_AUTO_SYNC_FLAG.
+
+  IOC_MBLK_AUTO_SYNC_FLAG: Set or clear memory block's IOC_AUTO_SYNC flag. The auto sync is
+  enabled, then either ioc_send() or ioc_receive() will be called when reading or writing data
+  and is called by this function.
 
   @param   mblk Pointer to the memory block object.
-  @param   flag Flags, IOC_AUTO_RECEIVE for or source memory buffer or nd IOC_AUTO_SEND for
-           target memory buffer.
-  @param   set OS_TRUE to set the flag. OS_FALSE to clear it.
-  @return  Previous flag state. OS_TRUE of the flag was enabled before calling this function,
-           OS_FALSE if not.
+  @param   param_ix Parameter index, for IOC_MBLK_AUTO_SYNC_FLAG.
+  @param   value If flag, zero to disable or nonzero to enable.
+  @return  None.
 
 ****************************************************************************************************
 */
-os_boolean ioc_set_flag(
+void ioc_memory_block_set_int_param(
     iocMemoryBlock *mblk,
-    int flag,
-    os_boolean set)
+    iocMemoryBlockParamIx param_ix,
+    os_int value)
 {
     IOC_MT_ROOT_PTR;
 
-    os_boolean
-        oldstate;
+    /* Check that mblk is valid pointer.
+     */
+    osal_debug_assert(mblk->debug_id == 'M');
+
+    /* If parameter cannot be set, do nothing
+     */
+    if (param_ix != IOC_MBLK_AUTO_SYNC_FLAG) return;
+
+    /* Synchronize.
+     */
+    ioc_set_mt_root(root, mblk->link.root);
+    ioc_lock(root);
+
+    /* Modify the flag.
+     */
+    if (value) mblk->flags |= IOC_AUTO_SYNC;
+    else mblk->flags &= ~IOC_AUTO_SYNC;
+
+    /* Synchronize once immediately
+     */
+    if (value)
+    {
+        if (mblk->flags & IOC_SOURCE)
+        {
+            ioc_send(mblk);
+        }
+        else
+        {
+            ioc_receive(mblk);
+        }
+    }
+
+    /* End syncronization.
+     */
+    ioc_unlock(root);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Get memory block parameter value as integer.
+  @anchor ioc_memory_block_get_int_param
+
+  The ioc_memory_block_get_int_param() function gets a memory block parameter value.
+
+  @param   mblk Pointer to the memory block object.
+  @param   param_ix Parameter index. Selects which parameter to get, one of:
+           IOC_DEVICE_NR, IOC_MBLK_NR or IOC_MBLK_AUTO_SYNC_FLAG.
+  @return  Parameter value as integer. -1 if cannot be converted to integer.
+
+****************************************************************************************************
+*/
+os_int ioc_memory_block_get_int_param(
+    iocMemoryBlock *mblk,
+    iocMemoryBlockParamIx param_ix)
+{
+    IOC_MT_ROOT_PTR;
+
+    os_int
+        value;
 
     /* Check that mblk is valid pointer.
      */
@@ -292,50 +352,53 @@ os_boolean ioc_set_flag(
     ioc_set_mt_root(root, mblk->link.root);
     ioc_lock(root);
 
-    oldstate = (mblk->flags & flag) ? OS_TRUE : OS_FALSE;
-    if (set) mblk->flags |= flag;
-    else mblk->flags &= ~flag;
-
-    if (set)
+    switch (param_ix)
     {
-        if (mblk->flags & IOC_SOURCE)
-        {
-            osal_debug_assert(flag == IOC_AUTO_SEND);
-            ioc_send(mblk);
-        }
-        else
-        {
-            osal_debug_assert(flag == IOC_AUTO_RECEIVE);
-            ioc_receive(mblk);
-        }
+        case IOC_DEVICE_NR:
+            value = mblk->device_nr;
+            break;
+
+        case IOC_MBLK_NR:
+            value = mblk->mblk_nr;
+            break;
+
+        case IOC_MBLK_AUTO_SYNC_FLAG:
+            value = (mblk->flags & IOC_AUTO_SYNC) ? OS_TRUE : OS_FALSE;
+            break;
+
+        default:
+            value = -1;
+            break;
     }
 
     /* End syncronization.
      */
     ioc_unlock(root);
-    return oldstate;
+    return value;
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Get memory block parameter value.
-  @anchor ioc_get_memory_block_param
+  @brief Get memory block parameter value as string.
+  @anchor ioc_memory_block_get_string_param
 
-  The ioc_get_memory_block_param() function gets a memory block parameter value, either as
+  The ioc_memory_block_get_string_param() function gets a memory block parameter value, either as
   string or as integer.
 
   @param   mblk Pointer to the memory block object.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
-           IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NR or IOC_MBLK_NAME.
-  @param   buf Pointer to buffer where to store parameter value as string. OS_NULL if not needed.
+           IOC_NETWORK_NAME, IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NR, IOC_MBLK_NAME or
+           IOC_MBLK_AUTO_SYNC_FLAG.
+  @param   buf Pointer to buffer where to store parameter value as string. Empty string if
+           no value.
   @param   buf_sz Buffer size in bytes.
-  @return  Parameter value as integer. -1 if cannot be converted to integer.
+  @return  None.
 
 ****************************************************************************************************
 */
-os_int ioc_get_memory_block_param(
+void ioc_memory_block_get_string_param(
     iocMemoryBlock *mblk,
     iocMemoryBlockParamIx param_ix,
     os_char *buf,
@@ -359,37 +422,32 @@ os_int ioc_get_memory_block_param(
     {
         case IOC_DEVICE_NAME:
             os_strncpy(buf, mblk->device_name, buf_sz);
-            value = -1;
-            goto getout;
-
-        case IOC_DEVICE_NR:
-            value = mblk->device_nr;
-            break;
-
-        case IOC_MBLK_NR:
-            value = mblk->mblk_nr;
             break;
 
         case IOC_MBLK_NAME:
             os_strncpy(buf, mblk->mblk_name, buf_sz);
-            value = -1;
-            goto getout;
+            break;
+
+        case IOC_NETWORK_NAME:
+            os_strncpy(buf, mblk->network_name, buf_sz);
+            break;
 
         default:
-            value = -1;
+            value = ioc_memory_block_get_int_param(mblk, param_ix);
+            if (value == -1)
+            {
+                *buf = '\0';
+            }
+            else
+            {
+                osal_int_to_string(buf, buf_sz, value);
+            }
             break;
     }
 
-    if (buf)
-    {
-        osal_int_to_string(buf, buf_sz, value);
-    }
-
-getout:
     /* End syncronization.
      */
     ioc_unlock(root);
-    return value;
 }
 
 
@@ -569,7 +627,7 @@ void ioc_write_internal(
     }
     ioc_mblk_invalidate(mblk, addr, addr + n - 1);
 
-    if (mblk->flags & IOC_AUTO_SEND)
+    if (mblk->flags & IOC_AUTO_SYNC)
     {
         ioc_send(mblk);
     }
@@ -1387,7 +1445,7 @@ void ioc_clear(
   @anchor ioc_send
 
   The ioc_send() function pushes all writes to memory block to proceed as a snapshot. This
-  function must be called from application IOC_AUTO_SEND is not enabled (flag given as argument
+  function must be called from application IOC_AUTO_SYNC is not enabled (flag given as argument
   when memory block is initialized).
 
   Call ioc_send() function repeatedly, for example in mictorontroller's main loop. Synchronous
@@ -1433,7 +1491,7 @@ void ioc_send(
   @anchor ioc_receive
 
   The ioc_receive() function moves received data as snapshot to be abailable for reads. This
-  function must be called by application if IOC_AUTO_RECEIVE flag is off.
+  function must be called by application if IOC_AUTO_SYNC flag is off.
   This receives all data matching to one ioc_send() call at other end.
 
   @param   mblk Pointer to the memory block object.
@@ -1587,7 +1645,7 @@ static void ioc_mblk_invalidate(
          sbuf = sbuf->mlink.next)
     {
         ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
-        if (mblk->flags & IOC_AUTO_SEND) ioc_sbuf_synchronize(sbuf);
+        if (mblk->flags & IOC_AUTO_SYNC) ioc_sbuf_synchronize(sbuf);
     }
 }
 

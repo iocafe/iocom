@@ -16,7 +16,7 @@
   - IO board connects to control computer through TCP socket - control computer listens for
     connections.
   - Data transfer synchronized precisely by ioc_receive() and ioc_send() calls - no
-    "prm.auto_synchronization = OS_TRUE" -> IOC_AUTO_SEND or IOC_AUTO_RECEIVE flags not set.
+    "prm.auto_synchronization = OS_TRUE" -> IOC_AUTO_SYNC flags not set.
   - Relatively large 10k memory blocks and input memory block ioboard_fc is changed as quickly
     as computer can change it.
   - Unnanamed device, device name is empty string and device number is 0.
@@ -92,7 +92,7 @@ os_int osal_main(
     os_memclear(&prm, sizeof(prm));
     prm.iface = IOBOARD_STEAM_IFACE;
     prm.ctrl_type = IOBOARD_CTRL_CON;
-    prm.socket_con_str = "127.0.0.1:" IOC_DEFAULT_SOCKET_PORT_STR; /**************** SET IP ADDRESS HERE ***************/
+    prm.socket_con_str = "127.0.0.1"; /**************** SET IP ADDRESS HERE ***************/
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;
     prm.receive_block_sz = IOBOARD_FC_BLOCK_SZ;

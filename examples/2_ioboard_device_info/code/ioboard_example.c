@@ -116,7 +116,7 @@ os_int osal_main(
     prm.device_name = "MYDEV";
     prm.device_nr = 1;
 	prm.ctrl_type = IOBOARD_CTRL_CON;
-	prm.socket_con_str = "127.0.0.1:" IOC_DEFAULT_SOCKET_PORT_STR;
+    prm.socket_con_str = "127.0.0.1";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;
     prm.receive_block_sz = IOBOARD_FC_BLOCK_SZ;

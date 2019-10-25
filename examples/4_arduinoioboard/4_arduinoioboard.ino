@@ -102,8 +102,8 @@ void setup()
      */
     os_memclear(&prm, sizeof(prm));
     prm.ctrl_type = IOBOARD_CTRL_CON;
-    prm.socket_con_str = "127.0.0.1:" IOC_DEFAULT_SOCKET_PORT_STR;
-    prm.socket_con_str = "192.168.1.220:" IOC_DEFAULT_SOCKET_PORT_STR;
+    // prm.socket_con_str = "127.0.0.1";
+    prm.socket_con_str = "192.168.1.220";
     prm.serial_con_str = "COM3,baud=115200";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;

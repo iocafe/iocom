@@ -108,12 +108,11 @@ static PyObject *MemoryBlock_new(
         PyErr_SetString(iocomError, "Memory block must have either target or source flag");
         goto failed;
     }
-    if (os_strstr(flags, "auto", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "auto_sync", OSAL_STRING_SEARCH_ITEM_NAME))
     {
-        if (prm.flags & IOC_TARGET) prm.flags |= IOC_AUTO_RECEIVE;
-        if (prm.flags & IOC_SOURCE) prm.flags |= IOC_AUTO_SEND;
+        prm.flags |= IOC_AUTO_SYNC;
     }
-    if (os_strstr(flags, "resize", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "allow_resize", OSAL_STRING_SEARCH_ITEM_NAME))
     {
         prm.flags |= IOC_ALLOW_RESIZE;
     }
@@ -169,7 +168,7 @@ failed:
   The MemoryBlock_dealloc function releases the associated Python object. It doesn't do anything
   for the actual IOCOM memory block.
 
-  @param   self Pointer to the python object.
+  @param   self Pointer to the Python MemoryBlock object.
   @return  None.
 
 ****************************************************************************************************
@@ -193,7 +192,7 @@ static void MemoryBlock_dealloc(
   I do not think this is needed
 
   The MemoryBlock_init function initializes an object.
-  @param   self Pointer to the python object.
+  @param   self Pointer to the Python MemoryBlock object.
   @return  ?.
 
 ****************************************************************************************************
@@ -218,7 +217,7 @@ static int MemoryBlock_init(
   X...
 
   The MemoryBlock_init function initializes an object.
-  @param   self Pointer to the python object.
+  @param   self Pointer to the Python MemoryBlock object.
   @return  ?.
 
 ****************************************************************************************************
@@ -243,28 +242,83 @@ static PyObject *MemoryBlock_delete(
 /**
 ****************************************************************************************************
 
-  @brief Initialize.
+  @brief Get memory block parameter value.
+  @anchor MemoryBlock_get_param
 
-  X...
+  The MemoryBlock.get_param() function gets value of memory block's parameter.
 
-  The MemoryBlock_init function initializes an object.
-  @param   self Pointer to the python object.
-  @return  ?.
+  @param   self Pointer to the Python MemoryBlock object.
+  @param   param_name Which parameter to get, one of "network_name", "device_name", "device_nr",
+           "mblk_name" or "mblk_nr".
+  @return  Parameter value as string.
 
 ****************************************************************************************************
 */
 static PyObject *MemoryBlock_get_param(
-    MemoryBlock *self)
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwargs)
 {
+    const char
+        *param_name = NULL;
 
-/* os_int ioc_get_memory_block_param(
-    self->mblk,
-    iocMemoryBlockParamIx param_ix,
-    os_char *buf,
-    os_memsz buf_sz); */
+    char
+        buf[128];
 
-    PySys_WriteStdout("MemoryBlock.getParam()\n");
-    return PyLong_FromLong((long)self->number);
+    iocMemoryBlockParamIx
+        param_ix;
+
+    static char *kwlist[] = {
+        "param_name",
+        NULL
+    };
+
+    if (self->mblk == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "IOCOM memory block has been deleted");
+        return NULL;
+    }
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s",
+         kwlist, &param_name))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    if (!os_strcmp(param_name, "network_name"))
+    {
+        param_ix = IOC_NETWORK_NAME;
+    }
+    else if (!os_strcmp(param_name, "device_name"))
+    {
+        param_ix = IOC_DEVICE_NAME;
+    }
+    else if (!os_strcmp(param_name, "device_nr"))
+    {
+        param_ix = IOC_DEVICE_NR;
+    }
+    else if (!os_strcmp(param_name, "mblk_name"))
+    {
+        param_ix = IOC_MBLK_NAME;
+    }
+    else if (!os_strcmp(param_name, "mblk_nr"))
+    {
+        param_ix = IOC_MBLK_NR;
+    }
+    else
+    {
+        PyErr_SetString(iocomError, "Unknown parameter name");
+        return NULL;
+    }
+
+    ioc_memory_block_get_string_param(self->mblk, param_ix, buf, sizeof(buf));
+
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("MemoryBlock.get_param()\n");
+#endif
+
+    return PyUnicode_FromString(buf);
 }
 
 
@@ -286,7 +340,7 @@ static PyMemberDef MemoryBlock_members[] = {
 */
 static PyMethodDef MemoryBlock_methods[] = {
     {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
-    {"get_param", (PyCFunction)MemoryBlock_get_param, METH_NOARGS, "Get memory block parameter"},
+    {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS|METH_KEYWORDS, "Get memory block parameter"},
     {NULL} /* Sentinel */
 };
 

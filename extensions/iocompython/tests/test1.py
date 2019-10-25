@@ -18,7 +18,6 @@ def main():
     inputThread.start()
 
     root = Root('TESTDEVICE', network_name='TESTNET')
-    root = Root()
     myinputs = MemoryBlock(root, 'source,auto', 'MYINPUTS', 15, nbytes=256)
     connection = Connection(root, "127.0.0.1", "socket")
 

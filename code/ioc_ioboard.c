@@ -73,13 +73,13 @@ void ioboard_start_communication(
     blockprm.mblk_nr = IOC_INPUT_MBLK;
     blockprm.mblk_name = "IN";
     blockprm.nbytes = prm->send_block_sz ? prm->send_block_sz : 256;
-    blockprm.flags = prm->auto_synchronization ? (IOC_SOURCE|IOC_AUTO_SEND) : IOC_SOURCE;
+    blockprm.flags = prm->auto_synchronization ? (IOC_SOURCE|IOC_AUTO_SYNC) : IOC_SOURCE;
     ioc_initialize_memory_block(&ioboard_tc, &ioboard_communication, &blockprm);
  
     blockprm.mblk_nr = IOC_OUTPUT_MBLK;
     blockprm.mblk_name = "OUT";
     blockprm.nbytes = prm->receive_block_sz ? prm->receive_block_sz : 256;
-    blockprm.flags = prm->auto_synchronization ? (IOC_TARGET|IOC_AUTO_RECEIVE) : IOC_TARGET;
+    blockprm.flags = prm->auto_synchronization ? (IOC_TARGET|IOC_AUTO_SYNC) : IOC_TARGET;
     ioc_initialize_memory_block(&ioboard_fc, &ioboard_communication, &blockprm);
 
     /* Do we publish device information?

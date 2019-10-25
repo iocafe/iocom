@@ -122,7 +122,7 @@ static void root_callback(
         /* Process "new dynamic memory block" callback.
          */
         case IOC_NEW_DYNAMIC_MBLK:
-             ioc_get_memory_block_param(mblk, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
+            ioc_memory_block_get_string_param(mblk, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
 
             os_strncpy(text, "Memory block ", sizeof(text));
             os_strncat(text, mblk_name, sizeof(text));
@@ -132,7 +132,7 @@ static void root_callback(
             if (!os_strcmp(mblk_name, "INFO"))
             {
                 ioc_add_callback(mblk, info_callback, OS_NULL);
-                ioc_set_flag(mblk, IOC_AUTO_RECEIVE, OS_TRUE);
+                ioc_memory_block_set_int_param(mblk, IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
             }
             break;
 

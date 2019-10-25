@@ -28,32 +28,6 @@ MemoryBlock;
 extern PyTypeObject MemoryBlockType;
 
 #if 0
-/* Initialize memory block object.
- */
-iocMemoryBlock *ioc_initialize_memory_block(
-    iocMemoryBlock *mblk,
-    iocRoot *root,
-    iocMemoryBlockParams *prm);
-
-/* Release memory block object.
- */
-void ioc_release_memory_block(
-    iocMemoryBlock *mblk);
-
-/* Modify memory block flag (IOC_AUTO_RECEIVE or IOC_AUTO_SEND)
- */
-os_boolean ioc_set_flag(
-    iocMemoryBlock *mblk,
-    int flag,
-    os_boolean set);
-
-/* Get memory block parameter value.
- */
-os_int ioc_get_memory_block_param(
-    iocMemoryBlock *mblk,
-    iocMemoryBlockParamIx param_ix,
-    os_char *buf,
-    os_memsz buf_sz);
 
 /* Write data to memory block.
  */

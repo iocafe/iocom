@@ -114,7 +114,7 @@ typedef struct
      */
     os_int device_info_sz;
 
-    /* Enable IOC_AUTO_SEND and IOC_AUTO_RECEIVE
+    /** Enable IOC_AUTO_SYNC
      */
     os_boolean auto_synchronization;
 }

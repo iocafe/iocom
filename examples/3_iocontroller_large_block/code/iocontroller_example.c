@@ -69,11 +69,11 @@ os_int osal_main(
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.mblk_nr = IOC_INPUT_MBLK;
     blockprm.nbytes = input_block_sz;
-    blockprm.flags = IOC_TARGET|IOC_AUTO_RECEIVE|IOC_ALLOW_RESIZE;
+    blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
     inputs = ioc_initialize_memory_block(OS_NULL, &root, &blockprm);
     blockprm.mblk_nr = IOC_OUTPUT_MBLK;
     blockprm.nbytes = output_block_sz;
-    blockprm.flags = IOC_SOURCE|IOC_AUTO_SEND|IOC_ALLOW_RESIZE;
+    blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
     outputs = ioc_initialize_memory_block(OS_NULL, &root, &blockprm);
 
     /* Set callback to count received data packages.

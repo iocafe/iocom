@@ -20,14 +20,6 @@
 #ifndef IOC_CONNECTION_INCLUDED
 #define IOC_CONNECTION_INCLUDED
 
-/** Default iocom library socket port as string. This can be appended to IP address.
- */
-#define IOC_DEFAULT_SOCKET_PORT_STR "6368"
-
-/** Default iocom library SSL socket port as string. This can be appended to IP address.
- */
-#define IOC_DEFAULT_TLS_PORT_STR "6369"
-
 /** Frame sizes for socket and serial connections. These can never be modified, otherwise
  *  communication compatibility will break. Notice that socket frame size is not same as
  *  TCP frame size, signle tcp frame can hold multiple communication frames.
