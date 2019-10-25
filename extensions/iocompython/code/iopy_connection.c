@@ -36,6 +36,7 @@ static PyObject *Connection_new(
     PyObject *pyroot = NULL;
     Root *root;
     iocRoot *iocroot;
+    osalStatus s;
 
     const char
         *parameters = NULL,
@@ -63,7 +64,6 @@ static PyObject *Connection_new(
         goto failed;
     }
 
-
     if (pyroot == OS_NULL)
     {
         PyErr_SetString(iocomError, "A root object is not given as argument");
@@ -84,13 +84,82 @@ static PyObject *Connection_new(
         goto failed;
     }
 
+    if (parameters == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "No commminication parameters");
+        goto failed;
+    }
+    prm.parameters = parameters;
+
+    if (flags == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "No flags");
+        goto failed;
+    }
+
+    if (os_strstr(flags, "tls", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+#ifdef OSAL_TLS_SUPPORT
+        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.iface = OSAL_TLS_IFACE;
+#else
+        PyErr_SetString(iocomError, "TLS support if not included in eosal build");
+        goto failed;
+#endif
+    }
+
+    else if (os_strstr(flags, "socket", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+#ifdef OSAL_TLS_SUPPORT
+        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.iface = OSAL_SOCKET_IFACE;
+#else
+        PyErr_SetString(iocomError, "Socket support if not included in eosal build");
+        goto failed;
+#endif
+    }
+
+    else if (os_strstr(flags, "bluetooth", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+#ifdef OSAL_BLUETOOTH_SUPPORT
+        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.iface = OSAL_BLUETOOTH_IFACE;
+#else
+        PyErr_SetString(iocomError, "Bluetooth support if not included in eosal build");
+        goto failed;
+#endif
+    }
+
+    else if (os_strstr(flags, "serial", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+#ifdef OSAL_SERIAL_SUPPORT
+        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.iface = OSAL_SERIAL_IFACE;
+#else
+        PyErr_SetString(iocomError, "Serial port support if not included in eosal build");
+        goto failed;
+#endif
+    }
+    else
+    {
+        PyErr_SetString(iocomError, "Transport (tls, socket, bluetooth or serial) must be specified in flags");
+        goto failed;
+    }
+
+    if (os_strstr(flags, "listen", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        prm.flags |= 0;
+    }
+
     self->con = ioc_initialize_connection(OS_NULL, iocroot);
     self->number = 1;
 
-//    prm.flags = ??
-// prm.iface
+    s = ioc_connect(self->con, &prm);
+    self->number = 1 + s;
 
-    PySys_WriteStdout("new\n");
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("Connection.new(%s, %s)\n", prm.parameters, flags);
+#endif
 
     return (PyObject *)self;
 
@@ -210,7 +279,9 @@ static PyObject *Connection_connect(
         s = OSAL_STATUS_FAILED;
     }
 
-    PySys_WriteStdout("Connection.delete()\n");
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("Connection.connect()\n");
+#endif
     return PyLong_FromLong(s);
 }
 

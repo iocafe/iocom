@@ -47,7 +47,7 @@ static PyObject *Root_new(
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|is",
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sis",
          kwlist, &device_name, &device_nr, &network_name))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");

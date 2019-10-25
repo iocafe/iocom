@@ -28,13 +28,10 @@ static os_int module_init_count;
 /**
 ****************************************************************************************************
 
-  @brief Initialize node configuration structure.
+  @brief Python module initialization function.
 
-  The iotopology_initialize_node_configuration() function initalizes iotopologyNode structure
-  and creates mutex to synchronize access to node configuration information.
-and initialize it in your module’s initialization function (PyInit_spam()) with an exception object:
+  X...
 
-  @param   node Pointer to node's network topology configuration to initialize.
   @return  None.
 
 ****************************************************************************************************

@@ -852,6 +852,7 @@ static void ioc_connection_thread(
             if (status == OSAL_STATUS_PENDING) 
             {
                 os_timeslice();
+                goto failed;
             }
             if (status) 
             {

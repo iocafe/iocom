@@ -17,30 +17,13 @@
 
 typedef struct
 {
-  PyObject_HEAD
+    PyObject_HEAD
 
-  iocConnection *con;
+    iocConnection *con;
 
-  int number;
-} Connection;
+    int number;
+}
+Connection;
 
 extern PyTypeObject ConnectionType;
 
-#if 0
-/* Initialize connection object.
- */
-iocConnection *ioc_initialize_connection(
-    iocConnection *con,
-    iocRoot *root);
-
-/* Release connection object.
- */
-void ioc_release_connection(
-    iocConnection *con);
-
-/* Start or prepare the connection.
- */
-osalStatus ioc_connect(
-    iocConnection *con,
-    iocConnectionParams *prm);
-#endif
