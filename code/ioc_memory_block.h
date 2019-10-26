@@ -198,7 +198,7 @@ iocMemoryBlockLink;
 ****************************************************************************************************
 */
 typedef void ioc_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *handle,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -226,6 +226,10 @@ typedef struct iocMemoryBlock
         that a function argument is pointer to correct initialized object.
      */
     IOC_DEBUG_ID
+
+    /** Memory block handle structure.
+     */
+    iocHandle handle;
 
     /** Flags as given to ioc_initialize_memory_block()
      */
@@ -320,33 +324,34 @@ iocMemoryBlock;
 
 /* Initialize memory block object.
  */
-iocMemoryBlock *ioc_initialize_memory_block(
-    iocMemoryBlock *mblk,
+osalStatus ioc_initialize_memory_block(
+    iocHandle *handle,
+    iocMemoryBlock *static_mblk,
     iocRoot *root,
     iocMemoryBlockParams *prm);
 
 /* Release memory block object.
  */
 void ioc_release_memory_block(
-    iocMemoryBlock *mblk);
+    iocHandle *handle);
 
 /* Set integer as memory block parameter value.
  */
 void ioc_memory_block_set_int_param(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     iocMemoryBlockParamIx param_ix,
     os_int value);
 
 /* Get memory block parameter value as integer.
  */
 os_int ioc_memory_block_get_int_param(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     iocMemoryBlockParamIx param_ix);
 
 /* Get memory block parameter as string
  */
 void ioc_memory_block_get_string_param(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     iocMemoryBlockParamIx param_ix,
     os_char *buf,
     os_memsz buf_sz);
@@ -354,7 +359,7 @@ void ioc_memory_block_get_string_param(
 /* Write data to memory block.
  */
 void ioc_write(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_uchar *buf,
     int n);
@@ -362,7 +367,7 @@ void ioc_write(
 /* Write data to memory block (internal function for the iocom library).
  */
 void ioc_write_internal(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_uchar *buf,
     int n,
@@ -371,7 +376,7 @@ void ioc_write_internal(
 /* Read data from memory block.
  */
 void ioc_read(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_uchar *buf,
     int n);
@@ -379,7 +384,7 @@ void ioc_read(
 /* Read data from memory block (internal function for the iocom library).
  */
 void ioc_read_internal(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_uchar *buf,
     int n,
@@ -388,7 +393,7 @@ void ioc_read_internal(
 /* Write one bit to the memory block.
  */
 void ioc_set_bit(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int bit_nr,
     int value);
@@ -396,91 +401,91 @@ void ioc_set_bit(
 /* Read one bit from the memory block.
  */
 char ioc_get_bit(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int bit_nr);
 
 /* Write one byte to the memory block.
  */
 void ioc_set8(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int value);
 
 /* Read one signed byte from the memory block.
  */
 int ioc_get8(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr);
 
 /* Read one unsigned byte from the memory block.
  */
 int ioc_get8u(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr);
 
 /* Write 16 bit integer to the memory block.
  */
 void ioc_set16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int value);
 
 /* Read signed 16 bit integer from the memory block.
  */
 int ioc_get16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr);
 
 /* Read unsigned 16 bit integer from the memory block.
  */
 os_int ioc_get16u(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr);
 
 /* Write 32 bit integer (os_int) to the memory block.
  */
 void ioc_set32(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_int value);
 
 /* Read 32 bit integer from the memory block.
  */
 os_int ioc_get32(
-    iocMemoryBlock * mblk,
+    iocHandle *handle,
     int addr);
 
 /* Write 64 bit integer (os_int64) to the memory block.
  */
 void ioc_set64(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_int64 value);
 
 /* Read 64 bit integer from the memory block.
  */
 os_int64 ioc_get64(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr);
 
 /* Write 32 bit floating point value to the memory block.
  */
 void ioc_setfloat(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_float value);
 
 /* Read 32 bit floating point value from the memory block.
  */
 os_float ioc_getfloat(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr);
 
 /* Write string to the memory block.
  */
 void ioc_setstring(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_char *str,
     int n);
@@ -488,7 +493,7 @@ void ioc_setstring(
 /* Read string from the memory block.
  */
 void ioc_getstring(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_char *str,
     int n);
@@ -496,7 +501,7 @@ void ioc_getstring(
 /* Store array of 16 bit integers to the memory block.
  */
 void ioc_setarray16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_short *arr,
     int n);
@@ -504,7 +509,7 @@ void ioc_setarray16(
 /* Read array of 16 bit integers from the memory block.
  */
 void ioc_getarray16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_short *arr,
     int n);
@@ -512,7 +517,7 @@ void ioc_getarray16(
 /* Store array of 32 bit integers to the memory block.
  */
 void ioc_setarray32(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_int *arr,
     int n);
@@ -520,7 +525,7 @@ void ioc_setarray32(
 /* Read array of 32 bit integers from the memory block.
  */
 void ioc_getarray32(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_int *arr,
     int n);
@@ -528,7 +533,7 @@ void ioc_getarray32(
 /* Store array of 32 bit floating point values to the memory block.
  */
 void ioc_setfloatarray(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_float *arr,
     int n);
@@ -536,7 +541,7 @@ void ioc_setfloatarray(
 /* Read array of 32 bit floating point values from the memory block.
  */
 void ioc_getfloatarray(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_float *arr,
     int n);
@@ -544,31 +549,31 @@ void ioc_getfloatarray(
 /* Clear N bytes of memory block starting from specified address.
  */
 void ioc_clear(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int n);
 
 /* Send data synchronously.
  */
 void ioc_send(
-    iocMemoryBlock *mblk);
+    iocHandle *handle);
 
 /* Receive data synchronously.
  */
 void ioc_receive(
-    iocMemoryBlock *mblk);
+    iocHandle *handle);
 
 /* Add callback function.
  */
 void ioc_add_callback(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     ioc_callback func,
     void *context);
 
 /* Remove callback function.
  */
 /* void ioc_remove_callback(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     ioc_callback func,
     void *context); */
 

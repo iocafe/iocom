@@ -370,6 +370,6 @@ void ioc_tbuf_synchronize(
      */
     if (tbuf->mlink.mblk->flags & IOC_AUTO_SYNC)
     {
-        ioc_receive(tbuf->mlink.mblk);
+        ioc_receive(&tbuf->mlink.mblk->handle);
     }
 }

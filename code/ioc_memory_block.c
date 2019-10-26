@@ -40,7 +40,8 @@ static int ioc_get_unique_mblk_id(
   The ioc_initialize_memory_block() function initializes a memory block. A memory block can
   be either allocated by application or by the iocom library.
 
-  @param   mblk Pointer to memory block structure allocated by application, or OS_NULL
+  @param   handle Pointer to memory block handle to set up.
+  @param   static_mblk Pointer to memory block structure allocated by application, or OS_NULL
            to let iocom to allocate the memory block.
   @param   root Pointer to initialized root object.
 
@@ -60,15 +61,17 @@ static int ioc_get_unique_mblk_id(
            - nbytes. Memory block size in bytes (data size).
            - flags IOC_TARGET, IOC_SOURCE, IOC_AUTO_SYNC.
 
-  @return  Pointer to initialized memory block object. OS_NULL if memory allocation failed.
+  @return  OSAL_SUCCESS to indicate success, other values indicate an error.
 
 ****************************************************************************************************
 */
-iocMemoryBlock *ioc_initialize_memory_block(
-    iocMemoryBlock *mblk,
+osalStatus ioc_initialize_memory_block(
+    iocHandle *handle,
+    iocMemoryBlock *static_mblk,
     iocRoot *root,
     iocMemoryBlockParams *prm)
 {
+    iocMemoryBlock *mblk;
     os_uchar *buf;
     int nbytes;
 
@@ -80,15 +83,19 @@ iocMemoryBlock *ioc_initialize_memory_block(
      */
     ioc_lock(root);
 
+    /* In case of errors (malloc fails)
+     */
+    ioc_setup_handle(handle, root, OS_NULL);
+
     /* Allocate memory block structure, unless allocated by application.
      */
-    if (mblk == OS_NULL)
+    if (static_mblk == OS_NULL)
     {
         mblk = (iocMemoryBlock*)ioc_malloc(root, sizeof(iocMemoryBlock), OS_NULL);
         if (mblk == OS_NULL)
         {
             ioc_unlock(root);
-            return OS_NULL;
+            return OSAL_STATUS_FAILED;
         }
 
         os_memclear(mblk, sizeof(iocMemoryBlock));
@@ -96,6 +103,7 @@ iocMemoryBlock *ioc_initialize_memory_block(
     }
     else
     {
+        mblk = static_mblk;
         os_memclear(mblk, sizeof(iocMemoryBlock));
     }
 
@@ -108,6 +116,11 @@ iocMemoryBlock *ioc_initialize_memory_block(
         buf = ioc_malloc(root, nbytes, OS_NULL);
         mblk->buf_allocated = OS_TRUE;
     }
+
+    /* Setup handle within memory block structure and one given as argument.
+     */
+    ioc_setup_handle(&mblk->handle, root, mblk);
+    ioc_setup_handle(handle, root, mblk);
 
     /* Set up memory block structure.
      */
@@ -156,7 +169,7 @@ iocMemoryBlock *ioc_initialize_memory_block(
 
     /* Return pointer to initialized memory block.
      */
-    return mblk;
+    return OSAL_SUCCESS;
 }
 
 
@@ -170,32 +183,30 @@ iocMemoryBlock *ioc_initialize_memory_block(
   object. Memory allocated for the memory block object is freed, if it was allocated by
   ioc_initialize_memory_block().
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_release_memory_block(
-    iocMemoryBlock *mblk)
+    iocHandle *handle)
 {
-    iocRoot
-        *root;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_boolean allocated;
 
-    os_boolean
-        allocated;
-
-    /* Check that mblk is valid pointer.
+    /* Get memory block pointer and start synchronization.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
-
-    /* Synchronize.
-     */
-    root = mblk->link.root;
-    ioc_lock(root);
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
 
     /* Memory block is being deleted, remove it from all send info.
      */
     ioc_mbinfo_mblk_is_deleted(mblk);
+
+    /* Terminate all handles to this memory block including the contained one.
+     */
+    ioc_terminate_handles(&mblk->handle);
 
     /* Release all source buffers.
      */
@@ -267,7 +278,7 @@ void ioc_release_memory_block(
   enabled, then either ioc_send() or ioc_receive() will be called when reading or writing data
   and is called by this function.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   param_ix Parameter index, for IOC_MBLK_AUTO_SYNC_FLAG.
   @param   value If flag, zero to disable or nonzero to enable.
   @return  None.
@@ -275,24 +286,21 @@ void ioc_release_memory_block(
 ****************************************************************************************************
 */
 void ioc_memory_block_set_int_param(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     iocMemoryBlockParamIx param_ix,
     os_int value)
 {
-    IOC_MT_ROOT_PTR;
-
-    /* Check that mblk is valid pointer.
-     */
-    osal_debug_assert(mblk->debug_id == 'M');
+    iocRoot *root;
+    iocMemoryBlock *mblk;
 
     /* If parameter cannot be set, do nothing
      */
     if (param_ix != IOC_MBLK_AUTO_SYNC_FLAG) return;
 
-    /* Synchronize.
+    /* Get memory block pointer and start synchronization.
      */
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
 
     /* Modify the flag.
      */
@@ -305,11 +313,11 @@ void ioc_memory_block_set_int_param(
     {
         if (mblk->flags & IOC_SOURCE)
         {
-            ioc_send(mblk);
+            ioc_send(handle);
         }
         else
         {
-            ioc_receive(mblk);
+            ioc_receive(handle);
         }
     }
 
@@ -327,7 +335,7 @@ void ioc_memory_block_set_int_param(
 
   The ioc_memory_block_get_int_param() function gets a memory block parameter value.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
            IOC_DEVICE_NR, IOC_MBLK_NR or IOC_MBLK_AUTO_SYNC_FLAG.
   @return  Parameter value as integer. -1 if cannot be converted to integer.
@@ -335,22 +343,17 @@ void ioc_memory_block_set_int_param(
 ****************************************************************************************************
 */
 os_int ioc_memory_block_get_int_param(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     iocMemoryBlockParamIx param_ix)
 {
-    IOC_MT_ROOT_PTR;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_int value;
 
-    os_int
-        value;
-
-    /* Check that mblk is valid pointer.
+    /* Get memory block pointer and start synchronization.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
-
-    /* Synchronize.
-     */
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return -1;
 
     switch (param_ix)
     {
@@ -387,7 +390,7 @@ os_int ioc_memory_block_get_int_param(
   The ioc_memory_block_get_string_param() function gets a memory block parameter value, either as
   string or as integer.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
            IOC_NETWORK_NAME, IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NR, IOC_MBLK_NAME or
            IOC_MBLK_AUTO_SYNC_FLAG.
@@ -399,24 +402,22 @@ os_int ioc_memory_block_get_int_param(
 ****************************************************************************************************
 */
 void ioc_memory_block_get_string_param(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     iocMemoryBlockParamIx param_ix,
     os_char *buf,
     os_memsz buf_sz)
 {
-    IOC_MT_ROOT_PTR;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_int value;
 
-    os_int
-        value;
-
-    /* Check that mblk is valid pointer.
+    /* Get memory block pointer and start synchronization.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
 
-    /* Synchronize.
-     */
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
+    *buf = '\0';
+    value = -1;
 
     switch (param_ix)
     {
@@ -432,17 +433,22 @@ void ioc_memory_block_get_string_param(
             os_strncpy(buf, mblk->network_name, buf_sz);
             break;
 
-        default:
-            value = ioc_memory_block_get_int_param(mblk, param_ix);
-            if (value == -1)
-            {
-                *buf = '\0';
-            }
-            else
-            {
-                osal_int_to_string(buf, buf_sz, value);
-            }
+        case IOC_DEVICE_NR:
+            value = mblk->device_nr;
             break;
+
+        case IOC_MBLK_NR:
+            value = mblk->mblk_nr;
+            break;
+
+        case IOC_MBLK_AUTO_SYNC_FLAG:
+            value = (mblk->flags & IOC_AUTO_SYNC) ? OS_TRUE : OS_FALSE;
+            break;
+    }
+
+    if (value != -1)
+    {
+        osal_int_to_string(buf, buf_sz, value);
     }
 
     /* End syncronization.
@@ -464,7 +470,7 @@ void ioc_memory_block_get_string_param(
   to swap the byte order.
   Strings in memory block should be always UTF-8 encoded and '\0' terminated.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   buf Pointer to source data.
   @param   n Number of bytes to write.
@@ -473,12 +479,12 @@ void ioc_memory_block_get_string_param(
 ****************************************************************************************************
 */
 void ioc_write(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_uchar *buf,
     int n)
 {
-    ioc_write_internal(mblk, addr, buf, n, 0);
+    ioc_write_internal(handle, addr, buf, n, 0);
 }
 
 
@@ -497,7 +503,7 @@ void ioc_write(
   to swap the byte order.
   Strings in memory block should be always UTF-8 encoded and '\0' terminated.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   buf Pointer to source data.
   @param   n Number of bytes to write.
@@ -518,13 +524,14 @@ void ioc_write(
 ****************************************************************************************************
 */
 void ioc_write_internal(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_uchar *buf,
     int n,
     int flags)
 {
-    IOC_MT_ROOT_PTR;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
 
     os_uchar
         *p;
@@ -534,9 +541,13 @@ void ioc_write_internal(
         nstat,
         count;
 
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
+
     /* Check function arguments.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
     osal_debug_assert(buf != OS_NULL || (flags & IOC_CLEAR_MBLK_RANGE));
     osal_debug_assert(n > 0);
 
@@ -563,8 +574,6 @@ void ioc_write_internal(
 
     /* Store the data.
      */
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
     p = mblk->buf + addr;
     if (flags & IOC_MBLK_STRING)
     {
@@ -629,7 +638,7 @@ void ioc_write_internal(
 
     if (mblk->flags & IOC_AUTO_SYNC)
     {
-        ioc_send(mblk);
+        ioc_send(handle);
     }
 
     ioc_unlock(root);
@@ -649,7 +658,7 @@ void ioc_write_internal(
   to swap the byte order after reading.
   Strings in memory block should be always UTF-8 encoded and '\0' terminated.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @param   buf Pointer to buffer where to place data.
   @param   n Number of bytes to read.
@@ -658,12 +667,12 @@ void ioc_write_internal(
 ****************************************************************************************************
 */
 void ioc_read(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_uchar *buf,
     int n)
 {
-    ioc_read_internal(mblk, addr, buf, n, 0);
+    ioc_read_internal(handle, addr, buf, n, 0);
 }
 
 
@@ -680,7 +689,7 @@ void ioc_read(
   to swap the byte order after reading.
   Strings in memory block should be always UTF-8 encoded and '\0' terminated.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @param   buf Pointer to buffer where to place data.
   @param   n Number of bytes to read.
@@ -696,25 +705,23 @@ void ioc_read(
 ****************************************************************************************************
 */
 void ioc_read_internal(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_uchar *buf,
     int n,
     int flags)
 {
-    IOC_MT_ROOT_PTR;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_uchar *p;
+    int max_n, nstat, count;
 
-    os_uchar
-        *p;
-
-    int
-        max_n,
-        nstat,
-        count;
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
 
     /* Check function arguments.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
     osal_debug_assert(buf != OS_NULL);
     osal_debug_assert(n > 0);
 
@@ -744,8 +751,6 @@ void ioc_read_internal(
 
     /* Copy the data.
      */
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
     p = mblk->buf + addr;
 
     if (flags & IOC_MBLK_STRING)
@@ -820,7 +825,7 @@ void ioc_read_internal(
 
   The ioc_set_bit() function writes a single bit into the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   bit_nr Bit number 0 ... 7. Zero is the least significant bit.
   @param   Bit value to write. Can be either signed -128 ... 127, or unsigned 0 ... 255.
@@ -830,24 +835,25 @@ void ioc_read_internal(
 ****************************************************************************************************
 */
 void ioc_set_bit(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int bit_nr,
     int value)
 {
-    IOC_MT_ROOT_PTR;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_uchar *p;
 
-    os_uchar
-        *p;
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
 
     if (addr < 0 || addr >= mblk->nbytes) return;
 
     /* Copy the data.
      */
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
     p = mblk->buf + addr;
-
     if (value)
     {
         *p |= (1 << bit_nr);
@@ -869,7 +875,7 @@ void ioc_set_bit(
 
   The ioc_get_bit() function reads a single bit from memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read frin.
   @param   bit_nr Bit number 0 ... 7. Zeri is the least significant bit.
   @return  Bit value, either OS_TRUE (1) or OS_FALSE (0).
@@ -877,13 +883,13 @@ void ioc_set_bit(
 ****************************************************************************************************
 */
 char ioc_get_bit(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int bit_nr)
 {
     os_uchar buf;
 
-    ioc_read_internal(mblk, addr, &buf, 1, 0);
+    ioc_read_internal(handle, addr, &buf, 1, 0);
     return (buf | (1 << bit_nr)) ? OS_TRUE : OS_FALSE;
 }
 
@@ -896,7 +902,7 @@ char ioc_get_bit(
 
   The ioc_set8() function writes one byte of data into the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   value Byte value to write. Can be either signed -128 ... 127, or unsigned 0 ... 255.
            At this point we do not need to care.
@@ -905,13 +911,13 @@ char ioc_get_bit(
 ****************************************************************************************************
 */
 void ioc_set8(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int value)
 {
     os_uchar buf[1];
     buf[0] = (os_uchar)value;
-    ioc_write_internal(mblk, addr, buf, sizeof(buf), 0);
+    ioc_write_internal(handle, addr, buf, sizeof(buf), 0);
 }
 
 
@@ -923,18 +929,18 @@ void ioc_set8(
 
   The ioc_get8() function reads one byte of data from the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @return  Byte value -128 ... 127.
 
 ****************************************************************************************************
 */
 int ioc_get8(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr)
 {
     os_char s;
-    ioc_read_internal(mblk, addr, (os_uchar*)&s, sizeof(os_char), 0);
+    ioc_read_internal(handle, addr, (os_uchar*)&s, sizeof(os_char), 0);
     return s;
 }
 
@@ -947,18 +953,18 @@ int ioc_get8(
 
   The ioc_get8u() function reads one byte of data from the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @return  Byte value 0 ... 255.
 
 ****************************************************************************************************
 */
 int ioc_get8u(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr)
 {
     os_uchar u;
-    ioc_read_internal(mblk, addr, (os_uchar*)&u, sizeof(os_uchar), 0);
+    ioc_read_internal(handle, addr, (os_uchar*)&u, sizeof(os_uchar), 0);
     return u;
 }
 
@@ -972,7 +978,7 @@ int ioc_get8u(
   The ioc_set16() function writes 16 bit integer into the memory block. 16 bit integer will
   take two bytes space.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   value Integer value to write. Can be either signed -32768 ... 32767, or
            unsigned 0 ... 65535. At this point we do not need to care.
@@ -981,13 +987,13 @@ int ioc_get8u(
 ****************************************************************************************************
 */
 void ioc_set16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int value)
 {
     os_ushort u;
     u = (os_ushort)value;
-    ioc_write_internal(mblk, addr, (os_uchar*)&u, sizeof(os_ushort), IOC_SWAP_16);
+    ioc_write_internal(handle, addr, (os_uchar*)&u, sizeof(os_ushort), IOC_SWAP_16);
 }
 
 
@@ -999,18 +1005,18 @@ void ioc_set16(
 
   The ioc_get16() function reads 16 bit integer from the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @return  Integer value -32768 ... 32767.
 
 ****************************************************************************************************
 */
 int ioc_get16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr)
 {
     os_short s;
-    ioc_read_internal(mblk, addr, (os_uchar*)&s, sizeof(os_short), IOC_SWAP_16);
+    ioc_read_internal(handle, addr, (os_uchar*)&s, sizeof(os_short), IOC_SWAP_16);
     return s;
 }
 
@@ -1023,18 +1029,18 @@ int ioc_get16(
 
   The ioc_get16u() function reads 16 bit integer from the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @return  Integer value 0 ... 65535.
 
 ****************************************************************************************************
 */
 os_int ioc_get16u(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr)
 {
     os_ushort u;
-    ioc_read_internal(mblk, addr, (os_uchar*)&u, sizeof(os_ushort), IOC_SWAP_16);
+    ioc_read_internal(handle, addr, (os_uchar*)&u, sizeof(os_ushort), IOC_SWAP_16);
     return u;
 }
 
@@ -1048,7 +1054,7 @@ os_int ioc_get16u(
   The ioc_set32() function writes 32 bit integer into the memory block. 32 bit integer will take
   4 bytes space.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   value Integer value to write.
   @return  None.
@@ -1056,11 +1062,11 @@ os_int ioc_get16u(
 ****************************************************************************************************
 */
 void ioc_set32(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_int value)
 {
-    ioc_write_internal(mblk, addr, (os_uchar*)&value, sizeof(os_int), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_uchar*)&value, sizeof(os_int), IOC_SWAP_32);
 }
 
 
@@ -1072,18 +1078,18 @@ void ioc_set32(
 
   The ioc_get32() function reads 32 bit integer from the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @return  Integer value.
 
 ****************************************************************************************************
 */
 os_int ioc_get32(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr)
 {
     os_int s;
-    ioc_read_internal(mblk, addr, (os_uchar*)&s, sizeof(os_int), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_uchar*)&s, sizeof(os_int), IOC_SWAP_32);
     return s;
 }
 
@@ -1097,7 +1103,7 @@ os_int ioc_get32(
   The ioc_set64() function writes 64 bit integer into the memory block. 64 bit integer will take
   eight bytes space.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   value Integer value to write.
   @return  None.
@@ -1105,11 +1111,11 @@ os_int ioc_get32(
 ****************************************************************************************************
 */
 void ioc_set64(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_int64 value)
 {
-    ioc_write_internal(mblk, addr, (os_uchar*)&value, sizeof(os_int64), IOC_SWAP_64);
+    ioc_write_internal(handle, addr, (os_uchar*)&value, sizeof(os_int64), IOC_SWAP_64);
 }
 
 
@@ -1121,18 +1127,18 @@ void ioc_set64(
 
   The ioc_get64() function reads 64 bit integer from the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @return  Integer value.
 
 ****************************************************************************************************
 */
 os_int64 ioc_get64(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr)
 {
     os_int64 value;
-    ioc_read_internal(mblk, addr, (os_uchar*)&value, sizeof(os_int64), IOC_SWAP_64);
+    ioc_read_internal(handle, addr, (os_uchar*)&value, sizeof(os_int64), IOC_SWAP_64);
     return value;
 }
 
@@ -1147,7 +1153,7 @@ os_int64 ioc_get64(
   This may not work on all systems, requires that 32 bit IEEE float is available. So far
   all systems I tested do support 32 bit IEEE float.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   value Integer value to write.
   @return  None.
@@ -1155,11 +1161,11 @@ os_int64 ioc_get64(
 ****************************************************************************************************
 */
 void ioc_setfloat(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_float value)
 {
-    ioc_write_internal(mblk, addr, (os_uchar*)&value, sizeof(os_float), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_uchar*)&value, sizeof(os_float), IOC_SWAP_32);
 }
 
 
@@ -1171,18 +1177,18 @@ void ioc_setfloat(
 
   The ioc_getfloat() function reads 4 byte floating point value from the memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @return  Integer value.
 
 ****************************************************************************************************
 */
 os_float ioc_getfloat(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr)
 {
     os_float value;
-    ioc_read_internal(mblk, addr, (os_uchar*)&value, sizeof(os_float), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_uchar*)&value, sizeof(os_float), IOC_SWAP_32);
     return value;
 }
 
@@ -1198,7 +1204,7 @@ os_float ioc_getfloat(
   size n minus one, string is truncated. Resulting string will always be terminated with '\0'
   character. String str should be UTF-8 encoded.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   str Pointer to string to write.
   @param   n Maximum number of memory block bytes to set.
@@ -1207,12 +1213,12 @@ os_float ioc_getfloat(
 ****************************************************************************************************
 */
 void ioc_setstring(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_char *str,
     int n)
 {
-    ioc_write_internal(mblk, addr, (os_uchar*)str, n, IOC_MBLK_STRING);
+    ioc_write_internal(handle, addr, (os_uchar*)str, n, IOC_MBLK_STRING);
 }
 
 
@@ -1226,7 +1232,7 @@ void ioc_setstring(
   n sets maximum number of characters to read, including terminating '\0' character. String
   should be UTF-8 encoded.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @param   str Pointer to buffer where to store the string.
   @param   n Size of str buffer in bytes (maximum number of bytes to read).
@@ -1235,12 +1241,12 @@ void ioc_setstring(
 ****************************************************************************************************
 */
 void ioc_getstring(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_char *str,
     int n)
 {
-    ioc_read_internal(mblk, addr, (os_uchar*)str, n, IOC_MBLK_STRING);
+    ioc_read_internal(handle, addr, (os_uchar*)str, n, IOC_MBLK_STRING);
 }
 
 
@@ -1253,7 +1259,7 @@ void ioc_getstring(
   The ioc_setarray16() function writes an array of 16 bit integers to the memory block. It is
   more efficient to use this function than to loop trough values and write them one at a time.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   arr Pointer to array to write. If writing unsigned 16 bit integers, just cast the
            pointer. It doesn't really make any difference.
@@ -1263,12 +1269,12 @@ void ioc_getstring(
 ****************************************************************************************************
 */
 void ioc_setarray16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_short *arr,
     int n)
 {
-    ioc_write_internal(mblk, addr, (os_uchar*)arr, n * sizeof(os_short), IOC_SWAP_16);
+    ioc_write_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_short), IOC_SWAP_16);
 }
 
 
@@ -1281,7 +1287,7 @@ void ioc_setarray16(
   The ioc_getarray16() function reads an array of 16 bit integers from the memory block. It is
   more efficient to use this function than to loop trough values and read them one at a time.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @param   arr Pointer to array where to store the data. If reading unsigned 16 bit integers,
            just cast the pointer. It doesn' really make any difference.
@@ -1291,12 +1297,12 @@ void ioc_setarray16(
 ****************************************************************************************************
 */
 void ioc_getarray16(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_short *arr,
     int n)
 {
-    ioc_read_internal(mblk, addr, (os_uchar*)arr, n * sizeof(os_short), IOC_SWAP_16);
+    ioc_read_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_short), IOC_SWAP_16);
 }
 
 
@@ -1309,7 +1315,7 @@ void ioc_getarray16(
   The ioc_setarray32() function writes an array of 32 bit integers to the memory block. It is
   more efficient to use this function than to loop trough values and write them one at a time.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   arr Pointer to array to write. If writing unsigned 32 bit integers, just cast the
            pointer. It doesn't really make any difference.
@@ -1319,12 +1325,12 @@ void ioc_getarray16(
 ****************************************************************************************************
 */
 void ioc_setarray32(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_int *arr,
     int n)
 {
-    ioc_write_internal(mblk, addr, (os_uchar*)arr, n * sizeof(os_int), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_int), IOC_SWAP_32);
 }
 
 
@@ -1337,7 +1343,7 @@ void ioc_setarray32(
   The ioc_getarray32() function reads an array of 32 bit integers from the memory block. It is
   more efficient to use this function than to loop trough values and read them one at a time.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @param   arr Pointer to array where to store the data. If reading unsigned 32 bit integers,
            just cast the pointer. It doesn't really make any difference.
@@ -1347,12 +1353,12 @@ void ioc_setarray32(
 ****************************************************************************************************
 */
 void ioc_getarray32(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_int *arr,
     int n)
 {
-    ioc_read_internal(mblk, addr, (os_uchar*)arr, n * sizeof(os_int), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_int), IOC_SWAP_32);
 }
 
 
@@ -1366,7 +1372,7 @@ void ioc_getarray32(
   block. It is more efficient to use this function than to loop trough values and write them
   one at a time.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to write to.
   @param   arr Pointer to array to write.
   @param   n Number of elements in array (not number of bytes).
@@ -1375,12 +1381,12 @@ void ioc_getarray32(
 ****************************************************************************************************
 */
 void ioc_setfloatarray(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     const os_float *arr,
     int n)
 {
-    ioc_write_internal(mblk, addr, (os_uchar*)arr, n * sizeof(os_float), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_float), IOC_SWAP_32);
 }
 
 
@@ -1394,7 +1400,7 @@ void ioc_setfloatarray(
   block. It is more efficient to use this function than to loop trough values and read them
   one at a time.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address to read from.
   @param   arr Pointer to array where to store the data.
   @param   n Number of elements in array (not number of bytes).
@@ -1403,12 +1409,12 @@ void ioc_setfloatarray(
 ****************************************************************************************************
 */
 void ioc_getfloatarray(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     os_float *arr,
     int n)
 {
-    ioc_read_internal(mblk, addr, (os_uchar*)arr, n * sizeof(os_float), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_float), IOC_SWAP_32);
 }
 
 
@@ -1422,7 +1428,7 @@ void ioc_getfloatarray(
   be cleared and n is the last one. This is fairly efficient and can be used to wipe even whole
   memory blocks.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   addr Memory address start zeroing.
   @param   n Number of bytes to set to zero.
   @return  None.
@@ -1430,11 +1436,11 @@ void ioc_getfloatarray(
 ****************************************************************************************************
 */
 void ioc_clear(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     int addr,
     int n)
 {
-    ioc_write_internal(mblk, addr, OS_NULL, n, IOC_CLEAR_MBLK_RANGE);
+    ioc_write_internal(handle, addr, OS_NULL, n, IOC_CLEAR_MBLK_RANGE);
 }
 
 
@@ -1455,25 +1461,24 @@ void ioc_clear(
   at low frequency. This assumes that analog inputs with same desired maximum update frequency
   are grouped into same memory block.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_send(
-    iocMemoryBlock *mblk)
+    iocHandle *handle)
 {
-    iocSourceBuffer
-        *sbuf;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    iocSourceBuffer *sbuf;
 
-    IOC_MT_ROOT_PTR;
 
-    /* Check function arguments.
+    /* Get memory block pointer and start synchronization.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
 
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
     for (sbuf = mblk->sbuf.first;
          sbuf;
          sbuf = sbuf->mlink.next)
@@ -1494,30 +1499,23 @@ void ioc_send(
   function must be called by application if IOC_AUTO_SYNC flag is off.
   This receives all data matching to one ioc_send() call at other end.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_receive(
-    iocMemoryBlock *mblk)
+    iocHandle *handle)
 {
-    iocTargetBuffer
-        *tbuf;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    iocTargetBuffer *tbuf;
+    int start_addr, end_addr, i;
 
-    IOC_MT_ROOT_PTR;
-
-    int
-        start_addr,
-        end_addr,
-        i;
-
-    /* Check function arguments.
+    /* Get memory block pointer and start synchronization.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
-
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
 
     /* We should have only one target buffer.
      */
@@ -1540,7 +1538,7 @@ void ioc_receive(
         {
             if (mblk->func[i])
             {
-                mblk->func[i](mblk, start_addr, end_addr, 0, mblk->context[i]);
+                mblk->func[i](&mblk->handle, start_addr, end_addr, 0, mblk->context[i]);
             }
         }
     }
@@ -1553,13 +1551,13 @@ void ioc_receive(
 ****************************************************************************************************
 
   @brief Add callback function.
-  @anchor ioc_receive
+  @anchor ioc_add_callback
 
   The ioc_add_callback() function adds a callback function to memory block. The callback function
   gets called when data is received from connection, etc. This allows application to react to
   recived data without polling it (faster and uses less processor time).
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   func Pointer to a callback function.
   @param   context Application specific pointer to be passed to callback function.
   @return  None.
@@ -1567,21 +1565,18 @@ void ioc_receive(
 ****************************************************************************************************
 */
 void ioc_add_callback(
-    iocMemoryBlock *mblk,
+    iocHandle *handle,
     ioc_callback func,
     void *context)
 {
-    IOC_MT_ROOT_PTR;
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_int i;
 
-    os_int
-        i;
-
-    /* Check function arguments.
+    /* Get memory block pointer and start synchronization.
      */
-    osal_debug_assert(mblk->debug_id == 'M');
-
-    ioc_set_mt_root(root, mblk->link.root);
-    ioc_lock(root);
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
 
     /* If we already got the same callback function with the same context, do nothing.
      */
@@ -1625,7 +1620,7 @@ void ioc_add_callback(
 
   ioc_lock() must be on before calling this function.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   start_addr Beginning address of changes.
   @param   end_addr End address of changed.
   @return  None.
@@ -1637,8 +1632,7 @@ static void ioc_mblk_invalidate(
     int start_addr,
     int end_addr)
 {
-    iocSourceBuffer
-        *sbuf;
+    iocSourceBuffer *sbuf;
 
     for (sbuf = mblk->sbuf.first;
          sbuf;

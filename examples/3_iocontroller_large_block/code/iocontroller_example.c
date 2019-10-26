@@ -25,7 +25,7 @@ static os_long callback_count;
 /* Forward referred static functions.
  */
 static void iocontroller_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *handle,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -52,7 +52,7 @@ os_int osal_main(
     iocEndPoint *ep;
     iocEndPointParams epprm;
     iocMemoryBlockParams blockprm;
-    iocMemoryBlock *inputs, *outputs;
+    iocHandle inputs, outputs;
     os_char text[128], nbuf[32];
 
     const int
@@ -70,15 +70,15 @@ os_int osal_main(
     blockprm.mblk_nr = IOC_INPUT_MBLK;
     blockprm.nbytes = input_block_sz;
     blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    inputs = ioc_initialize_memory_block(OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&inputs, OS_NULL, &root, &blockprm);
     blockprm.mblk_nr = IOC_OUTPUT_MBLK;
     blockprm.nbytes = output_block_sz;
     blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    outputs = ioc_initialize_memory_block(OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&outputs, OS_NULL, &root, &blockprm);
 
     /* Set callback to count received data packages.
      */
-    ioc_add_callback(inputs, iocontroller_callback, OS_NULL);
+    ioc_add_callback(&inputs, iocontroller_callback, OS_NULL);
 
     /* Listen to socket port.
      */
@@ -133,7 +133,7 @@ os_int osal_main(
 ****************************************************************************************************
 */
 static void iocontroller_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *handle,
     int start_addr,
     int end_addr,
     os_ushort flags,

@@ -246,6 +246,7 @@ void ioc_mbinfo_received(
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
+    iocHandle handle;
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf;
 
@@ -280,17 +281,18 @@ void ioc_mbinfo_received(
                 mbprm.mblk_name = info->mblk_name;
                 mbprm.nbytes = info->nbytes;
 
-                mblk = ioc_initialize_memory_block(OS_NULL, root, &mbprm);
-                if (mblk == OS_NULL) return;
+                if (ioc_initialize_memory_block(&handle, OS_NULL, root, &mbprm)) return;
+                mblk = handle.mblk;
 
                 /* If we have callback function, application may want to know about
                    the new memory block, so call it.
                  */
                 if (root->callback_func)
                 {
-                    root->callback_func(root, con, mblk,
+                    root->callback_func(root, con, &handle,
                         IOC_NEW_DYNAMIC_MBLK, root->callback_context);
                 }
+                ioc_release_handle(&handle);
                 break;
             }
 #endif

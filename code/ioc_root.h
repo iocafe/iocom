@@ -114,7 +114,7 @@ iocRootCallbackEvent;
 typedef void ioc_root_callback(
     struct iocRoot *root,
     struct iocConnection *con,
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *mblk_handle,
     iocRootCallbackEvent event,
     void *context);
 

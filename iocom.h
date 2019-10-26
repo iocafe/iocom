@@ -31,6 +31,7 @@ OSAL_C_HEADER_BEGINS
  */
 #include "code/ioc_timing.h"
 #include "code/ioc_debug.h"
+#include "code/ioc_handle.h"
 #include "code/ioc_root.h"
 #include "code/ioc_com_status.h"
 #include "code/ioc_memory_block_info.h"

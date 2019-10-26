@@ -151,7 +151,7 @@ void ioc_release_root(
      */
     while (root->mblk.first)
     {
-        ioc_release_memory_block(root->mblk.first);
+        ioc_release_memory_block(&root->mblk.first->handle);
     }
 
     /* End syncronization.

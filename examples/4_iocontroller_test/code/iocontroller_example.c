@@ -82,9 +82,9 @@ typedef struct
     iocRoot
         *root;
 
-    iocMemoryBlock
-        *inputs,
-        *outputs;
+    iocHandle
+        inputs,
+        outputs;
 
     ioControllerCallbackData
         callbackdata;
@@ -96,7 +96,7 @@ ioControllerContext;
 /* Forward referred static functions.
  */
 static void iocontroller_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *mblk_handle,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -106,11 +106,11 @@ static void iocontroller_long_processing(
     ioControllerContext *c);
 
 static void iocontroller_7_segment(
-    struct iocMemoryBlock *mblk,
+    iocHandle *mblk_handle,
     int x);
 
 static void iocontroller_8_spinner(
-    struct iocMemoryBlock *mblk,
+    iocHandle *mblk_handle,
     int x);
 
 
@@ -193,16 +193,16 @@ os_int osal_main(
     blockprm.mblk_nr = IOC_INPUT_MBLK;
     blockprm.nbytes = input_block_sz;
     blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    c.inputs = ioc_initialize_memory_block(OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&c.inputs, OS_NULL, &root, &blockprm);
 
     blockprm.mblk_nr = IOC_OUTPUT_MBLK;
     blockprm.nbytes = output_block_sz;
     blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    c.outputs = ioc_initialize_memory_block(OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&c.outputs, OS_NULL, &root, &blockprm);
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(c.inputs, iocontroller_callback, &c);
+    ioc_add_callback(&c.inputs, iocontroller_callback, &c);
 
 #if MY_ROLE==EXAMPLE_CONNECT
     /* Connect to an "IO board".
@@ -226,13 +226,13 @@ os_int osal_main(
     {
         if (countdown > 0)
         {
-            iocontroller_7_segment(c.outputs, --countdown);
+            iocontroller_7_segment(&c.outputs, --countdown);
             os_sleep(500);
         }
         else
         {
             if (++spinner > 7) spinner = 0;
-            iocontroller_8_spinner(c.outputs, spinner);
+            iocontroller_8_spinner(&c.outputs, spinner);
             os_sleep(slow ? 30 : 1);
             if (count++ > (slow ? 100 : 2800))
             {
@@ -288,7 +288,7 @@ os_int osal_main(
 ****************************************************************************************************
 */
 static void iocontroller_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *mblk_handle,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -307,12 +307,12 @@ static void iocontroller_callback(
      */
     if (end_addr >= IOC_NRO_CONNECTED_STREAMS && start_addr < IOC_NRO_CONNECTED_STREAMS + 2)
     {
-        c->nro_connections = ioc_get16(mblk, IOC_NRO_CONNECTED_STREAMS);
+        c->nro_connections = ioc_get16(mblk_handle, IOC_NRO_CONNECTED_STREAMS);
     }
 
     if (end_addr >= IOC_CONNECTION_DROP_COUNT && start_addr < IOC_CONNECTION_DROP_COUNT + 4)
     {
-        c->drop_count = ioc_get32(mblk, IOC_CONNECTION_DROP_COUNT);
+        c->drop_count = ioc_get32(mblk_handle, IOC_CONNECTION_DROP_COUNT);
     }
 
     /* Echo 2 bytes at address 2 back to IO board address 10. This happens practically
@@ -320,8 +320,8 @@ static void iocontroller_callback(
      */
     if (end_addr >= 2 && start_addr < 2 + 2)
     {
-        command_echo = ioc_get16(mblk, 2);
-        ioc_set16(c->outputs, 11, command_echo);
+        command_echo = ioc_get16(mblk_handle, 2);
+        ioc_set16(&c->outputs, 11, command_echo);
     }
 
     /* Set up for longer processing by specific thread.
@@ -386,7 +386,7 @@ static void iocontroller_long_processing(
         for (i = cd.start_addr; i <= cd.end_addr; i++)
         {
             if (i > cd.start_addr) os_strncat(text, ", ", sizeof(text));
-            ioc_read(c->inputs, i, &u, 1);
+            ioc_read(&c->inputs, i, &u, 1);
             osal_int_to_string(nbuf, sizeof(nbuf), (os_long)((os_uint)u));
             os_strncat(text, nbuf, sizeof(text));
         }
@@ -396,7 +396,7 @@ static void iocontroller_long_processing(
 }
 
 static void iocontroller_7_segment(
-    struct iocMemoryBlock *mblk,
+    iocHandle *mblk_handle,
     int x)
 {
     static os_uchar digits[10][8] = {
@@ -413,11 +413,11 @@ static void iocontroller_7_segment(
       {1, 1, 1, 0, 0, 0, 1, 1}  /* 9 */
     };
 
-    ioc_write(mblk, 0, digits[x], 8);
+    ioc_write(mblk_handle, 0, digits[x], 8);
 }
 
 static void iocontroller_8_spinner(
-    struct iocMemoryBlock *mblk,
+    iocHandle *mblk_handle,
     int x)
 {
     static os_uchar digits[10][8] = {
@@ -432,5 +432,5 @@ static void iocontroller_8_spinner(
       {0, 1, 0, 0, 0, 0, 0, 0}, /* 7 */
     };
 
-    ioc_write(mblk, 0, digits[x], 8);
+    ioc_write(mblk_handle, 0, digits[x], 8);
 }

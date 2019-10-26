@@ -92,7 +92,7 @@ void ioc_status_write(
         {
             if (mblk->func[i])
             {
-                mblk->func[i](mblk, start_addr, end_addr, 0, mblk->context[i]);
+                mblk->func[i](&mblk->handle, start_addr, end_addr, 0, mblk->context[i]);
             }
         }
 
@@ -189,8 +189,8 @@ void ioc_count_connected_streams(
          mblk;
          mblk = mblk->link.next)
     {
-        ioc_set16(mblk, IOC_NRO_CONNECTED_STREAMS, count);
-        ioc_set32(mblk, IOC_CONNECTION_DROP_COUNT, root->drop_count);
+        ioc_set16(&mblk->handle, IOC_NRO_CONNECTED_STREAMS, count);
+        ioc_set32(&mblk->handle, IOC_CONNECTION_DROP_COUNT, root->drop_count);
     }
 
     ioc_unlock(root);
