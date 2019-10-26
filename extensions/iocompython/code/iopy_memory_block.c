@@ -254,63 +254,314 @@ static PyObject *MemoryBlock_delete(
 */
 static PyObject *MemoryBlock_get_param(
     MemoryBlock *self,
-    PyObject *args,
-    PyObject *kwargs)
+    PyObject *args)
 {
-    const char
-        *param_name = NULL;
+    #define GET_PARAM_N 8
+    const char *param_name[GET_PARAM_N], *p;
+    os_char buf[128];
+    os_int i, n;
+    iocMemoryBlockParamIx param_ix;
+    iocRoot *root;
+    PyObject *py_list, *py_item;
 
-    char
-        buf[128];
+    os_memclear(param_name, sizeof(param_name));
 
-    iocMemoryBlockParamIx
-        param_ix;
+    if (!PyArg_ParseTuple(args, "s|sssssss",
+         param_name, param_name + 1, param_name + 2, param_name + 3, param_name + 4, param_name + 5, param_name + 6, param_name + 7))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    /* Count parameters.
+     */
+    for (n = 0; n < GET_PARAM_N; ++n)
+    {
+        if (param_name[n] == NULL) break;
+    }
+
+    /* Get memory block pointer, start synchronization and
+     */
+    if (ioc_handle_lock_to_mblk(&self->mblk_handle, &root) == OS_NULL)
+    {
+        Py_RETURN_NONE;
+    }
+
+    py_list = PyList_New(n);
+    for (i = 0; i < n; ++i)
+    {
+        p = param_name[i];
+        if (!os_strcmp(p, "network_name"))
+        {
+            param_ix = IOC_NETWORK_NAME;
+        }
+        else if (!os_strcmp(p, "device_name"))
+        {
+            param_ix = IOC_DEVICE_NAME;
+        }
+        else if (!os_strcmp(p, "device_nr"))
+        {
+            param_ix = IOC_DEVICE_NR;
+        }
+        else if (!os_strcmp(p, "mblk_name"))
+        {
+            param_ix = IOC_MBLK_NAME;
+        }
+        else if (!os_strcmp(p, "mblk_nr"))
+        {
+            param_ix = IOC_MBLK_NR;
+        }
+        else
+        {
+            Py_XDECREF(py_list);
+            PyErr_SetString(iocomError, "Unknown parameter name");
+            ioc_unlock(root);
+            return NULL;
+        }
+
+        ioc_memory_block_get_string_param(&self->mblk_handle, param_ix, buf, sizeof(buf));
+
+        py_item = Py_BuildValue("s", buf);
+        PyList_SetItem(py_list, i, py_item);
+    }
+
+    ioc_unlock(root);
+
+#if IOPYTHON_TRACE
+    PySys_WriteStdout("MemoryBlock.get_param()\n");
+#endif
+
+    return py_list;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Get memory block parameter value.
+  @anchor MemoryBlock_get_param
+
+  The MemoryBlock.get_param() function gets value of memory block's parameter.
+
+  @param   self Pointer to the Python MemoryBlock object.
+  @param   param_name Which parameter to get, one of "network_name", "device_name", "device_nr",
+           "mblk_name" or "mblk_nr".
+  @return  Parameter value as string.
+
+****************************************************************************************************
+*/
+static PyObject *MemoryBlock_set(
+    MemoryBlock *self,
+    PyObject *args)
+{
+  PyObject * a, *py_repr, *py_str;
+
+  //The input arguments come as a tuple, we parse the args to get the various variables
+  //In this case it's only one list variable, which will now be referenced by listObj
+//  if (! PyArg_ParseTuple( args, "O", &listObj))
+//    return NULL;
+
+  //length of the list
+//  long length = PyList_Size(args);
+
+  long length = PySequence_Length(args);
+
+  //iterate over all the elements
+  long i, sum =0;
+
+
+  for(i = 0; i < length; i++){
+    a = PySequence_GetItem(args, i);
+
+    PySys_WriteStdout("x\n");
+
+    /* if (PyList_Check(a))
+    {
+        PySys_WriteStdout("List\n");
+
+    }
+    if (PyTuple_Check(a))
+    {
+        PySys_WriteStdout("Tuple\n");
+    } */
+
+    if (PyLong_Check(a)) {
+        int  elem = PyLong_AsLong(a);
+        PySys_WriteStdout("Long %d\n", elem);
+    }
+
+    if (PyFloat_Check(a)) {
+        double d = PyFloat_AsDouble(a);
+        PySys_WriteStdout("Float %f\n", d);
+    }
+
+    if (PyUnicode_Check(a)) {
+        py_repr = PyObject_Repr(a);
+        py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
+        const char *bytes = PyBytes_AS_STRING(py_str);
+
+        PySys_WriteStdout("String: %s\n", bytes);
+        Py_XDECREF(py_repr);
+        Py_XDECREF(py_str);
+    }
+
+    else if (PySequence_Check(a))
+    {
+        PySys_WriteStdout("Sequence\n");
+
+        long bn = PySequence_Length(a);
+        for (int j = 0; j<bn; j++)
+        {
+            PyObject *b = PySequence_GetItem(a, j);
+            if (PyLong_Check(b)) {
+                int  elem = PyLong_AsLong(b);
+                PySys_WriteStdout("LL %d\n", elem);
+            }
+
+            if (PyFloat_Check(b)) {
+                double d = PyFloat_AsDouble(b);
+                PySys_WriteStdout("FF %f\n", d);
+            }
+            Py_DECREF(b);
+        }
+
+    }
+
+
+    //get an element out of the list - the element is also a python objects
+    // PyObject* temp = PyList_GetItem(args, i);
+    //we know that object represents an integer - so convert it into C long
+    // long elem = PyLong_AsLong(a);
+    // sum += elem;
+
+    Py_DECREF(a);
+  }
+
+  //value returned back to python code - another python object
+  //build value here converts the C long to a python integer
+  return Py_BuildValue("i", sum);
+
+#if 0
+xxxxxxxxxxxxxxxxxxx
+
+PyObject * listObj;
+
+  //The input arguments come as a tuple, we parse the args to get the various variables
+  //In this case it's only one list variable, which will now be referenced by listObj
+  if (! PyArg_ParseTuple( args, "O", &listObj))
+    return NULL;
+
+  //length of the list
+  long length = PyList_Size(listObj);
+
+  //iterate over all the elements
+  long i, sum =0;
+  for(i = 0; i < length; i++){
+    //get an element out of the list - the element is also a python objects
+    PyObject* temp = PyList_GetItem(listObj, i);
+    //we know that object represents an integer - so convert it into C long
+    long elem = PyLong_AsLong(temp);
+    sum += elem;
+  }
+
+  //value returned back to python code - another python object
+  //build value here converts the C long to a python integer
+  return Py_BuildValue("i", sum);
+
+
+xxxxxxxxxxxxxxxxxxx
+
+    #define SET_N 8
+    const char *address_etc[SET_N], *p;
+    PyObject *value[SET_N];
+    os_char buf[128];
+    os_int i, n;
+    iocRoot *root;
+    PyObject *py_list, *py_item, *py_obj, *py_repp, *py_str;
 
     static char *kwlist[] = {
         "param_name",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s",
-         kwlist, &param_name))
+    py_repr = PyObject_Repr(py_obj);
+    py_str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    const char *bytes = PyBytes_AS_STRING(str);
+
+    xx printf("REPR: %s\n", bytes);
+
+    Py_XDECREF(py_repr);
+    Py_XDECREF(py_str);
+
+    os_memclear(param_name, sizeof(address_etc));
+
+    if (!PyArg_ParseTuple(args, kwargs, "s|sssssss",
+         kwlist, address_etc, address_etc + 1, address_etc + 2, address_etc + 3, address_etc + 4, address_etc + 5, address_etc + 6, address_etc + 7))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         return NULL;
     }
 
-    if (!os_strcmp(param_name, "network_name"))
+    /* Count parameters.
+     */
+    for (n = 0; n < GET_PARAM_N; ++n)
     {
-        param_ix = IOC_NETWORK_NAME;
-    }
-    else if (!os_strcmp(param_name, "device_name"))
-    {
-        param_ix = IOC_DEVICE_NAME;
-    }
-    else if (!os_strcmp(param_name, "device_nr"))
-    {
-        param_ix = IOC_DEVICE_NR;
-    }
-    else if (!os_strcmp(param_name, "mblk_name"))
-    {
-        param_ix = IOC_MBLK_NAME;
-    }
-    else if (!os_strcmp(param_name, "mblk_nr"))
-    {
-        param_ix = IOC_MBLK_NR;
-    }
-    else
-    {
-        PyErr_SetString(iocomError, "Unknown parameter name");
-        return NULL;
+        if (address_etc[n] == NULL) break;
     }
 
-    ioc_memory_block_get_string_param(&self->mblk_handle, param_ix, buf, sizeof(buf));
+    /* Get memory block pointer, start synchronization and
+     */
+    if (ioc_handle_lock_to_mblk(&self->mblk_handle, &root) == OS_NULL)
+    {
+        Py_RETURN_NONE;
+    }
+
+    py_list = PyList_New(n);
+    for (i = 0; i < n; ++i)
+    {
+        p = address_etc[i];
+        if (!os_strcmp(p, "network_name"))
+        {
+            param_ix = IOC_NETWORK_NAME;
+        }
+        else if (!os_strcmp(p, "device_name"))
+        {
+            param_ix = IOC_DEVICE_NAME;
+        }
+        else if (!os_strcmp(p, "device_nr"))
+        {
+            param_ix = IOC_DEVICE_NR;
+        }
+        else if (!os_strcmp(p, "mblk_name"))
+        {
+            param_ix = IOC_MBLK_NAME;
+        }
+        else if (!os_strcmp(p, "mblk_nr"))
+        {
+            param_ix = IOC_MBLK_NR;
+        }
+        else
+        {
+            Py_XDECREF(py_list);
+            PyErr_SetString(iocomError, "Unknown parameter name");
+            ioc_unlock(root);
+            return NULL;
+        }
+
+        ioc_memory_block_get_string_param(&self->mblk_handle, param_ix, buf, sizeof(buf));
+
+        py_item = Py_BuildValue("s", buf);
+        PyList_SetItem(py_list, i, py_item);
+    }
+
+    ioc_unlock(root);
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.get_param()\n");
 #endif
 
-    return PyUnicode_FromString(buf);
+    return py_list;
+#endif
 }
 
 
@@ -332,7 +583,8 @@ static PyMemberDef MemoryBlock_members[] = {
 */
 static PyMethodDef MemoryBlock_methods[] = {
     {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
-    {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS|METH_KEYWORDS, "Get memory block parameter"},
+    {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS, "Get memory block parameters"},
+    {"set", (PyCFunction)MemoryBlock_set, METH_VARARGS, "Store data to memory block"},
     {NULL} /* Sentinel */
 };
 

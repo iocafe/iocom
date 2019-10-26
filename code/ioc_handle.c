@@ -84,9 +84,12 @@ void ioc_duplicate_handle(
     iocHandle *handle,
     iocHandle *source_handle)
 {
-    ioc_lock(source_handle->root);
-    ioc_setup_handle(handle, source_handle->root, source_handle->mblk);
-    ioc_unlock(source_handle->root);
+    iocRoot *root;
+
+    root = source_handle->root;
+    ioc_lock(root);
+    ioc_setup_handle(handle, root, root ? source_handle->mblk : OS_NULL);
+    ioc_unlock(root);
 }
 
 
@@ -102,7 +105,7 @@ void ioc_terminate_handles(
         nexth = h->next;
         h->next = h->prev = h;
         h->mblk = OS_NULL;
-        /* root must not be zeroed */
+        h->root = OS_NULL;
         h = nexth;
     }
     while (h != handle);
@@ -125,6 +128,10 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     /* Get root. Return root pointer if needed.
      */
     root = handle->root;
+    if (root == OS_NULL)
+    {
+        return OS_NULL;
+    }
     if (proot) *proot = root;
 
     /* Synchronize.

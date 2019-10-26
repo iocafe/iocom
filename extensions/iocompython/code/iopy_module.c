@@ -159,6 +159,8 @@ void iocom_python_release(void)
 #if OSAL_BLUETOOTH_SUPPORT
     osal_bluetooth_shutdown();
 #endif
+
+    osal_shutdown();
 }
 
 
