@@ -144,7 +144,7 @@ static PyObject *MemoryBlock_new(
     if (nbytes < 24) nbytes = 24;
     prm.nbytes = nbytes;
 
-    self->mblk = ioc_initialize_memory_block(OS_NULL, iocroot, &prm);
+    ioc_initialize_memory_block(&self->mblk_handle, OS_NULL, iocroot, &prm);
     self->number = 1;
 
 #if IOPYTHON_TRACE
@@ -176,6 +176,8 @@ failed:
 static void MemoryBlock_dealloc(
     MemoryBlock *self)
 {
+    ioc_release_handle(&self->mblk_handle);
+
     Py_TYPE(self)->tp_free((PyObject *)self);
 
 #if IOPYTHON_TRACE
@@ -225,11 +227,7 @@ static int MemoryBlock_init(
 static PyObject *MemoryBlock_delete(
     MemoryBlock *self)
 {
-    if (self->mblk)
-    {
-        ioc_release_memory_block(self->mblk);
-        self->mblk = NULL;
-    }
+    ioc_release_memory_block(&self->mblk_handle);
     self->number = 0;
 
 #if IOPYTHON_TRACE
@@ -273,12 +271,6 @@ static PyObject *MemoryBlock_get_param(
         NULL
     };
 
-    if (self->mblk == OS_NULL)
-    {
-        PyErr_SetString(iocomError, "IOCOM memory block has been deleted");
-        return NULL;
-    }
-
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s",
          kwlist, &param_name))
     {
@@ -312,7 +304,7 @@ static PyObject *MemoryBlock_get_param(
         return NULL;
     }
 
-    ioc_memory_block_get_string_param(self->mblk, param_ix, buf, sizeof(buf));
+    ioc_memory_block_get_string_param(&self->mblk_handle, param_ix, buf, sizeof(buf));
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.get_param()\n");

@@ -9,7 +9,6 @@ def read_kbd_input(inputQueue):
         input_str = input()
         inputQueue.put(input_str)
 
-
 def main():
     EXIT_COMMAND = "exit"
     inputQueue = queue.Queue()

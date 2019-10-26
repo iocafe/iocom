@@ -19,7 +19,7 @@ typedef struct
 {
   PyObject_HEAD
 
-  iocMemoryBlock *mblk;
+  iocHandle mblk_handle;
 
   int number;
 }
