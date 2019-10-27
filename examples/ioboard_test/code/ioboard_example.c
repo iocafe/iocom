@@ -96,7 +96,7 @@ static MyAppContext ioboard_app_context;
 /* Static function prototypes.
  */
 static void ioboard_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *mblk,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -277,7 +277,7 @@ void osal_main_cleanup(
 ****************************************************************************************************
 */
 static void ioboard_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *mblk,
     int start_addr,
     int end_addr,
     os_ushort flags,

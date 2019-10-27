@@ -24,6 +24,7 @@
     <ClInclude Include="..\..\code\ioc_connection.h" />
     <ClInclude Include="..\..\code\ioc_debug.h" />
     <ClInclude Include="..\..\code\ioc_end_point.h" />
+    <ClInclude Include="..\..\code\ioc_handle.h" />
     <ClInclude Include="..\..\code\ioc_ioboard.h" />
     <ClInclude Include="..\..\code\ioc_memory.h" />
     <ClInclude Include="..\..\code\ioc_memory_block.h" />
@@ -44,6 +45,7 @@
     <ClCompile Include="..\..\code\ioc_connection_send.c" />
     <ClCompile Include="..\..\code\ioc_end_point.c" />
     <ClCompile Include="..\..\code\ioc_establish_serial_connection.c" />
+    <ClCompile Include="..\..\code\ioc_handle.c" />
     <ClCompile Include="..\..\code\ioc_ioboard.c" />
     <ClCompile Include="..\..\code\ioc_memory.c" />
     <ClCompile Include="..\..\code\ioc_memory_block.c" />
