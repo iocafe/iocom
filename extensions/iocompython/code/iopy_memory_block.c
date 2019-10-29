@@ -15,6 +15,10 @@
 */
 #include "extensions/iocompython/iocompython.h"
 
+static osalStatus MemoryBlock_set_sequence(
+    MemoryBlock *self,
+    PyObject *args);
+
 
 /**
 ****************************************************************************************************
@@ -354,7 +358,9 @@ static PyObject *MemoryBlock_set(
     MemoryBlock *self,
     PyObject *args)
 {
-  PyObject * a, *py_repr, *py_str;
+//   PyObject * a, *py_repr, *py_str;
+
+  osalStatus s;
 
   //The input arguments come as a tuple, we parse the args to get the various variables
   //In this case it's only one list variable, which will now be referenced by listObj
@@ -364,6 +370,9 @@ static PyObject *MemoryBlock_set(
   //length of the list
 //  long length = PyList_Size(args);
 
+    s = MemoryBlock_set_sequence(self, args);
+
+#if 0
   long length = PySequence_Length(args);
 
   //iterate over all the elements
@@ -419,6 +428,8 @@ static PyObject *MemoryBlock_set(
 
     Py_DECREF(a);
   }
+#endif
+
    // return Py_BuildValue("i", sum);
     Py_RETURN_NONE;
 }
@@ -428,89 +439,87 @@ static osalStatus MemoryBlock_set_sequence(
     MemoryBlock *self,
     PyObject *args)
 {
-  PyObject * a, *py_repr, *py_str;
+    PyObject *a, *py_repr, *py_str;
+    osalTypeId fix_type, tag_name_or_addr_type, value_type;
+    os_char tag_name_or_addr_str[128], value_str[128];
 
-  long length = PySequence_Length(args);
+    long i, length;
+    os_boolean expect_value;
+    osalStatus s;
+    const os_char *str;
 
-  //iterate over all the elements
-  long i;
-
-  /* Start with untyped data.
-   */
-    fix_type = NONE;
-    expect_value = FALSE;
-
-  for(i = 0; i < length; i++){
-    a = PySequence_GetItem(args, ii);
-
-    /* If string
+    /* Start with untyped data.
      */
-    if (PyUnicode_Check(a)) {
-        py_repr = PyObject_Repr(a);
-        py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
-        const char *bytes = PyBytes_AS_STRING(py_str);
+    fix_type = OS_UNDEFINED_TYPE;
+    expect_value = OS_FALSE;
 
-        if (!expect_value)
-        {
-            /* If this is register type setting, we use it and do no guessing
-             */
-            if (??)
-
-
-            /* If this is named memory location, get the attrs
-             */
-
-            /* Convert address from int to str
-             */
-        }
-
-        else
-        {
-            /* Set the value
-             */
-
-
-        PySys_WriteStdout("String: %s\n", bytes);
-        Py_XDECREF(py_repr);
-        Py_XDECREF(py_str);
-    }
-
-    else if (PyLong_Check(a)) {
-        int  elem = PyLong_AsLong(a);
-        PySys_WriteStdout("Long %d\n", elem);
-    }
-
-    else if (PyFloat_Check(a)) {
-        double d = PyFloat_AsDouble(a);
-        PySys_WriteStdout("Float %f\n", d);
-    }
-
-    else if (PySequence_Check(a))
+    length = PySequence_Length(args);
+    for(i = 0; i < length; i++)
     {
-        PySys_WriteStdout("Sequence\n");
+        a = PySequence_GetItem(args, i);
 
-        long bn = PySequence_Length(a);
-        for (int j = 0; j<bn; j++)
+        /* If string
+         */
+        if (PyUnicode_Check(a))
         {
-            PyObject *b = PySequence_GetItem(a, j);
-            if (PyLong_Check(b)) {
-                int  elem = PyLong_AsLong(b);
-                PySys_WriteStdout("LL %d\n", elem);
-            }
+            py_repr = PyObject_Repr(a);
+            py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
+            str = PyBytes_AS_STRING(py_str);
 
-            if (PyFloat_Check(b)) {
-                double d = PyFloat_AsDouble(b);
-                PySys_WriteStdout("FF %f\n", d);
+            if (!expect_value)
+            {
+                os_strncpy(tag_name_or_addr_str, str, sizeof(tag_name_or_addr_str));
+                tag_name_or_addr_type = OS_STRING;
             }
-            Py_DECREF(b);
+            else
+            {
+                os_strncpy(value_str, str, sizeof(value_str));
+                value_type = OS_STRING;
+            }
+            PySys_WriteStdout("String: %s\n", str);
+            Py_XDECREF(py_repr);
+            Py_XDECREF(py_str);
         }
+
+        else if (PyLong_Check(a)) {
+            int  elem = PyLong_AsLong(a);
+            PySys_WriteStdout("Long %d\n", elem);
+        }
+
+        else if (PyFloat_Check(a)) {
+            double d = PyFloat_AsDouble(a);
+            PySys_WriteStdout("Float %f\n", d);
+        }
+
+        else if (PySequence_Check(a))
+        {
+            PySys_WriteStdout("Sequence\n");
+
+            s = MemoryBlock_set_sequence(self, a);
+
+
+            /* long bn = PySequence_Length(a);
+            for (int j = 0; j<bn; j++)
+            {
+                PyObject *b = PySequence_GetItem(a, j);
+                if (PyLong_Check(b)) {
+                    int  elem = PyLong_AsLong(b);
+                    PySys_WriteStdout("LL %d\n", elem);
+                }
+
+                if (PyFloat_Check(b)) {
+                    double d = PyFloat_AsDouble(b);
+                    PySys_WriteStdout("FF %f\n", d);
+                }
+                Py_DECREF(b);
+            } */
+        }
+
+        Py_DECREF(a);
+        expect_value = !expect_value;
     }
 
-
-    Py_DECREF(a);
-  }
-
-return OSAL_SUCCESS;
+    return OSAL_SUCCESS;
 }
 
 
