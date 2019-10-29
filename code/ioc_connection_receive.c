@@ -311,7 +311,7 @@ osalStatus ioc_connection_receive(
         crc = buf[1] | ((os_ushort)buf[2] << 8);
         buf[1] = buf[2] = 0;
 
-        if (crc != os_checksum(buf, needed))
+        if (crc != os_checksum(buf, needed, OS_NULL))
         {
             ioc_unlock(root);
             osal_trace("Checksum error");
