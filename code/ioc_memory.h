@@ -21,12 +21,12 @@
 */
 void ioc_set_memory_pool(
     iocRoot *root,
-    os_uchar *buf,
+    os_char *buf,
     os_int bufsz);
 
 /* Allocate a block of memory.
  */
-os_uchar *ioc_malloc(
+os_char *ioc_malloc(
     iocRoot *root,
     os_memsz request_bytes,
     os_memsz *allocated_bytes);

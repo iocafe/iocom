@@ -107,12 +107,12 @@ typedef struct
     os_int send_block_sz;
     os_int receive_block_sz;
 
-    os_uchar *pool;
+    os_char *pool;
     os_int pool_sz;
 
     /** Pointer to static device information.
      */
-    const os_uchar *device_info;
+    const os_char *device_info;
 
     /** Size of static device information in bytes.
      */

@@ -72,7 +72,7 @@ osalStatus ioc_initialize_memory_block(
     iocMemoryBlockParams *prm)
 {
     iocMemoryBlock *mblk;
-    os_uchar *buf;
+    os_char *buf;
     int nbytes;
 
     /* Check that root object is valid pointer.
@@ -124,7 +124,7 @@ osalStatus ioc_initialize_memory_block(
 
     /* Set up memory block structure.
      */
-    mblk->buf = (os_uchar*)buf;
+    mblk->buf = buf;
     mblk->nbytes = nbytes;
     if ((prm->flags & IOC_STATIC) == 0)
     {
@@ -481,7 +481,7 @@ void ioc_memory_block_get_string_param(
 void ioc_write(
     iocHandle *handle,
     int addr,
-    const os_uchar *buf,
+    const os_char *buf,
     int n)
 {
     ioc_write_internal(handle, addr, buf, n, 0);
@@ -526,20 +526,14 @@ void ioc_write(
 void ioc_write_internal(
     iocHandle *handle,
     int addr,
-    const os_uchar *buf,
+    const os_char *buf,
     int n,
     int flags)
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
-
-    os_uchar
-        *p;
-
-    int
-        max_n,
-        nstat,
-        count;
+    os_char *p;
+    os_int max_n, nstat, count;
 
     /* Get memory block pointer and start synchronization.
      */
@@ -669,7 +663,7 @@ void ioc_write_internal(
 void ioc_read(
     iocHandle *handle,
     int addr,
-    os_uchar *buf,
+    os_char *buf,
     int n)
 {
     ioc_read_internal(handle, addr, buf, n, 0);
@@ -707,13 +701,13 @@ void ioc_read(
 void ioc_read_internal(
     iocHandle *handle,
     int addr,
-    os_uchar *buf,
+    os_char *buf,
     int n,
     int flags)
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
-    os_uchar *p;
+    os_char *p;
     int max_n, nstat, count;
 
     /* Get memory block pointer and start synchronization.
@@ -853,7 +847,7 @@ void ioc_set_bit(
 
     /* Copy the data.
      */
-    p = mblk->buf + addr;
+    p = (os_uchar*)mblk->buf + addr;
     if (value)
     {
         *p |= (1 << bit_nr);
@@ -887,7 +881,7 @@ char ioc_get_bit(
     int addr,
     int bit_nr)
 {
-    os_uchar buf;
+    os_char buf;
 
     ioc_read_internal(handle, addr, &buf, 1, 0);
     return (buf | (1 << bit_nr)) ? OS_TRUE : OS_FALSE;
@@ -915,8 +909,8 @@ void ioc_set8(
     int addr,
     int value)
 {
-    os_uchar buf[1];
-    buf[0] = (os_uchar)value;
+    os_char buf[1];
+    buf[0] = (os_char)value;
     ioc_write_internal(handle, addr, buf, sizeof(buf), 0);
 }
 
@@ -940,7 +934,7 @@ int ioc_get8(
     int addr)
 {
     os_char s;
-    ioc_read_internal(handle, addr, (os_uchar*)&s, sizeof(os_char), 0);
+    ioc_read_internal(handle, addr, &s, sizeof(os_char), 0);
     return s;
 }
 
@@ -964,7 +958,7 @@ int ioc_get8u(
     int addr)
 {
     os_uchar u;
-    ioc_read_internal(handle, addr, (os_uchar*)&u, sizeof(os_uchar), 0);
+    ioc_read_internal(handle, addr, (os_char*)&u, sizeof(os_uchar), 0);
     return u;
 }
 
@@ -993,7 +987,7 @@ void ioc_set16(
 {
     os_ushort u;
     u = (os_ushort)value;
-    ioc_write_internal(handle, addr, (os_uchar*)&u, sizeof(os_ushort), IOC_SWAP_16);
+    ioc_write_internal(handle, addr, (os_char*)&u, sizeof(os_ushort), IOC_SWAP_16);
 }
 
 
@@ -1016,7 +1010,7 @@ int ioc_get16(
     int addr)
 {
     os_short s;
-    ioc_read_internal(handle, addr, (os_uchar*)&s, sizeof(os_short), IOC_SWAP_16);
+    ioc_read_internal(handle, addr, (os_char*)&s, sizeof(os_short), IOC_SWAP_16);
     return s;
 }
 
@@ -1040,7 +1034,7 @@ os_int ioc_get16u(
     int addr)
 {
     os_ushort u;
-    ioc_read_internal(handle, addr, (os_uchar*)&u, sizeof(os_ushort), IOC_SWAP_16);
+    ioc_read_internal(handle, addr, (os_char*)&u, sizeof(os_ushort), IOC_SWAP_16);
     return u;
 }
 
@@ -1066,7 +1060,7 @@ void ioc_set32(
     int addr,
     os_int value)
 {
-    ioc_write_internal(handle, addr, (os_uchar*)&value, sizeof(os_int), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_char*)&value, sizeof(os_int), IOC_SWAP_32);
 }
 
 
@@ -1089,7 +1083,7 @@ os_int ioc_get32(
     int addr)
 {
     os_int s;
-    ioc_read_internal(handle, addr, (os_uchar*)&s, sizeof(os_int), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_char*)&s, sizeof(os_int), IOC_SWAP_32);
     return s;
 }
 
@@ -1115,7 +1109,7 @@ void ioc_set64(
     int addr,
     os_int64 value)
 {
-    ioc_write_internal(handle, addr, (os_uchar*)&value, sizeof(os_int64), IOC_SWAP_64);
+    ioc_write_internal(handle, addr, (os_char*)&value, sizeof(os_int64), IOC_SWAP_64);
 }
 
 
@@ -1138,7 +1132,7 @@ os_int64 ioc_get64(
     int addr)
 {
     os_int64 value;
-    ioc_read_internal(handle, addr, (os_uchar*)&value, sizeof(os_int64), IOC_SWAP_64);
+    ioc_read_internal(handle, addr, (os_char*)&value, sizeof(os_int64), IOC_SWAP_64);
     return value;
 }
 
@@ -1165,7 +1159,7 @@ void ioc_setfloat(
     int addr,
     os_float value)
 {
-    ioc_write_internal(handle, addr, (os_uchar*)&value, sizeof(os_float), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_char*)&value, sizeof(os_float), IOC_SWAP_32);
 }
 
 
@@ -1188,7 +1182,7 @@ os_float ioc_getfloat(
     int addr)
 {
     os_float value;
-    ioc_read_internal(handle, addr, (os_uchar*)&value, sizeof(os_float), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_char*)&value, sizeof(os_float), IOC_SWAP_32);
     return value;
 }
 
@@ -1218,7 +1212,7 @@ void ioc_setstring(
     const os_char *str,
     int n)
 {
-    ioc_write_internal(handle, addr, (os_uchar*)str, n, IOC_MBLK_STRING);
+    ioc_write_internal(handle, addr, str, n, IOC_MBLK_STRING);
 }
 
 
@@ -1246,7 +1240,7 @@ void ioc_getstring(
     os_char *str,
     int n)
 {
-    ioc_read_internal(handle, addr, (os_uchar*)str, n, IOC_MBLK_STRING);
+    ioc_read_internal(handle, addr, str, n, IOC_MBLK_STRING);
 }
 
 
@@ -1274,7 +1268,7 @@ void ioc_setarray16(
     const os_short *arr,
     int n)
 {
-    ioc_write_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_short), IOC_SWAP_16);
+    ioc_write_internal(handle, addr, (os_char*)arr, n * sizeof(os_short), IOC_SWAP_16);
 }
 
 
@@ -1302,7 +1296,7 @@ void ioc_getarray16(
     os_short *arr,
     int n)
 {
-    ioc_read_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_short), IOC_SWAP_16);
+    ioc_read_internal(handle, addr, (os_char*)arr, n * sizeof(os_short), IOC_SWAP_16);
 }
 
 
@@ -1330,7 +1324,7 @@ void ioc_setarray32(
     const os_int *arr,
     int n)
 {
-    ioc_write_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_int), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_char*)arr, n * sizeof(os_int), IOC_SWAP_32);
 }
 
 
@@ -1358,7 +1352,7 @@ void ioc_getarray32(
     os_int *arr,
     int n)
 {
-    ioc_read_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_int), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_char*)arr, n * sizeof(os_int), IOC_SWAP_32);
 }
 
 
@@ -1386,7 +1380,7 @@ void ioc_setfloatarray(
     const os_float *arr,
     int n)
 {
-    ioc_write_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_float), IOC_SWAP_32);
+    ioc_write_internal(handle, addr, (os_char*)arr, n * sizeof(os_float), IOC_SWAP_32);
 }
 
 
@@ -1414,7 +1408,7 @@ void ioc_getfloatarray(
     os_float *arr,
     int n)
 {
-    ioc_read_internal(handle, addr, (os_uchar*)arr, n * sizeof(os_float), IOC_SWAP_32);
+    ioc_read_internal(handle, addr, (os_char*)arr, n * sizeof(os_float), IOC_SWAP_32);
 }
 
 
@@ -1472,7 +1466,6 @@ void ioc_send(
     iocRoot *root;
     iocMemoryBlock *mblk;
     iocSourceBuffer *sbuf;
-
 
     /* Get memory block pointer and start synchronization.
      */

@@ -50,7 +50,7 @@ iocFreeBlk;
 */
 void ioc_set_memory_pool(
     iocRoot *root,
-    os_uchar *buf,
+    os_char *buf,
     os_int bufsz)
 {
     root->pool = buf;
@@ -82,7 +82,7 @@ void ioc_set_memory_pool(
 
 ****************************************************************************************************
 */
-os_uchar *ioc_malloc(
+os_char *ioc_malloc(
     iocRoot *root,
     os_memsz request_bytes,
     os_memsz *allocated_bytes)
@@ -97,7 +97,7 @@ os_uchar *ioc_malloc(
      */
     if (root->pool == OS_NULL)
     {
-        return (os_uchar*)osal_memory_allocate(request_bytes, allocated_bytes);
+        return osal_memory_allocate(request_bytes, allocated_bytes);
     }
 
     prevb = OS_NULL;
@@ -134,7 +134,7 @@ os_uchar *ioc_malloc(
 
 alldone:
     if (allocated_bytes) *allocated_bytes = request_bytes;
-    return (os_uchar*)r;
+    return (os_char*)r;
 }
 
 

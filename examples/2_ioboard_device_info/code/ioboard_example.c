@@ -65,7 +65,7 @@
    on system with dynamic memory allocation, which is useful for testing micro-controller
    software in PC computer. ioboard.h has some macros for calculating necessary pool size.
  */
-static os_uchar
+static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
         IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)
         + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)];
@@ -75,7 +75,7 @@ static os_uchar
    compress device information as much as possible, since it is usually transferred every time
    when a connection is established.
  */
-const static os_uchar mydevice_info[256]
+const static os_char mydevice_info[256]
  = "di-1\n"
    "HEAT_POWER,OUTPUTS,121,float\n"
    "TEMPERATURE,INPUTS,18,float\n";

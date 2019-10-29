@@ -41,7 +41,7 @@
    with dynamic memory allocation. This is useful since we are writing and testing
    functionality which needs to run on micro controller.
  */
-static os_uchar
+static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
         IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
 

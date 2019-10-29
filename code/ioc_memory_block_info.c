@@ -255,7 +255,7 @@ void ioc_mbinfo_received(
 #endif
 
 #if IOC_RESIZE_MBLK_CODE
-    os_uchar *newbuf;
+    os_char *newbuf;
 #endif
 
     /* Find if we have memory block with device name, number and memory block 

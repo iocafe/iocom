@@ -55,7 +55,7 @@ struct iocMemoryBlock;
 void ioc_status_write(
     struct iocMemoryBlock *mblk,
     int addr,
-    const os_uchar *buf,
+    const os_char *buf,
     int n);
 
 /* Read status data.
@@ -63,7 +63,7 @@ void ioc_status_write(
 void ioc_status_read(
     struct iocMemoryBlock *mblk,
     int addr,
-    os_uchar *buf,
+    os_char *buf,
     int n);
 
 /* Count number of connected streams (sockets, etc).

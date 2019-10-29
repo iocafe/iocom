@@ -34,19 +34,19 @@
 /* Compress data.
  */
 int ioc_compress(
-    os_uchar *srcbuf,
+    os_char *srcbuf,
     int *start_addr,
     int end_addr,
-    os_uchar *dst,
+    os_char *dst,
     int dst_sz);
 
 
 /* Uncompress data.
  */
 int ioc_uncompress(
-    os_uchar *src,
+    os_char *src,
     int src_bytes,
-    os_uchar *dst,
+    os_char *dst,
     int dst_sz,
     os_uchar flags);
 

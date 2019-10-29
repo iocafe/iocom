@@ -21,7 +21,7 @@ static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
     int mblk_id,
     int addr,
-    os_uchar *data,
+    os_char *data,
     int data_sz,
     os_uchar flags);
 
@@ -29,14 +29,14 @@ static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
     int mblk_id,
     int addr,
-    os_uchar *data,
+    os_char *data,
     int data_sz,
     os_uchar flags);
 
 static osalStatus ioc_store_data_frame(
     iocTargetBuffer *tbuf,
     int addr,
-    os_uchar *data,
+    os_char *data,
     int data_sz,
     os_uchar flags);
 
@@ -72,8 +72,8 @@ osalStatus ioc_connection_receive(
 
     os_uchar
         flags,
-        *buf,
-        *p;
+        *buf, /* keep unsigned */
+        *p; /* keep unsigned */
 
     os_boolean
         is_serial;
@@ -108,7 +108,7 @@ osalStatus ioc_connection_receive(
 
     is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
 
-    buf = con->frame_in.buf;
+    buf = (os_uchar*)con->frame_in.buf;
     n = con->frame_in.pos;
 
     do
@@ -205,7 +205,7 @@ osalStatus ioc_connection_receive(
 
         status = osal_stream_read(
             con->stream,
-            buf + n,
+            (os_char*)buf + n,
             (os_memsz)needed - n,
             &n_read,
             OSAL_STREAM_DEFAULT);
@@ -311,7 +311,7 @@ osalStatus ioc_connection_receive(
         crc = buf[1] | ((os_ushort)buf[2] << 8);
         buf[1] = buf[2] = 0;
 
-        if (crc != os_checksum(buf, needed, OS_NULL))
+        if (crc != os_checksum((os_char*)buf, needed, OS_NULL))
         {
             ioc_unlock(root);
             osal_trace("Checksum error");
@@ -361,12 +361,12 @@ osalStatus ioc_connection_receive(
     if (flags & IOC_SYSTEM_FRAME)
     {
         status = ioc_process_received_system_frame(
-            con, mblk_id, addr, p, data_sz, flags);
+            con, mblk_id, addr, (os_char*)p, data_sz, flags);
     }
     else
     {
         status = ioc_process_received_data_frame(
-            con, mblk_id, addr, p, data_sz, flags);
+            con, mblk_id, addr, (os_char*)p, data_sz, flags);
     }
 
 alldone:
@@ -416,7 +416,7 @@ static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
     int mblk_id,
     int addr,
-    os_uchar *data,
+    os_char *data,
     int data_sz,
     os_uchar flags)
 {
@@ -479,7 +479,7 @@ static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
     int mblk_id,
     int addr,
-    os_uchar *data,
+    os_char *data,
     int data_sz,
     os_uchar flags)
 {
@@ -487,16 +487,16 @@ static osalStatus ioc_process_received_system_frame(
         mbinfo;
 
     os_uchar 
-        *p,
-        version_and_flags;
+        version_and_flags,
+        *p; /* keep as unsigned */
 
     switch (data[0])
     {
         /* Memory block information received. 
          */
         case IOC_SYSRAME_MBLK_INFO:
-            p = data + 1; /* Skip system frame type. */
-            version_and_flags = *(p++);
+            p = (os_uchar*)data + 1; /* Skip system frame type. */
+            version_and_flags = (os_uchar)*(p++);
             os_memclear(&mbinfo, sizeof(mbinfo));
             mbinfo.device_nr = ioc_msg_getint(&p, version_and_flags & IOC_INFO_D_2BYTES);
             mbinfo.mblk_nr = addr; /* ioc_msg_getint(&p); */
@@ -548,7 +548,7 @@ static osalStatus ioc_process_received_system_frame(
 static osalStatus ioc_store_data_frame(
     iocTargetBuffer *tbuf,
     int addr,
-    os_uchar *data,
+    os_char *data,
     int data_sz,
     os_uchar flags)
 {

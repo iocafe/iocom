@@ -154,7 +154,7 @@ typedef struct iocRoot
     /** Pointer to static memory pool, OS_NULL is not used.
         Pool size is in bytes.
      */
-    os_uchar *pool;
+    os_char *pool;
     os_int poolsz;
     os_int poolpos;
     struct iocFreeBlk *poolfree;

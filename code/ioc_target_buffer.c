@@ -94,8 +94,8 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     if (itembuf)
     {
         osal_debug_assert(nitems == tbuf->syncbuf.nbytes);
-        tbuf->syncbuf.buf = (os_uchar*)itembuf;
-        tbuf->syncbuf.newdata = (os_uchar*)tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
+        tbuf->syncbuf.buf = (os_char*)itembuf;
+        tbuf->syncbuf.newdata = tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
     }
     else
     {
@@ -110,7 +110,7 @@ iocTargetBuffer *ioc_initialize_target_buffer(
             return OS_NULL;
         }
         os_memclear(tbuf->syncbuf.buf, 2 * tbuf->syncbuf.nbytes);
-        tbuf->syncbuf.newdata = (os_uchar*)tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
+        tbuf->syncbuf.newdata = tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
         tbuf->syncbuf.allocated = OS_TRUE;
     }
 
@@ -310,7 +310,7 @@ void ioc_tbuf_invalidate(
 void ioc_tbuf_synchronize(
     iocTargetBuffer *tbuf)
 {
-    os_uchar
+    os_char
         *syncbuf,
         *newdata;
 

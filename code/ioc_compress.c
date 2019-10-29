@@ -39,13 +39,13 @@
 ****************************************************************************************************
 */
 int ioc_compress(
-    os_uchar *srcbuf,
+    os_char *srcbuf,
     int *start_addr,
     int end_addr,
-    os_uchar *dst,
+    os_char *dst,
     int dst_sz)
 {
-    os_uchar
+    os_char
         *dst_start,
         *dst_end,
         *p,
@@ -148,18 +148,18 @@ int ioc_compress(
 ****************************************************************************************************
 */
 int ioc_uncompress(
-    os_uchar *src,
+    os_char *src,
     int src_bytes,
-    os_uchar *dst,
+    os_char *dst,
     int dst_sz,
     os_uchar flags)
 {
-    os_uchar
+    os_char
         *src_end,
         *dst_start,
         *dst_end;
 
-    int
+    os_uint
         n;
 
     src_end = src + src_bytes;

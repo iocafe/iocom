@@ -278,7 +278,7 @@ osalStatus ioc_connect(
     iocRoot 
         *root;
 
-    os_uchar 
+    os_char
         *frame_in_buf, 
         *frame_out_buf;
 

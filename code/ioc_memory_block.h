@@ -98,7 +98,7 @@ typedef struct
         If buf argument is given, it must be pointer to buffer which can hold nro_bytes
         data (next structure member).
      */
-    os_uchar *buf;
+    os_char *buf;
 
     /** Memory block size in bytes.
      */
@@ -237,7 +237,7 @@ typedef struct iocMemoryBlock
 
     /** Pointer to data buffer.
      */
-    os_uchar *buf;
+    os_char *buf;
 
     /** Memory block (data buffer) size in bytes.
      */
@@ -361,7 +361,7 @@ void ioc_memory_block_get_string_param(
 void ioc_write(
     iocHandle *handle,
     int addr,
-    const os_uchar *buf,
+    const os_char *buf,
     int n);
 
 /* Write data to memory block (internal function for the iocom library).
@@ -369,7 +369,7 @@ void ioc_write(
 void ioc_write_internal(
     iocHandle *handle,
     int addr,
-    const os_uchar *buf,
+    const os_char *buf,
     int n,
     int flags);
 
@@ -378,7 +378,7 @@ void ioc_write_internal(
 void ioc_read(
     iocHandle *handle,
     int addr,
-    os_uchar *buf,
+    os_char *buf,
     int n);
 
 /* Read data from memory block (internal function for the iocom library).
@@ -386,7 +386,7 @@ void ioc_read(
 void ioc_read_internal(
     iocHandle *handle,
     int addr,
-    os_uchar *buf,
+    os_char *buf,
     int n,
     int flags);
 

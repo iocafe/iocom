@@ -32,7 +32,7 @@
 /* Select how to connect: TCP socket, TLS socket (OpenSSL, etc) or serial port.
  * EXAMPLE_USE_TCP_SOCKET, EXAMPLE_USE_TLS_SOCKET or EXAMPLE_USE_SERIAL_PORT
  */
-#define MY_TRANSPORT EXAMPLE_USE_TLS_SOCKET
+#define MY_TRANSPORT EXAMPLE_USE_TCP_SOCKET
 
 /* Modify connection parameters here: These apply to different communication types
    EXAMPLE_USE_TCP_SOCKET: Define EXAMPLE_TCP_SOCKET_PORT sets unsecured TCP socket port number
@@ -360,7 +360,7 @@ static void iocontroller_long_processing(
         text[80],
         nbuf[32];
 
-    os_uchar
+    os_char
         u;
 
     /* Get callback data, copy it to local stack
@@ -399,7 +399,7 @@ static void iocontroller_7_segment(
     iocHandle *mblk_handle,
     int x)
 {
-    static os_uchar digits[10][8] = {
+    static os_char digits[10][8] = {
     /* A, B, C, P, D, E, F, G */
       {1, 1, 1, 0, 1, 1, 1, 0}, /* 0 */
       {0, 1, 1, 0, 0, 0, 0, 0}, /* 1 */
@@ -420,7 +420,7 @@ static void iocontroller_8_spinner(
     iocHandle *mblk_handle,
     int x)
 {
-    static os_uchar digits[10][8] = {
+    static os_char digits[10][8] = {
     /* A, B, C, P, D, E, F, G */
       {1, 0, 0, 0, 0, 0, 0, 0}, /* 0 */
       {0, 0, 0, 0, 0, 0, 1, 0}, /* 1 */

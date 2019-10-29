@@ -93,8 +93,8 @@ iocSourceBuffer *ioc_initialize_source_buffer(
         if (itembuf)
         {
             osal_debug_assert(nitems == sbuf->syncbuf.nbytes);
-            sbuf->syncbuf.buf = (os_uchar*)itembuf;
-            sbuf->syncbuf.delta = (os_uchar*)sbuf->syncbuf.buf + nitems;
+            sbuf->syncbuf.buf = (os_char*)itembuf;
+            sbuf->syncbuf.delta = sbuf->syncbuf.buf + nitems;
         }
         else
         {
@@ -109,7 +109,7 @@ iocSourceBuffer *ioc_initialize_source_buffer(
                 return OS_NULL;
             }
             os_memclear(sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes);
-            sbuf->syncbuf.delta = (os_uchar*)sbuf->syncbuf.buf + sbuf->syncbuf.nbytes;
+            sbuf->syncbuf.delta = sbuf->syncbuf.buf + sbuf->syncbuf.nbytes;
             sbuf->syncbuf.allocated = OS_TRUE;
         }
     }
@@ -336,7 +336,7 @@ void ioc_sbuf_invalidate(
 void ioc_sbuf_synchronize(
     iocSourceBuffer *sbuf)
 {
-    os_uchar
+    os_char
         *buf,
         *syncbuf,
         *delta;

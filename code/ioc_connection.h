@@ -156,7 +156,7 @@ typedef struct
 
     /** Pointer to static frame buffer. OS_NULL to allocate the frame buffer.
      */
-    os_uchar *frame_out_buf;
+    os_char *frame_out_buf;
     
     /** Size of static frame buffer, either IOC_SOCKET_FRAME_SZ or IOC_SERIAL_FRAME_SZ.
         Zero for dynamically or pool allocated buffer.
@@ -165,7 +165,7 @@ typedef struct
 
     /** Pointer to static frame buffer. OS_NULL to allocate the frame buffer.
      */
-    os_uchar *frame_in_buf;
+    os_char *frame_in_buf;
 
     /** Size of static frame buffer, either IOC_SOCKET_FRAME_SZ or IOC_SERIAL_FRAME_SZ
         Zero for dynamically or pool allocated buffer.
@@ -190,7 +190,7 @@ typedef struct
 {
     /** Pointer to outgoing frame buffer.
      */
-    os_uchar *buf;
+    os_char *buf;
 
     /** Number of used bytes in buffer (current frame size). Zero if frame buffer is not used.
      */
@@ -220,7 +220,7 @@ typedef struct
 {
     /** Pointer to infoming frame buffer.
      */
-    os_uchar *buf;
+    os_char *buf;
 
     /** Current receive position within the buffer. 0 = at beginning of buffer.
      */

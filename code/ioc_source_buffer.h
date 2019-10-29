@@ -51,11 +51,11 @@ typedef struct
 {
     /** Pointer to synchronized buffer.
      */
-    os_uchar *buf;
+    os_char *buf;
 
     /** Pointer to delta buffer.
      */
-    os_uchar *delta;
+    os_char *delta;
 
     /** Synchronized bytes size in bytes
      */

@@ -85,7 +85,7 @@ osalStatus ioc_establish_serial_connection(
 
                     /* Send connect character.
                      */
-                    osal_stream_write(con->stream, &connect_char, 1,
+                    osal_stream_write(con->stream, (os_char*)&connect_char, 1,
                         &n_written, OSAL_STREAM_DEFAULT);
                     osal_debug_assert(n_written == 1);
 
@@ -97,7 +97,7 @@ osalStatus ioc_establish_serial_connection(
                 case OSAL_SERCON_STATE_INIT_2:
                     /* Try to read a character.
                      */
-                    osal_stream_read(con->stream, buf, sizeof(buf),
+                    osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
                         &n_read, OSAL_STREAM_DEFAULT);
 
                     /* If last character  received is CONNECT_REPLY character,
@@ -108,7 +108,7 @@ osalStatus ioc_establish_serial_connection(
                     {
                         /* Send confirm character.
                          */
-                        osal_stream_write(con->stream, &confirm_char, 1,
+                        osal_stream_write(con->stream, (os_char*)&confirm_char, 1,
                             &n_written, OSAL_STREAM_DEFAULT);
                         osal_debug_assert(n_written == 1);
 
@@ -133,7 +133,7 @@ osalStatus ioc_establish_serial_connection(
                        because other end may start sending acual data immediately
                        after confirm character.
                      */
-                    osal_stream_read(con->stream, buf, 1,
+                    osal_stream_read(con->stream, (os_char*)buf, 1,
                         &n_read, OSAL_STREAM_DEFAULT);
 
                     /* If CONFIRM_REPLY character received, clear connection
@@ -165,7 +165,7 @@ osalStatus ioc_establish_serial_connection(
             {
                 default:
                 case OSAL_SERCON_STATE_INIT_1:
-                    osal_stream_write(con->stream, &disconnect_char, 1,
+                    osal_stream_write(con->stream, (os_char*)&disconnect_char, 1,
                         &n_written, OSAL_STREAM_DEFAULT);
                     osal_debug_assert(n_written == 1);
                     con->sercon_state = OSAL_SERCON_STATE_INIT_2;
@@ -181,7 +181,7 @@ osalStatus ioc_establish_serial_connection(
                 case OSAL_SERCON_STATE_INIT_3:
                    /* Try to read a character.
                      */
-                    osal_stream_read(con->stream, buf, sizeof(buf),
+                    osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
                         &n_read, OSAL_STREAM_DEFAULT);
 
                     /* If last character received is CONNECT character, then send 
@@ -192,7 +192,7 @@ osalStatus ioc_establish_serial_connection(
                     {
                         /* Send connect reply character.
                          */
-                        osal_stream_write(con->stream, &connect_reply_char, 1,
+                        osal_stream_write(con->stream, (os_char*)&connect_reply_char, 1,
                             &n_written, OSAL_STREAM_DEFAULT);
                         osal_debug_assert(n_written == 1);
 
@@ -203,7 +203,7 @@ osalStatus ioc_establish_serial_connection(
                 case OSAL_SERCON_STATE_INIT_4:
                    /* Try to read a character. 
                      */
-                    osal_stream_read(con->stream, buf, sizeof(buf),
+                    osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
                         &n_read, OSAL_STREAM_DEFAULT);
 
                     /* If last character received is CONFIRM character, then send 
@@ -213,7 +213,7 @@ osalStatus ioc_establish_serial_connection(
                     {
                         /* Send confirm reply character.
                          */
-                        osal_stream_write(con->stream, &confirm_reply_char, 1,
+                        osal_stream_write(con->stream, (os_char*)&confirm_reply_char, 1,
                             &n_written, OSAL_STREAM_DEFAULT);
                         osal_debug_assert(n_written == 1);
 

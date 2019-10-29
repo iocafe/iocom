@@ -22,17 +22,17 @@ typedef struct
 {
     /** Pointer to check sum in header
      */
-    os_uchar *checksum_low;
-    os_uchar *checksum_high;
+    os_char *checksum_low;
+    os_char *checksum_high;
 
     /** Pointer to flags
      */
-    os_uchar *flags;
+    os_char *flags;
 
     /** Pointers to data size in bytes
      */
-    os_uchar *data_sz_low;
-    os_uchar *data_sz_high;
+    os_char *data_sz_low;
+    os_char *data_sz_high;
 
     /* Header size in bytes.
      */
@@ -56,18 +56,18 @@ static void ioc_make_mblk_info_frame(
 
 static void ioc_generate_header(
     iocConnection *con,
-    os_uchar *hdr,
+    os_char *hdr,
     iocSendHeaderPtrs *ptrs,
     int remote_mblk_id,
     os_uint addr);
 
 static void ioc_msg_setstr(
     os_char *str,
-    os_uchar **p);
+    os_char **p);
 
 static os_boolean ioc_msg_setint(
     os_ushort i,
-    os_uchar **p);
+    os_char **p);
 
 
 /**
@@ -205,7 +205,7 @@ static void ioc_make_data_frame(
     os_int
         bytes;
 
-    os_uchar
+    os_char
         *dst,
         *delta;
 
@@ -331,7 +331,7 @@ static void ioc_make_mblk_info_frame(
     iocSendHeaderPtrs
         ptrs;
 
-    os_uchar 
+    os_char
         *p,
         *start,
         *version_and_flags;
@@ -444,7 +444,7 @@ osalStatus ioc_send_acknowledge(
 
     IOC_MT_ROOT_PTR;
 
-    os_uchar
+    os_char
         *p;
 
     os_ushort
@@ -717,7 +717,7 @@ static osalStatus ioc_write_to_stream(
 */
 static void ioc_generate_header(
     iocConnection *con,
-    os_uchar *hdr,
+    os_char *hdr,
     iocSendHeaderPtrs *ptrs,
     int remote_mblk_id,
     os_uint addr)
@@ -725,8 +725,10 @@ static void ioc_generate_header(
     os_boolean
         is_serial;
 
+    os_char
+        *p;
+
     os_uchar
-        *p,
         flags;
 
     flags = remote_mblk_id > 255 ? IOC_MBLK_HAS_TWO_BYTES : 0;
@@ -819,16 +821,16 @@ static void ioc_generate_header(
 */
 static void ioc_msg_setstr(
     os_char *str,
-    os_uchar **p)
+    os_char **p)
 {
     os_memsz
         len;
 
     len = os_strlen(str) - 1;
-    *((*p)++) = (os_uchar)len;
+    *((*p)++) = (os_char)len;
     while (len-- > 0)
     {
-        *((*p)++) = (os_uchar)*(str++);
+        *((*p)++) = (os_char)*(str++);
     }
 }
 
@@ -850,10 +852,10 @@ static void ioc_msg_setstr(
 */
 static os_boolean ioc_msg_setint(
     os_ushort i,
-    os_uchar **p)
+    os_char **p)
 {
-    *((*p)++) = (os_uchar)i;
+    *((*p)++) = (os_char)i;
     if (i < 256) return OS_FALSE;
-    *((*p)++) = (os_uchar)(i >> 8);
+    *((*p)++) = (os_char)(i >> 8);
     return OS_TRUE;
 }

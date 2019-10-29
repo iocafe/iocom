@@ -60,7 +60,7 @@
    on system with dynamic memory allocation, which is useful for testing micro-controller
    software in PC computer.
  */
-static os_uchar
+static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
         IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
 
