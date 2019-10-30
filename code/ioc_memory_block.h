@@ -308,7 +308,7 @@ iocMemoryBlock;
 
 /**
 ****************************************************************************************************
-  IO signal state structure
+  IO signal state structure. Keep the order for initialization.
 ****************************************************************************************************
  */
 typedef struct iocSignal
@@ -316,6 +316,9 @@ typedef struct iocSignal
     /* Starting address in memory block.
      */
     os_int addr;
+
+    os_short flags;
+    os_char state_bits;
 
     /* Current value. For simple ones, this is either integer or float d, depending on type
        in flags. For strings value.i can be number of bytes in memory block for the string.
@@ -327,9 +330,6 @@ typedef struct iocSignal
         os_float f;
     }
     value;
-
-    os_short flags;
-    os_char state_bits;
 }
 iocSignal;
 
@@ -499,6 +499,42 @@ void ioc_read_internal(
     os_char *buf,
     int n,
     int flags);
+
+/* Read or write one or more signals to memory block.
+ */
+ void ioc_movex_signals(
+    iocHandle *handle,
+    iocSignal *signal,
+    os_int n_signals,
+    os_short flags);
+
+/* Set integer value as a signal.
+ */
+os_char ioc_setx_int(
+    iocHandle *handle,
+    os_int addr,
+    os_int value,
+    os_char state_bits,
+    os_short flags);
+
+/* Set floating point value as a signal.
+ */
+os_char ioc_setx_float(
+    iocHandle *handle,
+    os_int addr,
+    os_float value,
+    os_char state_bits,
+    os_short flags);
+
+/* Get integer signal value.
+ */
+os_int ioc_getx_int(
+    iocHandle *handle,
+    os_int addr,
+    os_char *state_bits,
+    os_short flags);
+
+
 
 #ifndef IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS
 #define IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS 1

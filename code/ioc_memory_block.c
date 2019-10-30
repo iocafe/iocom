@@ -561,7 +561,7 @@ void ioc_write_internal(
             ioc_status_write(mblk, addr, buf, nstat);
             buf += nstat;
         }
-        if (nstat == n) return;
+        if (nstat == n) goto getout;
         addr = 0;
         n -= nstat;
     }
@@ -569,7 +569,7 @@ void ioc_write_internal(
     /* Clip address and nuber of bytes to write within internal buffer.
      */
     max_n = mblk->nbytes - addr;
-    if (max_n <= 0) return;
+    if (max_n <= 0) goto getout;
     if (n > max_n) n = max_n;
 
     /* Store the data.
@@ -597,6 +597,7 @@ void ioc_write_internal(
         ioc_send(handle);
     }
 
+getout:
     ioc_unlock(root);
 }
 
@@ -693,7 +694,7 @@ void ioc_read_internal(
     {
         nstat = (n > -addr) ? -addr : n;
         ioc_status_read(mblk, addr, buf, nstat);
-        if (nstat == n) return;
+        if (nstat == n) goto getout;
         addr = 0;
         buf += nstat;
         n -= nstat;
@@ -704,7 +705,7 @@ void ioc_read_internal(
     /* Clip address and nuber of bytes to write within internal buffer.
      */
     max_n = mblk->nbytes - addr;
-    if (max_n <= 0) return;
+    if (max_n <= 0) goto getout;
     if (n > max_n)
     {
         os_memclear(buf + max_n, (os_memsz)n - (os_memsz)max_n);
@@ -730,6 +731,7 @@ void ioc_read_internal(
         ioc_byte_ordered_copy(buf, p, n, flags & IOC_SWAP_MASK);
     }
 
+getout:
     ioc_unlock(root);
 }
 
@@ -831,15 +833,38 @@ void ioc_movex_signals(
         /* Copy the state bits.
          */
         p = mblk->buf + addr;
-        sig->state_bits = *(p++);
 
         if (flags & IOC_SIGNAL_WRITE)
         {
-            ioc_byte_ordered_copy((os_char*)&sig->value, p, type_sz, type_sz);
+            /* If memory block is connected as source, we may turn OSAL_STATE_CONNECTED
+             * bit on. If memory block is disconnected, we sure turn it off.
+             */
+            if (mblk->sbuf.first)
+            {
+                if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
+                    sig->state_bits |= OSAL_STATE_CONNECTED;
+            }
+            else
+            {
+                sig->state_bits &= ~OSAL_STATE_CONNECTED;
+            }
+
+            *(p++) = sig->state_bits;
+            ioc_byte_ordered_copy(p, (os_char*)&sig->value, type_sz, type_sz);
+            ioc_mblk_invalidate(mblk, addr, addr + type_sz /* no -1, we need also state byte */);
         }
         else
         {
-            ioc_byte_ordered_copy(p, (os_char*)&sig->value, type_sz, type_sz);
+            /* Get state bits from memory block. If memory block is not connected
+               as target, turn OSAL_STATE_CONNECTED bit off in returned state, but
+               do not modify memory block (we are receiving).
+             */
+            sig->state_bits = *(p++);
+            if (mblk->tbuf.first == OS_NULL)
+            {
+                sig->state_bits &= ~OSAL_STATE_CONNECTED;
+            }
+            ioc_byte_ordered_copy((os_char*)&sig->value, p, type_sz, type_sz);
         }
     }
 

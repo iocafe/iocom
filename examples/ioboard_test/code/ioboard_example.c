@@ -35,7 +35,7 @@
    IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL, IOBOARD_CTRL_LISTEN_TLS.
    IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
  */
-#define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
+#define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
 
 /* Modify connection parameters here: These apply to different communication types
    Define EXAMPLE_TCP_SOCKET_PORT sets unsecured TCP socket port number
@@ -91,6 +91,10 @@ MyAppContext;
 /* Application context. This needs to exist as long as application runs.
  */
 static MyAppContext ioboard_app_context;
+
+static iocSignal my_signal_to_controller = {20, OS_SHORT};
+static os_short my_signal_count;
+static os_timer my_signal_timer;
 
 
 /* Static function prototypes.
@@ -234,6 +238,15 @@ osalStatus osal_loop(
         ioc_setp_short(&ioboard_tc, 2, command);
     }
 
+    /* Send periodic signal to controller.
+     */
+    if (os_elapsed(&my_signal_timer, 2000))
+    {
+        os_get_timer(&my_signal_timer);
+        my_signal_to_controller.value.i = ++my_signal_count;
+        ioc_set_signal(&ioboard_tc, &my_signal_to_controller);
+    }
+
     ioboard_show_communication_status(acontext);
 
     return OSAL_SUCCESS;
@@ -285,7 +298,7 @@ static void ioboard_callback(
 {
     int s, e, i, n;
     #define N_LEDS 8
-    os_uchar buf[N_LEDS];
+    os_char buf[N_LEDS];
 
     /* Get connection status changes.
      */

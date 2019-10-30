@@ -86,12 +86,26 @@ typedef struct
         inputs,
         outputs;
 
+    os_int
+        countdown,
+        spinner,
+        count,
+        slow;
+
+    os_short
+        my_count_from_ioboard;
+
+    os_char
+        my_count_status_bits_from_ioboard;
+
     ioControllerCallbackData
         callbackdata;
 }
 ioControllerContext;
 
 
+static iocRoot root;
+static ioControllerContext ctx;
 
 /* Forward referred static functions.
  */
@@ -101,6 +115,9 @@ static void iocontroller_callback(
     int end_addr,
     os_ushort flags,
     void *context);
+
+static void iocontroller_spin_7_segment_delay(
+    ioControllerContext *c);
 
 static void iocontroller_long_processing(
     ioControllerContext *c);
@@ -113,6 +130,8 @@ static void iocontroller_8_spinner(
     iocHandle *mblk_handle,
     int x);
 
+static void iocontroller_print_count_signal_changes(
+    ioControllerContext *c);
 
 /**
 ****************************************************************************************************
@@ -129,18 +148,17 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    iocRoot root;
-    ioControllerContext c;
     iocMemoryBlockParams blockprm;
     const osalStreamInterface *iface;
-    os_char *c_parameters, *l_parameters;
 
 #if MY_ROLE==EXAMPLE_CONNECT
     iocConnection *con = 0;
     iocConnectionParams conprm;
+    os_char *c_parameters;
 #else
     iocEndPoint *ep = 0;
     iocEndPointParams epprm;
+    os_char *l_parameters;
 #endif
 
     const os_int
@@ -148,10 +166,6 @@ osalStatus osal_main(
         output_block_sz = 1000;
 
     os_int
-        countdown = 10,
-        spinner = -1,
-        count = 0,
-        slow = 1,
         flags;
 
     /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
@@ -162,8 +176,11 @@ osalStatus osal_main(
 #if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
     osal_socket_initialize(OS_NULL, 0);
     iface = OSAL_SOCKET_IFACE;
+#if MY_ROLE==EXAMPLE_CONNECT
     c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TCP_SOCKET_PORT;
+#else
     l_parameters = ":" EXAMPLE_TCP_SOCKET_PORT;
+#endif
     flags = IOC_SOCKET|IOC_CREATE_THREAD;
 #endif
 
@@ -171,38 +188,49 @@ osalStatus osal_main(
     static osalTLSParam prm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
     osal_tls_initialize(OS_NULL, 0, &prm);
     iface = OSAL_TLS_IFACE;
+#if MY_ROLE==EXAMPLE_CONNECT
     c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TLS_SOCKET_PORT;
+#else
     l_parameters = ":" EXAMPLE_TLS_SOCKET_PORT;
+#endif
     flags = IOC_SOCKET|IOC_CREATE_THREAD;
 #endif
 
 #if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
     osal_serial_initialize();
     iface = OSAL_SERIAL_IFACE;
+#if MY_ROLE==EXAMPLE_CONNECT
     c_parameters = EXAMPLE_SERIAL_PORT;
+#else
     l_parameters = EXAMPLE_SERIAL_PORT;
+#endif
     flags = IOC_SERIAL | IOC_CREATE_THREAD;
 #endif
 
     ioc_initialize_root(&root);
-    os_memclear(&c, sizeof(c));
-    c.root = &root;
+    os_memclear(&ctx, sizeof(ctx));
+    ctx.root = &root;
+
+    ctx.countdown = 10;
+    ctx.spinner = -1;
+    ctx.count = 0;
+    ctx.slow = 1;
 
     os_memclear(&blockprm, sizeof(blockprm));
 
     blockprm.mblk_nr = IOC_INPUT_MBLK;
     blockprm.nbytes = input_block_sz;
     blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    ioc_initialize_memory_block(&c.inputs, OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&ctx.inputs, OS_NULL, &root, &blockprm);
 
     blockprm.mblk_nr = IOC_OUTPUT_MBLK;
     blockprm.nbytes = output_block_sz;
     blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    ioc_initialize_memory_block(&c.outputs, OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&ctx.outputs, OS_NULL, &root, &blockprm);
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&c.inputs, iocontroller_callback, &c);
+    ioc_add_callback(&ctx.inputs, iocontroller_callback, &ctx);
 
 #if MY_ROLE==EXAMPLE_CONNECT
     /* Connect to an "IO board".
@@ -222,30 +250,65 @@ osalStatus osal_main(
     ioc_listen(ep, &epprm);
 #endif
 
-    while (OS_TRUE)
-    {
-        if (countdown > 0)
-        {
-            iocontroller_7_segment(&c.outputs, --countdown);
-            os_sleep(500);
-        }
-        else
-        {
-            if (++spinner > 7) spinner = 0;
-            iocontroller_8_spinner(&c.outputs, spinner);
-            os_sleep(slow ? 30 : 1);
-            if (count++ > (slow ? 100 : 2800))
-            {
-                count = 0;
-                slow = !slow;
-                if (slow) countdown = 10;
-            }
-        }
+   /* When emulating micro-controller on PC, run loop. Just save context pointer on
+       real micro-controller.
+     */
+    osal_simulated_loop(&ctx);
+    return OSAL_SUCCESS;
+ }
 
-        /* Do processing which must be done by this thread.
-         */
-        iocontroller_long_processing(&c);
-    }
+
+/**
+****************************************************************************************************
+
+  @brief Loop function to be called repeatedly.
+
+  The osal_loop() function...
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  The function returns OSAL_SUCCESS to continue running. Other return values are
+           to be interprened as reboot on micro-controller or quit the program on PC computer.
+
+****************************************************************************************************
+*/
+osalStatus osal_loop(
+    void *app_context)
+{
+    ioControllerContext *c;
+    c = (ioControllerContext*)app_context;
+
+
+    /* Do processing which must be done by this thread.
+     */
+    // iocontroller_long_processing(c);
+
+    // iocontroller_spin_7_segment_delay(c);
+
+    iocontroller_print_count_signal_changes(c);
+
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Finished with the application, clean up.
+
+  The osal_main_cleanup() function ends IO board communication, cleans up and finshes with the
+  socket and serial port libraries.
+
+  On real IO device we may not need to take care about this, since these are often shut down
+  only by turning or power or by microcontroller reset.
+
+  @param   app_context Void pointer, to pass application context structure, etc.
+  @return  None.
+
+****************************************************************************************************
+*/
+void osal_main_cleanup(
+    void *app_context)
+{
 
     /* End IO board communication, clean up and finsh with the socket and serial port libraries.
      */
@@ -260,7 +323,6 @@ osalStatus osal_main(
 #if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
     osal_serial_shutdown();
 #endif
-    return 0;
 }
 
 
@@ -331,6 +393,28 @@ static void iocontroller_callback(
     c->callbackdata.end_addr = end_addr;
 }
 
+
+static void iocontroller_spin_7_segment_delay(
+    ioControllerContext *c)
+{
+    if (c->countdown > 0)
+    {
+        iocontroller_7_segment(&c->outputs, --(c->countdown));
+        os_sleep(500);
+    }
+    else
+    {
+        if (++(c->spinner) > 7) c->spinner = 0;
+        iocontroller_8_spinner(&c->outputs, c->spinner);
+        os_sleep(c->slow ? 30 : 1);
+        if (c->count++ > (c->slow ? 100 : 2800))
+        {
+            c->count = 0;
+            c->slow = !c->slow;
+            if (c->slow) c->countdown = 10;
+        }
+    }
+}
 
 /**
 ****************************************************************************************************
@@ -433,4 +517,47 @@ static void iocontroller_8_spinner(
     };
 
     ioc_write(mblk_handle, 0, digits[x], 8);
+}
+
+static void iocontroller_print_count_signal_changes(
+    ioControllerContext *c)
+{
+    os_short my_count_from_ioboard;
+    os_char my_count_status_bits_from_ioboard, nbuf[OSAL_NBUF_SZ];
+
+    /* Read count from IO board */
+    my_count_from_ioboard = ioc_get_short(&c->inputs, 20,
+        &my_count_status_bits_from_ioboard);
+    if (my_count_from_ioboard != c->my_count_from_ioboard ||
+        my_count_status_bits_from_ioboard != c->my_count_status_bits_from_ioboard)
+    {
+        c->my_count_from_ioboard = my_count_from_ioboard;
+        c->my_count_status_bits_from_ioboard = my_count_status_bits_from_ioboard;
+
+        osal_int_to_string(nbuf, sizeof(nbuf), my_count_from_ioboard);
+        osal_console_write("signal[20] = ");
+        osal_console_write(nbuf);
+
+        osal_console_write(my_count_status_bits_from_ioboard & OSAL_STATE_CONNECTED
+             ? " CONNECTED" : " DISCONNECTED");
+
+        switch (my_count_status_bits_from_ioboard & OSAL_STATE_MASK)
+        {
+            case OSAL_STATE_YELLOW:
+                osal_console_write(" YELLOW");
+                break;
+
+            case OSAL_STATE_ORANGE:
+                osal_console_write(" ORANGE");
+                break;
+
+            case OSAL_STATE_RED:
+                osal_console_write(" RED");
+                break;
+
+            default:
+                break;
+        }
+        osal_console_write("\n");
+    }
 }
