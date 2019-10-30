@@ -12,7 +12,7 @@
   may include also settings.
 
   From application's view communication status appears the same as data memory and is accessed
-  using the same ioc_read(), ioc_get16(), ioc_write(), ioc_set16(), etc. functions. For data
+  using the same ioc_read(), ioc_getp_short(), ioc_write(), ioc_setp_short(), etc. functions. For data
   memory, the address is positive or zero, status memory addresses are negative.
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
@@ -189,8 +189,8 @@ void ioc_count_connected_streams(
          mblk;
          mblk = mblk->link.next)
     {
-        ioc_set16(&mblk->handle, IOC_NRO_CONNECTED_STREAMS, count);
-        ioc_set32(&mblk->handle, IOC_CONNECTION_DROP_COUNT, root->drop_count);
+        ioc_setp_short(&mblk->handle, IOC_NRO_CONNECTED_STREAMS, count);
+        ioc_setp_int(&mblk->handle, IOC_CONNECTION_DROP_COUNT, root->drop_count);
     }
 
     ioc_unlock(root);

@@ -136,7 +136,7 @@ void loop()
        some operation of IO board. The command is eached back in address 2 to allow
        controller to know that command has been regognized.
      */
-    command = ioc_get16(&ioboard_fc, 10);
+    command = ioc_getp_short(&ioboard_fc, 10);
     if (command != prev_command) {
         // toggle_leds();
         /* if (command == 1) {
@@ -150,7 +150,7 @@ void loop()
         }
          */
         prev_command = command;
-        // ioc_set16(&ioboard_tc, 2, command);
+        // ioc_setp_short(&ioboard_tc, 2, command);
     }
 }
 

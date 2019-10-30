@@ -307,12 +307,12 @@ static void iocontroller_callback(
      */
     if (end_addr >= IOC_NRO_CONNECTED_STREAMS && start_addr < IOC_NRO_CONNECTED_STREAMS + 2)
     {
-        c->nro_connections = ioc_get16(mblk_handle, IOC_NRO_CONNECTED_STREAMS);
+        c->nro_connections = ioc_getp_short(mblk_handle, IOC_NRO_CONNECTED_STREAMS);
     }
 
     if (end_addr >= IOC_CONNECTION_DROP_COUNT && start_addr < IOC_CONNECTION_DROP_COUNT + 4)
     {
-        c->drop_count = ioc_get32(mblk_handle, IOC_CONNECTION_DROP_COUNT);
+        c->drop_count = ioc_getp_int(mblk_handle, IOC_CONNECTION_DROP_COUNT);
     }
 
     /* Echo 2 bytes at address 2 back to IO board address 10. This happens practically
@@ -320,8 +320,8 @@ static void iocontroller_callback(
      */
     if (end_addr >= 2 && start_addr < 2 + 2)
     {
-        command_echo = ioc_get16(mblk_handle, 2);
-        ioc_set16(&c->outputs, 11, command_echo);
+        command_echo = ioc_getp_short(mblk_handle, 2);
+        ioc_setp_short(&c->outputs, 11, command_echo);
     }
 
     /* Set up for longer processing by specific thread.

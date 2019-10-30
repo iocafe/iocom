@@ -193,7 +193,7 @@ static void info_callback(
      */
     if (end_addr >= 0)
     {
-        ioc_getstring(mblk, 0, buf, sizeof(buf));
+        ioc_getp_str(mblk, 0, buf, sizeof(buf));
         osal_console_write(buf);
         osal_console_write("\n");
     }

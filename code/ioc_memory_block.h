@@ -342,12 +342,13 @@ iocSignal;
 /* flags for memory block functions contain type, like OS_BOOLEAN, OS_USHORT, OS_FLOAT, etc,
    and may contain these additional flags.
  */
-#define OSAL_SIGNAL_DEFAULT 0
-#define OSAL_SIGNAL_NO_AUTO_TRANSFER 0x20
-#define OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT 0x40
-#define OSAL_SIGNAL_CLEAR_ERRORS 0x80
-#define OSAL_SIGNAL_NO_THREAD_SYNC 0x100
-#define OSAL_SIGNAL_FLAGS_MASK 0x1E0
+#define IOC_SIGNAL_DEFAULT 0
+#define IOC_SIGNAL_WRITE 0x20
+#define IOC_SIGNAL_NO_AUTO_TRANSFER 0x40
+#define IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT 0x80
+#define IOC_SIGNAL_CLEAR_ERRORS 0x100
+#define IOC_SIGNAL_NO_THREAD_SYNC 0x200
+#define IOC_SIGNAL_FLAGS_MASK 0xFE0
 
 /* Macros for signal value. state bits,  within iocSignal structure
  */
@@ -359,8 +360,8 @@ iocSignal;
 
 /* Macros for setting and getting multiple signals by signal structure.
  */
-#define ioc_set_signal(h,s) ioc_setx_signals((h), (s), 1, 0)
-#define ioc_get_signal(h,s) ioc_getx_signals((h), (s), 1, 0)
+#define ioc_set_signal(h,s) ioc_movex_signals((h), (s), 1, IOC_SIGNAL_WRITE)
+#define ioc_get_signal(h,s) ioc_movex_signals((h), (s), 1, IOC_SIGNAL_DEFAULT)
 
 /* Set one signal state.
  */
@@ -372,7 +373,7 @@ iocSignal;
 #define ioc_set_int(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_INT)
 #define ioc_set_uint ioc_set_int
 #define ioc_set_str(h,a,st,ss) ioc_setx_str((h), (a), (st), (os_int)(ss), OSAL_STATE_CONNECTED, OS_STRING)
-#define ioc_sets_str(h,s,st,ss) (s)->state_bits = ioc_setx_str((h), (s)->addr, (st), (s)->value.i, OSAL_STATE_CONNECTED, OS_STRING)
+#define ioc_sets_str(h,s,st,ss) (s)->state_bits = ioc_movex_str((h), (s)->addr, (st), (s)->value.i, OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_STRING)
 
 /* Get one signal state.
  */
@@ -384,7 +385,7 @@ iocSignal;
 #define ioc_get_int(h,a,sb) ioc_getx_int((h), (a), (sb), OS_INT)
 #define ioc_get_uint(h,a,sb) (os_uint)ioc_getx_uint((h), (a), (sb), OS_UINT)
 #define ioc_get_str(h,a,st,ss) ioc_getx_str((h), (a), (st), (os_int)(ss), OS_STRING)
-#define ioc_gets_str(h,s,st,ss) (s)->state_bits = ioc_getx_str((h), (s)->addr, (st), (s)->value.i < (os_int)(ss) ? (s)->value.i+1 : (os_int)(ss), OS_STRING)
+#define ioc_gets_str(h,s,st,ss) (s)->state_bits = ioc_movex_str((h), (s)->addr, (st), (s)->value.i < (os_int)(ss) ? (s)->value.i+1 : (os_int)(ss), OS_STRING)
 
 /* Set array of values.
  */
@@ -499,9 +500,15 @@ void ioc_read_internal(
     int n,
     int flags);
 
+#ifndef IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS
+#define IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS 1
+#endif
+
+#if IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS
+
 /* Write one bit to the memory block.
  */
-void ioc_set_bit(
+void ioc_setp_bit(
     iocHandle *handle,
     int addr,
     int bit_nr,
@@ -509,91 +516,91 @@ void ioc_set_bit(
 
 /* Read one bit from the memory block.
  */
-char ioc_get_bit(
+char ioc_getp_bit(
     iocHandle *handle,
     int addr,
     int bit_nr);
 
 /* Write one byte to the memory block.
  */
-void ioc_set8(
+void ioc_setp_char(
     iocHandle *handle,
     int addr,
     int value);
 
 /* Read one signed byte from the memory block.
  */
-int ioc_get8(
+int ioc_getp_char(
     iocHandle *handle,
     int addr);
 
 /* Read one unsigned byte from the memory block.
  */
-int ioc_get8u(
+int ioc_getp_uchar(
     iocHandle *handle,
     int addr);
 
 /* Write 16 bit integer to the memory block.
  */
-void ioc_set16(
+void ioc_setp_short(
     iocHandle *handle,
     int addr,
     int value);
 
 /* Read signed 16 bit integer from the memory block.
  */
-int ioc_get16(
+int ioc_getp_short(
     iocHandle *handle,
     int addr);
 
 /* Read unsigned 16 bit integer from the memory block.
  */
-os_int ioc_get16u(
+os_int ioc_getp_ushort(
     iocHandle *handle,
     int addr);
 
 /* Write 32 bit integer (os_int) to the memory block.
  */
-void ioc_set32(
+void ioc_setp_int(
     iocHandle *handle,
     int addr,
     os_int value);
 
 /* Read 32 bit integer from the memory block.
  */
-os_int ioc_get32(
+os_int ioc_getp_int(
     iocHandle *handle,
     int addr);
 
 /* Write 64 bit integer (os_int64) to the memory block.
  */
-void ioc_set64(
+void ioc_setp_long(
     iocHandle *handle,
     int addr,
     os_int64 value);
 
 /* Read 64 bit integer from the memory block.
  */
-os_int64 ioc_get64(
+os_int64 ioc_getp_long(
     iocHandle *handle,
     int addr);
 
 /* Write 32 bit floating point value to the memory block.
  */
-void ioc_setfloat(
+void ioc_setp_float(
     iocHandle *handle,
     int addr,
     os_float value);
 
 /* Read 32 bit floating point value from the memory block.
  */
-os_float ioc_getfloat(
+os_float ioc_getp_float(
     iocHandle *handle,
     int addr);
 
 /* Write string to the memory block.
  */
-void ioc_setstring(
+void ioc_setp_str(
     iocHandle *handle,
     int addr,
     const os_char *str,
@@ -601,7 +608,7 @@ void ioc_setstring(
 
 /* Read string from the memory block.
  */
-void ioc_getstring(
+void ioc_getp_str(
     iocHandle *handle,
     int addr,
     os_char *str,
@@ -609,7 +616,7 @@ void ioc_getstring(
 
 /* Store array of 16 bit integers to the memory block.
  */
-void ioc_setarray16(
+void ioc_setp_short_array(
     iocHandle *handle,
     int addr,
     const os_short *arr,
@@ -617,7 +624,7 @@ void ioc_setarray16(
 
 /* Read array of 16 bit integers from the memory block.
  */
-void ioc_getarray16(
+void ioc_getp_short_array(
     iocHandle *handle,
     int addr,
     os_short *arr,
@@ -625,7 +632,7 @@ void ioc_getarray16(
 
 /* Store array of 32 bit integers to the memory block.
  */
-void ioc_setarray32(
+void ioc_setp_int_array(
     iocHandle *handle,
     int addr,
     const os_int *arr,
@@ -633,7 +640,7 @@ void ioc_setarray32(
 
 /* Read array of 32 bit integers from the memory block.
  */
-void ioc_getarray32(
+void ioc_getp_int_array(
     iocHandle *handle,
     int addr,
     os_int *arr,
@@ -641,7 +648,7 @@ void ioc_getarray32(
 
 /* Store array of 32 bit floating point values to the memory block.
  */
-void ioc_setfloatarray(
+void ioc_setp_float_array(
     iocHandle *handle,
     int addr,
     const os_float *arr,
@@ -649,11 +656,13 @@ void ioc_setfloatarray(
 
 /* Read array of 32 bit floating point values from the memory block.
  */
-void ioc_getfloatarray(
+void ioc_getp_float_array(
     iocHandle *handle,
     int addr,
     os_float *arr,
     int n);
+
+#endif
 
 /* Clear N bytes of memory block starting from specified address.
  */

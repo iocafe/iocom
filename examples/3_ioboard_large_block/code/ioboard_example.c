@@ -150,7 +150,7 @@ osalStatus osal_loop(
     for (i = 0; i<IOBOARD_TC_BLOCK_SZ/2; i++)
     {
         j = rand() % IOBOARD_TC_BLOCK_SZ;
-        ioc_set16(&ioboard_tc, j, k);
+        ioc_setp_short(&ioboard_tc, j, k);
         k += 7;
     }
 

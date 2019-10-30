@@ -737,22 +737,25 @@ void ioc_read_internal(
 /**
 ****************************************************************************************************
 
-  @brief Write one or more signals to memory block.
-  @anchor ioc_setx_signals
+  @brief Read or write one or more signals to memory block.
+  @anchor ioc_movex_signals
 
-  The ioc_setx_signals() function writes one or more signal values to memory block. This
-  is used for basic types, like integers and floats. Use ioc_setx_str() for strings or
+  The ioc_movex_signals() function reads or writes one or more signal values to memory block.
+  This is used for basic types, like integers and floats. Use ioc_setx_str() for strings or
   ioc_setx_int_array() for arrays.
 
-  The OSAL_SIGNAL_NO_AUTO disables automatic synchronization of memory block data by preventing
-  ioc_send() and ioc_receive() function calls;
+  The IOC_SIGNAL_WRITE Write signals to memory block. If this flag is not given, signals
+  are read.
 
-  OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
+  The IOC_SIGNAL_NO_AUTO_TRANSFER disables automatic synchronization of memory block data by
+  preventing ioc_send() and ioc_receive() function calls;
+
+  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
   if it as off, leave it off.
 
-  OSAL_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
+  IOC_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
 
-  If OSAL_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
+  If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
 
@@ -760,15 +763,17 @@ void ioc_read_internal(
   @param   signal Pointer to array of signal structures. This holds memory address, value,
            state bits and data type for each signal.
   @oaram   n_signals Number of elements in signals array.
-  @param   flags OSAL_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: OSAL_SIGNAL_NO_AUTO_TRANSFER, OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
-           OSAL_SIGNAL_CLEAR_ERRORS and OSAL_SIGNAL_NO_THREAD_SYNC 256.
-           Type flags here are ignored, since type is set for each signal separately in signals array.
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_NO_AUTO_TRANSFER,
+           IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT, IOC_SIGNAL_CLEAR_ERRORS and
+           IOC_SIGNAL_NO_THREAD_SYNC.
+           Type flags here are ignored, since type is set for each signal separately in
+           the signals array.
   @return  None.
 
 ****************************************************************************************************
 */
-void ioc_setx_signals(
+void ioc_movex_signals(
     iocHandle *handle,
     iocSignal *signal,
     os_int n_signals,
@@ -789,7 +794,7 @@ void ioc_setx_signals(
 
     /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
      */
-    if (flags & OSAL_SIGNAL_NO_THREAD_SYNC)
+    if (flags & IOC_SIGNAL_NO_THREAD_SYNC)
     {
         mblk = handle->mblk;
     }
@@ -828,59 +833,22 @@ void ioc_setx_signals(
         p = mblk->buf + addr;
         sig->state_bits = *(p++);
 
-        ioc_byte_ordered_copy((os_char*)&sig->value, p, type_sz, type_sz);
+        if (flags & IOC_SIGNAL_WRITE)
+        {
+            ioc_byte_ordered_copy((os_char*)&sig->value, p, type_sz, type_sz);
+        }
+        else
+        {
+            ioc_byte_ordered_copy(p, (os_char*)&sig->value, type_sz, type_sz);
+        }
     }
 
     /* End synchronization (unless disabled by no thread sync flag).
      */
-    if ((flags & OSAL_SIGNAL_NO_THREAD_SYNC) == 0)
+    if ((flags & IOC_SIGNAL_NO_THREAD_SYNC) == 0)
     {
         ioc_unlock(root);
     }
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Read one or more signals from memory block.
-  @anchor ioc_getx_signals
-
-  The ioc_getx_signals() function reads one or more signal values from memory block. This
-  is used for basic types, like integers and floats. Use ioc_getx_str() for strings or
-  ioc_getx_int_array() for arrays.
-
-  The OSAL_SIGNAL_NO_AUTO disables automatic synchronization of memory block data by preventing
-  ioc_send() and ioc_receive() function calls;
-
-  OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
-  if it as off, leave it off.
-
-  OSAL_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
-
-  If OSAL_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
-  The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
-  synchronize thread access to IOCOM data structures.
-
-  @param   handle Memory block handle.
-  @param   signal Pointer to array of signal structures. This holds memory address, value,
-           state bits and data type for each signal.
-  @oaram   n_signals Number of elements in signals array.
-  @param   flags OSAL_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: OSAL_SIGNAL_NO_AUTO_TRANSFER, OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
-           OSAL_SIGNAL_CLEAR_ERRORS and OSAL_SIGNAL_NO_THREAD_SYNC 256.
-           Type flags here are ignored, since type is set for each signal separately in signals array.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_getx_signals(
-    iocHandle *handle,
-    iocSignal *signal,
-    os_int n_signals,
-    os_short flags)
-{
-
 }
 
 
@@ -898,9 +866,9 @@ void ioc_getx_signals(
   @param   value Integer value to write.
   @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
-  @param   flags OSAL_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: OSAL_SIGNAL_NO_AUTO_TRANSFER, OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
-           OSAL_SIGNAL_CLEAR_ERRORS and OSAL_SIGNAL_NO_THREAD_SYNC 256.
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: IOC_SIGNAL_NO_AUTO_TRANSFER, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           IOC_SIGNAL_CLEAR_ERRORS and IOC_SIGNAL_NO_THREAD_SYNC.
            Storage type to be used in memory block needs to be specified here by setting one
            of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
 
@@ -920,45 +888,155 @@ os_char ioc_setx_int(
     if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) signal.value.f = (os_float)value;
     else signal.value.i = value;
     signal.state_bits = state_bits;
-    signal.flags = (flags & ~OSAL_SIGNAL_FLAGS_MASK);
+    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
 
-    ioc_setx_signals(handle, &signal, 1, flags);
+    ioc_movex_signals(handle, &signal, 1, flags|IOC_SIGNAL_WRITE);
     return signal.state_bits;
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Set floating point value as a signal.
+  @anchor ioc_setx_float
+
+  The ioc_setx_float() function writes one signal value to memory block. This is used for basic
+  types like integers and floats and cannot be used for strings or arrays.
+
+  @param   handle Memory block handle.
+  @param   address Address within memory block.
+  @param   value Floating point value to write.
+  @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
+           with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: IOC_SIGNAL_NO_AUTO_TRANSFER, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           IOC_SIGNAL_CLEAR_ERRORS and IOC_SIGNAL_NO_THREAD_SYNC.
+           Storage type to be used in memory block needs to be specified here by setting one
+           of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
+
+  @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
+
+****************************************************************************************************
+*/
 os_char ioc_setx_float(
     iocHandle *handle,
     os_int addr,
     os_float value,
     os_char state_bits,
-    os_short flags);
+    os_short flags)
+{
+    iocSignal signal;
+    signal.addr = addr;
+    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) signal.value.f = value;
+    else signal.value.i = os_round_int(value);
 
-os_char ioc_setx_str(
+    signal.state_bits = state_bits;
+    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
+
+    ioc_movex_signals(handle, &signal, 1, flags|IOC_SIGNAL_WRITE);
+    return signal.state_bits;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Read or write string from/to memory block.
+  @anchor ioc_movex_signals
+
+  The ioc_movex_str() function reads or writes a string from/to memory block.
+
+  The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string is read.
+
+  The IOC_SIGNAL_NO_AUTO_TRANSFER disables automatic synchronization of memory block data by
+  preventing ioc_send() and ioc_receive() function calls;
+
+  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
+  if it as off, leave it off.
+
+  IOC_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
+
+  If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
+  The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
+  synchronize thread access to IOCOM data structures.
+
+  @param   handle Memory block handle.
+  @param   signal Pointer to array of signal structures. This holds memory address, value,
+           state bits and data type for each signal.
+  @oaram   n_signals Number of elements in signals array.
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_NO_AUTO_TRANSFER,
+           IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT, IOC_SIGNAL_CLEAR_ERRORS and
+           IOC_SIGNAL_NO_THREAD_SYNC.
+           Type flags here are ignored, since type is set for each signal separately in
+           the signals array.
+  @return  None.
+
+****************************************************************************************************
+*/
+os_char ioc_movex_str(
     iocHandle *handle,
     os_int addr,
     os_char *str,
     os_int str_sz,
     os_char state_bits,
-    os_short flags);
+    os_short flags)
+{
+    return 0;
+}
 
+
+/**
+****************************************************************************************************
+
+  @brief Get integer signal value.
+  @anchor ioc_getx_int
+
+  The ioc_getx_int() function reads one signal value from to memory block. This is used for basic
+  types like integers and floats and cannot be used for strings or arrays.
+
+  @param   handle Memory block handle.
+  @param   address Address within memory block.
+  @param   value Integer value to write.
+  @oaram   state_bits Pointer to integer where to store state bits.
+           OSAL_STATE_CONNECTED indicates that we have the signal value. HW errors are indicated
+           by OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bits.
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: IOC_SIGNAL_NO_AUTO_TRANSFER, IOC_SIGNAL_NO_THREAD_SYNC.
+           Storage type to be used in memory block needs to be specified here by setting one
+           of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
+
+  @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
+
+****************************************************************************************************
+*/
 os_int ioc_getx_int(
     iocHandle *handle,
     os_int addr,
     os_char *state_bits,
-    os_short flags);
+    os_short flags)
+{
+    iocSignal signal;
+    os_int value;
+
+    signal.addr = addr;
+    signal.state_bits = 0;
+    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
+
+    ioc_movex_signals(handle, &signal, 1, flags);
+    if (state_bits) *state_bits = signal.state_bits;
+
+    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) value = signal.value.f;
+    else value = signal.value.i;
+
+    return value;
+}
 
 os_float ioc_getx_float(
     iocHandle *handle,
     os_int addr,
     os_char *state_bits,
-    os_short flags);
-
-os_char ioc_getx_str(
-    iocHandle *handle,
-    os_int addr,
-    os_char *str,
-    os_int str_sz,
     os_short flags);
 
 os_char ioc_setx_int_array(
@@ -976,13 +1054,15 @@ os_char ioc_getx_int_array(
     os_int *n,
     os_short flags); /* osalTypeId */
 
+#if IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS
+
 /**
 ****************************************************************************************************
 
   @brief Write one bit to the memory block.
-  @anchor ioc_set_bit
+  @anchor ioc_setp_bit
 
-  The ioc_set_bit() function writes a single bit into the memory block.
+  The ioc_setp_bit() function writes a single bit into the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to write to.
@@ -993,7 +1073,7 @@ os_char ioc_getx_int_array(
 
 ****************************************************************************************************
 */
-void ioc_set_bit(
+void ioc_setp_bit(
     iocHandle *handle,
     int addr,
     int bit_nr,
@@ -1030,9 +1110,9 @@ void ioc_set_bit(
 ****************************************************************************************************
 
   @brief Read one bit from the memory block.
-  @anchor ioc_get_bit
+  @anchor ioc_getp_bit
 
-  The ioc_get_bit() function reads a single bit from memory block.
+  The ioc_getp_bit() function reads a single bit from memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read frin.
@@ -1041,7 +1121,7 @@ void ioc_set_bit(
 
 ****************************************************************************************************
 */
-char ioc_get_bit(
+char ioc_getp_bit(
     iocHandle *handle,
     int addr,
     int bit_nr)
@@ -1057,9 +1137,9 @@ char ioc_get_bit(
 ****************************************************************************************************
 
   @brief Write one byte to the memory block.
-  @anchor ioc_set8
+  @anchor ioc_setp_char
 
-  The ioc_set8() function writes one byte of data into the memory block.
+  The ioc_setp_char() function writes one byte of data into the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to write to.
@@ -1069,7 +1149,7 @@ char ioc_get_bit(
 
 ****************************************************************************************************
 */
-void ioc_set8(
+void ioc_setp_char(
     iocHandle *handle,
     int addr,
     int value)
@@ -1084,9 +1164,9 @@ void ioc_set8(
 ****************************************************************************************************
 
   @brief Read one signed byte from the memory block.
-  @anchor ioc_get8
+  @anchor ioc_getp_char
 
-  The ioc_get8() function reads one byte of data from the memory block.
+  The ioc_getp_char() function reads one byte of data from the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read from.
@@ -1094,7 +1174,7 @@ void ioc_set8(
 
 ****************************************************************************************************
 */
-int ioc_get8(
+int ioc_getp_char(
     iocHandle *handle,
     int addr)
 {
@@ -1108,9 +1188,9 @@ int ioc_get8(
 ****************************************************************************************************
 
   @brief Read one unsigned byte from the memory block.
-  @anchor ioc_get8u
+  @anchor ioc_getp_uchar
 
-  The ioc_get8u() function reads one byte of data from the memory block.
+  The ioc_getp_uchar() function reads one byte of data from the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read from.
@@ -1118,7 +1198,7 @@ int ioc_get8(
 
 ****************************************************************************************************
 */
-int ioc_get8u(
+int ioc_getp_uchar(
     iocHandle *handle,
     int addr)
 {
@@ -1132,9 +1212,9 @@ int ioc_get8u(
 ****************************************************************************************************
 
   @brief Write 16 bit integer (os_short) to the memory block.
-  @anchor ioc_set16
+  @anchor ioc_setp_short
 
-  The ioc_set16() function writes 16 bit integer into the memory block. 16 bit integer will
+  The ioc_setp_short() function writes 16 bit integer into the memory block. 16 bit integer will
   take two bytes space.
 
   @param   handle Memory block handle.
@@ -1145,7 +1225,7 @@ int ioc_get8u(
 
 ****************************************************************************************************
 */
-void ioc_set16(
+void ioc_setp_short(
     iocHandle *handle,
     int addr,
     int value)
@@ -1160,9 +1240,9 @@ void ioc_set16(
 ****************************************************************************************************
 
   @brief Read signed 16 bit integer from the memory block.
-  @anchor ioc_get16
+  @anchor ioc_getp_short
 
-  The ioc_get16() function reads 16 bit integer from the memory block.
+  The ioc_getp_short() function reads 16 bit integer from the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read from.
@@ -1170,7 +1250,7 @@ void ioc_set16(
 
 ****************************************************************************************************
 */
-int ioc_get16(
+int ioc_getp_short(
     iocHandle *handle,
     int addr)
 {
@@ -1184,9 +1264,9 @@ int ioc_get16(
 ****************************************************************************************************
 
   @brief Read unsigned 16 bit integer from the memory block.
-  @anchor ioc_get16u
+  @anchor ioc_getp_ushort
 
-  The ioc_get16u() function reads 16 bit integer from the memory block.
+  The ioc_getp_ushort() function reads 16 bit integer from the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read from.
@@ -1194,7 +1274,7 @@ int ioc_get16(
 
 ****************************************************************************************************
 */
-os_int ioc_get16u(
+os_int ioc_getp_ushort(
     iocHandle *handle,
     int addr)
 {
@@ -1208,9 +1288,9 @@ os_int ioc_get16u(
 ****************************************************************************************************
 
   @brief Write 32 bit integer (os_int) to the memory block.
-  @anchor ioc_set32
+  @anchor ioc_setp_int
 
-  The ioc_set32() function writes 32 bit integer into the memory block. 32 bit integer will take
+  The ioc_setp_int() function writes 32 bit integer into the memory block. 32 bit integer will take
   4 bytes space.
 
   @param   handle Memory block handle.
@@ -1220,7 +1300,7 @@ os_int ioc_get16u(
 
 ****************************************************************************************************
 */
-void ioc_set32(
+void ioc_setp_int(
     iocHandle *handle,
     int addr,
     os_int value)
@@ -1233,9 +1313,9 @@ void ioc_set32(
 ****************************************************************************************************
 
   @brief Read 32 bit integer from the memory block.
-  @anchor ioc_get32
+  @anchor ioc_getp_int
 
-  The ioc_get32() function reads 32 bit integer from the memory block.
+  The ioc_getp_int() function reads 32 bit integer from the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read from.
@@ -1243,7 +1323,7 @@ void ioc_set32(
 
 ****************************************************************************************************
 */
-os_int ioc_get32(
+os_int ioc_getp_int(
     iocHandle *handle,
     int addr)
 {
@@ -1257,9 +1337,9 @@ os_int ioc_get32(
 ****************************************************************************************************
 
   @brief Write 64 bit integer (os_int64) to the memory block.
-  @anchor ioc_set64
+  @anchor ioc_setp_long
 
-  The ioc_set64() function writes 64 bit integer into the memory block. 64 bit integer will take
+  The ioc_setp_long() function writes 64 bit integer into the memory block. 64 bit integer will take
   eight bytes space.
 
   @param   handle Memory block handle.
@@ -1269,7 +1349,7 @@ os_int ioc_get32(
 
 ****************************************************************************************************
 */
-void ioc_set64(
+void ioc_setp_long(
     iocHandle *handle,
     int addr,
     os_int64 value)
@@ -1282,9 +1362,9 @@ void ioc_set64(
 ****************************************************************************************************
 
   @brief Read 64 bit integer from the memory block.
-  @anchor ioc_get64
+  @anchor ioc_getp_long
 
-  The ioc_get64() function reads 64 bit integer from the memory block.
+  The ioc_getp_long() function reads 64 bit integer from the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read from.
@@ -1292,7 +1372,7 @@ void ioc_set64(
 
 ****************************************************************************************************
 */
-os_int64 ioc_get64(
+os_int64 ioc_getp_long(
     iocHandle *handle,
     int addr)
 {
@@ -1306,9 +1386,9 @@ os_int64 ioc_get64(
 ****************************************************************************************************
 
   @brief Write 32 bit floating point value (os_float) to the memory block.
-  @anchor ioc_setfloat
+  @anchor ioc_setp_float
 
-  The ioc_setfloat() function writes 4 byte floating pointr value into the memory block.
+  The ioc_setp_float() function writes 4 byte floating pointr value into the memory block.
   This may not work on all systems, requires that 32 bit IEEE float is available. So far
   all systems I tested do support 32 bit IEEE float.
 
@@ -1319,7 +1399,7 @@ os_int64 ioc_get64(
 
 ****************************************************************************************************
 */
-void ioc_setfloat(
+void ioc_setp_float(
     iocHandle *handle,
     int addr,
     os_float value)
@@ -1332,9 +1412,9 @@ void ioc_setfloat(
 ****************************************************************************************************
 
   @brief Read 32 bit floating point value from the memory block.
-  @anchor ioc_getfloat
+  @anchor ioc_getp_float
 
-  The ioc_getfloat() function reads 4 byte floating point value from the memory block.
+  The ioc_getp_float() function reads 4 byte floating point value from the memory block.
 
   @param   handle Memory block handle.
   @param   addr Memory address to read from.
@@ -1342,7 +1422,7 @@ void ioc_setfloat(
 
 ****************************************************************************************************
 */
-os_float ioc_getfloat(
+os_float ioc_getp_float(
     iocHandle *handle,
     int addr)
 {
@@ -1356,9 +1436,9 @@ os_float ioc_getfloat(
 ****************************************************************************************************
 
   @brief Write string to the memory block.
-  @anchor ioc_setstring
+  @anchor ioc_setp_str
 
-  The ioc_setstring() function writes a string to the memory block. If string is shorter than
+  The ioc_setp_str() function writes a string to the memory block. If string is shorter than
   maximum size n, extra space is filled with '\0' characters. If string is longer than maximum
   size n minus one, string is truncated. Resulting string will always be terminated with '\0'
   character. String str should be UTF-8 encoded.
@@ -1371,7 +1451,7 @@ os_float ioc_getfloat(
 
 ****************************************************************************************************
 */
-void ioc_setstring(
+void ioc_setp_str(
     iocHandle *handle,
     int addr,
     const os_char *str,
@@ -1385,9 +1465,9 @@ void ioc_setstring(
 ****************************************************************************************************
 
   @brief Read string from the memory block.
-  @anchor ioc_getstring
+  @anchor ioc_getp_str
 
-  The ioc_getstring() function reads a string from memory block and stores it in str buffer.
+  The ioc_getp_str() function reads a string from memory block and stores it in str buffer.
   n sets maximum number of characters to read, including terminating '\0' character. String
   should be UTF-8 encoded.
 
@@ -1399,7 +1479,7 @@ void ioc_setstring(
 
 ****************************************************************************************************
 */
-void ioc_getstring(
+void ioc_getp_str(
     iocHandle *handle,
     int addr,
     os_char *str,
@@ -1413,9 +1493,9 @@ void ioc_getstring(
 ****************************************************************************************************
 
   @brief Store array of 16 bit integers to the memory block.
-  @anchor ioc_setarray16
+  @anchor ioc_setp_short_array
 
-  The ioc_setarray16() function writes an array of 16 bit integers to the memory block. It is
+  The ioc_setp_short_array() function writes an array of 16 bit integers to the memory block. It is
   more efficient to use this function than to loop trough values and write them one at a time.
 
   @param   handle Memory block handle.
@@ -1427,7 +1507,7 @@ void ioc_getstring(
 
 ****************************************************************************************************
 */
-void ioc_setarray16(
+void ioc_setp_short_array(
     iocHandle *handle,
     int addr,
     const os_short *arr,
@@ -1441,9 +1521,9 @@ void ioc_setarray16(
 ****************************************************************************************************
 
   @brief Read array of 16 bit integers from the memory block.
-  @anchor ioc_getarray16
+  @anchor ioc_getp_short_array
 
-  The ioc_getarray16() function reads an array of 16 bit integers from the memory block. It is
+  The ioc_getp_short_array() function reads an array of 16 bit integers from the memory block. It is
   more efficient to use this function than to loop trough values and read them one at a time.
 
   @param   handle Memory block handle.
@@ -1455,7 +1535,7 @@ void ioc_setarray16(
 
 ****************************************************************************************************
 */
-void ioc_getarray16(
+void ioc_getp_short_array(
     iocHandle *handle,
     int addr,
     os_short *arr,
@@ -1469,9 +1549,9 @@ void ioc_getarray16(
 ****************************************************************************************************
 
   @brief Store array of 32 bit integers to the memory block.
-  @anchor ioc_setarray32
+  @anchor ioc_setp_int_array
 
-  The ioc_setarray32() function writes an array of 32 bit integers to the memory block. It is
+  The ioc_setp_int_array() function writes an array of 32 bit integers to the memory block. It is
   more efficient to use this function than to loop trough values and write them one at a time.
 
   @param   handle Memory block handle.
@@ -1483,7 +1563,7 @@ void ioc_getarray16(
 
 ****************************************************************************************************
 */
-void ioc_setarray32(
+void ioc_setp_int_array(
     iocHandle *handle,
     int addr,
     const os_int *arr,
@@ -1497,9 +1577,9 @@ void ioc_setarray32(
 ****************************************************************************************************
 
   @brief Read array of 32 bit integers from the memory block.
-  @anchor ioc_getarray32
+  @anchor ioc_getp_int_array
 
-  The ioc_getarray32() function reads an array of 32 bit integers from the memory block. It is
+  The ioc_getp_int_array() function reads an array of 32 bit integers from the memory block. It is
   more efficient to use this function than to loop trough values and read them one at a time.
 
   @param   handle Memory block handle.
@@ -1511,7 +1591,7 @@ void ioc_setarray32(
 
 ****************************************************************************************************
 */
-void ioc_getarray32(
+void ioc_getp_int_array(
     iocHandle *handle,
     int addr,
     os_int *arr,
@@ -1525,9 +1605,9 @@ void ioc_getarray32(
 ****************************************************************************************************
 
   @brief Store array of 32 bit floating point values to the memory block.
-  @anchor ioc_setfloatarray
+  @anchor ioc_setp_float_array
 
-  The ioc_setfloatarray() function writes an array of 4 byte floating point values to memory
+  The ioc_setp_float_array() function writes an array of 4 byte floating point values to memory
   block. It is more efficient to use this function than to loop trough values and write them
   one at a time.
 
@@ -1539,7 +1619,7 @@ void ioc_getarray32(
 
 ****************************************************************************************************
 */
-void ioc_setfloatarray(
+void ioc_setp_float_array(
     iocHandle *handle,
     int addr,
     const os_float *arr,
@@ -1553,9 +1633,9 @@ void ioc_setfloatarray(
 ****************************************************************************************************
 
   @brief Read array of 32 bit floating point values from the memory block.
-  @anchor ioc_getfloatarray
+  @anchor ioc_getp_float_array
 
-  The ioc_getfloatarray() function reads an array of 4 byte floating point values from the memory
+  The ioc_getp_float_array() function reads an array of 4 byte floating point values from the memory
   block. It is more efficient to use this function than to loop trough values and read them
   one at a time.
 
@@ -1567,7 +1647,7 @@ void ioc_setfloatarray(
 
 ****************************************************************************************************
 */
-void ioc_getfloatarray(
+void ioc_getp_float_array(
     iocHandle *handle,
     int addr,
     os_float *arr,
@@ -1575,7 +1655,7 @@ void ioc_getfloatarray(
 {
     ioc_read_internal(handle, addr, (os_char*)arr, n * sizeof(os_float), IOC_SWAP_32);
 }
-
+#endif
 
 /**
 ****************************************************************************************************
