@@ -541,7 +541,7 @@ static void iocontroller_print_count_signal_changes(
         osal_console_write(my_count_status_bits_from_ioboard & OSAL_STATE_CONNECTED
              ? " CONNECTED" : " DISCONNECTED");
 
-        switch (my_count_status_bits_from_ioboard & OSAL_STATE_MASK)
+        switch (my_count_status_bits_from_ioboard & OSAL_STATE_ERROR_MASK)
         {
             case OSAL_STATE_YELLOW:
                 osal_console_write(" YELLOW");

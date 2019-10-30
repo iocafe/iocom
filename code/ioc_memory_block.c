@@ -749,13 +749,12 @@ getout:
   The IOC_SIGNAL_WRITE Write signals to memory block. If this flag is not given, signals
   are read.
 
-  The IOC_SIGNAL_NO_AUTO_TRANSFER disables automatic synchronization of memory block data by
-  preventing ioc_send() and ioc_receive() function calls;
-
   IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
-  if it as off, leave it off.
+  if it as off, leave it off. This flag is meaningfull only when combined with IOC_SIGNAL_WRITE
+  flag.
 
   IOC_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
+  This flag is meaningfull only when combined with IOC_SIGNAL_WRITE flag.
 
   If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
@@ -766,9 +765,8 @@ getout:
            state bits and data type for each signal.
   @oaram   n_signals Number of elements in signals array.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_NO_AUTO_TRANSFER,
-           IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT, IOC_SIGNAL_CLEAR_ERRORS and
-           IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           IOC_SIGNAL_CLEAR_ERRORS and IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
            the signals array.
   @return  None.
@@ -843,6 +841,11 @@ void ioc_movex_signals(
             {
                 if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
                     sig->state_bits |= OSAL_STATE_CONNECTED;
+
+                if (flags & IOC_SIGNAL_CLEAR_ERRORS)
+                {
+                    sig->state_bits &= ~OSAL_STATE_ERROR_MASK;
+                }
             }
             else
             {
@@ -892,8 +895,8 @@ void ioc_movex_signals(
   @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_NO_AUTO_TRANSFER, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
-           IOC_SIGNAL_CLEAR_ERRORS and IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT, IOC_SIGNAL_CLEAR_ERRORS and
+           IOC_SIGNAL_NO_THREAD_SYNC.
            Storage type to be used in memory block needs to be specified here by setting one
            of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
 
@@ -935,8 +938,8 @@ os_char ioc_setx_int(
   @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_NO_AUTO_TRANSFER, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
-           IOC_SIGNAL_CLEAR_ERRORS and IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT, IOC_SIGNAL_CLEAR_ERRORS and
+           IOC_SIGNAL_NO_THREAD_SYNC.
            Storage type to be used in memory block needs to be specified here by setting one
            of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
 
@@ -967,54 +970,6 @@ os_char ioc_setx_float(
 /**
 ****************************************************************************************************
 
-  @brief Read or write string from/to memory block.
-  @anchor ioc_movex_signals
-
-  The ioc_movex_str() function reads or writes a string from/to memory block.
-
-  The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string is read.
-
-  The IOC_SIGNAL_NO_AUTO_TRANSFER disables automatic synchronization of memory block data by
-  preventing ioc_send() and ioc_receive() function calls;
-
-  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
-  if it as off, leave it off.
-
-  IOC_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
-
-  If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
-  The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
-  synchronize thread access to IOCOM data structures.
-
-  @param   handle Memory block handle.
-  @param   signal Pointer to array of signal structures. This holds memory address, value,
-           state bits and data type for each signal.
-  @oaram   n_signals Number of elements in signals array.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_NO_AUTO_TRANSFER,
-           IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT, IOC_SIGNAL_CLEAR_ERRORS and
-           IOC_SIGNAL_NO_THREAD_SYNC.
-           Type flags here are ignored, since type is set for each signal separately in
-           the signals array.
-  @return  None.
-
-****************************************************************************************************
-*/
-os_char ioc_movex_str(
-    iocHandle *handle,
-    os_int addr,
-    os_char *str,
-    os_int str_sz,
-    os_char state_bits,
-    os_short flags)
-{
-    return 0;
-}
-
-
-/**
-****************************************************************************************************
-
   @brief Get integer signal value.
   @anchor ioc_getx_int
 
@@ -1027,10 +982,10 @@ os_char ioc_movex_str(
   @oaram   state_bits Pointer to integer where to store state bits.
            OSAL_STATE_CONNECTED indicates that we have the signal value. HW errors are indicated
            by OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bits.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_NO_AUTO_TRANSFER, IOC_SIGNAL_NO_THREAD_SYNC.
-           Storage type to be used in memory block needs to be specified here by setting one
-           of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flag can be combined by or
+           operator: IOC_SIGNAL_NO_THREAD_SYNC. Storage type to be used in memory block needs to
+           be specified here by setting one of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT,
+            OS_INT, OS_UINT or OS_FLOAT
 
   @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
 
@@ -1063,6 +1018,235 @@ os_float ioc_getx_float(
     os_int addr,
     os_char *state_bits,
     os_short flags);
+
+/**
+****************************************************************************************************
+
+  @brief Read or write one string from/to memory block.
+  @anchor ioc_movex_str_signal
+
+  The ioc_movex_str_signal() function reads or writes one string signal from or to memory
+  block.
+
+  The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string
+  is read.
+
+  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
+  if it as off, leave it off. This flag is meaningfull only when combined with IOC_SIGNAL_WRITE
+  flag.
+
+  IOC_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
+  This flag is meaningfull only when combined with IOC_SIGNAL_WRITE flag.
+
+  If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
+  The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
+  synchronize thread access to IOCOM data structures.
+
+  @param   handle Memory block handle.
+  @param   signal Pointer to array of signal structures. This holds memory address, value,
+           state bits and data type for each signal.
+  @oaram   n_signals Number of elements in signals array.
+  @param   str Pointer to string buffer
+  @param   str_sz String buffer size in bytes (including terminating NULL character).
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           IOC_SIGNAL_CLEAR_ERRORS and IOC_SIGNAL_NO_THREAD_SYNC.
+           Type flags here are ignored, since type is set for each signal separately in
+           the signals array.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_movex_str_signal(
+    iocHandle *handle,
+    iocSignal *signal,
+    os_char *str,
+    os_memsz str_sz,
+    os_short flags)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_char *p;
+    os_int addr;
+    os_memsz len;
+
+    /* Check function arguments.
+     */
+    osal_debug_assert(handle != OS_NULL);
+    osal_debug_assert(signal != OS_NULL);
+    osal_debug_assert(str != OS_NULL);
+
+    /* If the value in memory block is actually integer or float.
+     */
+    switch (signal->flags & OSAL_TYPEID_MASK)
+    {
+        case OS_STRING:
+            break;
+
+        case OS_FLOAT:
+            if (flags & IOC_SIGNAL_WRITE)
+            {
+                signal->value.f = (os_float)osal_string_to_double(str, OS_NULL);
+                ioc_movex_signals(handle, signal, 1, flags);
+            }
+            else
+            {
+                ioc_movex_signals(handle, signal, 1, flags);
+                osal_double_to_string(str, str_sz, signal->value.f, 4, OSAL_FLOAT_DEFAULT);
+            }
+            return;
+
+        default:
+            if (flags & IOC_SIGNAL_WRITE)
+            {
+                signal->value.i = (os_int)osal_string_to_int(str, OS_NULL);
+                ioc_movex_signals(handle, signal, 1, flags);
+            }
+            else
+            {
+                ioc_movex_signals(handle, signal, 1, flags);
+                osal_int_to_string(str, str_sz, signal->value.i);
+            }
+            return;
+    }
+
+    /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
+     */
+    if (flags & IOC_SIGNAL_NO_THREAD_SYNC)
+    {
+        mblk = handle->mblk;
+    }
+    else
+    {
+        mblk = ioc_handle_lock_to_mblk(handle, &root);
+    }
+
+    /* If memory block is not found, we do not know signal value.
+     */
+    if (mblk == OS_NULL)
+    {
+        signal->state_bits = 0;
+        return;
+    }
+
+    /* If address is outside the memory block.
+     */
+    addr = signal->addr;
+    if (addr < 0 || addr + signal->value.i > mblk->nbytes)
+    {
+        signal->state_bits = 0;
+        goto goon;
+    }
+
+    /* Copy the state bits.
+     */
+    p = mblk->buf + addr;
+
+    if (flags & IOC_SIGNAL_WRITE)
+    {
+        /* If memory block is connected as source, we may turn OSAL_STATE_CONNECTED
+         * bit on. If memory block is disconnected, we sure turn it off.
+         */
+        if (mblk->sbuf.first)
+        {
+            if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
+                signal->state_bits |= OSAL_STATE_CONNECTED;
+
+            if (flags & IOC_SIGNAL_CLEAR_ERRORS)
+            {
+                signal->state_bits &= ~OSAL_STATE_ERROR_MASK;
+            }
+        }
+        else
+        {
+            signal->state_bits &= ~OSAL_STATE_CONNECTED;
+        }
+
+        *(p++) = signal->state_bits;
+        len = os_strlen(str);
+        if (signal->value.i < len) len = signal->value.i;
+        ioc_byte_ordered_copy(p, str, len, 1);
+        ioc_mblk_invalidate(mblk, addr, addr + len /* no -1, we need also state byte */);
+    }
+    else
+    {
+        /* Get state bits from memory block. If memory block is not connected
+           as target, turn OSAL_STATE_CONNECTED bit off in returned state, but
+           do not modify memory block (we are receiving).
+         */
+        signal->state_bits = *(p++);
+        if (mblk->tbuf.first == OS_NULL)
+        {
+            signal->state_bits &= ~OSAL_STATE_CONNECTED;
+        }
+        len = str_sz;
+        if (signal->value.i < len) len = signal->value.i;
+        ioc_byte_ordered_copy(str, p, len, 1);
+    }
+
+goon:
+    /* End synchronization (unless disabled by no thread sync flag).
+     */
+    if ((flags & IOC_SIGNAL_NO_THREAD_SYNC) == 0)
+    {
+        ioc_unlock(root);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Read or write string from/to memory block.
+  @anchor ioc_movex_signals
+
+  The ioc_movex_str() function reads or writes a string from/to memory block.
+
+  The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string is read.
+
+  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
+  if it as off, leave it off.
+
+  IOC_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
+
+  If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
+  The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
+  synchronize thread access to IOCOM data structures.
+
+  @param   handle Memory block handle.
+  @param   signal Pointer to array of signal structures. This holds memory address, value,
+           state bits and data type for each signal.
+  @oaram   n_signals Number of elements in signals array.
+  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           IOC_SIGNAL_CLEAR_ERRORS and IOC_SIGNAL_NO_THREAD_SYNC.
+           Type flags here are ignored, since type is set for each signal separately in
+           the signals array.
+  @return  None.
+
+****************************************************************************************************
+*/
+os_char ioc_movex_str(
+    iocHandle *handle,
+    os_int addr,
+    os_char *str,
+    os_memsz str_sz,
+    os_char state_bits,
+    os_short flags)
+{
+    iocSignal signal;
+
+    signal.addr = addr;
+    signal.state_bits = state_bits;
+    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
+    signal.state_bits = state_bits;
+
+    ioc_movex_str_signal(handle, &signal, str, str_sz, flags);
+
+    return signal.state_bits;
+}
+
+
 
 os_char ioc_setx_int_array(
     iocHandle *handle,

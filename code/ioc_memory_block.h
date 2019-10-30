@@ -344,10 +344,9 @@ iocSignal;
  */
 #define IOC_SIGNAL_DEFAULT 0
 #define IOC_SIGNAL_WRITE 0x20
-#define IOC_SIGNAL_NO_AUTO_TRANSFER 0x40
-#define IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT 0x80
-#define IOC_SIGNAL_CLEAR_ERRORS 0x100
-#define IOC_SIGNAL_NO_THREAD_SYNC 0x200
+#define IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT 0x40
+#define IOC_SIGNAL_CLEAR_ERRORS 0x80
+#define IOC_SIGNAL_NO_THREAD_SYNC 0x100
 #define IOC_SIGNAL_FLAGS_MASK 0xFE0
 
 /* Macros for signal value. state bits,  within iocSignal structure
@@ -534,6 +533,24 @@ os_int ioc_getx_int(
     os_char *state_bits,
     os_short flags);
 
+/* Read or write one string from/to memory block (with signal structure).
+ */
+void ioc_movex_str_signal(
+    iocHandle *handle,
+    iocSignal *signal,
+    os_char *str,
+    os_memsz str_sz,
+    os_short flags);
+
+/* Read or write one string from/to memory block (without signal structure).
+ */
+os_char ioc_movex_str(
+    iocHandle *handle,
+    os_int addr,
+    os_char *str,
+    os_memsz str_sz,
+    os_char state_bits,
+    os_short flags);
 
 
 #ifndef IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS
