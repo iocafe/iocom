@@ -30,6 +30,12 @@ static void ioc_mblk_invalidate(
 static int ioc_get_unique_mblk_id(
     iocRoot *root);
 
+static void ioc_byte_ordered_copy(
+    os_char *buf,
+    const os_char *p,
+    os_memsz total_sz,
+    os_memsz type_sz);
+
 
 /**
 ****************************************************************************************************
@@ -582,51 +588,7 @@ void ioc_write_internal(
     }
     else
     {
-#if OSAL_SMALL_ENDIAN == 0
-    switch (flags & IOC_SWAP_MASK)
-    {
-        default:
-        case 0:
-            os_memcpy(p, buf, n);
-            break;
-
-        case IOC_SWAP_16:
-            count = n;
-            while (count > 0)
-            {
-                *(p++) = buf[1]; *(p++) = buf[0];
-                buf += 2;
-                count -= 2;
-            }
-            break;
-
-        case IOC_SWAP_32:
-            count = n;
-            while (count > 0)
-            {
-                *(p++) = buf[3]; *(p++) = buf[2];
-                *(p++) = buf[1]; *(p++) = buf[0];
-                buf += 4;
-                count -= 4;
-            }
-            break;
-
-        case IOC_SWAP_64:
-            count = n;
-            while (count > 0)
-            {
-                *(p++) = buf[7]; *(p++) = buf[6];
-                *(p++) = buf[5]; *(p++) = buf[4];
-                *(p++) = buf[3]; *(p++) = buf[2];
-                *(p++) = buf[1]; *(p++) = buf[0];
-                buf += 8;
-                count -= 8;
-            }
-            break;
-    }
-#else
-        os_memcpy(p, buf, n);
-#endif
+        ioc_byte_ordered_copy(p, buf, n, flags & IOC_SWAP_MASK);
     }
     ioc_mblk_invalidate(mblk, addr, addr + n - 1);
 
@@ -710,9 +672,15 @@ void ioc_read_internal(
     os_char *p;
     int max_n, nstat, count;
 
-    /* Get memory block pointer and start synchronization.
+    /* Get memory block pointer and start synchronization. If memory block is not found, mark
+       return zeroes.
      */
     mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL)
+    {
+        os_memclear(buf, n);
+        return;
+    }
 
     /* Check function arguments.
      */
@@ -759,57 +727,254 @@ void ioc_read_internal(
     }
     else
     {
-#if OSAL_SMALL_ENDIAN == 0
-    switch (flags & IOC_SWAP_MASK)
-    {
-        default:
-        case 0:
-            os_memcpy(buf, p, n);
-            break;
-
-        case IOC_SWAP_16:
-            count = n;
-            while (count > 0)
-            {
-                buf[1] = *(p++);
-                buf[0] = *(p++);
-                buf += 2;
-                count -= 2;
-            }
-            break;
-
-        case IOC_SWAP_32:
-            count = n;
-            while (count > 0)
-            {
-                buf[3] = *(p++); buf[2] = *(p++);
-                buf[1] = *(p++); buf[0] = *(p++);
-                buf += 4;
-                count -= 4;
-            }
-            break;
-
-        case IOC_SWAP_64:
-            count = n;
-            while (count > 0)
-            {
-                buf[7] = *(p++); buf[6] = *(p++);
-                buf[5] = *(p++); buf[4] = *(p++);
-                buf[3] = *(p++); buf[2] = *(p++);
-                buf[1] = *(p++); buf[0] = *(p++);
-                buf += 8;
-                count -= 8;
-            }
-            break;
-    }
-#else
-        os_memcpy(buf, p, n);
-#endif
+        ioc_byte_ordered_copy(buf, p, n, flags & IOC_SWAP_MASK);
     }
 
     ioc_unlock(root);
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Write one or more signals to memory block.
+  @anchor ioc_setx_signals
+
+  The ioc_setx_signals() function writes one or more signal values to memory block. This
+  is used for basic types, like integers and floats. Use ioc_setx_str() for strings or
+  ioc_setx_int_array() for arrays.
+
+  The OSAL_SIGNAL_NO_AUTO disables automatic synchronization of memory block data by preventing
+  ioc_send() and ioc_receive() function calls;
+
+  OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
+  if it as off, leave it off.
+
+  OSAL_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
+
+  If OSAL_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
+  The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
+  synchronize thread access to IOCOM data structures.
+
+  @param   handle Memory block handle.
+  @param   signal Pointer to array of signal structures. This holds memory address, value,
+           state bits and data type for each signal.
+  @oaram   n_signals Number of elements in signals array.
+  @param   flags OSAL_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: OSAL_SIGNAL_NO_AUTO_TRANSFER, OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           OSAL_SIGNAL_CLEAR_ERRORS and OSAL_SIGNAL_NO_THREAD_SYNC 256.
+           Type flags here are ignored, since type is set for each signal separately in signals array.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_setx_signals(
+    iocHandle *handle,
+    iocSignal *signal,
+    os_int n_signals,
+    os_short flags)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    iocSignal *sig;
+    os_char *p;
+    os_memsz type_sz;
+    os_int addr, i;
+
+    /* Check function arguments.
+     */
+    osal_debug_assert(handle != OS_NULL);
+    osal_debug_assert(signal != OS_NULL);
+    osal_debug_assert(n_signals > 0);
+
+    /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
+     */
+    if (flags & OSAL_SIGNAL_NO_THREAD_SYNC)
+    {
+        mblk = handle->mblk;
+    }
+    else
+    {
+        mblk = ioc_handle_lock_to_mblk(handle, &root);
+    }
+
+    /* If memory block is not found, we do not know signal value.
+     */
+    if (mblk == OS_NULL)
+    {
+        signal->state_bits = 0;
+        return;
+    }
+
+    /* Loop trough signal array.
+     */
+    for (i = 0; i < n_signals; i++)
+    {
+        sig = signal + i;
+
+        addr = sig->addr;
+        type_sz = osal_typeid_size(sig->flags & OSAL_TYPEID_MASK);
+        osal_debug_assert(type_sz > 0);
+
+        if (addr < 0 || addr + type_sz > mblk->nbytes)
+        {
+            sig->state_bits = 0;
+            sig->value.i = 0;
+            continue;
+        }
+
+        /* Copy the state bits.
+         */
+        p = mblk->buf + addr;
+        sig->state_bits = *(p++);
+
+        ioc_byte_ordered_copy((os_char*)&sig->value, p, type_sz, type_sz);
+    }
+
+    /* End synchronization (unless disabled by no thread sync flag).
+     */
+    if ((flags & OSAL_SIGNAL_NO_THREAD_SYNC) == 0)
+    {
+        ioc_unlock(root);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Read one or more signals from memory block.
+  @anchor ioc_getx_signals
+
+  The ioc_getx_signals() function reads one or more signal values from memory block. This
+  is used for basic types, like integers and floats. Use ioc_getx_str() for strings or
+  ioc_getx_int_array() for arrays.
+
+  The OSAL_SIGNAL_NO_AUTO disables automatic synchronization of memory block data by preventing
+  ioc_send() and ioc_receive() function calls;
+
+  OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
+  if it as off, leave it off.
+
+  OSAL_SIGNAL_CLEAR_ERRORS: Clear OSAL_STATE_YELLOW and OSAL_STATE_ORANGE in state bits.
+
+  If OSAL_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
+  The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
+  synchronize thread access to IOCOM data structures.
+
+  @param   handle Memory block handle.
+  @param   signal Pointer to array of signal structures. This holds memory address, value,
+           state bits and data type for each signal.
+  @oaram   n_signals Number of elements in signals array.
+  @param   flags OSAL_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: OSAL_SIGNAL_NO_AUTO_TRANSFER, OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           OSAL_SIGNAL_CLEAR_ERRORS and OSAL_SIGNAL_NO_THREAD_SYNC 256.
+           Type flags here are ignored, since type is set for each signal separately in signals array.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_getx_signals(
+    iocHandle *handle,
+    iocSignal *signal,
+    os_int n_signals,
+    os_short flags)
+{
+
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Set integer value as a signal.
+  @anchor ioc_setx_int
+
+  The ioc_setx_int() function writes one signal value to memory block. This is used for basic
+  types like integers and floats and cannot be used for strings or arrays.
+
+  @param   handle Memory block handle.
+  @param   address Address within memory block.
+  @param   value Integer value to write.
+  @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
+           with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
+  @param   flags OSAL_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
+           operator: OSAL_SIGNAL_NO_AUTO_TRANSFER, OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
+           OSAL_SIGNAL_CLEAR_ERRORS and OSAL_SIGNAL_NO_THREAD_SYNC 256.
+           Storage type to be used in memory block needs to be specified here by setting one
+           of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
+
+  @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
+
+****************************************************************************************************
+*/
+os_char ioc_setx_int(
+    iocHandle *handle,
+    os_int addr,
+    os_int value,
+    os_char state_bits,
+    os_short flags)
+{
+    iocSignal signal;
+    signal.addr = addr;
+    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) signal.value.f = (os_float)value;
+    else signal.value.i = value;
+    signal.state_bits = state_bits;
+    signal.flags = (flags & ~OSAL_SIGNAL_FLAGS_MASK);
+
+    ioc_setx_signals(handle, &signal, 1, flags);
+    return signal.state_bits;
+}
+
+
+os_char ioc_setx_float(
+    iocHandle *handle,
+    os_int addr,
+    os_float value,
+    os_char state_bits,
+    os_short flags);
+
+os_char ioc_setx_str(
+    iocHandle *handle,
+    os_int addr,
+    os_char *str,
+    os_int str_sz,
+    os_char state_bits,
+    os_short flags);
+
+os_int ioc_getx_int(
+    iocHandle *handle,
+    os_int addr,
+    os_char *state_bits,
+    os_short flags);
+
+os_float ioc_getx_float(
+    iocHandle *handle,
+    os_int addr,
+    os_char *state_bits,
+    os_short flags);
+
+os_char ioc_getx_str(
+    iocHandle *handle,
+    os_int addr,
+    os_char *str,
+    os_int str_sz,
+    os_short flags);
+
+os_char ioc_setx_int_array(
+    iocHandle *handle,
+    os_int addr,
+    void *v,
+    os_int *n,
+    os_char state_bits,
+    os_short flags); /* osalTypeId */
+
+os_char ioc_getx_int_array(
+    iocHandle *handle,
+    os_int addr,
+    void *v,
+    os_int *n,
+    os_short flags); /* osalTypeId */
 
 /**
 ****************************************************************************************************
@@ -1734,4 +1899,61 @@ notthis:;
      */
     osal_debug_error("Too many memory blocks?");
     return 0;
+}
+
+
+static void ioc_byte_ordered_copy(
+    os_char *buf,
+    const os_char *p,
+    os_memsz total_sz,
+    os_memsz type_sz)
+{
+#if OSAL_SMALL_ENDIAN == 0
+    os_memsz count;
+
+    switch (type_sz)
+    {
+        case 2:
+            count = total_sz;
+            while (count >= type_sz)
+            {
+                buf[1] = *(p++);
+                buf[0] = *(p++);
+                buf += 2;
+                count -= type_sz;
+            }
+            break;
+
+        case 4:
+            count = total_sz;
+            while (count >= type_sz)
+            {
+                buf[3] = *(p++); buf[2] = *(p++);
+                buf[1] = *(p++); buf[0] = *(p++);
+                buf += 4;
+                count -= type_sz;
+            }
+            break;
+
+        case 8:
+            count = total_sz;
+            while (count >= type_sz)
+            {
+                buf[7] = *(p++); buf[6] = *(p++);
+                buf[5] = *(p++); buf[4] = *(p++);
+                buf[3] = *(p++); buf[2] = *(p++);
+                buf[1] = *(p++); buf[0] = *(p++);
+                buf += 8;
+                count -= type_sz;
+            }
+            break;
+
+        default:
+            os_memcpy(buf, p, total_sz);
+            break;
+
+    }
+#else
+    os_memcpy(buf, p, total_sz);
+#endif
 }

@@ -54,9 +54,9 @@
 
 /* Flags for ioc_write_internal().
  */
-#define IOC_SWAP_16 1
-#define IOC_SWAP_32 2
-#define IOC_SWAP_64 3
+#define IOC_SWAP_16 2 /* needs to be number of bytes */
+#define IOC_SWAP_32 4 /* needs to be number of bytes */
+#define IOC_SWAP_64 8 /* needs to be number of bytes */
 #define IOC_SWAP_MASK 15
 #define IOC_MBLK_STRING 16
 #define IOC_CLEAR_MBLK_RANGE 32
@@ -306,11 +306,120 @@ typedef struct iocMemoryBlock
 iocMemoryBlock;
 
 
+/**
+****************************************************************************************************
+  IO signal state structure
+****************************************************************************************************
+ */
+typedef struct iocSignal
+{
+    /* Starting address in memory block.
+     */
+    os_int addr;
+
+    /* Current value. For simple ones, this is either integer or float d, depending on type
+       in flags. For strings value.i can be number of bytes in memory block for the string.
+       For arrays value.i is number of elements reserved in memory block.
+     */
+    union
+    {
+        os_int i;
+        os_float f;
+    }
+    value;
+
+    os_short flags;
+    os_char state_bits;
+}
+iocSignal;
+
+
+/**
+****************************************************************************************************
+  Macros to simplify memory block access
+****************************************************************************************************
+ */
+/* flags for memory block functions contain type, like OS_BOOLEAN, OS_USHORT, OS_FLOAT, etc,
+   and may contain these additional flags.
+ */
+#define OSAL_SIGNAL_DEFAULT 0
+#define OSAL_SIGNAL_NO_AUTO_TRANSFER 0x20
+#define OSAL_SIGNAL_DO_NOT_SET_CONNECTED_BIT 0x40
+#define OSAL_SIGNAL_CLEAR_ERRORS 0x80
+#define OSAL_SIGNAL_NO_THREAD_SYNC 0x100
+#define OSAL_SIGNAL_FLAGS_MASK 0x1E0
+
+/* Macros for signal value. state bits,  within iocSignal structure
+ */
+#define ioc_value_int(s) (s).value.i
+#define ioc_value_float(s) (s).value.f
+#define ioc_state_bits(s) (s).state_bits
+#define ioc_typeid(s) ((s).flags & OSAL_TYPEID_MASK)
+#define ioc_flags(s) ((s).flags)
+
+/* Macros for setting and getting multiple signals by signal structure.
+ */
+#define ioc_set_signal(h,s) ioc_setx_signals((h), (s), 1, 0)
+#define ioc_get_signal(h,s) ioc_getx_signals((h), (s), 1, 0)
+
+/* Set one signal state.
+ */
+#define ioc_set_boolean(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_BOOLEAN)
+#define ioc_set_char(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_CHAR)
+#define ioc_set_uchar ioc_set_char
+#define ioc_set_short(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_SHORT)
+#define ioc_set_ushort ioc_set_short
+#define ioc_set_int(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_INT)
+#define ioc_set_uint ioc_set_int
+#define ioc_set_str(h,a,st,ss) ioc_setx_str((h), (a), (st), (os_int)(ss), OSAL_STATE_CONNECTED, OS_STRING)
+#define ioc_sets_str(h,s,st,ss) (s)->state_bits = ioc_setx_str((h), (s)->addr, (st), (s)->value.i, OSAL_STATE_CONNECTED, OS_STRING)
+
+/* Get one signal state.
+ */
+#define ioc_get_boolean(h,a,sb) (os_boolean)ioc_getx_int((h), (a), (sb), OS_BOOLEAN)
+#define ioc_get_char(h,a,sb) (os_char)ioc_getx_int((h), (a), (sb), OS_CHAR)
+#define ioc_get_uchar(h,a,sb) (os_uchar)ioc_getx_int((h), (a), (sb), OS_UCHAR)
+#define ioc_get_short(h,a,sb) (os_short)ioc_getx_int((h), (a), (sb), OS_SHORT)
+#define ioc_get_ushort(h,a,sb) (os_ushort)ioc_getx_int((h), (a), (sb), OS_USHORT)
+#define ioc_get_int(h,a,sb) ioc_getx_int((h), (a), (sb), OS_INT)
+#define ioc_get_uint(h,a,sb) (os_uint)ioc_getx_uint((h), (a), (sb), OS_UINT)
+#define ioc_get_str(h,a,st,ss) ioc_getx_str((h), (a), (st), (os_int)(ss), OS_STRING)
+#define ioc_gets_str(h,s,st,ss) (s)->state_bits = ioc_getx_str((h), (s)->addr, (st), (s)->value.i < (os_int)(ss) ? (s)->value.i+1 : (os_int)(ss), OS_STRING)
+
+/* Set array of values.
+ */
+#define ioc_set_bool_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_BOOLEAN)
+#define ioc_set_char_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_CHAR)
+#define ioc_set_uchar_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_UCHAR)
+#define ioc_set_short_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_SHORT)
+#define ioc_set_ushort_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_USHORT)
+#define ioc_set_int_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_INT)
+#define ioc_set_uint_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_UINT)
+#define ioc_set_float_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_FLOAT)
+
+/* Set array of values using initialized signal structure.
+ */
+#define ioc_sets_int_array(h,s,v,n) (s)->state_bits = ioc_setx_array((h), (s)->addr, (v), (n) < (s)->value.i ? (n) : (s)->value.i, OSAL_STATE_CONNECTED, OS_INT)
+
+/* Get array of values.
+ */
+#define ioc_get_bool_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_BOOLEAN)
+#define ioc_get_char_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_CHAR)
+#define ioc_get_uchar_array ioc_get_char_array
+#define ioc_get_short_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_SHORT)
+#define ioc_get_ushort_array ioc_get_short_array
+#define ioc_get_int_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_INT)
+#define ioc_get_uint_array ioc_get_int_array
+
+/* Get array of values using initialized signal structure.
+ */
+#define ioc_gets_int_array(h,s,v,n) (s)->state_bits = ioc_getx_array((h), (s)->addr, (v), (n) < (s)->value.i ? (n) : (s)->value.i, OS_INT)
+
 
 /** 
 ****************************************************************************************************
 
-  @name Functions related to iocom root object
+  @name Functions related to memory blocks
 
   The ioc_initialize_memory_block() function initializes or allocates new memory block object,
   and ioc_release_memory_block() releases resources associated with it. Memory allocated for the

@@ -113,6 +113,7 @@ void ioc_terminate_handles(
 
 
 /* Get memory block pointer from handle and enter synchronization lock.
+ * If memory block no longer exists, lock is left off.
  */
 struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     iocHandle *handle,
