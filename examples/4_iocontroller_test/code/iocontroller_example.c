@@ -130,7 +130,7 @@ static void iocontroller_8_spinner(
     iocHandle *mblk_handle,
     int x);
 
-static void iocontroller_print_count_signal_changes(
+static void iocontroller_print_changes(
     ioControllerContext *c);
 
 /**
@@ -277,14 +277,13 @@ osalStatus osal_loop(
     ioControllerContext *c;
     c = (ioControllerContext*)app_context;
 
-
     /* Do processing which must be done by this thread.
      */
     // iocontroller_long_processing(c);
 
-    // iocontroller_spin_7_segment_delay(c);
+    iocontroller_spin_7_segment_delay(c);
 
-    iocontroller_print_count_signal_changes(c);
+    iocontroller_print_changes(c);
 
     return OSAL_SUCCESS;
 }
@@ -309,7 +308,6 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-
     /* End IO board communication, clean up and finsh with the socket and serial port libraries.
      */
     ioc_release_root(&root);
@@ -497,7 +495,7 @@ static void iocontroller_7_segment(
       {1, 1, 1, 0, 0, 0, 1, 1}  /* 9 */
     };
 
-    ioc_write(mblk_handle, 0, digits[x], 8);
+    ioc_set_boolean_array(mblk_handle, 0, digits[x], 8);
 }
 
 static void iocontroller_8_spinner(
@@ -516,18 +514,23 @@ static void iocontroller_8_spinner(
       {0, 1, 0, 0, 0, 0, 0, 0}, /* 7 */
     };
 
-    ioc_write(mblk_handle, 0, digits[x], 8);
+    ioc_set_boolean_array(mblk_handle, 0, digits[x], 8);
 }
 
-static void iocontroller_print_count_signal_changes(
+
+static void iocontroller_print_changes(
     ioControllerContext *c)
 {
     os_short my_count_from_ioboard;
     os_char my_count_status_bits_from_ioboard, nbuf[OSAL_NBUF_SZ];
 
-    /* Read count from IO board */
+    /* Read count from IO board.
+     */
     my_count_from_ioboard = ioc_get_short(&c->inputs, 20,
         &my_count_status_bits_from_ioboard);
+
+    /* If count or state bits have changed, then print it.
+     */
     if (my_count_from_ioboard != c->my_count_from_ioboard ||
         my_count_status_bits_from_ioboard != c->my_count_status_bits_from_ioboard)
     {

@@ -317,12 +317,20 @@ typedef struct iocSignal
      */
     os_int addr;
 
-    os_short flags;
+    /* For strings n can be number of bytes in memory block for the string. For arrays n is
+       number of elements reserved in memory block. Either 0 or 1 for single variables.
+     */
+    os_short n;
+
+    /* Type and possi
+     * xx
+     */
+    os_char flags;
+
     os_char state_bits;
 
     /* Current value. For simple ones, this is either integer or float d, depending on type
-       in flags. For strings value.i can be number of bytes in memory block for the string.
-       For arrays value.i is number of elements reserved in memory block.
+       in flags.
      */
     union
     {
@@ -345,17 +353,21 @@ iocSignal;
 #define IOC_SIGNAL_DEFAULT 0
 #define IOC_SIGNAL_WRITE 0x20
 #define IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT 0x40
-#define IOC_SIGNAL_CLEAR_ERRORS 0x80
-#define IOC_SIGNAL_NO_THREAD_SYNC 0x100
-#define IOC_SIGNAL_FLAGS_MASK 0xFE0
+#define IOC_SIGNAL_NO_THREAD_SYNC 0x80
+#define IOC_SIGNAL_FLAGS_MASK 0xE0
 
 /* Macros for signal value. state bits,  within iocSignal structure
  */
 #define ioc_value_int(s) (s).value.i
 #define ioc_value_float(s) (s).value.f
-#define ioc_state_bits(s) (s).state_bits
-#define ioc_typeid(s) ((s).flags & OSAL_TYPEID_MASK)
-#define ioc_flags(s) ((s).flags)
+#define ioc_value_state_bits(s) (s).state_bits
+#define ioc_value_typeid(s) ((s).flags & OSAL_TYPEID_MASK)
+#define ioc_value_flags(s) ((s).flags)
+#define ioc_is_value_connected(s) ((s).state_bits & OSAL_STATE_CONNECTED)
+#define ioc_is_value_error_on(s) ((s).state_bits & OSAL_STATE_ERROR_MASK)
+#define ioc_is_value_yellow(s) (((s).state_bits & OSAL_STATE_ERROR_MASK) == OSAL_STATE_YELLOW)
+#define ioc_is_value_orange(s) (((s).state_bits & OSAL_STATE_ERROR_MASK) == OSAL_STATE_ORANGE)
+#define ioc_is_value_red(s) (((s).state_bits & OSAL_STATE_ERROR_MASK) == OSAL_STATE_RED)
 
 /* Macros for setting and getting multiple signals by signal structure.
  */
@@ -372,7 +384,6 @@ iocSignal;
 #define ioc_set_int(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_INT)
 #define ioc_set_uint ioc_set_int
 #define ioc_set_str(h,a,st,ss) ioc_setx_str((h), (a), (st), (os_int)(ss), OSAL_STATE_CONNECTED, OS_STRING)
-#define ioc_sets_str(h,s,st,ss) (s)->state_bits = ioc_movex_str((h), (s)->addr, (st), (s)->value.i, OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_STRING)
 
 /* Get one signal state.
  */
@@ -384,36 +395,37 @@ iocSignal;
 #define ioc_get_int(h,a,sb) ioc_getx_int((h), (a), (sb), OS_INT)
 #define ioc_get_uint(h,a,sb) (os_uint)ioc_getx_uint((h), (a), (sb), OS_UINT)
 #define ioc_get_str(h,a,st,ss) ioc_getx_str((h), (a), (st), (os_int)(ss), OS_STRING)
-#define ioc_gets_str(h,s,st,ss) (s)->state_bits = ioc_movex_str((h), (s)->addr, (st), (s)->value.i < (os_int)(ss) ? (s)->value.i+1 : (os_int)(ss), OS_STRING)
+
+/* Set or get a string using initialized signal structure.
+ */
+#define ioc_sets_str(h,s,st) ioc_movex_str_signal((h), (s), (st), 0, IOC_SIGNAL_WRITE|OS_STRING)
+#define ioc_gets_str(h,s,st,ss) ioc_movex_str_signal((h), (s), (st), (ss), OS_STRING)
 
 /* Set array of values.
  */
-#define ioc_set_bool_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_BOOLEAN)
-#define ioc_set_char_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_CHAR)
-#define ioc_set_uchar_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_UCHAR)
-#define ioc_set_short_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_SHORT)
-#define ioc_set_ushort_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_USHORT)
-#define ioc_set_int_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_INT)
-#define ioc_set_uint_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_UINT)
-#define ioc_set_float_array(h,a,v,n) ioc_setx_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, OS_FLOAT)
-
-/* Set array of values using initialized signal structure.
- */
-#define ioc_sets_int_array(h,s,v,n) (s)->state_bits = ioc_setx_array((h), (s)->addr, (v), (n) < (s)->value.i ? (n) : (s)->value.i, OSAL_STATE_CONNECTED, OS_INT)
+#define ioc_set_boolean_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_BOOLEAN)
+#define ioc_set_char_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_CHAR)
+#define ioc_set_uchar_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_UCHAR)
+#define ioc_set_short_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_SHORT)
+#define ioc_set_ushort_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_USHORT)
+#define ioc_set_int_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_INT)
+#define ioc_set_uint_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_UINT)
+#define ioc_set_float_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_FLOAT)
 
 /* Get array of values.
  */
-#define ioc_get_bool_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_BOOLEAN)
-#define ioc_get_char_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_CHAR)
-#define ioc_get_uchar_array ioc_get_char_array
-#define ioc_get_short_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_SHORT)
-#define ioc_get_ushort_array ioc_get_short_array
-#define ioc_get_int_array(h,a,v,n) ioc_getx_array((h), (a), (v), (n), OS_INT)
-#define ioc_get_uint_array ioc_get_int_array
+#define ioc_get_boolean_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_BOOLEAN)
+#define ioc_get_char_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_CHAR)
+#define ioc_get_uchar_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_CHAR)
+#define ioc_get_short_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_SHORT)
+#define ioc_get_ushort_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_USHORT)
+#define ioc_get_int_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_INT)
+#define ioc_get_uint_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_UINT)
 
-/* Get array of values using initialized signal structure.
+/* Set or get array of values using initialized signal structure.
  */
-#define ioc_gets_int_array(h,s,v,n) (s)->state_bits = ioc_getx_array((h), (s)->addr, (v), (n) < (s)->value.i ? (n) : (s)->value.i, OS_INT)
+#define ioc_sets_array(h,s,v,n) ioc_movex_array_signal((h), (s), (v), (n), IOC_SIGNAL_WRITE)
+#define ioc_gets_array(h,s,v,n) ioc_movex_array_signal((h), (s), (v), (n), IOC_SIGNAL_DEFAULT)
 
 
 /** 
@@ -444,7 +456,7 @@ osalStatus ioc_initialize_memory_block(
 void ioc_release_memory_block(
     iocHandle *handle);
 
-/* Set integer as memory block parameter value.
+/* Set memory block parameter.
  */
 void ioc_memory_block_set_int_param(
     iocHandle *handle,
@@ -457,7 +469,7 @@ os_int ioc_memory_block_get_int_param(
     iocHandle *handle,
     iocMemoryBlockParamIx param_ix);
 
-/* Get memory block parameter as string
+/* Get memory block parameter as string.
  */
 void ioc_memory_block_get_string_param(
     iocHandle *handle,
@@ -533,7 +545,15 @@ os_int ioc_getx_int(
     os_char *state_bits,
     os_short flags);
 
-/* Read or write one string from/to memory block (with signal structure).
+/* Get floating point signal value.
+ */
+os_float ioc_getx_float(
+    iocHandle *handle,
+    os_int addr,
+    os_char *state_bits,
+    os_short flags);
+
+/* Read or write string from/to memory block (with signal structure).
  */
 void ioc_movex_str_signal(
     iocHandle *handle,
@@ -542,7 +562,7 @@ void ioc_movex_str_signal(
     os_memsz str_sz,
     os_short flags);
 
-/* Read or write one string from/to memory block (without signal structure).
+/* Read or write string from/to memory block (without signal structure).
  */
 os_char ioc_movex_str(
     iocHandle *handle,
@@ -552,12 +572,31 @@ os_char ioc_movex_str(
     os_char state_bits,
     os_short flags);
 
+/* Read or write array from/to memory block (with signal structure).
+ */
+void ioc_movex_array_signal(
+    iocHandle *handle,
+    iocSignal *signal,
+    void *array,
+    os_int n,
+    os_short flags);
 
-#ifndef IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS
-#define IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS 1
+/* Read or write array from/to memory block (without signal structure).
+ */
+os_char ioc_movex_array(
+    iocHandle *handle,
+    os_int addr,
+    void *array,
+    os_int n,
+    os_char state_bits,
+    os_short flags);
+
+
+#ifndef IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS
+#define IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS 1
 #endif
 
-#if IOC_SUPPORT_PRIMITIVE_MBLK_FUNCTIONS
+#if IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS
 
 /* Write one bit to the memory block.
  */
@@ -747,6 +786,13 @@ void ioc_add_callback(
     iocHandle *handle,
     ioc_callback func,
     void *context); */
+
+/* Check if memory address range belongs to signal.
+ */
+os_boolean ioc_is_my_address(
+    iocSignal *signal,
+    int start_addr,
+    int end_addr);
 
 /*@}*/
 

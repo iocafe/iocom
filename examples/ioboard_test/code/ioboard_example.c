@@ -92,14 +92,21 @@ MyAppContext;
  */
 static MyAppContext ioboard_app_context;
 
-static iocSignal my_signal_to_controller = {20, OS_SHORT};
+#define N_LEDS 8
+
+/* Here I create signal structures from C code by hand. Code to create these can
+   be also generated from XML by script.
+ */
+static iocSignal my_tc_count = {20, 1, OS_SHORT};
 static os_short my_signal_count;
 static os_timer my_signal_timer;
+
+static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN};
 
 
 /* Static function prototypes.
  */
-static void ioboard_callback(
+static void ioboard_fc_callback(
     struct iocHandle *mblk,
     int start_addr,
     int end_addr,
@@ -188,7 +195,7 @@ osalStatus osal_main(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_fc, ioboard_callback, OS_NULL);
+    ioc_add_callback(&ioboard_fc, ioboard_fc_callback, OS_NULL);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -243,8 +250,8 @@ osalStatus osal_loop(
     if (os_elapsed(&my_signal_timer, 2000))
     {
         os_get_timer(&my_signal_timer);
-        my_signal_to_controller.value.i = ++my_signal_count;
-        ioc_set_signal(&ioboard_tc, &my_signal_to_controller);
+        my_tc_count.value.i = ++my_signal_count;
+        ioc_set_signal(&ioboard_tc, &my_tc_count);
     }
 
     ioboard_show_communication_status(acontext);
@@ -283,37 +290,37 @@ void osal_main_cleanup(
 
   @brief Callback function when some communication data has changed.
 
-  The ioboard_callback function...
+  The ioboard_fc_callback function...
 
   @return  None.
 
 ****************************************************************************************************
 */
-static void ioboard_callback(
+static void ioboard_fc_callback(
     struct iocHandle *mblk,
     int start_addr,
     int end_addr,
     os_ushort flags,
     void *context)
 {
-    int s, e, i, n;
-    #define N_LEDS 8
+    int i;
     os_char buf[N_LEDS];
 
-    /* Get connection status changes.
-     */
-    if (end_addr >= 0 && start_addr < N_LEDS)
+    if (ioc_is_my_address(&my_fc_7_segments, start_addr, end_addr))
     {
-        s = start_addr;
-        e = end_addr;
-        if (s < 0) s = 0;
-        if (e >= N_LEDS) e = N_LEDS - 1;
-        n = e - s + 1;
-
-        ioc_read(mblk, s, buf, n);
-        for (i = 0; i<n; i++)
+        ioc_gets_array(mblk, &my_fc_7_segments, buf, N_LEDS);
+        if (ioc_is_value_connected(my_fc_7_segments))
         {
-          // digitalWrite(leds[s + i], buf[i] ? HIGH : LOW);
+            osal_console_write("7 segment data received\n");
+            for (i = 0; i < N_LEDS; i++)
+            {
+                // digitalWrite(leds[s + i], buf[i] ? HIGH : LOW);
+            }
+        }
+        else
+        {
+            // WE DO NOT COME HERE. SHOULD WE INVALIDATE WHOLE MAP ON DISCONNECT?
+            osal_console_write("7 segment data DISCONNECTED\n");
         }
     }
 }
