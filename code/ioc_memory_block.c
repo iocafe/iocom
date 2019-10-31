@@ -776,7 +776,7 @@ void ioc_movex_signals(
     os_int n_signals,
     os_short flags)
 {
-    iocRoot *root;
+    iocRoot *root = OS_NULL;
     iocMemoryBlock *mblk;
     iocSignal *sig;
     os_char *p, nbuf[OSAL_NBUF_SZ];
@@ -826,7 +826,7 @@ void ioc_movex_signals(
             else
             {
                 ioc_movex_str_signal(handle, sig, nbuf, sizeof(nbuf), flags);
-                sig->value.i = osal_string_to_int(nbuf, OS_NULL);
+                sig->value.i = (os_int)osal_string_to_int(nbuf, OS_NULL);
             }
             continue;
         }
@@ -883,7 +883,7 @@ void ioc_movex_signals(
 
             *(p++) = sig->state_bits;
             ioc_byte_ordered_copy(p, (os_char*)&sig->value, type_sz, type_sz);
-            ioc_mblk_invalidate(mblk, addr, addr + type_sz /* no -1, we need also state byte */);
+            ioc_mblk_invalidate(mblk, addr, (int)(addr + type_sz) /* no -1, we need also state byte */);
         }
         else
         {
@@ -1094,7 +1094,7 @@ os_float ioc_getx_float(
     if (state_bits) *state_bits = signal.state_bits;
 
     if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) value = signal.value.f;
-    else value = signal.value.i;
+    else value = (os_float)signal.value.i;
 
     return value;
 }
@@ -1141,7 +1141,7 @@ void ioc_movex_str_signal(
     os_memsz str_sz,
     os_short flags)
 {
-    iocRoot *root;
+    iocRoot *root = OS_NULL;
     iocMemoryBlock *mblk;
     os_char *p;
     os_int addr;
@@ -1238,7 +1238,7 @@ void ioc_movex_str_signal(
         len = os_strlen(str);
         if (signal->n < len) len = signal->n;
         ioc_byte_ordered_copy(p, str, len, 1);
-        ioc_mblk_invalidate(mblk, addr, addr + len /* no -1, we need also state byte */);
+        ioc_mblk_invalidate(mblk, addr, (int)(addr + len) /* no -1, we need also state byte */);
     }
     else
     {
@@ -1304,7 +1304,7 @@ os_char ioc_movex_str(
     signal.state_bits = state_bits;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.state_bits = state_bits;
-    signal.n = str_sz;
+    signal.n = (os_short)str_sz;
 
     ioc_movex_str_signal(handle, &signal, str, str_sz, flags);
 
@@ -1354,7 +1354,7 @@ void ioc_movex_array_signal(
     os_int n,
     os_short flags)
 {
-    iocRoot *root;
+    iocRoot *root= OS_NULL;
     iocMemoryBlock *mblk;
     os_char *p;
     os_int addr;
@@ -1422,7 +1422,7 @@ void ioc_movex_array_signal(
 
         if (signal->n < n) n = signal->n;
         ioc_byte_ordered_copy(p, array, n, type_sz);
-        ioc_mblk_invalidate(mblk, addr, addr + n * type_sz /* no -1, we need also state byte */);
+        ioc_mblk_invalidate(mblk, addr, (int)(addr + n * type_sz) /* no -1, we need also state byte */);
     }
     else
     {
