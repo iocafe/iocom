@@ -757,7 +757,6 @@ getout:
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
 
-  @param   handle Memory block handle.
   @param   signal Pointer to array of signal structures. This holds memory address, value,
            state bits and data type for each signal.
   @oaram   n_signals Number of elements in signals array.
@@ -771,64 +770,70 @@ getout:
 ****************************************************************************************************
 */
 void ioc_movex_signals(
-    iocHandle *handle,
     iocSignal *signal,
     os_int n_signals,
     os_short flags)
 {
     iocRoot *root = OS_NULL;
-    iocMemoryBlock *mblk;
+    iocMemoryBlock *mblk = OS_NULL;
     iocSignal *sig;
     os_char *p, nbuf[OSAL_NBUF_SZ];
     os_memsz type_sz;
     os_int addr, i;
     os_short type_id;
+    iocHandle *handle;
+    os_boolean handle_tried = OS_FALSE, unlock_now;
 
     /* Check function arguments.
      */
-    osal_debug_assert(handle != OS_NULL);
     osal_debug_assert(signal != OS_NULL);
     osal_debug_assert(n_signals > 0);
-
-    /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
-     */
-    if (flags & IOC_SIGNAL_NO_THREAD_SYNC)
-    {
-        mblk = handle->mblk;
-    }
-    else
-    {
-        mblk = ioc_handle_lock_to_mblk(handle, &root);
-    }
-
-    /* If memory block is not found, we do not know signal value.
-     */
-    if (mblk == OS_NULL)
-    {
-        signal->state_bits = 0;
-        return;
-    }
 
     /* Loop trough signal array.
      */
     for (i = 0; i < n_signals; i++)
     {
         sig = signal + i;
-        type_id = sig->flags & OSAL_TYPEID_MASK;
 
+        handle = sig->handle;
+
+        /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
+         */
+        if (!handle_tried)
+        {
+            handle_tried = OS_TRUE;
+            if (flags & IOC_SIGNAL_NO_THREAD_SYNC)
+            {
+                mblk = handle->mblk;
+            }
+            else
+            {
+                mblk = ioc_handle_lock_to_mblk(handle, &root);
+            }
+        }
+
+        /* If memory block is not found, we do not know signal value.
+         */
+        if (mblk == OS_NULL)
+        {
+            sig->state_bits = 0;
+            goto nextone;
+        }
+
+        type_id = sig->flags & OSAL_TYPEID_MASK;
         if (type_id == OS_STR)
         {
             if (flags & IOC_SIGNAL_WRITE)
             {
                 osal_int_to_string(nbuf, sizeof(nbuf), type_id);
-                ioc_movex_str_signal(handle, sig, nbuf, sizeof(nbuf), flags);
+                ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), flags);
             }
             else
             {
-                ioc_movex_str_signal(handle, sig, nbuf, sizeof(nbuf), flags);
+                ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), flags);
                 sig->value.i = (os_int)osal_string_to_int(nbuf, OS_NULL);
             }
-            continue;
+            goto nextone;
         }
 
         addr = sig->addr;
@@ -848,7 +853,7 @@ void ioc_movex_signals(
         {
             sig->state_bits = 0;
             sig->value.i = 0;
-            continue;
+            goto nextone;
         }
 
         /* Copy the state bits.
@@ -908,13 +913,30 @@ void ioc_movex_signals(
                 ioc_byte_ordered_copy((os_char*)&sig->value, p, type_sz, type_sz);
             }
         }
-    }
 
-    /* End synchronization (unless disabled by no thread sync flag).
-     */
-    if ((flags & IOC_SIGNAL_NO_THREAD_SYNC) == 0)
-    {
-        ioc_unlock(root);
+nextone:
+        /* We need to end synchronization nor if this is last signal, or
+           the next signal uses different handle.
+         */
+        if (i + 1 < n_signals)
+        {
+            unlock_now = (os_boolean) (signal[i+1].handle != handle);
+        }
+        else
+        {
+            unlock_now = OS_TRUE;
+        }
+
+        /* End synchronization (unless disabled by no thread sync flag).
+         */
+        if (unlock_now)
+        {
+            if ((flags & IOC_SIGNAL_NO_THREAD_SYNC) == 0)
+            {
+                ioc_unlock(root);
+            }
+            handle_tried = OS_FALSE;
+        }
     }
 }
 
@@ -950,6 +972,8 @@ os_char ioc_setx_int(
     os_short flags)
 {
     iocSignal signal;
+
+    signal.handle = handle;
     signal.addr = addr;
     if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) signal.value.f = (os_float)value;
     else signal.value.i = value;
@@ -957,7 +981,7 @@ os_char ioc_setx_int(
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(handle, &signal, 1, flags|IOC_SIGNAL_WRITE);
+    ioc_movex_signals(&signal, 1, flags|IOC_SIGNAL_WRITE);
     return signal.state_bits;
 }
 
@@ -994,6 +1018,8 @@ os_char ioc_setx_float(
     os_short flags)
 {
     iocSignal signal;
+
+    signal.handle = handle;
     signal.addr = addr;
     if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) signal.value.f = value;
     else signal.value.i = os_round_int(value);
@@ -1001,7 +1027,7 @@ os_char ioc_setx_float(
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(handle, &signal, 1, flags|IOC_SIGNAL_WRITE);
+    ioc_movex_signals(&signal, 1, flags|IOC_SIGNAL_WRITE);
     return signal.state_bits;
 }
 
@@ -1038,12 +1064,13 @@ os_int ioc_getx_int(
     iocSignal signal;
     os_int value;
 
+    signal.handle = handle;
     signal.addr = addr;
     signal.state_bits = 0;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(handle, &signal, 1, flags);
+    ioc_movex_signals(&signal, 1, flags);
     if (state_bits) *state_bits = signal.state_bits;
 
     if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) value = os_round_int(signal.value.f);
@@ -1085,12 +1112,13 @@ os_float ioc_getx_float(
     iocSignal signal;
     os_float value;
 
+    signal.handle = handle;
     signal.addr = addr;
     signal.state_bits = 0;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(handle, &signal, 1, flags);
+    ioc_movex_signals(&signal, 1, flags);
     if (state_bits) *state_bits = signal.state_bits;
 
     if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) value = signal.value.f;
@@ -1120,7 +1148,6 @@ os_float ioc_getx_float(
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
 
-  @param   handle Memory block handle.
   @param   signal Pointer to signal structure. This holds memory address, value,
            state bits and data type.
   @param   str Pointer to string buffer
@@ -1135,7 +1162,6 @@ os_float ioc_getx_float(
 ****************************************************************************************************
 */
 void ioc_movex_str_signal(
-    iocHandle *handle,
     iocSignal *signal,
     os_char *str,
     os_memsz str_sz,
@@ -1146,6 +1172,8 @@ void ioc_movex_str_signal(
     os_char *p;
     os_int addr;
     os_memsz len;
+    iocHandle *handle;
+    handle = signal->handle;
 
     /* Check function arguments.
      */
@@ -1164,11 +1192,11 @@ void ioc_movex_str_signal(
             if (flags & IOC_SIGNAL_WRITE)
             {
                 signal->value.f = (os_float)osal_string_to_double(str, OS_NULL);
-                ioc_movex_signals(handle, signal, 1, flags);
+                ioc_movex_signals(signal, 1, flags);
             }
             else
             {
-                ioc_movex_signals(handle, signal, 1, flags);
+                ioc_movex_signals(signal, 1, flags);
                 osal_double_to_string(str, str_sz, signal->value.f, 4, OSAL_FLOAT_DEFAULT);
             }
             return;
@@ -1177,11 +1205,11 @@ void ioc_movex_str_signal(
             if (flags & IOC_SIGNAL_WRITE)
             {
                 signal->value.i = (os_int)osal_string_to_int(str, OS_NULL);
-                ioc_movex_signals(handle, signal, 1, flags);
+                ioc_movex_signals(signal, 1, flags);
             }
             else
             {
-                ioc_movex_signals(handle, signal, 1, flags);
+                ioc_movex_signals(signal, 1, flags);
                 osal_int_to_string(str, str_sz, signal->value.i);
             }
             return;
@@ -1300,13 +1328,14 @@ os_char ioc_movex_str(
 {
     iocSignal signal;
 
+    signal.handle = handle;
     signal.addr = addr;
     signal.state_bits = state_bits;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.state_bits = state_bits;
     signal.n = (os_short)str_sz;
 
-    ioc_movex_str_signal(handle, &signal, str, str_sz, flags);
+    ioc_movex_str_signal(&signal, str, str_sz, flags);
 
     return signal.state_bits;
 }
@@ -1332,7 +1361,6 @@ os_char ioc_movex_str(
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
 
-  @param   handle Memory block handle.
   @param   signal Pointer to signal structure. This holds memory address, value,
            state bits and data type.
   @param   str Pointer to array buffer
@@ -1348,7 +1376,6 @@ os_char ioc_movex_str(
 ****************************************************************************************************
 */
 void ioc_movex_array_signal(
-    iocHandle *handle,
     iocSignal *signal,
     void *array,
     os_int n,
@@ -1360,6 +1387,8 @@ void ioc_movex_array_signal(
     os_int addr;
     os_memsz type_sz;
     osalTypeId type_id;
+    iocHandle *handle;
+    handle = signal->handle;
 
     /* Check function arguments.
      */
@@ -1483,13 +1512,14 @@ os_char ioc_movex_array(
 {
     iocSignal signal;
 
+    signal.handle = handle;
     signal.addr = addr;
     signal.state_bits = state_bits;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.state_bits = state_bits;
     signal.n = n;
 
-    ioc_movex_array_signal(handle, &signal, array, n, flags);
+    ioc_movex_array_signal(&signal, array, n, flags);
 
     return signal.state_bits;
 }

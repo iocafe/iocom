@@ -97,11 +97,11 @@ static MyAppContext ioboard_app_context;
 /* Here I create signal structures from C code by hand. Code to create these can
    be also generated from XML by script.
  */
-static iocSignal my_tc_count = {20, 1, OS_SHORT};
+static iocSignal my_tc_count = {20, 1, OS_SHORT, 0, OS_NULL, &ioboard_tc};
 static os_short my_signal_count;
 static os_timer my_signal_timer;
 
-static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN};
+static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, OS_NULL, &ioboard_fc};
 
 
 /* Static function prototypes.
@@ -251,7 +251,7 @@ osalStatus osal_loop(
     {
         os_get_timer(&my_signal_timer);
         my_tc_count.value.i = ++my_signal_count;
-        ioc_set_signal(&ioboard_tc, &my_tc_count);
+        ioc_set_signal(&my_tc_count);
     }
 
     ioboard_show_communication_status(acontext);
@@ -308,7 +308,7 @@ static void ioboard_fc_callback(
 
     if (ioc_is_my_address(&my_fc_7_segments, start_addr, end_addr))
     {
-        ioc_gets_array(mblk, &my_fc_7_segments, buf, N_LEDS);
+        ioc_gets_array(&my_fc_7_segments, buf, N_LEDS);
         if (ioc_is_value_connected(my_fc_7_segments))
         {
             osal_console_write("7 segment data received\n");

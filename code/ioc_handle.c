@@ -113,7 +113,7 @@ void ioc_terminate_handles(
 
 
 /* Get memory block pointer from handle and enter synchronization lock.
- * If memory block no longer exists, lock is left off.
+ * If memory block no longer exists, lock is left off and proot pointer is set to NULL.
  */
 struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     iocHandle *handle,
@@ -129,11 +129,11 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     /* Get root. Return root pointer if needed.
      */
     root = handle->root;
+    if (proot) *proot = root;
     if (root == OS_NULL)
     {
         return OS_NULL;
     }
-    if (proot) *proot = root;
 
     /* Synchronize.
      */
@@ -145,6 +145,7 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     if (mblk == OS_NULL)
     {
         ioc_unlock(root);
+        if (proot) *proot = OS_NULL;
         return OS_NULL;
     }
 

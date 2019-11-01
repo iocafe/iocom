@@ -381,8 +381,8 @@ iocSignal;
 
 /* Macros for setting and getting multiple signals by signal structure.
  */
-#define ioc_set_signal(h,s) ioc_movex_signals((h), (s), 1, IOC_SIGNAL_WRITE)
-#define ioc_get_signal(h,s) ioc_movex_signals((h), (s), 1, IOC_SIGNAL_DEFAULT)
+#define ioc_set_signal(s) ioc_movex_signals((s), 1, IOC_SIGNAL_WRITE)
+#define ioc_get_signal(s) ioc_movex_signals((s), 1, IOC_SIGNAL_DEFAULT)
 
 /* Set one signal state.
  */
@@ -408,8 +408,8 @@ iocSignal;
 
 /* Set or get a string using initialized signal structure.
  */
-#define ioc_sets_str(h,s,st) ioc_movex_str_signal((h), (s), (st), 0, IOC_SIGNAL_WRITE|OS_STR)
-#define ioc_gets_str(h,s,st,ss) ioc_movex_str_signal((h), (s), (st), (ss), OS_STR)
+#define ioc_sets_str(s,st) ioc_movex_str_signal((s), (st), 0, IOC_SIGNAL_WRITE|OS_STR)
+#define ioc_gets_str(s,st,ss) ioc_movex_str_signal((s), (st), (ss), OS_STR)
 
 /* Set array of values.
  */
@@ -434,8 +434,8 @@ iocSignal;
 
 /* Set or get array of values using initialized signal structure.
  */
-#define ioc_sets_array(h,s,v,n) ioc_movex_array_signal((h), (s), (v), (n), IOC_SIGNAL_WRITE)
-#define ioc_gets_array(h,s,v,n) ioc_movex_array_signal((h), (s), (v), (n), IOC_SIGNAL_DEFAULT)
+#define ioc_sets_array(s,v,n) ioc_movex_array_signal((s), (v), (n), IOC_SIGNAL_WRITE)
+#define ioc_gets_array(s,v,n) ioc_movex_array_signal((s), (v), (n), IOC_SIGNAL_DEFAULT)
 
 
 /** 
@@ -524,7 +524,6 @@ void ioc_read_internal(
 /* Read or write one or more signals to memory block.
  */
  void ioc_movex_signals(
-    iocHandle *handle,
     iocSignal *signal,
     os_int n_signals,
     os_short flags);
@@ -566,7 +565,6 @@ os_float ioc_getx_float(
 /* Read or write string from/to memory block (with signal structure).
  */
 void ioc_movex_str_signal(
-    iocHandle *handle,
     iocSignal *signal,
     os_char *str,
     os_memsz str_sz,
@@ -585,7 +583,6 @@ os_char ioc_movex_str(
 /* Read or write array from/to memory block (with signal structure).
  */
 void ioc_movex_array_signal(
-    iocHandle *handle,
     iocSignal *signal,
     void *array,
     os_int n,
