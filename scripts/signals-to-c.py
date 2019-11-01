@@ -53,7 +53,7 @@ def calc_signal_memory_sz(type, array_n):
     return array_n * type_sz + 1
 
 def write_signal_to_c_source(pin_type, signal_name, signal):
-    global current_type, current_addr, max_addr, signal_nr, nro_signals, handle
+    global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
     if addr != current_addr:
@@ -77,25 +77,20 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
 
     cfile.write('  {')
 
-    # Write address
     cfile.write(str(addr) + ", ")
     cfile.write(str(array_n) + ", ")
     cfile.write('OS_' + type.upper() + ', ')
-
     cfile.write('0, ' + handle)
-#    cfile.write('(os_ushort)((os_char*)&' + my_name + ' - (os_char*)&' + prefix + block_name + ')')
-#    cfile.write('0, ')
 
-    signal_nr = signal_nr + 1
+    if signal_name in pinlist:
+        cfile.write(', ' + pin_prefix + signal_name)
 
-
-    # Setup linked list for all signals in this memory block
-#    cfile.write("0, " + prev_signals_c_name)
-#    prev_signals_c_name = '&' + signals_c_name
     cfile.write('}')
 
-    if signal_nr <= nro_signals:
+    if signal_nr < nro_signals:
         cfile.write(',')
+        
+    signal_nr = signal_nr + 1
 
     cfile.write(' /* ' + signal_name + ' */\n')
 
@@ -129,18 +124,18 @@ def process_group_block(group):
         process_signal(group_name, signal)
 
 def process_mblk(mblk):
-    global prefix, block_name, prev_signals_c_name, handle
+    global prefix, block_name, handle, pin_prefix
     global current_addr, max_addr, signal_nr, nro_signals
 
     block_name = mblk.get("name", "MBLK")
     prefix = mblk.get('prefix', block_name + '_')
+    pin_prefix = mblk.get('pin_prefix', '&io_')
     handle = mblk.get("handle", "OS_NULL")         
     groups = mblk.get("groups", None)
     if groups == None:
         print("'groups' not found for " + block_name)
         exit()
 
-    prev_signals_c_name = "OS_NULL"
     current_addr = 0
     max_addr = 32
     signal_nr = 1
@@ -171,8 +166,6 @@ def process_mblk(mblk):
 
     cfile.write('};\n\n')
 
-#    write_linked_list_heads()
-
 def process_source_file(path):
     read_file = open(path, "r")
     if read_file:
@@ -187,36 +180,70 @@ def process_source_file(path):
 
     else:
         printf ("Opening file " + path + " failed")
+
+def list_pins_rootblock(rootblock):
+    groups = rootblock.get("groups", None)
+
+    for group in groups:
+        pins  = group.get("pins", None);
+        if pins != None:
+            for pin in pins:
+                name = pin.get('name', None)
+                if name is not None:
+                    pinlist.append(name)
+
+def list_pins_in_pinsfile(path):
+    pins_file = open(path, "r")
+    if pins_file:
+        data = json.load(pins_file)
+        rootblocks = data.get("io", None)
+        if rootblocks == None:
+            print("'io' not found")
+            exit()
+
+        for rootblock in rootblocks:
+            list_pins_rootblock(rootblock)
+
+    else:
+        printf ("Opening file " + path + " failed")
             
 def mymain():
-    global cfilepath, hfilepath
+    global cfilepath, hfilepath, pinlist
 
-    # Get options
+    # Get command line arguments
     n = len(sys.argv)
     sourcefiles = []
     outpath = None
+    pinspath = None
+    expectpath = True
     for i in range(1, n):
         if sys.argv[i][0] is "-":
             if sys.argv[i][1] is "o":
                 outpath = sys.argv[i+1]
-                i = i + 1
-                if i >=n:
-                    print("Output file name must follow -o")
-                    exit()
+                expectpath = False
 
-            s = sys.argv[i]
+            if sys.argv[i][1] is "p":
+                pinspath = sys.argv[i+1]
+                expectpath = False
 
         else:
-            sourcefiles.append(sys.argv[i])
+            if expectpath:
+                sourcefiles.append(sys.argv[i])
+            expectpath = True    
 
     if len(sourcefiles) < 1:
         print("No source files")
-#        exit()
+        exit()
 
-    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
+#    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
+#    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 
     if outpath is None:
         outpath = sourcefiles[0]
+
+    pinlist = []
+    if pinspath is not None:
+        list_pins_in_pinsfile(pinspath)
 
     filename, file_extension = os.path.splitext(outpath)
     cfilepath = filename + '.c'

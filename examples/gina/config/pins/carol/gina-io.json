@@ -1,6 +1,7 @@
 {
   "io": [{
     "name": "jane",
+    "prexix": "io_",
     "title": "IO pin setup for 'jane' application on 'carol' hardware",
     "groups": [
       {

@@ -1384,7 +1384,9 @@ void ioc_movex_array_signal(
     iocRoot *root= OS_NULL;
     iocMemoryBlock *mblk;
     os_char *p;
-    os_int addr;
+    os_uchar *b, ubyte;
+    os_ushort bit;
+    os_int addr, nn;
     os_memsz type_sz;
     osalTypeId type_id;
     iocHandle *handle;
@@ -1422,7 +1424,10 @@ void ioc_movex_array_signal(
     /* If address is outside the memory block.
      */
     addr = signal->addr;
-    if (addr < 0 || addr + signal->n * type_sz + 1 >= mblk->nbytes)
+    nn = signal->n;
+    if (type_id == OS_BOOLEAN) nn = (nn == 1 ? 0 : (nn + 7) >> 3);
+
+    if (addr < 0 || addr + nn * type_sz >= mblk->nbytes)
     {
         signal->state_bits = 0;
         goto goon;
@@ -1446,12 +1451,48 @@ void ioc_movex_array_signal(
         {
             signal->state_bits &= ~OSAL_STATE_CONNECTED;
         }
-
-        *(p++) = signal->state_bits;
-
         if (signal->n < n) n = signal->n;
-        ioc_byte_ordered_copy(p, array, n, type_sz);
-        ioc_mblk_invalidate(mblk, addr, (int)(addr + n * type_sz) /* no -1, we need also state byte */);
+
+        /* Pack os_boolean as bits.
+         */
+        if (type_id == OS_BOOLEAN)
+        {
+            b = (os_uchar*)array;
+            if (*b) { signal->state_bits |= OSAL_STATE_BOOLEAN_VALUE; }
+            else { signal->state_bits &= ~OSAL_STATE_BOOLEAN_VALUE; }
+            *(p++) = signal->state_bits;
+
+            if (n > 1)
+            {
+                while (n > 0 )
+                {
+                    bit = 1;
+                    ubyte = 0;
+
+                    while (n > 0 && bit < 256)
+                    {
+                        if (*(b++)) ubyte |= (os_uchar)bit;
+                        bit <<= 1;
+                    }
+                    *(p++) = ubyte;
+                }
+
+            }
+            else
+            {
+                n = 0;
+            }
+
+            ioc_mblk_invalidate(mblk, addr, (int)(addr + n) /* no -1, we need also state byte */);
+
+        }
+
+        else
+        {
+            *(p++) = signal->state_bits;
+            ioc_byte_ordered_copy(p, array, n, type_sz);
+            ioc_mblk_invalidate(mblk, addr, (int)(addr + n * type_sz) /* no -1, we need also state byte */);
+        }
     }
     else
     {
@@ -1465,7 +1506,36 @@ void ioc_movex_array_signal(
             signal->state_bits &= ~OSAL_STATE_CONNECTED;
         }
         if (signal->n < n) n = signal->n;
-        ioc_byte_ordered_copy(array, p, n, type_sz);
+
+        /* Unpack os_boolean array from bits.
+         */
+        if (type_id == OS_BOOLEAN)
+        {
+            b = (os_uchar*)array;
+            if (n > 1)
+            {
+                while (n > 0 )
+                {
+                    bit = 1;
+                    ubyte = *(p++);
+
+                    while (n > 0 && bit < 256)
+                    {
+                        *(b++) = (ubyte & (os_uchar)bit) ? OS_TRUE : OS_FALSE;
+                        bit <<= 1;
+                    }
+                }
+
+            }
+            else
+            {
+                *b =  (signal->state_bits &= OSAL_STATE_BOOLEAN_VALUE) ? OS_TRUE : OS_FALSE;
+            }
+        }
+        else
+        {
+            ioc_byte_ordered_copy(array, p, n, type_sz);
+        }
     }
 
 goon:
@@ -1659,57 +1729,6 @@ char ioc_getp_bit(
 /**
 ****************************************************************************************************
 
-  @brief Write one byte to the memory block.
-  @anchor ioc_setp_char
-
-  The ioc_setp_char() function writes one byte of data into the memory block.
-
-  @param   handle Memory block handle.
-  @param   addr Memory address to write to.
-  @param   value Byte value to write. Can be either signed -128 ... 127, or unsigned 0 ... 255.
-           At this point we do not need to care.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_setp_char(
-    iocHandle *handle,
-    int addr,
-    int value)
-{
-    os_char buf[1];
-    buf[0] = (os_char)value;
-    ioc_write_internal(handle, addr, buf, sizeof(buf), 0);
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Read one signed byte from the memory block.
-  @anchor ioc_getp_char
-
-  The ioc_getp_char() function reads one byte of data from the memory block.
-
-  @param   handle Memory block handle.
-  @param   addr Memory address to read from.
-  @return  Byte value -128 ... 127.
-
-****************************************************************************************************
-*/
-int ioc_getp_char(
-    iocHandle *handle,
-    int addr)
-{
-    os_char s;
-    ioc_read_internal(handle, addr, &s, sizeof(os_char), 0);
-    return s;
-}
-
-
-/**
-****************************************************************************************************
-
   @brief Read one unsigned byte from the memory block.
   @anchor ioc_getp_uchar
 
@@ -1853,55 +1872,6 @@ os_int ioc_getp_int(
     os_int s;
     ioc_read_internal(handle, addr, (os_char*)&s, sizeof(os_int), IOC_SWAP_32);
     return s;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Write 64 bit integer (os_int64) to the memory block.
-  @anchor ioc_setp_long
-
-  The ioc_setp_long() function writes 64 bit integer into the memory block. 64 bit integer will take
-  eight bytes space.
-
-  @param   handle Memory block handle.
-  @param   addr Memory address to write to.
-  @param   value Integer value to write.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_setp_long(
-    iocHandle *handle,
-    int addr,
-    os_int64 value)
-{
-    ioc_write_internal(handle, addr, (os_char*)&value, sizeof(os_int64), IOC_SWAP_64);
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Read 64 bit integer from the memory block.
-  @anchor ioc_getp_long
-
-  The ioc_getp_long() function reads 64 bit integer from the memory block.
-
-  @param   handle Memory block handle.
-  @param   addr Memory address to read from.
-  @return  Integer value.
-
-****************************************************************************************************
-*/
-os_int64 ioc_getp_long(
-    iocHandle *handle,
-    int addr)
-{
-    os_int64 value;
-    ioc_read_internal(handle, addr, (os_char*)&value, sizeof(os_int64), IOC_SWAP_64);
-    return value;
 }
 
 

@@ -97,11 +97,11 @@ static MyAppContext ioboard_app_context;
 /* Here I create signal structures from C code by hand. Code to create these can
    be also generated from XML by script.
  */
-static iocSignal my_tc_count = {20, 1, OS_SHORT, 0, OS_NULL, &ioboard_EXPORT};
+static iocSignal my_tc_count = {20, 1, OS_SHORT, 0, &ioboard_EXPORT};
 static os_short my_signal_count;
 static os_timer my_signal_timer;
 
-static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, OS_NULL, &ioboard_IMPORT};
+static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, &ioboard_IMPORT};
 
 
 /* Static function prototypes.

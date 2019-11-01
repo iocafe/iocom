@@ -308,6 +308,26 @@ iocMemoryBlock;
 
 /**
 ****************************************************************************************************
+  We may have multiple iocSignal structures within one app defined structure. This is common
+  header for the application defined structure.
+  .
+****************************************************************************************************
+ */
+struct iocSignal;
+
+typedef struct iocSignalStructHeader
+{
+    iocHandle *handle;
+
+    os_int n_signals;
+
+    struct iocSignal *first_signal;
+}
+iocSignalStructHeader;
+
+
+/**
+****************************************************************************************************
   IO signal state structure. Keep the order for initialization.
 ****************************************************************************************************
  */
@@ -617,19 +637,6 @@ char ioc_getp_bit(
     int addr,
     int bit_nr);
 
-/* Write one byte to the memory block.
- */
-void ioc_setp_char(
-    iocHandle *handle,
-    int addr,
-    int value);
-
-/* Read one signed byte from the memory block.
- */
-int ioc_getp_char(
-    iocHandle *handle,
-    int addr);
-
 /* Read one unsigned byte from the memory block.
  */
 int ioc_getp_uchar(
@@ -665,19 +672,6 @@ void ioc_setp_int(
 /* Read 32 bit integer from the memory block.
  */
 os_int ioc_getp_int(
-    iocHandle *handle,
-    int addr);
-
-/* Write 64 bit integer (os_int64) to the memory block.
- */
-void ioc_setp_long(
-    iocHandle *handle,
-    int addr,
-    os_int64 value);
-
-/* Read 64 bit integer from the memory block.
- */
-os_int64 ioc_getp_long(
     iocHandle *handle,
     int addr);
 
