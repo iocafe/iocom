@@ -83,7 +83,7 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
     cfile.write('OS_' + type.upper())
 
     # Setup linked list for all signals in this memory block
-    cfile.write(", 0,  " + prev_signals_c_name)
+    cfile.write(", 0, " + prev_signals_c_name)
     prev_signals_c_name = "&" + signals_c_name
     cfile.write("};\n")
 
