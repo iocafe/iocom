@@ -313,24 +313,34 @@ iocMemoryBlock;
  */
 typedef struct iocSignal
 {
-    /* Starting address in memory block.
+    /** Starting address in memory block.
      */
     os_int addr;
 
-    /* For strings n can be number of bytes in memory block for the string. For arrays n is
-       number of elements reserved in memory block. Either 0 or 1 for single variables.
+    /** For strings n can be number of bytes in memory block for the string. For arrays n is
+        number of elements reserved in memory block. Either 0 or 1 for single variables.
      */
     os_short n;
 
-    /* Type and possi
-     * xx
+    /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
+       or OS_STR.
      */
     os_char flags;
 
+    /** State bits, indicate if signal is connected, or if any error is active.
+     */
     os_char state_bits;
 
-    /* Current value. For simple ones, this is either integer or float d, depending on type
-       in flags.
+    /** Next signal belonging to the same memory block. OS_NULL if unknown or last on the list.
+     */
+    struct iocSignal *next;
+
+    /** Pointer to memory block handle.
+     */
+    iocHandle *handle;
+
+    /** Current value. For simple ones, this is either integer i or float f, depending on
+        data type (flags).
      */
     union
     {
@@ -383,7 +393,7 @@ iocSignal;
 #define ioc_set_ushort ioc_set_short
 #define ioc_set_int(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_INT)
 #define ioc_set_uint ioc_set_int
-#define ioc_set_str(h,a,st,ss) ioc_setx_str((h), (a), (st), (os_int)(ss), OSAL_STATE_CONNECTED, OS_STRING)
+#define ioc_set_str(h,a,st,ss) ioc_setx_str((h), (a), (st), (os_int)(ss), OSAL_STATE_CONNECTED, OS_STR)
 
 /* Get one signal state.
  */
@@ -394,12 +404,12 @@ iocSignal;
 #define ioc_get_ushort(h,a,sb) (os_ushort)ioc_getx_int((h), (a), (sb), OS_USHORT)
 #define ioc_get_int(h,a,sb) ioc_getx_int((h), (a), (sb), OS_INT)
 #define ioc_get_uint(h,a,sb) (os_uint)ioc_getx_uint((h), (a), (sb), OS_UINT)
-#define ioc_get_str(h,a,st,ss) ioc_getx_str((h), (a), (st), (os_int)(ss), OS_STRING)
+#define ioc_get_str(h,a,st,ss) ioc_getx_str((h), (a), (st), (os_int)(ss), OS_STR)
 
 /* Set or get a string using initialized signal structure.
  */
-#define ioc_sets_str(h,s,st) ioc_movex_str_signal((h), (s), (st), 0, IOC_SIGNAL_WRITE|OS_STRING)
-#define ioc_gets_str(h,s,st,ss) ioc_movex_str_signal((h), (s), (st), (ss), OS_STRING)
+#define ioc_sets_str(h,s,st) ioc_movex_str_signal((h), (s), (st), 0, IOC_SIGNAL_WRITE|OS_STR)
+#define ioc_gets_str(h,s,st,ss) ioc_movex_str_signal((h), (s), (st), (ss), OS_STR)
 
 /* Set array of values.
  */

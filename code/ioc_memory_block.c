@@ -816,7 +816,7 @@ void ioc_movex_signals(
         sig = signal + i;
         type_id = sig->flags & OSAL_TYPEID_MASK;
 
-        if (type_id == OS_STRING)
+        if (type_id == OS_STR)
         {
             if (flags & IOC_SIGNAL_WRITE)
             {
@@ -1157,7 +1157,7 @@ void ioc_movex_str_signal(
      */
     switch (signal->flags & OSAL_TYPEID_MASK)
     {
-        case OS_STRING:
+        case OS_STR:
             break;
 
         case OS_FLOAT:
@@ -1530,7 +1530,7 @@ os_boolean ioc_is_my_address(
 
     switch (type_id)
     {
-        case OS_STRING:
+        case OS_STR:
             n++;
             break;
 

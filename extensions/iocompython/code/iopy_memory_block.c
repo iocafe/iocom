@@ -469,12 +469,12 @@ static osalStatus MemoryBlock_set_sequence(
             if (!expect_value)
             {
                 os_strncpy(tag_name_or_addr_str, str, sizeof(tag_name_or_addr_str));
-                tag_name_or_addr_type = OS_STRING;
+                tag_name_or_addr_type = OS_STR;
             }
             else
             {
                 os_strncpy(value_str, str, sizeof(value_str));
-                value_type = OS_STRING;
+                value_type = OS_STR;
             }
             PySys_WriteStdout("String: %s\n", str);
             Py_XDECREF(py_repr);
