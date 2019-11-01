@@ -24,14 +24,6 @@ osal_typeinfo = {
     "object" : 0,
     "pointer" : 0}
 
-pin_types = {
-    "inputs" : "PIN_INPUT",
-    "outputs" : "PIN_OUTPUT",
-    "analog_inputs" : "PIN_ANALOG_INPUT",
-    "analog_outputs" : "PIN_ANALOG_OUTPUT",
-    "pwm" : "PIN_PWM", 
-    "timers" : "PIN_TIMER"}
-
 def start_c_files():
     global cfile, hfile, cfilepath, hfilepath
     cfile = open(cfilepath, "w")
@@ -62,8 +54,8 @@ def calc_signal_memory_sz(type, array_n):
     return array_n * type_sz + 1
 
 def write_signal_to_c_source(pin_type, signal_name, signal):
-    global prefix, block_name, prev_signals_c_name, known_groups
-    global current_type, current_addr;
+    global prefix, block_name, prev_signals_c_name
+    global current_type, current_addr, max_addr
 
     addr = signal.get('addr', current_addr);
     if addr != current_addr:
@@ -78,6 +70,8 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
         array_n = 1
 
     current_addr += calc_signal_memory_sz(type, array_n)
+    if current_addr > max_addr:
+        max_addr = current_addr
 
     # Write pin name and type
     signals_c_name = prefix + signal_name
@@ -94,13 +88,14 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
     cfile.write("};\n")
 
 def write_linked_list_heads():
-    global prefix, block_name, prev_signals_c_name, known_groups
-
-
+    global prefix, block_name, prev_signals_c_name
     if prev_signals_c_name is not "OS_NULL":
-        varname = prefix + block_name + "_pins";
+        varname = prefix + block_name + "_signals";
         cfile.write("iocSignal *" + varname + " = " + prev_signals_c_name + ";\n")
         hfile.write("extern iocSignal *" + varname + ";\n")
+
+        define_name = prefix + block_name + "_MBLK_SZ"
+        hfile.write("#define " + define_name.upper() + " " + str(max_addr) + "\n")
 
 def process_signal(group_name, signal):
     global block_name
@@ -112,7 +107,7 @@ def process_signal(group_name, signal):
     write_signal_to_c_source(group_name, signal_name, signal)
 
 def process_group_block(group):
-    global pin_types, current_type
+    global current_type
     group_name = group.get("name", None);
     if group_name == None:
         print("'name' not found for group in " + block_name)
@@ -131,8 +126,8 @@ def process_group_block(group):
         process_signal(group_name, signal)
 
 def process_mblk(mblk):
-    global prefix, block_name, prev_signals_c_name, known_groups, known_mblks
-    global current_addr
+    global prefix, block_name, prev_signals_c_name
+    global current_addr, max_addr
 
     block_name = mblk.get("name", "MBLK")
     prefix = mblk.get("prefix", None)
@@ -145,6 +140,7 @@ def process_mblk(mblk):
 
     prev_signals_c_name = "OS_NULL"
     current_addr = 0
+    max_addr = 32
 
     for group in groups:
         process_group_block(group)
@@ -167,7 +163,7 @@ def process_source_file(path):
         printf ("Opening file " + path + " failed")
             
 def mymain():
-    global cfilepath, hfilepath, known_mblks
+    global cfilepath, hfilepath
 
     # Get options
     n = len(sys.argv)
@@ -201,8 +197,6 @@ def mymain():
     hfilepath = filename + '.h'
 
     print("Writing files " + cfilepath + " and " + hfilepath)
-
-    known_mblks = {}
 
     start_c_files()
 
