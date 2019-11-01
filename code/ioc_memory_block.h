@@ -319,8 +319,9 @@ typedef struct iocSignal
 
     /** For strings n can be number of bytes in memory block for the string. For arrays n is
         number of elements reserved in memory block. Either 0 or 1 for single variables.
+        Unsigned type used for reason, we want to have max 65535 items.
      */
-    os_short n;
+    os_ushort n;
 
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
        or OS_STR.
@@ -330,10 +331,6 @@ typedef struct iocSignal
     /** State bits, indicate if signal is connected, or if any error is active.
      */
     os_char state_bits;
-
-    /** Next signal belonging to the same memory block. OS_NULL if unknown or last on the list.
-     */
-    struct iocSignal *next;
 
     /** Pointer to memory block handle.
      */

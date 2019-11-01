@@ -17,7 +17,7 @@
     connections.
   - Data transfer synchronized precisely by ioc_receive() and ioc_send() calls - no
     "prm.auto_synchronization = OS_TRUE" -> IOC_AUTO_SYNC flags not set.
-  - Relatively large 10k memory blocks and input memory block ioboard_fc is changed as quickly
+  - Relatively large 10k memory blocks and input memory block ioboard_IMPORT is changed as quickly
     as computer can change it.
   - Unnanamed device, device name is empty string and device number is 0.
 
@@ -48,8 +48,8 @@
 #define IOBOARD_MAX_CONNECTIONS (IOBOARD_CTRL_CON == IOBOARD_CTRL_LISTEN_SOCKET ? 2 : 1)
 
 /* IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
-   and sets size for ioboard_tc "IN" memory block. Similarly "FC" stands for "from controller"
-   and ioboard_fc "OUT" memory block.
+   and sets size for ioboard_EXPORT "IN" memory block. Similarly "FC" stands for "from controller"
+   and ioboard_IMPORT "OUT" memory block.
    Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
    imposed by static memory pool memory allocation.
  */
@@ -141,7 +141,7 @@ osalStatus osal_loop(
 
     /* Received data fame up to date.
      */
-    ioc_receive(&ioboard_fc);
+    ioc_receive(&ioboard_IMPORT);
 
     /* Write lot of random stuff to simulate vast number of inputs changing
        very quickly.
@@ -150,13 +150,13 @@ osalStatus osal_loop(
     for (i = 0; i<IOBOARD_TC_BLOCK_SZ/2; i++)
     {
         j = rand() % IOBOARD_TC_BLOCK_SZ;
-        ioc_setp_short(&ioboard_tc, j, k);
+        ioc_setp_short(&ioboard_EXPORT, j, k);
         k += 7;
     }
 
     /* Send changes trough communication.
      */
-    ioc_send(&ioboard_tc);
+    ioc_send(&ioboard_EXPORT);
 
     return OSAL_SUCCESS;
 }

@@ -40,7 +40,8 @@ def finish_c_files():
     hfile.close()
 
 def write_signal_to_c_header(signal_name):
-    hfile.write("  iocSignal " + signal_name + ";\n")
+    global prefix
+    hfile.write("extern iocSignal " + prefix + signal_name + ";\n")
 
 def calc_signal_memory_sz(type, array_n):
     if type == "boolean":
@@ -53,7 +54,8 @@ def calc_signal_memory_sz(type, array_n):
     return array_n * type_sz + 1
 
 def write_signal_to_c_source(pin_type, signal_name, signal):
-    global current_type, current_addr, max_addr, signal_nr, nro_signals, handle
+    global prefix, block_name, prev_signals_c_name
+    global current_type, current_addr, max_addr
 
     addr = signal.get('addr', current_addr);
     if addr != current_addr:
@@ -71,34 +73,29 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
     if current_addr > max_addr:
         max_addr = current_addr
 
-    my_name = prefix + block_name + '.' + signal_name
-    if signal_nr == 1:
-        cfile.write('&' + my_name + '},\n')
-
-    cfile.write('  {')
+    # Write pin name and type
+    signals_c_name = prefix + signal_name
+    cfile.write("iocSignal " + signals_c_name + ' = {')
 
     # Write address
     cfile.write(str(addr) + ", ")
     cfile.write(str(array_n) + ", ")
-    cfile.write('OS_' + type.upper() + ', ')
-
-    cfile.write('0, ' + handle)
-#    cfile.write('(os_ushort)((os_char*)&' + my_name + ' - (os_char*)&' + prefix + block_name + ')')
-#    cfile.write('0, ')
-
-    signal_nr = signal_nr + 1
-
+    cfile.write('OS_' + type.upper())
 
     # Setup linked list for all signals in this memory block
-#    cfile.write("0, " + prev_signals_c_name)
-#    prev_signals_c_name = '&' + signals_c_name
-    cfile.write('}')
+    cfile.write(", 0, " + prev_signals_c_name)
+    prev_signals_c_name = "&" + signals_c_name
+    cfile.write("};\n")
 
-    if signal_nr <= nro_signals:
-        cfile.write(',')
+def write_linked_list_heads():
+    global prefix, block_name, prev_signals_c_name
+    if prev_signals_c_name is not "OS_NULL":
+        varname = prefix + block_name + "_signals";
+        cfile.write("iocSignal *" + varname + " = " + prev_signals_c_name + ";\n")
+        hfile.write("extern iocSignal *" + varname + ";\n")
 
-    cfile.write(' /* ' + signal_name + ' */\n')
-
+        define_name = prefix + block_name + "_MBLK_SZ"
+        hfile.write("#define " + define_name.upper() + " " + str(max_addr) + "\n")
 
 def process_signal(group_name, signal):
     global block_name
@@ -129,12 +126,13 @@ def process_group_block(group):
         process_signal(group_name, signal)
 
 def process_mblk(mblk):
-    global prefix, block_name, prev_signals_c_name, handle
-    global current_addr, max_addr, signal_nr, nro_signals
+    global prefix, block_name, prev_signals_c_name
+    global current_addr, max_addr
 
     block_name = mblk.get("name", "MBLK")
-    prefix = mblk.get('prefix', block_name + '_')
-    handle = mblk.get("handle", "OS_NULL")         
+    prefix = mblk.get("prefix", None)
+    if prefix == None:
+        prefix = block_name + '_'
     groups = mblk.get("groups", None)
     if groups == None:
         print("'groups' not found for " + block_name)
@@ -143,35 +141,11 @@ def process_mblk(mblk):
     prev_signals_c_name = "OS_NULL"
     current_addr = 0
     max_addr = 32
-    signal_nr = 1
-
-    instance_name = prefix + block_name
-    struct_name = instance_name + "_t"
-
-    nro_signals = 0
-    for group in groups:
-        signals = group.get("signals", None);
-        if signals != None:
-            for signal in signals:
-                nro_signals += 1
-
-    hfile.write('typedef struct ' + struct_name + '\n{\n')
-    hfile.write('  iocSignalStructHeader hdr;\n')
-
-    cfile.write(struct_name + ' ' + instance_name + '\n= {')
-    cfile.write('{' + handle + ', ' + str(nro_signals) + ', ')
 
     for group in groups:
         process_group_block(group)
 
-    hfile.write('}\n' + struct_name + ';\n\n')
-    hfile.write('extern ' + struct_name + ' ' + instance_name + ';\n')
-    define_name = prefix + block_name + "_MBLK_SZ"
-    hfile.write("#define " + define_name.upper() + " " + str(max_addr) + "\n\n")
-
-    cfile.write('};\n\n')
-
-#    write_linked_list_heads()
+    write_linked_list_heads()
 
 def process_source_file(path):
     read_file = open(path, "r")

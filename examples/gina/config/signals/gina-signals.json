@@ -2,7 +2,8 @@
   "mblk": [
   {
     "name": "EXPORT",
-    "prefix": "com_",
+    "prefix": "signal_",
+    "handle": "&ioboard_EXPORT",
     "title": "Exported by 'gina' IO device",
     "groups": [
       {
@@ -24,7 +25,8 @@
 
   {
     "name": "IMPORT",
-    "prefix": "com_",
+    "prefix": "signal_",
+    "handle": "&ioboard_IMPORT",
     "title": "Imported by 'gina' IO device",
     "groups": [
       {
