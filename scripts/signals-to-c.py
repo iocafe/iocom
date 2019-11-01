@@ -236,6 +236,7 @@ def mymain():
         exit()
 
 #    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
+#    putpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
 #    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 
     if outpath is None:
