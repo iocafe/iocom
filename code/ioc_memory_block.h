@@ -331,6 +331,7 @@ iocSignalStructHeader;
   IO signal state structure. Keep the order for initialization.
 ****************************************************************************************************
  */
+struct Pin;
 typedef struct iocSignal
 {
     /** Starting address in memory block.
@@ -355,6 +356,11 @@ typedef struct iocSignal
     /** Pointer to memory block handle.
      */
     iocHandle *handle;
+
+    /** Pointer to IO pin configuration structure. OS_NULL if this signal doesn't
+        match to an IO pin.
+     */
+    const struct Pin *pin;
 
     /** Current value. For simple ones, this is either integer i or float f, depending on
         data type (flags).
