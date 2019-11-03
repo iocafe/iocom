@@ -315,15 +315,26 @@ iocMemoryBlock;
  */
 struct iocSignal;
 
-typedef struct iocSignalStructHeader
+typedef struct iocMblkSignalHdr
 {
     iocHandle *handle;
 
     os_int n_signals;
+    os_uint mblk_sz;
 
     struct iocSignal *first_signal;
 }
-iocSignalStructHeader;
+iocMblkSignalHdr;
+
+
+typedef struct iocDeviceHdr
+{
+    const iocMblkSignalHdr *mblk_hdr;
+    os_int n_mblk_hdrs;
+}
+iocDeviceHdr;
+
+
 
 
 /**

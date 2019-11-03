@@ -26,15 +26,14 @@
   The IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
 
   IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
-  and sets size for ioboard_EXPORT "IN" memory block. Similarly "FC" stands for "from controller"
-  and ioboard_IMPORT "OUT" memory block.
+  and sets size for ioboard_UP "IN" memory block. Similarly "FC" stands for "from controller"
+  and ioboard_DOWN "OUT" memory block.
   Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
   imposed by static memory pool memory allocation.
 
   Allocate static memory pool for the IO board. We can do this even if we would be running
    on system with dynamic memory allocation, which is useful for testing micro-controller
    software in PC computer.
-
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -64,7 +63,7 @@
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
-        SIGNAL_EXPORT_MBLK_SZ, SIGNAL_IMPORT_MBLK_SZ)];
+        GINA_UP_MBLK_SZ, GINA_DOWN_MBLK_SZ)];
 
 
 /**
@@ -89,6 +88,20 @@ osalStatus osal_main(
     osal_tls_initialize(OS_NULL, 0, OS_NULL);
     osal_serial_initialize();
 
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
+  #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
+    static osalTLSParam tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
+    osal_tls_initialize(OS_NULL, 0, &tlsprm);
+    iface = OSAL_TLS_IFACE;
+  #else
+    osal_socket_initialize(OS_NULL, 0);
+    iface = OSAL_SOCKET_IFACE;
+  #endif
+#else
+    osal_serial_initialize();
+    iface = OSAL_SERIAL_IFACE;
+#endif
+
     /* Set up parameters for the IO board. This is necessary since
        we are using static memory pool.
      */
@@ -98,8 +111,8 @@ osalStatus osal_main(
     prm.socket_con_str = EXAMPLE_IP_ADDRESS;
     prm.serial_con_str = EXAMPLE_SERIAL_PORT;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = SIGNAL_EXPORT_MBLK_SZ;
-    prm.receive_block_sz = SIGNAL_IMPORT_MBLK_SZ;
+    prm.send_block_sz = GINA_UP_MBLK_SZ;
+    prm.receive_block_sz = GINA_DOWN_MBLK_SZ;
     prm.auto_synchronization = OS_FALSE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
@@ -110,7 +123,7 @@ osalStatus osal_main(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_IMPORT, ioboard_communication_callback, OS_NULL);
+    ioc_add_callback(&ioboard_DOWN, ioboard_communication_callback, OS_NULL);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -192,10 +205,10 @@ void ioboard_communication_callback(
 #define N_LEDS 8
     os_char buf[N_LEDS];
 
-    if (ioc_is_my_address(&signal_IMPORT.SEVEN_SEGMENT, start_addr, end_addr))
+    if (ioc_is_my_address(&gina.down.seven_segment, start_addr, end_addr))
     {
-        ioc_gets_array(&signal_IMPORT.SEVEN_SEGMENT, buf, N_LEDS);
-        if (ioc_is_value_connected(signal_IMPORT.SEVEN_SEGMENT))
+        ioc_gets_array(&gina.down.seven_segment, buf, N_LEDS);
+        if (ioc_is_value_connected(gina.down.seven_segment))
         {
             osal_console_write("7 segment data received\n");
             for (i = 0; i < N_LEDS; i++)

@@ -53,8 +53,8 @@
 #define IOBOARD_MAX_CONNECTIONS (IOBOARD_CTRL_CON == IOBOARD_CTRL_LISTEN_SOCKET ? 2 : 1)
 
 /* IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
-   and sets size for ioboard_EXPORT "IN" memory block. Similarly "FC" stands for "from controller"
-   and ioboard_IMPORT "OUT" memory block.
+   and sets size for ioboard_UP "IN" memory block. Similarly "FC" stands for "from controller"
+   and ioboard_DOWN "OUT" memory block.
    Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
    imposed by static memory pool memory allocation.
  */
@@ -167,13 +167,13 @@ osalStatus osal_loop(
        some operation of IO board. The command is eached back in address 2 to allow
        controller to know that command has been regognized.
      */
-    command = ioc_getp_short(&ioboard_IMPORT, 2);
+    command = ioc_getp_short(&ioboard_DOWN, 2);
     if (command != prev_command) {
         if (command == 1) {
             osal_console_write("Command 1, working on it.\n");
         }
         prev_command = command;
-        ioc_setp_short(&ioboard_EXPORT, 2, command);
+        ioc_setp_short(&ioboard_UP, 2, command);
     }
 
     return OSAL_SUCCESS;

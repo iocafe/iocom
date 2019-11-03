@@ -23,12 +23,12 @@ extern iocRoot
 /* To and from controller memory blocks.
  */
 extern iocMemoryBlock
-    ioboard_IMPORT_mblk,
-    ioboard_EXPORT_mblk;
+    ioboard_mblk_DOWN,
+    ioboard_mblk_UP;
 
 extern iocHandle
-    ioboard_IMPORT,
-    ioboard_EXPORT;
+    ioboard_DOWN,
+    ioboard_UP;
 
 /* Communication between controller and the IO board.
  */

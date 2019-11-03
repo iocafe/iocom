@@ -184,7 +184,7 @@ def process_source_file(path):
 
         struct_name = device_name + '_t'
         define_list = []
-        hfile.write('typedef struct\n{')
+        hfile.write('typedef struct ' + struct_name + '\n{')
         cfile.write('struct ' + struct_name + ' ' + device_name + ' = \n{')
 
         mblk_nr = 1;
@@ -212,7 +212,7 @@ def process_source_file(path):
             if not isfirst:
                 cfile.write(',\n  ')
             isfirst = False
-            cfile.write('&' + p)
+            cfile.write('&' + p + '.hdr')
         cfile.write('\n};\n\n')
         cfile.write('const iocDeviceHdr ' + device_name + '_hdr = {' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
 

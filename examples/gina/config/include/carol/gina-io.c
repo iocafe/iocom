@@ -31,10 +31,10 @@ const pins_t pins =
 
 static const PinGroupHdr *pins_group_list[] =
 {
-  &pins.inputs,
-  &pins.outputs,
-  &pins.analog_inputs,
-  &pins.pwm
+  &pins.inputs.hdr,
+  &pins.outputs.hdr,
+  &pins.analog_inputs.hdr,
+  &pins.pwm.hdr
 };
 
 const IoPinsHdr pins_hdr = {pins_group_list, sizeof(pins_group_list)/sizeof(PinGroupHdr*)};

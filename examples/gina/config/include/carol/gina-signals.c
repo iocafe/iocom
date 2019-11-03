@@ -21,8 +21,8 @@ struct gina_t gina =
 
 static const iocMblkSignalHdr *gina_mblk_list[] =
 {
-  &gina.up,
-  &gina.down
+  &gina.up.hdr,
+  &gina.down.hdr
 };
 
 const iocDeviceHdr gina_hdr = {gina_mblk_list, sizeof(gina_mblk_list)/sizeof(iocMblkSignalHdr*)};

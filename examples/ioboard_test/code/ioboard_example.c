@@ -63,8 +63,8 @@
 #define IOBOARD_MAX_CONNECTIONS (IOBOARD_CTRL_CON == IOBOARD_CTRL_LISTEN_SOCKET ? 2 : 1)
 
 /* IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
-   and sets size for ioboard_EXPORT "IN" memory block. Similarly "FC" stands for "from controller"
-   and ioboard_IMPORT "OUT" memory block.
+   and sets size for ioboard_UP "IN" memory block. Similarly "FC" stands for "from controller"
+   and ioboard_DOWN "OUT" memory block.
    Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
    imposed by static memory pool memory allocation.
  */
@@ -97,11 +97,11 @@ static MyAppContext ioboard_app_context;
 /* Here I create signal structures from C code by hand. Code to create these can
    be also generated from XML by script.
  */
-static iocSignal my_tc_count = {20, 1, OS_SHORT, 0, &ioboard_EXPORT};
+static iocSignal my_tc_count = {20, 1, OS_SHORT, 0, &ioboard_UP};
 static os_short my_signal_count;
 static os_timer my_signal_timer;
 
-static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, &ioboard_IMPORT};
+static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, &ioboard_DOWN};
 
 
 /* Static function prototypes.
@@ -195,7 +195,7 @@ osalStatus osal_main(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_IMPORT, ioboard_fc_callback, OS_NULL);
+    ioc_add_callback(&ioboard_DOWN, ioboard_fc_callback, OS_NULL);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -236,13 +236,13 @@ osalStatus osal_loop(
        some operation of IO board. The command is eached back in address 2 to allow
        controller to know that command has been regognized.
      */
-    command = ioc_getp_short(&ioboard_IMPORT, 2);
+    command = ioc_getp_short(&ioboard_DOWN, 2);
     if (command != acontext->prev_command) {
         if (command == 1) {
             osal_console_write("Command 1, working on it.\n");
         }
         acontext->prev_command = command;
-        ioc_setp_short(&ioboard_EXPORT, 2, command);
+        ioc_setp_short(&ioboard_UP, 2, command);
     }
 
     /* Send periodic signal to controller.
@@ -349,8 +349,8 @@ static void ioboard_show_communication_status(
     os_char
         nbuf[32];
 
-    nro_connections = ioc_getp_short(&ioboard_IMPORT, IOC_NRO_CONNECTED_STREAMS);
-    drop_count = ioc_getp_int(&ioboard_IMPORT, IOC_CONNECTION_DROP_COUNT);
+    nro_connections = ioc_getp_short(&ioboard_DOWN, IOC_NRO_CONNECTED_STREAMS);
+    drop_count = ioc_getp_int(&ioboard_DOWN, IOC_CONNECTION_DROP_COUNT);
     if (nro_connections != acontext->prev_nro_connections ||
         drop_count != acontext->prev_drop_count)
     {

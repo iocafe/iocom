@@ -119,7 +119,7 @@ void setup()
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_IMPORT, ioboard_callback, OS_NULL);
+    ioc_add_callback(&ioboard_DOWN, ioboard_callback, OS_NULL);
 }
 
 
@@ -136,7 +136,7 @@ void loop()
        some operation of IO board. The command is eached back in address 2 to allow
        controller to know that command has been regognized.
      */
-    command = ioc_getp_short(&ioboard_IMPORT, 10);
+    command = ioc_getp_short(&ioboard_DOWN, 10);
     if (command != prev_command) {
         // toggle_leds();
         /* if (command == 1) {
@@ -150,7 +150,7 @@ void loop()
         }
          */
         prev_command = command;
-        // ioc_setp_short(&ioboard_EXPORT, 2, command);
+        // ioc_setp_short(&ioboard_UP, 2, command);
     }
 }
 

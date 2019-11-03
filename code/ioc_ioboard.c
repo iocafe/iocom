@@ -9,8 +9,8 @@
   The ioboard_start_communication() should be called at entry to IO board's program and
   if clean up is needed ioboard_end_communication() at exit.
 
-  Memory blocks initialized are ioboard_EXPORT (tc = to controller) and 
-  ioboard_IMPORT (fc = from controller).
+  Memory blocks initialized are ioboard_UP (tc = to controller) and 
+  ioboard_DOWN (fc = from controller).
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -25,12 +25,12 @@ iocRoot
     ioboard_communication;
 
 iocMemoryBlock
-    ioboard_IMPORT_mblk,
-    ioboard_EXPORT_mblk;
+    ioboard_mblk_DOWN,
+    ioboard_mblk_UP;
 
 iocHandle
-    ioboard_IMPORT,
-    ioboard_EXPORT,
+    ioboard_DOWN,
+    ioboard_UP,
     ioboard_dinfo;
 
 static iocEndPoint
@@ -79,13 +79,13 @@ void ioboard_start_communication(
     blockprm.mblk_name = "IN";
     blockprm.nbytes = prm->send_block_sz ? prm->send_block_sz : 256;
     blockprm.flags = prm->auto_synchronization ? (IOC_SOURCE|IOC_AUTO_SYNC) : IOC_SOURCE;
-    ioc_initialize_memory_block(&ioboard_EXPORT, &ioboard_EXPORT_mblk, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_UP, &ioboard_mblk_UP, &ioboard_communication, &blockprm);
  
     blockprm.mblk_nr = IOC_OUTPUT_MBLK;
     blockprm.mblk_name = "OUT";
     blockprm.nbytes = prm->receive_block_sz ? prm->receive_block_sz : 256;
     blockprm.flags = prm->auto_synchronization ? (IOC_TARGET|IOC_AUTO_SYNC) : IOC_TARGET;
-    ioc_initialize_memory_block(&ioboard_IMPORT, &ioboard_IMPORT_mblk, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_DOWN, &ioboard_mblk_DOWN, &ioboard_communication, &blockprm);
 
     /* Do we publish device information?
      */
