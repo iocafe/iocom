@@ -107,7 +107,7 @@ static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, &ioboard_DOWN};
 /* Static function prototypes.
  */
 static void ioboard_fc_callback(
-    struct iocHandle *mblk,
+    struct iocHandle *handle,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -297,7 +297,7 @@ void osal_main_cleanup(
 ****************************************************************************************************
 */
 static void ioboard_fc_callback(
-    struct iocHandle *mblk,
+    struct iocHandle *handle,
     int start_addr,
     int end_addr,
     os_ushort flags,

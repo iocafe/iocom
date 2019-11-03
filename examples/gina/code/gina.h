@@ -14,7 +14,7 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
-#include "pins.h"
+#include "pinsx.h"
 
 #include "gina-io.h"
 #include "gina-signals.h"

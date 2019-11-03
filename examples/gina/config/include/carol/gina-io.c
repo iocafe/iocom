@@ -4,8 +4,8 @@
 static os_short pins_inputs_dip_switch_3_prm[]= {PIN_PULL_UP, 1};
 static os_short pins_inputs_touch_sensor_prm[]= {PIN_TOUCH, 1};
 static os_short pins_analog_inputs_potentiometer_prm[]= {PIN_DELAY, 11, PIN_SPEED, 3};
-static os_short pins_pwm_servo_prm[]= {PIN_RESOLUTION, 12, PIN_FREQENCY, 50, PIN_INIT, 2048};
-static os_short pins_pwm_dimmer_led_prm[]= {PIN_RESOLUTION, 12, PIN_FREQENCY, 5000, PIN_INIT, 0};
+static os_short pins_pwm_servo_prm[]= {PIN_INIT, 2048, PIN_FREQENCY, 50, PIN_RESOLUTION, 12};
+static os_short pins_pwm_dimmer_led_prm[]= {PIN_INIT, 0, PIN_FREQENCY, 5000, PIN_RESOLUTION, 12};
 
 const pins_t pins =
 {
@@ -15,8 +15,15 @@ const pins_t pins =
     {"touch_sensor", PIN_INPUT, 0, 4, pins_inputs_touch_sensor_prm, sizeof(pins_inputs_touch_sensor_prm)/sizeof(os_short), OS_NULL}
   },
 
-  {{1, &pins.outputs.led_builtin},
-    {"led_builtin", PIN_OUTPUT, 0, 2, OS_NULL, 0, OS_NULL}
+  {{8, &pins.outputs.led_builtin},
+    {"led_builtin", PIN_OUTPUT, 0, 2, OS_NULL, 0, OS_NULL},
+    {"A", PIN_OUTPUT, 0, 2, OS_NULL, 0, OS_NULL},
+    {"B", PIN_OUTPUT, 0, 2, OS_NULL, 0, &pins.outputs.A},
+    {"C", PIN_OUTPUT, 0, 2, OS_NULL, 0, &pins.outputs.B},
+    {"D", PIN_OUTPUT, 0, 2, OS_NULL, 0, &pins.outputs.C},
+    {"E", PIN_OUTPUT, 0, 2, OS_NULL, 0, &pins.outputs.D},
+    {"F", PIN_OUTPUT, 0, 2, OS_NULL, 0, &pins.outputs.E},
+    {"G", PIN_OUTPUT, 0, 2, OS_NULL, 0, &pins.outputs.F}
   },
 
   {{1, &pins.analog_inputs.potentiometer},
@@ -25,7 +32,7 @@ const pins_t pins =
 
   {{2, &pins.pwm.servo},
     {"servo", PIN_PWM, 0, 32, pins_pwm_servo_prm, sizeof(pins_pwm_servo_prm)/sizeof(os_short), OS_NULL},
-    {"dimmer_led", PIN_PWM, 1, 33, pins_pwm_dimmer_led_prm, sizeof(pins_pwm_dimmer_led_prm)/sizeof(os_short), &pins.outputs.led_builtin}
+    {"dimmer_led", PIN_PWM, 1, 33, pins_pwm_dimmer_led_prm, sizeof(pins_pwm_dimmer_led_prm)/sizeof(os_short), OS_NULL}
   }
 };
 
@@ -38,4 +45,4 @@ static const PinGroupHdr *pins_group_list[] =
 };
 
 const IoPinsHdr pins_hdr = {pins_group_list, sizeof(pins_group_list)/sizeof(PinGroupHdr*)};
-const Pin *pins_aba_group = &pins.pwm.dimmer_led;
+const Pin *pins_segment7_group = &pins.outputs.G;

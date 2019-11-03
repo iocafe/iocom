@@ -36,6 +36,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_com_status.h"
 #include "code/ioc_memory_block_info.h"
 #include "code/ioc_memory_block.h"
+#include "code/ioc_signal.h"
 #include "code/ioc_connection.h"
 #if OSAL_SOCKET_SUPPORT
 #include "code/ioc_end_point.h"

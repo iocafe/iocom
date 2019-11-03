@@ -54,7 +54,7 @@ def calc_signal_memory_sz(type, array_n):
     return array_n * type_sz + 1
 
 def write_signal_to_c_source(pin_type, signal_name, signal):
-    global cfile, hfile
+    global cfile, hfile, array_list
     global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
@@ -69,11 +69,16 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
     if array_n < 1:
         array_n = 1
 
+    if array_n > 1:
+        arr_name = device_name + '_' + block_name + '_' + signal_name + '_ARRAY_SZ'
+        array_list.append('#define ' + arr_name.upper() + ' ' + str(array_n))
+
     current_addr += calc_signal_memory_sz(type, array_n)
     if current_addr > max_addr:
         max_addr = current_addr
 
     my_name = device_name + '.' + block_name + '.' + signal_name
+
     if signal_nr == 1:
         cfile.write('&' + my_name + '},\n')
 
@@ -170,7 +175,7 @@ def process_mblk(mblk):
 
 
 def process_source_file(path):
-    global cfile, hfile
+    global cfile, hfile, array_list
     global device_name, define_list, mblk_nr, nro_mblks, mblk_list
     read_file = open(path, "r")
     if read_file:
@@ -193,6 +198,7 @@ def process_source_file(path):
             nro_mblks += 1
 
         mblk_list = []
+        array_list = []
 
         for mblk in mblks:
             process_mblk(mblk)
@@ -216,7 +222,10 @@ def process_source_file(path):
         cfile.write('\n};\n\n')
         cfile.write('const iocDeviceHdr ' + device_name + '_hdr = {' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
 
-        hfile.write('extern const iocDeviceHdr ' + device_name + '_' + 'hdr;\n')
+        hfile.write('extern const iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
+
+        for p in array_list:
+            hfile.write(p + '\n')
 
     else:
         printf ("Opening file " + path + " failed")

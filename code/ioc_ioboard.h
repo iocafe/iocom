@@ -66,6 +66,18 @@ extern iocHandle
 #define IOBOARD_POOL_DEVICE_INFO(MAX_CONNECTIONS) \
     sizeof(iocMemoryBlock) + IOBOARD_MAX_CONNECTIONS * sizeof(iocSourceBuffer)
 
+/* Macro to get interface by other defines.
+ */
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
+  #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
+    #define ioboard_iface() OSAL_TLS_IFACE
+  #else
+    #define ioboard_iface() OSAL_SOCKET_IFACE
+  #endif
+#else
+    #define ioboard_iface() OSAL_SERIAL_IFACE
+#endif
+
 /* IO board parameter structure.
  */
 typedef struct

@@ -16,6 +16,13 @@ typedef struct
   {
     PinGroupHdr hdr;
     Pin led_builtin;
+    Pin A;
+    Pin B;
+    Pin C;
+    Pin D;
+    Pin E;
+    Pin F;
+    Pin G;
   }
   outputs;
 
@@ -38,6 +45,6 @@ pins_t;
 
 extern const IoPinsHdr pins_hdr;
 extern const pins_t pins;
-extern const Pin *pins_aba_group;
+extern const Pin *pins_segment7_group;
 
 OSAL_C_HEADER_ENDS

@@ -31,4 +31,6 @@ gina_t;
 extern gina_t gina;
 extern const iocDeviceHdr gina_hdr;
 
+#define GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ 8
+
 OSAL_C_HEADER_ENDS

@@ -6,34 +6,14 @@
   @version 1.0
   @date    1.11.2019
 
-  Selecting transport
   IOBOARD_CTRL_CON define selects how this IO device connects to control computer. One of
   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
 
-  Transport configuration
-  Modify connection parameters here: These apply to different communication types
-  Define EXAMPLE_TCP_SOCKET_PORT sets unsecured TCP socket port number
-   to listen.
-   Define EXAMPLE_TLS_SOCKET_PORT sets secured TCP socket port number
-   to listen.
-   Defines EXAMPLE_TLS_SERVER_CERT and EXAMPLE_TLS_SERVER_KEY set path
-   to cerver certificate and key files.
-   Define EXAMPLE_SERIAL_PORT: Serial port can be selected using Windows
-   style using "COM1", "COM2"... These are mapped to hardware/operating system in device specific
-   manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
+  GINA_SERIAL_PORT: Serial port can be selected using Windows style using "COM1",
+  "COM2"... These are mapped to hardware/operating system in device specific
+  manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
 
-  Number of connections
-  The IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
-
-  IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
-  and sets size for ioboard_UP "IN" memory block. Similarly "FC" stands for "from controller"
-  and ioboard_DOWN "OUT" memory block.
-  Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
-  imposed by static memory pool memory allocation.
-
-  Allocate static memory pool for the IO board. We can do this even if we would be running
-   on system with dynamic memory allocation, which is useful for testing micro-controller
-   software in PC computer.
+  IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -50,16 +30,14 @@
 
 /* Transport parameters.
  */
-#define EXAMPLE_IP_ADDRESS "192.168.1.220"
-#define EXAMPLE_TLS_SERVER_CERT "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/alice.crt"
-#define EXAMPLE_TLS_SERVER_KEY "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/alice.key"
-#define EXAMPLE_SERIAL_PORT "COM3,baud=115200"
+#define GINA_IP_ADDRESS "192.168.1.220"
+#define GINA_SERIAL_PORT "COM3,baud=115200"
 
 /* Maximum number of sockets, etc.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
 
-/* Memory pool
+/* Use static memory pool
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
@@ -88,19 +66,9 @@ osalStatus osal_main(
     osal_tls_initialize(OS_NULL, 0, OS_NULL);
     osal_serial_initialize();
 
-#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
-  #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-    static osalTLSParam tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
-    osal_tls_initialize(OS_NULL, 0, &tlsprm);
-    iface = OSAL_TLS_IFACE;
-  #else
-    osal_socket_initialize(OS_NULL, 0);
-    iface = OSAL_SOCKET_IFACE;
-  #endif
-#else
-    osal_serial_initialize();
-    iface = OSAL_SERIAL_IFACE;
-#endif
+    /* Get stream interface by defines.
+     */
+    iface = ioboard_iface();
 
     /* Set up parameters for the IO board. This is necessary since
        we are using static memory pool.
@@ -108,8 +76,8 @@ osalStatus osal_main(
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
     prm.ctrl_type = IOBOARD_CTRL_CON;
-    prm.socket_con_str = EXAMPLE_IP_ADDRESS;
-    prm.serial_con_str = EXAMPLE_SERIAL_PORT;
+    prm.socket_con_str = GINA_IP_ADDRESS;
+    prm.serial_con_str = GINA_SERIAL_PORT;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = GINA_UP_MBLK_SZ;
     prm.receive_block_sz = GINA_DOWN_MBLK_SZ;
@@ -186,34 +154,50 @@ void osal_main_cleanup(
 /**
 ****************************************************************************************************
 
-  @brief Callback function when some communication data has changed.
+  @brief Callback function when data has been received from communication.
 
-  The ioboard_fc_callback function...
+  The ioboard_communication_callback function reacts to communication changes. Here we treat
+  memory block as set of communication signals, and mostly just forward these to IO.
 
+  @param   handle Memory block handle.
+  @param   start_addr First changed memory block address.
+  @param   end_addr Last changed memory block address.
+  @param   flags Last changed memory block address.
+  @param   context Callback context, not used by "gina" example.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioboard_communication_callback(
-    struct iocHandle *mblk,
+    struct iocHandle *handle,
     int start_addr,
     int end_addr,
     os_ushort flags,
     void *context)
 {
-    int i;
-#define N_LEDS 8
-    os_char buf[N_LEDS];
+    os_char buf[GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ];
+    const Pin *pin;
+    os_short i;
 
+    /* Call pins library extension to forward communication signal changed to IO pins.
+     */
+    forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
+
+    /* Process 7 segment display. Since this is transferred as boolean array, the
+       forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
+       boolean array from communication signal, and write it to IO pins.
+     */
     if (ioc_is_my_address(&gina.down.seven_segment, start_addr, end_addr))
     {
-        ioc_gets_array(&gina.down.seven_segment, buf, N_LEDS);
+        ioc_gets_array(&gina.down.seven_segment, buf, GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ);
         if (ioc_is_value_connected(gina.down.seven_segment))
         {
             osal_console_write("7 segment data received\n");
-            for (i = 0; i < N_LEDS; i++)
+            for (i = GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
+                 i >= 0 && pin;
+                 i--, pin = pin->next) /* For now we need to loop backwards, fix this */
             {
-                // digitalWrite(leds[s + i], buf[i] ? HIGH : LOW);
+                pin_set(pin, buf[i]);
             }
         }
         else
