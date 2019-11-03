@@ -36,7 +36,7 @@ typedef struct
 }
 pins_t;
 
-extern const IoDeviceHdr pins_hdr;
+extern const IoPinsHdr pins_hdr;
 extern const pins_t pins;
 extern const Pin *pins_aba_group;
 

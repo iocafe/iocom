@@ -31,17 +31,16 @@ def start_c_files():
     cfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
     cfile.write('#include "iocom.h"\n')
     hfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
-    hfile.write('OSAL_C_HEADER_BEGINS\n\n')
+    hfile.write('OSAL_C_HEADER_BEGINS\n')
 
 def finish_c_files():
     global cfile, hfile
-    hfile.write('\nOSAL_C_HEADER_ENDS\n')
+    hfile.write('OSAL_C_HEADER_ENDS\n')
     cfile.close()
     hfile.close()
 
 def write_signal_to_c_header(signal_name):
-    global hfile
-    hfile.write("    iocSignal " + signal_name + ";\n")
+    hfile.write("  iocSignal " + signal_name + ";\n")
 
 def calc_signal_memory_sz(type, array_n):
     if type == "boolean":
@@ -54,7 +53,6 @@ def calc_signal_memory_sz(type, array_n):
     return array_n * type_sz + 1
 
 def write_signal_to_c_source(pin_type, signal_name, signal):
-    global cfile, hfile
     global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
@@ -73,11 +71,11 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
     if current_addr > max_addr:
         max_addr = current_addr
 
-    my_name = device_name + '.' + block_name + '.' + signal_name
+    my_name = prefix + block_name + '.' + signal_name
     if signal_nr == 1:
         cfile.write('&' + my_name + '},\n')
 
-    cfile.write('    {')
+    cfile.write('  {')
 
     cfile.write(str(addr) + ", ")
     cfile.write(str(array_n) + ", ")
@@ -85,7 +83,7 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
     cfile.write('0, ' + handle)
 
     if signal_name in pinlist:
-        cfile.write(', ' + pinlist[signal_name])
+        cfile.write(', ' + pin_prefix + signal_name)
 
     cfile.write('}')
 
@@ -93,7 +91,9 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
         cfile.write(',')
         
     signal_nr = signal_nr + 1
+
     cfile.write(' /* ' + signal_name + ' */\n')
+
 
 def process_signal(group_name, signal):
     global block_name
@@ -124,22 +124,24 @@ def process_group_block(group):
         process_signal(group_name, signal)
 
 def process_mblk(mblk):
-    global cfile, hfile
-    global block_name, handle, define_list, mblk_nr, nro_mblks, mblk_list
+    global prefix, block_name, handle, pin_prefix
     global current_addr, max_addr, signal_nr, nro_signals
 
     block_name = mblk.get("name", "MBLK")
+    prefix = mblk.get('prefix', block_name + '_')
+    pin_prefix = mblk.get('pin_prefix', '&io_')
     handle = mblk.get("handle", "OS_NULL")         
     groups = mblk.get("groups", None)
     if groups == None:
         print("'groups' not found for " + block_name)
         exit()
 
-    mblk_list.append(device_name + '.' + block_name)
-
     current_addr = 0
     max_addr = 32
     signal_nr = 1
+
+    instance_name = prefix + block_name
+    struct_name = instance_name + "_t"
 
     nro_signals = 0
     for group in groups:
@@ -148,92 +150,47 @@ def process_mblk(mblk):
             for signal in signals:
                 nro_signals += 1
 
-    hfile.write('\n  struct ' + '\n  {\n')
-    hfile.write('    iocMblkSignalHdr hdr;\n')
+    hfile.write('typedef struct ' + struct_name + '\n{\n')
+    hfile.write('  iocSignalStructHeader hdr;\n')
 
-    cfile.write('\n  {\n    {' + handle + ', ' + str(nro_signals) + ', ')
-    define_name = device_name + '_' + block_name + "_MBLK_SZ"
-    cfile.write(define_name.upper() + ', ')
+    cfile.write(struct_name + ' ' + instance_name + '\n= {')
+    cfile.write('{' + handle + ', ' + str(nro_signals) + ', ')
 
     for group in groups:
         process_group_block(group)
 
-    hfile.write('  }\n  ' + block_name + ';\n')
-    define_list.append("#define " + define_name.upper() + " " + str(max_addr) + "\n")
+    hfile.write('}\n' + struct_name + ';\n\n')
+    hfile.write('extern ' + struct_name + ' ' + instance_name + ';\n')
+    define_name = prefix + block_name + "_MBLK_SZ"
+    hfile.write("#define " + define_name.upper() + " " + str(max_addr) + "\n\n")
 
-    cfile.write('  }')
-
-    if mblk_nr < nro_mblks:
-        cfile.write(',')
-    cfile.write('\n')
-    mblk_nr = mblk_nr + 1
-
+    cfile.write('};\n\n')
 
 def process_source_file(path):
-    global cfile, hfile
-    global device_name, define_list, mblk_nr, nro_mblks, mblk_list
     read_file = open(path, "r")
     if read_file:
         data = json.load(read_file)
-        device_name = data.get("name", "unnamed_device")
-
         mblks = data.get("mblk", None)
         if mblks == None:
             print("'mblk' not found")
             exit()
 
-        struct_name = device_name + '_t'
-        define_list = []
-        hfile.write('typedef struct\n{')
-        cfile.write('struct ' + struct_name + ' ' + device_name + ' = \n{')
-
-        mblk_nr = 1;
-        nro_mblks = 0
-        for mblk in mblks:
-            nro_mblks += 1
-
-        mblk_list = []
-
         for mblk in mblks:
             process_mblk(mblk)
-
-        hfile.write('}\n' + struct_name + ';\n\n')
-        cfile.write('};\n')
-
-        for d in define_list:
-            hfile.write(d)
-
-        hfile.write('\nextern ' + struct_name + ' ' + device_name + ';\n')
-
-        list_name = device_name + "_mblk_list"
-        cfile.write('\nstatic const iocMblkSignalHdr *' + list_name + '[] =\n{\n  ')
-        isfirst = True
-        for p in mblk_list:
-            if not isfirst:
-                cfile.write(',\n  ')
-            isfirst = False
-            cfile.write('&' + p)
-        cfile.write('\n};\n\n')
-        cfile.write('const iocDeviceHdr ' + device_name + '_hdr = {' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
-
-        hfile.write('extern const iocDeviceHdr ' + device_name + '_' + 'hdr;\n')
 
     else:
         printf ("Opening file " + path + " failed")
 
 def list_pins_rootblock(rootblock):
-    global pinlist
-    prins_prefix = rootblock.get('prefix', "pins")
     groups = rootblock.get("groups", None)
 
     for group in groups:
         pins  = group.get("pins", None);
         if pins != None:
-            pingroup_name = group.get("name", None);
             for pin in pins:
                 name = pin.get('name', None)
                 if name is not None:
-                    pinlist.update({name : '&' + prins_prefix + '.' + pingroup_name + '.' + name})
+                    pinlist.append(name)
 
 def list_pins_in_pinsfile(path):
     pins_file = open(path, "r")
@@ -279,13 +236,13 @@ def mymain():
         exit()
 
 #    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
-#    outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
+#    putpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
 #    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 
     if outpath is None:
         outpath = sourcefiles[0]
 
-    pinlist = {}
+    pinlist = []
     if pinspath is not None:
         list_pins_in_pinsfile(pinspath)
 

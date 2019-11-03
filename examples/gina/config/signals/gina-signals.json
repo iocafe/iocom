@@ -1,51 +1,50 @@
 {
+  "name": "gina",
   "mblk": [
   {
-    "name": "EXPORT",
-    "prefix": "signal_",
-    "handle": "&ioboard_EXPORT",
+    "name": "up",
+    "handle": "&ioboard_UP",
     "title": "Exported by 'gina' IO device",
     "groups": [
       {
-	    "name": "inputs",
+        "name": "inputs",
          "signals": [
-           {"name": "DIP_SWITCH_3", "addr": 30, "type": "boolean"},
-           {"name": "DIP_SWITCH_4"},
-           {"name": "TOUCH_SENSOR"}
+           {"name": "dip_switch_3", "addr": 30, "type": "boolean"},
+           {"name": "dip_switch_4"},
+           {"name": "touch_sensor"}
          ]
        },
        {
-	     "name": "analog_inputs",
-	     "signals": [
-           {"name": "POTENTIOMETER"}
+         "name": "analog_inputs",
+         "signals": [
+           {"name": "potentiometer"}
          ]
        }
     ]
   },
 
   {
-    "name": "IMPORT",
-    "prefix": "signal_",
-    "handle": "&ioboard_IMPORT",
+    "name": "down",
+    "handle": "&ioboard_DOWN",
     "title": "Imported by 'gina' IO device",
     "groups": [
       {
-	    "name": "pwm",
-	    "signals": [
-          {"name": "SERVO", "type": "short"},
-	      {"name": "DIMMER_LED"}
-        ]
-      },
-      {
-	    "name": "outputs",
+        "name": "pwm",
         "signals": [
-          {"name": "LED_BUILTIN", "type": "boolean"} 
+          {"name": "servo", "type": "short"},
+          {"name": "dimmer_led"}
         ]
       },
       {
-	    "name": "controls",
-	    "signals": [
-           {"name": "SEVEN_SEGMENT", "type": "boolean", "array": 8}
+        "name": "outputs",
+        "signals": [
+          {"name": "led_builtin", "type": "boolean"}
+        ]
+      },
+      {
+        "name": "controls",
+        "signals": [
+           {"name": "seven_segment", "type": "boolean", "array": 8}
          ]
       }
     ]

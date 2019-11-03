@@ -1,29 +1,34 @@
 /* This file is gerated by signals-to-c.py script, do not modify. */
 OSAL_C_HEADER_BEGINS
-typedef struct signal_EXPORT_t
+
+typedef struct
 {
-  iocSignalStructHeader hdr;
-  iocSignal DIP_SWITCH_3;
-  iocSignal DIP_SWITCH_4;
-  iocSignal TOUCH_SENSOR;
-  iocSignal POTENTIOMETER;
+  struct 
+  {
+    iocMblkSignalHdr hdr;
+    iocSignal dip_switch_3;
+    iocSignal dip_switch_4;
+    iocSignal touch_sensor;
+    iocSignal potentiometer;
+  }
+  up;
+
+  struct 
+  {
+    iocMblkSignalHdr hdr;
+    iocSignal servo;
+    iocSignal dimmer_led;
+    iocSignal led_builtin;
+    iocSignal seven_segment;
+  }
+  down;
 }
-signal_EXPORT_t;
+gina_t;
 
-extern signal_EXPORT_t signal_EXPORT;
-#define SIGNAL_EXPORT_MBLK_SZ 36
+#define GINA_UP_MBLK_SZ 36
+#define GINA_DOWN_MBLK_SZ 32
 
-typedef struct signal_IMPORT_t
-{
-  iocSignalStructHeader hdr;
-  iocSignal SERVO;
-  iocSignal DIMMER_LED;
-  iocSignal LED_BUILTIN;
-  iocSignal SEVEN_SEGMENT;
-}
-signal_IMPORT_t;
-
-extern signal_IMPORT_t signal_IMPORT;
-#define SIGNAL_IMPORT_MBLK_SZ 32
+extern gina_t gina;
+extern const iocDeviceHdr gina_hdr;
 
 OSAL_C_HEADER_ENDS
