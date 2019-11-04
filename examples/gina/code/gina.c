@@ -61,6 +61,10 @@ osalStatus osal_main(
     ioboardParams prm;
     const osalStreamInterface *iface;
 
+    /* Setup IO pins.
+     */
+    pins_setup(&pins_hdr, 0);
+
     /* Initialize the transport, socket, TLS, serial, etc..
      */
     osal_tls_initialize(OS_NULL, 0, OS_NULL);
@@ -105,7 +109,8 @@ osalStatus osal_main(
 
   @brief Loop function to be called repeatedly.
 
-  The osal_loop() function...
+  The osal_loop() function maintains communication, reads IO pins (reading forwards input states
+  to communication) and runs the IO device functionality.
 
   @param   app_context Void pointer, to pass application context structure, etc.
   @return  The function returns OSAL_SUCCESS to continue running. Other return values are
@@ -116,10 +121,26 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
-    /* Keep the communication alive. Here we use single thread model, thus we need to call
-       this function repeatedly.
+    /* Keep the communication alive. If data is received from communication, the
+       ioboard_communication_callback() will be called.
      */
     ioc_run(&ioboard_communication);
+
+    /* Move data data synchronously to incomong memory block.
+     */
+    ioc_receive(&ioboard_DOWN);
+
+    /* Read all input pins from hardware into global pins structures. Reading will forward
+       input states to communication.
+     */
+    pins_read_all(&pins_hdr);
+
+    /* Run the IO device functionality.
+     */
+
+    /* Move data synchronously from outgoing memory block.
+     */
+    ioc_send(&ioboard_UP);
 
     return OSAL_SUCCESS;
 }
