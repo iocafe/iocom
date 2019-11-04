@@ -49,7 +49,7 @@ static os_char
 
   @brief Set up the communication.
 
-  X..
+  Initialize transport stream and set interface
   @return  OSAL_SUCCESS if all fine, other values indicate an error.
 
 ****************************************************************************************************
@@ -66,12 +66,11 @@ osalStatus osal_main(
     osal_tls_initialize(OS_NULL, 0, OS_NULL);
     osal_serial_initialize();
 
-    /* Get stream interface by defines.
+    /* Get stream interface by IOBOARD_CTRL_CON define.
      */
-    iface = ioboard_iface();
+    iface = IOBOARD_IFACE;
 
-    /* Set up parameters for the IO board. This is necessary since
-       we are using static memory pool.
+    /* Set up parameters for the IO board.
      */
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
@@ -97,7 +96,7 @@ osalStatus osal_main(
        real micro-controller.
      */
     osal_simulated_loop(OS_NULL);
-    return 0;
+    return OSAL_SUCCESS;
 }
 
 
@@ -156,7 +155,7 @@ void osal_main_cleanup(
 
   @brief Callback function when data has been received from communication.
 
-  The ioboard_communication_callback function reacts to communication changes. Here we treat
+  The ioboard_communication_callback function reacts to data from communication. Here we treat
   memory block as set of communication signals, and mostly just forward these to IO.
 
   @param   handle Memory block handle.

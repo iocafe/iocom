@@ -91,6 +91,8 @@ def write_signal_to_c_source(pin_type, signal_name, signal):
 
     if signal_name in pinlist:
         cfile.write(', ' + pinlist[signal_name])
+    else:
+        cfile.write(', OS_NULL')
 
     cfile.write('}')
 
