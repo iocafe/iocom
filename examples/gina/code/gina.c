@@ -174,13 +174,13 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
+    /* '#ifdef' is used to compile code in only if 7-segment display is configured
+       for the hardware.
+     */
+#ifdef PINS_SEGMENT7_GROUP
     os_char buf[GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ];
     const Pin *pin;
     os_short i;
-
-    /* Call pins library extension to forward communication signal changed to IO pins.
-     */
-    forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
 
     /* Process 7 segment display. Since this is transferred as boolean array, the
        forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
@@ -205,4 +205,9 @@ void ioboard_communication_callback(
             osal_console_write("7 segment data DISCONNECTED\n");
         }
     }
+#endif
+
+    /* Call pins library extension to forward communication signal changed to IO pins.
+     */
+    forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
 }
