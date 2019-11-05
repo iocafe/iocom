@@ -38,6 +38,7 @@ typedef os_ushort ioc_sbuf_item;
 typedef os_ushort ioc_tbuf_item;
 
 struct iocFreeBlk;
+struct iocDeviceHdr;
 
 /**
 ****************************************************************************************************
@@ -177,6 +178,10 @@ typedef struct iocRoot
     /** Callback context for callback function. OS_NULL if not used.
      */
     void *callback_context;
+
+    /** Pointer to static structure defining signals.
+     */
+    const struct iocDeviceHdr *device_signal_hdr;
 }
 iocRoot;
 

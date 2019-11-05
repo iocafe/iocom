@@ -10,22 +10,30 @@ typedef struct gina_t
     iocSignal dip_switch_4;
     iocSignal touch_sensor;
     iocSignal potentiometer;
+    iocSignal A;
+    iocSignal B;
+    iocSignal C;
+    iocSignal D;
+    iocSignal E;
+    iocSignal F;
+    iocSignal G;
+    iocSignal H;
   }
   up;
 
   struct 
   {
     iocMblkSignalHdr hdr;
+    iocSignal seven_segment;
     iocSignal servo;
     iocSignal dimmer_led;
     iocSignal led_builtin;
-    iocSignal seven_segment;
   }
   down;
 }
 gina_t;
 
-#define GINA_UP_MBLK_SZ 36
+#define GINA_UP_MBLK_SZ 44
 #define GINA_DOWN_MBLK_SZ 32
 
 extern gina_t gina;

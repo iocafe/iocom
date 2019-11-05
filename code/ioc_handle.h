@@ -35,6 +35,11 @@ typedef struct iocHandle
      */
     IOC_DEBUG_ID
 
+    /** Memory block flags, like IOC_TARGET, IOC_SOURCE, IOC_AUTO_SYNC, IOC_ALLOW_RESIZE
+     *  or IOC_STATIC 32
+     */
+    os_short flags;
+
     struct iocRoot *root;
     struct iocMemoryBlock *mblk;
     struct iocHandle *next, *prev;

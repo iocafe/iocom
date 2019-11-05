@@ -26,7 +26,7 @@
   #define IOC_SET_DEBUG_ID(o,c)
 
 #else
-  #define IOC_DEBUG_ID int debug_id;
+  #define IOC_DEBUG_ID os_char debug_id;
   #define IOC_SET_DEBUG_ID(o,c) (o)->debug_id = c;
 
 #endif

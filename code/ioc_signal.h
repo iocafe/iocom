@@ -39,7 +39,7 @@ iocMblkSignalHdr;
 typedef struct iocDeviceHdr
 {
     const iocMblkSignalHdr **mblk_hdr;
-    os_int n_mblk_hdrs;
+    os_short n_mblk_hdrs;
 }
 iocDeviceHdr;
 
@@ -124,6 +124,8 @@ iocSignal;
  */
 #define ioc_set_signal(s) ioc_movex_signals((s), 1, IOC_SIGNAL_WRITE)
 #define ioc_get_signal(s) ioc_movex_signals((s), 1, IOC_SIGNAL_DEFAULT)
+#define ioc_sets_int(s,v) ((s)->value.i = (v), ioc_movex_signals((s), 1, IOC_SIGNAL_WRITE))
+#define ioc_gets_int(s) (ioc_movex_signals((s), 1, IOC_SIGNAL_DEFAULT), s->value.i)
 
 /* Set one signal state.
  */

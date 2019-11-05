@@ -24,6 +24,7 @@ typedef struct
     Pin E;
     Pin F;
     Pin G;
+    Pin H;
   }
   outputs;
 
@@ -66,6 +67,7 @@ extern const Pin *pins_segment7_group;
 #define PINS_OUTPUTS_E "E"
 #define PINS_OUTPUTS_F "F"
 #define PINS_OUTPUTS_G "G"
+#define PINS_OUTPUTS_H "H"
 #define PINS_ANALOG_INPUTS_POTENTIOMETER "potentiometer"
 #define PINS_PWM_SERVO "servo"
 #define PINS_PWM_DIMMER_LED "dimmer_led"

@@ -281,7 +281,7 @@ osalStatus osal_loop(
      */
     // iocontroller_long_processing(c);
 
-    // iocontroller_spin_7_segment_delay(c);
+    iocontroller_spin_7_segment_delay(c);
 
     iocontroller_print_changes(c);
 

@@ -78,13 +78,13 @@ typedef struct
         this identifies the device. This number is often written in 
         context as device name, like "TEMPCTRL1".
      */
-    int device_nr;
+    os_short device_nr;
 
     /** Memory block identifier number. A communication typically has multiple
         memory blocks and this identifies the memory block among memory blocks
         of the device. 
      */
-    int mblk_nr; 
+    os_short mblk_nr;
 
     /** Memory block name, max 15 characters.
      */
@@ -103,11 +103,11 @@ typedef struct
 
     /** Memory block size in bytes.
      */
-    int nbytes;
+    os_int nbytes;
 
     /** Flags, bit fields: IOC_TARGET, IOC_SOURCE, IOC_AUTO_SYNC.
      */
-    int flags;
+    os_short flags;
 } 
 iocMemoryBlockParams;
 
@@ -235,7 +235,7 @@ typedef struct iocMemoryBlock
 
     /** Flags as given to ioc_initialize_memory_block()
      */
-    int flags;
+    os_short flags;
 
     /** Pointer to data buffer.
      */
@@ -243,7 +243,7 @@ typedef struct iocMemoryBlock
 
     /** Memory block (data buffer) size in bytes.
      */
-    int nbytes;
+    os_int nbytes;
 
     /** Network name.
      */
@@ -258,16 +258,16 @@ typedef struct iocMemoryBlock
         this identifies the device. This number is often written in 
         context as device name, like "TEMPCTRL1".
      */
-    int device_nr;
+    os_short device_nr;
 
     /** Memory block number, identifies the memory block within device.
      */
-    int mblk_nr;
+    os_short mblk_nr;
 
     /** Unique memory block identifier (unique for this memory block among
-       all memory blocks of this iocRoot).
+        all memory blocks of this iocRoot).
      */
-    int mblk_id;
+    os_short mblk_id;
 
     /** Memory block name, max 15 characters
      */

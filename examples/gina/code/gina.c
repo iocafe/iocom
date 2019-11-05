@@ -22,11 +22,10 @@
 
 ****************************************************************************************************
 */
-#include "gina.h"
-
-/* Select socket, TLS or serial communication.
+/* Select socket, TLS or serial communication before including gina.h.
  */
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
+#include "gina.h"
 
 /* Transport parameters.
  */
@@ -87,6 +86,7 @@ osalStatus osal_main(
     prm.auto_synchronization = OS_FALSE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
+    prm.device_signal_hdr = &gina_hdr;
 
     /* Start communication.
      */
@@ -95,6 +95,10 @@ osalStatus osal_main(
     /* Set callback to detect received data and connection status changes.
      */
     ioc_add_callback(&ioboard_DOWN, ioboard_communication_callback, OS_NULL);
+
+    /* Connect PINS library to IOCOM library
+     */
+    pins_connect_iocom_library(&pins_hdr, &ioboard_communication);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -133,7 +137,7 @@ osalStatus osal_loop(
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
-    pins_read_all(&pins_hdr);
+    pins_read_all(&pins_hdr, PINS_DEFAULT);
 
     /* Run the IO device functionality.
      */

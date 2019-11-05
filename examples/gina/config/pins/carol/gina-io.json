@@ -21,7 +21,8 @@
           {"name": "D", "addr": 2, "group" : "segment7"},
           {"name": "E", "addr": 2, "group" : "segment7"},
           {"name": "F", "addr": 2, "group" : "segment7"},
-          {"name": "G", "addr": 2, "group" : "segment7"}
+          {"name": "G", "addr": 2, "group" : "segment7"},
+          {"name": "H", "addr": 2, "group" : "segment7"}
         ]
       },
       {

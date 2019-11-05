@@ -78,6 +78,8 @@ extern iocHandle
     #define IOBOARD_IFACE OSAL_SERIAL_IFACE
 #endif
 
+struct iocDeviceHdr;
+
 /* IO board parameter structure.
  */
 typedef struct
@@ -95,7 +97,7 @@ typedef struct
         this identifies the device. This number is often written in 
         context as device name, like "TEMPCTRL1".
      */
-    int device_nr;
+    os_short device_nr;
 
 	/** Control computer connection type: IOBOARD_CTRL_LISTEN_SOCKET, 
         IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL,
@@ -133,6 +135,10 @@ typedef struct
     /** Enable IOC_AUTO_SYNC
      */
     os_boolean auto_synchronization;
+
+    /** Pointer to static structure defining signals.
+     */
+    const struct iocDeviceHdr *device_signal_hdr;
 }
 ioboardParams;
 

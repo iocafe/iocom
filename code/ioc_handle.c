@@ -31,6 +31,7 @@ void ioc_setup_handle(
 
     if (mblk == OS_NULL)
     {
+        handle->flags = 0;
         handle->next = handle->prev = handle;
     }
 
@@ -38,6 +39,7 @@ void ioc_setup_handle(
      */
     else if (handle == &mblk->handle)
     {
+        handle->flags = mblk->flags;
         handle->next = handle->prev = handle;
     }
 

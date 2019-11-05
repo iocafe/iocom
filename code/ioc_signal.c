@@ -252,6 +252,7 @@ os_char ioc_setx_int(
     os_short flags)
 {
     iocSignal signal;
+    os_memclear(&signal, sizeof(signal));
 
     signal.handle = handle;
     signal.addr = addr;
@@ -298,6 +299,7 @@ os_char ioc_setx_float(
     os_short flags)
 {
     iocSignal signal;
+    os_memclear(&signal, sizeof(signal));
 
     signal.handle = handle;
     signal.addr = addr;
@@ -343,6 +345,7 @@ os_int ioc_getx_int(
 {
     iocSignal signal;
     os_int value;
+    os_memclear(&signal, sizeof(signal));
 
     signal.handle = handle;
     signal.addr = addr;
@@ -391,6 +394,7 @@ os_float ioc_getx_float(
 {
     iocSignal signal;
     os_float value;
+    os_memclear(&signal, sizeof(signal));
 
     signal.handle = handle;
     signal.addr = addr;
@@ -607,6 +611,7 @@ os_char ioc_movex_str(
     os_short flags)
 {
     iocSignal signal;
+    os_memclear(&signal, sizeof(signal));
 
     signal.handle = handle;
     signal.addr = addr;
@@ -744,19 +749,21 @@ void ioc_movex_array_signal(
 
             if (n > 1)
             {
-                while (n > 0 )
+                nn = n;
+                while (nn > 0 )
                 {
                     bit = 1;
                     ubyte = 0;
 
-                    while (n > 0 && bit < 256)
+                    while (nn > 0 && bit < 256)
                     {
                         if (*(b++)) ubyte |= (os_uchar)bit;
                         bit <<= 1;
+                        nn--;
                     }
                     *(p++) = ubyte;
                 }
-
+                n = ((n + 7) >> 3);
             }
             else
             {
@@ -803,6 +810,7 @@ void ioc_movex_array_signal(
                     {
                         *(b++) = (ubyte & (os_uchar)bit) ? OS_TRUE : OS_FALSE;
                         bit <<= 1;
+                        n--;
                     }
                 }
 
@@ -861,6 +869,7 @@ os_char ioc_movex_array(
     os_short flags)
 {
     iocSignal signal;
+    os_memclear(&signal, sizeof(signal));
 
     signal.handle = handle;
     signal.addr = addr;

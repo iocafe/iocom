@@ -287,11 +287,11 @@ def mymain():
 
     if len(sourcefiles) < 1:
         print("No source files")
-        exit()
+            exit()
 
-#    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
-#    outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
-#    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
+    #sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
+    #outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
+    #pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 
     if outpath is None:
         outpath = sourcefiles[0]

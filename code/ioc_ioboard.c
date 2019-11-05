@@ -65,6 +65,8 @@ void ioboard_start_communication(
     }
 
     ioc_initialize_root(&ioboard_communication);
+    ioboard_communication.device_signal_hdr = prm->device_signal_hdr;
+
 
     if (prm->pool)
     {
