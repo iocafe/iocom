@@ -6,5 +6,9 @@ export MYCONFIG=${MYCODEROOT}/iocom/examples/${MYAPP}/config
 
 export MYHW=carol
 
-${MYCODEROOT}/bin/linux/json --t2b -title ${MYCONFIG}/signals/${MYAPP}-signals.json ${MYCONFIG}/signals/${MYAPP}-signals.json-bin
+${MYCODEROOT}/bin/linux/json --t2b -title ${MYCONFIG}/signals/${MYAPP}-signals.json ${MYCONFIG}/signals/${MYAPP}-signals.binjson
+${MYCODEROOT}/bin/linux/json --b2t  ${MYCONFIG}/signals/${MYAPP}-signals.binjson ${MYCONFIG}/signals/${MYAPP}-signals-check.json
+
+python3 ${MYCODEROOT}/eosal/scripts/bin-to-c.py -v ${MYAPP}_config ${MYCONFIG}/signals/${MYAPP}-signals.binjson -o ${MYCONFIG}/include/${MYHW}/${MYAPP}-info-mblk.c
+
 python3 ${MYSCRIPTS}/signals-to-c.py ${MYCONFIG}/signals/${MYAPP}-signals.json -p ${MYCONFIG}/pins/${MYHW}/${MYAPP}-io.json -o ${MYCONFIG}/include/${MYHW}/${MYAPP}-signals.c

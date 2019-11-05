@@ -18,6 +18,7 @@
 
 #include "gina-io.h"
 #include "gina-signals.h"
+#include "gina-info-mblk.h"
 
 void ioboard_communication_callback(
     struct iocHandle *mblk,
