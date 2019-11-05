@@ -27,12 +27,12 @@
 static void root_callback(
     struct iocRoot *root,
     struct iocConnection *con,
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *handle,
     iocRootCallbackEvent event,
     void *context);
 
 static void info_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *mblk,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -122,6 +122,8 @@ void iodomain_start(
   @brief Callback from iocom root object.
 
   The root_callback() function is used to detect new dynamically allocated memory blocks.
+
+  @param   handle Memory block handle.
   @return  None.
 
 ****************************************************************************************************
@@ -129,7 +131,7 @@ void iodomain_start(
 static void root_callback(
     struct iocRoot *root,
     struct iocConnection *con,
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *handle,
     iocRootCallbackEvent event,
     void *context)
 {
@@ -140,7 +142,7 @@ static void root_callback(
         /* Process "new dynamic memory block" callback.
          */
         case IOC_NEW_DYNAMIC_MBLK:
-            ioc_memory_block_get_string_param(mblk, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
+            ioc_memory_block_get_string_param(handle, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
 
             os_strncpy(text, "Memory block ", sizeof(text));
             os_strncat(text, mblk_name, sizeof(text));
@@ -149,8 +151,8 @@ static void root_callback(
 
             if (!os_strcmp(mblk_name, "INFO"))
             {
-                ioc_add_callback(mblk, info_callback, OS_NULL);
-                ioc_memory_block_set_int_param(mblk, IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
+                ioc_add_callback(handle, info_callback, OS_NULL);
+                ioc_memory_block_set_int_param(handle, IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
             }
             break;
 
@@ -181,7 +183,7 @@ static void root_callback(
 ****************************************************************************************************
 */
 static void info_callback(
-    struct iocMemoryBlock *mblk,
+    struct iocHandle *handle,
     int start_addr,
     int end_addr,
     os_ushort flags,
@@ -193,7 +195,7 @@ static void info_callback(
      */
     if (end_addr >= 0)
     {
-        ioc_getp_str(mblk, 0, buf, sizeof(buf));
+        ioc_getp_str(handle, 0, buf, sizeof(buf));
         osal_console_write(buf);
         osal_console_write("\n");
     }

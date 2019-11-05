@@ -19,6 +19,7 @@ def main():
     root = Root('TESTDEVICE', network_name='TESTNET')
     myinputs = MemoryBlock(root, 'source,auto', 'MYINPUTS', 15, nbytes=256)
 #    connection = Connection(root, "127.0.0.1", "socket")
+#    end_point = EndPoint(root, "socket")
 
     x = myinputs.set(10.1, 20, 30, [1.0, 2.1], 5, 'nasse', (1,2))
 

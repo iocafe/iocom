@@ -98,7 +98,7 @@ osalStatus osal_main(
 
     /* Connect PINS library to IOCOM library
      */
-    pins_connect_iocom_library(&pins_hdr, &ioboard_communication);
+    pins_connect_iocom_library(&pins_hdr);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.

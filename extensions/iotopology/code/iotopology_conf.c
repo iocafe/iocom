@@ -136,7 +136,7 @@ void iotopology_get_nic_conf(
     os_char *p;
     os_int i;
 
-    os_memclear(&nic, n_nics * sizeof(osalNetworkInterface));
+    os_memclear(nic, n_nics * sizeof(osalNetworkInterface));
 
     if (n_nics > IOTOPOLOGY_MAX_NICS)
     {
