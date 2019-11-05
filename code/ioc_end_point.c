@@ -217,7 +217,7 @@ osalStatus ioc_listen(
     iocEndPointParams *prm)
 {
     IOC_MT_ROOT_PTR;
-    int flags;
+    os_short flags;
 
     osal_debug_assert(epoint->debug_id == 'E');
 

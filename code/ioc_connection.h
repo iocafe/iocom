@@ -176,7 +176,7 @@ typedef struct
         - IOC_SOCKET Connect with TCP socket.
         - IOC_CREATE_THREAD Create thread to run connection (multithread support needed).
      */
-    int flags;
+    os_short flags;
 } 
 iocConnectionParams;
 
@@ -378,7 +378,7 @@ typedef struct iocConnection
 
     /** Flags as given to ioc_listen()
      */
-    int flags;
+    os_short flags;
 
     /** Parameter string
      */

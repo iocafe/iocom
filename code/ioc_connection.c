@@ -501,7 +501,7 @@ osalStatus ioc_run_connection(
     {
         /* Receive as much data as we can
          */
-        while (OS_TRUE)
+        while (osal_go())
         {
             status = ioc_connection_receive(con);
             if (status == OSAL_STATUS_PENDING)
@@ -841,7 +841,7 @@ static void ioc_connection_thread(
 
     /* Run the end point.
      */
-    while (!con->worker.stop_thread)
+    while (!con->worker.stop_thread && osal_go())
     {
         /* If stream is not open, then connect it now. Do not try if two secons have not
            passed since last failed open try.
@@ -910,7 +910,7 @@ static void ioc_connection_thread(
         count = 32; /* How ever fast we write, we cannot block here */
         while (count--)
         {
-            while (OS_TRUE)
+            while (osal_go())
             {
                 /* Try receiving data from the connection.
                  */

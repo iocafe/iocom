@@ -1,12 +1,12 @@
 /**
 
-  @file    ionconf.h
-  @brief   Data structures, defines and functions for managing network node configuration and security.
+  @file    devicedir.h
+  @brief   List IO networks, devices, memory blocks and IO signals.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    20.10.2019
+  @date    5.11.2019
 
-  The ionconf library provides data structure for storing IO network node configuration, and functions
+  The devicedir library provides data structure for storing IO network node configuration, and functions
   for accessing, modifying and saving/loading it.
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
@@ -16,8 +16,8 @@
 
 ****************************************************************************************************
 */
-#ifndef IONCONF_INCLUDED
-#define IONCONF_INCLUDED
+#ifndef DEVICEDIR_INCLUDED
+#define DEVICEDIR_INCLUDED
 
 /* Include iocom and operating system abstraction layer.
  */
@@ -28,11 +28,9 @@
  */
 OSAL_C_HEADER_BEGINS
 
-/* Include all ionconf headers.
+/* Include all devicedir headers.
  */
-#include "extensions/ionconf/code/ionconf_types.h"
-#include "extensions/ionconf/code/ionconf_data_struct.h"
-#include "extensions/ionconf/code/ionconf_persistent.h"
+#include "extensions/devicedir/code/devicedir_basic.h"
 
 /* If C++ compilation, end the undecorated code.
  */

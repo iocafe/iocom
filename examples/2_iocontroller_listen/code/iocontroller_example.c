@@ -28,6 +28,10 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#include "devicedir.h"
+
+
+iocRoot root;
 
 /* Forward referred static functions.
  */
@@ -45,6 +49,7 @@ static void info_callback(
     os_ushort flags,
     void *context);
 
+static void testit(void);
 
 /**
 ****************************************************************************************************
@@ -62,9 +67,10 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    iocRoot root;
     iocEndPoint *ep;
     iocEndPointParams epprm;
+    os_uint c;
+
 
     /* Initialize the socket library and root structure.
      */
@@ -85,9 +91,13 @@ osalStatus osal_main(
 
     /* Do something else.
      */
-    while (OS_TRUE)
+    while (osal_go())
     {
+        c = osal_console_read();
+
         os_sleep(100);
+
+        testit();
     }
 
     /* End IO board communication, clean up and finsh with the socket library.
@@ -179,4 +189,23 @@ static void info_callback(
         osal_console_write(buf);
         osal_console_write("\n");
     }
+}
+
+
+static void testit(void)
+{
+    osalStream stream;
+    os_char *p;
+    os_memsz n;
+
+    stream = osal_stream_buffer_open(OS_NULL, 0, OS_NULL, 0);
+
+    devicedir_connections(&root, stream, 0);
+
+    osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
+    p = osal_stream_buffer_content(stream, &n);
+
+    printf (p);
+
+    osal_stream_close(stream);
 }

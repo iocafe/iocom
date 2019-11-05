@@ -76,7 +76,7 @@ os_char *nodeconf_get_network_name(
 void nodeconf_set_connection(
     nodeconfNode *node,
     os_int connection_nr,
-    os_int flags,
+    os_short flags,
     const os_char *parameters);
 
 os_int nodeconf_get_connection(

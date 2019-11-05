@@ -43,7 +43,7 @@ typedef struct
         - IOC_CREATE_THREAD Create thread to run end_point and create thread to run
           each accepted connection (multithread support needed).
      */
-    int flags;
+    os_short flags;
 } 
 iocEndPointParams;
 
@@ -91,7 +91,7 @@ typedef struct iocEndPoint
 
     /** Flags as given to ioc_listen()
      */
-    int flags;
+    os_short flags;
 
     /** Parameter string
      */

@@ -109,7 +109,7 @@ nodeconfAuthorization;
 */
 typedef struct
 {
-    os_int flags;
+    os_short flags;
     os_char parameters[NODECONF_CONNECTION_PRMSTR_SZ];
 }
 nodeconfNetworkConnect;
@@ -122,7 +122,7 @@ nodeconfNetworkConnect;
 */
 typedef struct nodeconfNetworkListen
 {
-    os_int flags;
+    os_short flags;
     os_char parameters[NODECONF_CONNECTION_PRMSTR_SZ];
 
     struct nodeconfNetworkListen *next;

@@ -1,8 +1,8 @@
-# iocom/extensions/ionconf/CmakeLists.txt - Cmake build for ionconf library.
+# iocom/extensions/devicedir/CmakeLists.txt - Cmake build for devicedir library.
 cmake_minimum_required(VERSION 2.8.11)
 
 # Set project name (= project root folder name).
-set(E_PROJECT "ionconf")
+set(E_PROJECT "devicedir")
 project(${E_PROJECT})
 
 # include build environment setting common to all projects.

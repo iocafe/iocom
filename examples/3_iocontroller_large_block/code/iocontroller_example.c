@@ -90,7 +90,7 @@ osalStatus osal_main(
 
     /* Do something else.
      */
-    while (OS_TRUE)
+    while (osal_go())
     {
         os_sleep(1000);
 

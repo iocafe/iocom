@@ -11,6 +11,7 @@ include(../../../eosal/build/cmakedefs/eosal-defs.txt)
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
 add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
+add_subdirectory($ENV{E_ROOT}/iocom/extensions/devicedir "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/devicedir")
 
 # Set path to where to keep libraries.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
@@ -20,6 +21,7 @@ set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
 # Add iocom to include path.
 include_directories("$ENV{E_ROOT}/iocom")
+include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
 
 # Add header files, the file(GLOB_RECURSE...) allows for wildcards and recurses subdirs.
 file(GLOB_RECURSE HEADERS "${E_SOURCE_PATH}/*.h")
@@ -30,4 +32,4 @@ file(GLOB_RECURSE SOURCES "${E_SOURCE_PATH}/*.c")
 # Build executable. Set library folder and libraries to link with.
 link_directories($ENV{E_LIB})
 add_executable(${E_PROJECT}${E_POSTFIX} ${HEADERS} ${SOURCES})
-target_link_libraries(${E_PROJECT}${E_POSTFIX} iocom${E_POSTFIX};$ENV{OSAL_CONSOLE_APP_LIBS})
+target_link_libraries(${E_PROJECT}${E_POSTFIX} devicedir${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})
