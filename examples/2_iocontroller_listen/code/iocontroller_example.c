@@ -49,7 +49,7 @@ static void info_callback(
     os_ushort flags,
     void *context);
 
-static void testit(void);
+static void iocom_state_list(os_char select);
 
 /**
 ****************************************************************************************************
@@ -94,10 +94,34 @@ osalStatus osal_main(
     while (osal_go())
     {
         c = osal_console_read();
+        switch (c)
+        {
+            case OSAL_CONSOLE_ESC:
+                break;
+
+            case OSAL_CONSOLE_ENTER:
+            case '?':
+            case 'h':
+            case 'H':
+                osal_console_write("\nC=connections\n");
+                break;
+
+            case 'c':
+            case 'C':
+                iocom_state_list('c');
+                break;
+
+            case 'm':
+            case 'M':
+                iocom_state_list('m');
+                break;
+
+            default:
+                break;
+        }
 
         os_sleep(100);
 
-        testit();
     }
 
     /* End IO board communication, clean up and finsh with the socket library.
@@ -192,7 +216,7 @@ static void info_callback(
 }
 
 
-static void testit(void)
+static void iocom_state_list(os_char select)
 {
     osalStream stream;
     os_char *p;
@@ -200,12 +224,22 @@ static void testit(void)
 
     stream = osal_stream_buffer_open(OS_NULL, 0, OS_NULL, 0);
 
-    devicedir_connections(&root, stream, 0);
+    switch (select)
+    {
+        case 'c':
+            devicedir_connections(&root, stream, 0);
+            break;
+
+        case 'm':
+            devicedir_memory_blocks(&root, stream, 0);
+            break;
+    }
 
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
     p = osal_stream_buffer_content(stream, &n);
 
-    printf (p);
+    osal_console_write("\n*** connections ***\n");
+    osal_console_write(p);
 
     osal_stream_close(stream);
 }

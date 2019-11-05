@@ -20,3 +20,25 @@ void devicedir_connections(
     osalStream list,
     os_short flags);
 
+void devicedir_memory_blocks(
+    iocRoot *root,
+    osalStream list,
+    os_short flags);
+
+
+
+void devicedir_append_flag(
+    osalStream list,
+    os_char *flag_name,
+    os_boolean *is_first);
+
+void devicedir_append_str_param(
+    osalStream list,
+    os_char *param_name,
+    os_char *str,
+    os_boolean is_first);
+
+void devicedir_append_int_param(
+    osalStream list,
+    os_char *param_name,
+    os_int x);

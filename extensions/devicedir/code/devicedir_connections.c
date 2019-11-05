@@ -1,7 +1,7 @@
 /**
 
-  @file    devicedir_conf.c
-  @brief   List IO networks, devices, memory blocks and IO signals.
+  @file    devicedir_connections.c
+  @brief   List connections.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    5.11.2019
@@ -14,7 +14,6 @@
 ****************************************************************************************************
 */
 #include "extensions/devicedir/devicedir.h"
-
 
 
 /**
@@ -38,18 +37,18 @@ void devicedir_connections(
 {
     iocConnection *con;
     os_char *iface_name;
+    os_short cflags;
     os_boolean isfirst;
 
     /* Check that root object is valid pointer.
      */
     osal_debug_assert(root->debug_id == 'R');
 
-    osal_stream_write_str(list, "{\"connections\": [", 0);
+    osal_stream_write_str(list, "{\"con\": [\n", 0);
 
     /* Synchronize.
      */
     ioc_lock(root);
-
 
     for (con = root->con.first;
          con;
@@ -82,41 +81,17 @@ void devicedir_connections(
             iface_name = "unknown";
         }
 
-        osal_stream_write_str(list, "{\"iface\":\"", 0);
-        osal_stream_write_str(list, iface_name, 0);
-        osal_stream_write_str(list, "\"", 0);
-
-        osal_stream_write_str(list, ", \"param\":\"", 0);
-        osal_stream_write_str(list, con->parameters, 0);
-        osal_stream_write_str(list, "\"", 0);
-
+        osal_stream_write_str(list, "{", 0);
+        devicedir_append_str_param(list, "iface", iface_name, OS_TRUE);
+        devicedir_append_str_param(list, "param", con->parameters, OS_FALSE);
 
         osal_stream_write_str(list, ", \"flags\":\"", 0);
         isfirst = OS_TRUE;
-        if (con->flags & IOC_DYNAMIC_MBLKS)
-        {
-            if (!isfirst) osal_stream_write_str(list, ",", 0);
-            osal_stream_write_str(list, "dynamic", 0);
-            isfirst = OS_FALSE;
-        }
-        if (con->flags & IOC_LISTENER)
-        {
-            if (!isfirst) osal_stream_write_str(list, ",", 0);
-            osal_stream_write_str(list, "listener", 0);
-            isfirst = OS_FALSE;
-        }
-        if (con->flags & IOC_CREATE_THREAD)
-        {
-            if (!isfirst) osal_stream_write_str(list, ",", 0);
-            osal_stream_write_str(list, "thread", 0);
-            isfirst = OS_FALSE;
-        }
-        if (con->flags & IOC_CLOSE_CONNECTION_ON_ERROR)
-        {
-            if (!isfirst) osal_stream_write_str(list, ",", 0);
-            osal_stream_write_str(list, "closeonerr", 0);
-            isfirst = OS_FALSE;
-        }
+        cflags = con->flags;
+        if (cflags & IOC_DYNAMIC_MBLKS) devicedir_append_flag(list, "dynamic", &isfirst);
+        if (cflags & IOC_LISTENER) devicedir_append_flag(list, "listener", &isfirst);
+        if (cflags & IOC_CREATE_THREAD) devicedir_append_flag(list, "thread", &isfirst);
+        if (cflags & IOC_CLOSE_CONNECTION_ON_ERROR) devicedir_append_flag(list, "closeonerr", &isfirst);
         osal_stream_write_str(list, "\"", 0);
 
         osal_stream_write_str(list, "}", 0);
@@ -124,6 +99,7 @@ void devicedir_connections(
         {
             osal_stream_write_str(list, ",", 0);
         }
+        osal_stream_write_str(list, "\n", 0);
     }
 
     /* End synchronization.

@@ -16,41 +16,44 @@
 #include "extensions/devicedir/devicedir.h"
 
 
-
-/**
-****************************************************************************************************
-
-  @brief Initialize node configuration structure.
-
-  The devicedir_initialize_node_configuration() function initalizes devicedirNode structure
-  and creates mutex to synchronize access to node configuration information.
-
-  @param   node Pointer to node's network node configuration to initialize.
-  @return  None.
-
-****************************************************************************************************
-*/
-void devicedir_list(
-    os_char *path,
-    osalStream *device_list,
-    os_short flags)
+void devicedir_append_flag(
+    osalStream list,
+    os_char *flag_name,
+    os_boolean *is_first)
 {
-//    os_memclear(node, sizeof(devicedirNode));
+    if (!*is_first)
+    {
+        osal_stream_write_str(list, ",", 0);
+    }
+    *is_first = OS_FALSE;
 
-#if OSAL_MULTITHREAD_SUPPORT
-//     node->lock = osal_mutex_create();
-#endif
+    osal_stream_write_str(list, flag_name, 0);
 }
 
 
-
-void devicedir_list_end_points(
-    os_char *path,
-    osalStream *device_list,
-    os_short flags)
+void devicedir_append_str_param(
+    osalStream list,
+    os_char *param_name,
+    os_char *str,
+    os_boolean is_first)
 {
+    osal_stream_write_str(list, is_first ? "\"" : ", \"", 0);
+    osal_stream_write_str(list, param_name, 0);
+    osal_stream_write_str(list, "\":\"", 0);
+    osal_stream_write_str(list, str, 0);
+    osal_stream_write_str(list, "\"", 0);
+}
 
+void devicedir_append_int_param(
+    osalStream list,
+    os_char *param_name,
+    os_int x)
+{
+    os_char nbuf[OSAL_NBUF_SZ];
 
-
-
+    osal_int_to_string(nbuf, sizeof(nbuf), x);
+    osal_stream_write_str(list, ", \"", 0);
+    osal_stream_write_str(list, param_name, 0);
+    osal_stream_write_str(list, "\":", 0);
+    osal_stream_write_str(list, nbuf, 0);
 }
