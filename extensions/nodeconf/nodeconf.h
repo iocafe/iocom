@@ -1,12 +1,12 @@
 /**
 
-  @file    iotopology.h
-  @brief   Data structures, defines and functions for managing network topology and security.
+  @file    nodeconf.h
+  @brief   Data structures, defines and functions for managing network node configuration and security.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    20.10.2019
 
-  The iotopology library provides data structure for storing IO network topology, and functions
+  The nodeconf library provides data structure for storing IO network node configuration, and functions
   for accessing, modifying and saving/loading it.
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
@@ -16,8 +16,8 @@
 
 ****************************************************************************************************
 */
-#ifndef IOTOPOLOGY_INCLUDED
-#define IOTOPOLOGY_INCLUDED
+#ifndef NODECONF_INCLUDED
+#define NODECONF_INCLUDED
 
 /* Include iocom and operating system abstraction layer.
  */
@@ -28,11 +28,11 @@
  */
 OSAL_C_HEADER_BEGINS
 
-/* Include all iotopology headers.
+/* Include all nodeconf headers.
  */
-#include "extensions/iotopology/code/iotopology_types.h"
-#include "extensions/iotopology/code/iotopology_conf.h"
-#include "extensions/iotopology/code/iotopology_persistent.h"
+#include "extensions/nodeconf/code/nodeconf_types.h"
+#include "extensions/nodeconf/code/nodeconf_data_struct.h"
+#include "extensions/nodeconf/code/nodeconf_persistent.h"
 
 /* If C++ compilation, end the undecorated code.
  */

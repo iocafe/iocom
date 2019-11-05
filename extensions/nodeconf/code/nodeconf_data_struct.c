@@ -1,7 +1,7 @@
 /**
 
-  @file    iotopology_conf.c
-  @brief   Data structures, defines and functions for managing network topology and security.
+  @file    nodeconf_conf.c
+  @brief   Data structures, defines and functions for managing network node configuration and security.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    20.10.2019
@@ -13,16 +13,16 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iotopology/iotopology.h"
+#include "extensions/nodeconf/nodeconf.h"
 
 
 /* Prototyped for forward referred static functions.
  */
-/* static void iotopology_set_string(
+/* static void nodeconf_set_string(
     os_char **pstr,
     const os_char *x);
 
-static void iotopology_release_string(
+static void nodeconf_release_string(
     os_char **pstr);
 
 */
@@ -33,18 +33,18 @@ static void iotopology_release_string(
 
   @brief Initialize node configuration structure.
 
-  The iotopology_initialize_node_configuration() function initalizes iotopologyNode structure
+  The nodeconf_initialize_node_configuration() function initalizes nodeconfNode structure
   and creates mutex to synchronize access to node configuration information.
 
-  @param   node Pointer to node's network topology configuration to initialize.
+  @param   node Pointer to node's network node configuration to initialize.
   @return  None.
 
 ****************************************************************************************************
 */
-void iotopology_initialize_node_configuration(
-    iotopologyNode *node)
+void nodeconf_initialize_node_configuration(
+    nodeconfNode *node)
 {
-    os_memclear(node, sizeof(iotopologyNode));
+    os_memclear(node, sizeof(nodeconfNode));
 
 #if OSAL_MULTITHREAD_SUPPORT
     node->lock = osal_mutex_create();
@@ -57,16 +57,16 @@ void iotopology_initialize_node_configuration(
 
   @brief Release all memory allocated for node configuration structure.
 
-  The iotopology_release_node_configuration() function releases all memory allocated for
+  The nodeconf_release_node_configuration() function releases all memory allocated for
   IO node configuration structure.
 
-  @param   node Pointer to node's network topology configuration to release.
+  @param   node Pointer to node's network node configuration to release.
   @return  None.
 
 ****************************************************************************************************
 */
-void iotopology_release_node_configuration(
-    iotopologyNode *node)
+void nodeconf_release_node_configuration(
+    nodeconfNode *node)
 {
 #if OSAL_MULTITHREAD_SUPPORT
     osalMutex lock;
@@ -74,10 +74,10 @@ void iotopology_release_node_configuration(
     osal_mutex_lock(lock);
 #endif
 
-//    iotopology_release_string(&node->node_name);
-//    iotopology_release_string(&node->network_name);
+//    nodeconf_release_string(&node->node_name);
+//    nodeconf_release_string(&node->network_name);
 
-    os_memclear(node, sizeof(iotopologyNode));
+    os_memclear(node, sizeof(nodeconfNode));
 
 #if OSAL_MULTITHREAD_SUPPORT
     osal_mutex_unlock(lock);
@@ -91,56 +91,56 @@ void iotopology_release_node_configuration(
 
   @brief Set application name and version.
 
-  The iotopology_set_application_name() function stores application name and version into node
+  The nodeconf_set_application_name() function stores application name and version into node
   configuration. Application name and version are used to identify the software which the
   IO device or controller runs.
 
-  @param   node Pointer to node's network topology configuration.
+  @param   node Pointer to node's network node configuration.
   @param   app_name Name of the application.
   @param   app_version Application version string.
   @return  None.
 
 ****************************************************************************************************
 */
-void iotopology_set_application_name(
-    iotopologyNode *node,
+void nodeconf_set_application_name(
+    nodeconfNode *node,
     const os_char *app_name,
     const os_char *app_version)
 {
-    os_strncpy(node->app_name, app_name, IOTOPOLOGY_APP_NAME_SZ);
-    os_strncpy(node->app_version, app_version, IOTOPOLOGY_APP_VERSION_SZ);
+    os_strncpy(node->app_name, app_name, NODECONF_APP_NAME_SZ);
+    os_strncpy(node->app_version, app_version, NODECONF_APP_VERSION_SZ);
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Get network interface configuration from node's topology data.
+  @brief Get network interface configuration from node's nconf data.
 
-  The iotopology_get_nic_conf() function fills in the network interface structure NIC by
-  information in the topology configuration.
+  The nodeconf_get_nic_conf() function fills in the network interface structure NIC by
+  information in the nconf configuration.
 
-  @param   node Pointer to node's network topology configuration.
+  @param   node Pointer to node's network node configuration.
   @param   nic Pointer to array of network interface structure to fill in.
   @param   n_nics Number of network interfaces in nic array.
   @return  None.
 
 ****************************************************************************************************
 */
-void iotopology_get_nic_conf(
-    iotopologyNode *node,
+void nodeconf_get_nic_conf(
+    nodeconfNode *node,
     osalNetworkInterface *nic,
     os_int n_nics)
 {
-    iotopologyNIC *src;
+    nodeconfNIC *src;
     os_char *p;
     os_int i;
 
     os_memclear(nic, n_nics * sizeof(osalNetworkInterface));
 
-    if (n_nics > IOTOPOLOGY_MAX_NICS)
+    if (n_nics > NODECONF_MAX_NICS)
     {
-        n_nics = IOTOPOLOGY_MAX_NICS;
+        n_nics = NODECONF_MAX_NICS;
     }
 
     src = node->config.nic;
@@ -171,38 +171,38 @@ void iotopology_get_nic_conf(
 }
 
 
-os_boolean iotopology_is_feature_used(
-    iotopologyNode *node,
-    iotopologyFeatureEnum feature)
+os_boolean nodeconf_is_feature_used(
+    nodeconfNode *node,
+    nodeconfFeatureEnum feature)
 {
     return OS_TRUE; // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 }
 
 
-void iotopology_set_node_name(
-    iotopologyNode *node,
+void nodeconf_set_node_name(
+    nodeconfNode *node,
     const os_char *node_name)
 {
-    os_strncpy(node->config.node_name, node_name, IOTOPOLOGY_NODE_NAME_SZ);
+    os_strncpy(node->config.node_name, node_name, NODECONF_NODE_NAME_SZ);
 }
 
 
-const os_char *iotopology_get_node_name(
-    iotopologyNode *node)
+const os_char *nodeconf_get_node_name(
+    nodeconfNode *node)
 {
     return node->config.node_name;
 }
 
-void iotopology_set_network_name(
-    iotopologyNode *node,
+void nodeconf_set_network_name(
+    nodeconfNode *node,
     const os_char *network_name)
 
 {
-    os_strncpy(node->config.network_name, network_name, IOTOPOLOGY_NETWORK_NAME_SZ);
+    os_strncpy(node->config.network_name, network_name, NODECONF_NETWORK_NAME_SZ);
 }
 
-os_char *iotopology_get_network_name(
-    iotopologyNode *node)
+os_char *nodeconf_get_network_name(
+    nodeconfNode *node)
 {
     return node->config.network_name;
 }
@@ -214,17 +214,17 @@ os_char *iotopology_get_network_name(
 
   @brief Store copy of string in newly allocated memory.
 
-  The iotopology_set_string() strores copy of string x and sets pstr to point it.
+  The nodeconf_set_string() strores copy of string x and sets pstr to point it.
 
   @param   pstr Pointer to string pointer used to hold copy. This must be initialized before
-           calling this function either to OS_NULL or set by earlier iotopology_set_string()
+           calling this function either to OS_NULL or set by earlier nodeconf_set_string()
            function call.
   @param   x Pointer to new string value. If OS_NULL, the pstr pointer is set to OS_NULL.
   @return  None.
 
 ****************************************************************************************************
 */
-static void iotopology_set_string(
+static void nodeconf_set_string(
     os_char **pstr,
     const os_char *x)
 {
@@ -232,7 +232,7 @@ static void iotopology_set_string(
 
     /* If we have old string value, release memory allocated for it.
      */
-    iotopology_release_string(pstr);
+    nodeconf_release_string(pstr);
 
     /* If we have non empty string argument x, allocate memory for it and store a copy
        of string.
@@ -252,16 +252,16 @@ static void iotopology_set_string(
 
   @brief Release memory allocated for string.
 
-  The iotopology_release_string() releases memoty allocated to hold a string, if any.
+  The nodeconf_release_string() releases memoty allocated to hold a string, if any.
 
   @param   pstr Pointer to string pointer used to hold copy. This must be initialized before
-           calling this function either to OS_NULL or set by earlier iotopology_set_string()
+           calling this function either to OS_NULL or set by earlier nodeconf_set_string()
            function call. At return pstr will be OS_NULL.
   @return  None.
 
 ****************************************************************************************************
 */
-static void iotopology_release_string(
+static void nodeconf_release_string(
     os_char **pstr)
 {
     if (*pstr)

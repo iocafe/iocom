@@ -1,8 +1,8 @@
-# iocom/extensions/iotopology/CmakeLists.txt - Cmake build for iotopology library.
+# iocom/extensions/nodeconf/CmakeLists.txt - Cmake build for nodeconf library.
 cmake_minimum_required(VERSION 2.8.11)
 
 # Set project name (= project root folder name).
-set(E_PROJECT "iotopology")
+set(E_PROJECT "nodeconf")
 project(${E_PROJECT})
 
 # include build environment setting common to all projects.

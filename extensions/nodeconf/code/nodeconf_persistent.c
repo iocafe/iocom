@@ -1,7 +1,7 @@
 /**
 
-  @file    iotopology_persistent.c
-  @brief   Data structures, defines and functions for managing network topology and security.
+  @file    nodeconf_persistent.c
+  @brief   Data structures, defines and functions for managing network node configuration and security.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    20.10.2019
@@ -13,27 +13,27 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iotopology/iotopology.h"
+#include "extensions/nodeconf/nodeconf.h"
 
 
 /**
 ****************************************************************************************************
 
-  @brief Load node's network topology from persistent storage.
+  @brief Load node's network node configuration from persistent storage.
 
-  The iotopology_load_node_configuration()
+  The nodeconf_load_node_configuration()
 
   @return  None.
 
 ****************************************************************************************************
 */
-void iotopology_load_node_configuration(
-    iotopologyNode *node)
+void nodeconf_load_node_configuration(
+    nodeconfNode *node)
 {
 }
 
-void iotopology_save_node_configuration(
-    iotopologyNode *node)
+void nodeconf_save_node_configuration(
+    nodeconfNode *node)
 {
 }
 

@@ -1,7 +1,7 @@
 /**
 
-  @file    iotopology.h
-  @brief   Data structures, defines and functions for managing network topology and security.
+  @file    nodeconf.h
+  @brief   Data structures, defines and functions for managing network node configuration and security.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    20.10.2019
@@ -14,22 +14,22 @@
 ****************************************************************************************************
 */
 
-#define IOTOPOLOGY_APP_NAME_SZ 16
-#define IOTOPOLOGY_APP_VERSION_SZ 8
-#define IOTOPOLOGY_VERSION_SZ  8
-#define IOTOPOLOGY_NODE_NAME_SZ 16
-#define IOTOPOLOGY_NETWORK_NAME_SZ 24
-#define IOTOPOLOGY_PASSWORD_SZ 16
-#define IOTOPOLOGY_CONNECTION_PRMSTR_SZ 48
+#define NODECONF_APP_NAME_SZ 16
+#define NODECONF_APP_VERSION_SZ 8
+#define NODECONF_VERSION_SZ  8
+#define NODECONF_NODE_NAME_SZ 16
+#define NODECONF_NETWORK_NAME_SZ 24
+#define NODECONF_PASSWORD_SZ 16
+#define NODECONF_CONNECTION_PRMSTR_SZ 48
 
-#define IOTOPOLOGY_IPADDR_SZ 40
-#define IOTOPOLOGY_MAC_SZ 24
-#define IOTOPOLOGY_OPTIONS_SZ 16
-#define IOTOPOLOGY_WIFI_PRM_SZ 16
+#define NODECONF_IPADDR_SZ 40
+#define NODECONF_MAC_SZ 24
+#define NODECONF_OPTIONS_SZ 16
+#define NODECONF_WIFI_PRM_SZ 16
 
-#define IOTOPOLOGY_MAX_NICS 2
-#define IOTOPOLOGY_MAX_CONNECTIONS 2
-#define IOTOPOLOGY_MAX_TRUSTED_AUTHORITIES 3
+#define NODECONF_MAX_NICS 2
+#define NODECONF_MAX_CONNECTIONS 2
+#define NODECONF_MAX_TRUSTED_AUTHORITIES 3
 
 
 /**
@@ -42,7 +42,7 @@ typedef struct
     os_char *data;
     os_memsz *data_sz;
 }
-iotopologyCertificate;
+nodeconfCertificate;
 
 
 /**
@@ -55,7 +55,7 @@ typedef struct
     os_char *key;
     os_memsz *key_sz;
 }
-iotopologyKey;
+nodeconfKey;
 
 
 /**
@@ -67,11 +67,11 @@ typedef struct
 {
     /** Name of trusted network, for example SMOKECLOUD.
      */
-    os_char network_name[IOTOPOLOGY_NETWORK_NAME_SZ];
+    os_char network_name[NODECONF_NETWORK_NAME_SZ];
 
     // public key
 }
-iotopologyTrustedAuthority;
+nodeconfTrustedAuthority;
 
 
 /**
@@ -79,17 +79,17 @@ iotopologyTrustedAuthority;
     An IO device (or controller below) authorized to connect to this one.
 ****************************************************************************************************
 */
-typedef struct iotopologyAuthorization
+typedef struct nodeconfAuthorization
 {
     /** Name of authenticated node, for example GRUMPYBORG.
         If asterix "*", then all node names are accepted.
      */
-    os_char node_name[IOTOPOLOGY_NODE_NAME_SZ];
+    os_char node_name[NODECONF_NODE_NAME_SZ];
 
     /** Name of authenticated IO device network, for example PEKKA.
         If asterix "*", then all node names are accepted.
      */
-    os_char network_name[IOTOPOLOGY_NETWORK_NAME_SZ];
+    os_char network_name[NODECONF_NETWORK_NAME_SZ];
 
     /** Frag indicating that this is received from higher level controller.
      */
@@ -97,9 +97,9 @@ typedef struct iotopologyAuthorization
 
     /** Pointer to next authorization in linked list.
      */
-    struct iotopologyAuthorization *next;
+    struct nodeconfAuthorization *next;
 }
-iotopologyAuthorization;
+nodeconfAuthorization;
 
 
 /**
@@ -110,9 +110,9 @@ iotopologyAuthorization;
 typedef struct
 {
     os_int flags;
-    os_char parameters[IOTOPOLOGY_CONNECTION_PRMSTR_SZ];
+    os_char parameters[NODECONF_CONNECTION_PRMSTR_SZ];
 }
-iotopologyNetworkConnect;
+nodeconfNetworkConnect;
 
 
 /**
@@ -120,14 +120,14 @@ iotopologyNetworkConnect;
     Specifies protocol, port and possibly port to listen to.
 ****************************************************************************************************
 */
-typedef struct iotopologyNetworkListen
+typedef struct nodeconfNetworkListen
 {
     os_int flags;
-    os_char parameters[IOTOPOLOGY_CONNECTION_PRMSTR_SZ];
+    os_char parameters[NODECONF_CONNECTION_PRMSTR_SZ];
 
-    struct iotopologyNetworkListen *next;
+    struct nodeconfNetworkListen *next;
 }
-iotopologyNetworkListen;
+nodeconfNetworkListen;
 
 
 /**
@@ -137,21 +137,21 @@ iotopologyNetworkListen;
 */
 typedef struct
 {
-    os_char ip_address[IOTOPOLOGY_IPADDR_SZ];
-    os_char subnet_mask[IOTOPOLOGY_IPADDR_SZ];
-    os_char gateway_address[IOTOPOLOGY_IPADDR_SZ];
-    os_char dns_address[IOTOPOLOGY_IPADDR_SZ];
+    os_char ip_address[NODECONF_IPADDR_SZ];
+    os_char subnet_mask[NODECONF_IPADDR_SZ];
+    os_char gateway_address[NODECONF_IPADDR_SZ];
+    os_char dns_address[NODECONF_IPADDR_SZ];
 
     /* Locally administered MAC address ranges safe for testing: x2:xx:xx:xx:xx:xx,
        x6:xx:xx:xx:xx:xx, xA:xx:xx:xx:xx:xx and xE:xx:xx:xx:xx:xx
     */
-    os_char mac[IOTOPOLOGY_MAC_SZ];
-    os_char options[IOTOPOLOGY_OPTIONS_SZ]; /* dhcp, etc */
+    os_char mac[NODECONF_MAC_SZ];
+    os_char options[NODECONF_OPTIONS_SZ]; /* dhcp, etc */
 
-    os_char wifi_net_name[IOTOPOLOGY_WIFI_PRM_SZ];
-    os_char wifi_net_password[IOTOPOLOGY_WIFI_PRM_SZ];
+    os_char wifi_net_name[NODECONF_WIFI_PRM_SZ];
+    os_char wifi_net_password[NODECONF_WIFI_PRM_SZ];
 }
-iotopologyNIC;
+nodeconfNIC;
 
 
 /**
@@ -163,32 +163,32 @@ typedef struct
 {
     /** Version of this structure.
      */
-    os_char version[IOTOPOLOGY_VERSION_SZ];
+    os_char version[NODECONF_VERSION_SZ];
 
     /** Network interface configuration. Used only for embedded devices/micro-controllers.
      */
-    iotopologyNIC nic[IOTOPOLOGY_MAX_NICS];
+    nodeconfNIC nic[NODECONF_MAX_NICS];
 
     /** Name of this node, for example GRUMPYBORG.
      */
-    os_char node_name[IOTOPOLOGY_NODE_NAME_SZ];
+    os_char node_name[NODECONF_NODE_NAME_SZ];
 
     /** Name of this IO device network, for example PEKKA. This can be also in two parts,
         like VARKAUS.MIGHTYCORP.
      */
-    os_char network_name[IOTOPOLOGY_NETWORK_NAME_SZ];
+    os_char network_name[NODECONF_NETWORK_NAME_SZ];
 
     /** Array of IP addressess/ports of IO domain controllers to connect. In simple cases
         there is one connection upwards, but two are reserved for future redundant connection
         support.
      */
-    iotopologyNetworkConnect connect[IOTOPOLOGY_MAX_CONNECTIONS];
+    nodeconfNetworkConnect connect[NODECONF_MAX_CONNECTIONS];
 
     /** Array of trusted authorities (a certificate signed by authority is accepted)
      */
-    iotopologyTrustedAuthority trust[IOTOPOLOGY_MAX_TRUSTED_AUTHORITIES];
+    nodeconfTrustedAuthority trust[NODECONF_MAX_TRUSTED_AUTHORITIES];
 }
-iotopologyNodeBasics;
+nodeconfNodeBasics;
 
 
 /**
@@ -201,29 +201,29 @@ typedef struct
     /** Server certificate. Used to identify this controller as legimate
         to IO devices and controllers below it.
      */
-    iotopologyCertificate server_cert;
+    nodeconfCertificate server_cert;
 
-    iotopologyKey public_key;
-    iotopologyKey private_key;
+    nodeconfKey public_key;
+    nodeconfKey private_key;
 
     /** Controller only: Linked list of IP protocols/addressess/socket ports to listen.
         There may be more than one, for example if our controller listens for both TLS and serial
         communication.
       */
-    iotopologyNetworkListen *listen;
+    nodeconfNetworkListen *listen;
 
     /** Controller only: Linked list of nodes authorized to connect to this one. Basically
         we could do security without this: Alternatively if an IO device is breached and we
         need to revoke it's access rights we could maintain revokation list.
      */
-    iotopologyAuthorization *authorizations;
+    nodeconfAuthorization *authorizations;
 }
-iotopologyNodeExts;
+nodeconfNodeExts;
 
 
 /**
 ****************************************************************************************************
-    Data structure to describe network topology for one node. A node is either IO device or
+    Data structure to describe network node configuration for one node. A node is either IO device or
     controller.
 ****************************************************************************************************
 */
@@ -231,26 +231,26 @@ typedef struct
 {
     /** Basic IO network node configuration (flat structure)
      */
-    iotopologyNodeBasics config;
+    nodeconfNodeBasics config;
 
     /** Extra information for IO controller (not flat)
      */
-    iotopologyNodeExts *extconfig;
+    nodeconfNodeExts *extconfig;
 
     /** Application name
      */
-    os_char app_name[IOTOPOLOGY_APP_NAME_SZ];
+    os_char app_name[NODECONF_APP_NAME_SZ];
 
     /** Application version
      */
-    os_char app_version[IOTOPOLOGY_APP_VERSION_SZ];
+    os_char app_version[NODECONF_APP_VERSION_SZ];
 
 #if OSAL_MULTITHREAD_SUPPORT
 
     /** The an IO device is identified by node name, network name and password.
         One directional hash by server?
      */
-    os_char password[IOTOPOLOGY_PASSWORD_SZ];
+    os_char password[NODECONF_PASSWORD_SZ];
 
     /** Mutex to synchronize access and modifications to node configuration, needed for
         multithread mode.
@@ -258,7 +258,7 @@ typedef struct
     osalMutex lock;
 #endif
 }
-iotopologyNode;
+nodeconfNode;
 
 
 
