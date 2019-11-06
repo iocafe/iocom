@@ -49,7 +49,6 @@ static void info_callback(
     os_ushort flags,
     void *context);
 
-static void iocom_state_list(os_char select);
 
 /**
 ****************************************************************************************************
@@ -69,8 +68,6 @@ osalStatus osal_main(
 {
     iocEndPoint *ep;
     iocEndPointParams epprm;
-    os_uint c;
-
 
     /* Initialize the socket library and root structure.
      */
@@ -89,39 +86,12 @@ osalStatus osal_main(
     epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
     ioc_listen(ep, &epprm);
 
-    /* Do something else.
+    /* Just run the console.
      */
     while (osal_go())
     {
-        c = osal_console_read();
-        switch (c)
-        {
-            case OSAL_CONSOLE_ESC:
-                break;
-
-            case OSAL_CONSOLE_ENTER:
-            case '?':
-            case 'h':
-            case 'H':
-                osal_console_write("\nC=connections\n");
-                break;
-
-            case 'c':
-            case 'C':
-                iocom_state_list('c');
-                break;
-
-            case 'm':
-            case 'M':
-                iocom_state_list('m');
-                break;
-
-            default:
-                break;
-        }
-
+        io_device_console(&root);
         os_sleep(100);
-
     }
 
     /* End IO board communication, clean up and finsh with the socket library.
@@ -213,33 +183,4 @@ static void info_callback(
         osal_console_write(buf);
         osal_console_write("\n");
     }
-}
-
-
-static void iocom_state_list(os_char select)
-{
-    osalStream stream;
-    os_char *p;
-    os_memsz n;
-
-    stream = osal_stream_buffer_open(OS_NULL, 0, OS_NULL, 0);
-
-    switch (select)
-    {
-        case 'c':
-            devicedir_connections(&root, stream, 0);
-            break;
-
-        case 'm':
-            devicedir_memory_blocks(&root, stream, 0);
-            break;
-    }
-
-    osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
-    p = osal_stream_buffer_content(stream, &n);
-
-    osal_console_write("\n*** connections ***\n");
-    osal_console_write(p);
-
-    osal_stream_close(stream);
 }

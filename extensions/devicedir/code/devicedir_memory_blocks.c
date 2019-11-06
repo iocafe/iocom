@@ -62,6 +62,7 @@ void devicedir_memory_blocks(
         devicedir_append_int_param(list, "mblk_nr", mblk->mblk_nr);
         devicedir_append_int_param(list, "mblk_id", mblk->mblk_id);
         devicedir_append_int_param(list, "dev_nr", mblk->device_nr);
+        devicedir_append_int_param(list, "size", mblk->nbytes);
 
         osal_stream_write_str(list, ", \"flags\":\"", 0);
         isfirst = OS_TRUE;
@@ -87,5 +88,3 @@ void devicedir_memory_blocks(
 
     osal_stream_write_str(list, "]}\n", 0);
 }
-
-

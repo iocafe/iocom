@@ -262,7 +262,7 @@ def list_pins_in_pinsfile(path):
         printf ("Opening file " + path + " failed")
             
 def mymain():
-    global cfilepath, hfilepath, pinlist
+    global cfilepath, hfilepath, pinlist, device_name
 
     # Get command line arguments
     n = len(sys.argv)
@@ -270,6 +270,7 @@ def mymain():
     outpath = None
     pinspath = None
     expectpath = True
+    device_name = "noname"
     for i in range(1, n):
         if sys.argv[i][0] is "-":
             if sys.argv[i][1] is "o":
@@ -311,6 +312,7 @@ def mymain():
     for path in sourcefiles:
         process_source_file(path)
 
+    hfile.write('\n#define IOBOARD_DEVICE_NAME \"' + device_name + '\"\n')
     finish_c_files()
 
 mymain()

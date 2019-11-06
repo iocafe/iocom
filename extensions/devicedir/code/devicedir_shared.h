@@ -14,8 +14,19 @@
 ****************************************************************************************************
 */
 
+#if OS_CONTROL_CONSOLE_SUPPORT
+    osalStatus io_device_console(iocRoot *root);
+#else
+    #define io_device_console(r) OSAL_SUCCESS
+#endif
+
 
 void devicedir_connections(
+    iocRoot *root,
+    osalStream list,
+    os_short flags);
+
+void devicedir_end_points(
     iocRoot *root,
     osalStream list,
     os_short flags);
@@ -24,8 +35,6 @@ void devicedir_memory_blocks(
     iocRoot *root,
     osalStream list,
     os_short flags);
-
-
 
 void devicedir_append_flag(
     osalStream list,

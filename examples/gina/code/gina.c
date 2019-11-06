@@ -27,6 +27,10 @@
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
 #include "gina.h"
 
+/* The devicedir is here for testing only, take away.
+ */
+#include "devicedir.h"
+
 /* Transport parameters.
  */
 #define GINA_IP_ADDRESS "192.168.1.220"
@@ -40,7 +44,8 @@
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
-        GINA_UP_MBLK_SZ, GINA_DOWN_MBLK_SZ)];
+        GINA_UP_MBLK_SZ, GINA_DOWN_MBLK_SZ)
+        + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)];
 
 
 /**
@@ -77,6 +82,8 @@ osalStatus osal_main(
      */
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
+    prm.device_name = IOBOARD_DEVICE_NAME;
+    prm.device_nr = 1;
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = GINA_IP_ADDRESS;
     prm.serial_con_str = GINA_SERIAL_PORT;
@@ -87,6 +94,9 @@ osalStatus osal_main(
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_signal_hdr = &gina_hdr;
+
+    prm.device_info = gina_config;
+    prm.device_info_sz = sizeof(gina_config);
 
     /* Start communication.
      */
@@ -141,6 +151,11 @@ osalStatus osal_loop(
 
     /* Run the IO device functionality.
      */
+
+    /* The devicedir call is here for testing only, take away.
+     */
+    io_device_console(&ioboard_communication);
+
 
     /* Move data synchronously from outgoing memory block.
      */

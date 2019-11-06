@@ -30,7 +30,8 @@ static osalStatus ioc_try_accept_new_sockets(
 
 static osalStatus ioc_establish_connection(
     iocEndPoint *epoint,
-    osalStream newsocket);
+    osalStream newsocket,
+    os_char *remote_ip_addr);
 
 #if OSAL_MULTITHREAD_SUPPORT
 static void ioc_endpoint_thread(
@@ -426,6 +427,8 @@ static osalStatus ioc_try_accept_new_sockets(
     osalStream
         newsocket;
 
+    os_char remote_ip_addr[IOC_CONNECTION_PRMSTR_SZ];
+
     /* If two seconds have not passed since last failed try. We cannot delay here
      * if we are running with select, we would miss selected events.
      */
@@ -444,12 +447,12 @@ static osalStatus ioc_try_accept_new_sockets(
 
     /* Try to accept an incoming socket connection.
      */
-    newsocket = osal_stream_accept(epoint->socket, &status, OSAL_STREAM_TCP_NODELAY);
+    newsocket = osal_stream_accept(epoint->socket, remote_ip_addr, sizeof(remote_ip_addr), &status, OSAL_STREAM_TCP_NODELAY);
     switch (status)
     {
         case OSAL_SUCCESS:
             osal_trace("end point: connection accepted");
-            if (!ioc_establish_connection(epoint, newsocket)) break;
+            if (!ioc_establish_connection(epoint, newsocket, remote_ip_addr)) break;
             osal_debug_error("Out of connection pool");
             osal_stream_close(epoint->socket);
             epoint->socket = OS_NULL;
@@ -489,7 +492,8 @@ static osalStatus ioc_try_accept_new_sockets(
 */
 static osalStatus ioc_establish_connection(
     iocEndPoint *epoint,
-    osalStream newsocket)
+    osalStream newsocket,
+    os_char *remote_ip_addr)
 {
     iocConnection
         *con;
@@ -504,7 +508,7 @@ static osalStatus ioc_establish_connection(
 
     os_memclear(&conprm, sizeof(conprm));
     conprm.iface = newsocket->iface;
-    conprm.parameters = "-"; 
+    conprm.parameters = remote_ip_addr;
     conprm.newsocket = newsocket; 
     conprm.flags = epoint->flags;
     return ioc_connect(con, &conprm);
