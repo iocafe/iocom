@@ -53,7 +53,6 @@ static void iocom_state_list(
 }
 
 
-
 osalStatus io_device_console(
     iocRoot *root)
 {
@@ -95,9 +94,5 @@ osalStatus io_device_console(
 
     return OSAL_SUCCESS;
 }
-
-
-
-
 
 #endif

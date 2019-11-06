@@ -29,7 +29,7 @@ def start_c_files():
     cfile = open(cfilepath, "w")
     hfile = open(hfilepath, "w")
     cfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
-    # cfile.write('#include "iocom.h"\n')
+    cfile.write('#include "iocom.h"\n')
     hfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
     hfile.write('OSAL_C_HEADER_BEGINS\n\n')
 
@@ -53,7 +53,7 @@ def calc_signal_memory_sz(type, array_n):
     type_sz = osal_typeinfo[type];
     return array_n * type_sz + 1
 
-def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
+def write_signal_to_c_source(pin_type, signal_name, signal):
     global cfile, hfile, array_list
     global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
@@ -80,20 +80,14 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
     my_name = device_name + '.' + block_name + '.' + signal_name
 
     if signal_nr == 1:
-        cfile.write('\n  {\n    {' + handle + ', ' + str(nro_signals) + ', ')
-        define_name = device_name + '_' + block_name + "_MBLK_SZ"
-        cfile.write(define_name.upper() + ', ')
         cfile.write('&' + my_name + '},\n')
 
     cfile.write('    {')
 
     cfile.write(str(addr) + ", ")
     cfile.write(str(array_n) + ", ")
-    cfile.write('OS_' + type.upper())
-    if signal_name in pinlist:
-        cfile.write('|IOC_PIN_PTR')
-
-    cfile.write(', 0, ' + handle)
+    cfile.write('OS_' + type.upper() + ', ')
+    cfile.write('0, ' + handle)
 
     if signal_name in pinlist:
         cfile.write(', ' + pinlist[signal_name])
@@ -108,52 +102,6 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
     signal_nr = signal_nr + 1
     cfile.write(' /* ' + signal_name + ' */\n')
 
-def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
-    global cfile, hfile, array_list
-    global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
-
-    addr = signal.get('addr', current_addr);
-    if addr != current_addr:
-        current_addr = addr
-
-    type = signal.get('type', current_type);
-    if type != current_type:
-        current_type = type
-
-    array_n = signal.get('array', 1);
-    if array_n < 1:
-        array_n = 1
-
-    if array_n > 1  and not is_dynamic:
-        arr_name = device_name + '_' + block_name + '_' + signal_name + '_ARRAY_SZ'
-        array_list.append('#define ' + arr_name.upper() + ' ' + str(array_n))
-
-    current_addr += calc_signal_memory_sz(type, array_n)
-    if current_addr > max_addr:
-        max_addr = current_addr
-
-    if signal_nr == 1:
-        my_name = 's->' + block_name + '.hdr'
-        cfile.write('    ' + my_name + '.handle = ' + block_name + ';\n')
-        cfile.write('    ' + my_name + '.n_signals = ' + str(nro_signals)  + ';\n')
-        if not is_dynamic:
-            define_name = device_name + '_' + block_name + "_MBLK_SZ"
-            cfile.write('    ' + my_name + '.mblk_sz = ' + define_name.upper() + ';\n')
-        cfile.write('    ' + my_name + '.first_signal = (iocSignal*)((os_char*)gina + offsetof(struct ' + device_name + '_t, ' + block_name + '.' + signal_name + '));\n')
-
-    cfile.write('\n /* ' + signal_name + ' */\n')
-    my_name = 's->' + block_name + '.' + signal_name
-    if not is_dynamic:
-        cfile.write('    ' + my_name + '.addr = ' + str(addr) + ';\n')
-        cfile.write('    ' + my_name + '.n = ' + str(array_n) + ';\n')
-        cfile.write('    ' + my_name + '.type = OS_' + type.upper() + ';\n')
-    cfile.write('    ' + my_name + '.handle = ' + block_name + ';\n')
-
-    if is_dynamic:
-        cfile.write('    ' + my_name + '.ptr = \"' + signal_name + '\";\n')
-       
-    signal_nr = signal_nr + 1
-
 def process_signal(group_name, signal):
     global block_name
     signal_name = signal.get("name", None)
@@ -161,10 +109,7 @@ def process_signal(group_name, signal):
         print("'name' not found for signal in " + block_name + " " + group_name)
         exit()
     write_signal_to_c_header(signal_name)
-    if is_controller:
-        write_signal_to_c_source_for_controller(group_name, signal_name, signal)
-    else:
-        write_signal_to_c_source_for_iodevice(group_name, signal_name, signal)
+    write_signal_to_c_source(group_name, signal_name, signal)
 
 def process_group_block(group):
     global current_type
@@ -188,10 +133,10 @@ def process_group_block(group):
 def process_mblk(mblk):
     global cfile, hfile
     global block_name, handle, define_list, mblk_nr, nro_mblks, mblk_list
-    global current_addr, max_addr, signal_nr, nro_signals, is_controller
+    global current_addr, max_addr, signal_nr, nro_signals
 
     block_name = mblk.get("name", "MBLK")
-    handle = mblk.get("handle", "OS_NULL")
+    handle = mblk.get("handle", "OS_NULL")         
     groups = mblk.get("groups", None)
     if groups == None:
         print("'groups' not found for " + block_name)
@@ -213,25 +158,21 @@ def process_mblk(mblk):
     hfile.write('\n  struct ' + '\n  {\n')
     hfile.write('    iocMblkSignalHdr hdr;\n')
 
-#    cfile.write('\n  {\n    {' + handle + ', ' + str(nro_signals) + ', ')
-#    define_name = device_name + '_' + block_name + "_MBLK_SZ"
-#    cfile.write(define_name.upper() + ', ')
+    cfile.write('\n  {\n    {' + handle + ', ' + str(nro_signals) + ', ')
+    define_name = device_name + '_' + block_name + "_MBLK_SZ"
+    cfile.write(define_name.upper() + ', ')
 
     for group in groups:
         process_group_block(group)
 
     hfile.write('  }\n  ' + block_name + ';\n')
-    if not is_dynamic:
-        define_name = device_name + '_' + block_name + "_MBLK_SZ"
-        define_list.append("#define " + define_name.upper() + " " + str(max_addr) + "\n")
+    define_list.append("#define " + define_name.upper() + " " + str(max_addr) + "\n")
 
-    if not is_controller:
-        cfile.write('  }')
-        if mblk_nr < nro_mblks:
-            cfile.write(',')
-    
+    cfile.write('  }')
+
+    if mblk_nr < nro_mblks:
+        cfile.write(',')
     cfile.write('\n')
-
     mblk_nr = mblk_nr + 1
 
 
@@ -252,13 +193,7 @@ def process_source_file(path):
         struct_name = device_name + '_t'
         define_list = []
         hfile.write('typedef struct ' + struct_name + '\n{')
-
-        if is_controller:
-            cfile.write('void ' + device_name + '_init_signal_struct(' + struct_name + ' *s, ' + device_name + '_init_prm_t *prm)\n{\n')
-            cfile.write('    os_memclear(s, sizeof(' + struct_name + '));\n')
-
-        else:
-            cfile.write('struct ' + struct_name + ' ' + device_name + ' = \n{')
+        cfile.write('struct ' + struct_name + ' ' + device_name + ' = \n{')
 
         mblk_nr = 1;
         nro_mblks = 0
@@ -277,8 +212,7 @@ def process_source_file(path):
         for d in define_list:
             hfile.write(d)
 
-        if not is_controller:
-            hfile.write('\nextern ' + struct_name + ' ' + device_name + ';\n')
+        hfile.write('\nextern ' + struct_name + ' ' + device_name + ';\n')
 
         list_name = device_name + "_mblk_list"
         cfile.write('\nstatic const iocMblkSignalHdr *' + list_name + '[] =\n{\n  ')
@@ -292,9 +226,6 @@ def process_source_file(path):
         cfile.write('const iocDeviceHdr ' + device_name + '_hdr = {' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
 
         hfile.write('extern const iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
-
-        if is_controller:
-            hfile.write('void ' + device_name + '_init_signal_struct(' + struct_name + ' *s, ' + device_name + '_init_prm_t *prm);\n')
 
         for p in array_list:
             hfile.write(p + '\n')
@@ -332,7 +263,7 @@ def list_pins_in_pinsfile(path):
         printf ("Opening file " + path + " failed")
             
 def mymain():
-    global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic
+    global cfilepath, hfilepath, pinlist, device_name
 
     # Get command line arguments
     n = len(sys.argv)
@@ -341,7 +272,6 @@ def mymain():
     pinspath = None
     expectpath = True
     device_name = None
-    application_type = "iodevice"
     for i in range(1, n):
         if sys.argv[i][0] is "-":
             if sys.argv[i][1] is "o":
@@ -356,14 +286,6 @@ def mymain():
                 device_name = sys.argv[i+1]
                 expectpath = False
 
-            if sys.argv[i][1] is "a":
-                # application_type: 
-                #   "iodevice" - IO board, etc
-                #   "controller-static" Controller using static addressess and types to match data with IO device
-                #   "controller-dynamic" Controller using signal names to match types and 
-                application_type = sys.argv[i+1]
-                expectpath = False
-
         else:
             if expectpath:
                 sourcefiles.append(sys.argv[i])
@@ -376,18 +298,7 @@ def mymain():
     sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
     outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
     pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
-#    device_name = "gina2"
-#    application_type = "controller-static"
-    application_type = "controller-dynamic"
-
-    is_controller = False
-    is_dynamic = False
-    if application_type == "controller-static":
-        is_controller = True
-
-    if application_type == "controller-dynamic":
-        is_controller = True
-        is_dynamic = True
+    device_name = "gina2"
 
     if outpath is None:
         outpath = sourcefiles[0]

@@ -96,5 +96,3 @@ void devicedir_end_points(
 
     osal_stream_write_str(list, "]}\n", 0);
 }
-
-

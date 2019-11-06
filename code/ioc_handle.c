@@ -67,7 +67,7 @@ void ioc_release_handle(
 
     ioc_lock(handle->root);
 
-    if (handle->next != handle->prev)
+    if (handle->next != handle)
     {
         handle->prev->next = handle->next;
         handle->next->prev = handle->prev;
@@ -77,6 +77,10 @@ void ioc_release_handle(
     /* root must not be zeroed */
 
     ioc_unlock(handle->root);
+
+    /* Mark handle structure finished with small h
+     */
+    IOC_SET_DEBUG_ID(handle, 'h')
 }
 
 
@@ -87,6 +91,10 @@ void ioc_duplicate_handle(
     iocHandle *source_handle)
 {
     iocRoot *root;
+
+    /* Check that mblk is valid pointer.
+     */
+    osal_debug_assert(source_handle->debug_id == 'H');
 
     root = source_handle->root;
     ioc_lock(root);
@@ -102,6 +110,10 @@ void ioc_terminate_handles(
 {
     iocHandle *h, *nexth;
 
+    /* Check that mblk is valid pointer.
+     */
+    osal_debug_assert(handle->debug_id == 'H');
+
     h = handle;
     do {
         nexth = h->next;
@@ -111,6 +123,10 @@ void ioc_terminate_handles(
         h = nexth;
     }
     while (h != handle);
+
+    /* Mark handle structure finished with small h
+     */
+    IOC_SET_DEBUG_ID(handle, 'h')
 }
 
 

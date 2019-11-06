@@ -43,6 +43,10 @@ typedef struct iocDeviceHdr
 }
 iocDeviceHdr;
 
+/* Additional flag bits to type in bits byte
+ */
+#define IOC_PIN_PTR 0x20
+
 
 /**
 ****************************************************************************************************
@@ -63,7 +67,8 @@ typedef struct iocSignal
     os_ushort n;
 
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
-       or OS_STR.
+        or OS_STR.
+        Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.
      */
     os_char flags;
 
@@ -78,7 +83,8 @@ typedef struct iocSignal
     /** Pointer to IO pin configuration structure. OS_NULL if this signal doesn't
         match to an IO pin.
      */
-    const struct Pin *pin;
+    const void *ptr;
+    /* const struct Pin *pin; */
 
     /** Current value. For simple ones, this is either integer i or float f, depending on
         data type (flags).

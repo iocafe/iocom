@@ -109,5 +109,3 @@ void devicedir_connections(
 
     osal_stream_write_str(list, "]}\n", 0);
 }
-
-
