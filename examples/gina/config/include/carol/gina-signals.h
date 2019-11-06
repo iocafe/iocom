@@ -3,6 +3,9 @@ OSAL_C_HEADER_BEGINS
 
 typedef struct gina_t
 {
+  ioDeviceHdr hdr;
+  iocMblkSignalHdr *mblk_list[2];
+
   struct 
   {
     iocMblkSignalHdr hdr;
@@ -33,12 +36,10 @@ typedef struct gina_t
 }
 gina_t;
 
-extern const iocDeviceHdr gina_hdr;
+#define GINA_UP_MBLK_SZ 44
+#define GINA_DOWN_MBLK_SZ 32
 
 void gina_init_signal_struct(gina_t *s, gina_init_prm_t *prm);
-
-#ifndef IOBOARD_DEVICE_NAME
-#define IOBOARD_DEVICE_NAME "gina"
-#endif
+#define GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ 8
 
 OSAL_C_HEADER_ENDS
