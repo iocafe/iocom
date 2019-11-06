@@ -29,4 +29,7 @@ public:
 	/* Virtual destructor.
  	 */
     virtual ~TitoIoDevice();
+
+
+    iocDeviceHdr *m_io_device_hdr;
 };

@@ -13,7 +13,6 @@
 
 ****************************************************************************************************
 */
-
 #include "tito.h"
 
 static void tito_application_thread_func(void *prm, osalEvent done);
@@ -79,6 +78,7 @@ void TitoApplication::run()
         osal_event_wait(m_event, OSAL_EVENT_INFINITE);
     }
 }
+
 
 static void tito_application_thread_func(void *prm, osalEvent done)
 {

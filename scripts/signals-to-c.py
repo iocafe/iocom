@@ -134,7 +134,7 @@ def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
 
     if signal_nr == 1:
         my_name = '  s->' + block_name + '.hdr'
-        cfile.write(my_name + '.handle = ' + block_name + ';\n')
+        cfile.write(my_name + '.handle = prm->' + block_name + ';\n')
         cfile.write(my_name + '.n_signals = ' + str(nro_signals)  + ';\n')
         if not is_dynamic:
             define_name = device_name + '_' + block_name + "_MBLK_SZ"
@@ -146,8 +146,8 @@ def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
     if not is_dynamic:
         cfile.write(my_name + '.addr = ' + str(addr) + ';\n')
         cfile.write(my_name + '.n = ' + str(array_n) + ';\n')
-        cfile.write(my_name + '.type = OS_' + type.upper() + ';\n')
-    cfile.write(my_name + '.handle = ' + block_name + ';\n')
+        cfile.write(my_name + '.flags = OS_' + type.upper() + ';\n')
+    cfile.write(my_name + '.handle = prm->' + block_name + ';\n')
 
     if is_dynamic:
         cfile.write(my_name + '.ptr = \"' + signal_name + '\";\n')
@@ -261,8 +261,8 @@ def process_source_file(path):
         hfile.write('typedef struct ' + struct_name + '\n{')
 
         if is_controller:
-            hfile.write('\n  ioDeviceHdr hdr;\n')
-            hfile.write('  iocMblkSignalHdr *mblk_list[' + str(nro_mblks) + '];\n')
+            hfile.write('\n  iocDeviceHdr hdr;\n')
+            hfile.write('  const iocMblkSignalHdr *mblk_list[' + str(nro_mblks) + '];\n')
 
             cfile.write('void ' + device_name + '_init_signal_struct(' + struct_name + ' *s, ' + device_name + '_init_prm_t *prm)\n{\n')
             cfile.write('  os_memclear(s, sizeof(' + struct_name + '));\n')
@@ -303,6 +303,12 @@ def process_source_file(path):
             cfile.write('const iocDeviceHdr ' + device_name + '_hdr = {' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
 
         if is_controller:
+            init_struct_name = device_name + '_init_prm_t'
+            hfile.write('\ntypedef struct ' + init_struct_name + '\n{\n')
+            for mblk in mblks:
+                mblk_name = mblk.get("name", "no-name");
+                hfile.write('  iocHandle *' + mblk_name + ';\n')
+            hfile.write('}\n' + init_struct_name + ';\n')
             hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s, ' + device_name + '_init_prm_t *prm);\n')
 
         else:
@@ -310,6 +316,7 @@ def process_source_file(path):
 
         for p in array_list:
             hfile.write(p + '\n')
+
 
     else:
         printf ("Opening file " + path + " failed")
@@ -383,13 +390,14 @@ def mymain():
 
     if len(sourcefiles) < 1:
         print("No source files")
-        exit()
+ #       exit()
 
-#    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
+    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
 #    outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
+    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
 #    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 #    device_name = "gina2"
-#    application_type = "controller-static"
+    application_type = "controller-static"
 #    application_type = "controller-dynamic"
 
     is_controller = False

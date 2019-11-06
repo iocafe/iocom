@@ -1,35 +1,115 @@
 /* This file is gerated by signals-to-c.py script, do not modify. */
-struct gina_t gina = 
+void gina_init_signal_struct(gina_t *s, gina_init_prm_t *prm)
 {
-  {
-    {&ioboard_UP, 12, GINA_UP_MBLK_SZ, &gina.up.dip_switch_3},
-    {30, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* dip_switch_3 */
-    {31, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* dip_switch_4 */
-    {32, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* touch_sensor */
-    {33, 1, OS_USHORT, 0, &ioboard_UP, OS_NULL}, /* potentiometer */
-    {36, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* A */
-    {37, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* B */
-    {38, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* C */
-    {39, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* D */
-    {40, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* E */
-    {41, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* F */
-    {42, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL}, /* G */
-    {43, 1, OS_BOOLEAN, 0, &ioboard_UP, OS_NULL} /* H */
-  },
+  os_memclear(s, sizeof(gina_t));
+  s->up.hdr.handle = prm->up;
+  s->up.hdr.n_signals = 12;
+  s->up.hdr.mblk_sz = GINA_UP_MBLK_SZ;
+  s->up.hdr.first_signal = &s->up.dip_switch_3;
 
-  {
-    {&ioboard_DOWN, 4, GINA_DOWN_MBLK_SZ, &gina.down.seven_segment},
-    {0, 8, OS_BOOLEAN, 0, &ioboard_DOWN, OS_NULL}, /* seven_segment */
-    {9, 1, OS_SHORT, 0, &ioboard_DOWN, OS_NULL}, /* servo */
-    {12, 1, OS_SHORT, 0, &ioboard_DOWN, OS_NULL}, /* dimmer_led */
-    {15, 1, OS_BOOLEAN, 0, &ioboard_DOWN, OS_NULL} /* led_builtin */
-  }
-};
+ /* dip_switch_3 */
+  s->up.dip_switch_3.addr = 30;
+  s->up.dip_switch_3.n = 1;
+  s->up.dip_switch_3.flags = OS_BOOLEAN;
+  s->up.dip_switch_3.handle = prm->up;
 
-static const iocMblkSignalHdr *gina_mblk_list[] =
-{
-  &gina.up.hdr,
-  &gina.down.hdr
-};
+ /* dip_switch_4 */
+  s->up.dip_switch_4.addr = 31;
+  s->up.dip_switch_4.n = 1;
+  s->up.dip_switch_4.flags = OS_BOOLEAN;
+  s->up.dip_switch_4.handle = prm->up;
 
-const iocDeviceHdr gina_hdr = {gina_mblk_list, sizeof(gina_mblk_list)/sizeof(iocMblkSignalHdr*)};
+ /* touch_sensor */
+  s->up.touch_sensor.addr = 32;
+  s->up.touch_sensor.n = 1;
+  s->up.touch_sensor.flags = OS_BOOLEAN;
+  s->up.touch_sensor.handle = prm->up;
+
+ /* potentiometer */
+  s->up.potentiometer.addr = 33;
+  s->up.potentiometer.n = 1;
+  s->up.potentiometer.flags = OS_USHORT;
+  s->up.potentiometer.handle = prm->up;
+
+ /* A */
+  s->up.A.addr = 36;
+  s->up.A.n = 1;
+  s->up.A.flags = OS_BOOLEAN;
+  s->up.A.handle = prm->up;
+
+ /* B */
+  s->up.B.addr = 37;
+  s->up.B.n = 1;
+  s->up.B.flags = OS_BOOLEAN;
+  s->up.B.handle = prm->up;
+
+ /* C */
+  s->up.C.addr = 38;
+  s->up.C.n = 1;
+  s->up.C.flags = OS_BOOLEAN;
+  s->up.C.handle = prm->up;
+
+ /* D */
+  s->up.D.addr = 39;
+  s->up.D.n = 1;
+  s->up.D.flags = OS_BOOLEAN;
+  s->up.D.handle = prm->up;
+
+ /* E */
+  s->up.E.addr = 40;
+  s->up.E.n = 1;
+  s->up.E.flags = OS_BOOLEAN;
+  s->up.E.handle = prm->up;
+
+ /* F */
+  s->up.F.addr = 41;
+  s->up.F.n = 1;
+  s->up.F.flags = OS_BOOLEAN;
+  s->up.F.handle = prm->up;
+
+ /* G */
+  s->up.G.addr = 42;
+  s->up.G.n = 1;
+  s->up.G.flags = OS_BOOLEAN;
+  s->up.G.handle = prm->up;
+
+ /* H */
+  s->up.H.addr = 43;
+  s->up.H.n = 1;
+  s->up.H.flags = OS_BOOLEAN;
+  s->up.H.handle = prm->up;
+  s->mblk_list[0] = &s->up.hdr;
+
+  s->down.hdr.handle = prm->down;
+  s->down.hdr.n_signals = 4;
+  s->down.hdr.mblk_sz = GINA_DOWN_MBLK_SZ;
+  s->down.hdr.first_signal = &s->down.seven_segment;
+
+ /* seven_segment */
+  s->down.seven_segment.addr = 0;
+  s->down.seven_segment.n = 8;
+  s->down.seven_segment.flags = OS_BOOLEAN;
+  s->down.seven_segment.handle = prm->down;
+
+ /* servo */
+  s->down.servo.addr = 9;
+  s->down.servo.n = 1;
+  s->down.servo.flags = OS_SHORT;
+  s->down.servo.handle = prm->down;
+
+ /* dimmer_led */
+  s->down.dimmer_led.addr = 12;
+  s->down.dimmer_led.n = 1;
+  s->down.dimmer_led.flags = OS_SHORT;
+  s->down.dimmer_led.handle = prm->down;
+
+ /* led_builtin */
+  s->down.led_builtin.addr = 15;
+  s->down.led_builtin.n = 1;
+  s->down.led_builtin.flags = OS_BOOLEAN;
+  s->down.led_builtin.handle = prm->down;
+  s->mblk_list[1] = &s->down.hdr;
+
+  s->hdr.n_mblk_hdrs = 2;
+  s->hdr.mblk_hdr = s->mblk_list;
+}

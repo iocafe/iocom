@@ -13,7 +13,6 @@
 
 ****************************************************************************************************
 */
-
 #include "tito.h"
 
 
@@ -65,10 +64,9 @@ TitoMain::~TitoMain()
 }
 
 
-
 osalStatus TitoMain::loop()
 {
-
+    os_sleep(100);
     return OSAL_SUCCESS;
 }
 
