@@ -37,8 +37,9 @@
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
 
-  @param   signal Pointer to array of signal structures. This holds memory address, value,
+  @param   signal Pointer to array of signal structures. This holds memory address,
            state bits and data type for each signal.
+  @param   vv Array where signal values and state bits are stored, n_signals elements.
   @oaram   n_signals Number of elements in signals array.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
            operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
@@ -50,16 +51,17 @@
 ****************************************************************************************************
 */
 void ioc_movex_signals(
-    iocSignal *signal,
+    const iocSignal *signal,
+    iocValue *vv,
     os_int n_signals,
     os_short flags)
 {
     iocRoot *root = OS_NULL;
     iocMemoryBlock *mblk = OS_NULL;
-    iocSignal *sig;
-    os_char *p, nbuf[OSAL_NBUF_SZ];
+    const iocSignal *sig;
+    os_char *p, nbuf[OSAL_NBUF_SZ], sb;
     os_memsz type_sz;
-    os_int addr, i;
+    os_int addr, i, v;
     os_short type_id;
     iocHandle *handle;
     os_boolean handle_tried = OS_FALSE, unlock_now;
@@ -67,7 +69,13 @@ void ioc_movex_signals(
     /* Check function arguments.
      */
     osal_debug_assert(signal != OS_NULL);
+    osal_debug_assert(vv != OS_NULL);
     osal_debug_assert(n_signals > 0);
+
+    if ((flags & IOC_SIGNAL_WRITE) == 0)
+    {
+        os_memclear(vv, n_signals * sizeof(iocValue));
+    }
 
     /* Loop trough signal array.
      */
@@ -96,7 +104,7 @@ void ioc_movex_signals(
          */
         if (mblk == OS_NULL)
         {
-            sig->state_bits = 0;
+            vv[i].state_bits &= ~OSAL_STATE_CONNECTED;
             goto nextone;
         }
 
@@ -105,13 +113,13 @@ void ioc_movex_signals(
         {
             if (flags & IOC_SIGNAL_WRITE)
             {
-                osal_int_to_string(nbuf, sizeof(nbuf), type_id);
-                ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), flags);
+                osal_int_to_string(nbuf, sizeof(nbuf), vv[i].value.i);
+                vv[i].state_bits = ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
             }
             else
             {
-                ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), flags);
-                sig->value.i = (os_int)osal_string_to_int(nbuf, OS_NULL);
+                vv[i].state_bits = ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
+                vv[i].value.i = (os_int)osal_string_to_int(nbuf, OS_NULL);
             }
             goto nextone;
         }
@@ -131,8 +139,6 @@ void ioc_movex_signals(
          */
         if (addr < 0 || addr + type_sz >= mblk->nbytes) /* >= one for state byte */
         {
-            sig->state_bits = 0;
-            sig->value.i = 0;
             goto nextone;
         }
 
@@ -142,32 +148,29 @@ void ioc_movex_signals(
 
         if (flags & IOC_SIGNAL_WRITE)
         {
+            sb = vv[i].state_bits;
+
+            /* Set boolean value (works only for integers)
+             */
+            v = vv[i].value.i;
+            if (v) sb |= OSAL_STATE_BOOLEAN_VALUE;
+            else  sb &= ~OSAL_STATE_BOOLEAN_VALUE;
+
             /* If memory block is connected as source, we may turn OSAL_STATE_CONNECTED
              * bit on. If memory block is disconnected, we sure turn it off.
              */
             if (mblk->sbuf.first)
             {
                 if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
-                    sig->state_bits |= OSAL_STATE_CONNECTED;
+                    sb |= OSAL_STATE_CONNECTED;
             }
             else
             {
-                sig->state_bits &= ~OSAL_STATE_CONNECTED;
+                sb &= ~OSAL_STATE_CONNECTED;
             }
 
-            /* Set boolean value
-             */
-            if (sig->value.i)
-            {
-                sig->state_bits &= ~OSAL_STATE_BOOLEAN_VALUE;
-            }
-            else
-            {
-                sig->state_bits |= OSAL_STATE_BOOLEAN_VALUE;
-            }
-
-            *(p++) = sig->state_bits;
-            ioc_byte_ordered_copy(p, (os_char*)&sig->value, type_sz, type_sz);
+            *(p++) = vv[i].state_bits = sb;
+            ioc_byte_ordered_copy(p, (os_char*)&vv[i].value, type_sz, type_sz);
             ioc_mblk_invalidate(mblk, addr, (int)(addr + type_sz) /* no -1, we need also state byte */);
         }
         else
@@ -176,21 +179,20 @@ void ioc_movex_signals(
                as target, turn OSAL_STATE_CONNECTED bit off in returned state, but
                do not modify memory block (we are receiving).
              */
-            sig->state_bits = *(p++);
-            if (mblk->tbuf.first == OS_NULL)
-            {
-                sig->state_bits &= ~OSAL_STATE_CONNECTED;
-            }
+            sb = *(p++);
+            if (mblk->tbuf.first == OS_NULL) sb &= ~OSAL_STATE_CONNECTED;
+
+            vv[i].state_bits = sb;
 
             /* If boolean, no more data
              */
             if (type_id == OS_BOOLEAN)
             {
-                sig->value.i = (sig->state_bits & OSAL_STATE_BOOLEAN_VALUE) ? 1 : 0;
+                vv[i].value.i = (sb & OSAL_STATE_BOOLEAN_VALUE) ? 1 : 0;
             }
             else
             {
-                ioc_byte_ordered_copy((os_char*)&sig->value, p, type_sz, type_sz);
+                ioc_byte_ordered_copy((os_char*)&vv[i].value, p, type_sz, type_sz);
             }
         }
 
@@ -225,6 +227,60 @@ nextone:
 ****************************************************************************************************
 
   @brief Set integer value as a signal.
+  @anchor ioc_sets_int
+
+  The ioc_sets_int() function writes one signal value to memory block. This is used for basic
+  types like integers and floats and cannot be used for strings or arrays.
+
+  @param   signal Pointer to signal structure. This holds memory address,  state bits and data
+           type for the signal.
+  @param   value Integer value to write.
+
+  @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
+
+****************************************************************************************************
+*/
+os_char ioc_sets_int(
+    const iocSignal *signal,
+    os_int value,
+    os_char state_bits)
+{
+    iocValue vv;
+
+    if ((signal->flags & OSAL_TYPEID_MASK) == OS_FLOAT) vv.value.f = (os_float)value;
+    else vv.value.i = value;
+    vv.state_bits = state_bits;
+
+    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_WRITE);
+    return vv.state_bits;
+}
+
+
+os_char ioc_sets_double(
+    const iocSignal *signal,
+    os_double value,
+    os_char state_bits)
+{
+    iocValue vv;
+
+    switch (signal->flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT: vv.value.f = (os_float)value; break;
+        case OS_DOUBLE: vv.value.d = value; break;
+        case OS_LONG: vv.value.l = os_round_long(value); break;
+        default: vv.value.i = os_round_int(value); break;
+    }
+    vv.state_bits = state_bits;
+
+    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_WRITE);
+    return vv.state_bits;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Set integer value as a signal.
   @anchor ioc_setx_int
 
   The ioc_setx_int() function writes one signal value to memory block. This is used for basic
@@ -252,18 +308,20 @@ os_char ioc_setx_int(
     os_short flags)
 {
     iocSignal signal;
-    os_memclear(&signal, sizeof(signal));
+    iocValue vv;
 
+    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) vv.value.f = (os_float)value;
+    else vv.value.i = value;
+    vv.state_bits = state_bits;
+
+    os_memclear(&signal, sizeof(signal));
     signal.handle = handle;
     signal.addr = addr;
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) signal.value.f = (os_float)value;
-    else signal.value.i = value;
-    signal.state_bits = state_bits;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(&signal, 1, flags|IOC_SIGNAL_WRITE);
-    return signal.state_bits;
+    ioc_movex_signals(&signal, &vv, 1, flags|IOC_SIGNAL_WRITE);
+    return vv.state_bits;
 }
 
 
@@ -299,18 +357,73 @@ os_char ioc_setx_float(
     os_short flags)
 {
     iocSignal signal;
+    iocValue vv;
+
     os_memclear(&signal, sizeof(signal));
+
+    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) vv.value.f = value;
+    else vv.value.i = os_round_int(value);
+    vv.state_bits = state_bits;
 
     signal.handle = handle;
     signal.addr = addr;
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) signal.value.f = value;
-    else signal.value.i = os_round_int(value);
-    signal.state_bits = state_bits;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(&signal, 1, flags|IOC_SIGNAL_WRITE);
-    return signal.state_bits;
+    ioc_movex_signals(&signal, &vv, 1, flags|IOC_SIGNAL_WRITE);
+    return vv.state_bits;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Get signal as integer value.
+  @anchor ioc_gets_int
+
+  The ioc_gets_int() function reads one signal value from memory block. This is used for basic
+  types like integers and floats and cannot be used for strings or arrays.
+
+  @param   signal Pointer to signal structure. This holds memory address,  state bits and data
+           type for the signal.
+  @oaram   state_bits Pointer to integer where to store state bits. OSAL_STATE_CONNECTED bit
+           indicates that we have the signal value. HW errors are indicated.
+
+  @return  Signal value as integer.
+
+****************************************************************************************************
+*/
+os_int ioc_gets_int(
+    const iocSignal *signal,
+    os_char *state_bits)
+{
+    iocValue vv;
+
+    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_DEFAULT);
+    if (state_bits) *state_bits = vv.state_bits;
+
+
+    if ((signal->flags & OSAL_TYPEID_MASK) == OS_FLOAT) return os_round_int(vv.value.f);
+    else return vv.value.i;
+}
+
+
+os_double ioc_gets_double(
+    const iocSignal *signal,
+    os_char *state_bits)
+{
+    iocValue vv;
+
+    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_DEFAULT);
+    if (state_bits) *state_bits = vv.state_bits;
+
+    switch (signal->flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT: return vv.value.f; break;
+        case OS_DOUBLE: return vv.value.d; break;
+        case OS_LONG: return vv.value.l; break;
+        default: return vv.value.i; break;
+    }
 }
 
 
@@ -344,22 +457,20 @@ os_int ioc_getx_int(
     os_short flags)
 {
     iocSignal signal;
-    os_int value;
+    iocValue vv;
+
     os_memclear(&signal, sizeof(signal));
 
     signal.handle = handle;
     signal.addr = addr;
-    signal.state_bits = 0;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(&signal, 1, flags);
-    if (state_bits) *state_bits = signal.state_bits;
+    ioc_movex_signals(&signal, &vv, 1, flags);
+    if (state_bits) *state_bits = vv.state_bits;
 
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) value = os_round_int(signal.value.f);
-    else value = signal.value.i;
-
-    return value;
+    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) return os_round_int(vv.value.f);
+    else return vv.value.i;
 }
 
 
@@ -393,22 +504,19 @@ os_float ioc_getx_float(
     os_short flags)
 {
     iocSignal signal;
-    os_float value;
-    os_memclear(&signal, sizeof(signal));
+    iocValue vv;
 
+    os_memclear(&signal, sizeof(signal));
     signal.handle = handle;
     signal.addr = addr;
-    signal.state_bits = 0;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = 1;
 
-    ioc_movex_signals(&signal, 1, flags);
-    if (state_bits) *state_bits = signal.state_bits;
+    ioc_movex_signals(&signal, &vv, 1, flags);
+    if (state_bits) *state_bits = vv.state_bits;
 
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) value = signal.value.f;
-    else value = (os_float)signal.value.i;
-
-    return value;
+    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) return vv.value.f;
+    else return (os_float)vv.value.i;
 }
 
 
@@ -445,16 +553,18 @@ os_float ioc_getx_float(
 
 ****************************************************************************************************
 */
-void ioc_movex_str_signal(
-    iocSignal *signal,
+os_char ioc_movex_str_signal(
+    const iocSignal *signal,
     os_char *str,
     os_memsz str_sz,
+    os_char state_bits,
     os_short flags)
 {
     iocRoot *root = OS_NULL;
     iocMemoryBlock *mblk;
     os_char *p;
-    os_int addr;
+    os_double dvalue;
+    os_int addr, value;
     os_memsz len;
     iocHandle *handle;
     handle = signal->handle;
@@ -475,29 +585,32 @@ void ioc_movex_str_signal(
         case OS_FLOAT:
             if (flags & IOC_SIGNAL_WRITE)
             {
-                signal->value.f = (os_float)osal_string_to_double(str, OS_NULL);
-                ioc_movex_signals(signal, 1, flags);
+                return ioc_sets_double(signal, osal_string_to_double(str, OS_NULL), state_bits);
             }
             else
             {
-                ioc_movex_signals(signal, 1, flags);
-                osal_double_to_string(str, str_sz, signal->value.f, 4, OSAL_FLOAT_DEFAULT);
+                dvalue = ioc_gets_double(signal, &state_bits);
+                osal_double_to_string(str, str_sz, dvalue, 4, OSAL_FLOAT_DEFAULT);
+                return state_bits;
             }
-            return;
 
         default:
             if (flags & IOC_SIGNAL_WRITE)
             {
-                signal->value.i = (os_int)osal_string_to_int(str, OS_NULL);
-                ioc_movex_signals(signal, 1, flags);
+                return ioc_sets_int(signal, (os_int)osal_string_to_int(str, OS_NULL), state_bits);
             }
             else
             {
-                ioc_movex_signals(signal, 1, flags);
-                osal_int_to_string(str, str_sz, signal->value.i);
+                value = ioc_gets_int(signal, &state_bits);
+                osal_int_to_string(str, str_sz, value);
+                return state_bits;
             }
-            return;
     }
+
+    /* In case of errors.
+     */
+    if ((flags & IOC_SIGNAL_WRITE) == 0) *str = '\0';
+
 
     /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
      */
@@ -514,8 +627,7 @@ void ioc_movex_str_signal(
      */
     if (mblk == OS_NULL)
     {
-        signal->state_bits = 0;
-        return;
+        return 0;
     }
 
     /* If address is outside the memory block.
@@ -523,7 +635,7 @@ void ioc_movex_str_signal(
     addr = signal->addr;
     if (addr < 0 || addr + signal->n + 1 > mblk->nbytes)
     {
-        signal->state_bits = 0;
+        state_bits = 0;
         goto goon;
     }
 
@@ -539,14 +651,14 @@ void ioc_movex_str_signal(
         if (mblk->sbuf.first)
         {
             if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
-                signal->state_bits |= OSAL_STATE_CONNECTED;
+                state_bits |= OSAL_STATE_CONNECTED;
         }
         else
         {
-            signal->state_bits &= ~OSAL_STATE_CONNECTED;
+            state_bits &= ~OSAL_STATE_CONNECTED;
         }
 
-        *(p++) = signal->state_bits;
+        *(p++) = state_bits;
         len = os_strlen(str);
         if (signal->n < len) len = signal->n;
         ioc_byte_ordered_copy(p, str, len, 1);
@@ -558,10 +670,10 @@ void ioc_movex_str_signal(
            as target, turn OSAL_STATE_CONNECTED bit off in returned state, but
            do not modify memory block (we are receiving).
          */
-        signal->state_bits = *(p++);
+        state_bits = *(p++);
         if (mblk->tbuf.first == OS_NULL)
         {
-            signal->state_bits &= ~OSAL_STATE_CONNECTED;
+            state_bits &= ~OSAL_STATE_CONNECTED;
         }
         len = str_sz;
         if (signal->n < len) len = signal->n;
@@ -575,6 +687,8 @@ goon:
     {
         ioc_unlock(root);
     }
+
+    return state_bits;
 }
 
 
@@ -615,14 +729,12 @@ os_char ioc_movex_str(
 
     signal.handle = handle;
     signal.addr = addr;
-    signal.state_bits = state_bits;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.state_bits = state_bits;
     signal.n = (os_short)str_sz;
 
-    ioc_movex_str_signal(&signal, str, str_sz, flags);
+    state_bits = ioc_movex_str_signal(&signal, str, str_sz, state_bits, flags);
 
-    return signal.state_bits;
+    return state_bits;
 }
 
 
@@ -660,10 +772,11 @@ os_char ioc_movex_str(
 
 ****************************************************************************************************
 */
-void ioc_movex_array_signal(
-    iocSignal *signal,
+os_char ioc_movex_array_signal(
+    const iocSignal *signal,
     void *array,
     os_int n,
+    os_char state_bits,
     os_short flags)
 {
     iocRoot *root= OS_NULL;
@@ -702,8 +815,7 @@ void ioc_movex_array_signal(
      */
     if (mblk == OS_NULL)
     {
-        signal->state_bits = 0;
-        return;
+        return 0;
     }
 
     /* If address is outside the memory block.
@@ -714,7 +826,7 @@ void ioc_movex_array_signal(
 
     if (addr < 0 || addr + nn * type_sz >= mblk->nbytes)
     {
-        signal->state_bits = 0;
+        state_bits = 0;
         goto goon;
     }
 
@@ -730,11 +842,11 @@ void ioc_movex_array_signal(
         if (mblk->sbuf.first)
         {
             if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
-                signal->state_bits |= OSAL_STATE_CONNECTED;
+                state_bits |= OSAL_STATE_CONNECTED;
         }
         else
         {
-            signal->state_bits &= ~OSAL_STATE_CONNECTED;
+            state_bits &= ~OSAL_STATE_CONNECTED;
         }
         if (signal->n < n) n = signal->n;
 
@@ -743,9 +855,9 @@ void ioc_movex_array_signal(
         if (type_id == OS_BOOLEAN)
         {
             b = (os_uchar*)array;
-            if (*b) { signal->state_bits |= OSAL_STATE_BOOLEAN_VALUE; }
-            else { signal->state_bits &= ~OSAL_STATE_BOOLEAN_VALUE; }
-            *(p++) = signal->state_bits;
+            if (*b) { state_bits |= OSAL_STATE_BOOLEAN_VALUE; }
+            else { state_bits &= ~OSAL_STATE_BOOLEAN_VALUE; }
+            *(p++) = state_bits;
 
             if (n > 1)
             {
@@ -776,7 +888,7 @@ void ioc_movex_array_signal(
 
         else
         {
-            *(p++) = signal->state_bits;
+            *(p++) = state_bits;
             ioc_byte_ordered_copy(p, array, n, type_sz);
             ioc_mblk_invalidate(mblk, addr, (int)(addr + n * type_sz) /* no -1, we need also state byte */);
         }
@@ -787,10 +899,10 @@ void ioc_movex_array_signal(
            as target, turn OSAL_STATE_CONNECTED bit off in returned state, but
            do not modify memory block (we are receiving).
          */
-        signal->state_bits = *(p++);
+        state_bits = *(p++);
         if (mblk->tbuf.first == OS_NULL)
         {
-            signal->state_bits &= ~OSAL_STATE_CONNECTED;
+            state_bits &= ~OSAL_STATE_CONNECTED;
         }
         if (signal->n < n) n = signal->n;
 
@@ -817,7 +929,7 @@ void ioc_movex_array_signal(
             }
             else
             {
-                *b =  (signal->state_bits &= OSAL_STATE_BOOLEAN_VALUE) ? OS_TRUE : OS_FALSE;
+                *b =  (state_bits &= OSAL_STATE_BOOLEAN_VALUE) ? OS_TRUE : OS_FALSE;
             }
         }
         else
@@ -833,6 +945,8 @@ goon:
     {
         ioc_unlock(root);
     }
+
+    return state_bits;
 }
 
 
@@ -873,14 +987,10 @@ os_char ioc_movex_array(
 
     signal.handle = handle;
     signal.addr = addr;
-    signal.state_bits = state_bits;
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.state_bits = state_bits;
     signal.n = n;
 
-    ioc_movex_array_signal(&signal, array, n, flags);
-
-    return signal.state_bits;
+    return ioc_movex_array_signal(&signal, array, n, state_bits, flags);
 }
 
 
@@ -902,7 +1012,7 @@ os_char ioc_movex_array(
 ****************************************************************************************************
 */
 os_boolean ioc_is_my_address(
-    iocSignal *signal,
+    const iocSignal *signal,
     int start_addr,
     int end_addr)
 {

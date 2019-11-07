@@ -40,13 +40,13 @@ TitoApplication::TitoApplication(const os_char *network_name, os_short device_nr
     /* Set up static IO boards, for now two gina boards 1 and 2
      */
     m_nro_io_devices = 0;
-    m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 1);
-    m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 2);
+    gina1 = m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 1);
+    gina2 = m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 2);
     osal_debug_assert(m_nro_io_devices <= MAX_IO_DEVICES);
 
-    /* Start running application for this network in own thread.
+    /* Start running application for this IO device network in own thread.
      */
-    osal_event_create();
+    m_event = osal_event_create();
     m_stop_thread = OS_FALSE;
     m_thread = osal_thread_create(tito_application_thread_func, this,
         OSAL_THREAD_ATTACHED, 0, network_name);
@@ -82,6 +82,8 @@ TitoApplication::~TitoApplication()
 
 void TitoApplication::run()
 {
+    TitoTestSequence1 test_seq1(this);
+
     while (!m_stop_thread && osal_go())
     {
         osal_event_wait(m_event, OSAL_EVENT_INFINITE);

@@ -214,6 +214,8 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
+    os_char sb;
+
     /* '#ifdef' is used to compile code in only if 7-segment display is configured
        for the hardware.
      */
@@ -228,8 +230,8 @@ void ioboard_communication_callback(
      */
     if (ioc_is_my_address(&gina.down.seven_segment, start_addr, end_addr))
     {
-        ioc_gets_array(&gina.down.seven_segment, buf, GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ);
-        if (ioc_is_value_connected(gina.down.seven_segment))
+        sb = ioc_gets_array(&gina.down.seven_segment, buf, GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ);
+        if (sb & OSAL_STATE_CONNECTED)
         {
             osal_console_write("7 segment data received\n");
             for (i = GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;

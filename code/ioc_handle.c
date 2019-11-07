@@ -97,9 +97,16 @@ void ioc_duplicate_handle(
     osal_debug_assert(source_handle->debug_id == 'H');
 
     root = source_handle->root;
-    ioc_lock(root);
-    ioc_setup_handle(handle, root, root ? source_handle->mblk : OS_NULL);
-    ioc_unlock(root);
+    if (root)
+    {
+        ioc_lock(root);
+        ioc_setup_handle(handle, root, source_handle->mblk);
+        ioc_unlock(root);
+    }
+    else
+    {
+        ioc_setup_handle(handle, root, OS_NULL);
+    }
 }
 
 

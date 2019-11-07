@@ -92,19 +92,19 @@ void gina_init_signal_struct(gina_t *s, gina_init_prm_t *prm)
   s->down.seven_segment.handle = prm->down;
 
  /* servo */
-  s->down.servo.addr = 9;
+  s->down.servo.addr = 2;
   s->down.servo.n = 1;
   s->down.servo.flags = OS_SHORT;
   s->down.servo.handle = prm->down;
 
  /* dimmer_led */
-  s->down.dimmer_led.addr = 12;
+  s->down.dimmer_led.addr = 5;
   s->down.dimmer_led.n = 1;
   s->down.dimmer_led.flags = OS_SHORT;
   s->down.dimmer_led.handle = prm->down;
 
  /* led_builtin */
-  s->down.led_builtin.addr = 15;
+  s->down.led_builtin.addr = 8;
   s->down.led_builtin.n = 1;
   s->down.led_builtin.flags = OS_BOOLEAN;
   s->down.led_builtin.handle = prm->down;

@@ -29,7 +29,6 @@ def start_c_files():
     cfile = open(cfilepath, "w")
     hfile = open(hfilepath, "w")
     cfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
-    # cfile.write('#include "iocom.h"\n')
     hfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
     hfile.write('OSAL_C_HEADER_BEGINS\n\n')
 
@@ -45,10 +44,10 @@ def write_signal_to_c_header(signal_name):
 
 def calc_signal_memory_sz(type, array_n):
     if type == "boolean":
-        if array_n == 1:
+        if array_n <= 1:
             return 1
-        #else            
-            return (array_n + 7) / 8 + 1;
+        else:
+            return ((array_n + 7) >> 3) + 1;
 
     type_sz = osal_typeinfo[type];
     return array_n * type_sz + 1
@@ -93,7 +92,7 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
     if signal_name in pinlist:
         cfile.write('|IOC_PIN_PTR')
 
-    cfile.write(', 0, ' + handle)
+    cfile.write(', ' + handle)
 
     if signal_name in pinlist:
         cfile.write(', ' + pinlist[signal_name])
@@ -213,10 +212,6 @@ def process_mblk(mblk):
     hfile.write('\n  struct ' + '\n  {\n')
     hfile.write('    iocMblkSignalHdr hdr;\n')
 
-#    cfile.write('\n  {\n    {' + handle + ', ' + str(nro_signals) + ', ')
-#    define_name = device_name + '_' + block_name + "_MBLK_SZ"
-#    cfile.write(define_name.upper() + ', ')
-
     for group in groups:
         process_group_block(group)
 
@@ -268,7 +263,7 @@ def process_source_file(path):
             cfile.write('  os_memclear(s, sizeof(' + struct_name + '));\n')
 
         else:
-            cfile.write('struct ' + struct_name + ' ' + device_name + ' = \n{')
+            cfile.write('const struct ' + struct_name + ' ' + device_name + ' = \n{')
 
         mblk_list = []
         array_list = []
@@ -289,7 +284,7 @@ def process_source_file(path):
             hfile.write(d)
 
         if not is_controller:
-            hfile.write('\nextern ' + struct_name + ' ' + device_name + ';\n')
+            hfile.write('\nextern const ' + struct_name + ' ' + device_name + ';\n')
 
             list_name = device_name + "_mblk_list"
             cfile.write('\nstatic const iocMblkSignalHdr *' + list_name + '[] =\n{\n  ')
@@ -390,14 +385,14 @@ def mymain():
 
     if len(sourcefiles) < 1:
         print("No source files")
- #       exit()
+        exit()
 
-    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
+#    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
 #    outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
-    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
+#    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
 #    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 #    device_name = "gina2"
-    application_type = "controller-static"
+#    application_type = "controller-static"
 #    application_type = "controller-dynamic"
 
     is_controller = False

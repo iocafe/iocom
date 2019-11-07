@@ -1,10 +1,10 @@
 /**
 
-  @file    tito_main.h
-  @brief   Controller example with static IO defice configuration.
+  @file    tito_test_sequence1.cpp
+  @brief   Some example sequence as own thread.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    6.12.2011
+  @date    6.11.2019
 
   Copyright 2012 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -21,22 +21,15 @@
 
   @brief Constructor.
 
-  X...
-
+  Start the sequence as a new thread.
   @return  None.
 
 ****************************************************************************************************
 */
-TitoMain::TitoMain()
+TitoTestSequence1::TitoTestSequence1(TitoApplication *app)
+    : TitoSequence(app)
 {
-    /* Lauch tour 'tito' applications, one for pekkanet, one for markkunet and two for surfnet.
-     */
-    m_nro_apps = 0;
-    m_app[m_nro_apps++] = new TitoApplication("pekkanet", 1);
-    /* m_app[m_nro_apps++] = new TitoApplication("markkunet", 1);
-    m_app[m_nro_apps++] = new TitoApplication("surfnet", 1);
-    m_app[m_nro_apps++] = new TitoApplication("surfnet", 2); */
-    osal_debug_assert(m_nro_apps <= MAX_APPS);
+    gina1 = 0;
 }
 
 
@@ -45,24 +38,36 @@ TitoMain::TitoMain()
 
   @brief Virtual destructor.
 
-  X...
-
+  Join worker thread to this thread and clean up.
   @return  None.
 
 ****************************************************************************************************
 */
-TitoMain::~TitoMain()
+TitoTestSequence1::~TitoTestSequence1()
 {
-    /* Finish with 'tito' applications.
-     */
-    for (os_int i = 0; i < m_nro_apps; i++) delete m_app[i];
 }
 
 
-osalStatus TitoMain::loop()
+/**
+****************************************************************************************************
+
+  @brief The thread function.
+
+  This function should be overloaded by actual sequence.
+  @return  None.
+
+****************************************************************************************************
+*/
+void TitoTestSequence1::run()
 {
-    os_sleep(100);
-    return OSAL_SUCCESS;
+    os_boolean led_on;
+
+    while (!m_stop_thread && osal_go())
+    {
+        led_on = !led_on;
+        ioc_sets_int(&gina1->down.led_builtin, led_on, OSAL_STATE_CONNECTED);
+        os_sleep(500);
+    }
 }
 
 

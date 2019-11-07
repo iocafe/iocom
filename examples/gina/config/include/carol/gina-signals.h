@@ -36,7 +36,7 @@ gina_t;
 #define GINA_UP_MBLK_SZ 44
 #define GINA_DOWN_MBLK_SZ 32
 
-extern gina_t gina;
+extern const gina_t gina;
 extern const iocDeviceHdr gina_hdr;
 
 #define GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ 8
