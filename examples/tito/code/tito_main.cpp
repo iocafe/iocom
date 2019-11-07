@@ -53,14 +53,9 @@ TitoMain::TitoMain()
 */
 TitoMain::~TitoMain()
 {
-    os_int i;
-
     /* Finish with 'tito' applications.
      */
-    for (i = 0; i < m_nro_apps; i++)
-    {
-        delete m_app[i];
-    }
+    for (os_int i = 0; i < m_nro_apps; i++) delete m_app[i];
 }
 
 

@@ -44,9 +44,18 @@ TitoIoDevice::TitoIoDevice(const os_char *device_name, os_short device_nr)
     os_memclear(&gina_prm, sizeof(gina_prm));
     // gina_prm.up = ?;
 
-
     m_io_device_hdr = (iocDeviceHdr*)os_malloc(sizeof(gina_t), OS_NULL);
     gina_init_signal_struct((gina_t*)m_io_device_hdr, &gina_prm);
+    // Dynamic: merge received JSON in.
+
+    /* Generate memory blocks
+     */
+
+    /* Put memory blocks handle into signals
+     */
+
+
+
 }
 
 
@@ -63,6 +72,8 @@ TitoIoDevice::TitoIoDevice(const os_char *device_name, os_short device_nr)
 */
 TitoIoDevice::~TitoIoDevice()
 {
+
+    os_free(m_io_device_hdr, sizeof(gina_t));
 }
 
 

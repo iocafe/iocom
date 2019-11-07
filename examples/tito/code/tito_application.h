@@ -34,9 +34,13 @@ public:
 
     virtual void run();
 
-    os_char m_device_name[IOC_NAME_SZ];
+    os_char m_controller_device_name[IOC_NAME_SZ];
     os_char m_network_name[IOC_NETWORK_NAME_SZ];
-    os_short m_device_nr;
+    os_short m_controller_device_nr;
+
+    static const os_int MAX_IO_DEVICES = 20;
+    os_int m_nro_io_devices;
+    class TitoIoDevice *m_io_device[MAX_IO_DEVICES];
 
     osalEvent m_event;
     osalThreadHandle *m_thread;

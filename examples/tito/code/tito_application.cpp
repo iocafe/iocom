@@ -33,12 +33,16 @@ TitoApplication::TitoApplication(const os_char *network_name, os_short device_nr
 {
     /* Save IO device network topology related stuff.
      */
-    os_strncpy(m_device_name, "tito", IOC_NAME_SZ);
+    os_strncpy(m_controller_device_name, "tito", IOC_NAME_SZ);
     os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
-    m_device_nr = device_nr;
+    m_controller_device_nr = device_nr;
 
     /* Set up static IO boards, for now two gina boards 1 and 2
      */
+    m_nro_io_devices = 0;
+    m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 1);
+    m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 2);
+    osal_debug_assert(m_nro_io_devices <= MAX_IO_DEVICES);
 
     /* Start running application for this network in own thread.
      */
@@ -67,6 +71,11 @@ TitoApplication::~TitoApplication()
     m_stop_thread = OS_TRUE;
     osal_event_set(m_event);
     osal_thread_join(m_thread);
+
+    /* Finish with IO devices.
+     */
+    for (os_int i = 0; i < m_nro_io_devices; i++) delete m_io_device[i];
+
     osal_event_delete(m_event);
 }
 
