@@ -9,8 +9,8 @@
   The ioboard_start_communication() should be called at entry to IO board's program and
   if clean up is needed ioboard_end_communication() at exit.
 
-  Memory blocks initialized are ioboard_UP (tc = to controller) and 
-  ioboard_DOWN (fc = from controller).
+  Memory blocks initialized are ioboard_export (tc = to controller) and
+  ioboard_import (fc = from controller).
 
   Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -25,12 +25,12 @@ iocRoot
     ioboard_communication;
 
 iocMemoryBlock
-    ioboard_mblk_DOWN,
-    ioboard_mblk_UP;
+    ioboard_import_mblk,
+    ioboard_export_mblk;
 
 iocHandle
-    ioboard_DOWN,
-    ioboard_UP,
+    ioboard_import,
+    ioboard_export,
     ioboard_dinfo;
 
 static iocEndPoint
@@ -77,17 +77,17 @@ void ioboard_start_communication(
     blockprm.device_name = prm->device_name;
     blockprm.device_nr = prm->device_nr;
 
-    blockprm.mblk_nr = IOC_INPUT_MBLK;
-    blockprm.mblk_name = "IN";
+    blockprm.mblk_nr = IOC_DEV_EXPORT_MBLK;
+    blockprm.mblk_name = "exp";
     blockprm.nbytes = prm->send_block_sz ? prm->send_block_sz : 256;
     blockprm.flags = prm->auto_synchronization ? (IOC_SOURCE|IOC_AUTO_SYNC) : IOC_SOURCE;
-    ioc_initialize_memory_block(&ioboard_UP, &ioboard_mblk_UP, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_export, &ioboard_export_mblk, &ioboard_communication, &blockprm);
  
-    blockprm.mblk_nr = IOC_OUTPUT_MBLK;
-    blockprm.mblk_name = "OUT";
+    blockprm.mblk_nr = IOC_DEV_IMPORT_MBLK;
+    blockprm.mblk_name = "imp";
     blockprm.nbytes = prm->receive_block_sz ? prm->receive_block_sz : 256;
     blockprm.flags = prm->auto_synchronization ? (IOC_TARGET|IOC_AUTO_SYNC) : IOC_TARGET;
-    ioc_initialize_memory_block(&ioboard_DOWN, &ioboard_mblk_DOWN, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_import, &ioboard_import_mblk, &ioboard_communication, &blockprm);
 
     /* Do we publish device information?
      */

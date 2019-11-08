@@ -78,6 +78,25 @@ TitoMain::~TitoMain()
 }
 
 
+osalStatus TitoMain::listen_for_clients()
+{
+    iocEndPoint *ep = OS_NULL;
+    iocEndPointParams epprm;
+
+    const osalStreamInterface *iface = OSAL_SOCKET_IFACE;
+
+    ep = ioc_initialize_end_point(OS_NULL, &tito_root);
+    os_memclear(&epprm, sizeof(epprm));
+    epprm.iface = iface;
+    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD;
+    epprm.parameters = ":" IOC_DEFAULT_SOCKET_PORT_STR;
+    ioc_listen(ep, &epprm);
+
+    os_sleep(100);
+    return OSAL_SUCCESS;
+}
+
+
 osalStatus TitoMain::loop()
 {
     os_sleep(100);

@@ -64,180 +64,181 @@ osalStatus ioc_establish_serial_connection(
     /* If we are running serial connection, follow connect procedure. Notice that
        checking for received control frames is in ioc_connection_receive.c.
      */
+
+    /* Client end of the connection.
+     */
+    if ((con->flags & IOC_LISTENER) == 0)
     {
-        /* Client end of the connection.
-         */
-        if ((con->flags & IOC_LISTENER) == 0)
+        switch (con->sercon_state)
         {
-            switch (con->sercon_state)
-            {   
-                default:
-                case OSAL_SERCON_STATE_INIT_1:
-                    /* Clear RX and TX buffers.
+            default:
+            case OSAL_SERCON_STATE_INIT_1:
+                /* Clear RX and TX buffers.
+                 */
+                osal_stream_flush(con->stream,
+                    OSAL_STREAM_CLEAR_RECEIVE_BUFFER|
+                    OSAL_STREAM_CLEAR_TRANSMIT_BUFFER);
+
+                /* Start timer.
+                 */
+                os_get_timer(&con->sercon_timer);
+
+                /* Send connect character.
+                 */
+                osal_stream_write(con->stream, (os_char*)&connect_char, 1,
+                    &n_written, OSAL_STREAM_DEFAULT);
+                osal_debug_assert(n_written == 1);
+
+                /* Move on to step 2.
+                 */
+                con->sercon_state = OSAL_SERCON_STATE_INIT_2;
+                break;
+
+            case OSAL_SERCON_STATE_INIT_2:
+                /* Try to read a character.
+                 */
+                osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
+                    &n_read, OSAL_STREAM_DEFAULT);
+
+                /* If last character  received is CONNECT_REPLY character,
+                   then send CONFIRM character and start wait for CONFIRM_REPLY.
+                 */
+                if (n_read >= 1 && n_read < sizeof(buf))
+                    if (buf[n_read-1] == IOC_SERIAL_CONNECT_REPLY)
+                {
+                    /* Send confirm character.
                      */
-                    osal_stream_flush(con->stream,
-                        OSAL_STREAM_CLEAR_RECEIVE_BUFFER|
-                        OSAL_STREAM_CLEAR_TRANSMIT_BUFFER);
+                    osal_stream_write(con->stream, (os_char*)&confirm_char, 1,
+                        &n_written, OSAL_STREAM_DEFAULT);
+                    osal_debug_assert(n_written == 1);
 
                     /* Start timer.
                      */
                     os_get_timer(&con->sercon_timer);
 
-                    /* Send connect character.
-                     */
-                    osal_stream_write(con->stream, (os_char*)&connect_char, 1,
-                        &n_written, OSAL_STREAM_DEFAULT);
-                    osal_debug_assert(n_written == 1);
-
-                    /* Move on to step 2.
-                     */
-                    con->sercon_state = OSAL_SERCON_STATE_INIT_2;
-                    break;
-
-                case OSAL_SERCON_STATE_INIT_2:
-                    /* Try to read a character.
-                     */
-                    osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
-                        &n_read, OSAL_STREAM_DEFAULT);
-
-                    /* If last character  received is CONNECT_REPLY character,
-                       then send CONFIRM character and start wait for CONFIRM_REPLY.
-                     */
-                    if (n_read >= 1 && n_read < sizeof(buf)) 
-                        if (buf[n_read-1] == IOC_SERIAL_CONNECT_REPLY)
-                    {
-                        /* Send confirm character.
-                         */
-                        osal_stream_write(con->stream, (os_char*)&confirm_char, 1,
-                            &n_written, OSAL_STREAM_DEFAULT);
-                        osal_debug_assert(n_written == 1);
-
-                        /* Start timer.
-                         */
-                        os_get_timer(&con->sercon_timer);
-
-                        con->sercon_state = OSAL_SERCON_STATE_INIT_3;
-                        break;
-                    }
-
-                    /* If time out while waiting for CONNECT_REPLY, start over.
-                     */
-                    if (os_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS))
-                    {
-                        con->sercon_state = OSAL_SERCON_STATE_INIT_1;
-                    }
-                    break;
-
-                case OSAL_SERCON_STATE_INIT_3:
-                    /* Try to read a character. Now we read only one character
-                       because other end may start sending acual data immediately
-                       after confirm character.
-                     */
-                    osal_stream_read(con->stream, (os_char*)buf, 1,
-                        &n_read, OSAL_STREAM_DEFAULT);
-
-                    /* If CONFIRM_REPLY character received, clear connection
-                       state and move on to data transfer.
-                     */
-                    if (n_read == 1 && buf[0] == IOC_SERIAL_CONFIRM_REPLY)
-                    {
-                        ioc_reset_connection_state(con);
-                        con->sercon_state = OSAL_SERCON_STATE_CONNECTED_5;
-                        ioc_unlock(root);
-                        return OSAL_SUCCESS;
-                    }
-
-                    /* If time out while waiting for CONFIRMT_REPLY, start over.
-                     */
-                    if (os_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS) /* || n_read */)
-                    {
-                        con->sercon_state = OSAL_SERCON_STATE_INIT_1;
-                    }
-                    break;
-            }
-        }
-
-        /* Server end of the connection.
-         */
-        else
-        {
-            switch (con->sercon_state)
-            {
-                default:
-                case OSAL_SERCON_STATE_INIT_1:
-                    osal_stream_write(con->stream, (os_char*)&disconnect_char, 1,
-                        &n_written, OSAL_STREAM_DEFAULT);
-                    osal_debug_assert(n_written == 1);
-                    con->sercon_state = OSAL_SERCON_STATE_INIT_2;
-                    break;
-
-                case OSAL_SERCON_STATE_INIT_2:
-                    osal_stream_flush(con->stream,
-                        OSAL_STREAM_CLEAR_RECEIVE_BUFFER|
-                        OSAL_STREAM_CLEAR_TRANSMIT_BUFFER);
                     con->sercon_state = OSAL_SERCON_STATE_INIT_3;
                     break;
+                }
 
-                case OSAL_SERCON_STATE_INIT_3:
-                   /* Try to read a character.
-                     */
-                    osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
-                        &n_read, OSAL_STREAM_DEFAULT);
+                /* If time out while waiting for CONNECT_REPLY, start over.
+                 */
+                if (os_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS))
+                {
+                    con->sercon_state = OSAL_SERCON_STATE_INIT_1;
+                }
+                break;
 
-                    /* If last character received is CONNECT character, then send 
-                       CONNECT_REPLY character and start wait for CONFIRM.
-                     */
-                    if (n_read >= 1 && n_read < sizeof(buf)) 
-                        if (buf[n_read-1] == IOC_SERIAL_CONNECT)
-                    {
-                        /* Send connect reply character.
-                         */
-                        osal_stream_write(con->stream, (os_char*)&connect_reply_char, 1,
-                            &n_written, OSAL_STREAM_DEFAULT);
-                        osal_debug_assert(n_written == 1);
+            case OSAL_SERCON_STATE_INIT_3:
+                /* Try to read a character. Now we read only one character
+                   because other end may start sending acual data immediately
+                   after confirm character.
+                 */
+                osal_stream_read(con->stream, (os_char*)buf, 1,
+                    &n_read, OSAL_STREAM_DEFAULT);
 
-                        con->sercon_state = OSAL_SERCON_STATE_INIT_4;
-                    }
-                    break;
+                /* If CONFIRM_REPLY character received, clear connection
+                   state and move on to data transfer.
+                 */
+                if (n_read == 1 && buf[0] == IOC_SERIAL_CONFIRM_REPLY)
+                {
+                    ioc_reset_connection_state(con);
+                    con->sercon_state = OSAL_SERCON_STATE_CONNECTED_5;
+                    ioc_unlock(root);
+                    return OSAL_SUCCESS;
+                }
 
-                case OSAL_SERCON_STATE_INIT_4:
-                   /* Try to read a character. 
-                     */
-                    osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
-                        &n_read, OSAL_STREAM_DEFAULT);
-
-                    /* If last character received is CONFIRM character, then send 
-                       CONNECT_REPLY character and start wait for CONFIRM.
-                     */
-                    if (n_read == 1 && buf[0] == IOC_SERIAL_CONFIRM)
-                    {
-                        /* Send confirm reply character.
-                         */
-                        osal_stream_write(con->stream, (os_char*)&confirm_reply_char, 1,
-                            &n_written, OSAL_STREAM_DEFAULT);
-                        osal_debug_assert(n_written == 1);
-
-                        ioc_reset_connection_state(con);
-                        con->sercon_state = OSAL_SERCON_STATE_CONNECTED_5;
-                        ioc_unlock(root);
-                        return OSAL_SUCCESS;
-                    }
-
-                    /* If we received something else but confirm, not good.
-                       Go back to waiting for CONNECT charcter.
-                     */
-                    if (n_read)
-                    {
-                        con->sercon_state = OSAL_SERCON_STATE_INIT_3;
-                    }
-                    break;
-            }
+                /* If time out while waiting for CONFIRMT_REPLY, start over.
+                 */
+                if (os_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS) /* || n_read */)
+                {
+                    con->sercon_state = OSAL_SERCON_STATE_INIT_1;
+                }
+                break;
         }
     }
-#endif
+
+    /* Server end of the connection.
+     */
+    else
+    {
+        switch (con->sercon_state)
+        {
+            default:
+            case OSAL_SERCON_STATE_INIT_1:
+                osal_stream_write(con->stream, (os_char*)&disconnect_char, 1,
+                    &n_written, OSAL_STREAM_DEFAULT);
+                osal_debug_assert(n_written == 1);
+                con->sercon_state = OSAL_SERCON_STATE_INIT_2;
+                break;
+
+            case OSAL_SERCON_STATE_INIT_2:
+                osal_stream_flush(con->stream,
+                    OSAL_STREAM_CLEAR_RECEIVE_BUFFER|
+                    OSAL_STREAM_CLEAR_TRANSMIT_BUFFER);
+                con->sercon_state = OSAL_SERCON_STATE_INIT_3;
+                break;
+
+            case OSAL_SERCON_STATE_INIT_3:
+               /* Try to read a character.
+                 */
+                osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
+                    &n_read, OSAL_STREAM_DEFAULT);
+
+                /* If last character received is CONNECT character, then send
+                   CONNECT_REPLY character and start wait for CONFIRM.
+                 */
+                if (n_read >= 1 && n_read < sizeof(buf))
+                    if (buf[n_read-1] == IOC_SERIAL_CONNECT)
+                {
+                    /* Send connect reply character.
+                     */
+                    osal_stream_write(con->stream, (os_char*)&connect_reply_char, 1,
+                        &n_written, OSAL_STREAM_DEFAULT);
+                    osal_debug_assert(n_written == 1);
+
+                    con->sercon_state = OSAL_SERCON_STATE_INIT_4;
+                }
+                break;
+
+            case OSAL_SERCON_STATE_INIT_4:
+               /* Try to read a character.
+                 */
+                osal_stream_read(con->stream, (os_char*)buf, sizeof(buf),
+                    &n_read, OSAL_STREAM_DEFAULT);
+
+                /* If last character received is CONFIRM character, then send
+                   CONNECT_REPLY character and start wait for CONFIRM.
+                 */
+                if (n_read == 1 && buf[0] == IOC_SERIAL_CONFIRM)
+                {
+                    /* Send confirm reply character.
+                     */
+                    osal_stream_write(con->stream, (os_char*)&confirm_reply_char, 1,
+                        &n_written, OSAL_STREAM_DEFAULT);
+                    osal_debug_assert(n_written == 1);
+
+                    ioc_reset_connection_state(con);
+                    con->sercon_state = OSAL_SERCON_STATE_CONNECTED_5;
+                    ioc_unlock(root);
+                    return OSAL_SUCCESS;
+                }
+
+                /* If we received something else but confirm, not good.
+                   Go back to waiting for CONNECT charcter.
+                 */
+                if (n_read)
+                {
+                    con->sercon_state = OSAL_SERCON_STATE_INIT_3;
+                }
+                break;
+        }
+    }
 
     /* Still establishing serial connection.
      */
     ioc_unlock(root);
     return OSAL_STATUS_PENDING;
 }
+
+
+#endif

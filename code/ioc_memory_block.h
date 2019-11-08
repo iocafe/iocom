@@ -26,8 +26,8 @@
  */
 /*@{*/
 #define IOC_DEVICE_INFO_MBLK 1
-#define IOC_INPUT_MBLK 2
-#define IOC_OUTPUT_MBLK 3
+#define IOC_DEV_EXPORT_MBLK 2
+#define IOC_DEV_IMPORT_MBLK 3
 /*@}*/
 
 
@@ -69,7 +69,7 @@
 */
 typedef struct
 {
-    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
+    /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL". 
      */
     const os_char *device_name;
@@ -249,7 +249,7 @@ typedef struct iocMemoryBlock
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
 
-    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
+    /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL". 
      */
     os_char device_name[IOC_NAME_SZ];

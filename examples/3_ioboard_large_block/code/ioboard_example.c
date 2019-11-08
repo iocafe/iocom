@@ -17,7 +17,7 @@
     connections.
   - Data transfer synchronized precisely by ioc_receive() and ioc_send() calls - no
     "prm.auto_synchronization = OS_TRUE" -> IOC_AUTO_SYNC flags not set.
-  - Relatively large 10k memory blocks and input memory block ioboard_DOWN is changed as quickly
+  - Relatively large 10k memory blocks and input memory block ioboard_import is changed as quickly
     as computer can change it.
   - Unnanamed device, device name is empty string and device number is 0.
 
@@ -47,14 +47,11 @@
  */
 #define IOBOARD_MAX_CONNECTIONS (IOBOARD_CTRL_CON == IOBOARD_CTRL_LISTEN_SOCKET ? 2 : 1)
 
-/* IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
-   and sets size for ioboard_UP "IN" memory block. Similarly "FC" stands for "from controller"
-   and ioboard_DOWN "OUT" memory block.
-   Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
-   imposed by static memory pool memory allocation.
+/* IO device's data transfer memory blocks sizes in bytes. Minimum IO memory block size
+   is sizeof(osalStaticMemBlock).
  */
-#define IOBOARD_TC_BLOCK_SZ 10000
-#define IOBOARD_FC_BLOCK_SZ 10000
+#define IOBOARD_EXPORT_MBLK_SZ 10000
+#define IOBOARD_IMPORT_MBLK_SZ 10000
 
 /* Allocate static memory pool for the IO board. We can do this even if we would be running
    on system with dynamic memory allocation, which is useful for testing micro-controller
@@ -62,7 +59,7 @@
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
-        IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
+        IOBOARD_EXPORT_MBLK_SZ, IOBOARD_IMPORT_MBLK_SZ)];
 
 
 /**
@@ -94,8 +91,8 @@ osalStatus osal_main(
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = "127.0.0.1"; /**************** SET IP ADDRESS HERE ***************/
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;
-    prm.receive_block_sz = IOBOARD_FC_BLOCK_SZ;
+    prm.send_block_sz = IOBOARD_EXPORT_MBLK_SZ;
+    prm.receive_block_sz = IOBOARD_IMPORT_MBLK_SZ;
     prm.auto_synchronization = OS_FALSE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
@@ -141,22 +138,22 @@ osalStatus osal_loop(
 
     /* Received data fame up to date.
      */
-    ioc_receive(&ioboard_DOWN);
+    ioc_receive(&ioboard_import);
 
     /* Write lot of random stuff to simulate vast number of inputs changing
        very quickly.
      */
     k = rand();
-    for (i = 0; i<IOBOARD_TC_BLOCK_SZ/2; i++)
+    for (i = 0; i<IOBOARD_EXPORT_MBLK_SZ/2; i++)
     {
-        j = rand() % IOBOARD_TC_BLOCK_SZ;
-        ioc_setp_short(&ioboard_UP, j, k);
+        j = rand() % IOBOARD_EXPORT_MBLK_SZ;
+        ioc_setp_short(&ioboard_export, j, k);
         k += 7;
     }
 
     /* Send changes trough communication.
      */
-    ioc_send(&ioboard_UP);
+    ioc_send(&ioboard_export);
 
     return OSAL_SUCCESS;
 }

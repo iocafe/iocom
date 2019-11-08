@@ -78,7 +78,7 @@ void TitoTestSequence1::run()
     while (!m_stop_thread && osal_go())
     {
         led_on = !led_on;
-        ioc_sets_int(&gina1->down.led_builtin, led_on, OSAL_STATE_CONNECTED);
+        ioc_sets_int(&gina1->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
         os_sleep(500);
     }
 }

@@ -56,6 +56,10 @@ void TitoTestApplication::start(const os_char *network_name, os_short device_nr)
     m_gina2_def = m_gina2.inititalize(2);
 
     TitoApplication::start(network_name, device_nr);
+
+    m_gina1.inititalize(1);
+    m_gina2.inititalize(2);
+    m_test_seq1.start(this);
 }
 
 void TitoTestApplication::stop()
@@ -67,9 +71,6 @@ void TitoTestApplication::stop()
 
 void TitoTestApplication::run()
 {
-    m_gina1.inititalize(1);
-    m_gina2.inititalize(2);
-    m_test_seq1.start(this);
 
     while (!m_stop_thread && osal_go())
     {

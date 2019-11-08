@@ -19,7 +19,7 @@ typedef struct gina_t
     iocSignal G;
     iocSignal H;
   }
-  up;
+  exp;
 
   struct 
   {
@@ -29,17 +29,17 @@ typedef struct gina_t
     iocSignal dimmer_led;
     iocSignal led_builtin;
   }
-  down;
+  imp;
 }
 gina_t;
 
-#define GINA_UP_MBLK_SZ 44
-#define GINA_DOWN_MBLK_SZ 32
+#define GINA_EXP_MBLK_SZ 44
+#define GINA_IMP_MBLK_SZ 32
 
 extern const gina_t gina;
 extern const iocDeviceHdr gina_hdr;
 
-#define GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ 8
+#define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 
 #ifndef IOBOARD_DEVICE_NAME
 #define IOBOARD_DEVICE_NAME "gina"

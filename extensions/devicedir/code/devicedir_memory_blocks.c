@@ -55,13 +55,13 @@ void devicedir_memory_blocks(
          mblk = mblk->link.next)
     {
         osal_stream_write_str(list, "{", 0);
-        devicedir_append_str_param(list, "name", mblk->mblk_name, OS_TRUE);
-        devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_FALSE);
+        devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_TRUE);
+        devicedir_append_int_param(list, "dev_nr", mblk->device_nr);
         devicedir_append_str_param(list, "net_name", mblk->network_name, OS_FALSE);
 
+        devicedir_append_str_param(list, "mblk_name", mblk->mblk_name, OS_FALSE);
         devicedir_append_int_param(list, "mblk_nr", mblk->mblk_nr);
         devicedir_append_int_param(list, "mblk_id", mblk->mblk_id);
-        devicedir_append_int_param(list, "dev_nr", mblk->device_nr);
         devicedir_append_int_param(list, "size", mblk->nbytes);
 
         osal_stream_write_str(list, ", \"flags\":\"", 0);

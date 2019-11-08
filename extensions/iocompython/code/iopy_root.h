@@ -26,7 +26,7 @@ typedef struct
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
 
-    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
+    /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL".
      */
     os_char device_name[IOC_NAME_SZ];

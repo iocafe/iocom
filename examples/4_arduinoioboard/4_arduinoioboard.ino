@@ -26,15 +26,15 @@
 #define IOBOARD_MAX_CONNECTIONS (IOBOARD_CTRL_CON == IOBOARD_CTRL_LISTEN_SOCKET ? 2 : 1)
 #endif
 
- /* Defaults for IO memory blocks sizes. Minimum IO memory blocks size
+ /* Defaults for IO memory block sizes. Minimum IO memory block size
     is sizeof(osalStaticMemBlock). The minimum size is needed for static
     memory allocation.
   */
-#ifndef IOBOARD_TC_BLOCK_SZ
-#define IOBOARD_TC_BLOCK_SZ 256
+#ifndef IOBOARD_EXPORT_MBLK_SZ
+#define IOBOARD_EXPORT_MBLK_SZ 256
 #endif
-#ifndef IOBOARD_FC_BLOCK_SZ
-#define IOBOARD_FC_BLOCK_SZ 256
+#ifndef IOBOARD_IMPORT_MBLK_SZ
+#define IOBOARD_IMPORT_MBLK_SZ 256
 #endif
 
 /* We set up static memory pool for the IO board, even if we would be running on system
@@ -43,7 +43,7 @@
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
-        IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
+        IOBOARD_EXPORT_MBLK_SZ, IOBOARD_IMPORT_MBLK_SZ)];
 
 
 #ifdef STM32L476xx
@@ -106,8 +106,8 @@ void setup()
     prm.socket_con_str = "192.168.1.220";
     prm.serial_con_str = "COM3,baud=115200";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;
-    prm.receive_block_sz = IOBOARD_FC_BLOCK_SZ;
+    prm.send_block_sz = IOBOARD_EXPORT_MBLK_SZ;
+    prm.receive_block_sz = IOBOARD_IMPORT_MBLK_SZ;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
     prm.auto_synchronization = OS_TRUE;
@@ -119,7 +119,7 @@ void setup()
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_DOWN, ioboard_callback, OS_NULL);
+    ioc_add_callback(&ioboard_import, ioboard_callback, OS_NULL);
 }
 
 
@@ -136,7 +136,7 @@ void loop()
        some operation of IO board. The command is eached back in address 2 to allow
        controller to know that command has been regognized.
      */
-    command = ioc_getp_short(&ioboard_DOWN, 10);
+    command = ioc_getp_short(&ioboard_import, 10);
     if (command != prev_command) {
         // toggle_leds();
         /* if (command == 1) {
@@ -150,7 +150,7 @@ void loop()
         }
          */
         prev_command = command;
-        // ioc_setp_short(&ioboard_UP, 2, command);
+        // ioc_setp_short(&ioboard_export, 2, command);
     }
 }
 

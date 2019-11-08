@@ -36,7 +36,7 @@ typedef struct
 
     /** Parameters For example ":8817" or "127.0.0.1:8817" for TCP socket.
      */
-    os_char *parameters;
+    const os_char *parameters;
     
     /** Flags, bit fields:
         - IOC_SOCKET Connect with TCP socket (set always).

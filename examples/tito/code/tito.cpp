@@ -15,6 +15,10 @@
 */
 #include "tito.h"
 
+/* The devicedir is here for testing only, take away.
+ */
+#include "devicedir.h"
+
 iocRoot tito_root;
 static TitoMain *tito_main;
 
@@ -45,9 +49,10 @@ osalStatus osal_main(
      */
     ioc_initialize_root(&tito_root);
 
-    /* Create tito main object
+    /* Create tito main object and start listening for clients.
      */
     tito_main = new TitoMain;
+    tito_main->listen_for_clients();
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -74,6 +79,10 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+    /* The devicedir call is here for testing only, take away.
+     */
+    io_device_console(&tito_root);
+
     return tito_main->loop();
 }
 

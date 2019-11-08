@@ -69,12 +69,9 @@ void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
 }
 
 
-
-
 gina_t *TitoGinaIoDevice::inititalize(os_short device_nr)
 {
     iocMemoryBlockParams blockprm;
-    gina_init_prm_t gina_prm;
 
     if (m_initialized) return &m_gina_def;
 
@@ -82,31 +79,34 @@ gina_t *TitoGinaIoDevice::inititalize(os_short device_nr)
 
     /* Setup initial Gina IO board definition structure.
      */
-    os_memclear(&gina_prm, sizeof(gina_prm));
-    // gina_prm.up = m_gina_export;
-    // gina_prm.down = m_gina_import;
-    gina_init_signal_struct(&m_gina_def, &gina_prm);
+    gina_init_signal_struct(&m_gina_def);
 
 
     /* Dynamic conf: put data from json in
      */
 
+
     /* Generate memory blocks.
      */
     os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.mblk_nr = IOC_INPUT_MBLK;
-    blockprm.nbytes = m_gina_def.up.hdr.mblk_sz;
+    blockprm.device_name = m_device_name;
+    blockprm.device_nr = m_device_nr;
+
+    blockprm.mblk_nr = IOC_DEV_EXPORT_MBLK;
+    blockprm.mblk_name = m_gina_def.exp.hdr.mblk_name;
+    blockprm.nbytes = m_gina_def.exp.hdr.mblk_sz;
     blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
     ioc_initialize_memory_block(&m_gina_export, OS_NULL, &tito_root, &blockprm);
 
-    blockprm.mblk_nr = IOC_OUTPUT_MBLK;
-    blockprm.nbytes = m_gina_def.down.hdr.mblk_sz;
+    blockprm.mblk_nr = IOC_DEV_IMPORT_MBLK;
+    blockprm.mblk_name = m_gina_def.imp.hdr.mblk_name;
+    blockprm.nbytes = m_gina_def.imp.hdr.mblk_sz;
     blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
     ioc_initialize_memory_block(&m_gina_import, OS_NULL, &tito_root, &blockprm);
 
 
-doit(&m_gina_def.down.hdr, &m_gina_import);
-doit(&m_gina_def.up.hdr, &m_gina_export);
+doit(&m_gina_def.imp.hdr, &m_gina_import);
+doit(&m_gina_def.exp.hdr, &m_gina_export);
 
     /* Set callback to detect received data and connection status changes.
      */

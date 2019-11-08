@@ -50,14 +50,11 @@
  */
 #define IOBOARD_MAX_CONNECTIONS (IOBOARD_CTRL_CON == IOBOARD_CTRL_LISTEN_SOCKET ? 2 : 1)
 
-/* IO device's data memory blocks sizes in bytes. "TC" is abbreviation for "to controller"
-   and sets size for ioboard_UP "IN" memory block. Similarly "FC" stands for "from controller"
-   and ioboard_DOWN "OUT" memory block.
-   Notice that minimum IO memory blocks size is sizeof(osalStaticMemBlock), this limit is
-   imposed by static memory pool memory allocation.
+/* IO device's data transfer memory blocks sizes in bytes. Minimum IO memory block size
+   is sizeof(osalStaticMemBlock).
  */
-#define IOBOARD_TC_BLOCK_SZ 256
-#define IOBOARD_FC_BLOCK_SZ 256
+#define IOBOARD_EXPORT_MBLK_SZ 256
+#define IOBOARD_IMPORT_MBLK_SZ 256
 
 /* Allocate static memory pool for the IO board. We can do this even if we would be running
    on system with dynamic memory allocation, which is useful for testing micro-controller
@@ -65,7 +62,7 @@
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
-		IOBOARD_TC_BLOCK_SZ, IOBOARD_FC_BLOCK_SZ)];
+		IOBOARD_EXPORT_MBLK_SZ, IOBOARD_IMPORT_MBLK_SZ)];
 
 typedef struct
 {
@@ -139,8 +136,8 @@ osalStatus osal_main(
     //prm.serial_con_str = "ttyS31,baud=115200";
     prm.serial_con_str = "COM3,baud=115200";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = IOBOARD_TC_BLOCK_SZ;
-    prm.receive_block_sz = IOBOARD_FC_BLOCK_SZ;
+    prm.send_block_sz = IOBOARD_EXPORT_MBLK_SZ;
+    prm.receive_block_sz = IOBOARD_IMPORT_MBLK_SZ;
     prm.auto_synchronization = OS_TRUE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
@@ -161,7 +158,7 @@ osalStatus osal_main(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_DOWN, ioboard_callback, OS_NULL);
+    ioc_add_callback(&ioboard_import, ioboard_callback, OS_NULL);
 
     os_get_timer(&ti);
 
@@ -178,13 +175,13 @@ osalStatus osal_main(
            some operation of IO board. The command is eached back in address 2 to allow 
            controller to know that command has been regognized.
          */
-        command = ioc_getp_short(&ioboard_DOWN, 2);
+        command = ioc_getp_short(&ioboard_import, 2);
         if (command != prev_command) {
             if (command == 1) {
                 // osal_console_write("Command 1, working on it.\n");
             }
             prev_command = command;
-            // ioc_setp_short(&ioboard_UP, 2, command);
+            // ioc_setp_short(&ioboard_export, 2, command);
         }
 
         if (os_elapsed(&ti, 100))

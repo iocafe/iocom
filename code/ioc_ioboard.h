@@ -23,12 +23,12 @@ extern iocRoot
 /* To and from controller memory blocks.
  */
 extern iocMemoryBlock
-    ioboard_mblk_DOWN,
-    ioboard_mblk_UP;
+    ioboard_import_mblk,
+    ioboard_export_mblk;
 
 extern iocHandle
-    ioboard_DOWN,
-    ioboard_UP;
+    ioboard_import,
+    ioboard_export;
 
 /* Communication between controller and the IO board.
  */
@@ -88,7 +88,7 @@ typedef struct
      */
     const osalStreamInterface *iface;
 
-    /** Device name, max 15 upper case characters from 'A' - 'Z'. This
+    /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL". 
      */
     const os_char *device_name;

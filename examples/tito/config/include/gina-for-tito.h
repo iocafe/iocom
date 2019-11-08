@@ -22,7 +22,7 @@ typedef struct gina_t
     iocSignal G;
     iocSignal H;
   }
-  up;
+  exp;
 
   struct 
   {
@@ -32,21 +32,14 @@ typedef struct gina_t
     iocSignal dimmer_led;
     iocSignal led_builtin;
   }
-  down;
+  imp;
 }
 gina_t;
 
-#define GINA_UP_MBLK_SZ 44
-#define GINA_DOWN_MBLK_SZ 32
+#define GINA_EXP_MBLK_SZ 44
+#define GINA_IMP_MBLK_SZ 32
 
-typedef struct gina_init_prm_t
-{
-  iocHandle *up;
-  iocHandle *down;
-}
-gina_init_prm_t;
-
-void gina_init_signal_struct(gina_t *s, gina_init_prm_t *prm);
-#define GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ 8
+void gina_init_signal_struct(gina_t *s);
+#define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 
 OSAL_C_HEADER_ENDS

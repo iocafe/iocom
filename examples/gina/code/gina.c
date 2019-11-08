@@ -43,8 +43,8 @@
 /* Use static memory pool
  */
 static os_char
-    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
-        GINA_UP_MBLK_SZ, GINA_DOWN_MBLK_SZ)
+    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
+        GINA_EXP_MBLK_SZ, GINA_IMP_MBLK_SZ)
         + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)];
 
 
@@ -88,8 +88,8 @@ osalStatus osal_main(
     prm.socket_con_str = GINA_IP_ADDRESS;
     prm.serial_con_str = GINA_SERIAL_PORT;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = GINA_UP_MBLK_SZ;
-    prm.receive_block_sz = GINA_DOWN_MBLK_SZ;
+    prm.send_block_sz = GINA_EXP_MBLK_SZ;
+    prm.receive_block_sz = GINA_IMP_MBLK_SZ;
     prm.auto_synchronization = OS_FALSE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
@@ -104,7 +104,7 @@ osalStatus osal_main(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_DOWN, ioboard_communication_callback, OS_NULL);
+    ioc_add_callback(&ioboard_import, ioboard_communication_callback, OS_NULL);
 
     /* Connect PINS library to IOCOM library
      */
@@ -142,7 +142,7 @@ osalStatus osal_loop(
 
     /* Move data data synchronously to incomong memory block.
      */
-    ioc_receive(&ioboard_DOWN);
+    ioc_receive(&ioboard_import);
 
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
@@ -159,7 +159,7 @@ osalStatus osal_loop(
 
     /* Move data synchronously from outgoing memory block.
      */
-    ioc_send(&ioboard_UP);
+    ioc_send(&ioboard_export);
 
     return OSAL_SUCCESS;
 }
@@ -220,7 +220,7 @@ void ioboard_communication_callback(
        for the hardware.
      */
 #ifdef PINS_SEGMENT7_GROUP
-    os_char buf[GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ];
+    os_char buf[GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ];
     const Pin *pin;
     os_short i;
 
@@ -228,13 +228,13 @@ void ioboard_communication_callback(
        forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
        boolean array from communication signal, and write it to IO pins.
      */
-    if (ioc_is_my_address(&gina.down.seven_segment, start_addr, end_addr))
+    if (ioc_is_my_address(&gina.imp.seven_segment, start_addr, end_addr))
     {
-        sb = ioc_gets_array(&gina.down.seven_segment, buf, GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ);
+        sb = ioc_gets_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
         if (sb & OSAL_STATE_CONNECTED)
         {
             osal_console_write("7 segment data received\n");
-            for (i = GINA_DOWN_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
+            for (i = GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
                  i >= 0 && pin;
                  i--, pin = pin->next) /* For now we need to loop backwards, fix this */
             {

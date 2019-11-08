@@ -26,6 +26,7 @@ struct iocSignal;
 
 typedef struct iocMblkSignalHdr
 {
+    const os_char *mblk_name;
     iocHandle *handle;
 
     os_int n_signals;

@@ -2,8 +2,8 @@
   "name": "gina",
   "mblk": [
   {
-    "name": "up",
-    "handle": "&ioboard_UP",
+    "name": "exp",
+    "handle": "&ioboard_export",
     "title": "Exported by 'gina' IO device",
     "groups": [
       {
@@ -37,8 +37,8 @@
   },
 
   {
-    "name": "down",
-    "handle": "&ioboard_DOWN",
+    "name": "imp",
+    "handle": "&ioboard_import",
     "title": "Imported by 'gina' IO device",
     "groups": [
       {
