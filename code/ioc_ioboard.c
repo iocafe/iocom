@@ -94,7 +94,7 @@ void ioboard_start_communication(
     if (prm->device_info)
     {
         blockprm.mblk_nr = IOC_DEVICE_INFO_MBLK;
-        blockprm.mblk_name = "INFO";
+        blockprm.mblk_name = "info";
         blockprm.buf = (char*)prm->device_info;
         blockprm.nbytes = prm->device_info_sz;
         blockprm.flags = IOC_SOURCE|IOC_STATIC;

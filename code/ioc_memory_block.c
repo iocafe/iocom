@@ -134,6 +134,7 @@ osalStatus ioc_initialize_memory_block(
 
     /* Generate unique memory block id within the root
      */
+
     mblk->mblk_id = ioc_get_unique_mblk_id(root);
 
     /* Save pointer to root object and join to linked list of memory blocks.
