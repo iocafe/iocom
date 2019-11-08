@@ -367,12 +367,13 @@ static void ioc_make_mblk_info_frame(
     if (mblk->device_name[0])
     {
         ioc_msg_setstr(mblk->device_name, &p);
-        *version_and_flags |= IOC_INFO_HAS_DNAME;
+        ioc_msg_setstr(mblk->network_name, &p);
+        *version_and_flags |= IOC_INFO_HAS_DEVICE_NAME;
     }
-    if (mblk->mblk_name[0])
+    if (mblk->mblk_name[0] || mblk->network_name[0])
     {
         ioc_msg_setstr(mblk->mblk_name, &p);
-        *version_and_flags |= IOC_INFO_HAS_MBNAME;
+        *version_and_flags |= IOC_INFO_HAS_MBLK_NAME;
     }
 
     /* If other end has not acknowledged enough data to send the

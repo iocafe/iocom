@@ -36,6 +36,16 @@ void devicedir_memory_blocks(
     osalStream list,
     os_short flags);
 
+void devicedir_list_mblks_target_buffers(
+    iocMemoryBlock *mblk,
+    osalStream list,
+    os_short flags);
+
+void devicedir_list_mblks_source_buffers(
+    iocMemoryBlock *mblk,
+    osalStream list,
+    os_short flags);
+
 void devicedir_append_flag(
     osalStream list,
     os_char *flag_name,
@@ -50,4 +60,5 @@ void devicedir_append_str_param(
 void devicedir_append_int_param(
     osalStream list,
     os_char *param_name,
-    os_int x);
+    os_int x,
+    os_boolean is_first);

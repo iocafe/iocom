@@ -117,8 +117,8 @@
 #define IOC_INFO_D_2BYTES 8
 #define IOC_INFO_N_2BYTES 16
 #define IOC_INFO_F_2BYTES 32
-#define IOC_INFO_HAS_DNAME 64
-#define IOC_INFO_HAS_MBNAME 128
+#define IOC_INFO_HAS_DEVICE_NAME 64
+#define IOC_INFO_HAS_MBLK_NAME 128
 
 /** System frame types.
  */

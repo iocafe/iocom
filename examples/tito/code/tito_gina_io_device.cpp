@@ -69,7 +69,7 @@ void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
 }
 
 
-gina_t *TitoGinaIoDevice::inititalize(os_short device_nr)
+gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_short device_nr)
 {
     iocMemoryBlockParams blockprm;
 
@@ -85,12 +85,12 @@ gina_t *TitoGinaIoDevice::inititalize(os_short device_nr)
     /* Dynamic conf: put data from json in
      */
 
-
     /* Generate memory blocks.
      */
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.device_name = m_device_name;
     blockprm.device_nr = m_device_nr;
+    blockprm.network_name = network_name;
 
     blockprm.mblk_nr = IOC_DEV_EXPORT_MBLK;
     blockprm.mblk_name = m_gina_def.exp.hdr.mblk_name;

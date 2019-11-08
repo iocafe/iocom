@@ -52,13 +52,15 @@ void TitoTestApplication::start(const os_char *network_name, os_short device_nr)
 {
     if (m_started) return;
 
-    m_gina1_def = m_gina1.inititalize(1);
-    m_gina2_def = m_gina2.inititalize(2);
+    initialize(network_name, device_nr);
 
-    TitoApplication::start(network_name, device_nr);
+    m_gina1_def = m_gina1.inititalize(m_network_name, 1);
+    m_gina2_def = m_gina2.inititalize(m_network_name, 2);
 
-    m_gina1.inititalize(1);
-    m_gina2.inititalize(2);
+    TitoApplication::startapp();
+
+//    m_gina1.inititalize(1);
+//    m_gina2.inititalize(2);
     m_test_seq1.start(this);
 }
 

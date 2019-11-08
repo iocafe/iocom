@@ -130,6 +130,7 @@ osalStatus ioc_initialize_memory_block(
     os_strncpy(mblk->device_name, prm->device_name, IOC_NAME_SZ);
     mblk->device_nr = prm->device_nr;
     os_strncpy(mblk->mblk_name, prm->mblk_name, IOC_NAME_SZ);
+    os_strncpy(mblk->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
 
     /* Generate unique memory block id within the root
      */

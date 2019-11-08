@@ -55,17 +55,21 @@ TitoApplication::~TitoApplication()
 }
 
 
-void TitoApplication::start(const os_char *network_name, os_short device_nr)
+void TitoApplication::initialize(const os_char *network_name, os_short device_nr)
 {
-    if (m_started) return;
 
     os_strncpy(m_controller_device_name, "tito", IOC_NAME_SZ);
     os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
     m_controller_device_nr = device_nr;
+}
+
+void TitoApplication::startapp()
+{
+    if (m_started) return;
 
     m_stop_thread = OS_FALSE;
     m_thread = osal_thread_create(tito_application_thread_func, this,
-        OSAL_THREAD_ATTACHED, 0, network_name);
+        OSAL_THREAD_ATTACHED, 0, m_network_name);
 
     m_started = OS_TRUE;
 }

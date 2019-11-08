@@ -503,12 +503,14 @@ static osalStatus ioc_process_received_system_frame(
             mbinfo.mblk_id = mblk_id; /* ioc_msg_getint(&p); */
             mbinfo.nbytes = ioc_msg_getint(&p, version_and_flags & IOC_INFO_N_2BYTES);
             mbinfo.flags = ioc_msg_getint(&p, version_and_flags & IOC_INFO_F_2BYTES);
-            if (version_and_flags & IOC_INFO_HAS_DNAME)
+            if (version_and_flags & IOC_INFO_HAS_DEVICE_NAME)
             {
                 if (ioc_msg_getstr(mbinfo.device_name, IOC_NAME_SZ, &p))
                     return OSAL_STATUS_FAILED;
+                if (ioc_msg_getstr(mbinfo.network_name, IOC_NETWORK_NAME_SZ, &p))
+                    return OSAL_STATUS_FAILED;
             }
-            if (version_and_flags & IOC_INFO_HAS_MBNAME)
+            if (version_and_flags & IOC_INFO_HAS_MBLK_NAME)
             {
                 if (ioc_msg_getstr(mbinfo.mblk_name, IOC_NAME_SZ, &p))
                     return OSAL_STATUS_FAILED;

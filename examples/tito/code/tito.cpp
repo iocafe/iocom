@@ -37,9 +37,6 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    // ioboardParams prm;
-    //const osalStreamInterface *iface;
-
     /* Initialize the transport, socket, TLS, serial, etc..
      */
     osal_tls_initialize(OS_NULL, 0, OS_NULL);
@@ -108,7 +105,7 @@ void osal_main_cleanup(
 {
     delete tito_main;
 
-    ioboard_end_communication();
+    ioc_release_root(&tito_root);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }

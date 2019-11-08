@@ -30,7 +30,7 @@ public:
 
     /* Functions to start, stop and thread function to run the application.
      */
-    virtual void start(const os_char *network_name, os_short device_nr);
+    virtual void start(const os_char *network_name, os_short device_nr) {};
     virtual void stop();
     virtual void run();
 
@@ -46,4 +46,8 @@ public:
     osalThreadHandle *m_thread;
     os_boolean m_stop_thread;
     os_boolean m_started;
+
+// protected:
+    void initialize(const os_char *network_name, os_short device_nr);
+    void startapp();
 };
