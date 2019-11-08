@@ -15,8 +15,8 @@
 */
 #include "tito.h"
 
-iocRoot root;
-TitoMain *tito_main;
+iocRoot tito_root;
+static TitoMain *tito_main;
 
 
 /**
@@ -43,7 +43,7 @@ osalStatus osal_main(
 
     /* Initialize communication root object.
      */
-    ioc_initialize_root(&root);
+    ioc_initialize_root(&tito_root);
 
     /* Create tito main object
      */

@@ -29,13 +29,27 @@
 */
 TitoMain::TitoMain()
 {
+    TitoApplication *app;
     /* Lauch tour 'tito' applications, one for pekkanet, one for markkunet and two for surfnet.
      */
     m_nro_apps = 0;
-    m_app[m_nro_apps++] = new TitoApplication("pekkanet", 1);
-    /* m_app[m_nro_apps++] = new TitoApplication("markkunet", 1);
-    m_app[m_nro_apps++] = new TitoApplication("surfnet", 1);
-    m_app[m_nro_apps++] = new TitoApplication("surfnet", 2); */
+
+    app = new TitoTestApplication();
+    app->start("pekkanet", 1);
+    m_app[m_nro_apps++] = app;
+
+    /* app = new TitoTestApplication();
+    app->start("markkunet", 1);
+    m_app[m_nro_apps++] = app;
+
+    app = new TitoTestApplication();
+    app->start("surfnet", 1);
+    m_app[m_nro_apps++] = app;
+
+    app = new TitoTestApplication();
+    app->start("surfnet", 2);
+    m_app[m_nro_apps++] = app; */
+
     osal_debug_assert(m_nro_apps <= MAX_APPS);
 }
 
@@ -53,9 +67,14 @@ TitoMain::TitoMain()
 */
 TitoMain::~TitoMain()
 {
+    os_int i;
+
     /* Finish with 'tito' applications.
      */
-    for (os_int i = 0; i < m_nro_apps; i++) delete m_app[i];
+    for (i = 0; i < m_nro_apps; i++)
+    {
+        delete m_app[i];
+    }
 }
 
 

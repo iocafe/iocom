@@ -24,16 +24,12 @@
 class TitoTestSequence1 : public TitoSequence
 {
 public:
-    /* Constructor.
-	 */
-    TitoTestSequence1(TitoApplication *app);
-
-	/* Virtual destructor.
- 	 */
+    /* Constructor and virtual destructor.
+     */
+    TitoTestSequence1();
     virtual ~TitoTestSequence1();
 
+    virtual void start(TitoTestApplication *app);
+    virtual void stop();
     virtual void run();
-
-    gina_t *gina1;
-
 };

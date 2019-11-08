@@ -1,7 +1,7 @@
 /**
 
-  @file    tito_io_device.h
-  @brief   Wrapper representing IO device interface.
+  @file    tito_test_application.h
+  @brief   Controller application running for one IO device network.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    6.11.2019
@@ -16,19 +16,30 @@
 
 /**
 ****************************************************************************************************
-  IO device interface wrapper class.
+
+  Application instance running one IO network.
+
 ****************************************************************************************************
 */
-class TitoIoDevice
+class TitoTestApplication : public TitoApplication
 {
 public:
-    /* Constructor and virtual destructor.
+    /* Constructor.
 	 */
-    TitoIoDevice(TitoTestApplication());
-    virtual ~TitoIoDevice();
+    TitoTestApplication();
 
-    virtual void release () {};
+	/* Virtual destructor.
+ 	 */
+    virtual ~TitoTestApplication();
 
-    os_char m_device_name[IOC_NAME_SZ];
-    os_short m_device_nr;
+    virtual void start(const os_char *network_name, os_short device_nr);
+    virtual void stop();
+    virtual void run();
+
+    TitoGinaIoDevice m_gina1;
+    TitoGinaIoDevice m_gina2;
+    gina_t *m_gina1_def;
+    gina_t *m_gina2_def;
+
+    TitoTestSequence1 m_test_seq1;
 };

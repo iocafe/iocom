@@ -17,6 +17,10 @@
 #include "gina-for-tito.h"
 #include "tito_main.h"
 #include "tito_io_device.h"
+#include "tito_gina_io_device.h"
 #include "tito_application.h"
 #include "tito_sequence.h"
 #include "tito_test_sequence1.h"
+#include "tito_test_application.h"
+
+extern iocRoot tito_root;

@@ -14,6 +14,8 @@
 ****************************************************************************************************
 */
 
+class TitoTestApplication;
+
 /**
 ****************************************************************************************************
 
@@ -24,17 +26,20 @@
 class TitoSequence
 {
 public:
-    /* Constructor.
+    /* Constructor and virtual destructor.
 	 */
-    TitoSequence(TitoApplication *app);
-
-	/* Virtual destructor.
- 	 */
+    TitoSequence();
     virtual ~TitoSequence();
 
-    virtual void run();
+    virtual void start(TitoTestApplication *app);
+    virtual void stop();
+    virtual void run() {};
+
+    gina_t *gina1;
+    gina_t *gina2;
 
     osalEvent m_event;
     osalThreadHandle *m_thread;
     os_boolean m_stop_thread;
+    os_boolean m_started;
 };

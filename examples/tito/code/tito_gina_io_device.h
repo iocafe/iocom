@@ -1,7 +1,7 @@
 /**
 
-  @file    tito_io_device.h
-  @brief   Wrapper representing IO device interface.
+  @file    tito_gina_io_device.h
+  @brief   Wrapper representing Gina IO device interface.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    6.11.2019
@@ -19,16 +19,28 @@
   IO device interface wrapper class.
 ****************************************************************************************************
 */
-class TitoIoDevice
+class TitoGinaIoDevice : public TitoIoDevice
 {
 public:
     /* Constructor and virtual destructor.
-	 */
-    TitoIoDevice(TitoTestApplication());
-    virtual ~TitoIoDevice();
+     */
+    TitoGinaIoDevice();
+    virtual ~TitoGinaIoDevice();
 
-    virtual void release () {};
+    gina_t *inititalize(os_short device_nr);
+    virtual void release();
 
-    os_char m_device_name[IOC_NAME_SZ];
-    os_short m_device_nr;
+    os_boolean
+        m_initialized;
+
+    /* Memory block handles.
+     */
+    iocHandle
+        m_gina_export,
+        m_gina_import;
+
+    /* Gina IO definition structure.
+     */
+    gina_t
+        m_gina_def;
 };

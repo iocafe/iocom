@@ -257,7 +257,7 @@ def process_source_file(path):
 
         if is_controller:
             hfile.write('\n  iocDeviceHdr hdr;\n')
-            hfile.write('  const iocMblkSignalHdr *mblk_list[' + str(nro_mblks) + '];\n')
+            hfile.write('  iocMblkSignalHdr *mblk_list[' + str(nro_mblks) + '];\n')
 
             cfile.write('void ' + device_name + '_init_signal_struct(' + struct_name + ' *s, ' + device_name + '_init_prm_t *prm)\n{\n')
             cfile.write('  os_memclear(s, sizeof(' + struct_name + '));\n')
@@ -346,7 +346,7 @@ def list_pins_in_pinsfile(path):
         printf ("Opening file " + path + " failed")
             
 def mymain():
-    global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic
+    global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic, const_mark
 
     # Get command line arguments
     n = len(sys.argv)
@@ -385,24 +385,26 @@ def mymain():
 
     if len(sourcefiles) < 1:
         print("No source files")
-        exit()
+#        exit()
 
-#    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
+    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
 #    outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
-#    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
+    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
 #    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
-#    device_name = "gina2"
-#    application_type = "controller-static"
+    application_type = "controller-static"
 #    application_type = "controller-dynamic"
 
     is_controller = False
     is_dynamic = False
+    const_mark = 'const '
     if application_type == "controller-static":
         is_controller = True
+        const_mark = ''
 
     if application_type == "controller-dynamic":
         is_controller = True
         is_dynamic = True
+        const_mark = ''
 
     if outpath is None:
         outpath = sourcefiles[0]

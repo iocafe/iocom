@@ -26,8 +26,7 @@
 
 ****************************************************************************************************
 */
-TitoTestSequence1::TitoTestSequence1(TitoApplication *app)
-    : TitoSequence(app)
+TitoTestSequence1::TitoTestSequence1() : TitoSequence()
 {
     gina1 = 0;
 }
@@ -45,6 +44,20 @@ TitoTestSequence1::TitoTestSequence1(TitoApplication *app)
 */
 TitoTestSequence1::~TitoTestSequence1()
 {
+}
+
+
+void TitoTestSequence1::start(TitoTestApplication *app)
+{
+    if (m_started) return;
+    TitoSequence::start(app);
+}
+
+
+void TitoTestSequence1::stop()
+{
+    if (!m_started) return;
+    TitoSequence::stop();
 }
 
 

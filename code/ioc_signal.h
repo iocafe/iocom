@@ -31,14 +31,14 @@ typedef struct iocMblkSignalHdr
     os_int n_signals;
     os_uint mblk_sz;
 
-    const struct iocSignal *first_signal;
+    struct iocSignal *first_signal;
 }
 iocMblkSignalHdr;
 
 
 typedef struct iocDeviceHdr
 {
-    const iocMblkSignalHdr **mblk_hdr;
+    iocMblkSignalHdr **mblk_hdr;
     os_short n_mblk_hdrs;
 }
 iocDeviceHdr;

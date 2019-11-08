@@ -4,7 +4,7 @@ OSAL_C_HEADER_BEGINS
 typedef struct gina_t
 {
   iocDeviceHdr hdr;
-  const iocMblkSignalHdr *mblk_list[2];
+  iocMblkSignalHdr *mblk_list[2];
 
   struct 
   {

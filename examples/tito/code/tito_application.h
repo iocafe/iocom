@@ -1,7 +1,7 @@
 /**
 
   @file    tito_application.h
-  @brief   Controller application running for one IO device network.
+  @brief   Controller application base class.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    6.11.2019
@@ -14,37 +14,36 @@
 ****************************************************************************************************
 */
 
+
 /**
 ****************************************************************************************************
-
-  Application instance running one IO network.
-
+  Tito application base class.
 ****************************************************************************************************
 */
 class TitoApplication
 {
 public:
-    /* Constructor.
+    /* Constructor and virtual destructor.
 	 */
-    TitoApplication(const os_char *network_name, os_short device_nr);
-
-	/* Virtual destructor.
- 	 */
+    TitoApplication();
     virtual ~TitoApplication();
 
+    /* Functions to start, stop and thread function to run the application.
+     */
+    virtual void start(const os_char *network_name, os_short device_nr);
+    virtual void stop();
     virtual void run();
 
+    /* Network topology stuff.
+     */
     os_char m_controller_device_name[IOC_NAME_SZ];
     os_char m_network_name[IOC_NETWORK_NAME_SZ];
     os_short m_controller_device_nr;
 
-    static const os_int MAX_IO_DEVICES = 20;
-    os_int m_nro_io_devices;
-    TitoIoDevice *m_io_device[MAX_IO_DEVICES];
-    TitoIoDevice *gina1;
-    TitoIoDevice *gina2;
-
+    /* Thread control.
+     */
     osalEvent m_event;
     osalThreadHandle *m_thread;
     os_boolean m_stop_thread;
+    os_boolean m_started;
 };

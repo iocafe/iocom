@@ -1,7 +1,7 @@
 /**
 
   @file    tito_application.cpp
-  @brief   Controller application running for one IO device network.
+  @brief   Controller application base class.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    6.11.2019
@@ -23,33 +23,17 @@ static void tito_application_thread_func(void *prm, osalEvent done);
 
   @brief Constructor.
 
-  X...
+  Save IO device network topology related stuff and atart running application for this
+  IO device network in own thread.
 
   @return  None.
 
 ****************************************************************************************************
 */
-TitoApplication::TitoApplication(const os_char *network_name, os_short device_nr)
+TitoApplication::TitoApplication()
 {
-    /* Save IO device network topology related stuff.
-     */
-    os_strncpy(m_controller_device_name, "tito", IOC_NAME_SZ);
-    os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
-    m_controller_device_nr = device_nr;
-
-    /* Set up static IO boards, for now two gina boards 1 and 2
-     */
-    m_nro_io_devices = 0;
-    gina1 = m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 1);
-    gina2 = m_io_device[m_nro_io_devices++] = new TitoIoDevice("gina", 2);
-    osal_debug_assert(m_nro_io_devices <= MAX_IO_DEVICES);
-
-    /* Start running application for this IO device network in own thread.
-     */
     m_event = osal_event_create();
-    m_stop_thread = OS_FALSE;
-    m_thread = osal_thread_create(tito_application_thread_func, this,
-        OSAL_THREAD_ATTACHED, 0, network_name);
+    m_started = OS_FALSE;
 }
 
 
@@ -58,7 +42,7 @@ TitoApplication::TitoApplication(const os_char *network_name, os_short device_nr
 
   @brief Virtual destructor.
 
-  X...
+  Join worker thread to this thread and clean up.
 
   @return  None.
 
@@ -66,30 +50,45 @@ TitoApplication::TitoApplication(const os_char *network_name, os_short device_nr
 */
 TitoApplication::~TitoApplication()
 {
-    /* Join worker thread to this thread.
-     */
-    m_stop_thread = OS_TRUE;
-    osal_event_set(m_event);
-    osal_thread_join(m_thread);
-
-    /* Finish with IO devices.
-     */
-    for (os_int i = 0; i < m_nro_io_devices; i++) delete m_io_device[i];
-
+    stop();
     osal_event_delete(m_event);
 }
 
 
+void TitoApplication::start(const os_char *network_name, os_short device_nr)
+{
+    if (m_started) return;
+
+    os_strncpy(m_controller_device_name, "tito", IOC_NAME_SZ);
+    os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
+    m_controller_device_nr = device_nr;
+
+    m_stop_thread = OS_FALSE;
+    m_thread = osal_thread_create(tito_application_thread_func, this,
+        OSAL_THREAD_ATTACHED, 0, network_name);
+
+    m_started = OS_TRUE;
+}
+
+void TitoApplication::stop()
+{
+    if (!m_started) return;
+
+    m_stop_thread = OS_TRUE;
+    osal_event_set(m_event);
+    osal_thread_join(m_thread);
+    m_started = OS_FALSE;
+}
+
+
+
 void TitoApplication::run()
 {
-    TitoTestSequence1 test_seq1(this);
-
     while (!m_stop_thread && osal_go())
     {
         osal_event_wait(m_event, OSAL_EVENT_INFINITE);
     }
 }
-
 
 static void tito_application_thread_func(void *prm, osalEvent done)
 {
