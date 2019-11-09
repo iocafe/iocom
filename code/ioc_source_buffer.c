@@ -52,9 +52,9 @@ iocSourceBuffer *ioc_initialize_source_buffer(
     iocSourceBuffer *sbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
-    int remote_mblk_id,
+    os_short remote_mblk_id,
     ioc_sbuf_item *itembuf,
-    int nitems)
+    os_int nitems)
 {
     iocRoot *root;
 
@@ -295,8 +295,8 @@ void ioc_release_source_buffer(
 */
 void ioc_sbuf_invalidate(
     iocSourceBuffer *sbuf,
-    int start_addr,
-    int end_addr)
+    os_int start_addr,
+    os_int end_addr)
 {
     if (!sbuf->changed.range_set)
     {
@@ -341,7 +341,7 @@ void ioc_sbuf_synchronize(
         *syncbuf,
         *delta;
 
-    int
+    os_int
         start_addr,
         end_addr,
         n,

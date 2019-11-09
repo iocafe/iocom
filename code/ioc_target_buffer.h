@@ -37,15 +37,15 @@ typedef struct
 
     /** Synchronized bytes size in bytes
      */
-    int nbytes;
+    os_int nbytes;
 
     /** Synchronized buffer, first changed address.
      */
-    int buf_start_addr;
+    os_int buf_start_addr;
 
     /** Synchronized buffer, last changed address.
      */
-    int buf_end_addr;
+    os_int buf_end_addr;
 
     /** Synchronized buffer has data flag.
      */
@@ -57,11 +57,11 @@ typedef struct
 
     /** New data buffer, first changed address.
      */
-    int newdata_start_addr;
+    os_int newdata_start_addr;
 
     /** New data buffer, last changed address.
      */
-    int newdata_end_addr;
+    os_int newdata_end_addr;
 
     /** Flag indicating that the synchronized buffer structure was allocated.
      */
@@ -130,10 +130,14 @@ typedef struct iocTargetBuffer
      */
     IOC_DEBUG_ID
 
+    /** Flag indicating that the target buffer structure was allocated.
+     */
+    os_boolean allocated;
+
     /** Memory block identifier on remote end of connection. Identifies the memory
         block within the iocRoot.
      */
-    int remote_mblk_id;
+    os_short remote_mblk_id;
 
     /** Target buffers at client side need to request for data to start receiving it.
         This flag indicates if data has been requested. This is cleared at connection reset.
@@ -151,10 +155,6 @@ typedef struct iocTargetBuffer
     /** This target buffer in connections's linked list of target buffers.
      */
     iocConnectionsTargetBufferLink clink;
-
-    /** Flag indicating that the target buffer structure was allocated.
-     */
-    os_boolean allocated;
 }
 iocTargetBuffer;
 
@@ -180,9 +180,9 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     iocTargetBuffer *tbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
-    int remote_mblk_id,
+    os_short remote_mblk_id,
     ioc_tbuf_item *itembuf,
-    int nitems);
+    os_int nitems);
 
 /* Release target buffer object.
  */
@@ -193,8 +193,8 @@ void ioc_release_target_buffer(
  */
 void ioc_tbuf_invalidate(
     iocTargetBuffer *sbuf,
-    int start_addr,
-    int end_addr);
+    os_int start_addr,
+    os_int end_addr);
 
 /* Synchronize received data.
  */

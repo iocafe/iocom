@@ -52,9 +52,9 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     iocTargetBuffer *tbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
-    int remote_mblk_id,
+    os_short remote_mblk_id,
     ioc_tbuf_item *itembuf,
-    int nitems)
+    os_int nitems)
 {
     iocRoot *root;
 
@@ -267,8 +267,8 @@ void ioc_release_target_buffer(
 */
 void ioc_tbuf_invalidate(
     iocTargetBuffer *tbuf,
-    int start_addr,
-    int end_addr)
+    os_int start_addr,
+    os_int end_addr)
 {
     if (!tbuf->syncbuf.has_new_data)
     {
@@ -314,7 +314,7 @@ void ioc_tbuf_synchronize(
         *syncbuf,
         *newdata;
 
-    int
+    os_int
         start_addr,
         end_addr,
         n;

@@ -33,11 +33,11 @@ typedef struct
 
     /** First invalidated address
      */
-    int start_addr;
+    os_int start_addr;
 
     /** Last invalidated address
      */
-    int end_addr;
+    os_int end_addr;
 }
 iocInvalidatedRange;
 
@@ -59,7 +59,7 @@ typedef struct
 
     /** Synchronized bytes size in bytes
      */
-    int nbytes;
+    os_int nbytes;
 
     /** Synchronized buffer used flag.
      */
@@ -75,11 +75,11 @@ typedef struct
 
     /** Synchronization buffer, start of modifications.
      */
-    int start_addr;
+    os_int start_addr;
 
     /** Synchronization buffer end address.
      */
-    int end_addr;
+    os_int end_addr;
 
     /** Flag indicating that the synchronized buffer structure was allocated.
      */
@@ -148,10 +148,14 @@ typedef struct iocSourceBuffer
      */
     IOC_DEBUG_ID
 
+    /** Flag indicating that the source buffer structure was allocated.
+     */
+    os_boolean allocated;
+
     /** Memory block identifier on remote end of connection. Identifies the memory
         block within the device.
      */
-    int remote_mblk_id;
+    os_short remote_mblk_id;
 
     /** Invalidated (changed) range.
      */
@@ -168,10 +172,6 @@ typedef struct iocSourceBuffer
     /** This source buffer in connections's linked list of source buffers.
      */
     iocConnectionsSourceBufferLink clink;
-
-    /** Flag indicating that the source buffer structure was allocated.
-     */
-    os_boolean allocated;
 }
 iocSourceBuffer;
 
@@ -197,9 +197,9 @@ iocSourceBuffer *ioc_initialize_source_buffer(
     iocSourceBuffer *sbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
-    int remote_mblk_id,
+    os_short remote_mblk_id,
     ioc_sbuf_item *itembuf,
-    int nitems);
+    os_int nitems);
 
 /* Release source buffer object.
  */
@@ -210,8 +210,8 @@ void ioc_release_source_buffer(
  */
 void ioc_sbuf_invalidate(
     iocSourceBuffer *sbuf,
-    int start_addr,
-    int end_addr);
+    os_int start_addr,
+    os_int end_addr);
 
 /* Synchronize data for sending.
  */

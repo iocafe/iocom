@@ -57,6 +57,7 @@ void ioc_setup_handle(
     handle->flags = mblk->flags;
     osal_debug_assert(handle->flags != 0);
 
+    IOC_SET_DEBUG_ID(handle, 'H')
 }
 
 /* Release a memory block handle (calls synchronization).

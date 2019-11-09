@@ -161,7 +161,7 @@ typedef struct
     /** Size of static frame buffer, either IOC_SOCKET_FRAME_SZ or IOC_SERIAL_FRAME_SZ.
         Zero for dynamically or pool allocated buffer.
      */
-    int frame_out_buf_sz;
+    os_int frame_out_buf_sz;
 
     /** Pointer to static frame buffer. OS_NULL to allocate the frame buffer.
      */
@@ -170,7 +170,7 @@ typedef struct
     /** Size of static frame buffer, either IOC_SOCKET_FRAME_SZ or IOC_SERIAL_FRAME_SZ
         Zero for dynamically or pool allocated buffer.
      */
-    int frame_in_buf_sz;
+    os_int frame_in_buf_sz;
     
     /** Flags Bit fields:
         - IOC_SOCKET Connect with TCP socket.
@@ -194,11 +194,11 @@ typedef struct
 
     /** Number of used bytes in buffer (current frame size). Zero if frame buffer is not used.
      */
-    int used;
+    os_int used;
 
     /** Current send position within the buffer. 0 = at beginning of buffer.
      */
-    int pos;
+    os_int pos;
 
     /** Flags indication that outgoing frame buffer (buf) has been allocated by ioc_connect()
      */
@@ -224,7 +224,7 @@ typedef struct
 
     /** Current receive position within the buffer. 0 = at beginning of buffer.
      */
-    int pos;
+    os_int pos;
 
     /** Flags indication that incoming frame buffer (buf) has been allocated by ioc_connect()
      */
