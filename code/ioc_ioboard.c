@@ -76,6 +76,7 @@ void ioboard_start_communication(
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.device_name = prm->device_name;
     blockprm.device_nr = prm->device_nr;
+    blockprm.network_name = prm->network_name;
 
     blockprm.mblk_nr = IOC_DEV_EXPORT_MBLK;
     blockprm.mblk_name = "exp";

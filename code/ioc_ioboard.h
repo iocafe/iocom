@@ -99,6 +99,11 @@ typedef struct
      */
     os_short device_nr;
 
+    /** IO device network name, like "pekkanet". Devices in same "network" can speak to each
+        others.
+     */
+    const os_char *network_name;
+
 	/** Control computer connection type: IOBOARD_CTRL_LISTEN_SOCKET, 
         IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL,
         IOBOARD_CTRL_CONNECT_SERIAL.

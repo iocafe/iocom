@@ -83,7 +83,8 @@ osalStatus osal_main(
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
     prm.device_name = IOBOARD_DEVICE_NAME;
-    prm.device_nr = 1;
+    prm.device_nr = 2;
+    prm.network_name = "pekkanet";
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = GINA_IP_ADDRESS;
     prm.serial_con_str = GINA_SERIAL_PORT;

@@ -249,6 +249,7 @@ void ioc_mbinfo_received(
     iocHandle handle;
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf;
+    os_boolean mblk_matches;
 
 #if IOC_DYNAMIC_MBLK_CODE
     iocMemoryBlockParams mbprm;
@@ -306,9 +307,22 @@ void ioc_mbinfo_received(
             return;
         }
 
+        /* Compare memory block names if both ends have names,
+           otherwise compare numbers.
+         */
+        if (info->mblk_name[0] && mblk->mblk_name[0])
+        {
+            mblk_matches = !os_strcmp(info->mblk_name, mblk->mblk_name);
+        }
+        else
+        {
+            mblk_matches = (info->mblk_nr == mblk->mblk_nr);
+        }
+
         if (!os_strcmp(info->device_name, mblk->device_name) &&
+            !os_strcmp(info->network_name, mblk->network_name) &&
             info->device_nr == mblk->device_nr &&
-            info->mblk_nr == mblk->mblk_nr)
+            mblk_matches)
         {
             osal_trace3("Memory block matched");
             break;
