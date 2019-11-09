@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/devicedir/devicedir.h"
+#include "devicedir.h"
 
 
 void devicedir_append_flag(
@@ -23,11 +23,11 @@ void devicedir_append_flag(
 {
     if (!*is_first)
     {
-        osal_stream_write_str(list, ",", 0);
+        osal_stream_print_str(list, ",", 0);
     }
     *is_first = OS_FALSE;
 
-    osal_stream_write_str(list, flag_name, 0);
+    osal_stream_print_str(list, flag_name, 0);
 }
 
 
@@ -37,11 +37,11 @@ void devicedir_append_str_param(
     os_char *str,
     os_boolean is_first)
 {
-    osal_stream_write_str(list, is_first ? "\"" : ", \"", 0);
-    osal_stream_write_str(list, param_name, 0);
-    osal_stream_write_str(list, "\":\"", 0);
-    osal_stream_write_str(list, str, 0);
-    osal_stream_write_str(list, "\"", 0);
+    osal_stream_print_str(list, is_first ? "\"" : ", \"", 0);
+    osal_stream_print_str(list, param_name, 0);
+    osal_stream_print_str(list, "\":\"", 0);
+    osal_stream_print_str(list, str, 0);
+    osal_stream_print_str(list, "\"", 0);
 }
 
 void devicedir_append_int_param(
@@ -53,8 +53,8 @@ void devicedir_append_int_param(
     os_char nbuf[OSAL_NBUF_SZ];
 
     osal_int_to_string(nbuf, sizeof(nbuf), x);
-    osal_stream_write_str(list, is_first ? "\"" :  ", \"", 0);
-    osal_stream_write_str(list, param_name, 0);
-    osal_stream_write_str(list, "\":", 0);
-    osal_stream_write_str(list, nbuf, 0);
+    osal_stream_print_str(list, is_first ? "\"" :  ", \"", 0);
+    osal_stream_print_str(list, param_name, 0);
+    osal_stream_print_str(list, "\":", 0);
+    osal_stream_print_str(list, nbuf, 0);
 }

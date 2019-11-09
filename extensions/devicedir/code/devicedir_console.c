@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/devicedir/devicedir.h"
+#include "devicedir.h"
 #if OS_CONTROL_CONSOLE_SUPPORT
 
 static void iocom_state_list(

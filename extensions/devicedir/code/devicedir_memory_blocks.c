@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/devicedir/devicedir.h"
+#include "devicedir.h"
 
 
 /**
@@ -44,7 +44,7 @@ void devicedir_memory_blocks(
     osal_debug_assert(root->debug_id == 'R');
     osal_debug_assert(list != OS_NULL);
 
-    osal_stream_write_str(list, "{\"mblk\": [\n", 0);
+    osal_stream_print_str(list, "{\"mblk\": [\n", 0);
 
     /* Synchronize.
      */
@@ -54,7 +54,7 @@ void devicedir_memory_blocks(
          mblk;
          mblk = mblk->link.next)
     {
-        osal_stream_write_str(list, "{", 0);
+        osal_stream_print_str(list, "{", 0);
         devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_TRUE);
         devicedir_append_int_param(list, "dev_nr", mblk->device_nr, OS_FALSE);
         devicedir_append_str_param(list, "net_name", mblk->network_name, OS_FALSE);
@@ -64,7 +64,7 @@ void devicedir_memory_blocks(
         devicedir_append_int_param(list, "mblk_id", mblk->mblk_id, OS_FALSE);
         devicedir_append_int_param(list, "size", mblk->nbytes, OS_FALSE);
 
-        osal_stream_write_str(list, ", \"flags\":\"", 0);
+        osal_stream_print_str(list, ", \"flags\":\"", 0);
         isfirst = OS_TRUE;
         mflags = mblk->flags;
         if (mflags & IOC_TARGET) devicedir_append_flag(list, "target", &isfirst);
@@ -72,24 +72,24 @@ void devicedir_memory_blocks(
         if (mflags & IOC_AUTO_SYNC) devicedir_append_flag(list, "auto", &isfirst);
         if (mflags & IOC_ALLOW_RESIZE) devicedir_append_flag(list, "resize", &isfirst);
         if (mflags & IOC_STATIC) devicedir_append_flag(list, "static", &isfirst);
-        osal_stream_write_str(list, "\"", 0);
+        osal_stream_print_str(list, "\"", 0);
 
         devicedir_list_mblks_source_buffers(mblk, list, flags);
         devicedir_list_mblks_target_buffers(mblk, list, flags);
 
-        osal_stream_write_str(list, "}", 0);
+        osal_stream_print_str(list, "}", 0);
         if (mblk->link.next)
         {
-            osal_stream_write_str(list, ",", 0);
+            osal_stream_print_str(list, ",", 0);
         }
-        osal_stream_write_str(list, "\n", 0);
+        osal_stream_print_str(list, "\n", 0);
     }
 
     /* End synchronization.
      */
     ioc_unlock(root);
 
-    osal_stream_write_str(list, "]}\n", 0);
+    osal_stream_print_str(list, "]}\n", 0);
 }
 
 
@@ -120,7 +120,7 @@ void devicedir_append_target_buffer(
     osal_debug_assert(tbuf->debug_id == 'T');
     osal_debug_assert(list != OS_NULL);
 
-    osal_stream_write_str(list, "    {", 0);
+    osal_stream_print_str(list, "    {", 0);
     devicedir_append_int_param(list, "remote_mblk_id", tbuf->remote_mblk_id, OS_TRUE);
     devicedir_append_int_param(list, "nbytes", tbuf->syncbuf.nbytes, OS_FALSE);
     devicedir_append_int_param(list, "buf_start_addr", tbuf->syncbuf.buf_start_addr, OS_FALSE);
@@ -130,7 +130,7 @@ void devicedir_append_target_buffer(
     devicedir_append_int_param(list, "newdata_start_addr", tbuf->syncbuf.newdata_start_addr, OS_FALSE);
     devicedir_append_int_param(list, "newdata_end_addr", tbuf->syncbuf.newdata_end_addr, OS_FALSE);
 
-    osal_stream_write_str(list, "}", 0);
+    osal_stream_print_str(list, "}", 0);
 }
 
 
@@ -161,22 +161,22 @@ void devicedir_list_mblks_target_buffers(
     tbuf = mblk->tbuf.first;
     if (tbuf == OS_NULL) return;
 
-    osal_stream_write_str(list, ",\n  \"tbuf\": [\n", 0);
+    osal_stream_print_str(list, ",\n  \"tbuf\": [\n", 0);
 
     while (tbuf)
     {
         devicedir_append_target_buffer(tbuf, list, flags);
 
         tbuf = tbuf->mlink.next;
-        osal_stream_write_str(list, "}", 0);
+        osal_stream_print_str(list, "}", 0);
         if (tbuf)
         {
-            osal_stream_write_str(list, ",", 0);
+            osal_stream_print_str(list, ",", 0);
         }
-        osal_stream_write_str(list, "\n", 0);
+        osal_stream_print_str(list, "\n", 0);
     }
 
-    osal_stream_write_str(list, "  }\n", 0);
+    osal_stream_print_str(list, "  }\n", 0);
 }
 
 
@@ -207,7 +207,7 @@ void devicedir_append_source_buffer(
     osal_debug_assert(sbuf->debug_id == 'S');
     osal_debug_assert(list != OS_NULL);
 
-    osal_stream_write_str(list, "    {", 0);
+    osal_stream_print_str(list, "    {", 0);
     devicedir_append_int_param(list, "remote_mblk_id", sbuf->remote_mblk_id, OS_TRUE);
     devicedir_append_int_param(list, "range_set", sbuf->changed.range_set, OS_FALSE);
     devicedir_append_int_param(list, "changed.start_addr", sbuf->changed.start_addr, OS_FALSE);
@@ -221,7 +221,7 @@ void devicedir_append_source_buffer(
     devicedir_append_int_param(list, "start_addr", sbuf->syncbuf.start_addr, OS_FALSE);
     devicedir_append_int_param(list, "end_addr", sbuf->syncbuf.end_addr, OS_FALSE);
 
-    osal_stream_write_str(list, "}", 0);
+    osal_stream_print_str(list, "}", 0);
 }
 
 
@@ -252,21 +252,21 @@ void devicedir_list_mblks_source_buffers(
     sbuf = mblk->sbuf.first;
     if (sbuf == OS_NULL) return;
 
-    osal_stream_write_str(list, ",\n  \"sbuf\": [\n", 0);
+    osal_stream_print_str(list, ",\n  \"sbuf\": [\n", 0);
 
     while (sbuf)
     {
         devicedir_append_source_buffer(sbuf, list, flags);
 
         sbuf = sbuf->mlink.next;
-        osal_stream_write_str(list, "}", 0);
+        osal_stream_print_str(list, "}", 0);
         if (sbuf)
         {
-            osal_stream_write_str(list, ",", 0);
+            osal_stream_print_str(list, ",", 0);
         }
-        osal_stream_write_str(list, "\n", 0);
+        osal_stream_print_str(list, "\n", 0);
     }
 
-    osal_stream_write_str(list, "  }\n", 0);
+    osal_stream_print_str(list, "  }\n", 0);
 }
 

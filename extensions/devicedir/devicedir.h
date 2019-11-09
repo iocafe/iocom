@@ -30,7 +30,7 @@ OSAL_C_HEADER_BEGINS
 
 /* Include all devicedir headers.
  */
-#include "extensions/devicedir/code/devicedir_shared.h"
+#include "code/devicedir_shared.h"
 
 /* If C++ compilation, end the undecorated code.
  */

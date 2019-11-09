@@ -1,10 +1,12 @@
 #include <Arduino.h>
 #include <eosalx.h>
 #include <iocom.h>
+#include <devicedir.h>
+#include <pins.h>
 
 /*
-  4_ioboard_test.ino
-  Include a IO board test app to build it within Arduino IDE. 
+  gina_platformio.ino
+  To build it within Visual Studio Code and PlatformIO. 
  */
  
 /* The setup routine runs once when you press reset.
@@ -15,7 +17,7 @@ void setup()
      */
     Serial.begin(115200);
     while (!Serial) {}
-    Serial.println("Arduino IO board starting...");
+    Serial.println("Gina IO board starting...");
 
    /* Initialize the eosal library.
     */
