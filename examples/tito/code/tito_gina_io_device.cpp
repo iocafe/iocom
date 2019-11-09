@@ -56,7 +56,7 @@ void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
     iocSignal *sig;
     os_int count;
 
-    // mblk_hdr->handle = handle;
+    mblk_hdr->handle = handle;
 
     count = mblk_hdr->n_signals;
     sig = mblk_hdr->first_signal;
