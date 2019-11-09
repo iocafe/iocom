@@ -355,20 +355,20 @@ def mymain():
     device_name = None
     application_type = "iodevice"
     for i in range(1, n):
-        if sys.argv[i][0] is "-":
-            if sys.argv[i][1] is "o":
+        if sys.argv[i][0] == "-":
+            if sys.argv[i][1] == "o":
                 outpath = sys.argv[i+1]
                 expectpath = False
 
-            if sys.argv[i][1] is "p":
+            if sys.argv[i][1] == "p":
                 pinspath = sys.argv[i+1]
                 expectpath = False
 
-            if sys.argv[i][1] is "d":
+            if sys.argv[i][1] == "d":
                 device_name = sys.argv[i+1]
                 expectpath = False
 
-            if sys.argv[i][1] is "a":
+            if sys.argv[i][1] == "a":
                 # application_type: 
                 #   "iodevice" - IO board, etc
                 #   "controller-static" Controller using static addressess and types to match data with IO device

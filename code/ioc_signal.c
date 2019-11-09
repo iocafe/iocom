@@ -421,7 +421,7 @@ os_double ioc_gets_double(
     {
         case OS_FLOAT: return vv.value.f; break;
         case OS_DOUBLE: return vv.value.d; break;
-        case OS_LONG: return vv.value.l; break;
+        case OS_LONG: return (os_double)vv.value.l; break;
         default: return vv.value.i; break;
     }
 }

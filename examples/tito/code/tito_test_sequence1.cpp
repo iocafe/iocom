@@ -73,7 +73,7 @@ void TitoTestSequence1::stop()
 */
 void TitoTestSequence1::run()
 {
-    os_boolean led_on;
+    os_boolean led_on = OS_FALSE;
 
     while (!m_stop_thread && osal_go())
     {

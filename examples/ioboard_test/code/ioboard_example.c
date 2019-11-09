@@ -247,8 +247,7 @@ osalStatus osal_loop(
     if (os_elapsed(&my_signal_timer, 2000))
     {
         os_get_timer(&my_signal_timer);
-        my_tc_count.value.i = ++my_signal_count;
-        ioc_set_signal(&my_tc_count);
+        ioc_sets_int(&my_tc_count, ++my_signal_count, OSAL_STATE_CONNECTED);
     }
 
     ioboard_show_communication_status(acontext);
@@ -301,12 +300,12 @@ static void ioboard_fc_callback(
     void *context)
 {
     int i;
-    os_char buf[N_LEDS];
+    os_char buf[N_LEDS], sb;
 
     if (ioc_is_my_address(&my_fc_7_segments, start_addr, end_addr))
     {
-        ioc_gets_array(&my_fc_7_segments, buf, N_LEDS);
-        if (ioc_is_value_connected(my_fc_7_segments))
+        sb = ioc_gets_array(&my_fc_7_segments, buf, N_LEDS);
+        if (sb & OSAL_STATE_CONNECTED)
         {
             osal_console_write("7 segment data received\n");
             for (i = 0; i < N_LEDS; i++)

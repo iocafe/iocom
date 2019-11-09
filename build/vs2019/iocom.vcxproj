@@ -31,6 +31,7 @@
     <ClInclude Include="..\..\code\ioc_memory_block_info.h" />
     <ClInclude Include="..\..\code\ioc_poolsize.h" />
     <ClInclude Include="..\..\code\ioc_root.h" />
+    <ClInclude Include="..\..\code\ioc_signal.h" />
     <ClInclude Include="..\..\code\ioc_source_buffer.h" />
     <ClInclude Include="..\..\code\ioc_target_buffer.h" />
     <ClInclude Include="..\..\code\ioc_timing.h" />
@@ -51,6 +52,7 @@
     <ClCompile Include="..\..\code\ioc_memory_block.c" />
     <ClCompile Include="..\..\code\ioc_memory_block_info.c" />
     <ClCompile Include="..\..\code\ioc_root.c" />
+    <ClCompile Include="..\..\code\ioc_signal.c" />
     <ClCompile Include="..\..\code\ioc_source_buffer.c" />
     <ClCompile Include="..\..\code\ioc_target_buffer.c" />
   </ItemGroup>

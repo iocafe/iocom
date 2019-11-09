@@ -571,7 +571,7 @@ void ioc_write_internal(
         count = (int)os_strlen((os_char*)buf) - 1;
         if (count > n) count = n;
         if (count > 0) os_memcpy(p, buf, count);
-        if (n > count) os_memclear(p + count, n - count);
+        if (n > count) os_memclear(p + count, (os_memsz)n - count);
     }
     else if (flags & IOC_CLEAR_MBLK_RANGE)
     {
