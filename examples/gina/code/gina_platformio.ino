@@ -3,6 +3,7 @@
 #include <iocom.h>
 #include <devicedir.h>
 #include <pins.h>
+#include <FreeRTOS.h>
 
 /*
   gina_platformio.ino
