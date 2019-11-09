@@ -1,4 +1,4 @@
-notes 6.110.2019/pekka
+notes 6.11.2019/pekka
 Tito - IO controller using static IO board configuration. 
 
 Tito is controller which runs multiple device IO networks, for example "pekkanet" for Pekka's devices and and "markkunet" for Markku.
@@ -7,5 +7,5 @@ This idea can used by cloud server, which need to serve several people, connect 
 This program uses static configuration, and creates "pekkanet" and "markkunet" and devices in those at start at start. More practical approach is to
 do this dynamically, so that networks and devices appear at controller as needed, but this example simplifies a few aspects of it.
 Also signals in IO board are mapped by statically by signal address. This is also not optimal for versioning. Expanding form here to using "info" memory
-map to allow running different versions of IO devices.
+block, which named signals, can allow running different versions of IO devices.
 
