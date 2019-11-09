@@ -92,7 +92,8 @@ void ioc_status_write(
         {
             if (mblk->func[i])
             {
-                mblk->func[i](&mblk->handle, start_addr, end_addr, 0, mblk->context[i]);
+                mblk->func[i](&mblk->handle, start_addr, end_addr,
+                    IOC_MBLK_CALLBACK_WRITE, mblk->context[i]);
             }
         }
 

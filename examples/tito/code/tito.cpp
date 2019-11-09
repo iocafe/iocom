@@ -122,7 +122,8 @@ void osal_main_cleanup(
   @param   handle Memory block handle.
   @param   start_addr First changed memory block address.
   @param   end_addr Last changed memory block address.
-  @param   flags Last changed memory block address.
+  @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
+           IOC_MBLK_CALLBACK_RECEIVE change by data received.
   @param   context Callback context, not used by "tito" example.
   @return  None.
 

@@ -33,13 +33,14 @@ void ioc_setup_handle(
     {
         handle->flags = 0;
         handle->next = handle->prev = handle;
+        IOC_SET_DEBUG_ID(handle, 'H')
+        return;
     }
 
     /* If we seting up the handle structure within memory block.
      */
-    else if (handle == &mblk->handle)
+    if (handle == &mblk->handle)
     {
-        handle->flags = mblk->flags;
         handle->next = handle->prev = handle;
     }
 
@@ -53,9 +54,9 @@ void ioc_setup_handle(
         handle->prev->next = handle;
     }
 
-    /* Mark handle structure for debugging.
-     */
-    IOC_SET_DEBUG_ID(handle, 'H')
+    handle->flags = mblk->flags;
+    osal_debug_assert(handle->flags != 0);
+
 }
 
 /* Release a memory block handle (calls synchronization).

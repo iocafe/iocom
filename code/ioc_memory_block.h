@@ -199,6 +199,12 @@ iocMemoryBlockLink;
 
 ****************************************************************************************************
 */
+
+/* Flags
+ */
+#define IOC_MBLK_CALLBACK_WRITE 1   /* Changed by local write */
+#define IOC_MBLK_CALLBACK_RECEIVE 2 /* Changed by received data */
+
 typedef void ioc_callback(
     struct iocHandle *handle,
     int start_addr,

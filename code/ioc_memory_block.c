@@ -112,11 +112,6 @@ osalStatus ioc_initialize_memory_block(
         mblk->buf_allocated = OS_TRUE;
     }
 
-    /* Setup handle within memory block structure and one given as argument.
-     */
-    ioc_setup_handle(&mblk->handle, root, mblk);
-    ioc_setup_handle(handle, root, mblk);
-
     /* Set up memory block structure.
      */
     mblk->buf = buf;
@@ -132,9 +127,13 @@ osalStatus ioc_initialize_memory_block(
     os_strncpy(mblk->mblk_name, prm->mblk_name, IOC_NAME_SZ);
     os_strncpy(mblk->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
 
+    /* Setup handle within memory block structure and one given as argument.
+     */
+    ioc_setup_handle(&mblk->handle, root, mblk);
+    ioc_setup_handle(handle, root, mblk);
+
     /* Generate unique memory block id within the root
      */
-
     mblk->mblk_id = ioc_get_unique_mblk_id(root);
 
     /* Save pointer to root object and join to linked list of memory blocks.
@@ -1349,7 +1348,8 @@ void ioc_receive(
         {
             if (mblk->func[i])
             {
-                mblk->func[i](&mblk->handle, start_addr, end_addr, 0, mblk->context[i]);
+                mblk->func[i](&mblk->handle, start_addr, end_addr,
+                    IOC_MBLK_CALLBACK_RECEIVE, mblk->context[i]);
             }
         }
     }

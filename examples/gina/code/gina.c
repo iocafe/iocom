@@ -202,7 +202,8 @@ void osal_main_cleanup(
   @param   handle Memory block handle.
   @param   start_addr First changed memory block address.
   @param   end_addr Last changed memory block address.
-  @param   flags Last changed memory block address.
+  @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
+           IOC_MBLK_CALLBACK_RECEIVE change by data received.
   @param   context Callback context, not used by "gina" example.
   @return  None.
 
@@ -224,33 +225,37 @@ void ioboard_communication_callback(
     os_char buf[GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ];
     const Pin *pin;
     os_short i;
-
-    /* Process 7 segment display. Since this is transferred as boolean array, the
-       forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
-       boolean array from communication signal, and write it to IO pins.
-     */
-    if (ioc_is_my_address(&gina.imp.seven_segment, start_addr, end_addr))
+#endif
+    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
     {
-        sb = ioc_gets_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
-        if (sb & OSAL_STATE_CONNECTED)
+#ifdef PINS_SEGMENT7_GROUP
+        /* Process 7 segment display. Since this is transferred as boolean array, the
+           forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
+           boolean array from communication signal, and write it to IO pins.
+         */
+        if (ioc_is_my_address(&gina.imp.seven_segment, start_addr, end_addr))
         {
-            osal_console_write("7 segment data received\n");
-            for (i = GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
-                 i >= 0 && pin;
-                 i--, pin = pin->next) /* For now we need to loop backwards, fix this */
+            sb = ioc_gets_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
+            if (sb & OSAL_STATE_CONNECTED)
             {
-                pin_set(pin, buf[i]);
+                osal_console_write("7 segment data received\n");
+                for (i = GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
+                     i >= 0 && pin;
+                     i--, pin = pin->next) /* For now we need to loop backwards, fix this */
+                {
+                    pin_set(pin, buf[i]);
+                }
+            }
+            else
+            {
+                // WE DO NOT COME HERE. SHOULD WE INVALIDATE WHOLE MAP ON DISCONNECT?
+                osal_console_write("7 segment data DISCONNECTED\n");
             }
         }
-        else
-        {
-            // WE DO NOT COME HERE. SHOULD WE INVALIDATE WHOLE MAP ON DISCONNECT?
-            osal_console_write("7 segment data DISCONNECTED\n");
-        }
-    }
 #endif
 
-    /* Call pins library extension to forward communication signal changed to IO pins.
-     */
-    forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
+        /* Call pins library extension to forward communication signal changed to IO pins.
+         */
+        forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
+    }
 }
