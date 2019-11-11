@@ -336,7 +336,7 @@ static void ioc_make_mblk_info_frame(
         *start,
         *version_and_flags;
 
-    int
+    os_int
         content_bytes,
         used_bytes;
 
@@ -392,6 +392,11 @@ static void ioc_make_mblk_info_frame(
     /* Fill in data size and flag as system frame.
      */
     *ptrs.data_sz_low = (os_uchar)content_bytes;
+if (ptrs.data_sz_high)
+{
+    content_bytes >>= 8;
+    *ptrs.data_sz_high = (os_uchar)content_bytes;
+}
     con->frame_out.used = used_bytes;
     *ptrs.flags |= IOC_SYSTEM_FRAME;
 
