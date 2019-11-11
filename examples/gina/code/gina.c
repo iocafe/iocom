@@ -71,7 +71,8 @@ osalStatus osal_main(
 
     /* Initialize the transport, socket, TLS, serial, etc..
      */
-    osal_tls_initialize(OS_NULL, 0, OS_NULL);
+//    osal_tls_initialize(OS_NULL, 0, OS_NULL);
+    osal_socket_initialize(OS_NULL, 0);
     osal_serial_initialize();
 
     /* Get stream interface by IOBOARD_CTRL_CON define.
