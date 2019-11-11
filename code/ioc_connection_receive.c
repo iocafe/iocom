@@ -71,7 +71,7 @@ osalStatus ioc_connection_receive(
         *root;
 
     os_uchar
-        flags,
+        flags = 0,
         *buf, /* keep unsigned */
         *p; /* keep unsigned */
 
@@ -80,17 +80,17 @@ osalStatus ioc_connection_receive(
 
     int
         n,
-        needed;
+        needed = 0;
 
     os_ushort
-        data_sz,
+        data_sz = 0,
         mblk_id;
 
     os_uint
         addr;
 
     osalStatus
-        status;
+        status = OSAL_STATUS_FAILED;
 
     os_memsz
         n_read;
