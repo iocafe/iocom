@@ -97,8 +97,8 @@ osalStatus osal_main(
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_signal_hdr = &gina_hdr;
 
-    prm.device_info = gina_config;
-    prm.device_info_sz = sizeof(gina_config);
+//    prm.device_info = gina_config;
+    // prm.device_info_sz = sizeof(gina_config);
 
     /* Start communication.
      */
