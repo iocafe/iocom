@@ -97,7 +97,7 @@ os_char *ioc_malloc(
      */
     if (root->pool == OS_NULL)
     {
-        return osal_memory_allocate(request_bytes, allocated_bytes);
+        return os_malloc(request_bytes, allocated_bytes);
     }
 
     prevb = OS_NULL;
@@ -153,7 +153,7 @@ alldone:
   @param   memory_block Pointer to memory block to release. If this pointer is OS_NULL, then
            the function does nothing.
   @param   bytes Size of memory block, either request_bytes given as argument or allocated_bytes
-           returned by osal_memory_allocate() function.
+           returned by os_malloc() function.
 
   @return  None.
 
@@ -170,7 +170,7 @@ void ioc_free(
      */
     if (root->pool == OS_NULL) 
     {
-        osal_memory_free(memory_block, bytes);
+        os_free(memory_block, bytes);
         return;
     }
 
