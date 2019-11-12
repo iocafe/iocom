@@ -282,7 +282,7 @@ osalStatus ioc_connect(
         *frame_in_buf, 
         *frame_out_buf;
 
-    int 
+    os_int
         flags;
 
     osal_debug_assert(con->debug_id == 'C');

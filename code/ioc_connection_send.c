@@ -36,7 +36,7 @@ typedef struct
 
     /* Header size in bytes.
      */
-    int header_sz;
+    os_int header_sz;
 }
 iocSendHeaderPtrs;
 
@@ -58,8 +58,8 @@ static void ioc_generate_header(
     iocConnection *con,
     os_char *hdr,
     iocSendHeaderPtrs *ptrs,
-    int remote_mblk_id,
-    os_uint addr);
+    os_short remote_mblk_id,
+    os_int addr);
 
 static void ioc_msg_setstr(
     os_char *str,
@@ -194,7 +194,7 @@ static void ioc_make_data_frame(
     iocConnection *con,
     iocSourceBuffer *sbuf)
 {
-    int
+    os_int
         compressed_bytes,
         saved_start_addr,
         max_dst_bytes,
@@ -379,7 +379,7 @@ static void ioc_make_mblk_info_frame(
     /* If other end has not acknowledged enough data to send the
        frame, cancel the send.
      */
-    content_bytes = (int)(p - start);
+    content_bytes = (os_int)(p - start);
     used_bytes = content_bytes + ptrs.header_sz;
     u = con->bytes_sent - con->processed_bytes; 
     bytes = con->max_in_air - (os_int)u;
@@ -621,9 +621,9 @@ static osalStatus ioc_write_to_stream(
     os_int
         n;
 
-#if OSAL_TRACE  >= 3
+#if OSAL_TRACE  >= 1 // ?????????????
     os_char msg[64], nbuf[OSAL_NBUF_SZ];
-    int i;
+    os_int i;
 #endif
 
     n = con->frame_out.used - con->frame_out.pos;
@@ -666,12 +666,12 @@ static osalStatus ioc_write_to_stream(
     {
         osal_trace("Writing to stream failed");
     }
-#if OSAL_TRACE >= 3
+#if OSAL_TRACE >= 1 // ??????????????
     else if (n_written)
     {
         osal_int_to_string(msg, sizeof(msg), n_written);
         os_strncat(msg, " bytes written to stream", sizeof(msg));
-        osal_trace3(msg);
+        osal_trace(msg);
 
         msg[0] = '\0';
         for (i = 0; i < n_written; i++)
@@ -680,7 +680,7 @@ static osalStatus ioc_write_to_stream(
             osal_int_to_string(nbuf, sizeof(nbuf), con->frame_out.buf[con->frame_out.pos + i]);
             os_strncat(msg, nbuf, sizeof(msg));
         }
-        osal_trace3(msg);
+        osal_trace(msg);
     }
 #endif
 #endif
@@ -688,7 +688,7 @@ static osalStatus ioc_write_to_stream(
     /* Advance current frame buffer position. If we got the whole frame buffer written, 
        mark it unused.
      */
-    con->frame_out.pos += (int)n_written;
+    con->frame_out.pos += (os_int)n_written;
     if (con->frame_out.pos >= con->frame_out.used)
     {
         con->frame_out.used = 0;
@@ -725,8 +725,8 @@ static void ioc_generate_header(
     iocConnection *con,
     os_char *hdr,
     iocSendHeaderPtrs *ptrs,
-    int remote_mblk_id,
-    os_uint addr)
+    os_short remote_mblk_id,
+    os_int addr)
 {
     os_boolean
         is_serial;
@@ -806,7 +806,7 @@ static void ioc_generate_header(
     /* Set flags and store header size.
      */
     *ptrs->flags = flags;
-    ptrs->header_sz = (int)(p - hdr);
+    ptrs->header_sz = (os_int)(p - hdr);
 }
 
 

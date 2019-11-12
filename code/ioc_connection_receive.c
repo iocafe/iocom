@@ -19,25 +19,25 @@
  */
 static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
-    int mblk_id,
-    int addr,
+    os_short mblk_id,
+    os_int addr,
     os_char *data,
-    int data_sz,
+    os_int data_sz,
     os_uchar flags);
 
 static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
-    int mblk_id,
-    int addr,
+    os_short mblk_id,
+    os_int addr,
     os_char *data,
-    int data_sz,
+    os_int data_sz,
     os_uchar flags);
 
 static osalStatus ioc_store_data_frame(
     iocTargetBuffer *tbuf,
-    int addr,
+    os_int addr,
     os_char *data,
-    int data_sz,
+    os_int data_sz,
     os_uchar flags);
 
 static osalStatus ioc_msg_getstr(
@@ -78,7 +78,7 @@ osalStatus ioc_connection_receive(
     os_boolean
         is_serial;
 
-    int
+    os_int
         n,
         needed = 0;
 
@@ -98,9 +98,9 @@ osalStatus ioc_connection_receive(
     os_ushort
         crc;
 
-#if OSAL_TRACE >= 1 // ????????????????
+#if OSAL_TRACE >= 3
     os_char msg[64], nbuf[OSAL_NBUF_SZ];
-    int i;
+    os_int i;
 #endif
 
     root = con->link.root;
@@ -223,7 +223,7 @@ osalStatus ioc_connection_receive(
             osal_trace("Reading stream failed");
             return status;
         }
-#if OSAL_TRACE >= 1 // ????????????????????????????????????????????????????
+#if OSAL_TRACE >= 3
         else if (n_read)
         {
             osal_trace3_int("Data received, bytes=", n_read);
@@ -246,7 +246,7 @@ osalStatus ioc_connection_receive(
             /* Add number of bytes read to current buffer position and
              * number of received bytes.
              */
-            n += (int)n_read;
+            n += (os_int)n_read;
             con->bytes_received += (os_ushort)n_read;
 
             /* Record time of receive.
@@ -414,10 +414,10 @@ alldone:
 */
 static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
-    int mblk_id,
-    int addr,
+    os_short mblk_id,
+    os_int addr,
     os_char *data,
-    int data_sz,
+    os_int data_sz,
     os_uchar flags)
 {
     iocTargetBuffer
@@ -477,10 +477,10 @@ static osalStatus ioc_process_received_data_frame(
 */
 static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
-    int mblk_id,
-    int addr,
+    os_short mblk_id,
+    os_int addr,
     os_char *data,
-    int data_sz,
+    os_int data_sz,
     os_uchar flags)
 {
     iocMemoryBlockInfo
@@ -549,12 +549,12 @@ static osalStatus ioc_process_received_system_frame(
 */
 static osalStatus ioc_store_data_frame(
     iocTargetBuffer *tbuf,
-    int addr,
+    os_int addr,
     os_char *data,
-    int data_sz,
+    os_int data_sz,
     os_uchar flags)
 {
-    int
+    os_int
         max_newdata,
         dst_bytes;
 
@@ -620,7 +620,7 @@ static osalStatus ioc_msg_getstr(
     os_memsz str_sz,
     os_uchar **p)
 {
-    int len;
+    os_int len;
 
     len = *((*p)++);
     if (len < 0 || len >= str_sz) 
