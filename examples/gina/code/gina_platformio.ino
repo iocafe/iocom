@@ -4,7 +4,6 @@
 #include <devicedir.h>
 #include <pins.h>
 #include <FreeRTOS.h>
-#include <AsyncTCP.h>
 
 /*
   gina_platformio.ino
