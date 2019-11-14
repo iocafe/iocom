@@ -621,7 +621,7 @@ static osalStatus ioc_write_to_stream(
     os_int
         n;
 
-#if OSAL_TRACE  >= 1 // ?????????????
+#if OSAL_TRACE  >= 3
     os_char msg[64], nbuf[OSAL_NBUF_SZ];
     os_int i;
 #endif
@@ -666,7 +666,7 @@ static osalStatus ioc_write_to_stream(
     {
         osal_trace("Writing to stream failed");
     }
-#if OSAL_TRACE >= 1 // ??????????????
+#if OSAL_TRACE >= 3
     else if (n_written)
     {
         osal_int_to_string(msg, sizeof(msg), n_written);
@@ -677,7 +677,7 @@ static osalStatus ioc_write_to_stream(
         for (i = 0; i < n_written; i++)
         {
             if (i) os_strncat(msg, ", ", sizeof(msg));
-            osal_int_to_string(nbuf, sizeof(nbuf), con->frame_out.buf[con->frame_out.pos + i]);
+            osal_int_to_string(nbuf, sizeof(nbuf), (os_uchar)con->frame_out.buf[con->frame_out.pos + i]);
             os_strncat(msg, nbuf, sizeof(msg));
         }
         osal_trace(msg);
