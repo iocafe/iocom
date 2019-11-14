@@ -119,7 +119,7 @@ void ioc_movex_signals(
             else
             {
                 vv[i].state_bits = ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
-                vv[i].value.i = (os_int)osal_string_to_int(nbuf, OS_NULL);
+                vv[i].value.i = (os_int)osal_str_to_int(nbuf, OS_NULL);
             }
             goto nextone;
         }
@@ -597,7 +597,7 @@ os_char ioc_movex_str_signal(
         default:
             if (flags & IOC_SIGNAL_WRITE)
             {
-                return ioc_sets_int(signal, (os_int)osal_string_to_int(str, OS_NULL), state_bits);
+                return ioc_sets_int(signal, (os_int)osal_str_to_int(str, OS_NULL), state_bits);
             }
             else
             {

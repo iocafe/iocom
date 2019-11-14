@@ -226,7 +226,7 @@ osalStatus ioc_connection_receive(
 #if OSAL_TRACE >= 3
         else if (n_read)
         {
-            osal_trace3_int("Data received, bytes=", n_read);
+            osal_trace_int("Data received, bytes=", n_read);
 
             msg[0] = '\0';
             for (i = 0; i < n_read; i++)
@@ -235,7 +235,7 @@ osalStatus ioc_connection_receive(
                 osal_int_to_string(nbuf, sizeof(nbuf), buf[n + i]);
                 os_strncat(msg, nbuf, sizeof(msg));
             }
-            osal_trace3(msg);
+            osal_trace(msg);
         }
 #endif
 
