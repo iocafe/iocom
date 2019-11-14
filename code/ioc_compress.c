@@ -38,7 +38,7 @@
 
 ****************************************************************************************************
 */
-int ioc_compress(
+os_int ioc_compress(
     os_char *srcbuf,
     os_int *start_addr,
     os_int end_addr,
@@ -147,11 +147,11 @@ int ioc_compress(
 
 ****************************************************************************************************
 */
-int ioc_uncompress(
+os_int ioc_uncompress(
     os_char *src,
     os_int src_bytes,
     os_char *dst,
-    os_int dst_sz,
+    os_memsz dst_sz,
     os_uchar flags)
 {
     os_char
