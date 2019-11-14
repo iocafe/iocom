@@ -35,19 +35,19 @@
  */
 int ioc_compress(
     os_char *srcbuf,
-    int *start_addr,
-    int end_addr,
+    os_int *start_addr,
+    os_int end_addr,
     os_char *dst,
-    int dst_sz);
+    os_memsz dst_sz);
 
 
 /* Uncompress data.
  */
 int ioc_uncompress(
     os_char *src,
-    int src_bytes,
+    os_int src_bytes,
     os_char *dst,
-    int dst_sz,
+    os_memsz dst_sz,
     os_uchar flags);
 
 /*@}*/

@@ -40,10 +40,10 @@
 */
 int ioc_compress(
     os_char *srcbuf,
-    int *start_addr,
-    int end_addr,
+    os_int *start_addr,
+    os_int end_addr,
     os_char *dst,
-    int dst_sz)
+    os_memsz dst_sz)
 {
     os_char
         *dst_start,
@@ -51,7 +51,7 @@ int ioc_compress(
         *p,
         *start;
 
-    int
+    os_int
         bytes,
         count,
         dst_count,
@@ -149,9 +149,9 @@ int ioc_compress(
 */
 int ioc_uncompress(
     os_char *src,
-    int src_bytes,
+    os_int src_bytes,
     os_char *dst,
-    int dst_sz,
+    os_int dst_sz,
     os_uchar flags)
 {
     os_char
@@ -193,7 +193,7 @@ int ioc_uncompress(
 
     while (src < src_end && dst < dst_end)
     {
-        n = *(src++);
+        n = (os_uchar)*(src++);
         if (src + n > src_end) return -1;
         if (dst + n > dst_end) n = (int)(dst_end - dst);
 
@@ -213,7 +213,7 @@ int ioc_uncompress(
         }
 
         if (src >= src_end || dst >= dst_end) break;
-        n = *(src++);
+        n = (os_uchar)*(src++);
         if (dst + n > dst_end) n = (int)(dst_end - dst);
 
         if (flags & IOC_DELTA_ENCODED)
