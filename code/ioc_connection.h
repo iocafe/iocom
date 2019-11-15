@@ -396,11 +396,11 @@ typedef struct iocConnection
     /** Flow control: Maximum number of bytes in transit without being 
         acknowledged (for ack messages).
      */
-    os_int max_ack_in_air;
+    os_ushort max_ack_in_air;
 
     /** Number of bytes to leave unacknwledged (Minimum acknowledgement size).
      */
-    os_int unacknogledged_limit;
+    os_ushort unacknogledged_limit;
 
     /** OSAL stream handle (socket or serial port).
      */

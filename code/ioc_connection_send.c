@@ -569,7 +569,7 @@ osalStatus ioc_acknowledge_as_needed(
        OSAL_STATUS_PENDING.
      */
     u = con->bytes_sent - con->processed_bytes; 
-    bytes = con->max_ack_in_air - (os_int)u;
+    bytes = (os_int)con->max_ack_in_air - (os_int)u;
     if (bytes < IOC_ACK_SIZE)
     {
         return OSAL_STATUS_PENDING;
@@ -578,8 +578,7 @@ osalStatus ioc_acknowledge_as_needed(
     /* If we have received enough unacknowledged bytes to acknowledge now.
      */
     u = con->bytes_received - con->bytes_acknowledged; 
-    bytes = (os_int)u;
-    if (bytes < con->unacknogledged_limit)
+    if (u < con->unacknogledged_limit)
     {
         return OSAL_SUCCESS;
     }
