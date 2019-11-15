@@ -377,7 +377,7 @@ void ioc_write_internal(
     iocHandle *handle,
     os_int addr,
     const os_char *buf,
-    int n,
+    os_int n,
     os_short flags);
 
 /* Read data from memory block.
@@ -429,17 +429,17 @@ os_uchar ioc_getp_uchar(
 void ioc_setp_short(
     iocHandle *handle,
     os_int addr,
-    int value);
+    os_int value);
 
 /* Read signed 16 bit integer from the memory block.
  */
-int ioc_getp_short(
+os_short ioc_getp_short(
     iocHandle *handle,
     os_int addr);
 
 /* Read unsigned 16 bit integer from the memory block.
  */
-os_int ioc_getp_ushort(
+os_ushort ioc_getp_ushort(
     iocHandle *handle,
     os_int addr);
 

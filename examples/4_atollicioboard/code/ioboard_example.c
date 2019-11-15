@@ -108,7 +108,7 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    int
+    os_int
         command,
         prev_command  = 0x10000,
         state = 0;

@@ -1037,7 +1037,7 @@ os_boolean ioc_is_my_address(
             break;
 
         default:
-            n = n * (int)osal_typeid_size(type_id) + 1;
+            n = n * (os_int)osal_typeid_size(type_id) + 1;
             break;
     }
 

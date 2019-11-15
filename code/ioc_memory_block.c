@@ -796,7 +796,7 @@ void ioc_setp_bit(
 char ioc_getp_bit(
     iocHandle *handle,
     os_int addr,
-    int bit_nr)
+    os_int bit_nr)
 {
     os_char buf;
 
@@ -819,7 +819,7 @@ char ioc_getp_bit(
 
 ****************************************************************************************************
 */
-os_char ioc_getp_uchar(
+os_uchar ioc_getp_uchar(
     iocHandle *handle,
     os_int addr)
 {
@@ -849,7 +849,7 @@ os_char ioc_getp_uchar(
 void ioc_setp_short(
     iocHandle *handle,
     os_int addr,
-    int value)
+    os_int value)
 {
     os_ushort u;
     u = (os_ushort)value;
@@ -895,7 +895,7 @@ os_short ioc_getp_short(
 
 ****************************************************************************************************
 */
-os_int ioc_getp_ushort(
+os_ushort ioc_getp_ushort(
     iocHandle *handle,
     os_int addr)
 {

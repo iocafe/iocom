@@ -210,12 +210,12 @@ static void ioboard_callback(
 static void toggle_leds(void)
 {
 #if N_LEDS > 1
-    static int lednr = 0;
+    static os_int lednr = 0;
     digitalWrite(leds[lednr], LOW);
     if (++lednr >= N_LEDS) lednr = 0;
     digitalWrite(leds[lednr], HIGH);
 #else    
-    static int state = 0;
+    static os_int state = 0;
     state = !state;
     digitalWrite(leds[0], state ? HIGH : LOW);
 #endif

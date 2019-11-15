@@ -124,11 +124,11 @@ static void iocontroller_long_processing(
 
 static void iocontroller_7_segment(
     iocHandle *mblk_handle,
-    int x);
+    os_int x);
 
 static void iocontroller_8_spinner(
     iocHandle *mblk_handle,
-    int x);
+    os_int x);
 
 static void iocontroller_print_changes(
     ioControllerContext *c);
@@ -350,8 +350,8 @@ void osal_main_cleanup(
 */
 static void iocontroller_callback(
     struct iocHandle *mblk_handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context)
 {
@@ -436,7 +436,7 @@ static void iocontroller_long_processing(
     ioControllerCallbackData
         cd;
 
-    int
+    os_int
         i;
 
     char
@@ -480,7 +480,7 @@ static void iocontroller_long_processing(
 
 static void iocontroller_7_segment(
     iocHandle *mblk_handle,
-    int x)
+    os_int x)
 {
     static os_char digits[10][8] = {
     /* A, B, C, P, D, E, F, G */
@@ -501,7 +501,7 @@ static void iocontroller_7_segment(
 
 static void iocontroller_8_spinner(
     iocHandle *mblk_handle,
-    int x)
+    os_int x)
 {
     static os_char digits[10][8] = {
     /* A, B, C, P, D, E, F, G */

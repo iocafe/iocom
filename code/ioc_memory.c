@@ -54,7 +54,7 @@ void ioc_set_memory_pool(
     os_memsz bufsz)
 {
     root->pool = buf;
-    root->poolsz = bufsz;
+    root->poolsz = (os_int)bufsz;
     root->poolpos = 0;
     root->poolfree  = OS_NULL;
 }

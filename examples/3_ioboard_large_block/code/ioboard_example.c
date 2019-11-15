@@ -126,7 +126,7 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
-    int
+    os_int
         i,
         j,
         k;
