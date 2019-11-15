@@ -377,7 +377,7 @@ void ioc_write_internal(
     iocHandle *handle,
     os_int addr,
     const os_char *buf,
-    int n,
+    oa_int n,
     os_short flags);
 
 /* Read data from memory block.
@@ -394,7 +394,7 @@ void ioc_read_internal(
     iocHandle *handle,
     os_int addr,
     os_char *buf,
-    int n,
+    os_int n,
     os_short flags);
 
 #ifndef IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS
