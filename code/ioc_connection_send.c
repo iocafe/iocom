@@ -479,7 +479,14 @@ osalStatus ioc_send_acknowledge(
 
     status = ioc_write_to_stream(con);
     os_get_timer(&con->last_send);
- 
+
+    /* Flush now to force acknowledge trough. Other end needs it already.
+     */
+    if (con->stream)
+    {
+        osal_stream_flush(con->stream, 0);
+    }
+
     ioc_unlock(root);
     return status;
 }
