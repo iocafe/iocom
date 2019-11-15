@@ -742,12 +742,12 @@ static void ioc_generate_header(
     is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
     p = hdr;
 
+    /* FRAME_NR: Frame number is used to check that no frame is dropped.
+     */
+    *(p++) = con->frame_out.frame_nr;
+
     if (is_serial)
     {
-        /* FRAME_NR: Frame number is used to check that no frame is dropped.
-         */
-        *(p++) = con->frame_out.frame_nr;
-
         /* CHECKSUM: Set zero for now and save pointer. Set at the end.
          */
         ptrs->checksum_low = p;

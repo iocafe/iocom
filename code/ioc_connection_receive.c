@@ -166,11 +166,11 @@ osalStatus ioc_connection_receive(
                 needed = 3;
                 flags = 0;
             }
-            else if (n >= 3)
+            else if (n >= 4)
             {
-                data_sz = buf[1] | (((os_ushort)buf[2]) << 8);
-                needed = data_sz + 5;
-                flags = buf[0];
+                data_sz = buf[2] | (((os_ushort)buf[3]) << 8);
+                needed = data_sz + 6;
+                flags = buf[1];
                 if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
                 if (flags & IOC_ADDR_HAS_FOUR_BYTES) needed += 3;
                 else if (flags & IOC_ADDR_HAS_TWO_BYTES) needed++;
@@ -185,7 +185,7 @@ osalStatus ioc_connection_receive(
             else if (n >= 1)
             {
                 data_sz = 0xFFFF;
-                needed = 5;
+                needed = 6;
                 flags = 0;
             }
             else
@@ -253,8 +253,7 @@ osalStatus ioc_connection_receive(
              */
             os_get_timer(&con->last_receive);
 
-#if OSAL_SERIAL_SUPPORT
-            if (is_serial && n > 0)
+            if (/* is_serial && */ n > 0)
             {
                 /* If we have received nonzero frame count from serial
                    communication , make sure that it is correct already here
@@ -269,7 +268,6 @@ osalStatus ioc_connection_receive(
                     return OSAL_STATUS_FAILED;
                 }
             }
-#endif
         }
 
         /* If we got all what we wanted but did't know data size yet,
@@ -322,7 +320,7 @@ osalStatus ioc_connection_receive(
 
     /* MBLK: Memory block identifier.
      */
-    p = buf + (is_serial ? 5 : 3);
+    p = buf + (is_serial ? 5 : 4);
     mblk_id = *(p++);
     if (flags & IOC_MBLK_HAS_TWO_BYTES)
     {
@@ -342,19 +340,14 @@ osalStatus ioc_connection_receive(
         }
     }
 
-#if OSAL_SERIAL_SUPPORT
     /* Save frame number to expect next. Notice that the frame count can
         be zero only for the very first frame. never be zero again.
      */
-    if (is_serial)
+    con->frame_in.frame_nr = buf[0] + 1u;
+    if (con->frame_in.frame_nr > IOC_MAX_FRAME_NR)
     {
-        con->frame_in.frame_nr = buf[0] + 1u;
-        if (con->frame_in.frame_nr > IOC_MAX_FRAME_NR)
-        {
-            con->frame_in.frame_nr = 1;
-        }
+        con->frame_in.frame_nr = 1;
     }
-#endif
 
     /* Process the data frame.
      */
