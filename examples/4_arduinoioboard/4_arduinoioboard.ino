@@ -48,25 +48,25 @@ static os_char
 
 #ifdef STM32L476xx
 #define N_LEDS 8
-const int leds[] = {PB8, PA10, PB3, PB5, PB4, PA8, PA9, PC7}; 
+const os_int leds[] = {PB8, PA10, PB3, PB5, PB4, PA8, PA9, PC7}; 
 #endif
 
 #ifdef STM32F429xx
 #define N_LEDS 3
-const int leds[N_LEDS] = {PB0, PB14, PB7};
+const os_int leds[N_LEDS] = {PB0, PB14, PB7};
 #endif
 
 #ifndef N_LEDS
 #define N_LEDS 3
-const int leds[N_LEDS] = {PB0, PB14, PB7};
+const os_int leds[N_LEDS] = {PB0, PB14, PB7};
 #endif
 
-static int prev_command;
+static os_int prev_command;
 
 static void ioboard_callback(
     struct iocMemoryBlock *mblk,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);
 
@@ -76,8 +76,7 @@ static void toggle_leds(void);
 void setup() 
 {
     ioboardParams prm;
-    int lednr;
-
+    os_int lednr;
 
     // initialize the digital pin as an output.
     for (lednr = 0; lednr < N_LEDS; lednr++)
@@ -125,7 +124,7 @@ void setup()
 
 void loop()
 {
-    int command;
+    os_int command;
    
     /* Keep the communication alive. The IO board uses one thread model, thus
        we need to call this function repeatedly.
@@ -181,12 +180,12 @@ void loop()
 */
 static void ioboard_callback(
     struct iocMemoryBlock *mblk,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context)
 {
-    int s, e, i, n;
+    os_int s, e, i, n;
     os_uchar buf[N_LEDS];
 
     /* Get connection status changes.

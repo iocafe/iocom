@@ -22,7 +22,7 @@
 
 /* Forward referred static functions.
  */
-static int ioc_get_unique_mblk_id(
+static os_short ioc_get_unique_mblk_id(
     iocRoot *root);
 
 
@@ -567,7 +567,7 @@ void ioc_write_internal(
     p = mblk->buf + addr;
     if (flags & IOC_MBLK_STRING)
     {
-        count = (int)os_strlen((os_char*)buf) - 1;
+        count = (os_int)os_strlen((os_char*)buf) - 1;
         if (count > n) count = n;
         if (count > 0) os_memcpy(p, buf, count);
         if (n > count) os_memclear(p + count, (os_memsz)n - count);
@@ -661,7 +661,7 @@ void ioc_read_internal(
     iocRoot *root;
     iocMemoryBlock *mblk;
     os_char *p;
-    int max_n, nstat, count;
+    os_int max_n, nstat, count;
 
     /* Get memory block pointer and start synchronization. If memory block is not found, mark
        return zeroes.
@@ -748,8 +748,8 @@ getout:
 void ioc_setp_bit(
     iocHandle *handle,
     os_int addr,
-    int bit_nr,
-    int value)
+    os_int bit_nr,
+    os_int value)
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
@@ -819,7 +819,7 @@ char ioc_getp_bit(
 
 ****************************************************************************************************
 */
-int ioc_getp_uchar(
+os_char ioc_getp_uchar(
     iocHandle *handle,
     os_int addr)
 {
@@ -871,7 +871,7 @@ void ioc_setp_short(
 
 ****************************************************************************************************
 */
-int ioc_getp_short(
+os_short ioc_getp_short(
     iocHandle *handle,
     os_int addr)
 {
@@ -1320,7 +1320,7 @@ void ioc_receive(
     iocRoot *root;
     iocMemoryBlock *mblk;
     iocTargetBuffer *tbuf;
-    int start_addr, end_addr, i;
+    os_int start_addr, end_addr, i;
 
     /* Get memory block pointer and start synchronization.
      */
@@ -1440,8 +1440,8 @@ void ioc_add_callback(
 */
 void ioc_mblk_invalidate(
     iocMemoryBlock *mblk,
-    int start_addr,
-    int end_addr)
+    os_int start_addr,
+    os_int end_addr)
 {
     iocSourceBuffer *sbuf;
 
@@ -1473,16 +1473,16 @@ void ioc_mblk_invalidate(
 
 ****************************************************************************************************
 */
-static int ioc_get_unique_mblk_id(
+static os_short ioc_get_unique_mblk_id(
     iocRoot *root)
 {
     iocMemoryBlock *mblk;
-    int id, max_id, i, j;
+    os_int id, max_id, i, j;
 
     #define IOC_MAX_SMALL_UNIQUE_ID 255
     #define IOC_MIN_UNIQUE_ID 8
     #define IOC_MAX_UNIQUE_ID 32767
-    char mark[IOC_MAX_SMALL_UNIQUE_ID/8 + 1];
+    os_char mark[IOC_MAX_SMALL_UNIQUE_ID/8 + 1];
 
     /* Create array which flags used small identidiers and find out the biggest
        used memory block identifier.

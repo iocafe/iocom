@@ -105,8 +105,8 @@ static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, &ioboard_import};
  */
 static void ioboard_fc_callback(
     struct iocHandle *handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);
 
@@ -294,12 +294,12 @@ void osal_main_cleanup(
 */
 static void ioboard_fc_callback(
     struct iocHandle *handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context)
 {
-    int i;
+    os_int i;
     os_char buf[N_LEDS], sb;
 
     if (ioc_is_my_address(&my_fc_7_segments, start_addr, end_addr))

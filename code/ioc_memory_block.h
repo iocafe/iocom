@@ -377,7 +377,7 @@ void ioc_write_internal(
     iocHandle *handle,
     os_int addr,
     const os_char *buf,
-    oa_int n,
+    int n,
     os_short flags);
 
 /* Read data from memory block.
@@ -408,19 +408,19 @@ void ioc_read_internal(
 void ioc_setp_bit(
     iocHandle *handle,
     os_int addr,
-    int bit_nr,
-    int value);
+    os_int bit_nr,
+    os_int value);
 
 /* Read one bit from the memory block.
  */
-char ioc_getp_bit(
+os_boolean ioc_getp_bit(
     iocHandle *handle,
     os_int addr,
-    int bit_nr);
+    os_int bit_nr);
 
 /* Read one unsigned byte from the memory block.
  */
-int ioc_getp_uchar(
+os_uchar ioc_getp_uchar(
     iocHandle *handle,
     os_int addr);
 
@@ -570,8 +570,8 @@ void ioc_add_callback(
  */
 void ioc_mblk_invalidate(
     iocMemoryBlock *mblk,
-    int start_addr,
-    int end_addr);
+    os_int start_addr,
+    os_int end_addr);
 
 /* Copy data and swap byte order on big endian processors.
  */

@@ -171,7 +171,7 @@ void ioc_movex_signals(
 
             *(p++) = vv[i].state_bits = sb;
             ioc_byte_ordered_copy(p, (os_char*)&vv[i].value, type_sz, type_sz);
-            ioc_mblk_invalidate(mblk, addr, (int)(addr + type_sz) /* no -1, we need also state byte */);
+            ioc_mblk_invalidate(mblk, addr, (os_int)(addr + type_sz) /* no -1, we need also state byte */);
         }
         else
         {
@@ -662,7 +662,7 @@ os_char ioc_movex_str_signal(
         len = os_strlen(str);
         if (signal->n < len) len = signal->n;
         ioc_byte_ordered_copy(p, str, len, 1);
-        ioc_mblk_invalidate(mblk, addr, (int)(addr + len) /* no -1, we need also state byte */);
+        ioc_mblk_invalidate(mblk, addr, (os_int)(addr + len) /* no -1, we need also state byte */);
     }
     else
     {
@@ -882,7 +882,7 @@ os_char ioc_movex_array_signal(
                 n = 0;
             }
 
-            ioc_mblk_invalidate(mblk, addr, (int)(addr + n) /* no -1, we need also state byte */);
+            ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n) /* no -1, we need also state byte */);
 
         }
 
@@ -890,7 +890,7 @@ os_char ioc_movex_array_signal(
         {
             *(p++) = state_bits;
             ioc_byte_ordered_copy(p, array, n, type_sz);
-            ioc_mblk_invalidate(mblk, addr, (int)(addr + n * type_sz) /* no -1, we need also state byte */);
+            ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n * type_sz) /* no -1, we need also state byte */);
         }
     }
     else
@@ -1013,10 +1013,10 @@ os_char ioc_movex_array(
 */
 os_boolean ioc_is_my_address(
     const iocSignal *signal,
-    int start_addr,
-    int end_addr)
+    os_int start_addr,
+    os_int end_addr)
 {
-    int addr, n;
+    os_int addr, n;
     osalTypeId type_id;
 
     addr = signal->addr;

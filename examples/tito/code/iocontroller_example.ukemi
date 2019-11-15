@@ -64,10 +64,10 @@
 
 typedef struct
 {
-    volatile int
+    volatile os_int
         count;
 
-    volatile int
+    volatile os_int
         start_addr,
         end_addr;
 }
@@ -75,7 +75,7 @@ ioControllerCallbackData;
 
 typedef struct
 {
-    volatile int
+    volatile os_int
         nro_connections,
         drop_count;
 

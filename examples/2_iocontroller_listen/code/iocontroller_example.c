@@ -44,8 +44,8 @@ static void root_callback(
 
 static void info_callback(
     iocHandle *mblk_handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);
 
@@ -168,8 +168,8 @@ static void root_callback(
 */
 static void info_callback(
     iocHandle *mblk_handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context)
 {

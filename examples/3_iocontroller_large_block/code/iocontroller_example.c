@@ -26,8 +26,8 @@ static os_long callback_count;
  */
 static void iocontroller_callback(
     struct iocHandle *handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);
 
@@ -55,7 +55,7 @@ osalStatus osal_main(
     iocHandle inputs, outputs;
     os_char text[128], nbuf[32];
 
-    const int
+    const os_int
         input_block_sz = 10000,
         output_block_sz = 10000;
 
@@ -134,8 +134,8 @@ osalStatus osal_main(
 */
 static void iocontroller_callback(
     struct iocHandle *handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context)
 {

@@ -64,10 +64,10 @@
 
 typedef struct
 {
-    volatile int
+    volatile os_int
         count;
 
-    volatile int
+    volatile os_int
         start_addr,
         end_addr;
 }
@@ -75,7 +75,7 @@ ioControllerCallbackData;
 
 typedef struct
 {
-    volatile int
+    volatile os_int
         nro_connections,
         drop_count;
 
@@ -111,8 +111,8 @@ static ioControllerContext ctx;
  */
 static void iocontroller_callback(
     struct iocHandle *mblk_handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);
 
@@ -355,7 +355,7 @@ static void iocontroller_callback(
     os_ushort flags,
     void *context)
 {
-    static int
+    static os_int
         count,
         command_echo;
 

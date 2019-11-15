@@ -110,11 +110,11 @@ os_int ioc_compress(
         *(dst++) = count;
     }
 
-    count = (int)(p - &srcbuf[*start_addr]);
-    dst_count = (int)(dst - dst_start);
+    count = (os_int)(p - &srcbuf[*start_addr]);
+    dst_count = (os_int)(dst - dst_start);
 
     rval = dst_count < count ? dst_count : -1;
-    if (rval >= 0) *start_addr = (int)(p - srcbuf);
+    if (rval >= 0) *start_addr = (os_int)(p - srcbuf);
     return rval;
 }
 
@@ -170,7 +170,7 @@ os_int ioc_uncompress(
     {
         n = src_bytes;
         if (src + n > src_end) return -1;
-        if (dst + n > dst_end) n = (int)(dst_end - dst);
+        if (dst + n > dst_end) n = (os_uint)(dst_end - dst);
 
         if (flags & IOC_DELTA_ENCODED)
         {
@@ -187,7 +187,7 @@ os_int ioc_uncompress(
             }
         }
 
-        return (int)(dst - dst_start);
+        return (os_int)(dst - dst_start);
     }
 
 
@@ -195,7 +195,7 @@ os_int ioc_uncompress(
     {
         n = (os_uchar)*(src++);
         if (src + n > src_end) return -1;
-        if (dst + n > dst_end) n = (int)(dst_end - dst);
+        if (dst + n > dst_end) n = (os_uint)(dst_end - dst);
 
         if (flags & IOC_DELTA_ENCODED)
         {
@@ -214,7 +214,7 @@ os_int ioc_uncompress(
 
         if (src >= src_end || dst >= dst_end) break;
         n = (os_uchar)*(src++);
-        if (dst + n > dst_end) n = (int)(dst_end - dst);
+        if (dst + n > dst_end) n = (os_uint)(dst_end - dst);
 
         if (flags & IOC_DELTA_ENCODED)
         {
@@ -229,6 +229,6 @@ os_int ioc_uncompress(
         }
     }
 
-    return (int)(dst - dst_start);
+    return (os_int)(dst - dst_start);
 }
 

@@ -167,7 +167,7 @@ void ioc_count_connected_streams(
 {
     iocConnection *con;
     iocMemoryBlock *mblk;
-    int count;
+    os_int count;
 
     count = 0;
     ioc_lock(root);

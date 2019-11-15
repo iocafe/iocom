@@ -307,8 +307,8 @@ os_char ioc_movex_array(
  */
 os_boolean ioc_is_my_address(
     const iocSignal *signal,
-    int start_addr,
-    int end_addr);
+    os_int start_addr,
+    os_int end_addr);
 
 /*@}*/
 

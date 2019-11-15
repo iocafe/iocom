@@ -22,7 +22,7 @@
 
 void ioboard_communication_callback(
     struct iocHandle *mblk,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);

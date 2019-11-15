@@ -87,8 +87,8 @@ const MyPinDef leds[]
 
 static void ioboard_callback(
     struct iocMemoryBlock *mblk,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);
 
@@ -229,12 +229,12 @@ osalStatus osal_main(
 */
 static void ioboard_callback(
     struct iocMemoryBlock *mblk,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context)
 {
-    int s, e, i, n;
+    os_int s, e, i, n;
     os_uchar buf[N_LEDS];
 
     /* Get connection status changes.
