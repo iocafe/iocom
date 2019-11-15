@@ -4,7 +4,6 @@
 #include <devicedir.h>
 #include <pins.h>
 #include <FreeRTOS.h>
-#include <WiFi.h>
 
 /*
   gina_platformio.ino
@@ -31,8 +30,11 @@ void setup()
  */
 void loop() 
 {
+    os_timer start_t;
+
     /* Forward loop call to osal_loop(). Reboot if osal_loop returns "no success".
      */
     if (osal_loop(osal_application_context)) osal_reboot(0);
     os_timeslice();
+//    os_sleep(10);
 }
