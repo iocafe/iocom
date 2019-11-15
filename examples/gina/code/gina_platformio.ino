@@ -4,6 +4,7 @@
 #include <devicedir.h>
 #include <pins.h>
 #include <FreeRTOS.h>
+#include <WiFi.h>
 
 /*
   gina_platformio.ino
