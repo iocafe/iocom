@@ -51,7 +51,7 @@ iocFreeBlk;
 void ioc_set_memory_pool(
     iocRoot *root,
     os_char *buf,
-    os_int bufsz)
+    os_memsz bufsz)
 {
     root->pool = buf;
     root->poolsz = bufsz;

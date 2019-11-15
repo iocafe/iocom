@@ -22,7 +22,7 @@
 void ioc_set_memory_pool(
     iocRoot *root,
     os_char *buf,
-    os_int bufsz);
+    os_memsz bufsz);
 
 /* Allocate a block of memory.
  */

@@ -43,9 +43,9 @@
 */
 void ioc_status_write(
     struct iocMemoryBlock *mblk,
-    int addr,
+    os_int addr,
     const os_char *buf,
-    int n)
+    os_int n)
 {
     IOC_MT_ROOT_PTR;
 
@@ -120,9 +120,9 @@ void ioc_status_write(
 */
 void ioc_status_read(
     struct iocMemoryBlock *mblk,
-    int addr,
+    os_int addr,
     os_char *buf,
-    int n)
+    os_int n)
 {
     addr = IOC_STATUS_MEMORY_SZ + addr;
     if (addr < 0)

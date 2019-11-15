@@ -68,7 +68,7 @@ osalStatus ioc_initialize_memory_block(
 {
     iocMemoryBlock *mblk;
     os_char *buf;
-    int nbytes;
+    os_int nbytes;
 
     /* Check that root object is valid pointer.
      */
@@ -476,9 +476,9 @@ void ioc_memory_block_get_string_param(
 */
 void ioc_write(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_char *buf,
-    int n)
+    os_int n)
 {
     ioc_write_internal(handle, addr, buf, n, 0);
 }
@@ -521,9 +521,9 @@ void ioc_write(
 */
 void ioc_write_internal(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_char *buf,
-    int n,
+    os_int n,
     os_short flags)
 {
     iocRoot *root;
@@ -615,9 +615,9 @@ getout:
 */
 void ioc_read(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_char *buf,
-    int n)
+    os_int n)
 {
     ioc_read_internal(handle, addr, buf, n, 0);
 }
@@ -653,9 +653,9 @@ void ioc_read(
 */
 void ioc_read_internal(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_char *buf,
-    int n,
+    os_int n,
     os_short flags)
 {
     iocRoot *root;
@@ -747,7 +747,7 @@ getout:
 */
 void ioc_setp_bit(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     int bit_nr,
     int value)
 {
@@ -795,7 +795,7 @@ void ioc_setp_bit(
 */
 char ioc_getp_bit(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     int bit_nr)
 {
     os_char buf;
@@ -821,7 +821,7 @@ char ioc_getp_bit(
 */
 int ioc_getp_uchar(
     iocHandle *handle,
-    int addr)
+    os_int addr)
 {
     os_uchar u;
     ioc_read_internal(handle, addr, (os_char*)&u, sizeof(os_uchar), 0);
@@ -848,7 +848,7 @@ int ioc_getp_uchar(
 */
 void ioc_setp_short(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     int value)
 {
     os_ushort u;
@@ -873,7 +873,7 @@ void ioc_setp_short(
 */
 int ioc_getp_short(
     iocHandle *handle,
-    int addr)
+    os_int addr)
 {
     os_short s;
     ioc_read_internal(handle, addr, (os_char*)&s, sizeof(os_short), IOC_SWAP_16);
@@ -897,7 +897,7 @@ int ioc_getp_short(
 */
 os_int ioc_getp_ushort(
     iocHandle *handle,
-    int addr)
+    os_int addr)
 {
     os_ushort u;
     ioc_read_internal(handle, addr, (os_char*)&u, sizeof(os_ushort), IOC_SWAP_16);
@@ -923,7 +923,7 @@ os_int ioc_getp_ushort(
 */
 void ioc_setp_int(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_int value)
 {
     ioc_write_internal(handle, addr, (os_char*)&value, sizeof(os_int), IOC_SWAP_32);
@@ -946,7 +946,7 @@ void ioc_setp_int(
 */
 os_int ioc_getp_int(
     iocHandle *handle,
-    int addr)
+    os_int addr)
 {
     os_int s;
     ioc_read_internal(handle, addr, (os_char*)&s, sizeof(os_int), IOC_SWAP_32);
@@ -973,7 +973,7 @@ os_int ioc_getp_int(
 */
 void ioc_setp_float(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_float value)
 {
     ioc_write_internal(handle, addr, (os_char*)&value, sizeof(os_float), IOC_SWAP_32);
@@ -996,7 +996,7 @@ void ioc_setp_float(
 */
 os_float ioc_getp_float(
     iocHandle *handle,
-    int addr)
+    os_int addr)
 {
     os_float value;
     ioc_read_internal(handle, addr, (os_char*)&value, sizeof(os_float), IOC_SWAP_32);
@@ -1025,9 +1025,9 @@ os_float ioc_getp_float(
 */
 void ioc_setp_str(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_char *str,
-    int n)
+    os_int n)
 {
     ioc_write_internal(handle, addr, str, n, IOC_MBLK_STRING);
 }
@@ -1053,9 +1053,9 @@ void ioc_setp_str(
 */
 void ioc_getp_str(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_char *str,
-    int n)
+    os_int n)
 {
     ioc_read_internal(handle, addr, str, n, IOC_MBLK_STRING);
 }
@@ -1081,9 +1081,9 @@ void ioc_getp_str(
 */
 void ioc_setp_short_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_short *arr,
-    int n)
+    os_int n)
 {
     ioc_write_internal(handle, addr, (os_char*)arr, n * sizeof(os_short), IOC_SWAP_16);
 }
@@ -1109,9 +1109,9 @@ void ioc_setp_short_array(
 */
 void ioc_getp_short_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_short *arr,
-    int n)
+    os_int n)
 {
     ioc_read_internal(handle, addr, (os_char*)arr, n * sizeof(os_short), IOC_SWAP_16);
 }
@@ -1137,9 +1137,9 @@ void ioc_getp_short_array(
 */
 void ioc_setp_int_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_int *arr,
-    int n)
+    os_int n)
 {
     ioc_write_internal(handle, addr, (os_char*)arr, n * sizeof(os_int), IOC_SWAP_32);
 }
@@ -1165,9 +1165,9 @@ void ioc_setp_int_array(
 */
 void ioc_getp_int_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_int *arr,
-    int n)
+    os_int n)
 {
     ioc_read_internal(handle, addr, (os_char*)arr, n * sizeof(os_int), IOC_SWAP_32);
 }
@@ -1193,9 +1193,9 @@ void ioc_getp_int_array(
 */
 void ioc_setp_float_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_float *arr,
-    int n)
+    os_int n)
 {
     ioc_write_internal(handle, addr, (os_char*)arr, n * sizeof(os_float), IOC_SWAP_32);
 }
@@ -1221,9 +1221,9 @@ void ioc_setp_float_array(
 */
 void ioc_getp_float_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_float *arr,
-    int n)
+    os_int n)
 {
     ioc_read_internal(handle, addr, (os_char*)arr, n * sizeof(os_float), IOC_SWAP_32);
 }
@@ -1248,8 +1248,8 @@ void ioc_getp_float_array(
 */
 void ioc_clear(
     iocHandle *handle,
-    int addr,
-    int n)
+    os_int addr,
+    os_int n)
 {
     ioc_write_internal(handle, addr, OS_NULL, n, IOC_CLEAR_MBLK_RANGE);
 }

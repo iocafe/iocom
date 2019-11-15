@@ -207,8 +207,8 @@ iocMemoryBlockLink;
 
 typedef void ioc_callback(
     struct iocHandle *handle,
-    int start_addr,
-    int end_addr,
+    os_int start_addr,
+    os_int end_addr,
     os_ushort flags,
     void *context);
 
@@ -367,15 +367,15 @@ void ioc_memory_block_get_string_param(
  */
 void ioc_write(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_char *buf,
-    int n);
+    os_int n);
 
 /* Write data to memory block (internal function for the iocom library).
  */
 void ioc_write_internal(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_char *buf,
     int n,
     os_short flags);
@@ -384,15 +384,15 @@ void ioc_write_internal(
  */
 void ioc_read(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_char *buf,
-    int n);
+    os_int n);
 
 /* Read data from memory block (internal function for the iocom library).
  */
 void ioc_read_internal(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_char *buf,
     int n,
     os_short flags);
@@ -407,7 +407,7 @@ void ioc_read_internal(
  */
 void ioc_setp_bit(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     int bit_nr,
     int value);
 
@@ -415,123 +415,123 @@ void ioc_setp_bit(
  */
 char ioc_getp_bit(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     int bit_nr);
 
 /* Read one unsigned byte from the memory block.
  */
 int ioc_getp_uchar(
     iocHandle *handle,
-    int addr);
+    os_int addr);
 
 /* Write 16 bit integer to the memory block.
  */
 void ioc_setp_short(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     int value);
 
 /* Read signed 16 bit integer from the memory block.
  */
 int ioc_getp_short(
     iocHandle *handle,
-    int addr);
+    os_int addr);
 
 /* Read unsigned 16 bit integer from the memory block.
  */
 os_int ioc_getp_ushort(
     iocHandle *handle,
-    int addr);
+    os_int addr);
 
 /* Write 32 bit integer (os_int) to the memory block.
  */
 void ioc_setp_int(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_int value);
 
 /* Read 32 bit integer from the memory block.
  */
 os_int ioc_getp_int(
     iocHandle *handle,
-    int addr);
+    os_int addr);
 
 /* Write 32 bit floating point value to the memory block.
  */
 void ioc_setp_float(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_float value);
 
 /* Read 32 bit floating point value from the memory block.
  */
 os_float ioc_getp_float(
     iocHandle *handle,
-    int addr);
+    os_int addr);
 
 /* Write string to the memory block.
  */
 void ioc_setp_str(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_char *str,
-    int n);
+    os_int n);
 
 /* Read string from the memory block.
  */
 void ioc_getp_str(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_char *str,
-    int n);
+    os_int n);
 
 /* Store array of 16 bit integers to the memory block.
  */
 void ioc_setp_short_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_short *arr,
-    int n);
+    os_int n);
 
 /* Read array of 16 bit integers from the memory block.
  */
 void ioc_getp_short_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_short *arr,
-    int n);
+    os_int n);
 
 /* Store array of 32 bit integers to the memory block.
  */
 void ioc_setp_int_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_int *arr,
-    int n);
+    os_int n);
 
 /* Read array of 32 bit integers from the memory block.
  */
 void ioc_getp_int_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_int *arr,
-    int n);
+    os_int n);
 
 /* Store array of 32 bit floating point values to the memory block.
  */
 void ioc_setp_float_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     const os_float *arr,
-    int n);
+    os_int n);
 
 /* Read array of 32 bit floating point values from the memory block.
  */
 void ioc_getp_float_array(
     iocHandle *handle,
-    int addr,
+    os_int addr,
     os_float *arr,
-    int n);
+    os_int n);
 
 #endif
 
@@ -539,8 +539,8 @@ void ioc_getp_float_array(
  */
 void ioc_clear(
     iocHandle *handle,
-    int addr,
-    int n);
+    os_int addr,
+    os_int n);
 
 /* Send data synchronously.
  */
