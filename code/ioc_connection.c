@@ -557,6 +557,7 @@ failed:
     if (con->connected)
     {
         ioc_set_mt_root(root, con->link.root);
+        ioc_reset_connection_state(con);
         ioc_lock(root);
         con->connected = OS_FALSE;
         ioc_count_connected_streams(con->link.root, OS_TRUE);
