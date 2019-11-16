@@ -10,7 +10,7 @@
   communication have a connection object dedicated for that link, serialized data is
   transferred from a connection object to another.
 
-  Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
   it fully.

@@ -9,7 +9,7 @@
   Handles are used instead of direct pointers to enable deleting memory blocks fron other thread
   than one using them. The same handle class could be used for other purposes.
 
-  Copyright 2018 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
   it fully.
