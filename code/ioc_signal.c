@@ -585,12 +585,12 @@ os_char ioc_movex_str_signal(
         case OS_FLOAT:
             if (flags & IOC_SIGNAL_WRITE)
             {
-                return ioc_sets_double(signal, osal_string_to_double(str, OS_NULL), state_bits);
+                return ioc_sets_double(signal, osal_str_to_double(str, OS_NULL), state_bits);
             }
             else
             {
                 dvalue = ioc_gets_double(signal, &state_bits);
-                osal_double_to_string(str, str_sz, dvalue, 4, OSAL_FLOAT_DEFAULT);
+                osal_double_to_str(str, str_sz, dvalue, 4, OSAL_FLOAT_DEFAULT);
                 return state_bits;
             }
 
