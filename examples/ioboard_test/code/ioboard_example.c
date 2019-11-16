@@ -351,10 +351,10 @@ static void ioboard_show_communication_status(
         drop_count != acontext->prev_drop_count)
     {
         osal_console_write("nro connections = ");
-        osal_int_to_string(nbuf, sizeof(nbuf), nro_connections);
+        osal_int_to_str(nbuf, sizeof(nbuf), nro_connections);
         osal_console_write(nbuf);
         osal_console_write(", drop count = ");
-        osal_int_to_string(nbuf, sizeof(nbuf), drop_count);
+        osal_int_to_str(nbuf, sizeof(nbuf), drop_count);
         osal_console_write(nbuf);
         osal_console_write("\n");
 

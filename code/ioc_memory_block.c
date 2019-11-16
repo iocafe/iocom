@@ -444,7 +444,7 @@ void ioc_memory_block_get_string_param(
 
     if (value != -1)
     {
-        osal_int_to_string(buf, buf_sz, value);
+        osal_int_to_str(buf, buf_sz, value);
     }
 
     /* End syncronization.

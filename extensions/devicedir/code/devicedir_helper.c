@@ -52,7 +52,7 @@ void devicedir_append_int_param(
 {
     os_char nbuf[OSAL_NBUF_SZ];
 
-    osal_int_to_string(nbuf, sizeof(nbuf), x);
+    osal_int_to_str(nbuf, sizeof(nbuf), x);
     osal_stream_print_str(list, is_first ? "\"" :  ", \"", 0);
     osal_stream_print_str(list, param_name, 0);
     osal_stream_print_str(list, "\":", 0);

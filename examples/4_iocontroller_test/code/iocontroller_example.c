@@ -456,13 +456,13 @@ static void iocontroller_long_processing(
     if (cd.count)
     {
         os_strncpy(text, "processing callback ", sizeof(text));
-        osal_int_to_string(nbuf, sizeof(nbuf), cd.count);
+        osal_int_to_str(nbuf, sizeof(nbuf), cd.count);
         os_strncat(text, nbuf, sizeof(text));
         os_strncat(text, ": ", sizeof(text));
-        osal_int_to_string(nbuf, sizeof(nbuf), cd.start_addr);
+        osal_int_to_str(nbuf, sizeof(nbuf), cd.start_addr);
         os_strncat(text, nbuf, sizeof(text));
         os_strncat(text, " - ", sizeof(text));
-        osal_int_to_string(nbuf, sizeof(nbuf), cd.end_addr);
+        osal_int_to_str(nbuf, sizeof(nbuf), cd.end_addr);
         os_strncat(text, nbuf, sizeof(text));
         os_strncat(text, ": ", sizeof(text));
 
@@ -470,7 +470,7 @@ static void iocontroller_long_processing(
         {
             if (i > cd.start_addr) os_strncat(text, ", ", sizeof(text));
             ioc_read(&c->inputs, i, &u, 1);
-            osal_int_to_string(nbuf, sizeof(nbuf), (os_long)((os_uint)u));
+            osal_int_to_str(nbuf, sizeof(nbuf), (os_long)((os_uint)u));
             os_strncat(text, nbuf, sizeof(text));
         }
 
@@ -538,7 +538,7 @@ static void iocontroller_print_changes(
         c->my_count_from_ioboard = my_count_from_ioboard;
         c->my_count_status_bits_from_ioboard = my_count_status_bits_from_ioboard;
 
-        osal_int_to_string(nbuf, sizeof(nbuf), my_count_from_ioboard);
+        osal_int_to_str(nbuf, sizeof(nbuf), my_count_from_ioboard);
         osal_console_write("signal[20] = ");
         osal_console_write(nbuf);
 

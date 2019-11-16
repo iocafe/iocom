@@ -675,7 +675,7 @@ static osalStatus ioc_write_to_stream(
 #if OSAL_TRACE >= 3
     else if (n_written)
     {
-        osal_int_to_string(msg, sizeof(msg), n_written);
+        osal_int_to_str(msg, sizeof(msg), n_written);
         os_strncat(msg, " bytes written to stream", sizeof(msg));
         osal_trace(msg);
 
@@ -683,7 +683,7 @@ static osalStatus ioc_write_to_stream(
         for (i = 0; i < n_written; i++)
         {
             if (i) os_strncat(msg, ", ", sizeof(msg));
-            osal_int_to_string(nbuf, sizeof(nbuf), (os_uchar)con->frame_out.buf[con->frame_out.pos + i]);
+            osal_int_to_str(nbuf, sizeof(nbuf), (os_uchar)con->frame_out.buf[con->frame_out.pos + i]);
             os_strncat(msg, nbuf, sizeof(msg));
         }
         osal_trace(msg);

@@ -95,7 +95,7 @@ osalStatus osal_main(
         os_sleep(1000);
 
         os_strncpy(text, "callback count: ", sizeof(text));
-        osal_int_to_string(nbuf, sizeof(nbuf), callback_count);
+        osal_int_to_str(nbuf, sizeof(nbuf), callback_count);
         os_strncat(text, nbuf, sizeof(text));
         os_strncat(text, "\n", sizeof(text));
         osal_console_write(text);

@@ -232,7 +232,7 @@ osalStatus ioc_connection_receive(
             for (i = 0; i < n_read; i++)
             {
                 if (i) os_strncat(msg, ", ", sizeof(msg));
-                osal_int_to_string(nbuf, sizeof(nbuf), buf[n + i]);
+                osal_int_to_str(nbuf, sizeof(nbuf), buf[n + i]);
                 os_strncat(msg, nbuf, sizeof(msg));
             }
             osal_trace(msg);
