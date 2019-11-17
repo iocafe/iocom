@@ -31,7 +31,7 @@
  */
 #include "devicedir.h"
 
-/* Transport parameters.
+/* Transport parameters, IP address to connect to, serial port settings.
  */
 #define GINA_IP_ADDRESS "192.168.1.220"
 #define GINA_SERIAL_PORT "COM3,baud=115200"
@@ -53,7 +53,7 @@ static os_char
 
   @brief Set up the communication.
 
-  Initialize transport stream and set interface
+  Sets up network and Initialize transport
   @return  OSAL_SUCCESS if all fine, other values indicate an error.
 
 ****************************************************************************************************
@@ -71,15 +71,27 @@ osalStatus osal_main(
     pins_setup(&pins_hdr, 0);
 
     /* Setup network interface configuration for micro-controller environment. This is ignored
-       if network interfaces are managed by operating system, like Linux or Windows.
+       if network interfaces are managed by operating system (Linux/Windows,etc), or if we are
+       connecting trough wired Ethernet.
      */
     os_memclear(&nic, sizeof(osalNetworkInterface));
     os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
     os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
+//    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
+//    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
 
-    /* Initialize the transport, socket, TLS, serial, etc..
+    /* Manual network configuration. Comment to use automatic (DHCP). This is ignored
+       if network interfaces are managed by operating system, like Linux or Windows.
+       Notice that if two wifi networks are specified in NIC connfiguration, then static
+       congiguration is ignored and DHCP will be enabled.
+     */
+    os_strncpy(nic.ip_address, "192.168.1.195", OSAL_IPADDR_SZ);
+    os_strncpy(nic.subnet_mask, "255.255.255.0", OSAL_IPADDR_SZ);
+    os_strncpy(nic.gateway_address, "192.168.1.254", OSAL_IPADDR_SZ);
+    os_strncpy(nic.dns_address, "8.8.8.8", OSAL_IPADDR_SZ);
+    nic.no_dhcp = OS_TRUE;
+
+    /* Initialize the transport, socket, TLS-socket, serial port, etc.
      */
 //    osal_tls_initialize(OS_NULL, &nic, OS_NULL);
     osal_socket_initialize(&nic, 1);
@@ -107,8 +119,8 @@ osalStatus osal_main(
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_signal_hdr = &gina_hdr;
 
-//    prm.device_info = gina_config;
-    // prm.device_info_sz = sizeof(gina_config);
+    prm.device_info = gina_config;
+    prm.device_info_sz = sizeof(gina_config);
 
     /* Start communication.
      */
