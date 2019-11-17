@@ -960,10 +960,10 @@ static void ioc_connection_thread(
 
         /* Flush data to the connection.
          */
-        /* if (con->stream)
+        if (con->stream)
         {
             osal_stream_flush(con->stream, 0);
-        } */
+        }
 
         continue;
 
