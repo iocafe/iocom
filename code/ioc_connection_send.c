@@ -482,10 +482,10 @@ osalStatus ioc_send_acknowledge(
 
     /* Flush now to force acknowledge trough. Other end needs it already.
      */
-/*     if (con->stream)
+    if (con->stream)
     {
         osal_stream_flush(con->stream, 0);
-    } */
+    }
 
     ioc_unlock(root);
     return status;
