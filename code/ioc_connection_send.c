@@ -90,7 +90,7 @@ osalStatus ioc_connection_send(
 {
     IOC_MT_ROOT_PTR;
 
-    iocMemoryBlock 
+    iocMemoryBlock
         *mblk;
 
     iocSourceBuffer
@@ -106,12 +106,12 @@ osalStatus ioc_connection_send(
     /* If there is unsent or partly sent message in frame buffer,
        we can not place new message into it.
      */
-    if (con->frame_out.used) 
+    if (con->frame_out.used)
     {
         goto just_move_data;
     }
 
-    /* Is there received data to be acknowledged? (more than N 
+    /* Is there received data to be acknowledged? (more than N
        unacknowledged bytes, N = relax not ot acknowledge every
        small message separately)
      */
@@ -131,12 +131,12 @@ osalStatus ioc_connection_send(
 
     /* Did we send whole acknowledge? If not, return OSAL_STATUS_PENDING
      */
-    if (con->frame_out.used) 
+    if (con->frame_out.used)
     {
         ioc_unlock(root);
         return OSAL_STATUS_PENDING;
     }
-    
+
     /* Do we have memory block information to send?
      */
     mblk = ioc_get_mbinfo_to_send(con);
@@ -247,13 +247,13 @@ static void ioc_make_data_frame(
 
     src_bytes = sbuf->syncbuf.end_addr - saved_start_addr + 1;
     if (src_bytes > max_dst_bytes) src_bytes = max_dst_bytes;
-    used_bytes = (compressed_bytes < 0 ? src_bytes : compressed_bytes) 
+    used_bytes = (compressed_bytes < 0 ? src_bytes : compressed_bytes)
         + ptrs.header_sz;
 
     /* If other end has not acknowledged enough data to send the
        frame, cancel the send.
      */
-    u = con->bytes_sent - con->processed_bytes; 
+    u = con->bytes_sent - con->processed_bytes;
     bytes = con->max_in_air - (os_int)u;
     if (used_bytes > bytes)
     {
@@ -356,7 +356,7 @@ static void ioc_make_mblk_info_frame(
        we know (and trust) that it fits within one frame.
      */
     p = start = con->frame_out.buf + ptrs.header_sz;
-    *(p++) = IOC_SYSRAME_MBLK_INFO; 
+    *(p++) = IOC_SYSRAME_MBLK_INFO;
     version_and_flags = p; /* version, for future additions + flags */
     *(p++) = 0;
     if (ioc_msg_setint(mblk->device_nr, &p)) *version_and_flags |= IOC_INFO_D_2BYTES;
@@ -381,7 +381,7 @@ static void ioc_make_mblk_info_frame(
      */
     content_bytes = (os_int)(p - start);
     used_bytes = content_bytes + ptrs.header_sz;
-    u = con->bytes_sent - con->processed_bytes; 
+    u = con->bytes_sent - con->processed_bytes;
     bytes = con->max_in_air - (os_int)u;
     if (used_bytes > bytes)
     {
@@ -461,7 +461,7 @@ osalStatus ioc_send_acknowledge(
 
     /* If frame buffer is used, we can do nothing.
      */
-    if (con->frame_out.used) 
+    if (con->frame_out.used)
     {
         ioc_unlock(root);
         return OSAL_STATUS_PENDING;
@@ -470,7 +470,7 @@ osalStatus ioc_send_acknowledge(
     /* Generate acknowledge/keepalive message
      */
     p = con->frame_out.buf;
-    *(p++) = IOC_ACKNOWLEDGE; 
+    *(p++) = IOC_ACKNOWLEDGE;
     rbytes = con->bytes_received;
     *(p++) = (os_uchar)rbytes;
     *p = (os_uchar)(rbytes >> 8);
@@ -482,10 +482,10 @@ osalStatus ioc_send_acknowledge(
 
     /* Flush now to force acknowledge trough. Other end needs it already.
      */
-    if (con->stream)
+/*     if (con->stream)
     {
         osal_stream_flush(con->stream, 0);
-    }
+    } */
 
     ioc_unlock(root);
     return status;
@@ -549,21 +549,20 @@ osalStatus ioc_send_timed_keepalive(
   @brief Acknowledge if we have reached the limit of unacknowledged bytes.
   @anchor ioc_acknowledge_as_needed
 
-  The ioc_acknowledge_as_needed() function sends acknowledge is we have reached limit of 
+  The ioc_acknowledge_as_needed() function sends acknowledge is we have reached limit of
   unacknowledged bytes.
 
   @param   con Pointer to the connection object.
-  @return  The function returns OSAL_SUCCESS if acknowledgement was not needed or was sent (at
-           least stored in frame out buffer). The function returns OSAL_STATUS_PENDING is
-           other end has not acknowledged enough free space for acknowledge message.
-           Other return values indicate a broken connection.
+  @return  The function returns OSAL_SUCCESS if acknowledgement was not needed or was sent.
+           The function returns OSAL_STATUS_PENDING is other end has not acknowledged enough free
+           space for acknowledge message. Other return values indicate a broken connection.
 
 ****************************************************************************************************
 */
 osalStatus ioc_acknowledge_as_needed(
     iocConnection *con)
 {
-    os_int 
+    os_int
         bytes;
 
     os_ushort
@@ -575,7 +574,7 @@ osalStatus ioc_acknowledge_as_needed(
     /* If other end has not acknowledged 3 bytes of free space, return
        OSAL_STATUS_PENDING.
      */
-    u = con->bytes_sent - con->processed_bytes; 
+    u = con->bytes_sent - con->processed_bytes;
     bytes = (os_int)con->max_ack_in_air - (os_int)u;
     if (bytes < IOC_ACK_SIZE)
     {
@@ -584,7 +583,7 @@ osalStatus ioc_acknowledge_as_needed(
 
     /* If we have received enough unacknowledged bytes to acknowledge now.
      */
-    u = con->bytes_received - con->bytes_acknowledged; 
+    u = con->bytes_received - con->bytes_acknowledged;
     if (u < con->unacknogledged_limit)
     {
         return OSAL_SUCCESS;
@@ -597,7 +596,7 @@ osalStatus ioc_acknowledge_as_needed(
         return OSAL_STATUS_FAILED;
     }
     osal_trace2_int("connection: ACK sent, received byte count=", con->bytes_received);
-    return OSAL_SUCCESS;
+    return status;
 }
 
 
@@ -691,7 +690,7 @@ static osalStatus ioc_write_to_stream(
 #endif
 #endif
 
-    /* Advance current frame buffer position. If we got the whole frame buffer written, 
+    /* Advance current frame buffer position. If we got the whole frame buffer written,
        mark it unused.
      */
     con->frame_out.pos += (os_int)n_written;
@@ -722,7 +721,7 @@ static osalStatus ioc_write_to_stream(
   @param   remote_mblk_id Identifier of remote memory block to which the message being
            generated is addressed to.
   @param   addr Beginning address within the memory block where this data is written to.
-   
+
   @return  None.
 
 ****************************************************************************************************
@@ -767,7 +766,7 @@ static void ioc_generate_header(
     ptrs->flags = p;
     *(p++) = 0;
 
-    /* BYTES: Data size in bytes, as in this message. 1 bytes 
+    /* BYTES: Data size in bytes, as in this message. 1 bytes
        in serial communication, two bytes for socket.
        Set zero for now and save pointer. Set at the end.
      */
