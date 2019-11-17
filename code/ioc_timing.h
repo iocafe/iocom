@@ -23,7 +23,7 @@
 
 /* Long timeouts for tracing test. We cannot run in normal speed and print messages.
  */
-#if OSAL_TRACE >= 2
+#if OSAL_TRACE >= 3
 #define IOC_SOCKET_KEEPALIVE_MS 180000
 #define IOC_SOCKET_SILENCE_MS 3600000
 #define IOC_SERIAL_KEEPALIVE_MS 120000

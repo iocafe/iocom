@@ -62,6 +62,7 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
+    osalNetworkInterface nic;
     ioboardParams prm;
     const osalStreamInterface *iface;
 
@@ -69,10 +70,19 @@ osalStatus osal_main(
      */
     pins_setup(&pins_hdr, 0);
 
+    /* Setup network interface configuration for micro-controller environment. This is ignored
+       if network interfaces are managed by operating system, like Linux or Windows.
+     */
+    os_memclear(&nic, sizeof(osalNetworkInterface));
+    os_strncpy(nic.wifi_net_name_1, "bean24", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_name_2, "julian", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
+
     /* Initialize the transport, socket, TLS, serial, etc..
      */
-//    osal_tls_initialize(OS_NULL, 0, OS_NULL);
-    osal_socket_initialize(OS_NULL, 0);
+//    osal_tls_initialize(OS_NULL, &nic, OS_NULL);
+    osal_socket_initialize(&nic, 1);
     osal_serial_initialize();
 
     /* Get stream interface by IOBOARD_CTRL_CON define.
