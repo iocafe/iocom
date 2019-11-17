@@ -275,15 +275,10 @@ osalStatus ioc_connect(
     iocConnection *con,
     iocConnectionParams *prm)
 {
-    iocRoot 
-        *root;
-
-    os_char
-        *frame_in_buf, 
-        *frame_out_buf;
-
-    os_int
-        flags;
+    iocRoot *root;
+    os_char *frame_in_buf, *frame_out_buf;
+    os_int flags;
+    osalThreadOptParams opt;
 
     osal_debug_assert(con->debug_id == 'C');
 
@@ -406,8 +401,15 @@ osalStatus ioc_connect(
         con->worker.trig = osal_event_create();
         con->worker.thread_running = OS_TRUE;
         con->worker.stop_thread = OS_FALSE;
+
+        os_memclear(&opt, sizeof(opt));
+        opt.thread_name = "connection";
+        opt.stack_size = 4000;
+        opt.pin_to_core = OS_TRUE;
+        opt.pin_to_core_nr = 0;
+
         osal_thread_create(ioc_connection_thread, con,
-            OSAL_THREAD_DETACHED, 0, "connection");
+            &opt, OSAL_THREAD_DETACHED);
     }
 #endif
 

@@ -219,6 +219,7 @@ osalStatus ioc_listen(
 {
     IOC_MT_ROOT_PTR;
     os_short flags;
+    osalThreadOptParams opt;
 
     osal_debug_assert(epoint->debug_id == 'E');
 
@@ -268,8 +269,13 @@ osalStatus ioc_listen(
         epoint->worker_thread_running = OS_TRUE;
         epoint->stop_worker_thread = OS_FALSE;
 
+        opt.thread_name = "endpoint";
+        opt.stack_size = 4000;
+        opt.pin_to_core = OS_TRUE;
+        opt.pin_to_core_nr = 0;
+
         osal_thread_create(ioc_endpoint_thread, epoint,
-            OSAL_THREAD_DETACHED, 0, "endpoint");
+            &opt, OSAL_THREAD_DETACHED);
     }
 #endif
 

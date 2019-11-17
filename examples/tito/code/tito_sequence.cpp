@@ -65,7 +65,7 @@ void TitoSequence::start(TitoTestApplication *app)
      */
     m_stop_thread = OS_FALSE;
     m_thread = osal_thread_create(tito_test_sequence_thread_func, this,
-        OSAL_THREAD_ATTACHED, 0, app->m_network_name);
+        OS_NULL, OSAL_THREAD_ATTACHED);
 
     m_started = OS_TRUE;
 }

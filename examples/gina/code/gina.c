@@ -72,24 +72,13 @@ osalStatus osal_main(
 
     /* Setup network interface configuration for micro-controller environment. This is ignored
        if network interfaces are managed by operating system (Linux/Windows,etc), or if we are
-       connecting trough wired Ethernet.
+       connecting trough wired Ethernet. If only one subnet, set wifi_net_name_1.
      */
     os_memclear(&nic, sizeof(osalNetworkInterface));
     os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
     os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
-//    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
-//    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
-
-    /* Manual network configuration. Comment to use automatic (DHCP). This is ignored
-       if network interfaces are managed by operating system, like Linux or Windows.
-       Notice that if two wifi networks are specified in NIC connfiguration, then static
-       congiguration is ignored and DHCP will be enabled.
-     */
-    os_strncpy(nic.ip_address, "192.168.1.195", OSAL_IPADDR_SZ);
-    os_strncpy(nic.subnet_mask, "255.255.255.0", OSAL_IPADDR_SZ);
-    os_strncpy(nic.gateway_address, "192.168.1.254", OSAL_IPADDR_SZ);
-    os_strncpy(nic.dns_address, "8.8.8.8", OSAL_IPADDR_SZ);
-    nic.no_dhcp = OS_TRUE;
+    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
 
     /* Initialize the transport, socket, TLS-socket, serial port, etc.
      */

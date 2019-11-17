@@ -69,7 +69,7 @@ void TitoApplication::startapp()
 
     m_stop_thread = OS_FALSE;
     m_thread = osal_thread_create(tito_application_thread_func, this,
-        OSAL_THREAD_ATTACHED, 0, m_network_name);
+        OS_NULL, OSAL_THREAD_ATTACHED);
 
     m_started = OS_TRUE;
 }
