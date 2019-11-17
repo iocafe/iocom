@@ -292,7 +292,7 @@ osalStatus ioc_connection_receive(
     {
         con->processed_bytes = (os_ushort)buf[1] | (((os_ushort)buf[2]) << 8);
 
-        osal_trace2_int("ACK received, outgoing bytes in air=", 
+        osal_trace_int("ACK received, in air=",
             (con->bytes_sent - con->processed_bytes));
         goto alldone;
     }
