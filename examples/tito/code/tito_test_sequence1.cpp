@@ -73,13 +73,29 @@ void TitoTestSequence1::stop()
 */
 void TitoTestSequence1::run()
 {
-    os_boolean led_on = OS_FALSE;
+    os_boolean led_on = OS_TRUE;
+    os_char state_bits;
+    os_int dip, elap;
+    os_timer end_t, start_t;
 
     while (!m_stop_thread && osal_go())
     {
-        led_on = !led_on;
+
+        os_get_timer(&start_t);
         ioc_sets_int(&gina2->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
-        os_sleep(15);
+        do {
+            os_timeslice();
+            if (os_elapsed(&start_t, 1000)) break;
+            dip = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits);
+        } while (dip != led_on);
+        os_get_timer(&end_t);
+        elap = (end_t - start_t);
+
+        osal_trace_int("elap = ", elap);
+        osal_trace_int("led = ", led_on);
+        osal_trace_int("dip = ", dip);
+        os_sleep(500);
+        led_on = !led_on;
     }
 }
 

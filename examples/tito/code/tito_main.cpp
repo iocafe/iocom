@@ -38,11 +38,11 @@ TitoMain::TitoMain()
     app->start("pekkanet", 1);
     m_app[m_nro_apps++] = app;
 
-    app = new TitoTestApplication();
+    /* app = new TitoTestApplication();
     app->start("markkunet", 1);
     m_app[m_nro_apps++] = app;
 
-    /* app = new TitoTestApplication();
+    app = new TitoTestApplication();
     app->start("surfnet", 1);
     m_app[m_nro_apps++] = app;
 

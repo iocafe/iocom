@@ -582,10 +582,10 @@ void ioc_write_internal(
     }
     ioc_mblk_invalidate(mblk, addr, addr + n - 1);
 
-    if (mblk->flags & IOC_AUTO_SYNC)
+    /* NOT NEEDED, INVALIDATE ALREADY DOES THIS if (mblk->flags & IOC_AUTO_SYNC)
     {
         ioc_send(handle);
-    }
+    } */
 
 getout:
     ioc_unlock(root);
@@ -1450,7 +1450,10 @@ void ioc_mblk_invalidate(
          sbuf = sbuf->mlink.next)
     {
         ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
-        if (mblk->flags & IOC_AUTO_SYNC) ioc_sbuf_synchronize(sbuf);
+        if (mblk->flags & IOC_AUTO_SYNC)
+        {
+            ioc_sbuf_synchronize(sbuf);
+        }
     }
 }
 
