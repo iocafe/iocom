@@ -307,13 +307,14 @@ void ioc_memory_block_set_int_param(
      */
     if (value)
     {
+        if (mblk->flags & IOC_TARGET)
+        {
+            ioc_receive(handle);
+        }
+
         if (mblk->flags & IOC_SOURCE)
         {
             ioc_send(handle);
-        }
-        else
-        {
-            ioc_receive(handle);
         }
     }
 

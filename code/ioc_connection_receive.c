@@ -429,7 +429,7 @@ static osalStatus ioc_process_received_data_frame(
      */
     if (tbuf == OS_NULL)
     {
-        osal_trace2("Data for unlinked memory block");
+        osal_trace3("Data for unlinked memory block");
         return OSAL_SUCCESS;
     }
 

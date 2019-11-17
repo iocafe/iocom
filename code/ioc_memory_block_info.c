@@ -248,7 +248,7 @@ void ioc_mbinfo_received(
     iocMemoryBlock *mblk;
     iocHandle handle;
     iocSourceBuffer *sbuf;
-    iocTargetBuffer *tbuf;
+    iocTargetBuffer *tbuf, *next_tbuf;
     os_boolean mblk_matches;
 
 #if IOC_DYNAMIC_MBLK_CODE
@@ -354,16 +354,16 @@ void ioc_mbinfo_received(
     }
 #endif
 
-    /* If we have a source memory block?
+    /* If we have a memory block which can be a source?
      */
-    if ((mblk->flags & (IOC_TARGET|IOC_SOURCE)) == IOC_SOURCE)
+    if (mblk->flags & IOC_SOURCE)
     {
-        /* If the other end has target memory block?
+        /* If the other memory block cannot be a target, do nothing more
          */
-        if ((info->flags & (IOC_TARGET|IOC_SOURCE)) == IOC_SOURCE)
+        if ((info->flags & IOC_TARGET) == 0)
         {
-            osal_debug_error("Unable to bind two source mblks");
-            return;
+            osal_trace3("source - source skipped");
+            goto skip1;
         }
 
         /* Check if we already have subscription for this connection.
@@ -374,8 +374,8 @@ void ioc_mbinfo_received(
         {
             if (mblk == sbuf->mlink.mblk)
             {
-                osal_trace3("Memory block already subscribed for the connection");
-                return;
+                osal_trace2("Memory block already subscribed for the connection");
+                goto skip1;
             }
         }
 
@@ -405,20 +405,19 @@ void ioc_mbinfo_received(
             root->callback_func(root, con, mblk,
                 IOC_MBLK_CONNECTED, root->callback_context);
         } */
-
-        return;
     }
+skip1:
 
-    /* If we have target memory block
+    /* If we have memory block which can be a target
      */
-    if ((mblk->flags & (IOC_TARGET|IOC_SOURCE)) == IOC_TARGET)
+    if (mblk->flags & IOC_TARGET)
     {
-        /* If the other end has target memory block?
+        /* If the other memory block cannot be a source
          */
-        if ((info->flags & (IOC_TARGET|IOC_SOURCE)) == IOC_TARGET)
+        if ((info->flags & IOC_SOURCE) == 0)
         {
-            osal_debug_error("Unable to bind two target mblks");
-            return;
+            osal_trace3("target - target skippes");
+            goto skip2;
         }
 
         /* Check if we already have target buffer for this connection.
@@ -429,9 +428,19 @@ void ioc_mbinfo_received(
         {
             if (mblk == tbuf->mlink.mblk)
             {
-                osal_trace3("Memory block already targeted for the connection");
-                return;
+                osal_trace2("Memory block already targeted for the connection");
+                goto skip2;
             }
+        }
+
+        /* If we have target buffer for other connection, delete it.
+         */
+        for (tbuf = mblk->tbuf.first;
+             tbuf;
+             tbuf = next_tbuf)
+        {
+            next_tbuf = tbuf->mlink.next;
+            ioc_release_target_buffer(tbuf);
         }
 
         /* If memory block has no name, copy name from info (if there is one).
@@ -456,5 +465,7 @@ void ioc_mbinfo_received(
 
         return;
     }
+skip2:;
+
 }
 
