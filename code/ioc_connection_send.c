@@ -553,9 +553,10 @@ osalStatus ioc_send_timed_keepalive(
   unacknowledged bytes.
 
   @param   con Pointer to the connection object.
-  @return  The function returns OSAL_SUCCESS if acknowledgement was not needed or was sent.
-           The function returns OSAL_STATUS_PENDING is other end has not acknowledged enough free
-           space for acknowledge message. Other return values indicate a broken connection.
+  @return  The function returns OSAL_SUCCESS if acknowledgement was not needed or was sent (at
+           least stored in frame out buffer). The function returns OSAL_STATUS_PENDING is
+           other end has not acknowledged enough free space for acknowledge message.
+           Other return values indicate a broken connection.
 
 ****************************************************************************************************
 */
@@ -595,8 +596,8 @@ osalStatus ioc_acknowledge_as_needed(
         osal_debug_error("send acknowledge failed");
         return OSAL_STATUS_FAILED;
     }
-    osal_trace2_int("connection: ACK sent, received byte count=", con->bytes_received);
-    return status;
+    osal_trace_int("connection: ACK sent, received byte count=", con->bytes_received);
+    return OSAL_SUCCESS;
 }
 
 
