@@ -5,6 +5,9 @@
 #include <pins.h>
 #include <FreeRTOS.h>
 
+
+static int prio_set;
+
 /*
   gina_platformio.ino
   To build it within Visual Studio Code and PlatformIO. 
@@ -30,8 +33,9 @@ void setup()
  */
 void loop() 
 {
+    if (!prio_set) {osal_thread_set_priority(OSAL_THREAD_PRIORITY_TIME_CRITICAL); prio_set=1;}
+
     /* Forward loop call to osal_loop(). Reboot if osal_loop returns "no success".
      */
     if (osal_loop(osal_application_context)) osal_reboot(0);
-    os_timeslice();
 }
