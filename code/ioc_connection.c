@@ -454,16 +454,16 @@ osalStatus ioc_run_connection(
 
     osal_debug_assert(con->debug_id == 'C');
 
-    /* Do nothing if ioc_connect() has not been called.
-     */
-    if (con->parameters[0] == '\0')
-        return OSAL_SUCCESS;
-
     /* If stream is not open, then connect it now. Do not try if if two secons have not
        passed since last failed open try.
      */
     if (con->stream == OS_NULL)
     {
+        /* Do nothing if ioc_connect() has not been called. Should we report a program error?
+         */
+        if (con->parameters[0] == '\0')
+            return OSAL_SUCCESS;
+
         status = ioc_try_to_connect(con);
         if (status == OSAL_STATUS_PENDING) return OSAL_SUCCESS;
         if (status) return status;
