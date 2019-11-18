@@ -78,10 +78,21 @@ osalStatus osal_main(
     os_char *argv[])
 {
     ioboardParams prm;
+    osalNetworkInterface nic;
+
+    /* Setup network interface configuration for micro-controller environment. This is ignored
+       if network interfaces are managed by operating system (Linux/Windows,etc), or if we are
+       connecting trough wired Ethernet. If only one subnet, set wifi_net_name_1.
+     */
+    os_memclear(&nic, sizeof(osalNetworkInterface));
+    os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
 
     /* Initialize the socket library.
      */
-    osal_socket_initialize(OS_NULL, 0);
+    osal_socket_initialize(&nic, 1);
 
     /* Set up parameters for the IO board. To connect multiple devices,
        either device number or name must differ.

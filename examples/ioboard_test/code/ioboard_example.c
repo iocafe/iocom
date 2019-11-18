@@ -131,7 +131,18 @@ osalStatus osal_main(
     os_char *argv[])
 {
     ioboardParams prm;
+    osalNetworkInterface nic;
     const osalStreamInterface *iface;
+
+    /* Setup network interface configuration for micro-controller environment. This is ignored
+       if network interfaces are managed by operating system (Linux/Windows,etc), or if we are
+       connecting trough wired Ethernet. If only one subnet, set wifi_net_name_1.
+     */
+    os_memclear(&nic, sizeof(osalNetworkInterface));
+    os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
 
     /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
        and osal_tls_initialize(). These use the same underlying library.
@@ -141,10 +152,10 @@ osalStatus osal_main(
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
   #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     static osalTLSParam tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
-    osal_tls_initialize(OS_NULL, 0, &tlsprm);
+    osal_tls_initialize(&nic, 1, &tlsprm);
     iface = OSAL_TLS_IFACE;
   #else
-    osal_socket_initialize(OS_NULL, 0);
+    osal_socket_initialize(&nic, 1);
     iface = OSAL_SOCKET_IFACE;
   #endif
 #else

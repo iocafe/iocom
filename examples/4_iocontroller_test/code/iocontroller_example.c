@@ -45,7 +45,7 @@
    style using "COM1", "COM2"... These are mapped to hardware/operating system in device specific
    manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
  */
-#define EXAMPLE_IP_ADDRESS "192.168.1.220"
+#define EXAMPLE_IP_ADDRESS "192.168.1.66"
 #define EXAMPLE_TCP_SOCKET_PORT IOC_DEFAULT_SOCKET_PORT_STR
 #define EXAMPLE_TLS_SOCKET_PORT IOC_DEFAULT_TLS_PORT_STR
 #define EXAMPLE_TLS_SERVER_CERT "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/alice.crt"
@@ -162,6 +162,8 @@ osalStatus osal_main(
     os_char *l_parameters;
 #endif
 
+    osalNetworkInterface nic;
+
     const os_int
         input_block_sz = 1000,
         output_block_sz = 1000;
@@ -169,13 +171,23 @@ osalStatus osal_main(
     os_int
         flags;
 
+    /* Setup network interface configuration for micro-controller environment. This is ignored
+       if network interfaces are managed by operating system (Linux/Windows,etc), or if we are
+       connecting trough wired Ethernet. If only one subnet, set wifi_net_name_1.
+     */
+    os_memclear(&nic, sizeof(osalNetworkInterface));
+    os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
+
     /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
        and osal_tls_initialize(). These use the same underlying library.
        Set up iface to point correct transport interface and set parameters to configure it.
        Set also flags for communication protocol.
      */
 #if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
-    osal_socket_initialize(OS_NULL, 0);
+    osal_socket_initialize(&nic, 1);
     iface = OSAL_SOCKET_IFACE;
 #if MY_ROLE==EXAMPLE_CONNECT
     c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TCP_SOCKET_PORT;
@@ -187,7 +199,7 @@ osalStatus osal_main(
 
 #if MY_TRANSPORT==EXAMPLE_USE_TLS_SOCKET
     static osalTLSParam prm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
-    osal_tls_initialize(OS_NULL, 0, &prm);
+    osal_tls_initialize(&nic, 1, &prm);
     iface = OSAL_TLS_IFACE;
 #if MY_ROLE==EXAMPLE_CONNECT
     c_parameters = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TLS_SOCKET_PORT;
@@ -276,6 +288,7 @@ osalStatus osal_loop(
     void *app_context)
 {
     os_short x;
+    os_char state_bits;
     ioControllerContext *c;
     c = (ioControllerContext*)app_context;
 
@@ -287,8 +300,11 @@ osalStatus osal_loop(
 
     iocontroller_print_changes(c);
 
-    x = ioc_get_short(&ctx.exp, 20, OS_NULL);
-    osal_trace_int("v = ", x);
+    x = ioc_get_short(&ctx.exp, 20, &state_bits);
+    if (state_bits & OSAL_STATE_CONNECTED)
+    {
+        osal_trace_int("v = ", x);
+    }
 
     return OSAL_SUCCESS;
 }
