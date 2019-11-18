@@ -130,6 +130,9 @@ osalStatus osal_main(
     os_memclear(&prm, sizeof(prm));
     prm.iface = IOBOARD_STEAM_IFACE;
     prm.ctrl_type = IOBOARD_CTRL_CON;
+    //prm.device_name = "atollic";
+    //prm.device_nr = 1;
+    //prm.network_name = "pekkanet";
     prm.socket_con_str = "127.0.0.1";
     prm.socket_con_str = "192.168.1.229";
     //prm.serial_con_str = "COM5,baud=115200";

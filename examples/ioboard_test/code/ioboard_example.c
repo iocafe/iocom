@@ -29,13 +29,14 @@
 
 ****************************************************************************************************
 */
+#define IOCOM_IOBOARD
 #include "iocom.h"
 
 /* How this IO device and the control computer connect together. One of IOBOARD_CTRL_LISTEN_SOCKET,
    IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL, IOBOARD_CTRL_LISTEN_TLS.
    IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
  */
-#define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
+#define IOBOARD_CTRL_CON IOBOARD_CTRL_LISTEN_SOCKET
 
 /* Modify connection parameters here: These apply to different communication types
    Define EXAMPLE_TCP_SOCKET_PORT sets unsecured TCP socket port number
@@ -94,11 +95,11 @@ static MyAppContext ioboard_app_context;
 /* Here I create signal structures from C code by hand. Code to create these can
    be also generated from XML by script.
  */
-static iocSignal my_tc_count = {20, 1, OS_SHORT, 0, &ioboard_export};
+static iocSignal my_tc_count = {20, 1, OS_SHORT, &ioboard_export};
 static os_short my_signal_count;
 static os_timer my_signal_timer;
 
-static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, 0, &ioboard_import};
+static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, &ioboard_import};
 
 
 /* Static function prototypes.
@@ -162,7 +163,9 @@ osalStatus osal_main(
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
     prm.ctrl_type = IOBOARD_CTRL_CON;
-
+//    prm.device_name = "ulle";
+//    prm.device_nr = 1;
+    //prm.network_name = "pekkanet";
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     prm.socket_con_str = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TLS_SOCKET_PORT;
 #else

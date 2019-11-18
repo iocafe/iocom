@@ -15,6 +15,10 @@
 */
 #include "iocom.h"
 
+/* Include ioboard header. This is behind define avoid copy/paste errors.
+ */
+#ifdef IOCOM_IOBOARD
+
 /* Communication root structure.
  */
 extern iocRoot
@@ -154,3 +158,5 @@ void ioboard_start_communication(ioboardParams *prm);
 /* Shut down the communication.
  */
 void ioboard_end_communication(void);
+
+#endif

@@ -110,8 +110,9 @@ osalStatus osal_main(
      */
     os_memclear(&prm, sizeof(prm));
     prm.iface = IOBOARD_STEAM_IFACE;
-    prm.device_name = "MYDEV";
-    prm.device_nr = 1;
+    //prm.device_name = "MYDEV";
+    //prm.device_nr = 1;
+    //prm.network_name = "pekkanet";
 	prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = "127.0.0.1";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;

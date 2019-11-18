@@ -9,7 +9,7 @@
   The 4_iocontroller_test example controls 7 segment LED display. It connects to the IO board
   through TCP socket or serial port.
 
-  This example assumes one memory block for inputs and the other for outputs. It uses both
+  This example assumes one memory block for exp and the other for imp. It uses both
   supports dynamic memory allocation and multithreading, thus this example cannot be used in
   most microcontrollers.
 
@@ -59,7 +59,7 @@
 
 /* Select connect role here
  */
-#define MY_ROLE EXAMPLE_LISTEN
+#define MY_ROLE EXAMPLE_CONNECT
 
 
 typedef struct
@@ -83,8 +83,8 @@ typedef struct
         *root;
 
     iocHandle
-        inputs,
-        outputs;
+        exp,
+        imp;
 
     os_int
         countdown,
@@ -139,7 +139,7 @@ static void iocontroller_print_changes(
 
   @brief IO controller example.
 
-  The osal_main() function connects two memory blocks, inputs and outputs, to IO board.
+  The osal_main() function connects two memory blocks, exp and imp, to IO board.
 
   @return  None.
 
@@ -222,16 +222,16 @@ osalStatus osal_main(
     blockprm.mblk_nr = IOC_DEV_EXPORT_MBLK;
     blockprm.nbytes = input_block_sz;
     blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    ioc_initialize_memory_block(&ctx.inputs, OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&ctx.exp, OS_NULL, &root, &blockprm);
 
     blockprm.mblk_nr = IOC_DEV_IMPORT_MBLK;
     blockprm.nbytes = output_block_sz;
     blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
-    ioc_initialize_memory_block(&ctx.outputs, OS_NULL, &root, &blockprm);
+    ioc_initialize_memory_block(&ctx.imp, OS_NULL, &root, &blockprm);
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ctx.inputs, iocontroller_callback, &ctx);
+    ioc_add_callback(&ctx.exp, iocontroller_callback, &ctx);
 
 #if MY_ROLE==EXAMPLE_CONNECT
     /* Connect to an "IO board".
@@ -275,6 +275,7 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+    os_short x;
     ioControllerContext *c;
     c = (ioControllerContext*)app_context;
 
@@ -285,6 +286,9 @@ osalStatus osal_loop(
     iocontroller_spin_7_segment_delay(c);
 
     iocontroller_print_changes(c);
+
+    x = ioc_get_short(&ctx.exp, 20, OS_NULL);
+    osal_trace_int("v = ", x);
 
     return OSAL_SUCCESS;
 }
@@ -382,7 +386,7 @@ static void iocontroller_callback(
     if (end_addr >= 2 && start_addr < 2 + 2)
     {
         command_echo = ioc_getp_short(mblk_handle, 2);
-        ioc_setp_short(&c->outputs, 11, command_echo);
+        ioc_setp_short(&c->imp, 11, command_echo);
     }
 
     /* Set up for longer processing by specific thread.
@@ -398,13 +402,13 @@ static void iocontroller_spin_7_segment_delay(
 {
     if (c->countdown > 0)
     {
-        iocontroller_7_segment(&c->outputs, --(c->countdown));
+        iocontroller_7_segment(&c->imp, --(c->countdown));
         os_sleep(500);
     }
     else
     {
         if (++(c->spinner) > 7) c->spinner = 0;
-        iocontroller_8_spinner(&c->outputs, c->spinner);
+        iocontroller_8_spinner(&c->imp, c->spinner);
         os_sleep(c->slow ? 30 : 1);
         if (c->count++ > (c->slow ? 100 : 2800))
         {
@@ -469,7 +473,7 @@ static void iocontroller_long_processing(
         for (i = cd.start_addr; i <= cd.end_addr; i++)
         {
             if (i > cd.start_addr) os_strncat(text, ", ", sizeof(text));
-            ioc_read(&c->inputs, i, &u, 1);
+            ioc_read(&c->exp, i, &u, 1);
             osal_int_to_str(nbuf, sizeof(nbuf), (os_long)((os_uint)u));
             os_strncat(text, nbuf, sizeof(text));
         }
@@ -527,7 +531,7 @@ static void iocontroller_print_changes(
 
     /* Read count from IO board.
      */
-    my_count_from_ioboard = ioc_get_short(&c->inputs, 20,
+    my_count_from_ioboard = ioc_get_short(&c->exp, 20,
         &my_count_status_bits_from_ioboard);
 
     /* If count or state bits have changed, then print it.
