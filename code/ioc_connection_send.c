@@ -537,7 +537,13 @@ osalStatus ioc_send_timed_keepalive(
             osal_debug_error("send keepalive failed");
             return OSAL_STATUS_FAILED;
         }
-        osal_trace_int("connection: keep alive sent, received byte count=", con->bytes_received);
+#if OSAL_TRACE
+        if (status == OSAL_SUCCESS)
+        {
+            osal_trace_int("connection: keep alive sent, received = ",
+                con->bytes_received);
+        }
+#endif
     }
     return OSAL_SUCCESS;
 }
