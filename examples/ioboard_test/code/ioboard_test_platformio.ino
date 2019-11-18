@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <eosalx.h>
 #include <iocom.h>
+#include <FreeRTOS.h>
 
 /*
   4_ioboard_test.ino
@@ -15,7 +16,7 @@ void setup()
      */
     Serial.begin(115200);
     while (!Serial) {}
-    Serial.println("Arduino IO board starting...");
+    Serial.println("Arduino/PlatformIO board starting...");
 
    /* Initialize the eosal library.
     */
