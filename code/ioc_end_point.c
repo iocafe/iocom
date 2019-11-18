@@ -507,10 +507,10 @@ static osalStatus ioc_establish_connection(
     iocConnectionParams
         conprm;
 
-    /* If dynamic memory allocation is supported (and no connection pool given),
-       allocate connection dynamically and connect it.
+    /* If allocate connection structure either dynamically or from static pool and initialize it.
      */
     con = ioc_initialize_connection(OS_NULL, epoint->link.root);
+    if (con == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
 
     os_memclear(&conprm, sizeof(conprm));
     conprm.iface = newsocket->iface;
