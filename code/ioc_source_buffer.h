@@ -148,10 +148,6 @@ typedef struct iocSourceBuffer
      */
     IOC_DEBUG_ID
 
-    /** Flag indicating that the source buffer structure was allocated.
-     */
-    os_boolean allocated;
-
     /** Memory block identifier on remote end of connection. Identifies the memory
         block within the device.
      */
@@ -194,7 +190,6 @@ iocSourceBuffer;
 /* Initialize source buffer object.
  */
 iocSourceBuffer *ioc_initialize_source_buffer(
-    iocSourceBuffer *sbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
     os_short remote_mblk_id,

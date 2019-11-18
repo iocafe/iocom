@@ -25,6 +25,9 @@
 static void ioc_free_connection_bufs(
     iocConnection *con);
 
+static void ioc_free_source_and_target_bufs(
+    iocConnection *con);
+
 static osalStatus ioc_try_to_connect(
     iocConnection *con);
 
@@ -153,19 +156,9 @@ void ioc_release_connection(
      */
     ioc_mbinfo_con_is_closed(con);
 
-    /* Release all source buffers.
+    /* Release all source and target buffers.
      */
-    while (con->sbuf.first)
-    {
-        ioc_release_source_buffer(con->sbuf.first);
-    }
-
-    /* Release all target buffers.
-     */
-    while (con->tbuf.first)
-    {
-        ioc_release_target_buffer(con->tbuf.first);
-    }
+    ioc_free_source_and_target_bufs(con);
 
     /* Remove connection from linked list.
      */
@@ -211,7 +204,7 @@ void ioc_release_connection(
 /**
 ****************************************************************************************************
 
-  @brief Release memory allicated for connection buffers.
+  @brief Release memory allocated for connection buffers.
   @anchor ioc_free_connection_bufs
 
   The ioc_free_connection_bufs() function...
@@ -239,6 +232,40 @@ static void ioc_free_connection_bufs(
         ioc_free(root, con->frame_in.buf, con->frame_sz);
         con->frame_in.allocated = OS_FALSE;
         con->frame_in.buf = OS_NULL;
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Release all source and target buffers related to connection.
+  @anchor ioc_free_source_and_target_bufs
+
+  The ioc_free_source_and_target_bufs() function...
+
+  Mutex lock must be on.
+
+  @param   con Pointer to the connection object.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_free_source_and_target_bufs(
+    iocConnection *con)
+{
+    /* Release all source buffers.
+     */
+    while (con->sbuf.first)
+    {
+        ioc_release_source_buffer(con->sbuf.first);
+    }
+
+    /* Release all target buffers.
+     */
+    while (con->tbuf.first)
+    {
+        ioc_release_target_buffer(con->tbuf.first);
     }
 }
 
@@ -562,6 +589,7 @@ failed:
         ioc_reset_connection_state(con);
         ioc_lock(root);
         con->connected = OS_FALSE;
+        ioc_free_source_and_target_bufs(con);
         ioc_count_connected_streams(con->link.root, OS_TRUE);
         ioc_mbinfo_con_is_closed(con);
         ioc_unlock(root);
@@ -977,6 +1005,12 @@ failed:
         if (con->connected)
         {
             con->connected = OS_FALSE;
+
+            root = con->link.root;
+            ioc_lock(root);
+            ioc_free_source_and_target_bufs(con);
+            ioc_unlock(root);
+
             ioc_count_connected_streams(con->link.root, OS_TRUE);
             ioc_mbinfo_con_is_closed(con);
         }

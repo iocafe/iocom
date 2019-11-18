@@ -388,7 +388,7 @@ void ioc_mbinfo_received(
 
         /* Create source buffer to link the connection and memory block together.
          */
-        sbuf = ioc_initialize_source_buffer(OS_NULL, con, mblk, info->mblk_id, OS_NULL, 0);
+        sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
 
         /* Do initial synchronization for static memory blocks.
          */
@@ -452,7 +452,7 @@ skip1:
 
         /* Create source buffer to link the connection and memory block together.
          */
-        ioc_initialize_target_buffer(OS_NULL, con, mblk, info->mblk_id, OS_NULL, 0);
+        ioc_initialize_target_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
 
         /* If we have callback function, application may want to know that the
            memory block has been connected.

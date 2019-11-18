@@ -28,13 +28,6 @@
   The ioc_initialize_target_buffer() function initializes a target transfer buffer. Target
   buffer binds the connection and memory block together.
 
-  A target buffer can always be allocated global variable. In this case pointer to memory to be
-  initialized is given as argument and return value is the same pointer. If dynamic memory
-  allocation is supported, and the tbuf argument is OS_NULL, the target buffer object is
-  allocated by the function.
-
-  @param   tbuf Pointer to static target buffer structure, or OS_NULL to allocate target buffer
-           object dynamically.
   @param   con Pointer to connection object.
   @param   mblk Pointer to memory block.
   @param   remote_mblk_id Memory block identifier on remote end of connection.
@@ -49,7 +42,6 @@
 ****************************************************************************************************
 */
 iocTargetBuffer *ioc_initialize_target_buffer(
-    iocTargetBuffer *tbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
     os_short remote_mblk_id,
@@ -57,6 +49,7 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     os_int nitems)
 {
     iocRoot *root;
+    iocTargetBuffer *tbuf;
 
     /* Check that connection and memory block are valid pointers.
      */
@@ -68,21 +61,13 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     root = con->link.root;
     ioc_lock(root);
 
+    tbuf = (iocTargetBuffer*)ioc_malloc(root, sizeof(iocTargetBuffer), OS_NULL);
     if (tbuf == OS_NULL)
     {
-        tbuf = (iocTargetBuffer*)ioc_malloc(root, sizeof(iocTargetBuffer), OS_NULL);
-        if (tbuf == OS_NULL)
-        {
-            ioc_unlock(root);
-            return OS_NULL;
-        }
-        os_memclear(tbuf, sizeof(iocTargetBuffer));
-        tbuf->allocated = OS_TRUE;
+        ioc_unlock(root);
+        return OS_NULL;
     }
-    else
-    {
-        os_memclear(tbuf, sizeof(iocTargetBuffer));
-    }
+    os_memclear(tbuf, sizeof(iocTargetBuffer));
 
     /* Save remote device and memory block numbers.
      */
@@ -102,10 +87,7 @@ iocTargetBuffer *ioc_initialize_target_buffer(
         tbuf->syncbuf.buf = ioc_malloc(root, 2 * tbuf->syncbuf.nbytes, OS_NULL);
         if (tbuf->syncbuf.buf == OS_NULL)
         {
-            if (tbuf->allocated)
-            {
-                ioc_free(root, tbuf, sizeof(iocSourceBuffer));
-            }
+            ioc_free(root, tbuf, sizeof(iocSourceBuffer));
             ioc_unlock(root);
             return OS_NULL;
         }
@@ -176,9 +158,6 @@ void ioc_release_target_buffer(
     iocRoot
         *root;
 
-    os_boolean
-        allocated;
-
     /* Check that tbuf is valid pointer.
      */
     osal_debug_assert(tbuf->debug_id == 'T');
@@ -229,16 +208,10 @@ void ioc_release_target_buffer(
         ioc_free(root, tbuf->syncbuf.buf, 2 * tbuf->syncbuf.nbytes);
     }
 
-    /* Clear allocated memory indicate that is no longer initialized (for debugging and
-       for primitive static allocation schema).
+    /* Clear allocated memory indicate that is no longer initialized (for debugging).
      */
-    allocated = tbuf->allocated;
     os_memclear(tbuf, sizeof(iocTargetBuffer));
-
-    if (allocated)
-    {
-        ioc_free(root, tbuf, sizeof(iocTargetBuffer));
-    }
+    ioc_free(root, tbuf, sizeof(iocTargetBuffer));
 
     /* End syncronization.
      */

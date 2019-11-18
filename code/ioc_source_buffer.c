@@ -49,7 +49,6 @@
 ****************************************************************************************************
 */
 iocSourceBuffer *ioc_initialize_source_buffer(
-    iocSourceBuffer *sbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
     os_short remote_mblk_id,
@@ -57,6 +56,7 @@ iocSourceBuffer *ioc_initialize_source_buffer(
     os_int nitems)
 {
     iocRoot *root;
+    iocSourceBuffer *sbuf;
 
     /* Check that connection and memory block are valid pointers.
      */
@@ -69,21 +69,13 @@ iocSourceBuffer *ioc_initialize_source_buffer(
      */
     ioc_lock(root);
 
+    sbuf = (iocSourceBuffer*)ioc_malloc(root, sizeof(iocSourceBuffer), OS_NULL);
     if (sbuf == OS_NULL)
     {
-        sbuf = (iocSourceBuffer*)ioc_malloc(root, sizeof(iocSourceBuffer), OS_NULL);
-        if (sbuf == OS_NULL)
-        {
-            ioc_unlock(root);
-            return OS_NULL;
-        }
-        os_memclear(sbuf, sizeof(iocSourceBuffer));
-        sbuf->allocated = OS_TRUE;
+        ioc_unlock(root);
+        return OS_NULL;
     }
-    else
-    {
-        os_memclear(sbuf, sizeof(iocSourceBuffer));
-    }
+    os_memclear(sbuf, sizeof(iocSourceBuffer));
 
     /* Set up synchronized buffer.
      */
@@ -101,10 +93,7 @@ iocSourceBuffer *ioc_initialize_source_buffer(
             sbuf->syncbuf.buf = ioc_malloc(root, 2 * (os_memsz)sbuf->syncbuf.nbytes, OS_NULL);
             if (sbuf->syncbuf.buf == OS_NULL)
             {
-                if (sbuf->allocated)
-                {
-                    ioc_free(root, sbuf, sizeof(iocSourceBuffer));
-                }
+                ioc_free(root, sbuf, sizeof(iocSourceBuffer));
                 ioc_unlock(root);
                 return OS_NULL;
             }
@@ -184,9 +173,6 @@ void ioc_release_source_buffer(
     iocConnection
         *con;
 
-    os_boolean
-        allocated;
-
     /* Check that sbuf is valid pointer.
      */
     osal_debug_assert(sbuf->debug_id == 'S');
@@ -257,16 +243,10 @@ void ioc_release_source_buffer(
         ioc_free(root, sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes);
     }
 
-    /* Clear allocated memory indicate that is no longer initialized (for debugging and
-       for primitive static allocation schema).
+    /* Clear allocated memory indicate that is no longer initialized (for debugging).
      */
-    allocated = sbuf->allocated;
     os_memclear(sbuf, sizeof(iocSourceBuffer));
-
-    if (allocated)
-    {
-        ioc_free(root, sbuf, sizeof(iocSourceBuffer));
-    }
+    ioc_free(root, sbuf, sizeof(iocSourceBuffer));
 
     /* End syncronization.
      */

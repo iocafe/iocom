@@ -45,7 +45,7 @@
 /* How long silence (nothing received) on the line indicates broken connection.
  */
 #ifndef IOC_SOCKET_SILENCE_MS
-#define IOC_SOCKET_SILENCE_MS 120000
+#define IOC_SOCKET_SILENCE_MS 20000
 #endif
 
 /* How often to send CONNECT character while establishing serial connection.

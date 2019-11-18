@@ -130,10 +130,6 @@ typedef struct iocTargetBuffer
      */
     IOC_DEBUG_ID
 
-    /** Flag indicating that the target buffer structure was allocated.
-     */
-    os_boolean allocated;
-
     /** Memory block identifier on remote end of connection. Identifies the memory
         block within the iocRoot.
      */
@@ -177,7 +173,6 @@ iocTargetBuffer;
 /* Initialize target buffer object.
  */
 iocTargetBuffer *ioc_initialize_target_buffer(
-    iocTargetBuffer *tbuf,
     iocConnection *con,
     iocMemoryBlock *mblk,
     os_short remote_mblk_id,
