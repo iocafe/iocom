@@ -45,7 +45,7 @@
    style using "COM1", "COM2"... These are mapped to hardware/operating system in device specific
    manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
  */
-#define EXAMPLE_IP_ADDRESS "192.168.1.66"
+#define EXAMPLE_IP_ADDRESS "192.168.1.119"
 #define EXAMPLE_TCP_SOCKET_PORT IOC_DEFAULT_SOCKET_PORT_STR
 #define EXAMPLE_TLS_SOCKET_PORT IOC_DEFAULT_TLS_PORT_STR
 #define EXAMPLE_TLS_SERVER_CERT "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/alice.crt"
