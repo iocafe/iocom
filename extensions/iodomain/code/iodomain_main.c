@@ -123,7 +123,11 @@ void iodomain_start(
 
   The root_callback() function is used to detect new dynamically allocated memory blocks.
 
+  @param   root Root object.
+  @param   con Connection.
   @param   handle Memory block handle.
+  @param   event Why the callback?
+  @param   context IO domain.
   @return  None.
 
 ****************************************************************************************************

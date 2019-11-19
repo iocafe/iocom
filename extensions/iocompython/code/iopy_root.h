@@ -37,6 +37,11 @@ typedef struct
      */
     int device_nr;
 
+
+    /** Python root callback function.
+     */
+    PyObject *root_callback;
+
     int number;
 }
 Root;

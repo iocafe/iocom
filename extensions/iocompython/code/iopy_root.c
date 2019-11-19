@@ -16,6 +16,14 @@
 #include "extensions/iocompython/iocompython.h"
 
 
+static void Root_callback(
+    struct iocRoot *root,
+    struct iocConnection *con,
+    struct iocHandle *mblk_handle,
+    iocRootCallbackEvent event,
+    void *context);
+
+
 /**
 ****************************************************************************************************
 
@@ -146,8 +154,19 @@ static PyObject *Root_delete(
 
     if (self->root)
     {
+        /* Dispose of the callback function.
+         */
+        if (self->root_callback)
+        {
+            Py_XDECREF(self->root_callback);
+            self->root_callback = NULL;
+        }
+
+        /* Free the root data structure and everything that belong to it.
+         */
         ioc_release_root(self->root);
         self->root = OS_NULL;
+
         self->number = 0;
         PySys_WriteStdout("Root.delete()\n");
         s = OSAL_SUCCESS;
@@ -166,7 +185,7 @@ static PyObject *Root_delete(
 /**
 ****************************************************************************************************
 
-  @brief Initialize.
+  @brief Set python function as root callback.
 
   X...
 
@@ -177,24 +196,145 @@ static PyObject *Root_delete(
 ****************************************************************************************************
 */
 static PyObject *Root_set_callback(
-    Root *self)
+    Root *self,
+    PyObject *args)
 {
-    osalStatus s;
+    PyObject *temp;
 
-    if (self->root)
+    if (self->root == OS_NULL)
     {
-        ioc_set_root_callback(self->root, OS_NULL /* ioc_root_callback func*/, OS_NULL /* context */);
-        s = OSAL_SUCCESS;
-        PySys_WriteStdout("Root.set_callback\n");
-    }
-    else
-    {
-        s = OSAL_STATUS_FAILED;
-        PySys_WriteStdout("Root.set_callback() called, IOCOM root is NULL\n");
+        PyErr_SetString(iocomError, "no IOCOM root object");
+        return NULL;
     }
 
-    return PyLong_FromLong(s);
+    if (!PyArg_ParseTuple(args, "O:set_callback", &temp))
+    {
+        PyErr_SetString(PyExc_TypeError, "parsing argument failed");
+        return NULL;
+    }
+
+    if (!PyCallable_Check(temp))
+    {
+        PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+        return NULL;
+    }
+
+    /* Add a reference to new callback.
+     */
+    Py_XINCREF(temp);
+
+    /* Dispose of the previous callback.
+     */
+    if (self->root_callback)
+    {
+        Py_XDECREF(self->root_callback);
+        self->root_callback = NULL;
+    }
+
+    /* Remember the new callback.
+     */
+    self->root_callback = temp;
+    ioc_set_root_callback(self->root, Root_callback, self);
+    PySys_WriteStdout("Root.set_callback()\n");
+
+    /* Return "None".
+     */
+    Py_INCREF(Py_None);
+    return Py_None;
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief Call Python when new memory block is created, etc.
+
+  The Root_callback function gets called by iocom library on event related to whole root,
+  like when new memory block is created.
+
+  @param   root Root object.
+  @param   con Connection.
+  @param   handle Memory block handle.
+  @param   event Why the callback?
+  @param   context ?
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Root_callback(
+    struct iocRoot *root,
+    struct iocConnection *con,
+    struct iocHandle *mblk_handle,
+    iocRootCallbackEvent event,
+    void *context)
+{
+    os_char text[128], mblk_name[IOC_NAME_SZ];
+
+    int arg;
+    PyObject *arglist;
+    PyObject *result;
+
+    Root *pyroot;
+    pyroot = (Root*)context;
+
+    /* If we have no callback function, then do nothing.
+     */
+    if (pyroot->root_callback == OS_NULL) return;
+
+    switch (event)
+    {
+        /* Process "new dynamic memory block" callback.
+         */
+        case IOC_NEW_DYNAMIC_MBLK:
+            ioc_memory_block_get_string_param(mblk_handle, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
+
+            os_strncpy(text, "Memory block ", sizeof(text));
+            os_strncat(text, mblk_name, sizeof(text));
+            os_strncat(text, " dynamically allocated\n", sizeof(text));
+            osal_console_write(text);
+
+            /* if (!os_strcmp(mblk_name, "info"))
+            {
+                ioc_add_callback(handle, info_callback, OS_NULL);
+                ioc_memory_block_set_int_param(handle, IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
+            } */
+
+            PyGILState_STATE gstate;
+            gstate = PyGILState_Ensure();
+
+            /* Time to call the callback.
+             */
+            arglist = Py_BuildValue("(s)", text);
+            result = PyObject_CallObject(pyroot->root_callback, arglist);
+            Py_DECREF(arglist);
+
+            /* What is that callback function reported an error?
+             */
+            if (result == NULL)
+            {
+                PyErr_Clear();
+                PyGILState_Release(gstate);
+                return;
+                /* Pass error back ?? */
+            }
+
+            /* ...use result ... here we don't ...
+             */
+
+            Py_DECREF(result);
+
+            /* Release the thread. No Python API allowed beyond this point.
+             */
+            PyGILState_Release(gstate);
+            break;
+
+        /* Ignore unknown callbacks. More callback events may be introduced in future.
+         */
+        default:
+            break;
+    }
+}
+
 
 
 /**
@@ -215,7 +355,7 @@ static PyMemberDef Root_members[] = {
 */
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
-    {"set_callback", (PyCFunction)Root_set_callback, METH_NOARGS, "Set IOCOM root callback function"},
+    {"set_callback", (PyCFunction)Root_set_callback, METH_VARARGS, "Set IOCOM root callback function"},
     {NULL} /* Sentinel */
 };
 
