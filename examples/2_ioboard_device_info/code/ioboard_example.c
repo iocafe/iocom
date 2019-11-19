@@ -34,6 +34,7 @@
 
 ****************************************************************************************************
 */
+#define IOCOM_IOBOARD
 #include "iocom.h"
 
 /* How this IO device and the control computer connect together. One of IOBOARD_CTRL_LISTEN_SOCKET,
