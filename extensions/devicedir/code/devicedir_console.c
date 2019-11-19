@@ -40,7 +40,7 @@ static void iocom_state_list(
 
         case 'm':
             osal_console_write("\n*** memory blocks ***\n");
-            devicedir_memory_blocks(root, stream, 0);
+            devicedir_memory_blocks(root, stream, OS_NULL, 0);
             break;
     }
 

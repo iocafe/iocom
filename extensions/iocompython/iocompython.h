@@ -25,6 +25,7 @@
 /* Include iocom and operating system abstraction layer.
  */
 #include "iocom.h"
+#include "devicedir.h"
 
 /* If C++ compilation, all functions, etc. from this point on in included headers are
    plain C and must be left undecorated.

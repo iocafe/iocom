@@ -34,6 +34,7 @@ void devicedir_end_points(
 void devicedir_memory_blocks(
     iocRoot *root,
     osalStream list,
+    const os_char *iopath,
     os_short flags);
 
 void devicedir_list_mblks_target_buffers(

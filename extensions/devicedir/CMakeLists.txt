@@ -15,7 +15,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIB})
 # Set path to source files.
 set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 
-# Add iocom to include path.
+# Add include paths.
 include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
 

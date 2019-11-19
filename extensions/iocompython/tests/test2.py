@@ -9,12 +9,39 @@ def read_kbd_input(inputQueue):
         input_str = input()
         inputQueue.put(input_str)
 
+
+def handle_kbd_input(root, inputQueue):
+    if inputQueue.qsize() > 0:
+        input_str = inputQueue.get()
+        if len(input_str) < 1:
+            return True
+
+        print("input_str = {}".format(input_str))
+
+        if input_str == 'exit' or input_str[0] == 'x':
+            return False
+
+        parts = input_str.split()
+        arg = "";
+        if len(parts) > 1:
+            arg = parts[1]
+
+        if input_str[0] == 'm':
+            print(root.print('memory_blocks', arg))
+
+        if input_str[0] == 'e':
+            print(root.print('end_points'))
+
+        if input_str[0] == 'c':
+            print(root.print('connections'))
+
+    return True
+
 def root_callback(x):
     print('callback ' + str(x))
 
 
 def main():
-    EXIT_COMMAND = "exit"
     inputQueue = queue.Queue()
 
     inputThread = threading.Thread(target=read_kbd_input, args=(inputQueue,), daemon=True)
@@ -28,16 +55,7 @@ def main():
 
     # myinputs = MemoryBlock(root, 'source,auto', 'MYINPUTS', 15, nbytes=256)
 
-    while (True):
-        if (inputQueue.qsize() > 0):
-            input_str = inputQueue.get()
-            print("input_str = {}".format(input_str))
-
-            if (input_str == EXIT_COMMAND):
-                print("Exiting serial terminal.")
-                break
-
-            # Insert your code here to do whatever you want with the input_str.
+    while (handle_kbd_input(root, inputQueue)):
 
         # The rest of your program goes here.
 

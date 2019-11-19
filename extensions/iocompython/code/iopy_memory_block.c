@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iocompython/iocompython.h"
+#include "iocompython.h"
 
 static osalStatus MemoryBlock_set_sequence(
     MemoryBlock *self,
@@ -376,8 +376,7 @@ static PyObject *MemoryBlock_set(
   long length = PySequence_Length(args);
 
   //iterate over all the elements
-  long i, sum =0;
-
+  long i, sum = 0;
 
   for(i = 0; i < length; i++){
     a = PySequence_GetItem(args, i);

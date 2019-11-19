@@ -33,9 +33,11 @@
 void devicedir_memory_blocks(
     iocRoot *root,
     osalStream list,
+    const os_char *iopath,
     os_short flags)
 {
     iocMemoryBlock *mblk;
+    iocIdentifiers ids;
     os_short mflags;
     os_boolean isfirst;
 
@@ -43,6 +45,10 @@ void devicedir_memory_blocks(
      */
     osal_debug_assert(root->debug_id == 'R');
     osal_debug_assert(list != OS_NULL);
+
+    /* Split IO path
+     */
+    ioc_iopath_to_identifiers(&ids, iopath, IOC_EXPECT_MEMORY_BLOCK);
 
     osal_stream_print_str(list, "{\"mblk\": [\n", 0);
 
@@ -54,6 +60,23 @@ void devicedir_memory_blocks(
          mblk;
          mblk = mblk->link.next)
     {
+        if (ids.network_name[0] != '\0')
+        {
+            if (os_strcmp(ids.network_name, mblk->network_name)) continue;
+        }
+        if (ids.device_name[0] != '\0')
+        {
+            if (os_strcmp(ids.device_name, mblk->device_name)) continue;
+        }
+        if (ids.device_nr)
+        {
+            if (ids.device_nr != mblk->device_nr) continue;
+        }
+        if (ids.mblk_name[0] != '\0')
+        {
+            if (os_strcmp(ids.mblk_name, mblk->mblk_name)) continue;
+        }
+
         osal_stream_print_str(list, "{", 0);
         devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_TRUE);
         devicedir_append_int_param(list, "dev_nr", mblk->device_nr, OS_FALSE);

@@ -187,11 +187,12 @@ static PyObject *Root_delete(
 
   @brief Set python function as root callback.
 
-  X...
+  The Root_set_callback function sets function to call when IOCOM root object has information
+  to pass to the Python application.
 
-  The Root_init function initializes an object.
   @param   self Pointer to the python object.
-  @return  ?.
+  @param   args Callback function (Python callable).
+  @return  None.
 
 ****************************************************************************************************
 */
@@ -269,8 +270,6 @@ static void Root_callback(
     void *context)
 {
     os_char text[128], mblk_name[IOC_NAME_SZ];
-
-    int arg;
     PyObject *arglist;
     PyObject *result;
 
@@ -336,6 +335,64 @@ static void Root_callback(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Return IOCOM internal state printout.
+
+  The Root_print function initializes an object.
+  Example: print(root.print('memory_blocks'))
+
+  @param   self Pointer to the python object.
+  @param   args Which list to get.
+  @return  Requested printout as JSON.
+
+****************************************************************************************************
+*/
+static PyObject *Root_print(
+    Root *self,
+    PyObject *args)
+{
+    PyObject *rval;
+    const char *param1, *param2 = OS_NULL;
+    osalStream stream;
+    os_char *p;
+    os_memsz n;
+
+    if (self->root == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "no IOCOM root object");
+        return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "s|s", &param1, &param2))
+    {
+        PyErr_SetString(iocomError, "errornous function arguments");
+        return NULL;
+    }
+
+    stream = osal_stream_buffer_open(OS_NULL, 0, OS_NULL, 0);
+
+    if (!os_strcmp(param1, "connections"))
+    {
+        devicedir_connections(self->root, stream, 0);
+    }
+    else if (!os_strcmp(param1, "end_points"))
+    {
+        devicedir_end_points(self->root, stream, 0);
+    }
+    else if (!os_strcmp(param1, "memory_blocks"))
+    {
+        devicedir_memory_blocks(self->root, stream, param2, 0);
+    }
+
+    osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
+    p = osal_stream_buffer_content(stream, &n);
+    rval = PyUnicode_FromString(p);
+    osal_stream_close(stream);
+    return rval;
+}
+
 
 /**
 ****************************************************************************************************
@@ -356,6 +413,7 @@ static PyMemberDef Root_members[] = {
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
     {"set_callback", (PyCFunction)Root_set_callback, METH_VARARGS, "Set IOCOM root callback function"},
+    {"print", (PyCFunction)Root_print, METH_VARARGS, "Print internal state of IOCOM"},
     {NULL} /* Sentinel */
 };
 
