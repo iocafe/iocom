@@ -47,6 +47,11 @@ void devicedir_list_mblks_source_buffers(
     osalStream list,
     os_short flags);
 
+void devicedir_append_mblk_binary(
+    iocMemoryBlock *mblk,
+    osalStream list,
+    os_short flags);
+
 void devicedir_append_flag(
     osalStream list,
     os_char *flag_name,

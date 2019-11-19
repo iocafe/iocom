@@ -100,6 +100,8 @@ void devicedir_memory_blocks(
         devicedir_list_mblks_source_buffers(mblk, list, flags);
         devicedir_list_mblks_target_buffers(mblk, list, flags);
 
+        devicedir_append_mblk_binary(mblk, list, flags);
+
         osal_stream_print_str(list, "}", 0);
         if (mblk->link.next)
         {
@@ -191,7 +193,6 @@ void devicedir_list_mblks_target_buffers(
         devicedir_append_target_buffer(tbuf, list, flags);
 
         tbuf = tbuf->mlink.next;
-        osal_stream_print_str(list, "}", 0);
         if (tbuf)
         {
             osal_stream_print_str(list, ",", 0);
@@ -199,7 +200,7 @@ void devicedir_list_mblks_target_buffers(
         osal_stream_print_str(list, "\n", 0);
     }
 
-    osal_stream_print_str(list, "  }\n", 0);
+    osal_stream_print_str(list, "  ]", 0);
 }
 
 
@@ -282,7 +283,6 @@ void devicedir_list_mblks_source_buffers(
         devicedir_append_source_buffer(sbuf, list, flags);
 
         sbuf = sbuf->mlink.next;
-        osal_stream_print_str(list, "}", 0);
         if (sbuf)
         {
             osal_stream_print_str(list, ",", 0);
@@ -290,6 +290,53 @@ void devicedir_list_mblks_source_buffers(
         osal_stream_print_str(list, "\n", 0);
     }
 
-    osal_stream_print_str(list, "  }\n", 0);
+    osal_stream_print_str(list, "  ]", 0);
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Append memory block content as binary.
+
+  The devicedir_append_mblk_binary() function...
+
+  Sync lock must be on when calling this function.
+
+  @param   mblk Pointer to the memory buffer buffer structure.
+  @param   list Steam handle into which to write the list as JSON
+  @param   flags Reserved for future, set 0.
+  @return  None.
+
+****************************************************************************************************
+*/
+void devicedir_append_mblk_binary(
+    iocMemoryBlock *mblk,
+    osalStream list,
+    os_short flags)
+{
+    os_uchar *buf;
+    os_char nbuf[OSAL_NBUF_SZ];
+    os_int nbytes, i;
+
+    buf = (os_uchar*)mblk->buf;
+    nbytes = mblk->nbytes;
+
+    osal_stream_print_str(list, ",\n  \"data\": [\n    ", 0);
+
+    for (i = 0; i<nbytes; i++)
+    {
+        osal_int_to_str(nbuf, sizeof(nbuf), (os_uchar)buf[i]);
+        osal_stream_print_str(list, nbuf, 0);
+
+        if (i + 1 < nbytes)
+        {
+            if (((i + 1) % 32) == 0)
+                osal_stream_print_str(list, ",\n    ", 0);
+            else
+                osal_stream_print_str(list, ", ", 0);
+        }
+    }
+
+    osal_stream_print_str(list, "\n  ]\n", 0);
+}
