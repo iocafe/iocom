@@ -22,7 +22,11 @@
 #ifndef IOC_MEMORY_BLOCK_INFO_INCLUDED
 #define IOC_MEMORY_BLOCK_INFO_INCLUDED
 
-/** Maximum device name string length.
+/** Maximum signal name string length.
+ */
+#define IOC_SIGNAL_NAME_SZ 32
+
+/** Maximum device and memory block name string length.
  */
 #define IOC_NAME_SZ 16
 

@@ -18,10 +18,10 @@
  */
 typedef struct iocIdentifiers
 {
-    /** Signal name name, max 15 characters. Empty string = not selected, for example
+    /** Signal name name, max 31 characters. Empty string = not selected, for example
         we are expecting memory block or device selection.
      */
-    os_char signal_name[IOC_NAME_SZ];
+    os_char signal_name[IOC_SIGNAL_NAME_SZ];
 
     /** Memory block name, max 15 characters. Empty string = any memory block or
         we were expecting device selection.

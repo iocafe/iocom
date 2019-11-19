@@ -49,7 +49,7 @@ void ioc_iopath_to_identifiers(
 
     if (expect == IOC_EXPECT_SIGNAL)
     {
-        if (!ioc_get_part_of_iopath(&iopath, identifiers->signal_name, IOC_NAME_SZ)) return;
+        if (!ioc_get_part_of_iopath(&iopath, identifiers->signal_name, IOC_SIGNAL_NAME_SZ)) return;
         expect = IOC_EXPECT_MEMORY_BLOCK;
     }
 
@@ -106,12 +106,12 @@ os_boolean ioc_get_part_of_iopath(
     os_char *buf,
     os_memsz buf_sz)
 {
-    os_char *b, *p, *e;
+    const os_char *b, *p, *e;
     os_memsz n;
 
     b = *iopath;
-    p = os_strchr(b, '.');
-    e = p ? p : strchr(b, '\0');
+    p = os_strchr((os_char*)b, '.');
+    e = p ? p : strchr((os_char*)b, '\0');
     n = e - p;
     if (n > buf_sz) buf_sz = n;
     os_strncpy(buf, b, n);
