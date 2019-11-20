@@ -115,12 +115,6 @@ void devicedir_memory_blocks(
         osal_stream_print_str(list, "}", 0);
 
         sep = ",\n{";
-        /* if (mblk->link.next)
-        {
-            sep =
-            osal_stream_print_str(list, ",", 0);
-        }
-        osal_stream_print_str(list, "\n", 0); */
     }
     osal_stream_print_str(list, "\n", 0);
 

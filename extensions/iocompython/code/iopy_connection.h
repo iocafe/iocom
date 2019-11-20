@@ -14,16 +14,24 @@
 ****************************************************************************************************
 */
 
-
+/** Python connection class.
+ */
 typedef struct
 {
     PyObject_HEAD
 
+    /** Pointer to IOCOM connection object, OS_NULL if none.
+     */
     iocConnection *con;
 
-    int number;
+    /** Connection initialization status: 0 = all good, other values are errors.
+        Set by the constructor function.
+     */
+    int status;
 }
 Connection;
 
+/* For setting up the class within Python module.
+ */
 extern PyTypeObject ConnectionType;
 

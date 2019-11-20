@@ -41,6 +41,7 @@ void ioc_iopath_to_identifiers(
     iocExpectIoPath expect)
 {
     os_char *p, *e, *ee;
+    os_boolean has_more;
 
     /* Clear the identifier structure.
      */
@@ -61,11 +62,11 @@ void ioc_iopath_to_identifiers(
 
     if (expect == IOC_EXPECT_DEVICE)
     {
-        if (!ioc_get_part_of_iopath(&iopath, identifiers->mblk_name, IOC_NAME_SZ)) return;
+        has_more = ioc_get_part_of_iopath(&iopath, identifiers->device_name, IOC_NAME_SZ);
 
         /* Get device number, if any
          */
-        p = identifiers->mblk_name;
+        p = identifiers->device_name;
         e = ee = os_strchr(p, '\0');
         while (e > p)
         {
@@ -77,6 +78,8 @@ void ioc_iopath_to_identifiers(
             identifiers->device_nr = (os_short)osal_str_to_int(e, OS_NULL);
             *e = '\0';
         }
+
+        if (!has_more) return;
     }
 
     os_strncpy(identifiers->network_name, iopath, IOC_NETWORK_NAME_SZ);
@@ -112,10 +115,9 @@ os_boolean ioc_get_part_of_iopath(
     b = *iopath;
     p = os_strchr((os_char*)b, '.');
     e = p ? p : strchr((os_char*)b, '\0');
-    n = e - p;
-    if (n > buf_sz) buf_sz = n;
+    n = (e - b) + 1;
+    if (n > buf_sz) n = buf_sz;
     os_strncpy(buf, b, n);
-
     if (!os_strcmp(buf, "*")) buf[0] = '\0';
 
     *iopath = e + 1;

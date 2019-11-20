@@ -21,7 +21,13 @@
 
   @brief Constructor.
 
-  The Connection_new function generates a new connection.
+  The Connection_new function starts running the connection. Running connection will keep
+  on running until the connection is deleted. It will attempt repeatedly to connect socket,
+  etc transport to other IOCOM device and will move the data when transport is there.
+
+  Note: Application must not delete and create new connection to reestablish the transport.
+  This is handled by the running connection objects.
+
   @return  Pointer to the new Python object.
 
 ****************************************************************************************************
@@ -36,7 +42,6 @@ static PyObject *Connection_new(
     PyObject *pyroot = NULL;
     Root *root;
     iocRoot *iocroot;
-    osalStatus s;
 
     const char
         *parameters = NULL,
@@ -152,10 +157,8 @@ static PyObject *Connection_new(
     }
 
     self->con = ioc_initialize_connection(OS_NULL, iocroot);
-    self->number = 1;
+    self->status = (int)ioc_connect(self->con, &prm);
 
-    s = ioc_connect(self->con, &prm);
-    self->number = 1 + s;
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("Connection.new(%s, %s)\n", prm.parameters, flags);
@@ -206,7 +209,7 @@ static void Connection_dealloc(
 
 ****************************************************************************************************
 */
-static int Connection_init(
+/* static int Connection_init(
     Connection *self,
     PyObject *args,
     PyObject *kwds)
@@ -216,6 +219,7 @@ static int Connection_init(
 #endif
     return 0;
 }
+*/
 
 
 /**
@@ -228,7 +232,7 @@ static int Connection_init(
   .delete() on the root object. But not both.
 
   @param   self Pointer to the python object.
-  @return  ?.
+  @return  None.
 
 ****************************************************************************************************
 */
@@ -240,29 +244,36 @@ static PyObject *Connection_delete(
         ioc_release_connection(self->con);
         self->con = OS_NULL;
     }
-    self->number = 0;
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("Connection.delete()\n");
 #endif
-    return PyLong_FromLong((long)self->number);
+    /* Return "None".
+     */
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Initialize.
+  @brief Start the connection.
 
-  X...
+  The Connection_connect function starts running the connection. Running connection will keep
+  on running until the connection is deleted. It will attempt repeatedly to connect socket, etc.
+  transport to other IOCOM device and will move the data when transport is there.
 
-  The Connection_init function initializes an object.
-  @param   self Pointer to the python object.
-  @return  ?.
+  Note: Application must not delete and create new connection to reestablish the transport.
+  This is handled by the running connection objects.
+
+  @param   parmas Parameters for the connection.
+  @return  0 if the connection object was successfully created (even if there is no transport yet),
+           other values indicate error such as out of memory, illegal connection parameters, etc.
 
 ****************************************************************************************************
 */
-static PyObject *Connection_connect(
+/* static PyObject *Connection_connect(
     Connection *self)
 {
     osalStatus s;
@@ -272,7 +283,6 @@ static PyObject *Connection_connect(
     {
         os_memclear(&prm, sizeof(prm));
         s = ioc_connect(self->con, &prm);
-        self->number = 2;
     }
     else
     {
@@ -284,6 +294,7 @@ static PyObject *Connection_connect(
 #endif
     return PyLong_FromLong(s);
 }
+*/
 
 
 /**
@@ -292,7 +303,7 @@ static PyObject *Connection_connect(
 ****************************************************************************************************
 */
 static PyMemberDef Connection_members[] = {
-    {(char*)"number", T_INT, offsetof(Connection, number), 0, (char*)"classy number"},
+    {(char*)"status", T_INT, offsetof(Connection, status), 0, (char*)"constructor status"},
     {NULL} /* Sentinel */
 };
 
@@ -304,7 +315,7 @@ static PyMemberDef Connection_members[] = {
 */
 static PyMethodDef Connection_methods[] = {
     {"delete", (PyCFunction)Connection_delete, METH_NOARGS, "Deletes IOCOM connection"},
-    {"connect", (PyCFunction)Connection_connect, METH_NOARGS, "Initiate IOCOM connection"},
+    // {"connect", (PyCFunction)Connection_connect, METH_NOARGS, "Initiate IOCOM connection"},
     {NULL} /* Sentinel */
 };
 
@@ -349,7 +360,7 @@ PyTypeObject ConnectionType = {
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-    (initproc)Connection_init,                /* tp_init */
+  0, //  (initproc)Connection_init,                /* tp_init */
     0,                                        /* tp_alloc */
     Connection_new,                           /* tp_new */
 };
