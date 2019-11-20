@@ -20,6 +20,11 @@
     #define io_device_console(r) OSAL_SUCCESS
 #endif
 
+/* Flags for devicedir_memory_blocks
+ */
+#define IOC_DEVDIR_DEFAULT 0
+#define IOC_DEVDIR_DATA 1
+#define IOC_DEVDIR_BUFFERS 2
 
 void devicedir_connections(
     iocRoot *root,

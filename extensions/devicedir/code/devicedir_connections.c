@@ -84,7 +84,8 @@ void devicedir_connections(
         }
 
         osal_stream_print_str(list, "{", 0);
-        devicedir_append_str_param(list, "iface", iface_name, OS_TRUE);
+        devicedir_append_int_param(list, "connected", con->connected, OS_TRUE);
+        devicedir_append_str_param(list, "iface", iface_name, OS_FALSE);
         devicedir_append_str_param(list, "param", con->parameters, OS_FALSE);
 
         osal_stream_print_str(list, ", \"flags\":\"", 0);

@@ -354,10 +354,11 @@ static PyObject *Root_print(
     PyObject *args)
 {
     PyObject *rval;
-    const char *param1, *param2 = OS_NULL;
+    const char *param1, *param2 = OS_NULL, *param3 = OS_NULL;
     osalStream stream;
     os_char *p;
     os_memsz n;
+    os_short flags;
 
     if (self->root == OS_NULL)
     {
@@ -365,7 +366,7 @@ static PyObject *Root_print(
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "s|s", &param1, &param2))
+    if (!PyArg_ParseTuple(args, "s|ss", &param1, &param2, &param3))
     {
         PyErr_SetString(iocomError, "errornous function arguments");
         return NULL;
@@ -383,7 +384,22 @@ static PyObject *Root_print(
     }
     else if (!os_strcmp(param1, "memory_blocks"))
     {
-        devicedir_memory_blocks(self->root, stream, param2, 0);
+        flags = IOC_DEVDIR_DEFAULT;
+        if (os_strstr(param2, "data", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_DEVDIR_DATA;
+        if (os_strstr(param2, "buffers", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_DEVDIR_BUFFERS;
+
+        if (flags & (IOC_DEVDIR_DATA|IOC_DEVDIR_BUFFERS))
+        {
+            param2 = "";
+        }
+        if (os_strstr(param3, "data", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_DEVDIR_DATA;
+        if (os_strstr(param3, "buffers", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_DEVDIR_BUFFERS;
+
+        devicedir_memory_blocks(self->root, stream, param2, flags);
     }
 
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);

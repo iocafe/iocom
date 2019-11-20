@@ -25,7 +25,9 @@
 
   @param   root Pointer to the root structure.
   @param   list Steam handle into which to write the list as JSON
-  @param   flags Reserved for future, set 0.
+  @param   flags Information to display, bit fields: IOC_DEVDIR_DEFAULT, IOC_DEVDIR_DATA,
+           IOC_DEVDIR_BUFFERS.
+
   @return  None.
 
 ****************************************************************************************************
@@ -38,6 +40,7 @@ void devicedir_memory_blocks(
 {
     iocMemoryBlock *mblk;
     iocIdentifiers ids;
+    os_char *sep;
     os_short mflags;
     os_boolean isfirst;
 
@@ -51,6 +54,7 @@ void devicedir_memory_blocks(
     ioc_iopath_to_identifiers(&ids, iopath, IOC_EXPECT_MEMORY_BLOCK);
 
     osal_stream_print_str(list, "{\"mblk\": [\n", 0);
+    sep = "{";
 
     /* Synchronize.
      */
@@ -77,7 +81,7 @@ void devicedir_memory_blocks(
             if (os_strcmp(ids.mblk_name, mblk->mblk_name)) continue;
         }
 
-        osal_stream_print_str(list, "{", 0);
+        osal_stream_print_str(list, sep, 0);
         devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_TRUE);
         devicedir_append_int_param(list, "dev_nr", mblk->device_nr, OS_FALSE);
         devicedir_append_str_param(list, "net_name", mblk->network_name, OS_FALSE);
@@ -97,18 +101,28 @@ void devicedir_memory_blocks(
         if (mflags & IOC_STATIC) devicedir_append_flag(list, "static", &isfirst);
         osal_stream_print_str(list, "\"", 0);
 
-        devicedir_list_mblks_source_buffers(mblk, list, flags);
-        devicedir_list_mblks_target_buffers(mblk, list, flags);
+        if (flags & IOC_DEVDIR_BUFFERS)
+        {
+            devicedir_list_mblks_source_buffers(mblk, list, flags);
+            devicedir_list_mblks_target_buffers(mblk, list, flags);
+        }
 
-        devicedir_append_mblk_binary(mblk, list, flags);
+        if (flags & IOC_DEVDIR_DATA)
+        {
+            devicedir_append_mblk_binary(mblk, list, flags);
+        }
 
         osal_stream_print_str(list, "}", 0);
-        if (mblk->link.next)
+
+        sep = ",\n{";
+        /* if (mblk->link.next)
         {
+            sep =
             osal_stream_print_str(list, ",", 0);
         }
-        osal_stream_print_str(list, "\n", 0);
+        osal_stream_print_str(list, "\n", 0); */
     }
+    osal_stream_print_str(list, "\n", 0);
 
     /* End synchronization.
      */

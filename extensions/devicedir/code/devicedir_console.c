@@ -42,6 +42,11 @@ static void iocom_state_list(
             osal_console_write("\n*** memory blocks ***\n");
             devicedir_memory_blocks(root, stream, OS_NULL, 0);
             break;
+
+        case 'M':
+            osal_console_write("\n*** memory blocks ***\n");
+            devicedir_memory_blocks(root, stream, OS_NULL, IOC_DEVDIR_BUFFERS|IOC_DEVDIR_DATA);
+            break;
     }
 
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
@@ -78,14 +83,14 @@ osalStatus io_device_console(
             iocom_state_list(root, 'c');
             break;
 
-        case 'm':
-        case 'M':
-            iocom_state_list(root, 'm');
-            break;
-
         case 'e':
         case 'E':
             iocom_state_list(root, 'e');
+            break;
+
+        case 'm':
+        case 'M':
+            iocom_state_list(root, c);
             break;
 
         default:
