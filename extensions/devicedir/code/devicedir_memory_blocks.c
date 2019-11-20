@@ -312,7 +312,7 @@ void devicedir_list_mblks_source_buffers(
   Sync lock must be on when calling this function.
 
   @param   mblk Pointer to the memory buffer buffer structure.
-  @param   list Steam handle into which to write the list as JSON
+  @param   list Steam handle into which to write the JSON output.
   @param   flags Reserved for future, set 0.
   @return  None.
 
@@ -347,4 +347,32 @@ void devicedir_append_mblk_binary(
     }
 
     osal_stream_print_str(list, "\n  ]\n", 0);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Convert info memory block to plain JSON text.
+
+  The devicedir_static_mblk_to_json() function converts memory block to JSON. This is typically
+  used to get content of "info" memory block un understandable format.
+
+  @param   mblk Pointer to the memory buffer buffer structure.
+  @param   list Steam handle into which to write the JSON output.
+
+  @return  OSAL_SUCCESS (0) is all is fine. Other values indicate an error.
+
+****************************************************************************************************
+*/
+osalStatus devicedir_static_mblk_to_json(
+    iocMemoryBlock *mblk,
+    osalStream list)
+{
+    osalStatus s;
+
+    ioc_lock(mblk->link.root);
+    s = osal_uncompress_json(list, mblk->buf, mblk->nbytes, 0);
+    ioc_unlock(mblk->link.root);
+    return s;
 }

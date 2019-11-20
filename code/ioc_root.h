@@ -39,6 +39,7 @@ typedef os_ushort ioc_tbuf_item;
 
 struct iocFreeBlk;
 struct iocDeviceHdr;
+struct iocDynamicRoot;
 
 /**
 ****************************************************************************************************
@@ -182,6 +183,12 @@ typedef struct iocRoot
     /** Pointer to static structure defining signals.
      */
     const struct iocDeviceHdr *device_signal_hdr;
+
+#if IOC_DYNAMIC_MBLK_CODE
+    /** Pointer to dynamic IO network configuration, if any.
+     */
+    struct iocDynamicRoot *droot;
+#endif
 }
 iocRoot;
 

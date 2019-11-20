@@ -21,21 +21,6 @@
 */
 #include "iocom.h"
 
-/* Enable dynamic allocation of memory blocks and resizing
-   the memory blocks, if dynamic memory allocation is supported.
-   There may be rare cases when there is reason to do otherwise,
-   so this can be overridden by compiler define. These can
-   be used without dynamic allocation, but mostly it makes
-   no sense.
- */
-#ifndef IOC_DYNAMIC_MBLK_CODE
-#define IOC_DYNAMIC_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
-#endif
-
-#ifndef IOC_RESIZE_MBLK_CODE
-#define IOC_RESIZE_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
-#endif
-
 
 /**
 ****************************************************************************************************

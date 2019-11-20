@@ -27,6 +27,20 @@
  */
 OSAL_C_HEADER_BEGINS
 
+/* Enable/disable dynamic allocation of memory blocks and resizing
+   the memory blocks, if dynamic memory allocation is supported.
+   There may be cases when there is reason to do otherwise, so this
+   can be overridden by compiler define.
+ */
+#ifndef IOC_DYNAMIC_MBLK_CODE
+#define IOC_DYNAMIC_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
+#endif
+
+#ifndef IOC_RESIZE_MBLK_CODE
+#define IOC_RESIZE_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
+#endif
+
+
 /* Include all base iocom headers.
  */
 #include "code/ioc_timing.h"
@@ -46,6 +60,9 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
 #include "code/ioc_util.h"
+#include "code/ioc_dyn_signal.h"
+#include "code/ioc_dyn_network.h"
+#include "code/ioc_dyn_root.h"
 #include "code/ioc_ioboard.h"
 #include "code/ioc_poolsize.h"
 

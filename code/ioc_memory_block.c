@@ -200,6 +200,12 @@ void ioc_release_memory_block(
      */
     ioc_mbinfo_mblk_is_deleted(mblk);
 
+#if IOC_DYNAMIC_MBLK_CODE
+    /* Memory block is being deleted, remove it from dynamic configuration.
+     */
+    ioc_droot_mblk_is_deleted(root->droot, mblk);
+#endif
+
     /* Terminate all handles to this memory block including the contained one.
      */
     ioc_terminate_handles(&mblk->handle);
