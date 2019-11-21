@@ -24,6 +24,31 @@
 #include "iocom.h"
 #if IOC_DYNAMIC_MBLK_CODE
 
+
+typedef struct
+{
+    const os_char *tag;
+    const os_char *array_tag;
+    const os_char *block_tag;
+
+    const os_char *mblk_name;
+    const os_char *group_name;
+    const os_char *signal_name;
+    const os_char *signal_type_str;
+    //osalTypeId signal_type_id;
+    // os_memsz signal_type_sz;
+    os_int signal_addr;
+    os_int signal_array_n;
+}
+iocAddDinfoState;
+
+
+static osalStatus ioc_dinfo_process_block(
+    iocDynamicRoot *droot,
+    iocAddDinfoState *state,
+    osalJsonIndex *jindex);
+
+
 /* Allocate and initialize dynamic root object.
  */
 iocDynamicRoot *ioc_initialize_dynamic_root(
@@ -166,6 +191,239 @@ iocDynamicNetwork *ioc_find_network(
     }
 
     return OS_NULL;
+}
+
+
+/* Process a packed JSON array.
+ */
+static osalStatus ioc_dinfo_process_array(
+    iocDynamicRoot *droot,
+    iocAddDinfoState *state,
+    osalJsonIndex *jindex)
+{
+    osalJsonItem item;
+    osalStatus s;
+
+    while (!(s = osal_get_json_item(jindex, &item)))
+    {
+        if (item.code == OSAL_JSON_END_BLOCK)
+        {
+            return OSAL_STATUS_FAILED;
+        }
+
+        if (item.code == OSAL_JSON_END_ARRAY)
+        {
+            return OSAL_SUCCESS;
+        }
+
+        state->tag = item.tag_name;
+
+        switch (item.code)
+        {
+            case OSAL_JSON_START_BLOCK:
+                state->block_tag = state->tag;
+                s = ioc_dinfo_process_block(droot, state, jindex);
+                if (s) return s;
+                break;
+
+            case OSAL_JSON_START_ARRAY:
+                state->array_tag = state->tag;
+                s = ioc_dinfo_process_array(droot, state, jindex);
+                if (s) return s;
+                break;
+
+            case OSAL_JSON_VALUE_STRING:
+                // item.value.s;
+                break;
+
+            case OSAL_JSON_VALUE_INTEGER:
+                // item.value.l
+                break;
+
+            case OSAL_JSON_VALUE_FLOAT:
+                // item.value.d;
+                break;
+
+            /* Handling OSAL_JSON_VALUE_NULL, OSAL_JSON_VALUE_TRUE, and
+               OSAL_JSON_VALUE_FALSE is needed only if compressed with
+               OSAL_JSON_KEEP_QUIRKS flag.
+             */
+            case OSAL_JSON_VALUE_NULL:
+                // p = "null";
+                break;
+
+            case OSAL_JSON_VALUE_TRUE:
+                //p = "true";
+                break;
+
+            case OSAL_JSON_VALUE_FALSE:
+                //p = "false";
+                break;
+
+            default:
+                return OSAL_STATUS_FAILED;
+        }
+    }
+
+    return OSAL_SUCCESS;
+}
+
+
+/* Process a block of packed JSON.
+ */
+static osalStatus ioc_dinfo_process_block(
+    iocDynamicRoot *droot,
+    iocAddDinfoState *state,
+    osalJsonIndex *jindex)
+{
+    osalJsonItem item;
+    osalStatus s;
+
+    if (!os_strcmp(state->block_tag, "-") &&
+        !os_strcmp(state->array_tag, "signals"))
+    {
+        state->signal_addr = -1;
+        state->signal_array_n = 1;
+        state->signal_type_str = OS_NULL;
+        state->signal_name = OS_NULL;
+    }
+
+    while (!(s = osal_get_json_item(jindex, &item)))
+    {
+        if (item.code == OSAL_JSON_END_BLOCK)
+        {
+            return OSAL_SUCCESS;
+        }
+
+        if (item.code == OSAL_JSON_END_ARRAY)
+        {
+            return OSAL_STATUS_FAILED;
+        }
+
+        state->tag = item.tag_name;
+        switch (item.code)
+        {
+            case OSAL_JSON_START_BLOCK:
+                state->block_tag = state->tag;
+                s = ioc_dinfo_process_block(droot, state, jindex);
+                if (s) return s;
+                break;
+
+            case OSAL_JSON_START_ARRAY:
+                state->array_tag = state->tag;
+                s = ioc_dinfo_process_array(droot, state, jindex);
+                if (s) return s;
+                break;
+
+            case OSAL_JSON_VALUE_STRING:
+                if (!os_strcmp(state->tag, "name"))
+                {
+                    if (!os_strcmp(state->array_tag, "mblk"))
+                    {
+                        state->mblk_name = item.value.s;
+                    }
+
+                    else if (!os_strcmp(state->array_tag, "groups"))
+                    {
+                        state->group_name = item.value.s;
+                        if (!os_strcmp(state->group_name, "inputs") ||
+                            !os_strcmp(state->group_name, "outputs"))
+                        {
+                            state->signal_type_str = "boolean";
+                        }
+                        else
+                        {
+                            state->signal_type_str = "ushort";
+                        }
+                    }
+
+                    else if (!os_strcmp(state->array_tag, "signals"))
+                    {
+                        state->signal_name = item.value.s;
+                    }
+                }
+
+                if (!os_strcmp(state->tag, "type"))
+                {
+                    state->signal_type_str = item.value.s;
+                }
+                break;
+
+            case OSAL_JSON_VALUE_INTEGER:
+                if (!os_strcmp(state->array_tag, "signals"))
+                {
+                    if (!os_strcmp(state->tag, "addr"))
+                    {
+                        state->signal_addr = (os_int)item.value.l;
+                    }
+                    else if (!os_strcmp(state->tag, "array"))
+                    {
+                        state->signal_array_n = (os_int)item.value.l;
+                    }
+
+                }
+                // item.value.l
+                break;
+
+            case OSAL_JSON_VALUE_FLOAT:
+                // item.value.d;
+                break;
+
+            /* Handling OSAL_JSON_VALUE_NULL, OSAL_JSON_VALUE_TRUE, and
+               OSAL_JSON_VALUE_FALSE is needed only if compressed with
+               OSAL_JSON_KEEP_QUIRKS flag.
+             */
+            case OSAL_JSON_VALUE_NULL:
+                // p = "null";
+                break;
+
+            case OSAL_JSON_VALUE_TRUE:
+                //p = "true";
+                break;
+
+            case OSAL_JSON_VALUE_FALSE:
+                //p = "false";
+                break;
+
+            default:
+                return OSAL_STATUS_FAILED;
+        }
+    }
+
+    return OSAL_SUCCESS;
+}
+
+
+
+/* Add dynamic memory block/signal information.
+ */
+osalStatus ioc_add_dynamic_info(
+    iocDynamicRoot *droot,
+    iocHandle *mblk_handle)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    osalJsonIndex jindex;
+    osalStatus s;
+    iocAddDinfoState state;
+
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(mblk_handle, &root);
+    if (mblk == OS_NULL) return OSAL_STATUS_FAILED;
+
+    os_memclear(&state, sizeof(state));
+
+    s = osal_create_json_indexer(&jindex, mblk->buf, mblk->nbytes, 0);
+    if (s) goto getout;
+
+    s = ioc_dinfo_process_block(droot, &state, &jindex);
+
+    /* End syncronization and return.
+     */
+getout:
+    ioc_unlock(root);
+    return s;
 }
 
 

@@ -600,7 +600,7 @@ osalStatus ioc_acknowledge_as_needed(
         osal_debug_error("send acknowledge failed");
         return OSAL_STATUS_FAILED;
     }
-    osal_trace_int(status == OSAL_SUCCESS ? "ACK sent (SUCCESS), received="
+    osal_trace2_int(status == OSAL_SUCCESS ? "ACK sent (SUCCESS), received="
         : "ACK sent (PENDING), received=", con->bytes_received);
     return OSAL_SUCCESS;
 }

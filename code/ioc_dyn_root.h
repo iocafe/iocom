@@ -66,6 +66,12 @@ iocDynamicNetwork *ioc_find_network(
     iocDynamicRoot *droot,
     const os_char *network_name);
 
+/* Add dynamic memory block/signal information.
+ */
+osalStatus ioc_add_dynamic_info(
+    iocDynamicRoot *droot,
+    iocHandle *mblk_handle);
+
 /* Called by ioc_release_memory_block(): memory block is being deleted, remove any references
    to it from dynamic configuration.
  */

@@ -168,19 +168,19 @@ def process_signal(group_name, signal):
 
 def process_group_block(group):
     global current_type
-    group_name = group.get("name", None);
+    group_name = group.get("name", None)
     if group_name == None:
         print("'name' not found for group in " + block_name)
         exit()
-    signals = group.get("signals", None);
+    signals = group.get("signals", None)
     if signals == None:
         print("'signals' not found for " + block_name + " " + group_name)
         exit()
 
     if group_name == 'inputs' or group_name == 'outputs':
-        current_type = "boolean";
+        current_type = "boolean"
     else:
-        current_type = "ushort";
+        current_type = "ushort"
 
     for signal in signals:
         process_signal(group_name, signal)
@@ -205,7 +205,7 @@ def process_mblk(mblk):
 
     nro_signals = 0
     for group in groups:
-        signals = group.get("signals", None);
+        signals = group.get("signals", None)
         if signals != None:
             for signal in signals:
                 nro_signals += 1
