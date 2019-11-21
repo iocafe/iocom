@@ -87,7 +87,6 @@ void devicedir_memory_blocks(
         devicedir_append_str_param(list, "net_name", mblk->network_name, OS_FALSE);
 
         devicedir_append_str_param(list, "mblk_name", mblk->mblk_name, OS_FALSE);
-        devicedir_append_int_param(list, "mblk_nr", mblk->mblk_nr, OS_FALSE);
         devicedir_append_int_param(list, "mblk_id", mblk->mblk_id, OS_FALSE);
         devicedir_append_int_param(list, "size", mblk->nbytes, OS_FALSE);
 

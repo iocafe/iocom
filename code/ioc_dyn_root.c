@@ -71,6 +71,7 @@ iocDynamicNetwork *ioc_add_dynamic_network(
 
     /* If we have existing IO network with this name,
        just return pointer to it.
+       WE CAN SKIP THIS IF WE DO NOT NEED TO CHECK FOR ONE ALREADY THERE
      */
     hash_ix = ioc_hash(network_name) % IOC_DROOT_HASH_TAB_SZ;
     prev_dnetwork = OS_NULL;
@@ -175,8 +176,13 @@ void ioc_droot_mblk_is_deleted(
     iocDynamicRoot *droot,
     iocMemoryBlock *mblk)
 {
-    /* iocDynamicNetwork *dnetwork;
-    dnetwork = ioc_find_network(iocDynamicRoot *droot, const os_char *network_name) */
+    iocDynamicNetwork *dnetwork;
+
+    dnetwork = ioc_find_network(droot, mblk->network_name);
+    if (dnetwork)
+    {
+        ioc_network_mblk_is_deleted(dnetwork, mblk);
+    }
 }
 
 /* Calculate hash index for the key

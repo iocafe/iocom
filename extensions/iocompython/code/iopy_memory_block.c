@@ -48,7 +48,6 @@ static PyObject *MemoryBlock_new(
         *flags = NULL;
 
     int
-        mblk_nr = 0,
         nbytes = 128,
         device_nr = 0;
 
@@ -56,7 +55,6 @@ static PyObject *MemoryBlock_new(
         "root",
         "flags",
         "mblk_name",
-        "mblk_nr",
         "device_name",
         "device_nr",
         "network_name",
@@ -72,8 +70,8 @@ static PyObject *MemoryBlock_new(
 
     os_memclear(&prm, sizeof(prm));
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ssisisi",
-         kwlist, &pyroot, &flags, &mblk_name, &mblk_nr, &device_name, &device_nr, &network_name, &nbytes))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|sssisi",
+         kwlist, &pyroot, &flags, &mblk_name, &device_name, &device_nr, &network_name, &nbytes))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         goto failed;
@@ -126,7 +124,6 @@ static PyObject *MemoryBlock_new(
     }
 
     prm.mblk_name = mblk_name;
-    prm.mblk_nr = mblk_nr;
 
     prm.device_name = root->device_name;
     prm.device_nr = root->device_nr;
@@ -152,8 +149,8 @@ static PyObject *MemoryBlock_new(
     self->number = 1;
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("MemoryBlock.new(%s%d.%s%d.%s)\n",
-        prm.mblk_name, prm.mblk_nr,
+    PySys_WriteStdout("MemoryBlock.new(%s.%s%d.%s)\n",
+        prm.mblk_name,
         prm.device_name, prm.device_nr, prm.network_name);
 #endif
     return (PyObject *)self;
@@ -251,7 +248,7 @@ static PyObject *MemoryBlock_delete(
 
   @param   self Pointer to the Python MemoryBlock object.
   @param   param_name Which parameter to get, one of "network_name", "device_name", "device_nr",
-           "mblk_name" or "mblk_nr".
+           or "mblk_name".
   @return  Parameter value as string.
 
 ****************************************************************************************************
@@ -311,10 +308,6 @@ static PyObject *MemoryBlock_get_param(
         {
             param_ix = IOC_MBLK_NAME;
         }
-        else if (!os_strcmp(p, "mblk_nr"))
-        {
-            param_ix = IOC_MBLK_NR;
-        }
         else
         {
             Py_XDECREF(py_list);
@@ -349,7 +342,7 @@ static PyObject *MemoryBlock_get_param(
 
   @param   self Pointer to the Python MemoryBlock object.
   @param   param_name Which parameter to get, one of "network_name", "device_name", "device_nr",
-           "mblk_name" or "mblk_nr".
+           or "mblk_name".
   @return  Parameter value as string.
 
 ****************************************************************************************************

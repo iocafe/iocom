@@ -234,7 +234,8 @@ void ioc_mbinfo_received(
     iocHandle handle;
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf, *next_tbuf;
-    os_boolean mblk_matches;
+    os_boolean device_name_matches, device_nr_matches;
+    os_boolean network_name_matches, mblk_matches;
 
 #if IOC_DYNAMIC_MBLK_CODE
     iocMemoryBlockParams mbprm;
@@ -257,7 +258,6 @@ void ioc_mbinfo_received(
             osal_trace_int("~, dev nr=", info->device_nr);
             osal_trace_str("~, net name=", info->network_name);
             osal_trace_str("~, mblk name=", info->mblk_name);
-            osal_trace_int(", mblk nr=", info->mblk_nr);
 
 #if IOC_DYNAMIC_MBLK_CODE
             /* If we can allocate memory blocks dynamically.
@@ -267,9 +267,8 @@ void ioc_mbinfo_received(
                 os_memclear(&mbprm, sizeof(mbprm));
                 mbprm.device_name = info->device_name;
                 mbprm.device_nr = info->device_nr;
-                mbprm.mblk_nr = info->mblk_nr;
-                mbprm.flags = ((info->flags & (IOC_TARGET|IOC_SOURCE)) == IOC_SOURCE)
-                    ? (IOC_TARGET|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC)
+                mbprm.flags = (info->flags & IOC_SOURCE)
+                    ? (IOC_TARGET|IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC)
                     : (IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC);
                 mbprm.mblk_name = info->mblk_name;
                 mbprm.nbytes = info->nbytes;
@@ -293,21 +292,22 @@ void ioc_mbinfo_received(
             return;
         }
 
-        /* Compare memory block names if both ends have names,
-           otherwise compare numbers.
+        /* Compare memory block, device and network names. If same the memory blocks
+           do match. If one end has an empty name, accept it (execpt memory block name).
+           Notice that accepting empty names needs to be treated the same way for
+           both ends.
          */
-        if (info->mblk_name[0] && mblk->mblk_name[0])
-        {
-            mblk_matches = !os_strcmp(info->mblk_name, mblk->mblk_name);
-        }
-        else
-        {
-            mblk_matches = (info->mblk_nr == mblk->mblk_nr);
-        }
+        mblk_matches = !os_strcmp(info->mblk_name, mblk->mblk_name);
+        device_name_matches = !os_strcmp(info->device_name, mblk->device_name)
+            || mblk->device_name[0] =='\0' || info->device_name[0] =='\0';
+        device_nr_matches = info->device_nr == mblk->device_nr
+            || mblk->device_nr == 0 || info->device_nr == 0;
+        network_name_matches = !os_strcmp(info->network_name, mblk->network_name)
+            || mblk->network_name[0] =='\0' || info->network_name[0] =='\0';
 
-        if (!os_strcmp(info->device_name, mblk->device_name) &&
-            !os_strcmp(info->network_name, mblk->network_name) &&
-            info->device_nr == mblk->device_nr &&
+        if (device_name_matches &&
+            device_nr_matches &&
+            network_name_matches &&
             mblk_matches)
         {
             osal_trace3("Memory block matched");

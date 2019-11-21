@@ -350,7 +350,7 @@ static void ioc_make_mblk_info_frame(
     /* Set frame header.
      */
     ioc_generate_header(con, con->frame_out.buf, &ptrs,
-        mblk->mblk_id, mblk->mblk_nr);
+        mblk->mblk_id, 0);
 
     /* Generate frame content. Here we do not check for buffer overflow,
        we know (and trust) that it fits within one frame.
@@ -360,8 +360,6 @@ static void ioc_make_mblk_info_frame(
     version_and_flags = p; /* version, for future additions + flags */
     *(p++) = 0;
     if (ioc_msg_setint(mblk->device_nr, &p)) *version_and_flags |= IOC_INFO_D_2BYTES;
-    /* ioc_msg_setint(mblk->mblk_nr, &p);
-    ioc_msg_setint(mblk->mblk_id, &p); */
     if (ioc_msg_setint(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
     if (ioc_msg_setint(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
     if (mblk->device_name[0])

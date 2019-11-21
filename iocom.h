@@ -59,7 +59,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_target_buffer.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
-#include "code/ioc_util.h"
+#include "code/ioc_identifiers.h"
 #include "code/ioc_dyn_signal.h"
 #include "code/ioc_dyn_network.h"
 #include "code/ioc_dyn_root.h"

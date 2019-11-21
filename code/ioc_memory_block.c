@@ -47,8 +47,6 @@ static os_short ioc_get_unique_mblk_id(
            - device_nr If there are multiple devices of same type (same device name),
              this identifies the device. This number is often written in
              context as device name, like "TEMPCTRL1".
-           - mblk_nr Memory block identifier number. A communication typically has
-             multiple memory blocks and this identifies the memory block within device.
            - buf Buffer for memory block content. If dynamic memory allocation is supported,
              this argument can be OS_NULL, and the buffer will be allcated by the function.
              If buf argument is given, it must be pointer to buffer which can hold nro_bytes
@@ -120,7 +118,6 @@ osalStatus ioc_initialize_memory_block(
     {
         os_memclear(buf, nbytes);
     }
-    mblk->mblk_nr = prm->mblk_nr;
     mblk->flags = prm->flags;
     os_strncpy(mblk->device_name, prm->device_name, IOC_NAME_SZ);
     mblk->device_nr = prm->device_nr;
@@ -340,7 +337,7 @@ void ioc_memory_block_set_int_param(
 
   @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
-           IOC_DEVICE_NR, IOC_MBLK_NR or IOC_MBLK_AUTO_SYNC_FLAG.
+           IOC_DEVICE_NR or IOC_MBLK_AUTO_SYNC_FLAG.
   @return  Parameter value as integer. -1 if cannot be converted to integer.
 
 ****************************************************************************************************
@@ -362,10 +359,6 @@ os_int ioc_memory_block_get_int_param(
     {
         case IOC_DEVICE_NR:
             value = mblk->device_nr;
-            break;
-
-        case IOC_MBLK_NR:
-            value = mblk->mblk_nr;
             break;
 
         case IOC_MBLK_AUTO_SYNC_FLAG:
@@ -395,7 +388,7 @@ os_int ioc_memory_block_get_int_param(
 
   @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
-           IOC_NETWORK_NAME, IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NR, IOC_MBLK_NAME or
+           IOC_NETWORK_NAME, IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NAME or
            IOC_MBLK_AUTO_SYNC_FLAG.
   @param   buf Pointer to buffer where to store parameter value as string. Empty string if
            no value.
@@ -438,10 +431,6 @@ void ioc_memory_block_get_string_param(
 
         case IOC_DEVICE_NR:
             value = mblk->device_nr;
-            break;
-
-        case IOC_MBLK_NR:
-            value = mblk->mblk_nr;
             break;
 
         case IOC_MBLK_AUTO_SYNC_FLAG:

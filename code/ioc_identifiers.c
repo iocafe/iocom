@@ -1,7 +1,7 @@
 /**
 
-  @file    ioc_util.c
-  @brief   Helper functions
+  @file    ioc_identifiers.c
+  @brief   Functions related to identifiers (names).
   @author  Pekka Lehtikoski
   @version 1.0
   @date    19.11.2019

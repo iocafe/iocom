@@ -492,7 +492,7 @@ static osalStatus ioc_process_received_system_frame(
             version_and_flags = (os_uchar)*(p++);
             os_memclear(&mbinfo, sizeof(mbinfo));
             mbinfo.device_nr = ioc_msg_getint(&p, version_and_flags & IOC_INFO_D_2BYTES);
-            mbinfo.mblk_nr = addr; /* ioc_msg_getint(&p); */
+            /* unused addr, was mbinfo.mblk_nr = addr; */
             mbinfo.mblk_id = mblk_id; /* ioc_msg_getint(&p); */
             mbinfo.nbytes = ioc_msg_getint(&p, version_and_flags & IOC_INFO_N_2BYTES);
             mbinfo.flags = ioc_msg_getint(&p, version_and_flags & IOC_INFO_F_2BYTES);

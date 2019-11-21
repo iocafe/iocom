@@ -6,11 +6,7 @@
   @version 1.0
   @date    20.11.2019
 
-  The dynamic network organizes signals of one network .
-
-  An IO path can be split to individual identifiers by ioc_iopath_to_identifiers() function.
-  The network name and signal name are used as hash keys, since these are known explisitely
-  by application and are efficient for the purpose.
+  The dynamic network organizes signals of one network.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -79,9 +75,22 @@ void ioc_remove_dynamic_signal(
 
 /* Find a dynamic signal.
  */
-iocDynamicSignal *ioc_find_dynamic_signal(
+iocDynamicSignal *ioc_find_first_dynamic_signal(
     iocDynamicNetwork *dnetwork,
-    iocIdentifiers *identifiers); /* should we have identifiers as separate arguments ? */
+    iocIdentifiers *identifiers);  /* should we have identifiers as separate arguments ? */
+
+iocDynamicSignal *ioc_find_next_dynamic_signal(
+    iocDynamicNetwork *dnetwork,
+    iocDynamicSignal *dsignal,
+    iocIdentifiers *identifiers);
+
+
+/* Called by ioc_release_memory_block(): memory block is being deleted, remove any references
+   to it from dynamic configuration.
+ */
+void ioc_network_mblk_is_deleted(
+    iocDynamicNetwork *dnetwork,
+    iocMemoryBlock *mblk);
 
 #endif
 #endif

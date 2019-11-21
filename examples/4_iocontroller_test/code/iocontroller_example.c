@@ -231,12 +231,10 @@ osalStatus osal_main(
 
     os_memclear(&blockprm, sizeof(blockprm));
 
-    blockprm.mblk_nr = IOC_DEV_EXPORT_MBLK;
     blockprm.nbytes = input_block_sz;
     blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
     ioc_initialize_memory_block(&ctx.exp, OS_NULL, &root, &blockprm);
 
-    blockprm.mblk_nr = IOC_DEV_IMPORT_MBLK;
     blockprm.nbytes = output_block_sz;
     blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
     ioc_initialize_memory_block(&ctx.imp, OS_NULL, &root, &blockprm);

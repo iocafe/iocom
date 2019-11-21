@@ -22,15 +22,6 @@
 #define IOC_MEMORY_BLOCK_INCLUDED
 
 
-/** Memory block numbers reserved for specific use.
- */
-/*@{*/
-#define IOC_DEVICE_INFO_MBLK 1
-#define IOC_DEV_EXPORT_MBLK 2
-#define IOC_DEV_IMPORT_MBLK 3
-/*@}*/
-
-
 /** Flags for ioc_initialize_memory_block() function. Bit fields.
     Note about IOC_AUTO_SYNC mode: If this flag is given to source memory buffer,
     ioc_send() is called every time ioc_write() is called. Similarly IOC_AUTO_SYNC
@@ -80,12 +71,6 @@ typedef struct
      */
     os_short device_nr;
 
-    /** Memory block identifier number. A communication typically has multiple
-        memory blocks and this identifies the memory block among memory blocks
-        of the device. 
-     */
-    os_short mblk_nr;
-
     /** Memory block name, max 15 characters.
      */
     const os_char *mblk_name;
@@ -123,7 +108,6 @@ typedef enum
    IOC_NETWORK_NAME = 1,
    IOC_DEVICE_NAME = 2,
    IOC_DEVICE_NR = 3,
-   IOC_MBLK_NR = 4,
    IOC_MBLK_NAME = 5,
    IOC_MBLK_AUTO_SYNC_FLAG = 6
 }
@@ -265,10 +249,6 @@ typedef struct iocMemoryBlock
         context as device name, like "TEMPCTRL1".
      */
     os_short device_nr;
-
-    /** Memory block number, identifies the memory block within device.
-     */
-    os_short mblk_nr;
 
     /** Unique memory block identifier (unique for this memory block among
         all memory blocks of this iocRoot).
