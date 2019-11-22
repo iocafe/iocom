@@ -265,6 +265,7 @@ void ioc_mbinfo_received(
             if (con->flags & IOC_DYNAMIC_MBLKS)
             {
                 os_memclear(&mbprm, sizeof(mbprm));
+                mbprm.network_name = info->network_name;
                 mbprm.device_name = info->device_name;
                 mbprm.device_nr = info->device_nr;
                 mbprm.flags = (info->flags & IOC_SOURCE)

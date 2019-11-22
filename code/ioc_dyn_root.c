@@ -50,9 +50,6 @@ typedef struct
     os_int current_addr;
 
     const os_char *tag;
-    const os_char *array_tag;
-    const os_char *block_tag;
-
     const os_char *mblk_name;
     const os_char *group_name;
     const os_char *signal_name;
@@ -66,6 +63,7 @@ iocAddDinfoState;
 static osalStatus ioc_dinfo_process_block(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
+    os_char *array_tag,
     osalJsonIndex *jindex);
 
 
@@ -120,32 +118,20 @@ void ioc_set_dnetwork_callback(
 
 
 /* Add a dynamic network.
+ * Calling twice will add network twice, check with find first.
  * LOCK must be on.
  */
 iocDynamicNetwork *ioc_add_dynamic_network(
     iocDynamicRoot *droot,
     const os_char *network_name)
 {
-    iocDynamicNetwork *dnetwork, *prev_dnetwork;
+    iocDynamicNetwork *dnetwork;
     os_uint hash_ix;
 
     /* If we have existing IO network with this name,
        just return pointer to it.
-
-THIS IS NOT NEEDED, FIND IS USED TO CHECK IF NETWORK EXISTS BEFRE ADDING
      */
     hash_ix = ioc_hash(network_name) % IOC_DROOT_HASH_TAB_SZ;
-    prev_dnetwork = OS_NULL;
-    for (dnetwork = droot->hash[hash_ix];
-         dnetwork;
-         dnetwork = dnetwork->next)
-    {
-        if (!os_strcmp(network_name, dnetwork->network_name))
-        {
-            return dnetwork;
-        }
-        prev_dnetwork = dnetwork;
-    }
 
     /* Allocate and initialize a new IO network object.
      */
@@ -154,14 +140,8 @@ THIS IS NOT NEEDED, FIND IS USED TO CHECK IF NETWORK EXISTS BEFRE ADDING
 
     /* Join it as last to linked list for the hash index.
      */
-    if (prev_dnetwork)
-    {
-        prev_dnetwork->next = dnetwork;
-    }
-    else
-    {
-        droot->hash[hash_ix] = dnetwork;
-    }
+    dnetwork->next = droot->hash[hash_ix];
+    droot->hash[hash_ix] = dnetwork;
 
     return dnetwork;
 }
@@ -242,6 +222,7 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 static osalStatus ioc_dinfo_process_array(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
+    os_char *array_tag,
     osalJsonIndex *jindex)
 {
     osalJsonItem item;
@@ -264,43 +245,22 @@ static osalStatus ioc_dinfo_process_array(
         switch (item.code)
         {
             case OSAL_JSON_START_BLOCK:
-                state->block_tag = state->tag;
-                s = ioc_dinfo_process_block(droot, state, jindex);
+                // state->block_tag = state->tag;
+                s = ioc_dinfo_process_block(droot, state, array_tag, jindex);
                 if (s) return s;
                 break;
 
             case OSAL_JSON_START_ARRAY:
-                state->array_tag = state->tag;
-                s = ioc_dinfo_process_array(droot, state, jindex);
+                s = ioc_dinfo_process_array(droot, state, array_tag, jindex);
                 if (s) return s;
                 break;
 
             case OSAL_JSON_VALUE_STRING:
-                // item.value.s;
-                break;
-
             case OSAL_JSON_VALUE_INTEGER:
-                // item.value.l
-                break;
-
             case OSAL_JSON_VALUE_FLOAT:
-                // item.value.d;
-                break;
-
-            /* Handling OSAL_JSON_VALUE_NULL, OSAL_JSON_VALUE_TRUE, and
-               OSAL_JSON_VALUE_FALSE is needed only if compressed with
-               OSAL_JSON_KEEP_QUIRKS flag.
-             */
             case OSAL_JSON_VALUE_NULL:
-                // p = "null";
-                break;
-
             case OSAL_JSON_VALUE_TRUE:
-                //p = "true";
-                break;
-
             case OSAL_JSON_VALUE_FALSE:
-                //p = "false";
                 break;
 
             default:
@@ -373,18 +333,20 @@ static osalStatus ioc_new_signal_by_info(
 static osalStatus ioc_dinfo_process_block(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
+    os_char *array_tag,
     osalJsonIndex *jindex)
 {
     osalJsonItem item;
     osalStatus s;
     os_boolean is_signal_block;
+    os_char array_tag_buf[16];
 
     /* If this is beginning of signal block.
      */
     is_signal_block = OS_FALSE;
-    if (!os_strcmp(state->block_tag, "-"))
+    if (!os_strcmp(state->tag, "-"))
     {
-        if (!os_strcmp(state->array_tag, "signals"))
+        if (!os_strcmp(array_tag, "signals"))
         {
             is_signal_block = OS_TRUE;
             state->signal_addr = -1;
@@ -392,7 +354,7 @@ static osalStatus ioc_dinfo_process_block(
             state->signal_type_str = OS_NULL;
             state->signal_name = OS_NULL;
         }
-        else if (!os_strcmp(state->array_tag, "mblk"))
+        else if (!os_strcmp(array_tag, "mblk"))
         {
             state->current_addr = 0;
             state->current_type_id = OS_USHORT;
@@ -421,26 +383,25 @@ static osalStatus ioc_dinfo_process_block(
         switch (item.code)
         {
             case OSAL_JSON_START_BLOCK:
-                state->block_tag = state->tag;
-                s = ioc_dinfo_process_block(droot, state, jindex);
+                s = ioc_dinfo_process_block(droot, state, array_tag, jindex);
                 if (s) return s;
                 break;
 
             case OSAL_JSON_START_ARRAY:
-                state->array_tag = state->tag;
-                s = ioc_dinfo_process_array(droot, state, jindex);
+                os_strncpy(array_tag_buf, state->tag, sizeof(array_tag_buf));
+                s = ioc_dinfo_process_array(droot, state, array_tag_buf, jindex);
                 if (s) return s;
                 break;
 
             case OSAL_JSON_VALUE_STRING:
                 if (!os_strcmp(state->tag, "name"))
                 {
-                    if (!os_strcmp(state->array_tag, "mblk"))
+                    if (!os_strcmp(array_tag, "mblk"))
                     {
                         state->mblk_name = item.value.s;
                     }
 
-                    else if (!os_strcmp(state->array_tag, "groups"))
+                    else if (!os_strcmp(array_tag, "groups"))
                     {
                         state->group_name = item.value.s;
                         if (!os_strcmp(state->group_name, "inputs") ||
@@ -450,7 +411,7 @@ static osalStatus ioc_dinfo_process_block(
                         }
                     }
 
-                    else if (!os_strcmp(state->array_tag, "signals"))
+                    else if (!os_strcmp(array_tag, "signals"))
                     {
                         state->signal_name = item.value.s;
                     }
@@ -463,7 +424,7 @@ static osalStatus ioc_dinfo_process_block(
                 break;
 
             case OSAL_JSON_VALUE_INTEGER:
-                if (!os_strcmp(state->array_tag, "signals"))
+                if (!os_strcmp(array_tag, "signals"))
                 {
                     if (!os_strcmp(state->tag, "addr"))
                     {
@@ -475,27 +436,12 @@ static osalStatus ioc_dinfo_process_block(
                     }
 
                 }
-                // item.value.l
                 break;
 
             case OSAL_JSON_VALUE_FLOAT:
-                // item.value.d;
-                break;
-
-            /* Handling OSAL_JSON_VALUE_NULL, OSAL_JSON_VALUE_TRUE, and
-               OSAL_JSON_VALUE_FALSE is needed only if compressed with
-               OSAL_JSON_KEEP_QUIRKS flag.
-             */
             case OSAL_JSON_VALUE_NULL:
-                // p = "null";
-                break;
-
             case OSAL_JSON_VALUE_TRUE:
-                //p = "true";
-                break;
-
             case OSAL_JSON_VALUE_FALSE:
-                //p = "false";
                 break;
 
             default:
@@ -542,7 +488,7 @@ osalStatus ioc_add_dynamic_info(
 
     // ioc_add_mblk_to_network(); ???
 
-    s = ioc_dinfo_process_block(droot, &state, &jindex);
+    s = ioc_dinfo_process_block(droot, &state, "", &jindex);
     if (s) goto getout;
 
     /* If new network was created and we have application callback function.

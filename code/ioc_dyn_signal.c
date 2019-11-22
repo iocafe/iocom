@@ -144,7 +144,7 @@ static void ioc_setup_signal(
     iocDynamicNetwork *dnetwork;
     iocDynamicSignal *dsignal;
     iocMemoryBlock *mblk;
-    iocDynMBlkListItem *item;
+    // iocDynMBlkListItem *item;
     const os_char *topnet, *req_topnet;
 
     if (root->droot == OS_NULL)

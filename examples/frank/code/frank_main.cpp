@@ -86,7 +86,10 @@ void FrankMain::launch_app(
      */
     for (i = 0; i < MAX_APPS; i++)
     {
-        if (!os_strcmp(network_name, m_app[i]->m_network_name)) return;
+        if (m_app[i])
+        {
+            if (!os_strcmp(network_name, m_app[i]->m_network_name)) return;
+        }
     }
 
     /* Launc app.
@@ -96,7 +99,7 @@ void FrankMain::launch_app(
         if (m_app[i] == OS_NULL)
         {
             m_app[i] = new FrankApplication();
-            m_app[i]->start("surfnet", 1);
+            m_app[i]->start(network_name, 1);
             return;
         }
     }
