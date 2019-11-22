@@ -69,6 +69,9 @@ void ioc_release_dynamic_network(
 iocDynamicSignal *ioc_add_dynamic_signal(
     iocDynamicNetwork *dnetwork,
     const os_char *signal_name,
+    const os_char *mblk_name,
+    const os_char *device_name,
+    short device_nr,
     os_int addr,
     os_ushort n,
     os_char flags,

@@ -20,6 +20,10 @@
 #define IOC_DYN_SIGNAL_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
+
+struct iocDynamicNetwork;
+
+
 typedef struct iocDynamicSignal
 {
     /** Signal name. Dynamically allocated, can be up to 31 characters.
@@ -40,6 +44,10 @@ typedef struct iocDynamicSignal
         context as device name, like "TEMPCTRL1".
      */
     os_short device_nr;
+
+    /** Pointer to dynamic network, can be used for network name.
+     */
+    struct iocDynamicNetwork *dnetwork;
 
     /** Starting address in memory block.
      */

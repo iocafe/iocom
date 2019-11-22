@@ -83,6 +83,9 @@ void ioc_free_dynamic_mblk_list(
 iocDynamicSignal *ioc_add_dynamic_signal(
     iocDynamicNetwork *dnetwork,
     const os_char *signal_name,
+    const os_char *mblk_name,
+    const os_char *device_name,
+    short device_nr,
     os_int addr,
     os_ushort n,
     os_char flags,
@@ -110,6 +113,13 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     /* Allocate and initialize a new IO network object.
      */
     dsignal = ioc_initialize_dynamic_signal(signal_name);
+    dsignal->dnetwork = dnetwork;
+    os_strncpy(dsignal->mblk_name, mblk_name, IOC_NAME_SZ);
+    os_strncpy(dsignal->device_name, device_name, IOC_NAME_SZ);
+    dsignal->device_nr = device_nr;
+    dsignal->addr = addr;
+    dsignal->n = n;
+    dsignal->flags = flags;
 
     /* Join it as last to linked list for the hash index.
      */
@@ -206,6 +216,8 @@ iocDynamicSignal *ioc_find_next_dynamic_signal(
 
     return OS_NULL;
 }
+
+
 
 /* Called by ioc_release_memory_block(): memory block is being deleted, remove
    any references to it from dynamic configuration.

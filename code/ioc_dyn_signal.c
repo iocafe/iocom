@@ -131,7 +131,7 @@ void ioc_delete_signal(
 }
 
 
-/* Find a dynamic signal.
+/* Set up a dynamic signal.
  * LOCK must be on when calling this function.
  */
 static void ioc_setup_signal(
@@ -171,8 +171,12 @@ static void ioc_setup_signal(
     dnetwork = ioc_find_dynamic_network(root->droot, network_name);
     if (dnetwork == OS_NULL) return;
 
-    dsignal = ioc_find_dynamic_signal(dnetwork, &identifiers);
+    dsignal = ioc_find_first_dynamic_signal(dnetwork, &identifiers);
     if (dsignal == OS_NULL) return;
+
+    signal->addr = dsignal->addr;
+    signal->n = dsignal->n;
+    signal->flags = dsignal->flags;
 
     /* If we have already dynamic memory listed as search shortcut
      */
@@ -188,17 +192,16 @@ static void ioc_setup_signal(
     } */
 
     /* Search trough all memory blocks. This will be slow if there are very many IO device networks,
-     * that is why the shortcuts in memory block list.
+     * that is why the shortcuts are in memory block list.
      */
     for (mblk = root->mblk.first;
          mblk;
          mblk = mblk->link.next)
     {
-        if (mblk->network_name[0] != network_name[0] ||
-            mblk->device_nr != dsignal->device_nr) continue;
         if (os_strcmp(mblk->network_name, network_name)) continue;
-        if (os_strcmp(dinfo->mblk->mblk_name, dsignal->mblk_name)) continue;
-        if (os_strcmp(dinfo->mblk->device_name, dsignal->device_name)) continue;
+        if (os_strcmp(mblk->device_name, dsignal->device_name)) continue;
+        if (mblk->device_nr != dsignal->device_nr) continue;
+        if (os_strcmp(mblk->mblk_name, dsignal->mblk_name)) continue;
 
         ioc_setup_handle(signal->handle, root, mblk);
 
@@ -207,7 +210,6 @@ static void ioc_setup_signal(
 
         break;
     }
-
 }
 
 

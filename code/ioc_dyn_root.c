@@ -27,17 +27,27 @@
 
 typedef struct
 {
-    /* Pointer to dynamic IO network beging configured.
+    /** Pointer to dynamic IO network beging configured.
      */
     iocDynamicNetwork *dnetwork;
 
-    /* TRUE if new dynamic network was created and application callback is needed.
+    /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
+        identifies IO device type, like "TEMPCTRL".
+     */
+    os_char device_name[IOC_NAME_SZ];
+
+    /** If there are multiple devices of same type (same device name),
+        this identifies the device. This number is often written in
+        context as device name, like "TEMPCTRL1".
+     */
+    os_short device_nr;
+
+    /** TRUE if new dynamic network was created and application callback is needed.
      */
     os_boolean new_network;
 
     osalTypeId current_type_id;
     os_int current_addr;
-
 
     const os_char *tag;
     const os_char *array_tag;
@@ -328,6 +338,9 @@ static osalStatus ioc_new_signal_by_info(
 
     ioc_add_dynamic_signal(state->dnetwork,
         state->signal_name,
+        state->mblk_name,
+        state->device_name,
+        state->device_nr,
         state->current_addr,
         n,
         signal_type_id,
@@ -512,6 +525,8 @@ osalStatus ioc_add_dynamic_info(
     if (mblk == OS_NULL) return OSAL_STATUS_FAILED;
 
     os_memclear(&state, sizeof(state));
+    os_strncpy(state.device_name, mblk->device_name, IOC_NAME_SZ);
+    state.device_nr = mblk->device_nr;
 
     s = osal_create_json_indexer(&jindex, mblk->buf, mblk->nbytes, 0);
     if (s) goto getout;
