@@ -81,6 +81,14 @@ typedef struct iocSignal
         match to an IO pin.
      */
     const void *ptr;
+
+#if IOC_DYNAMIC_MBLK_CODE
+    /** One write could go to multiple devices in network environment, assuming there are
+        multiple devices with same signal name. Need to think how to maintain list for
+        this in dynamic environment.
+     */
+//    struct iocSignal *next;
+#endif
 }
 iocSignal;
 

@@ -221,6 +221,15 @@ void ioc_release_root(
 void ioc_run(
     iocRoot *root);
 
+/* Set callback function for iocRoot object.
+ */
+void ioc_set_root_callback(
+    iocRoot *root,
+    ioc_root_callback func,
+    void *context);
+
+/*@}*/
+
 #if OSAL_MULTITHREAD_SUPPORT
 /** Lock functions. These are used to lock object hierarchy under the root so it can be accessed
     only by one thread at the time. This is necessary for thread safety.
@@ -261,13 +270,5 @@ void ioc_unlock(
 
 #endif
 
-/* Set callback function for iocRoot object.
- */
-void ioc_set_root_callback(
-    iocRoot *root,
-    ioc_root_callback func,
-    void *context);
-
-/*@}*/
 
 #endif

@@ -68,7 +68,6 @@ void ioc_movex_signals(
 
     /* Check function arguments.
      */
-    osal_debug_assert(signal != OS_NULL);
     osal_debug_assert(vv != OS_NULL);
     osal_debug_assert(n_signals > 0);
 
@@ -76,6 +75,7 @@ void ioc_movex_signals(
     {
         os_memclear(vv, n_signals * sizeof(iocValue));
     }
+    if (signal == OS_NULL) return;
 
     /* Loop trough signal array.
      */
@@ -247,6 +247,8 @@ os_char ioc_sets_int(
 {
     iocValue vv;
 
+    if (signal == OS_NULL) return 0;
+
     if ((signal->flags & OSAL_TYPEID_MASK) == OS_FLOAT) vv.value.f = (os_float)value;
     else vv.value.i = value;
     vv.state_bits = state_bits;
@@ -262,6 +264,8 @@ os_char ioc_sets_double(
     os_char state_bits)
 {
     iocValue vv;
+
+    if (signal == OS_NULL) return 0;
 
     switch (signal->flags & OSAL_TYPEID_MASK)
     {
@@ -398,6 +402,8 @@ os_int ioc_gets_int(
     os_char *state_bits)
 {
     iocValue vv;
+
+    if (signal == OS_NULL) return 0;
 
     ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_DEFAULT);
     if (state_bits) *state_bits = vv.state_bits;
@@ -549,7 +555,7 @@ os_float ioc_getx_float(
            IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
            the signals array.
-  @return  None.
+  @return  State bits.
 
 ****************************************************************************************************
 */
@@ -569,10 +575,11 @@ os_char ioc_movex_str_signal(
     iocHandle *handle;
     handle = signal->handle;
 
+    if (signal == OS_NULL) return 0;
+
     /* Check function arguments.
      */
     osal_debug_assert(handle != OS_NULL);
-    osal_debug_assert(signal != OS_NULL);
     osal_debug_assert(str != OS_NULL);
 
     /* If the value in memory block is actually integer or float.
@@ -768,7 +775,7 @@ os_char ioc_movex_str(
            Type flags here are ignored, since type is set for each signal separately in
            the signals array.
 
-  @return  None.
+  @return  State bits.
 
 ****************************************************************************************************
 */
@@ -790,10 +797,11 @@ os_char ioc_movex_array_signal(
     iocHandle *handle;
     handle = signal->handle;
 
+    if (signal == OS_NULL) return 0;
+
     /* Check function arguments.
      */
     osal_debug_assert(handle != OS_NULL);
-    osal_debug_assert(signal != OS_NULL);
     osal_debug_assert(array != OS_NULL);
     osal_debug_assert(n > 0);
 

@@ -22,15 +22,41 @@
 
 typedef struct iocDynamicSignal
 {
-    /* Signal name
+    /** Signal name. Dynamically allocated, can be up to 31 characters.
      */
     os_char *signal_name;
 
-    /* Actual signal object.
+    /** Memory block name, max 15 characters.
      */
-    iocSignal x;
+    os_char mblk_name[IOC_NAME_SZ];
 
-    /* Next dynamic signal with same hash key.
+    /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
+        identifies IO device type, like "TEMPCTRL".
+     */
+    os_char device_name[IOC_NAME_SZ];
+
+    /** If there are multiple devices of same type (same device name),
+        this identifies the device. This number is often written in
+        context as device name, like "TEMPCTRL1".
+     */
+    os_short device_nr;
+
+    /** Starting address in memory block.
+     */
+    os_int addr;
+
+    /** For strings n can be number of bytes in memory block for the string. For arrays n is
+        number of elements reserved in memory block. Either 0 or 1 for single variables.
+        Unsigned type used for reason, we want to have max 65535 items.
+     */
+    os_ushort n;
+
+    /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
+        or OS_STR. Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.
+     */
+    os_char flags;
+
+    /** Next dynamic signal with same hash key.
      */
     struct iocDynamicSignal *next;
 }
@@ -47,6 +73,19 @@ iocDynamicSignal *ioc_initialize_dynamic_signal(
 void ioc_release_dynamic_signal(
     iocDynamicSignal *dsignal);
 
+/* Allocate or maintain dynamic signal structure.
+   psignal cannot be uninitialized.
+ */
+void ioc_new_signal(
+    iocRoot *root,
+    const os_char *iopath,
+    const os_char *network_name,
+    iocSignal **psignal);
+
+/* Free signal allocated by ioc_new_signal() function.
+ */
+void ioc_delete_signal(
+    iocSignal *signal);
 
 #endif
 #endif

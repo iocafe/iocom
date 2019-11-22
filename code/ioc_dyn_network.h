@@ -20,6 +20,8 @@
 #if IOC_DYNAMIC_MBLK_CODE
 
 
+struct iocDynMBlkListItem;
+
 /** We use fixed hash table size for now. Memory use/performance ratio can be improved
     in futute by adopting hash table memory allocation to number of signals.
  */
@@ -35,13 +37,18 @@ typedef struct iocDynamicNetwork
     iocDynamicSignal *hash[IOC_DNETWORK_HASH_TAB_SZ];
 
     struct iocDynamicNetwork *next;
+
+    /** Two directional list of memory blocks handles belonging to this IO network.
+     */
+    struct iocDynMBlkListItem *mlist_first, *mlist_last;
 }
 iocDynamicNetwork;
 
 
 /* Allocate and initialize dynamic network object.
  */
-iocDynamicNetwork *ioc_initialize_dynamic_network(void);
+iocDynamicNetwork *ioc_initialize_dynamic_network(
+    void);
 
 /* Release dynamic network object.
  */
@@ -73,6 +80,11 @@ void ioc_remove_dynamic_signal(
     iocDynamicNetwork *dnetwork,
     iocDynamicSignal *dsignal);
 
+/* Free list of memory blocks in this network
+ */
+void ioc_free_dynamic_mblk_list(
+    iocDynamicNetwork *dnetwork);
+
 /* Find a dynamic signal.
  */
 iocDynamicSignal *ioc_find_first_dynamic_signal(
@@ -83,7 +95,6 @@ iocDynamicSignal *ioc_find_next_dynamic_signal(
     iocDynamicNetwork *dnetwork,
     iocDynamicSignal *dsignal,
     iocIdentifiers *identifiers);
-
 
 /* Called by ioc_release_memory_block(): memory block is being deleted, remove any references
    to it from dynamic configuration.

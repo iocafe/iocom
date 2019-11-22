@@ -37,6 +37,12 @@ static void info_callback(
     os_ushort flags,
     void *context);
 
+static void network_callback(
+    struct iocDynamicRoot *droot,
+    struct iocDynamicNetwork *dnetwork,
+    iocDynamicNetworkEvent event,
+    void *context);
+
 
 /**
 ****************************************************************************************************
@@ -63,14 +69,21 @@ osalStatus osal_main(
     ioc_initialize_root(&frank_root);
     frank_root.droot = ioc_initialize_dynamic_root();
 
-    /* Create frank main object and start listening for clients.
+    /* Create frank main object
      */
     frank_main = new FrankMain;
-    frank_main->listen_for_clients();
+
+    /* Set callback function to receive information about created or removed dynamic IO networks.
+     */
+    ioc_set_dnetwork_callback(frank_root.droot, network_callback, OS_NULL);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
     ioc_set_root_callback(&frank_root, root_callback, OS_NULL);
+
+    /* Ready to go, start listening for clients.
+     */
+    frank_main->listen_for_clients();
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -121,6 +134,8 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
+    ioc_set_dnetwork_callback(frank_root.droot, OS_NULL, OS_NULL);
+    ioc_set_root_callback(&frank_root, OS_NULL, OS_NULL);
     delete frank_main;
 
     ioc_release_root(&frank_root);
@@ -159,7 +174,8 @@ static void root_callback(
         /* Process "new dynamic memory block" callback.
          */
         case IOC_NEW_DYNAMIC_MBLK:
-            ioc_memory_block_get_string_param(handle, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
+            ioc_memory_block_get_string_param(handle, IOC_MBLK_NAME,
+                mblk_name, sizeof(mblk_name));
 
             os_strncpy(text, "Memory block ", sizeof(text));
             os_strncat(text, mblk_name, sizeof(text));
@@ -210,5 +226,43 @@ static void info_callback(
     if (end_addr >= 0)
     {
         ioc_add_dynamic_info(frank_root.droot, handle);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Callback when dynamic IO network has been connected or disconnected.
+
+  The info_callback() function is called when device information data is received from connection
+  or when connection status changes.
+
+  @param   droot Pointer to the dynamic configuration root object.
+  @param   dnetwork Pointer to dynamic network object which has just been connected or is
+           about to be removed.
+  @param   event Either IOC_NEW_DYNAMIC_NETWORK or IOC_DYNAMIC_NETWORK_REMOVED.
+  @param   context Application specific pointer passed to this callback function.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void network_callback(
+    struct iocDynamicRoot *droot,
+    struct iocDynamicNetwork *dnetwork,
+    iocDynamicNetworkEvent event,
+    void *context)
+{
+    switch (event)
+    {
+        case IOC_NEW_DYNAMIC_NETWORK:
+            osal_debug_error("IOC_NEW_DYNAMIC_NETWORK");
+            frank_main->launch_app(dnetwork->network_name);
+            break;
+
+        case IOC_DYNAMIC_NETWORK_REMOVED:
+            osal_debug_error("IOC_DYNAMIC_NETWORK_REMOVED");
+            break;
     }
 }

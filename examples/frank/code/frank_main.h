@@ -31,11 +31,11 @@ public:
 
 	/* Virtual destructor.
  	 */
-    virtual ~FrankMain();
+    ~FrankMain();
 
     static const os_int MAX_APPS = 20;
-    os_int m_nro_apps;
     class FrankApplication *m_app[MAX_APPS];
 
     osalStatus listen_for_clients();
+    void launch_app(os_char *network_name);
 };

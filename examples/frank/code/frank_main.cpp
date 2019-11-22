@@ -18,51 +18,21 @@
 
 /**
 ****************************************************************************************************
-
-  @brief Constructor.
-
-  X...
-
-  @return  None.
-
+  Construct application.
 ****************************************************************************************************
 */
 FrankMain::FrankMain()
 {
-    FrankApplication *app;
-    /* Lauch tour 'frank' applications, one for pekkanet, one for markkunet and two for surfnet.
-     */
-    m_nro_apps = 0;
+    os_int i;
 
-    app = new FrankApplication();
-    app->start("pekkanet", 1);
-    m_app[m_nro_apps++] = app;
-
-    /* app = new FrankTestApplication();
-    app->start("markkunet", 1);
-    m_app[m_nro_apps++] = app;
-
-    app = new FrankTestApplication();
-    app->start("surfnet", 1);
-    m_app[m_nro_apps++] = app;
-
-    app = new FrankTestApplication();
-    app->start("surfnet", 2);
-    m_app[m_nro_apps++] = app; */
-
-    osal_debug_assert(m_nro_apps <= MAX_APPS);
+    for (i = 0; i < MAX_APPS; i++)
+        m_app[i] = OS_NULL;
 }
 
 
 /**
 ****************************************************************************************************
-
-  @brief Virtual destructor.
-
-  X...
-
-  @return  None.
-
+  Application destructor.
 ****************************************************************************************************
 */
 FrankMain::~FrankMain()
@@ -71,13 +41,18 @@ FrankMain::~FrankMain()
 
     /* Finish with 'frank' applications.
      */
-    for (i = 0; i < m_nro_apps; i++)
+    for (i = 0; i < MAX_APPS; i++)
     {
         delete m_app[i];
     }
 }
 
 
+/**
+****************************************************************************************************
+  Start thread which listens for client connections.
+****************************************************************************************************
+*/
 osalStatus FrankMain::listen_for_clients()
 {
     iocEndPoint *ep = OS_NULL;
@@ -94,4 +69,37 @@ osalStatus FrankMain::listen_for_clients()
 
     os_sleep(100);
     return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+  Launc a client application.
+****************************************************************************************************
+*/
+void FrankMain::launch_app(
+    os_char *network_name)
+{
+    os_int i;
+
+    /* If app is already running for this network.
+     */
+    for (i = 0; i < MAX_APPS; i++)
+    {
+        if (!os_strcmp(network_name, m_app[i]->m_network_name)) return;
+    }
+
+    /* Launc app.
+     */
+    for (i = 0; i < MAX_APPS; i++)
+    {
+        if (m_app[i] == OS_NULL)
+        {
+            m_app[i] = new FrankApplication();
+            m_app[i]->start("surfnet", 1);
+            return;
+        }
+    }
+
+    osal_debug_error("Too many IO networks");
 }

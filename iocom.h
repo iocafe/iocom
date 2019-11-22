@@ -63,6 +63,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_dyn_signal.h"
 #include "code/ioc_dyn_network.h"
 #include "code/ioc_dyn_root.h"
+#include "code/ioc_dyn_mblk_list.h"
 #include "code/ioc_ioboard.h"
 #include "code/ioc_poolsize.h"
 

@@ -50,12 +50,27 @@ void ioc_release_dynamic_network(
         }
     }
 
+    ioc_free_dynamic_mblk_list(dnetwork);
+
+
     os_free(dnetwork, sizeof(iocDynamicNetwork));
 }
 
 
+/* Free list of memory blocks in this network
+ */
+void ioc_free_dynamic_mblk_list(
+    iocDynamicNetwork *dnetwork)
+{
+    while (dnetwork->mlist_first)
+    {
+        ioc_release_mblk_list_item(dnetwork, dnetwork->mlist_first);
+    }
+}
+
+
 /* Add a dynamic signal.
-   Notice that there can be multiple dynamic signals with same name.
+   Notice that there can be multiple dynamic signals with same name. !!!!!!!!!!!!!!!!!!!!!!!!!!!! MISSING
     @param addr Starting address of the signal in memory block.
 
     @param n For strings n can be number of bytes in memory block for the string. For arrays n is
@@ -73,8 +88,24 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     os_char flags,
     iocHandle *mblk_handle)
 {
-    iocDynamicSignal *dsignal;
+    iocDynamicSignal *dsignal, *prev_dsignal;
     os_uint hash_ix;
+
+    /* If we have existing IO network with this name,
+       just return pointer to it.
+     */
+    hash_ix = ioc_hash(signal_name) % IOC_DNETWORK_HASH_TAB_SZ;
+    prev_dsignal = OS_NULL;
+    for (dsignal = dnetwork->hash[hash_ix];
+         dsignal;
+         dsignal = dsignal->next)
+    {
+        if (!os_strcmp(signal_name, dsignal->signal_name))
+        {
+            return dsignal;
+        }
+        prev_dsignal = dsignal;
+    }
 
     /* Allocate and initialize a new IO network object.
      */
@@ -82,9 +113,14 @@ iocDynamicSignal *ioc_add_dynamic_signal(
 
     /* Join it as last to linked list for the hash index.
      */
-    hash_ix = ioc_hash(signal_name) % IOC_DNETWORK_HASH_TAB_SZ;
-    dsignal->next = dnetwork->hash[hash_ix];
-    dnetwork->hash[hash_ix] = dsignal;
+    if (prev_dsignal)
+    {
+        prev_dsignal->next = dsignal;
+    }
+    else
+    {
+        dnetwork->hash[hash_ix] = dsignal;
+    }
 
     return dsignal;
 }
@@ -171,8 +207,11 @@ iocDynamicSignal *ioc_find_next_dynamic_signal(
     return OS_NULL;
 }
 
-/* Called by ioc_release_memory_block(): memory block is being deleted, remove any references
-   to it from dynamic configuration.
+/* Called by ioc_release_memory_block(): memory block is being deleted, remove
+   any references to it from dynamic configuration.
+
+
+   THIS IS NOT GOOD WAY TO DELETE DYNAMIC DATA
  */
 void ioc_network_mblk_is_deleted(
     iocDynamicNetwork *dnetwork,
@@ -187,10 +226,10 @@ void ioc_network_mblk_is_deleted(
              dsignal;
              dsignal = dsignal->next)
         {
-            if (dsignal->x.handle->mblk == mblk)
+/*             if (dsignal->x.handle->mblk == mblk)
             {
                 dsignal->x.handle = OS_NULL;
-            }
+            } */
         }
     }
 }

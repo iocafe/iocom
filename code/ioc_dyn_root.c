@@ -27,6 +27,18 @@
 
 typedef struct
 {
+    /* Pointer to dynamic IO network beging configured.
+     */
+    iocDynamicNetwork *dnetwork;
+
+    /* TRUE if new dynamic network was created and application callback is needed.
+     */
+    os_boolean new_network;
+
+    osalTypeId current_type_id;
+    os_int current_addr;
+
+
     const os_char *tag;
     const os_char *array_tag;
     const os_char *block_tag;
@@ -35,8 +47,6 @@ typedef struct
     const os_char *group_name;
     const os_char *signal_name;
     const os_char *signal_type_str;
-    //osalTypeId signal_type_id;
-    // os_memsz signal_type_sz;
     os_int signal_addr;
     os_int signal_array_n;
 }
@@ -84,6 +94,21 @@ void ioc_release_dynamic_root(
     os_free(droot, sizeof(iocDynamicRoot));
 }
 
+
+/* Set callback function for iocRoot object to inform application about IO network
+   connect and disconnects.
+   LOCK SHOULD BE ON IF COMMUNICATION IS RUNNING
+ */
+void ioc_set_dnetwork_callback(
+    iocDynamicRoot *droot,
+    ioc_dnetwork_callback func,
+    void *context)
+{
+    droot->func = func;
+    droot->context = context;
+}
+
+
 /* Add a dynamic network.
  * LOCK must be on.
  */
@@ -96,7 +121,8 @@ iocDynamicNetwork *ioc_add_dynamic_network(
 
     /* If we have existing IO network with this name,
        just return pointer to it.
-       WE CAN SKIP THIS IF WE DO NOT NEED TO CHECK FOR ONE ALREADY THERE
+
+THIS IS NOT NEEDED, FIND IS USED TO CHECK IF NETWORK EXISTS BEFRE ADDING
      */
     hash_ix = ioc_hash(network_name) % IOC_DROOT_HASH_TAB_SZ;
     prev_dnetwork = OS_NULL;
@@ -140,6 +166,13 @@ void ioc_remove_dynamic_network(
     iocDynamicNetwork *dn, *prev_dn;
     os_uint hash_ix;
 
+    /* If we have application callback function, call it.
+     */
+    if (droot->func)
+    {
+        droot->func(droot, dnetwork, IOC_DYNAMIC_NETWORK_REMOVED, droot->context);
+    }
+
     /* Fond out who has pointer to dnetwork in prev_dn.
      * If none, dnetwork is first in list and prev_dn is OS_NULL.
      */
@@ -172,7 +205,7 @@ void ioc_remove_dynamic_network(
 /* Find a dynamic network.
    LOCK MUST BE ON.
  */
-iocDynamicNetwork *ioc_find_network(
+iocDynamicNetwork *ioc_find_dynamic_network(
     iocDynamicRoot *droot,
     const os_char *network_name)
 {
@@ -268,6 +301,59 @@ static osalStatus ioc_dinfo_process_array(
     return OSAL_SUCCESS;
 }
 
+static osalStatus ioc_new_signal_by_info(
+    iocAddDinfoState *state)
+{
+    osalTypeId signal_type_id;
+    os_memsz sz;
+    os_int n;
+
+    if (state->signal_type_str)
+    {
+        signal_type_id = osal_typeid_from_name(state->signal_type_str);
+        state->current_type_id = signal_type_id;
+    }
+    else
+    {
+        signal_type_id = state->current_type_id;
+    }
+
+    if (state->signal_addr > 0)
+    {
+        state->current_addr = state->signal_addr;
+    }
+
+    n = state->signal_array_n;
+    if (n < 1) n = 1;
+
+    ioc_add_dynamic_signal(state->dnetwork,
+        state->signal_name,
+        state->current_addr,
+        n,
+        signal_type_id,
+        OS_NULL);
+
+    if (signal_type_id == OS_BOOLEAN)
+    {
+        if (n == 1)
+        {
+            state->current_addr++;
+        }
+        else
+        {
+            sz = (n + 7)/8 + 1;
+            state->current_addr += sz;
+        }
+    }
+    else
+    {
+        sz = osal_typeid_size(signal_type_id);
+        state->current_addr += n * sz + 1;
+    }
+
+    return OSAL_SUCCESS;
+}
+
 
 /* Process a block of packed JSON.
  */
@@ -278,20 +364,38 @@ static osalStatus ioc_dinfo_process_block(
 {
     osalJsonItem item;
     osalStatus s;
+    os_boolean is_signal_block;
 
-    if (!os_strcmp(state->block_tag, "-") &&
-        !os_strcmp(state->array_tag, "signals"))
+    /* If this is beginning of signal block.
+     */
+    is_signal_block = OS_FALSE;
+    if (!os_strcmp(state->block_tag, "-"))
     {
-        state->signal_addr = -1;
-        state->signal_array_n = 1;
-        state->signal_type_str = OS_NULL;
-        state->signal_name = OS_NULL;
+        if (!os_strcmp(state->array_tag, "signals"))
+        {
+            is_signal_block = OS_TRUE;
+            state->signal_addr = -1;
+            state->signal_array_n = 1;
+            state->signal_type_str = OS_NULL;
+            state->signal_name = OS_NULL;
+        }
+        else if (!os_strcmp(state->array_tag, "mblk"))
+        {
+            state->current_addr = 0;
+            state->current_type_id = OS_USHORT;
+        }
     }
 
     while (!(s = osal_get_json_item(jindex, &item)))
     {
         if (item.code == OSAL_JSON_END_BLOCK)
         {
+            /* If end of signal block, generate the signal
+             */
+            if (is_signal_block)
+            {
+                return ioc_new_signal_by_info(state);
+            }
             return OSAL_SUCCESS;
         }
 
@@ -329,11 +433,7 @@ static osalStatus ioc_dinfo_process_block(
                         if (!os_strcmp(state->group_name, "inputs") ||
                             !os_strcmp(state->group_name, "outputs"))
                         {
-                            state->signal_type_str = "boolean";
-                        }
-                        else
-                        {
-                            state->signal_type_str = "ushort";
+                            state->current_type_id = OS_BOOLEAN;
                         }
                     }
 
@@ -394,7 +494,6 @@ static osalStatus ioc_dinfo_process_block(
 }
 
 
-
 /* Add dynamic memory block/signal information.
  */
 osalStatus ioc_add_dynamic_info(
@@ -417,7 +516,26 @@ osalStatus ioc_add_dynamic_info(
     s = osal_create_json_indexer(&jindex, mblk->buf, mblk->nbytes, 0);
     if (s) goto getout;
 
+    /* Make sure that we have network with this name.
+     */
+    state.dnetwork = ioc_find_dynamic_network(droot, mblk->network_name);
+    if (state.dnetwork == OS_NULL)
+    {
+        state.dnetwork = ioc_add_dynamic_network(droot, mblk->network_name);
+        state.new_network = OS_TRUE;
+    }
+
+    // ioc_add_mblk_to_network(); ???
+
     s = ioc_dinfo_process_block(droot, &state, &jindex);
+    if (s) goto getout;
+
+    /* If new network was created and we have application callback function.
+     */
+    if (state.new_network && droot->func)
+    {
+        droot->func(droot, state.dnetwork, IOC_NEW_DYNAMIC_NETWORK, droot->context);
+    }
 
     /* End syncronization and return.
      */
@@ -436,12 +554,13 @@ void ioc_droot_mblk_is_deleted(
 {
     iocDynamicNetwork *dnetwork;
 
-    dnetwork = ioc_find_network(droot, mblk->network_name);
+    dnetwork = ioc_find_dynamic_network(droot, mblk->network_name);
     if (dnetwork)
     {
         ioc_network_mblk_is_deleted(dnetwork, mblk);
     }
 }
+
 
 /* Calculate hash index for the key
  */

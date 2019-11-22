@@ -25,6 +25,35 @@
 #define IOC_DYN_ROOT_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
+struct iocDynamicRoot;
+struct iocDynamicNetwork;
+
+
+/**
+****************************************************************************************************
+    Root callback event enumeration, reason why the callback?
+****************************************************************************************************
+*/
+typedef enum
+{
+    IOC_NEW_DYNAMIC_NETWORK,
+    IOC_DYNAMIC_NETWORK_REMOVED
+}
+iocDynamicNetworkEvent;
+
+
+/**
+****************************************************************************************************
+    Dynamic network connect/disconnect callback function type.
+****************************************************************************************************
+*/
+typedef void ioc_dnetwork_callback(
+    struct iocDynamicRoot *droot,
+    struct iocDynamicNetwork *dnetwork,
+    iocDynamicNetworkEvent event,
+    void *context);
+
+
 /** We use fixed hash table size for now. Memory use/performance ratio can be improved
     in futute by adopting hash table memory allocation to number of signals.
  */
@@ -36,8 +65,25 @@
 typedef struct iocDynamicRoot
 {
     iocDynamicNetwork *hash[IOC_DROOT_HASH_TAB_SZ];
+
+    /** Callback function pointer. Calback is used to inform application about dynamic
+        IO network connects and disconnects. OS_NULL if not used.
+     */
+    ioc_dnetwork_callback *func;
+
+    /** Callback context for callback function. OS_NULL if not used.
+     */
+    void *context;
 }
 iocDynamicRoot;
+
+
+
+/**
+****************************************************************************************************
+    Dynamic network configuration root functions.
+****************************************************************************************************
+*/
 
 /* Allocate and initialize dynamic root object.
  */
@@ -47,6 +93,14 @@ iocDynamicRoot *ioc_initialize_dynamic_root(void);
  */
 void ioc_release_dynamic_root(
     iocDynamicRoot *droot);
+
+/* Set callback function for iocRoot object to inform application about IO network
+   connect and disconnects.
+ */
+void ioc_set_dnetwork_callback(
+    iocDynamicRoot *droot,
+    ioc_dnetwork_callback func,
+    void *context);
 
 /* Add a dynamic network.
  */
@@ -62,7 +116,7 @@ void ioc_remove_dynamic_network(
 
 /* Find a dynamic network.
  */
-iocDynamicNetwork *ioc_find_network(
+iocDynamicNetwork *ioc_find_dynamic_network(
     iocDynamicRoot *droot,
     const os_char *network_name);
 

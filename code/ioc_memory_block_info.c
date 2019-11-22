@@ -235,7 +235,7 @@ void ioc_mbinfo_received(
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf, *next_tbuf;
     os_boolean device_name_matches, device_nr_matches;
-    os_boolean network_name_matches, mblk_matches;
+    os_boolean network_matches, mblk_matches;
 
 #if IOC_DYNAMIC_MBLK_CODE
     iocMemoryBlockParams mbprm;
@@ -302,12 +302,12 @@ void ioc_mbinfo_received(
             || mblk->device_name[0] =='\0' || info->device_name[0] =='\0';
         device_nr_matches = info->device_nr == mblk->device_nr
             || mblk->device_nr == 0 || info->device_nr == 0;
-        network_name_matches = !os_strcmp(info->network_name, mblk->network_name)
+        network_matches = !os_strcmp(info->network_name, mblk->network_name)  /* HERE WE ARE RELAXED ABOUT NETWORK NAME MATCH, THIS IS A SECURITY CONCERN. WE MAY NOT WANT TO EXECPT EMPTY BUT IN TESTERS, ETC */
             || mblk->network_name[0] =='\0' || info->network_name[0] =='\0';
 
         if (device_name_matches &&
             device_nr_matches &&
-            network_name_matches &&
+            network_matches &&
             mblk_matches)
         {
             osal_trace3("Memory block matched");
