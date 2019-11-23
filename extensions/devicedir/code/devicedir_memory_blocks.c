@@ -98,6 +98,7 @@ void devicedir_memory_blocks(
         if (mflags & IOC_AUTO_SYNC) devicedir_append_flag(list, "auto", &isfirst);
         if (mflags & IOC_ALLOW_RESIZE) devicedir_append_flag(list, "resize", &isfirst);
         if (mflags & IOC_STATIC) devicedir_append_flag(list, "static", &isfirst);
+        if (mflags & IOC_DYNAMIC_MBLK) devicedir_append_flag(list, "dynamic", &isfirst);
         osal_stream_print_str(list, "\"", 0);
 
         if (flags & IOC_DEVDIR_BUFFERS)

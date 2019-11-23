@@ -175,7 +175,7 @@ void ioc_remove_dynamic_signal(
 
 
 /* Find first matching dynamic signal.
-   Notice that there can be multiple dynamic signals with same name.
+   Notice that there can be multiple signals with same set of identifiers.
  */
 iocDynamicSignal *ioc_find_first_dynamic_signal(
     iocDynamicNetwork *dnetwork,
@@ -186,7 +186,7 @@ iocDynamicSignal *ioc_find_first_dynamic_signal(
 
 
 /* Find next matching dynamic signal.
-   Notice that there can be multiple dynamic signals with same name.
+   Notice that there can be multiple signals with same set of identifiers.
  */
 iocDynamicSignal *ioc_find_next_dynamic_signal(
     iocDynamicNetwork *dnetwork,
@@ -210,6 +210,19 @@ iocDynamicSignal *ioc_find_next_dynamic_signal(
 
         if (!os_strcmp(identifiers->signal_name, dsignal->signal_name))
         {
+            if (identifiers->mblk_name[0] != '\0')
+            {
+                if (os_strcmp(identifiers->mblk_name, dsignal->mblk_name)) continue;
+            }
+            if (identifiers->device_name[0] != '\0')
+            {
+                if (os_strcmp(identifiers->device_name, dsignal->device_name)) continue;
+            }
+            if (identifiers->device_nr)
+            {
+                if (identifiers->device_nr != dsignal->device_nr) continue;
+            }
+
             return dsignal;
         }
     }
