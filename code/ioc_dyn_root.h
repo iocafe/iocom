@@ -126,8 +126,7 @@ osalStatus ioc_add_dynamic_info(
     iocDynamicRoot *droot,
     iocHandle *mblk_handle);
 
-/* Called by ioc_release_memory_block(): memory block is being deleted, remove any references
-   to it from dynamic configuration.
+/* Memory block is being deleted, remove any references to it from dynamic configuration.
  */
 void ioc_droot_mblk_is_deleted(
     iocDynamicRoot *droot,

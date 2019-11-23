@@ -506,14 +506,32 @@ getout:
 }
 
 
-/* Called by ioc_release_memory_block(): memory block is being deleted, remove any references
-   to it from dynamic configuration.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Delete all dynamic signal information related to a memory block.
+  @anchor ioc_droot_mblk_is_deleted
+
+  The ioc_droot_mblk_is_deleted() is called when a memory block is about to be deleted from
+  the IO device network by ioc_release_memory_block() function. All dynamic signal information
+  related to the memory block is deleted.
+
+  Root lock must be on when calling this function.
+
+  @param   dnetwork Pointer to dynamic network object, to which memory block belongs to.
+  @param   mblk Pointer to memory block object being deleted.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_droot_mblk_is_deleted(
     iocDynamicRoot *droot,
     iocMemoryBlock *mblk)
 {
     iocDynamicNetwork *dnetwork;
+
+    if (droot == OS_NULL) return;
 
     dnetwork = ioc_find_dynamic_network(droot, mblk->network_name);
     if (dnetwork)

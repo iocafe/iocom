@@ -33,6 +33,9 @@
     to be synchronized. If IOC_STATIC flag is given, also IOC_SOURCE flag must
     be set and application allocated static buffer (and may be constant) must be
     given.
+    Flag IOC_DYNAMIC_MBLK indicates that the memory block was dynamically
+    allocated, and needs to be deleted when last source or target buffer attached
+    to it is deleted.
  */
 /*@{*/
 #define IOC_TARGET 1
@@ -40,6 +43,7 @@
 #define IOC_AUTO_SYNC 4
 #define IOC_ALLOW_RESIZE 16
 #define IOC_STATIC 32
+#define IOC_DYNAMIC_MBLK 512
 /*@}*/
 
 
@@ -321,6 +325,13 @@ osalStatus ioc_initialize_memory_block(
  */
 void ioc_release_memory_block(
     iocHandle *handle);
+
+#if IOC_DYNAMIC_MBLK_CODE
+/* Release dynamic memory block if it is no longer attached.
+ */
+void ioc_release_dynamic_mblk_if_not_attached(
+    iocHandle *handle);
+#endif
 
 /* Set memory block parameter.
  */

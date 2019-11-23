@@ -269,8 +269,8 @@ void ioc_mbinfo_received(
                 mbprm.device_name = info->device_name;
                 mbprm.device_nr = info->device_nr;
                 mbprm.flags = (info->flags & IOC_SOURCE)
-                    ? (IOC_TARGET|IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC)
-                    : (IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC);
+                    ? (IOC_TARGET|IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC_MBLK)
+                    : (IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC_MBLK);
                 mbprm.mblk_name = info->mblk_name;
                 mbprm.nbytes = info->nbytes;
 

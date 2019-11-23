@@ -47,6 +47,10 @@ static void iocom_state_list(
             osal_console_write("\n*** memory blocks ***\n");
             devicedir_memory_blocks(root, stream, OS_NULL, IOC_DEVDIR_BUFFERS|IOC_DEVDIR_DATA);
             break;
+
+        case 'd':
+            osal_console_write("\n*** dynamic signal info ***\n");
+            devicedir_dynamic_signals(root, stream, 0);
     }
 
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
@@ -91,6 +95,11 @@ osalStatus io_device_console(
         case 'm':
         case 'M':
             iocom_state_list(root, c);
+            break;
+
+        case 'd':
+        case 'D':
+            iocom_state_list(root, 'd');
             break;
 
         default:

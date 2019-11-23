@@ -264,6 +264,43 @@ void ioc_release_memory_block(
 }
 
 
+#if IOC_DYNAMIC_MBLK_CODE
+/**
+****************************************************************************************************
+
+  @brief Release dynamic memory block if it is no longer attached.
+  @anchor ioc_release_dynamic_mblk_if_not_connected
+
+  The ioc_release_dynamic_mblk_if_not_attached() function releases dynamically created memory
+  block if it is no longer attached to source or target buffers. This function is called
+  when connection cleans up resources.
+
+  @param   handle Memory block handle.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_release_dynamic_mblk_if_not_attached(
+    iocHandle *handle)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
+    if ((mblk->flags & IOC_DYNAMIC_MBLK) &&
+        mblk->sbuf.first == OS_NULL &&
+        mblk->tbuf.first == OS_NULL)
+    {
+        ioc_release_memory_block(handle);
+    }
+    ioc_unlock(root);
+}
+#endif
+
+
 /**
 ****************************************************************************************************
 

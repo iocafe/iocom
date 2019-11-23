@@ -218,30 +218,53 @@ iocDynamicSignal *ioc_find_next_dynamic_signal(
 }
 
 
+/**
+****************************************************************************************************
 
-/* Called by ioc_release_memory_block(): memory block is being deleted, remove
-   any references to it from dynamic configuration.
+  @brief Delete all dynamic signal information related to a memory block.
+  @anchor ioc_network_mblk_is_deleted
 
+  The ioc_network_mblk_is_deleted() is called when a memory block is about to be deleted from
+  the IO device network. It deletes all dynamic signal information for signals in that
+  memory block.
 
-   THIS IS NOT GOOD WAY TO DELETE DYNAMIC DATA
- */
+  Root lock must be on when calling this function.
+
+  @param   dnetwork Pointer to dynamic network object, to which memory block belongs to.
+  @param   mblk Pointer to memory block object being deleted.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_network_mblk_is_deleted(
     iocDynamicNetwork *dnetwork,
     iocMemoryBlock *mblk)
 {
-    iocDynamicSignal *dsignal;
+    iocDynamicSignal *dsignal, *prev_dsignal, *next_dsignal;
     os_int i;
 
     for (i = 0; i < IOC_DNETWORK_HASH_TAB_SZ; i++)
     {
+        prev_dsignal = OS_NULL;
         for (dsignal = dnetwork->hash[i];
              dsignal;
-             dsignal = dsignal->next)
+             dsignal = next_dsignal)
         {
-/*             if (dsignal->x.handle->mblk == mblk)
+            next_dsignal = dsignal->next;
+
+            if (!os_strcmp(dsignal->mblk_name, mblk->mblk_name) &&
+                !os_strcmp(dsignal->device_name, mblk->device_name) &&
+                dsignal->device_nr == mblk->device_nr)
             {
-                dsignal->x.handle = OS_NULL;
-            } */
+                if (prev_dsignal) prev_dsignal->next = dsignal->next;
+                else dnetwork->hash[i] = dsignal->next;
+
+                ioc_release_dynamic_signal(dsignal);
+            }
+            else
+            {
+                prev_dsignal = dsignal;
+            }
         }
     }
 }

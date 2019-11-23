@@ -63,17 +63,22 @@ osalStatus devicedir_static_mblk_to_json(
 
 void devicedir_append_flag(
     osalStream list,
-    os_char *flag_name,
+    const os_char *flag_name,
     os_boolean *is_first);
 
 void devicedir_append_str_param(
     osalStream list,
-    os_char *param_name,
-    os_char *str,
+    const os_char *param_name,
+    const os_char *str,
     os_boolean is_first);
 
 void devicedir_append_int_param(
     osalStream list,
-    os_char *param_name,
+    const os_char *param_name,
     os_int x,
     os_boolean is_first);
+
+void devicedir_dynamic_signals(
+    iocRoot *root,
+    osalStream list,
+    os_short flags);

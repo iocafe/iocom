@@ -99,8 +99,7 @@ iocDynamicSignal *ioc_find_next_dynamic_signal(
     iocDynamicSignal *dsignal,
     iocIdentifiers *identifiers);
 
-/* Called by ioc_release_memory_block(): memory block is being deleted, remove any references
-   to it from dynamic configuration.
+/* Delete all dynamic signal information related to a memory block.
  */
 void ioc_network_mblk_is_deleted(
     iocDynamicNetwork *dnetwork,

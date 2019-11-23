@@ -26,6 +26,7 @@ static void ioc_free_connection_bufs(
     iocConnection *con);
 
 static void ioc_free_source_and_target_bufs(
+    iocRoot *root,
     iocConnection *con);
 
 static osalStatus ioc_try_to_connect(
@@ -158,7 +159,7 @@ void ioc_release_connection(
 
     /* Release all source and target buffers.
      */
-    ioc_free_source_and_target_bufs(con);
+    ioc_free_source_and_target_bufs(root, con);
 
     /* Remove connection from linked list.
      */
@@ -246,14 +247,39 @@ static void ioc_free_connection_bufs(
 
   Mutex lock must be on.
 
+  @param   root Pointer to root object.
   @param   con Pointer to the connection object.
   @return  None.
 
 ****************************************************************************************************
 */
 static void ioc_free_source_and_target_bufs(
+    iocRoot *root,
     iocConnection *con)
 {
+#if IOC_DYNAMIC_MBLK_CODE
+    iocHandle handle;
+
+    /* Release all source buffers.
+     */
+    while (con->sbuf.first)
+    {
+        ioc_setup_handle(&handle, root, con->sbuf.first->mlink.mblk);
+        ioc_release_source_buffer(con->sbuf.first);
+        ioc_release_dynamic_mblk_if_not_attached(&handle);
+        ioc_release_handle(&handle);
+    }
+
+    /* Release all target buffers.
+     */
+    while (con->tbuf.first)
+    {
+        ioc_setup_handle(&handle, root, con->tbuf.first->mlink.mblk);
+        ioc_release_target_buffer(con->tbuf.first);
+        ioc_release_dynamic_mblk_if_not_attached(&handle);
+        ioc_release_handle(&handle);
+    }
+#else
     /* Release all source buffers.
      */
     while (con->sbuf.first)
@@ -267,6 +293,7 @@ static void ioc_free_source_and_target_bufs(
     {
         ioc_release_target_buffer(con->tbuf.first);
     }
+#endif
 }
 
 
@@ -589,7 +616,7 @@ failed:
         ioc_reset_connection_state(con);
         ioc_lock(root);
         con->connected = OS_FALSE;
-        ioc_free_source_and_target_bufs(con);
+        ioc_free_source_and_target_bufs(root, con);
         ioc_count_connected_streams(con->link.root, OS_TRUE);
         ioc_mbinfo_con_is_closed(con);
         ioc_unlock(root);
@@ -1008,7 +1035,7 @@ failed:
 
             root = con->link.root;
             ioc_lock(root);
-            ioc_free_source_and_target_bufs(con);
+            ioc_free_source_and_target_bufs(root, con);
             ioc_unlock(root);
 
             ioc_count_connected_streams(con->link.root, OS_TRUE);
