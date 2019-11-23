@@ -1,1 +1,3 @@
 https://liteos.github.io/en/kernel/
+
+https://github.com/lupyuen/NB-EK-L476.git
