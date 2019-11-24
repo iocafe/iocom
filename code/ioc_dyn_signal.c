@@ -19,7 +19,8 @@
 #include "iocom.h"
 #if IOC_DYNAMIC_MBLK_CODE
 
-
+/* Forward referred static functions.
+ */
 static void ioc_setup_signal(
     iocRoot *root,
     const os_char *iopath,
@@ -144,7 +145,6 @@ static void ioc_setup_signal(
     iocDynamicNetwork *dnetwork;
     iocDynamicSignal *dsignal;
     iocMemoryBlock *mblk;
-    // iocMblkShortcut *item;
     const os_char *topnet, *req_topnet;
 
     if (root->droot == OS_NULL)
