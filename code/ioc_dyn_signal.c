@@ -144,7 +144,7 @@ static void ioc_setup_signal(
     iocDynamicNetwork *dnetwork;
     iocDynamicSignal *dsignal;
     iocMemoryBlock *mblk;
-    // iocDynMBlkListItem *item;
+    // iocMblkShortcut *item;
     const os_char *topnet, *req_topnet;
 
     if (root->droot == OS_NULL)
@@ -178,18 +178,16 @@ static void ioc_setup_signal(
     signal->n = dsignal->n;
     signal->flags = dsignal->flags;
 
-    /* If we have already dynamic memory listed as search shortcut
+    /* Check if we already have shortcut. This is much faster than
+     * doing tough all memory blocks if there is many networks.
      */
-    /* item = ioc_find_dynamic_mblk(dnetwork, dsignal->mblk_name, dsignal->device_name, dsignal->device_nr);
-    if (item)
+    mblk = ioc_find_mblk_shortcut(dnetwork, dsignal->mblk_name,
+        dsignal->device_name, dsignal->device_nr);
+    if (mblk)
     {
-        if (item->mblk_handle.mblk)
-        {
-            we are good
-
-            return;
-        }
-    } */
+        ioc_setup_handle(signal->handle, root, mblk);
+        return;
+    }
 
     /* Search trough all memory blocks. This will be slow if there are very many IO device networks,
      * that is why the shortcuts are in memory block list.
@@ -205,9 +203,9 @@ static void ioc_setup_signal(
 
         ioc_setup_handle(signal->handle, root, mblk);
 
-        /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ADD TO SHORTCUT LIST
+        /* Add shortcut to memory block list for faster search
          */
-
+        ioc_add_mblk_shortcut(dnetwork, mblk);
         break;
     }
 }

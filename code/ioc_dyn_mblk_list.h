@@ -21,28 +21,40 @@
 
 /* Item in memory bloc list
  */
-typedef struct iocDynMBlkListItem
+typedef struct iocMblkShortcut
 {
     iocHandle mblk_handle;
 
-    struct iocDynMBlkListItem *next;
-    struct iocDynMBlkListItem *prev;
+    struct iocMblkShortcut *next;
+    struct iocMblkShortcut *prev;
 }
-iocDynMBlkListItem;
+iocMblkShortcut;
 
 
 /* Allocate and initialize dynamic signal.
  */
-iocDynMBlkListItem *ioc_initialize_mblk_list_item(
+iocMblkShortcut *ioc_add_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
-    iocHandle *mblk_handle);
+    iocMemoryBlock *mblk);
 
 /* Release dynamic signal.
  */
-void ioc_release_mblk_list_item(
+void ioc_release_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
-    iocDynMBlkListItem *item);
+    iocMblkShortcut *item);
 
+/* Find a shortcut to memory block.
+ */
+iocMemoryBlock *ioc_find_mblk_shortcut(
+    iocDynamicNetwork *dnetwork,
+    os_char *mblk_name,
+    os_char *device_name,
+    os_short device_nr);
+
+/* Remove memory block short cuts which are no longer needed.
+ */
+void ioc_clean_mblk_shortcuts(
+    iocDynamicNetwork *dnetwork);
 
 #endif
 #endif

@@ -20,7 +20,7 @@
 #if IOC_DYNAMIC_MBLK_CODE
 
 
-struct iocDynMBlkListItem;
+struct iocMblkShortcut;
 
 /** We use fixed hash table size for now. Memory use/performance ratio can be improved
     in futute by adopting hash table memory allocation to number of signals.
@@ -40,7 +40,7 @@ typedef struct iocDynamicNetwork
 
     /** Two directional list of memory blocks handles belonging to this IO network.
      */
-    struct iocDynMBlkListItem *mlist_first, *mlist_last;
+    struct iocMblkShortcut *mlist_first, *mlist_last;
 }
 iocDynamicNetwork;
 

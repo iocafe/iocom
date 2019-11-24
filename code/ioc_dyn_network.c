@@ -64,7 +64,7 @@ void ioc_free_dynamic_mblk_list(
 {
     while (dnetwork->mlist_first)
     {
-        ioc_release_mblk_list_item(dnetwork, dnetwork->mlist_first);
+        ioc_release_mblk_shortcut(dnetwork, dnetwork->mlist_first);
     }
 }
 
@@ -280,6 +280,10 @@ void ioc_network_mblk_is_deleted(
             }
         }
     }
+
+    /* Remove memory block short cuts which are no longer needed.
+     */
+    ioc_clean_mblk_shortcuts(dnetwork);
 }
 
 #endif
