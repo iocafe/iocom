@@ -15,7 +15,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iocompython/iocompython.h"
+#include "iocompython.h"
 
 
 /* Select different python extension name depending if we are building release or debug version.

@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iocompython/iocompython.h"
+#include "iocompython.h"
 
 
 static void Root_callback(
@@ -21,6 +21,13 @@ static void Root_callback(
     struct iocConnection *con,
     struct iocHandle *mblk_handle,
     iocRootCallbackEvent event,
+    void *context);
+
+static void Root_info_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
     void *context);
 
 
@@ -69,8 +76,17 @@ static PyObject *Root_new(
     }
 
     iocom_python_initialize();
+
+    /* Allocate and initialize communication root and dymanic structure data root objects.
+     * This demo uses dynamic signal configuration.
+     */
     self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
     ioc_initialize_root(self->root);
+    self->root->droot = ioc_initialize_dynamic_root();
+    ioc_set_root_callback(self->root, Root_callback, self);
+
+// Set callback function to receive information about created or removed dynamic IO networks.  XXXXXXXXXXXXXXXXXXXXXX ALSO
+// ioc_set_dnetwork_callback(frank_root.droot, network_callback, OS_NULL);
 
     os_strncpy(self->network_name, network_name, IOC_NETWORK_NAME_SZ);
     os_strncpy(self->device_name, device_name, IOC_NAME_SZ);
@@ -235,7 +251,6 @@ static PyObject *Root_set_callback(
     /* Remember the new callback.
      */
     self->root_callback = temp;
-    ioc_set_root_callback(self->root, Root_callback, self);
     PySys_WriteStdout("Root.set_callback()\n");
 
     /* Return "None".
@@ -276,9 +291,6 @@ static void Root_callback(
     Root *pyroot;
     pyroot = (Root*)context;
 
-    /* If we have no callback function, then do nothing.
-     */
-    if (pyroot->root_callback == OS_NULL) return;
 
     switch (event)
     {
@@ -292,11 +304,14 @@ static void Root_callback(
             os_strncat(text, " dynamically allocated\n", sizeof(text));
             osal_console_write(text);
 
-            /* if (!os_strcmp(mblk_name, "info"))
+            if (!os_strcmp(mblk_name, "info"))
             {
-                ioc_add_callback(handle, info_callback, OS_NULL);
-                ioc_memory_block_set_int_param(handle, IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
-            } */
+                ioc_add_callback(mblk_handle, Root_info_callback, OS_NULL);
+            }
+
+            /* If we have no python application callback function, then do nothing more.
+             */
+            if (pyroot->root_callback == OS_NULL) return;
 
             PyGILState_STATE gstate;
             gstate = PyGILState_Ensure();
@@ -331,6 +346,43 @@ static void Root_callback(
          */
         default:
             break;
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Callback function to add dynamic device information.
+
+  The info_callback() function is called when device information data is received from connection
+  or when connection status changes.
+
+  @param   mblk Pointer to the memory block object.
+  @param   start_addr Address of first changed byte.
+  @param   end_addr Address of the last changed byte.
+  @param   flags Reserved  for future.
+  @param   context Application specific pointer passed to this callback function.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Root_info_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context)
+{
+    iocRoot *root;
+    root = handle->root;
+
+    /* If actual data received (not connection status change).
+     */
+    if (end_addr >= 0 && root)
+    {
+        ioc_add_dynamic_info(root->droot, handle);
     }
 }
 
@@ -400,6 +452,10 @@ static PyObject *Root_print(
             flags |= IOC_DEVDIR_BUFFERS;
 
         devicedir_memory_blocks(self->root, stream, param2, flags);
+    }
+    else if (!os_strcmp(param1, "signals"))
+    {
+        devicedir_dynamic_signals(self->root, stream, param2, 0);
     }
 
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);

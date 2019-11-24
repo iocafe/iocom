@@ -15,7 +15,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/iocompython/iocompython.h"
+#include "iocompython.h"
 
 
 PyObject *iocomError;
@@ -65,18 +65,22 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
     if (PyType_Ready(&ConnectionType) < 0)
         return NULL;
 
+    if (PyType_Ready(&EndPointType) < 0)
+        return NULL;
+
     Py_INCREF(&RootType);
     PyModule_AddObject(m, "Root", (PyObject *)&RootType);
     Py_INCREF(&MemoryBlockType);
     PyModule_AddObject(m, "MemoryBlock", (PyObject *)&MemoryBlockType);
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
+    Py_INCREF(&EndPointType);
+    PyModule_AddObject(m, "EndPoint", (PyObject *)&EndPointType);
 
     module_init_count = 0;
 
     return m;
 }
-
 
 
 static PyObject *

@@ -50,7 +50,7 @@ static void iocom_state_list(
 
         case 'd':
             osal_console_write("\n*** dynamic signal info ***\n");
-            devicedir_dynamic_signals(root, stream, 0);
+            devicedir_dynamic_signals(root, stream, OS_NULL, 0);
     }
 
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);

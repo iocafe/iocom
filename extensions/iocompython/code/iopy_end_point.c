@@ -1,10 +1,12 @@
 /**
 
-  @file    iopy_connection.c
+  @file    iopy_end_point.c
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    22.10.2019
+
+  An end point listens for incoming connections.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -21,24 +23,25 @@
 
   @brief Constructor.
 
-  The Connection_new function starts running the connection. Running connection will keep
-  on running until the connection is deleted. It will attempt repeatedly to connect socket,
+  The EndPoint_new function starts running the end point. Running end point will keep
+  on running until the end point is deleted. It will attempt repeatedly to connect socket,
   etc transport to other IOCOM device and will move the data when transport is there.
 
-  Note: Application must not delete and create new connection to reestablish the transport.
-  This is handled by the running connection objects.
+  Note: Application must not delete and create new end point to reestablish the transport.
+  This is handled by the running end point object.
 
   @return  Pointer to the new Python object.
 
 ****************************************************************************************************
 */
-static PyObject *Connection_new(
+static PyObject *EndPoint_new(
     PyTypeObject *type,
     PyObject *args,
     PyObject *kwds)
 {
-    Connection *self;
-    iocConnectionParams prm;
+    EndPoint *self;
+    iocEndPointParams epprm;
+    iocConnectionParams cprm;
     PyObject *pyroot = NULL;
     Root *root;
     iocRoot *iocroot;
@@ -54,13 +57,16 @@ static PyObject *Connection_new(
         NULL
     };
 
-    self = (Connection *)type->tp_alloc(type, 0);
+    self = (EndPoint *)type->tp_alloc(type, 0);
     if (self == NULL)
     {
         return PyErr_NoMemory();
     }
+    self->con = OS_NULL;
+    self->epoint = OS_NULL;
 
-    os_memclear(&prm, sizeof(prm));
+    os_memclear(&epprm, sizeof(epprm));
+    os_memclear(&cprm, sizeof(cprm));
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ss",
          kwlist, &pyroot, &parameters, &flags))
@@ -89,12 +95,8 @@ static PyObject *Connection_new(
         goto failed;
     }
 
-    if (parameters == OS_NULL)
-    {
-        PyErr_SetString(iocomError, "No communication parameters");
-        goto failed;
-    }
-    prm.parameters = parameters;
+    cprm.parameters = parameters;
+    epprm.parameters = parameters;
 
     if (flags == OS_NULL)
     {
@@ -105,8 +107,8 @@ static PyObject *Connection_new(
     if (os_strstr(flags, "tls", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_TLS_SUPPORT
-        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-        prm.iface = OSAL_TLS_IFACE;
+        epprm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        epprm.iface = OSAL_TLS_IFACE;
 #else
         PyErr_SetString(iocomError, "TLS support if not included in eosal build");
         goto failed;
@@ -116,8 +118,8 @@ static PyObject *Connection_new(
     else if (os_strstr(flags, "socket", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_SOCKET_SUPPORT
-        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-        prm.iface = OSAL_SOCKET_IFACE;
+        epprm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        epprm.iface = OSAL_SOCKET_IFACE;
 #else
         PyErr_SetString(iocomError, "Socket support if not included in eosal build");
         goto failed;
@@ -127,8 +129,8 @@ static PyObject *Connection_new(
     else if (os_strstr(flags, "bluetooth", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_BLUETOOTH_SUPPORT
-        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-        prm.iface = OSAL_BLUETOOTH_IFACE;
+        cprm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        cprm.iface = OSAL_BLUETOOTH_IFACE;
 #else
         PyErr_SetString(iocomError, "Bluetooth support if not included in eosal build");
         goto failed;
@@ -138,8 +140,8 @@ static PyObject *Connection_new(
     else if (os_strstr(flags, "serial", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_SERIAL_SUPPORT
-        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-        prm.iface = OSAL_SERIAL_IFACE;
+        cprm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        cprm.iface = OSAL_SERIAL_IFACE;
 #else
         PyErr_SetString(iocomError, "Serial port support if not included in eosal build");
         goto failed;
@@ -156,12 +158,19 @@ static PyObject *Connection_new(
         prm.flags |= 0;
     } */
 
-    self->con = ioc_initialize_connection(OS_NULL, iocroot);
-    self->status = (int)ioc_connect(self->con, &prm);
-
+    if (epprm.flags & IOC_SOCKET)
+    {
+        self->epoint = ioc_initialize_end_point(OS_NULL, iocroot);
+        self->status = (int)ioc_listen(self->epoint, &epprm);
+    }
+    else
+    {
+        self->con = ioc_initialize_connection(OS_NULL, iocroot);
+        self->status = (int)ioc_connect(self->con, &cprm);
+    }
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Connection.new(%s, %s)\n", prm.parameters, flags);
+    PySys_WriteStdout("EndPoint.new(%s, %s)\n", parameters, flags);
 #endif
 
     return (PyObject *)self;
@@ -177,21 +186,21 @@ failed:
 
   @brief Destructor.
 
-  The Connection_dealloc function releases the associated Python object. It doesn't do anything
-  for the actual IOCOM connection.
+  The EndPoint_dealloc function releases the associated Python object. It doesn't do anything
+  for the actual IOCOM end point.
 
   @param   self Pointer to the python object.
   @return  None.
 
 ****************************************************************************************************
 */
-static void Connection_dealloc(
-    Connection *self)
+static void EndPoint_dealloc(
+    EndPoint *self)
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Connection.dealloc()\n");
+    PySys_WriteStdout("EndPoint.dealloc()\n");
 #endif
 }
 
@@ -199,36 +208,10 @@ static void Connection_dealloc(
 /**
 ****************************************************************************************************
 
-  @brief Initialize.
+  @brief Delete an IOCOM end point.
 
-  I do not think this is needed
-
-  The Connection_init function initializes an object.
-  @param   self Pointer to the python object.
-  @return  ?.
-
-****************************************************************************************************
-*/
-/* static int Connection_init(
-    Connection *self,
-    PyObject *args,
-    PyObject *kwds)
-{
-#if IOPYTHON_TRACE
-    PySys_WriteStdout("Connection.init()\n");
-#endif
-    return 0;
-}
-*/
-
-
-/**
-****************************************************************************************************
-
-  @brief Delete an IOCOM connection.
-
-  The Connection_delete function closes the connection and releases any ressources for it.
-  The connection must be explisitly closed by calling .delete() function, or by calling
+  The EndPoint_delete function closes the end point and releases any ressources for it.
+  The end point must be explisitly closed by calling .delete() function, or by calling
   .delete() on the root object. But not both.
 
   @param   self Pointer to the python object.
@@ -236,9 +219,15 @@ static void Connection_dealloc(
 
 ****************************************************************************************************
 */
-static PyObject *Connection_delete(
-    Connection *self)
+static PyObject *EndPoint_delete(
+    EndPoint *self)
 {
+    if (self->epoint)
+    {
+        ioc_release_end_point(self->epoint);
+        self->epoint = OS_NULL;
+    }
+
     if (self->con)
     {
         ioc_release_connection(self->con);
@@ -246,7 +235,7 @@ static PyObject *Connection_delete(
     }
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Connection.delete()\n");
+    PySys_WriteStdout("EndPoint.delete()\n");
 #endif
     /* Return "None".
      */
@@ -260,8 +249,8 @@ static PyObject *Connection_delete(
   Member variables.
 ****************************************************************************************************
 */
-static PyMemberDef Connection_members[] = {
-    {(char*)"status", T_INT, offsetof(Connection, status), 0, (char*)"constructor status"},
+static PyMemberDef EndPoint_members[] = {
+    {(char*)"status", T_INT, offsetof(EndPoint, status), 0, (char*)"constructor status"},
     {NULL} /* Sentinel */
 };
 
@@ -271,9 +260,8 @@ static PyMemberDef Connection_members[] = {
   Member functions.
 ****************************************************************************************************
 */
-static PyMethodDef Connection_methods[] = {
-    {"delete", (PyCFunction)Connection_delete, METH_NOARGS, "Deletes IOCOM connection"},
-    // {"connect", (PyCFunction)Connection_connect, METH_NOARGS, "Initiate IOCOM connection"},
+static PyMethodDef EndPoint_methods[] = {
+    {"delete", (PyCFunction)EndPoint_delete, METH_NOARGS, "Deletes IOCOM end point"},
     {NULL} /* Sentinel */
 };
 
@@ -283,11 +271,11 @@ static PyMethodDef Connection_methods[] = {
   Class type setup.
 ****************************************************************************************************
 */
-PyTypeObject ConnectionType = {
-    PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".Connection",  /* tp_name */
-    sizeof(Connection),                       /* tp_basicsize */
+PyTypeObject EndPointType = {
+    PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".EndPoint",  /* tp_name */
+    sizeof(EndPoint),                         /* tp_basicsize */
     0,                                        /* tp_itemsize */
-    (destructor)Connection_dealloc,           /* tp_dealloc */
+    (destructor)EndPoint_dealloc,             /* tp_dealloc */
     0,                                        /* tp_print */
     0,                                        /* tp_getattr */
     0,                                        /* tp_setattr */
@@ -303,22 +291,22 @@ PyTypeObject ConnectionType = {
     0,                                        /* tp_setattro */
     0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    "Connection objects",                     /* tp_doc */
+    "EndPoint objects",                       /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
     0,                                        /* tp_richcompare */
     0,                                        /* tp_weaklistoffset */
     0,                                        /* tp_iter */
     0,                                        /* tp_iternext */
-    Connection_methods,                       /* tp_methods */
-    Connection_members,                       /* tp_members */
+    EndPoint_methods,                         /* tp_methods */
+    EndPoint_members,                         /* tp_members */
     0,                                        /* tp_getset */
     0,                                        /* tp_base */
     0,                                        /* tp_dict */
     0,                                        /* tp_descr_get */
     0,                                        /* tp_descr_set */
     0,                                        /* tp_dictoffset */
-  0, //  (initproc)Connection_init,                /* tp_init */
+    0,                                        /* tp_init */
     0,                                        /* tp_alloc */
-    Connection_new,                           /* tp_new */
+    EndPoint_new,                             /* tp_new */
 };

@@ -35,6 +35,7 @@ static void devicedir_networks_dynamic_signals(
 
   @param   root Pointer to the root structure.
   @param   list Steam handle into which to write connection list JSON
+  @param   iopath
   @param   flags Reserved for future, set 0.
   @return  None.
 
@@ -43,6 +44,7 @@ static void devicedir_networks_dynamic_signals(
 void devicedir_dynamic_signals(
     iocRoot *root,
     osalStream list,
+    const os_char *iopath,
     os_short flags)
 {
     iocDynamicRoot *droot;

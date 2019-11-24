@@ -64,7 +64,6 @@ osalStatus FrankMain::listen_for_clients()
     os_memclear(&epprm, sizeof(epprm));
     epprm.iface = iface;
     epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS; /* Notice IOC_DYNAMIC_MBLKS */
-    epprm.parameters = ":" IOC_DEFAULT_SOCKET_PORT_STR;
     ioc_listen(ep, &epprm);
 
     os_sleep(100);

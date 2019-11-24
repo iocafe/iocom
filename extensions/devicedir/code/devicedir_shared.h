@@ -81,4 +81,5 @@ void devicedir_append_int_param(
 void devicedir_dynamic_signals(
     iocRoot *root,
     osalStream list,
+    const os_char *iopath,
     os_short flags);
