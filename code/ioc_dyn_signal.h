@@ -81,14 +81,20 @@ iocDynamicSignal *ioc_initialize_dynamic_signal(
 void ioc_release_dynamic_signal(
     iocDynamicSignal *dsignal);
 
-/* Allocate or maintain dynamic signal structure.
-   psignal cannot be uninitialized.
+/* Allocate or maintain signal structure using IO path.
  */
 void ioc_new_signal(
     iocRoot *root,
     const os_char *iopath,
     const os_char *network_name,
     iocSignal **psignal);
+
+/* Allocate and initialize dynamic signal using identifiers structure.
+ */
+void ioc_setup_signal_by_identifiers(
+    iocRoot *root,
+    iocIdentifiers *identifiers,
+    iocSignal *signal);
 
 /* Free signal allocated by ioc_new_signal() function.
  */

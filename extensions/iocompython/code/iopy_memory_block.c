@@ -335,7 +335,7 @@ static PyObject *MemoryBlock_get_param(
 /**
 ****************************************************************************************************
 
-  @brief Get memory block parameter value.
+  @brief Store value or arrya into memory block.
   @anchor MemoryBlock_get_param
 
   The MemoryBlock.get_param() function gets value of memory block's parameter.

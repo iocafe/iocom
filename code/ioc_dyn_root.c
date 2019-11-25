@@ -88,6 +88,8 @@ void ioc_release_dynamic_root(
     iocDynamicNetwork *dnetwork, *next_dnetwork;
     os_int i;
 
+    if (droot == OS_NULL) return;
+
     for (i = 0; i < IOC_DROOT_HASH_TAB_SZ; i++)
     {
         for (dnetwork = droot->hash[i];

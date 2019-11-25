@@ -1,4 +1,4 @@
-from iocompython import Root, MemoryBlock, Connection, EndPoint
+from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal
 import threading
 import queue
 import time
@@ -47,15 +47,18 @@ def root_callback(x):
 
 def main():
     inputQueue = queue.Queue()
-
     inputThread = threading.Thread(target=read_kbd_input, args=(inputQueue,), daemon=True)
     inputThread.start()
 
-#    root = Root('pythondevice', network_name='pekkanet')
-    root = Root('pythondevice')
+    root = Root('pythoncontrol')
     root.set_callback(root_callback)
     connection = EndPoint(root, flags='socket')
+
 #    connection = Connection(root, "192.168.1.119", "socket")
+
+    seven_segment = Signal(root, "seven_segment", "pekkanet")
+#    seven_segment.get()
+#     seven_segment.set_callback()
 
     # myinputs = MemoryBlock(root, 'source,auto', 'MYINPUTS', 15, nbytes=256)
 
@@ -63,9 +66,10 @@ def main():
 
         # The rest of your program goes here.
 
-        time.sleep(0.01) 
-    print("End.")
-
+        time.sleep(1.0) 
+        seven_segment.set(11,12)
+    
+    seven_segment.delete()
 
 #    end_point = EndPoint(root, "socket")
 

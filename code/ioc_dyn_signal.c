@@ -142,16 +142,7 @@ static void ioc_setup_signal(
     iocSignal *signal)
 {
     iocIdentifiers identifiers;
-    iocDynamicNetwork *dnetwork;
-    iocDynamicSignal *dsignal;
-    iocMemoryBlock *mblk;
     const os_char *topnet, *req_topnet;
-
-    if (root->droot == OS_NULL)
-    {
-        osal_debug_error("The application is not using dynamic network structure, root->dapp is NULL");
-        return;
-    }
 
     ioc_iopath_to_identifiers(&identifiers, iopath, IOC_EXPECT_SIGNAL);
 
@@ -163,15 +154,37 @@ static void ioc_setup_signal(
     topnet = topnet ? topnet + 1 : network_name;
     req_topnet = os_strchr(identifiers.network_name, '.');
     req_topnet = req_topnet ? req_topnet + 1 : req_topnet;
-    if (!os_strcmp(topnet, req_topnet))
+    if (os_strcmp(topnet, req_topnet))
     {
-        network_name = identifiers.network_name;
+        os_strncpy(identifiers.network_name, network_name, IOC_NETWORK_NAME_SZ);
     }
 
-    dnetwork = ioc_find_dynamic_network(root->droot, network_name);
+    ioc_setup_signal_by_identifiers(root, &identifiers, signal);
+}
+
+
+/* Set up a dynamic signal.
+ * LOCK must be on when calling this function.
+ */
+void ioc_setup_signal_by_identifiers(
+    iocRoot *root,
+    iocIdentifiers *identifiers,
+    iocSignal *signal)
+{
+    iocDynamicNetwork *dnetwork;
+    iocDynamicSignal *dsignal;
+    iocMemoryBlock *mblk;
+
+    if (root->droot == OS_NULL)
+    {
+        osal_debug_error("The application is not using dynamic network structure, root->dapp is NULL");
+        return;
+    }
+
+    dnetwork = ioc_find_dynamic_network(root->droot, identifiers->network_name);
     if (dnetwork == OS_NULL) return;
 
-    dsignal = ioc_find_first_dynamic_signal(dnetwork, &identifiers);
+    dsignal = ioc_find_first_dynamic_signal(dnetwork, identifiers);
     if (dsignal == OS_NULL) return;
 
     signal->addr = dsignal->addr;
@@ -196,7 +209,7 @@ static void ioc_setup_signal(
          mblk;
          mblk = mblk->link.next)
     {
-        if (os_strcmp(mblk->network_name, network_name)) continue;
+        if (os_strcmp(mblk->network_name, identifiers->network_name)) continue;
         if (os_strcmp(mblk->device_name, dsignal->device_name)) continue;
         if (mblk->device_nr != dsignal->device_nr) continue;
         if (os_strcmp(mblk->mblk_name, dsignal->mblk_name)) continue;

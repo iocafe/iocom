@@ -72,6 +72,10 @@ osalStatus io_device_console(
     switch (c)
     {
         case OSAL_CONSOLE_ESC:
+        case 'x':
+        case 'X':
+        case 'q':
+        case 'Q':
             osal_global->exit_process = OS_TRUE;
             return OSAL_END_OF_FILE;
 
