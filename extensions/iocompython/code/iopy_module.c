@@ -88,7 +88,7 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
     return m;
 }
 
-
+#if 0
 static PyObject *
 spam_system(PyObject *self, PyObject *args)
 {
@@ -104,6 +104,7 @@ spam_system(PyObject *self, PyObject *args)
     }
     return PyLong_FromLong(sts);
 }
+#endif
 
 
 /**
@@ -180,7 +181,9 @@ void iocom_python_release(void)
 ****************************************************************************************************
 */
 static PyMethodDef iocomPythonMethods[] = {
-    {"system",  spam_system, METH_VARARGS, "Execute a shell command."},
+//    {"system",  spam_system, METH_VARARGS, "Execute a shell command."},
+    {"json2bin", iocom_python_json2bin, METH_VARARGS, "Convert JSON to packed binary format."},
+
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

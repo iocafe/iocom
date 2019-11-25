@@ -44,6 +44,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/iopy_connection.h"
 #include "code/iopy_end_point.h"
 #include "code/iopy_signal.h"
+#include "code/iopy_util.h"
 
 /* If C++ compilation, end the undecorated code.
  */
