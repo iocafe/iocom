@@ -15,10 +15,6 @@
 */
 #include "iocompython.h"
 
-static osalStatus MemoryBlock_set_sequence(
-    MemoryBlock *self,
-    PyObject *args);
-
 
 /**
 ****************************************************************************************************
@@ -334,189 +330,6 @@ static PyObject *MemoryBlock_get_param(
 
 /**
 ****************************************************************************************************
-
-  @brief Store value or arrya into memory block.
-  @anchor MemoryBlock_get_param
-
-  The MemoryBlock.get_param() function gets value of memory block's parameter.
-
-  @param   self Pointer to the Python MemoryBlock object.
-  @param   param_name Which parameter to get, one of "network_name", "device_name", "device_nr",
-           or "mblk_name".
-  @return  Parameter value as string.
-
-****************************************************************************************************
-*/
-static PyObject *MemoryBlock_set(
-    MemoryBlock *self,
-    PyObject *args)
-{
-//   PyObject * a, *py_repr, *py_str;
-
-  osalStatus s;
-
-  //The input arguments come as a tuple, we parse the args to get the various variables
-  //In this case it's only one list variable, which will now be referenced by listObj
-//  if (! PyArg_ParseTuple( args, "O", &listObj))
-//    return NULL;
-
-  //length of the list
-//  long length = PyList_Size(args);
-
-    s = MemoryBlock_set_sequence(self, args);
-
-#if 0
-  long length = PySequence_Length(args);
-
-  //iterate over all the elements
-  long i, sum = 0;
-
-  for(i = 0; i < length; i++){
-    a = PySequence_GetItem(args, i);
-
-    PySys_WriteStdout("x\n");
-
-    if (PyLong_Check(a)) {
-        int  elem = PyLong_AsLong(a);
-        PySys_WriteStdout("Long %d\n", elem);
-    }
-
-    if (PyFloat_Check(a)) {
-        double d = PyFloat_AsDouble(a);
-        PySys_WriteStdout("Float %f\n", d);
-    }
-
-    if (PyUnicode_Check(a)) {
-        py_repr = PyObject_Repr(a);
-        py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
-        const char *bytes = PyBytes_AS_STRING(py_str);
-
-        PySys_WriteStdout("String: %s\n", bytes);
-        Py_XDECREF(py_repr);
-        Py_XDECREF(py_str);
-    }
-
-    else if (PySequence_Check(a))
-    {
-        PySys_WriteStdout("Sequence\n");
-
-        long bn = PySequence_Length(a);
-        for (int j = 0; j<bn; j++)
-        {
-            PyObject *b = PySequence_GetItem(a, j);
-            if (PyLong_Check(b)) {
-                int  elem = PyLong_AsLong(b);
-                PySys_WriteStdout("LL %d\n", elem);
-            }
-
-            if (PyFloat_Check(b)) {
-                double d = PyFloat_AsDouble(b);
-                PySys_WriteStdout("FF %f\n", d);
-            }
-            Py_DECREF(b);
-        }
-
-    }
-
-    Py_DECREF(a);
-  }
-#endif
-
-   // return Py_BuildValue("i", sum);
-    Py_RETURN_NONE;
-}
-
-
-static osalStatus MemoryBlock_set_sequence(
-    MemoryBlock *self,
-    PyObject *args)
-{
-    PyObject *a, *py_repr, *py_str;
-    osalTypeId fix_type, tag_name_or_addr_type, value_type;
-    os_char tag_name_or_addr_str[128], value_str[128];
-
-    long i, length;
-    os_boolean expect_value;
-    osalStatus s;
-    const os_char *str;
-
-    /* Start with untyped data.
-     */
-    fix_type = OS_UNDEFINED_TYPE;
-    expect_value = OS_FALSE;
-
-    length = PySequence_Length(args);
-    for(i = 0; i < length; i++)
-    {
-        a = PySequence_GetItem(args, i);
-
-        /* If string
-         */
-        if (PyUnicode_Check(a))
-        {
-            py_repr = PyObject_Repr(a);
-            py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
-            str = PyBytes_AS_STRING(py_str);
-
-            if (!expect_value)
-            {
-                os_strncpy(tag_name_or_addr_str, str, sizeof(tag_name_or_addr_str));
-                tag_name_or_addr_type = OS_STR;
-            }
-            else
-            {
-                os_strncpy(value_str, str, sizeof(value_str));
-                value_type = OS_STR;
-            }
-            PySys_WriteStdout("String: %s\n", str);
-            Py_XDECREF(py_repr);
-            Py_XDECREF(py_str);
-        }
-
-        else if (PyLong_Check(a)) {
-            int  elem = PyLong_AsLong(a);
-            PySys_WriteStdout("Long %d\n", elem);
-        }
-
-        else if (PyFloat_Check(a)) {
-            double d = PyFloat_AsDouble(a);
-            PySys_WriteStdout("Float %f\n", d);
-        }
-
-        else if (PySequence_Check(a))
-        {
-            PySys_WriteStdout("Sequence\n");
-
-            s = MemoryBlock_set_sequence(self, a);
-
-
-            /* long bn = PySequence_Length(a);
-            for (int j = 0; j<bn; j++)
-            {
-                PyObject *b = PySequence_GetItem(a, j);
-                if (PyLong_Check(b)) {
-                    int  elem = PyLong_AsLong(b);
-                    PySys_WriteStdout("LL %d\n", elem);
-                }
-
-                if (PyFloat_Check(b)) {
-                    double d = PyFloat_AsDouble(b);
-                    PySys_WriteStdout("FF %f\n", d);
-                }
-                Py_DECREF(b);
-            } */
-        }
-
-        Py_DECREF(a);
-        expect_value = !expect_value;
-    }
-
-    return OSAL_SUCCESS;
-}
-
-
-/**
-****************************************************************************************************
   Member variables.
 ****************************************************************************************************
 */
@@ -534,7 +347,7 @@ static PyMemberDef MemoryBlock_members[] = {
 static PyMethodDef MemoryBlock_methods[] = {
     {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
     {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS, "Get memory block parameters"},
-    {"set", (PyCFunction)MemoryBlock_set, METH_VARARGS, "Store data to memory block"},
+//    {"set", (PyCFunction)MemoryBlock_set, METH_VARARGS, "Store data to memory block"},
     {NULL} /* Sentinel */
 };
 
