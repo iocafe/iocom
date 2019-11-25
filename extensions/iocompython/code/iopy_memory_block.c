@@ -106,7 +106,7 @@ static PyObject *MemoryBlock_new(
         PyErr_SetString(iocomError, "Memory block must have either target or source flag");
         goto failed;
     }
-    if (os_strstr(flags, "auto_sync", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "auto", OSAL_STRING_SEARCH_ITEM_NAME))
     {
         prm.flags |= IOC_AUTO_SYNC;
     }
@@ -328,6 +328,38 @@ static PyObject *MemoryBlock_get_param(
 }
 
 
+static PyObject *MemoryBlock_write(
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    PyObject *pydata = NULL;
+    int pyaddr = 0;
+
+    char *buffer;
+    Py_ssize_t length;
+
+    static char *kwlist[] = {
+        "data",
+        "addr",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i",
+         kwlist, &pydata, &pyaddr))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    PyBytes_AsStringAndSize(pydata, &buffer, &length);
+
+    ioc_write(&self->mblk_handle, pyaddr, buffer, length);
+
+    Py_RETURN_NONE;
+}
+
+
 /**
 ****************************************************************************************************
   Member variables.
@@ -347,7 +379,7 @@ static PyMemberDef MemoryBlock_members[] = {
 static PyMethodDef MemoryBlock_methods[] = {
     {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
     {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS, "Get memory block parameters"},
-//    {"set", (PyCFunction)MemoryBlock_set, METH_VARARGS, "Store data to memory block"},
+    {"write", (PyCFunction)MemoryBlock_write, METH_VARARGS, "Write data to memory block"},
     {NULL} /* Sentinel */
 };
 

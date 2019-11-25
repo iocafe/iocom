@@ -42,18 +42,21 @@ signal_conf = ('{'
 
 def main():
     ioterminal.start()
-    root = Root('mydevice', network_name='pekkanet')
+    root = Root('mydevice', device_nr=3, network_name='pekkanet')
     myinputs = MemoryBlock(root, 'source,auto', 'exp', nbytes=256)
+
+    data = json2bin(signal_conf)
+    info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
+
     connection = Connection(root, "127.0.0.1", "socket")
 
     while (ioterminal.run(root)):
         time.sleep(0.01) 
+        info.write(data)
 
     root.delete()
 
-    print(signal_conf)
 
-    print(json2bin(signal_conf))
 
 if (__name__ == '__main__'): 
     main()
