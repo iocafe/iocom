@@ -67,13 +67,11 @@ def main():
         # The rest of your program goes here.
 
         time.sleep(1.0) 
-        seven_segment.set(11,12)
+        seven_segment.set(1, 0, 1, 0, 1, 0, 1)
     
     seven_segment.delete()
 
-#    end_point = EndPoint(root, "socket")
 
-#    x = myinputs.set(10.1, 20, 30, [1.0, 2.1], 5, 'nasse', (1,2))
 
 #    myinputs.delete()
     

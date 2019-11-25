@@ -16,11 +16,18 @@
 ****************************************************************************************************
 */
 
+struct Root;
+
+
 /** Python signal class.
  */
 typedef struct
 {
     PyObject_HEAD
+
+    /* Pointer to python toot object, notice reference counting.
+     */
+    Root *pyroot;
 
     /** IOCOM signal object.
      */

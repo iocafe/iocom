@@ -17,6 +17,31 @@
 */
 #include "iocompython.h"
 
+/* Used to store data parsed from arguments.
+ */
+#define IOPY_FIXBUF_SZ 64
+typedef struct
+{
+    iocSignal *signal;
+
+    osalTypeId type_id;
+    os_boolean is_array;
+    os_boolean is_string;
+
+    os_int n_values;
+    os_int max_values;
+
+    os_char *buf;
+
+    union
+    {
+        os_char fixbuf[IOPY_FIXBUF_SZ];
+        iocValue vv;
+    }
+    storage;
+}
+SignalSeqParseState;
+
 
 /**
 ****************************************************************************************************
@@ -128,12 +153,16 @@ static PyObject *Signal_new(
         }
     }
 
-    ioc_setup_signal_by_identifiers(iocroot, identifiers, signal);
     self->status = OSAL_SUCCESS;
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("Signal.new(%s, %s)\n", io_path, network_name);
 #endif
+
+    /* Save root pointer and increment reference count.
+     */
+    self->pyroot = root;
+    Py_INCREF(root);
 
     return (PyObject *)self;
 
@@ -160,6 +189,12 @@ static void Signal_dealloc(
     Signal *self)
 {
     ioc_release_handle(&self->handle);
+
+    if (self->pyroot)
+    {
+        Py_DECREF(self->pyroot);
+        self->pyroot = OS_NULL;
+    }
 
     Py_TYPE(self)->tp_free((PyObject *)self);
 
@@ -188,6 +223,12 @@ static PyObject *Signal_delete(
 {
     ioc_release_handle(&self->handle);
 
+    if (self->pyroot)
+    {
+        Py_DECREF(self->pyroot);
+        self->pyroot = OS_NULL;
+    }
+
 #if IOPYTHON_TRACE
     PySys_WriteStdout("Signal.delete()\n");
 #endif
@@ -198,23 +239,229 @@ static PyObject *Signal_delete(
 }
 
 
-static osalStatus Signal_set_sequence(
-    Signal *self,
-    PyObject *args)
+/**
+****************************************************************************************************
+
+  @brief Store long integer parsed from Python arguments in format expected for the signal.
+  @anchor Signal_store_double
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Signal_store_long(
+    os_long x,
+    SignalSeqParseState *state)
+{
+    os_char *p;
+    os_int i;
+
+    if (state->n_values >= state->max_values)
+    {
+        return;
+    }
+
+    if (state->is_array)
+    {
+//        PySys_WriteStdout("TYPE: %d\n", (int)state->type_id); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        p = state->buf;
+        i = state->n_values;
+        switch (state->type_id)
+        {
+            case OS_BOOLEAN:
+            case OS_CHAR:
+            case OS_UCHAR:
+                p[i] = (os_char)x;
+                break;
+
+            case OS_SHORT:
+            case OS_USHORT:
+                ((os_short*)p)[i] = (os_short)x;
+                break;
+
+            case OS_INT:
+            case OS_UINT:
+                ((os_int*)p)[i] = (os_int)x;
+                break;
+
+            case OS_INT64:
+            case OS_LONG:
+                ((os_long*)p)[i] = x;
+                break;
+
+            case OS_FLOAT:
+                ((os_float*)p)[i] = (os_float)x;
+                break;
+
+            case OS_DOUBLE:
+                ((os_double*)p)[i] = (os_double)x;
+                break;
+
+            default:
+                return;
+        }
+    }
+    else
+    {
+//        PySys_WriteStdout("TYPE II: %d\n", (int)state->type_id); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        switch (state->type_id)
+        {
+            case OS_BOOLEAN:
+            case OS_CHAR:
+            case OS_UCHAR:
+            case OS_SHORT:
+            case OS_USHORT:
+            case OS_INT:
+            case OS_UINT:
+                state->storage.vv.value.i = (os_int)x;
+                break;
+
+            case OS_INT64:
+            case OS_LONG:
+                state->storage.vv.value.l = x;
+                break;
+
+            case OS_FLOAT:
+                state->storage.vv.value.f = (os_float)x;
+                break;
+
+            case OS_DOUBLE:
+                state->storage.vv.value.d = (os_double)x;
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    state->n_values++;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Store double parsed from Python arguments in format expected for the signal.
+  @anchor Signal_store_double
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Signal_store_double(
+    os_double x,
+    SignalSeqParseState *state)
+{
+    os_char *p;
+    os_int i;
+
+    if (state->n_values >= state->max_values) return;
+
+    if (state->is_array)
+    {
+        p = state->buf;
+        i = state->n_values;
+        switch (state->type_id)
+        {
+            case OS_BOOLEAN:
+            case OS_CHAR:
+            case OS_UCHAR:
+                p[i] = (os_char)os_round_short(x);
+                break;
+
+            case OS_SHORT:
+            case OS_USHORT:
+                ((os_short*)p)[i] = os_round_short(x);
+                break;
+
+            case OS_INT:
+            case OS_UINT:
+                ((os_int*)p)[i] = os_round_int(x);
+                break;
+
+            case OS_INT64:
+            case OS_LONG:
+                ((os_long*)p)[i] = os_round_long(x);
+                break;
+
+            case OS_FLOAT:
+                ((os_float*)p)[i] = os_round_long(x);
+                break;
+
+            case OS_DOUBLE:
+                ((os_double*)p)[i] = x;
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    else
+    {
+//        PySys_WriteStdout("TYPE II: %d\n", (int)state->type_id); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        switch (state->type_id)
+        {
+            case OS_BOOLEAN:
+            case OS_CHAR:
+            case OS_UCHAR:
+            case OS_SHORT:
+            case OS_USHORT:
+            case OS_INT:
+            case OS_UINT:
+                state->storage.vv.value.i = os_round_int(x);
+                break;
+
+            case OS_INT64:
+            case OS_LONG:
+                state->storage.vv.value.l = os_round_long(x);
+                break;
+
+            case OS_FLOAT:
+                state->storage.vv.value.f = (os_float)x;
+                break;
+
+            case OS_DOUBLE:
+                state->storage.vv.value.d = x;
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    state->n_values++;
+}
+
+
+
+
+/**
+****************************************************************************************************
+
+  @brief Parse python arguments.
+  @anchor Signal_set_sequence
+
+  Idea here is to parse python arguments, how ever structured in python call, to format needed
+  for storing value(s) into register map.
+
+  - String signal, as one string argument.
+  - Array, as array of numbers
+  - Single value
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Signal_set_sequence(
+    PyObject *args,
+    SignalSeqParseState *state)
 {
     PyObject *a, *py_repr, *py_str;
-    osalTypeId fix_type, tag_name_or_addr_type, value_type;
-    os_char tag_name_or_addr_str[128], value_str[128];
+    os_char value_str[128];
 
-    long i, length;
-    os_boolean expect_value;
-    osalStatus s = OSAL_STATUS_FAILED;
+    long i, length, l;
     const os_char *str;
-
-    /* Start with untyped data.
-     */
-    fix_type = OS_UNDEFINED_TYPE;
-    expect_value = OS_FALSE;
 
     length = PySequence_Length(args);
     for(i = 0; i < length; i++)
@@ -229,37 +476,29 @@ static osalStatus Signal_set_sequence(
             py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
             str = PyBytes_AS_STRING(py_str);
 
-            if (!expect_value)
-            {
-                os_strncpy(tag_name_or_addr_str, str, sizeof(tag_name_or_addr_str));
-                tag_name_or_addr_type = OS_STR;
-            }
-            else
-            {
-                os_strncpy(value_str, str, sizeof(value_str));
-                value_type = OS_STR;
-            }
-            PySys_WriteStdout("String: %s\n", str);
+            os_strncpy(value_str, str, sizeof(value_str));
+//            PySys_WriteStdout("String: %s\n", str);
             Py_XDECREF(py_repr);
             Py_XDECREF(py_str);
         }
 
         else if (PyLong_Check(a)) {
-            int  elem = PyLong_AsLong(a);
-            PySys_WriteStdout("Long %d\n", elem);
+            l = PyLong_AsLong(a);
+            Signal_store_long(l, state);
+//            PySys_WriteStdout("Long %d\n", (int)l);
         }
 
         else if (PyFloat_Check(a)) {
             double d = PyFloat_AsDouble(a);
-            PySys_WriteStdout("Float %f\n", d);
+            Signal_store_double(d, state);
+//            PySys_WriteStdout("Float %f\n", d);
         }
 
         else if (PySequence_Check(a))
         {
-            PySys_WriteStdout("Sequence\n");
+//            PySys_WriteStdout("Sequence\n");
 
-            s = Signal_set_sequence(self, a);
-
+            Signal_set_sequence(a, state);
 
             /* long bn = PySequence_Length(a);
             for (int j = 0; j<bn; j++)
@@ -279,25 +518,99 @@ static osalStatus Signal_set_sequence(
         }
 
         Py_DECREF(a);
-        expect_value = !expect_value;
     }
-
-    return s;
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Store value or arrya into memory block.
-  @anchor Signal_get_param
+  @brief Set simple signal containing one numeric value.
+  @anchor Signal_set_one_value
 
-  The Signal.get_param() function gets value of memory block's parameter.
+  @return  None.
 
-  @param   self Pointer to the Python Signal object.
-  @param   param_name Which parameter to get, one of "network_name", "device_name", "device_nr",
-           or "mblk_name".
-  @return  Parameter value as string.
+****************************************************************************************************
+*/
+static void Signal_set_one_value(
+    PyObject *args,
+    SignalSeqParseState *state)
+{
+    state->max_values = 1;
+
+    /* Process the Python arguments into format we need.
+     */
+    Signal_set_sequence(args, state);
+
+    if (state->n_values)
+    {
+        state->storage.vv.state_bits = OSAL_STATE_CONNECTED;
+        ioc_movex_signals(state->signal, &state->storage.vv, 1, IOC_SIGNAL_WRITE);
+//        PySys_WriteStdout("WRITING : %d\n", state->storage.vv.value.i); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    }
+}
+
+
+
+/**
+****************************************************************************************************
+
+  @brief Set signal containing array of values.
+  @anchor Signal_set_array
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Signal_set_array(
+    PyObject *args,
+    SignalSeqParseState *state)
+{
+    os_memsz buf_sz, type_sz;
+
+    /* If we need more space than we have in small fixed buffer, allocate.
+     */
+    state->buf = state->storage.fixbuf;
+    type_sz = osal_typeid_size(state->type_id);
+    buf_sz = state->max_values * type_sz;
+    if (buf_sz > IOPY_FIXBUF_SZ)
+    {
+        state->buf = os_malloc(buf_sz, OS_NULL);
+        os_memclear(state->buf, buf_sz);
+    }
+
+    /* Process the Python arguments into format we need.
+     */
+    Signal_set_sequence(args, state);
+
+    /* Write always all values in array, even if caller would provides fewer. Rest will be zeros.
+     */
+    ioc_movex_array_signal(state->signal, state->buf, state->max_values,
+        OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
+
+    /* If we allocated extra buffer space, free it.
+     */
+    if (buf_sz > IOPY_FIXBUF_SZ)
+    {
+        os_free(state->buf, buf_sz);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Store signal value into memory block.
+  @anchor Signal_set
+
+  The Signal.set() function finds mathing dynamic information for this signal, and according
+  to the information stores signal value: string, array or one numerical value into the memory
+  block containing the signal.
+
+  @param   io_path Path to the IO signal.
+  @param   network_name Even network name can be part of IO path, it is often more convinient
+           to give it as separate parameter.
+  @return  None.
 
 ****************************************************************************************************
 */
@@ -305,7 +618,54 @@ static PyObject *Signal_set(
     Signal *self,
     PyObject *args)
 {
-    self->status = Signal_set_sequence(self, args);
+    iocRoot *iocroot;
+    SignalSeqParseState state;
+
+    /* Get IOC root pointer. Check not to crash on exceptional situations.
+     */
+    if (self->pyroot == OS_NULL) goto getout;
+    iocroot = self->pyroot->root;
+    if (iocroot == OS_NULL) goto getout;
+    ioc_lock(iocroot);
+
+    /* Find dynamic information for this signal.
+     */
+    os_memclear(&state, sizeof(state));
+    state.signal = &self->signal;
+    ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state.signal);
+    if (state.signal->handle->mblk == OS_NULL)
+    {
+        ioc_unlock(iocroot);
+        goto getout;
+    }
+
+    /* If the signal is string.
+     */
+    state.type_id = (state.signal->flags & OSAL_TYPEID_MASK);
+    state.max_values = state.signal->n;
+    if (state.type_id == OS_STR)
+    {
+        state.is_string = OS_TRUE;
+    }
+
+    /* If this signal is an array
+     */
+    if (state.max_values > 1)
+    {
+        state.is_array = OS_TRUE;
+        Signal_set_array(args, &state);
+    }
+
+    /* Otherwise this is single value signal.
+     */
+    else
+    {
+        Signal_set_one_value(args, &state);
+    }
+
+    ioc_unlock(iocroot);
+
+getout:
     Py_RETURN_NONE;
 }
 
@@ -340,9 +700,9 @@ static PyMethodDef Signal_methods[] = {
 */
 PyTypeObject SignalType = {
     PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".Signal",  /* tp_name */
-    sizeof(Signal),                         /* tp_basicsize */
+    sizeof(Signal),                           /* tp_basicsize */
     0,                                        /* tp_itemsize */
-    (destructor)Signal_dealloc,             /* tp_dealloc */
+    (destructor)Signal_dealloc,               /* tp_dealloc */
     0,                                        /* tp_print */
     0,                                        /* tp_getattr */
     0,                                        /* tp_setattr */
@@ -358,15 +718,15 @@ PyTypeObject SignalType = {
     0,                                        /* tp_setattro */
     0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    "Signal objects",                       /* tp_doc */
+    "Signal objects",                         /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
     0,                                        /* tp_richcompare */
     0,                                        /* tp_weaklistoffset */
     0,                                        /* tp_iter */
     0,                                        /* tp_iternext */
-    Signal_methods,                         /* tp_methods */
-    Signal_members,                         /* tp_members */
+    Signal_methods,                           /* tp_methods */
+    Signal_members,                           /* tp_members */
     0,                                        /* tp_getset */
     0,                                        /* tp_base */
     0,                                        /* tp_dict */
@@ -375,5 +735,5 @@ PyTypeObject SignalType = {
     0,                                        /* tp_dictoffset */
     0,                                        /* tp_init */
     0,                                        /* tp_alloc */
-    Signal_new,                             /* tp_new */
+    Signal_new,                               /* tp_new */
 };
