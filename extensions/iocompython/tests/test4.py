@@ -19,6 +19,7 @@ def main():
         print(hor.get())
 
     seven_segment.delete()
+    hor.delete()
 
     root.delete()
 

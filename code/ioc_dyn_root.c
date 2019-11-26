@@ -70,12 +70,14 @@ static osalStatus ioc_dinfo_process_block(
 /* Allocate and initialize dynamic root object.
  */
 iocDynamicRoot *ioc_initialize_dynamic_root(
-    void)
+    iocRoot *root)
 {
     iocDynamicRoot *droot;
 
     droot = (iocDynamicRoot*)os_malloc(sizeof(iocDynamicRoot), OS_NULL);
     os_memclear(droot, sizeof(iocDynamicRoot));
+    droot->root = root;
+    root->droot = droot;
     return droot;
 }
 
@@ -101,6 +103,11 @@ void ioc_release_dynamic_root(
         }
     }
 
+    if (droot->root)
+    {
+        droot->root->droot = OS_NULL;
+    }
+
     os_free(droot, sizeof(iocDynamicRoot));
 }
 
@@ -110,12 +117,17 @@ void ioc_release_dynamic_root(
    LOCK SHOULD BE ON IF COMMUNICATION IS RUNNING
  */
 void ioc_set_dnetwork_callback(
-    iocDynamicRoot *droot,
+    iocRoot *root,
     ioc_dnetwork_callback func,
     void *context)
 {
-    droot->func = func;
-    droot->context = context;
+    iocDynamicRoot *droot;
+    droot = root->droot;
+    if (droot)
+    {
+        droot->func = func;
+        droot->context = context;
+    }
 }
 
 
@@ -162,7 +174,7 @@ void ioc_remove_dynamic_network(
      */
     if (droot->func)
     {
-        droot->func(droot, dnetwork, IOC_DYNAMIC_NETWORK_REMOVED, droot->context);
+        droot->func(droot->root, dnetwork, IOC_DYNAMIC_NETWORK_REMOVED, droot->context);
     }
 
     /* Fond out who has pointer to dnetwork in prev_dn.
@@ -458,10 +470,10 @@ static osalStatus ioc_dinfo_process_block(
 /* Add dynamic memory block/signal information.
  */
 osalStatus ioc_add_dynamic_info(
-    iocDynamicRoot *droot,
     iocHandle *mblk_handle)
 {
     iocRoot *root;
+    iocDynamicRoot *droot;
     iocMemoryBlock *mblk;
     osalJsonIndex jindex;
     osalStatus s;
@@ -471,6 +483,7 @@ osalStatus ioc_add_dynamic_info(
      */
     mblk = ioc_handle_lock_to_mblk(mblk_handle, &root);
     if (mblk == OS_NULL) return OSAL_STATUS_FAILED;
+    droot = root->droot;
 
     os_memclear(&state, sizeof(state));
     os_strncpy(state.device_name, mblk->device_name, IOC_NAME_SZ);
@@ -497,7 +510,7 @@ osalStatus ioc_add_dynamic_info(
      */
     if (state.new_network && droot->func)
     {
-        droot->func(droot, state.dnetwork, IOC_NEW_DYNAMIC_NETWORK, droot->context);
+        droot->func(root, state.dnetwork, IOC_NEW_DYNAMIC_NETWORK, droot->context);
     }
 
     /* End syncronization and return.
@@ -506,7 +519,6 @@ getout:
     ioc_unlock(root);
     return s;
 }
-
 
 
 /**
@@ -521,7 +533,7 @@ getout:
 
   Root lock must be on when calling this function.
 
-  @param   dnetwork Pointer to dynamic network object, to which memory block belongs to.
+  @param   droot Pointer to dynamic root object.
   @param   mblk Pointer to memory block object being deleted.
   @return  None.
 

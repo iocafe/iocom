@@ -87,9 +87,10 @@ void ioc_release_root(
      */
     osal_debug_assert(root->debug_id == 'R');
 
-    /* Synchronize.
+    /* Synchronize, no more callbacks.
      */
     ioc_lock(root);
+    root->callback_func = OS_NULL;
 
 #if IOC_DYNAMIC_MBLK_CODE
     /* If we have dynamic IO network configuration, release it.

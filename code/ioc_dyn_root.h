@@ -48,7 +48,7 @@ iocDynamicNetworkEvent;
 ****************************************************************************************************
 */
 typedef void ioc_dnetwork_callback(
-    struct iocDynamicRoot *droot,
+    struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
     void *context);
@@ -65,6 +65,10 @@ typedef void ioc_dnetwork_callback(
 typedef struct iocDynamicRoot
 {
     iocDynamicNetwork *hash[IOC_DROOT_HASH_TAB_SZ];
+
+    /** Pointer back to root object.
+     */
+    iocRoot *root;
 
     /** Callback function pointer. Calback is used to inform application about dynamic
         IO network connects and disconnects. OS_NULL if not used.
@@ -87,7 +91,8 @@ iocDynamicRoot;
 
 /* Allocate and initialize dynamic root object.
  */
-iocDynamicRoot *ioc_initialize_dynamic_root(void);
+iocDynamicRoot *ioc_initialize_dynamic_root(
+    iocRoot *root);
 
 /* Release dynamic root structure.
  */
@@ -98,7 +103,7 @@ void ioc_release_dynamic_root(
    connect and disconnects.
  */
 void ioc_set_dnetwork_callback(
-    iocDynamicRoot *droot,
+    iocRoot *root,
     ioc_dnetwork_callback func,
     void *context);
 
@@ -123,7 +128,6 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 /* Add dynamic memory block/signal information.
  */
 osalStatus ioc_add_dynamic_info(
-    iocDynamicRoot *droot,
     iocHandle *mblk_handle);
 
 /* Memory block is being deleted, remove any references to it from dynamic configuration.

@@ -23,6 +23,16 @@ static void Root_callback(
     iocRootCallbackEvent event,
     void *context);
 
+static void Root_network_callback(
+    struct iocRoot *root,
+    struct iocDynamicNetwork *dnetwork,
+    iocDynamicNetworkEvent event,
+    void *context);
+
+static void Root_do_callback(
+    Root *pyroot,
+    os_char *text);
+
 static void Root_info_callback(
     struct iocHandle *handle,
     os_int start_addr,
@@ -82,12 +92,18 @@ static PyObject *Root_new(
      */
     self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
     ioc_initialize_root(self->root);
-    self->root->droot = ioc_initialize_dynamic_root();
+    ioc_initialize_dynamic_root(self->root);
+
+    /* Set callback function to receive information about created or removed dynamic IO networks.
+     */
+    ioc_set_dnetwork_callback(self->root, Root_network_callback, self);
+
+    /* Set callback function to receive information about new dynamic memory blocks.
+     */
     ioc_set_root_callback(self->root, Root_callback, self);
 
-// Set callback function to receive information about created or removed dynamic IO networks.  XXXXXXXXXXXXXXXXXXXXXX ALSO
-// ioc_set_dnetwork_callback(frank_root.droot, network_callback, OS_NULL);
-
+    /* Save network and device.
+     */
     os_strncpy(self->network_name, network_name, IOC_NETWORK_NAME_SZ);
     os_strncpy(self->device_name, device_name, IOC_NAME_SZ);
     self->device_nr = device_nr;
@@ -285,12 +301,8 @@ static void Root_callback(
     void *context)
 {
     os_char text[128], mblk_name[IOC_NAME_SZ];
-    PyObject *arglist;
-    PyObject *result;
-
     Root *pyroot;
     pyroot = (Root*)context;
-
 
     switch (event)
     {
@@ -309,37 +321,7 @@ static void Root_callback(
                 ioc_add_callback(mblk_handle, Root_info_callback, OS_NULL);
             }
 
-            /* If we have no python application callback function, then do nothing more.
-             */
-            if (pyroot->root_callback == OS_NULL) return;
-
-            PyGILState_STATE gstate;
-            gstate = PyGILState_Ensure();
-
-            /* Time to call the callback.
-             */
-            arglist = Py_BuildValue("(s)", text);
-            result = PyObject_CallObject(pyroot->root_callback, arglist);
-            Py_DECREF(arglist);
-
-            /* What is that callback function reported an error?
-             */
-            if (result == NULL)
-            {
-                PyErr_Clear();
-                PyGILState_Release(gstate);
-                return;
-                /* Pass error back ?? */
-            }
-
-            /* ...use result ... here we don't ...
-             */
-
-            Py_DECREF(result);
-
-            /* Release the thread. No Python API allowed beyond this point.
-             */
-            PyGILState_Release(gstate);
+            Root_do_callback(pyroot, text);
             break;
 
         /* Ignore unknown callbacks. More callback events may be introduced in future.
@@ -347,6 +329,99 @@ static void Root_callback(
         default:
             break;
     }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Callback when dynamic IO network has been connected or disconnected.
+
+  The info_callback() function is called when device information data is received from connection
+  or when connection status changes.
+
+  @param   root Pointer to the root object.
+  @param   dnetwork Pointer to dynamic network object which has just been connected or is
+           about to be removed.
+  @param   event Either IOC_NEW_DYNAMIC_NETWORK or IOC_DYNAMIC_NETWORK_REMOVED.
+  @param   context Application specific pointer passed to this callback function.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Root_network_callback(
+    struct iocRoot *root,
+    struct iocDynamicNetwork *dnetwork,
+    iocDynamicNetworkEvent event,
+    void *context)
+{
+    Root *pyroot;
+    pyroot = (Root*)context;
+
+    switch (event)
+    {
+        case IOC_NEW_DYNAMIC_NETWORK:
+            osal_trace2("IOC_NEW_DYNAMIC_NETWORK");
+
+            Root_do_callback(pyroot, "new_network");
+            break;
+
+        case IOC_DYNAMIC_NETWORK_REMOVED:
+            osal_trace2("IOC_DYNAMIC_NETWORK_REMOVED");
+            break;
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Do call the Python callback function.
+
+  The Root_do_callback() function is called when device information data is received from connection
+  or when connection status changes.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Root_do_callback(
+    Root *pyroot,
+    os_char *text)
+{
+    PyObject *arglist, *result;
+    PyGILState_STATE gstate;
+
+    /* If we have no python application callback function, then do nothing more.
+     */
+    if (pyroot->root_callback == OS_NULL) return;
+
+    gstate = PyGILState_Ensure();
+
+    /* Call the callback.
+     */
+    arglist = Py_BuildValue("(s)", text);
+    result = PyObject_CallObject(pyroot->root_callback, arglist);
+    Py_DECREF(arglist);
+
+    /* What is that callback function reported an error?
+     */
+    if (result == NULL)
+    {
+        PyErr_Clear();
+        PyGILState_Release(gstate);
+        return;
+        /* Pass error back ?? */
+    }
+
+    /* ...use result ... here we don't ...
+     */
+
+    Py_DECREF(result);
+
+    /* Release the thread. No Python API allowed beyond this point.
+     */
+    PyGILState_Release(gstate);
 }
 
 
@@ -382,7 +457,7 @@ static void Root_info_callback(
      */
     if (end_addr >= 0 && root)
     {
-        ioc_add_dynamic_info(root->droot, handle);
+        ioc_add_dynamic_info(handle);
     }
 }
 

@@ -3,7 +3,6 @@ import ioterminal
 import time
 
 signal_conf = ('{'
-  '"name": "gina",'
   '"mblk": ['
   '{'
     '"name": "exp",'
@@ -47,8 +46,10 @@ def main():
 
     data = json2bin(signal_conf)
     info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
-    info.write(data)
-
+    print(data)
+    info.publish(data)
+    print("uke2")
+    
     connection = Connection(root, "127.0.0.1", "socket")
 
     hor = Signal(root, "hor", "pekkanet")
@@ -59,10 +60,10 @@ def main():
         hor.set(i)
         i = i + 1
         time.sleep(0.01) 
-
+    
+# connection.delete is needed, should not be
+    connection.delete()
     root.delete()
-
-
 
 if (__name__ == '__main__'): 
     main()

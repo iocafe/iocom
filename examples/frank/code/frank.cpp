@@ -38,7 +38,7 @@ static void info_callback(
     void *context);
 
 static void network_callback(
-    struct iocDynamicRoot *droot,
+    struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
     void *context);
@@ -67,7 +67,7 @@ osalStatus osal_main(
      * This demo uses dynamic signal configuration.
      */
     ioc_initialize_root(&frank_root);
-    frank_root.droot = ioc_initialize_dynamic_root();
+    ioc_initialize_dynamic_root(&frank_root);
 
     /* Create frank main object
      */
@@ -75,7 +75,7 @@ osalStatus osal_main(
 
     /* Set callback function to receive information about created or removed dynamic IO networks.
      */
-    ioc_set_dnetwork_callback(frank_root.droot, network_callback, OS_NULL);
+    ioc_set_dnetwork_callback(&frank_root, network_callback, OS_NULL);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
@@ -134,7 +134,7 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    ioc_set_dnetwork_callback(frank_root.droot, OS_NULL, OS_NULL);
+    ioc_set_dnetwork_callback(&frank_root, OS_NULL, OS_NULL);
     ioc_set_root_callback(&frank_root, OS_NULL, OS_NULL);
     delete frank_main;
 
@@ -225,7 +225,7 @@ static void info_callback(
      */
     if (end_addr >= 0)
     {
-        ioc_add_dynamic_info(frank_root.droot, handle);
+        ioc_add_dynamic_info(handle);
     }
 }
 
@@ -238,7 +238,7 @@ static void info_callback(
   The info_callback() function is called when device information data is received from connection
   or when connection status changes.
 
-  @param   droot Pointer to the dynamic configuration root object.
+  @param   root Pointer to the root object.
   @param   dnetwork Pointer to dynamic network object which has just been connected or is
            about to be removed.
   @param   event Either IOC_NEW_DYNAMIC_NETWORK or IOC_DYNAMIC_NETWORK_REMOVED.
@@ -249,7 +249,7 @@ static void info_callback(
 ****************************************************************************************************
 */
 static void network_callback(
-    struct iocDynamicRoot *droot,
+    struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
     void *context)
@@ -257,12 +257,12 @@ static void network_callback(
     switch (event)
     {
         case IOC_NEW_DYNAMIC_NETWORK:
-            osal_debug_error("IOC_NEW_DYNAMIC_NETWORK");
+            osal_trace2("IOC_NEW_DYNAMIC_NETWORK");
             frank_main->launch_app(dnetwork->network_name);
             break;
 
         case IOC_DYNAMIC_NETWORK_REMOVED:
-            osal_debug_error("IOC_DYNAMIC_NETWORK_REMOVED");
+            osal_trace2("IOC_DYNAMIC_NETWORK_REMOVED");
             break;
     }
 }

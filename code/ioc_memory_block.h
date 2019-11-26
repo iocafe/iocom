@@ -112,8 +112,9 @@ typedef enum
    IOC_NETWORK_NAME = 1,
    IOC_DEVICE_NAME = 2,
    IOC_DEVICE_NR = 3,
-   IOC_MBLK_NAME = 5,
-   IOC_MBLK_AUTO_SYNC_FLAG = 6
+   IOC_MBLK_NAME = 4,
+   IOC_MBLK_AUTO_SYNC_FLAG = 5,
+   IOC_MBLK_SZ = 6
 }
 iocMemoryBlockParamIx;
 

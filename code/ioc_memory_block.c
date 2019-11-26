@@ -374,7 +374,7 @@ void ioc_memory_block_set_int_param(
 
   @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
-           IOC_DEVICE_NR or IOC_MBLK_AUTO_SYNC_FLAG.
+           IOC_DEVICE_NR, IOC_MBLK_AUTO_SYNC_FLAG, or IOC_MBLK_SIZE.
   @return  Parameter value as integer. -1 if cannot be converted to integer.
 
 ****************************************************************************************************
@@ -402,6 +402,10 @@ os_int ioc_memory_block_get_int_param(
             value = (mblk->flags & IOC_AUTO_SYNC) ? OS_TRUE : OS_FALSE;
             break;
 
+        case IOC_MBLK_SZ:
+            value = mblk->nbytes;
+            break;
+
         default:
             value = -1;
             break;
@@ -426,7 +430,7 @@ os_int ioc_memory_block_get_int_param(
   @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
            IOC_NETWORK_NAME, IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NAME or
-           IOC_MBLK_AUTO_SYNC_FLAG.
+           IOC_MBLK_AUTO_SYNC_FLAG, or IOC_MBLK_SIZE.
   @param   buf Pointer to buffer where to store parameter value as string. Empty string if
            no value.
   @param   buf_sz Buffer size in bytes.
@@ -472,6 +476,10 @@ void ioc_memory_block_get_string_param(
 
         case IOC_MBLK_AUTO_SYNC_FLAG:
             value = (mblk->flags & IOC_AUTO_SYNC) ? OS_TRUE : OS_FALSE;
+            break;
+
+        case IOC_MBLK_SZ:
+            value = mblk->nbytes;
             break;
     }
 

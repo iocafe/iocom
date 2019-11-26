@@ -304,6 +304,10 @@ static PyObject *MemoryBlock_get_param(
         {
             param_ix = IOC_MBLK_NAME;
         }
+        else if (!os_strcmp(p, "mblk_sz"))
+        {
+            param_ix = IOC_MBLK_SZ;
+        }
         else
         {
             Py_XDECREF(py_list);
@@ -328,13 +332,64 @@ static PyObject *MemoryBlock_get_param(
 }
 
 
+/**
+****************************************************************************************************
+  Read data from memory block.
+****************************************************************************************************
+*/
+static PyObject *MemoryBlock_read(
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    PyObject *rval;
+    os_char *data;
+    int pyaddr = 0, pynbytes = -1;
+    os_int mblk_sz, n;
+
+    static char *kwlist[] = {
+        "addr",
+        "n",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i",
+         kwlist, &pyaddr, &pynbytes))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    mblk_sz = ioc_memory_block_get_int_param(&self->mblk_handle, IOC_MBLK_SZ);
+    if (mblk_sz <= 0) goto getout;
+
+    n = pynbytes >= 0 ? pynbytes : mblk_sz;
+    if (pyaddr + n > mblk_sz) n = mblk_sz - pyaddr;
+    if (n <= 0) goto getout;
+
+    data = os_malloc(n, OS_NULL);
+    ioc_read(&self->mblk_handle, pyaddr, data, n);
+    rval = PyBytes_FromStringAndSize(data, n);
+
+    os_free(data, n);
+
+    return rval;
+
+getout:
+    Py_RETURN_NONE;
+}
+
+
+/**
+****************************************************************************************************
+  Write binary data to memory block.
+****************************************************************************************************
+*/
 static PyObject *MemoryBlock_write(
     MemoryBlock *self,
     PyObject *args,
     PyObject *kwds)
 {
-    iocMemoryBlock *mblk;
-    iocRoot *root;
     PyObject *pydata = NULL;
     int pyaddr = 0;
 
@@ -357,17 +412,74 @@ static PyObject *MemoryBlock_write(
     PyBytes_AsStringAndSize(pydata, &buffer, &length);
     ioc_write(&self->mblk_handle, pyaddr, buffer, length);
 
-    /* Special case. User has written info block content. Publish it as dynamic structure.
-     */
-    mblk = ioc_handle_lock_to_mblk(&self->mblk_handle, &root);
-    if (mblk)
+    Py_RETURN_NONE;
+}
+
+
+/**
+****************************************************************************************************
+  Publish memory block content as dynamic IO network information.
+  The Python example below sets signal configuration for an IO device.
+
+  \verbatim
+  signal_conf = ('{'
+    '"mblk": ['
+    '{'
+      '"name": "exp",'
+      '"groups": ['
+         '{'
+           '"name": "control",'
+           '"signals": ['
+             '{"name": "ver", "type": "short"},'
+             '{"name": "hor"}'
+           ']'
+         '}'
+      ']'
+    '}'
+    ']'
+  '}')
+
+  data = json2bin(signal_conf)
+  info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
+  info.publish(data)
+  \endverbatim
+****************************************************************************************************
+*/
+static PyObject *MemoryBlock_publish(
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    PyObject *pydata = NULL;
+    int pyaddr = 0;
+
+    char *buffer;
+    Py_ssize_t length;
+
+    static char *kwlist[] = {
+        "data",
+        "addr",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i",
+         kwlist, &pydata, &pyaddr))
     {
-        if (!os_strcmp(mblk->mblk_name, "info"))
-        {
-            ioc_add_dynamic_info(root->droot, &self->mblk_handle);
-        }
-        ioc_unlock(root);
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
     }
+
+    /* If we got data as argument, set it first.
+     */
+    if (pydata)
+    {
+        PyBytes_AsStringAndSize(pydata, &buffer, &length);
+        ioc_write(&self->mblk_handle, pyaddr, buffer, length);
+    }
+
+    /* Publish block content as dynamic structure.
+     */
+    ioc_add_dynamic_info(&self->mblk_handle);
 
     Py_RETURN_NONE;
 }
@@ -392,7 +504,10 @@ static PyMemberDef MemoryBlock_members[] = {
 static PyMethodDef MemoryBlock_methods[] = {
     {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
     {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS, "Get memory block parameters"},
+    {"read", (PyCFunction)MemoryBlock_read, METH_VARARGS, "Read data from memory block"},
     {"write", (PyCFunction)MemoryBlock_write, METH_VARARGS, "Write data to memory block"},
+    {"publish", (PyCFunction)MemoryBlock_publish, METH_VARARGS, "Publish as dynamic IO info"},
+
     {NULL} /* Sentinel */
 };
 
