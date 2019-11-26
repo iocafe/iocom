@@ -199,8 +199,9 @@ static PyObject *Root_delete(
         ioc_release_root(self->root);
         self->root = OS_NULL;
 
-        self->number = 0;
+#if IOPYTHON_TRACE
         PySys_WriteStdout("Root.delete()\n");
+#endif
         s = OSAL_SUCCESS;
         iocom_python_release();
     }

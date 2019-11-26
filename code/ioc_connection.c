@@ -617,7 +617,7 @@ failed:
         ioc_lock(root);
         con->connected = OS_FALSE;
         ioc_free_source_and_target_bufs(root, con);
-        ioc_count_connected_streams(con->link.root, OS_TRUE);
+        /* ioc_count_connected_streams(con->link.root, OS_TRUE); */
         ioc_mbinfo_con_is_closed(con);
         ioc_unlock(root);
     }
@@ -1037,8 +1037,7 @@ failed:
             ioc_lock(root);
             ioc_free_source_and_target_bufs(root, con);
             ioc_unlock(root);
-
-            ioc_count_connected_streams(con->link.root, OS_TRUE);
+            /* ioc_count_connected_streams(con->link.root, OS_TRUE); */
             ioc_mbinfo_con_is_closed(con);
         }
 

@@ -28,6 +28,10 @@
 /**
 ****************************************************************************************************
 
+
+NO LONGER USED
+
+
   @brief Write status data related to a memory block.
   @anchor ioc_status_write
 
@@ -41,6 +45,7 @@
 
 ****************************************************************************************************
 */
+#if 0
 void ioc_status_write(
     struct iocMemoryBlock *mblk,
     os_int addr,
@@ -100,7 +105,7 @@ void ioc_status_write(
         ioc_unlock(root);
     }
 }
-
+#endif
 
 /**
 ****************************************************************************************************
@@ -118,6 +123,7 @@ void ioc_status_write(
 
 ****************************************************************************************************
 */
+#if 0
 void ioc_status_read(
     struct iocMemoryBlock *mblk,
     os_int addr,
@@ -186,13 +192,15 @@ void ioc_count_connected_streams(
         if (con->connected) count++;
     }
 
-    for (mblk = root->mblk.first;
+    /* for (mblk = root->mblk.first;
          mblk;
          mblk = mblk->link.next)
     {
         ioc_setp_short(&mblk->handle, IOC_NRO_CONNECTED_STREAMS, count);
         ioc_setp_int(&mblk->handle, IOC_CONNECTION_DROP_COUNT, root->drop_count);
-    }
+    } */
 
     ioc_unlock(root);
 }
+
+#endif

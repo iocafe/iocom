@@ -373,7 +373,7 @@ alldone:
     if (!con->connected)
     {
         con->connected = OS_TRUE;
-        ioc_count_connected_streams(root, OS_FALSE);
+        /* ioc_count_connected_streams(root, OS_FALSE); */
         ioc_add_con_to_mbinfo(con);
     }
 

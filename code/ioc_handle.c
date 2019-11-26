@@ -48,6 +48,8 @@ void ioc_setup_handle(
      */
     else
     {
+// ioc_validate_handle(&mblk->handle);
+
         handle->prev = mblk->handle.prev;
         handle->next = &mblk->handle;
         mblk->handle.prev = handle;
@@ -58,6 +60,8 @@ void ioc_setup_handle(
     osal_debug_assert(handle->flags != 0);
 
     IOC_SET_DEBUG_ID(handle, 'H')
+
+// ioc_validate_handle(handle);
 }
 
 /* Release a memory block handle (calls synchronization).
@@ -68,6 +72,7 @@ void ioc_release_handle(
     if (handle->root == OS_NULL) return;
 
     ioc_lock(handle->root);
+// ioc_validate_handle(handle);
 
     if (handle->next != handle)
     {
@@ -98,6 +103,7 @@ void ioc_duplicate_handle(
      */
     osal_debug_assert(source_handle->debug_id == 'H');
 
+// ioc_validate_handle(handle);
     root = source_handle->root;
     if (root)
     {
@@ -105,12 +111,30 @@ void ioc_duplicate_handle(
         ioc_setup_handle(handle, root, source_handle->mblk);
         ioc_unlock(root);
     }
-    else
-    {
-        ioc_setup_handle(handle, root, OS_NULL);
-    }
 }
 
+
+/* Called when memory block is deleted (synchronization lock must be on).
+ */
+/* void ioc_validate_handle(
+    iocHandle *handle)
+{
+    iocHandle *h;
+
+    osal_debug_assert(handle->debug_id == 'H');
+
+    h = handle;
+    while (OS_TRUE) {
+        osal_debug_assert(h->debug_id == 'H');
+        osal_debug_assert(h->next->debug_id == 'H');
+        osal_debug_assert(h->prev->debug_id == 'H');
+        if (h->next == handle) break;
+        osal_debug_assert(h->prev->next == h);
+        osal_debug_assert(h->next->prev == h);
+        h = h->next;
+    }
+}
+*/
 
 /* Called when memory block is deleted (synchronization lock must be on).
  */
@@ -118,6 +142,8 @@ void ioc_terminate_handles(
     iocHandle *handle)
 {
     iocHandle *h, *nexth;
+
+// ioc_validate_handle(handle);
 
     /* Check that mblk is valid pointer.
      */
@@ -149,10 +175,6 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     iocRoot *root;
     iocMemoryBlock *mblk;
 
-    /* Check that mblk is valid pointer.
-     */
-    osal_debug_assert(handle->debug_id == 'H');
-
     /* Get root. Return root pointer if needed.
      */
     root = handle->root;
@@ -162,9 +184,15 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
         return OS_NULL;
     }
 
+    /* Check that mblk is valid pointer.
+     */
+    osal_debug_assert(handle->debug_id == 'H');
+
     /* Synchronize.
      */
     ioc_lock(root);
+
+// ioc_validate_handle(handle);
 
     /* Get memory block pointer. If none, unlock and return NULL to indicate failure.
      */

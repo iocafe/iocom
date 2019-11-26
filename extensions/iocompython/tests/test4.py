@@ -18,8 +18,8 @@ def main():
 #        print(seven_segment.get())
         print(hor.get())
 
-    seven_segment.delete()
-    hor.delete()
+#    seven_segment.delete()
+#    hor.delete()
 
     root.delete()
 

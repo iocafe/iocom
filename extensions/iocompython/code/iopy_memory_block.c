@@ -225,12 +225,11 @@ static PyObject *MemoryBlock_delete(
     MemoryBlock *self)
 {
     ioc_release_memory_block(&self->mblk_handle);
-    self->number = 0;
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.delete()\n");
 #endif
-    return PyLong_FromLong((long)self->number);
+    Py_RETURN_NONE;
 }
 
 

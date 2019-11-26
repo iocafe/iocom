@@ -92,12 +92,6 @@ void ioc_release_root(
     ioc_lock(root);
     root->callback_func = OS_NULL;
 
-#if IOC_DYNAMIC_MBLK_CODE
-    /* If we have dynamic IO network configuration, release it.
-     */
-    ioc_release_dynamic_root(root->droot);
-    root->droot = OS_NULL;
-#endif
 
 #if OSAL_MULTITHREAD_SUPPORT
 #if OSAL_SOCKET_SUPPORT
@@ -137,6 +131,13 @@ void ioc_release_root(
         os_timeslice();
         ioc_lock(root);
     }
+#endif
+
+#if IOC_DYNAMIC_MBLK_CODE
+    /* If we have dynamic IO network configuration, release it.
+     */
+    ioc_release_dynamic_root(root->droot);
+    root->droot = OS_NULL;
 #endif
 
     /* Release all initialized end points.

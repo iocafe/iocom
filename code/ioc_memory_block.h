@@ -294,7 +294,7 @@ typedef struct iocMemoryBlock
 
     /** Buffer for communication status.
      */
-    os_char status[IOC_STATUS_MEMORY_SZ];
+    /* os_char status[IOC_STATUS_MEMORY_SZ]; */
 }
 iocMemoryBlock;
 
@@ -390,7 +390,7 @@ void ioc_read_internal(
     os_short flags);
 
 #ifndef IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS
-#define IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS 1
+#define IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS 0
 #endif
 
 #if IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS

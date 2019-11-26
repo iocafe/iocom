@@ -28,9 +28,21 @@
 
 /**
 ****************************************************************************************************
+
+
+
+
+
+NO LONGER USED
+
+
+
+
+
     Used status memory addresses.
 ****************************************************************************************************
 */
+#if 0
 typedef enum
 {
     /** Number of connected streams at this moment, two bytes (addresses -2 and -1).
@@ -71,5 +83,8 @@ void ioc_status_read(
 void ioc_count_connected_streams(
     iocRoot *root,
     os_boolean incement_drop_count);
+#endif
+
+
 
 #endif

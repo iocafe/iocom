@@ -76,10 +76,6 @@ osalStatus ioc_initialize_memory_block(
      */
     ioc_lock(root);
 
-    /* In case of errors (malloc fails)
-     */
-    ioc_setup_handle(handle, root, OS_NULL);
-
     /* Allocate memory block structure, unless allocated by application.
      */
     if (static_mblk == OS_NULL)
@@ -570,7 +566,7 @@ void ioc_write_internal(
     iocRoot *root;
     iocMemoryBlock *mblk;
     os_char *p;
-    os_int max_n, nstat, count;
+    os_int max_n, count;
 
     /* Get memory block pointer and start synchronization.
      */
@@ -582,6 +578,7 @@ void ioc_write_internal(
     osal_debug_assert(buf != OS_NULL || (flags & IOC_CLEAR_MBLK_RANGE));
     osal_debug_assert(n > 0);
 
+#if 0
     /* Handle status data writes.
      */
     if (addr < 0)
@@ -596,6 +593,7 @@ void ioc_write_internal(
         addr = 0;
         n -= nstat;
     }
+#endif
 
     /* Clip address and nuber of bytes to write within internal buffer.
      */
@@ -702,7 +700,7 @@ void ioc_read_internal(
     iocRoot *root;
     iocMemoryBlock *mblk;
     os_char *p;
-    os_int max_n, nstat, count;
+    os_int max_n, count;
 
     /* Get memory block pointer and start synchronization. If memory block is not found, mark
        return zeroes.
@@ -721,7 +719,7 @@ void ioc_read_internal(
 
     /* Handle status data reads.
      */
-    if (addr < 0)
+    /* if (addr < 0)
     {
         nstat = (n > -addr) ? -addr : n;
         ioc_status_read(mblk, addr, buf, nstat);
@@ -729,7 +727,7 @@ void ioc_read_internal(
         addr = 0;
         buf += nstat;
         n -= nstat;
-    }
+    } */
 
     osal_debug_assert(addr >= 0);
 

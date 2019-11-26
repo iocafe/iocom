@@ -53,6 +53,7 @@ void ioc_release_dynamic_signal(
     iocDynamicSignal *dsignal)
 {
     os_memsz sz;
+
     sz = os_strlen(dsignal->signal_name);
     os_free(dsignal->signal_name, sz);
     os_free(dsignal, sizeof(iocDynamicSignal));
@@ -198,6 +199,7 @@ void ioc_setup_signal_by_identifiers(
         dsignal->device_name, dsignal->device_nr);
     if (mblk)
     {
+        ioc_release_handle(signal->handle);
         ioc_setup_handle(signal->handle, root, mblk);
         return;
     }
@@ -214,6 +216,7 @@ void ioc_setup_signal_by_identifiers(
         if (mblk->device_nr != dsignal->device_nr) continue;
         if (os_strcmp(mblk->mblk_name, dsignal->mblk_name)) continue;
 
+        ioc_release_handle(signal->handle);
         ioc_setup_handle(signal->handle, root, mblk);
 
         /* Add shortcut to memory block list for faster search

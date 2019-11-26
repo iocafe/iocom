@@ -62,7 +62,10 @@ def main():
         time.sleep(0.01) 
     
 # connection.delete is needed, should not be
-    connection.delete()
+#    hor.delete()
+#    myinputs.delete()
+#    info.delete()
+#    connection.delete()
     root.delete()
 
 if (__name__ == '__main__'): 
