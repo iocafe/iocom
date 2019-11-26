@@ -31,7 +31,8 @@ static void Root_network_callback(
 
 static void Root_do_callback(
     Root *pyroot,
-    os_char *text);
+    os_char *event_text,
+    os_char *arg_text);
 
 static void Root_info_callback(
     struct iocHandle *handle,
@@ -322,7 +323,7 @@ static void Root_callback(
                 ioc_add_callback(mblk_handle, Root_info_callback, OS_NULL);
             }
 
-            Root_do_callback(pyroot, text);
+            Root_do_callback(pyroot, "new_mblk", mblk_name);
             break;
 
         /* Ignore unknown callbacks. More callback events may be introduced in future.
@@ -365,7 +366,7 @@ static void Root_network_callback(
         case IOC_NEW_DYNAMIC_NETWORK:
             osal_trace2("IOC_NEW_DYNAMIC_NETWORK");
 
-            Root_do_callback(pyroot, "new_network");
+            Root_do_callback(pyroot, "new_network", dnetwork->network_name);
             break;
 
         case IOC_DYNAMIC_NETWORK_REMOVED:
@@ -388,7 +389,8 @@ static void Root_network_callback(
 */
 static void Root_do_callback(
     Root *pyroot,
-    os_char *text)
+    os_char *event_text,
+    os_char *arg_text)
 {
     PyObject *arglist, *result;
     PyGILState_STATE gstate;
@@ -401,7 +403,7 @@ static void Root_do_callback(
 
     /* Call the callback.
      */
-    arglist = Py_BuildValue("(s)", text);
+    arglist = Py_BuildValue("(ss)", event_text, arg_text);
     result = PyObject_CallObject(pyroot->root_callback, arglist);
     Py_DECREF(arglist);
 

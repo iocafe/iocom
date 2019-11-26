@@ -1,6 +1,4 @@
 # Module: ioterminal.py
-# Example 1: functions to store and retrieve global variables
-
 import threading
 import queue
 
