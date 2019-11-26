@@ -46,9 +46,7 @@ def main():
 
     data = json2bin(signal_conf)
     info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
-    print(data)
     info.publish(data)
-    print("uke2")
     
     connection = Connection(root, "127.0.0.1", "socket")
 
