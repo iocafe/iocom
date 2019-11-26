@@ -20,9 +20,6 @@ class TestApp(object):
         global root
         # Make sure that our player list is up to date
         player_list = root.list_devices(self.network_name)
-#        print(player_list)
-        # player_list = ['mydevice3']
-
         if player_list == None:
             print('network closed')
             return False
@@ -35,9 +32,14 @@ class TestApp(object):
                 self.players[player_name] = TestPlayer(player_name, self.network_name)
 
         # Remove players who dropped off
+        remove_these = []
         for player_name in self.players:
             if player_name not in player_list:
                 print ("player " + player_name + ' dropped off')
+                remove_these.append(player_name)
+
+        for player_name in remove_these:
+            self.players.pop(player_name)
 
         return True
 
