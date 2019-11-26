@@ -307,7 +307,7 @@ static void ioc_free_source_and_target_bufs(
   or serial port is opened when connection runs.
 
   @param   con Pointer to the connection object.
-  @param   prm Parameter structure. Clear parameter structure using os_memclear() and 
+  @param   prm Parameter structure. Clear parameter structure using os_memclear() and
            set the members needed. Members:
            - parameters Depending on connection type, can be "127.0.0.1:8817" for TCP socket.
            - newsocket If socket connection is accepted by listening end point, this is
@@ -318,7 +318,7 @@ static void ioc_free_source_and_target_bufs(
            - frame_in_buf Pointer to static frame buffer. OS_NULL to allocate the frame buffer.
            - frame_in_buf_sz Size of static frame buffer, either IOC_SOCKET_FRAME_SZ or
              IOC_SERIAL_FRAME_SZ. Leave to zero for frame buffer allocated by this call.
-           - flags Bit fields: IOC_SOCKET Connect with TCP socket. IOC_CREATE_THREAD Create 
+           - flags Bit fields: IOC_SOCKET Connect with TCP socket. IOC_CREATE_THREAD Create
              thread to run connection (multithread support needed).
 
   @return  OSAL_SUCCESS if successfull. Other return values indicate an error.
@@ -907,12 +907,12 @@ static void ioc_connection_thread(
         if (con->stream == OS_NULL)
         {
             status = ioc_try_to_connect(con);
-            if (status == OSAL_STATUS_PENDING) 
+            if (status == OSAL_STATUS_PENDING)
             {
                 os_timeslice();
                 goto failed;
             }
-            if (status) 
+            if (status)
             {
                 osal_trace("stream connect try failed");
                 goto failed;
@@ -1042,7 +1042,7 @@ failed:
             ioc_mbinfo_con_is_closed(con);
         }
 
-        if (con->flags & IOC_CLOSE_CONNECTION_ON_ERROR) 
+        if (con->flags & IOC_CLOSE_CONNECTION_ON_ERROR)
         {
             break;
         }

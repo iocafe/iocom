@@ -10,11 +10,13 @@ def main():
     epoint = EndPoint(root, flags='socket')
 
     seven_segment = Signal(root, "seven_segment", "pekkanet")
+    hor = Signal(root, "hor", "pekkanet")
 
     while (ioterminal.run(root)):
         time.sleep(0.5) 
         seven_segment.set(1, 0, 1, 0, 1, 0, 1)
         print(seven_segment.get())
+        print(hor.get())
 
     seven_segment.delete()
 

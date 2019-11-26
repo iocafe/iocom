@@ -1,4 +1,4 @@
-from iocompython import Root, MemoryBlock, Connection, json2bin
+from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
 import ioterminal
 import time
 
@@ -47,12 +47,15 @@ def main():
 
     data = json2bin(signal_conf)
     info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
+    info.write(data)
 
     connection = Connection(root, "127.0.0.1", "socket")
 
+    hor = Signal(root, "hor", "pekkanet")
+
     while (ioterminal.run(root)):
+        hor.set(11)
         time.sleep(0.01) 
-        info.write(data)
 
     root.delete()
 

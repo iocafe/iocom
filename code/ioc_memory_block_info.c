@@ -377,12 +377,9 @@ void ioc_mbinfo_received(
          */
         sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
 
-        /* Do initial synchronization for static memory blocks.
+        /* Do initial synchronization for all memory blocks.
          */
-        if (mblk->flags & IOC_STATIC)
-        {
-            ioc_sbuf_synchronize(sbuf);
-        }
+        ioc_sbuf_synchronize(sbuf);
 
         /* If we have callback function, application may want to know that the
            memory block has been connected.

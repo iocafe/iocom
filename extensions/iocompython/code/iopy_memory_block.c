@@ -333,6 +333,8 @@ static PyObject *MemoryBlock_write(
     PyObject *args,
     PyObject *kwds)
 {
+    iocMemoryBlock *mblk;
+    iocRoot *root;
     PyObject *pydata = NULL;
     int pyaddr = 0;
 
@@ -353,8 +355,19 @@ static PyObject *MemoryBlock_write(
     }
 
     PyBytes_AsStringAndSize(pydata, &buffer, &length);
-
     ioc_write(&self->mblk_handle, pyaddr, buffer, length);
+
+    /* Special case. User has written info block content. Publish it as dynamic structure.
+     */
+    mblk = ioc_handle_lock_to_mblk(&self->mblk_handle, &root);
+    if (mblk)
+    {
+        if (!os_strcmp(mblk->mblk_name, "info"))
+        {
+            ioc_add_dynamic_info(root->droot, &self->mblk_handle);
+        }
+        ioc_unlock(root);
+    }
 
     Py_RETURN_NONE;
 }
