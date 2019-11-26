@@ -3,10 +3,15 @@ import ioterminal
 import testapp
 import time
 
+import queue
+
 def main():
+    global root, callback_queue
     ioterminal.start()
 
     root = Root('pythoncontrol')
+
+    callback_queue = queue.Queue()
     root.set_callback(root_callback)
     epoint = EndPoint(root, flags='socket')
 
@@ -14,9 +19,16 @@ def main():
     seven_segment = Signal(root, "seven_segment", network_name)
     hor = Signal(root, "hor", network_name)
 
+
     while (ioterminal.run(root)):
-        time.sleep(0.01) 
+        if callback_queue.qsize() > 0:
+            network_name = callback_queue.get()
+            testapp.start(root, network_name)
+
+        time.sleep(0.1) 
         seven_segment.set(1, 0, 1, 0, 1, 0, 1)
+#        print(root.list_devices("pekkanet"))
+
 #        print(seven_segment.get())
 #        print(hor.get())
 
@@ -26,10 +38,11 @@ def main():
     root.delete()
 
 def root_callback(event_text, arg_text):
+    global callback_queue
     print('callback: ' + event_text + ' ' + arg_text)
 
     if event_text == 'new_network':
-        testapp.start(arg_text)
+        callback_queue.put(arg_text)
 
 if (__name__ == '__main__'): 
     main()

@@ -54,7 +54,8 @@ iocMemoryBlock *ioc_find_mblk_shortcut(
 /* Remove memory block short cuts which are no longer needed.
  */
 void ioc_clean_mblk_shortcuts(
-    iocDynamicNetwork *dnetwork);
+    iocDynamicNetwork *dnetwork,
+    iocMemoryBlock *deleting_mblk);
 
 #endif
 #endif

@@ -1,10 +1,12 @@
 # Module: testapp.py
+from iocompython import Root, Signal
 import threading
 import time
 from testplayer import TestPlayer 
 
 class TestApp(object):
-    def __init__(self, network_name):
+    def __init__(self, root, network_name):
+        self.root = root
         self.network_name = network_name
         self.players = {}
 
@@ -15,11 +17,14 @@ class TestApp(object):
         self.network_name = network_name
 
     def run(self):
+        global root
         # Make sure that our player list is up to date
-        # player_list = network.list("mblk", "info", "device_name");
-        player_list = ['mydevice3']
+        player_list = root.list_devices(self.network_name)
+#        print(player_list)
+        # player_list = ['mydevice3']
 
-        if len(player_list) == 0:
+        if player_list == None:
+            print('network closed')
             return False
         
         # Add new players
@@ -40,9 +45,11 @@ def run_testapp(myapp):
     while (myapp.run()):
         time.sleep(0.3)
 
-def start(network_name):
+def start(proot, network_name):
+    global root
+    root = proot
     print("new: starting application for " + network_name)
-    myapp = TestApp(network_name)
+    myapp = TestApp(root, network_name)
     testAppThread = threading.Thread(target=run_testapp, args=(myapp,), daemon=True)
     testAppThread.start()
 

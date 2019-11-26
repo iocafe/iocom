@@ -1,6 +1,6 @@
 # Module: testplayer.py
-import threading
-import time
+# import threading
+# import time
 
 class TestPlayer(object):
     def __init__(self, player_name, network_name):

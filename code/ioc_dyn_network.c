@@ -253,6 +253,7 @@ void ioc_network_mblk_is_deleted(
     iocDynamicNetwork *dnetwork,
     iocMemoryBlock *mblk)
 {
+    iocRoot *root;
     iocDynamicSignal *dsignal, *prev_dsignal, *next_dsignal;
     os_int i;
 
@@ -283,7 +284,20 @@ void ioc_network_mblk_is_deleted(
 
     /* Remove memory block short cuts which are no longer needed.
      */
-    ioc_clean_mblk_shortcuts(dnetwork);
+    ioc_clean_mblk_shortcuts(dnetwork, mblk);
+
+osal_debug_error("HERE1");
+    /* If this was the last memory block of the network.
+     */
+    if (dnetwork->mlist_first == OS_NULL)
+    {
+        root = mblk->link.root;
+        if (root) if (root->droot)
+        {
+            ioc_remove_dynamic_network(root->droot, dnetwork);
+osal_debug_error("HERE2");
+        }
+    }
 }
 
 #endif

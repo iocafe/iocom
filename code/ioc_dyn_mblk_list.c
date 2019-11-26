@@ -120,16 +120,19 @@ iocMemoryBlock *ioc_find_mblk_shortcut(
  * LOCK MUST BE ON
  */
 void ioc_clean_mblk_shortcuts(
-    iocDynamicNetwork *dnetwork)
+    iocDynamicNetwork *dnetwork,
+    iocMemoryBlock *deleting_mblk)
 {
     iocMblkShortcut *item, *next_item;
+    iocMemoryBlock *mblk;
 
     for (item = dnetwork->mlist_first;
          item;
          item = next_item)
     {
         next_item = item->next;
-        if (item->mblk_handle.mblk == OS_NULL)
+        mblk = item->mblk_handle.mblk;
+       if (mblk == OS_NULL || mblk == deleting_mblk)
         {
             ioc_release_mblk_shortcut(dnetwork, item);
         }

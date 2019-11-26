@@ -27,6 +27,7 @@ static void Root_network_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
+    const os_char *arg,
     void *context);
 
 static void Root_do_callback(
@@ -216,6 +217,77 @@ static PyObject *Root_delete(
 }
 
 
+
+/**
+****************************************************************************************************
+  List devices in specific network.
+****************************************************************************************************
+*/
+static PyObject *Root_list_devices(
+    Root *self,
+    PyObject *args)
+{
+    iocRoot *root;
+    iocDynamicRoot *droot;
+    iocDynamicNetwork *dnetwork;
+    iocMblkShortcut *shortcut;
+    iocMemoryBlock *mblk;
+    PyObject *pydevname, *rval;
+    const char *network_name = OS_NULL;
+    os_char device_name[IOC_NAME_SZ + 8]; /* +8 for device number */
+    os_char nbuf[OSAL_NBUF_SZ];
+
+
+    root = self->root;
+    if (root == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "no IOCOM root object");
+        return NULL;
+    }
+    droot = root->droot;
+    if (droot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "no dynamic objects");
+        Py_RETURN_NONE;
+    }
+
+    if (!PyArg_ParseTuple(args, "s", &network_name))
+    {
+        PyErr_SetString(iocomError, "Network name is needed as an argument");
+        return NULL;
+    }
+
+    ioc_lock(root);
+    dnetwork = ioc_find_dynamic_network(droot, network_name);
+    if (dnetwork == OS_NULL)
+    {
+        ioc_unlock(root);
+        Py_RETURN_NONE;
+    }
+
+    rval = PyList_New(0);
+    for (shortcut = dnetwork->mlist_first;
+         shortcut;
+         shortcut = shortcut->next)
+    {
+        mblk = shortcut->mblk_handle.mblk;
+        if (mblk == OS_NULL) continue;
+        if (os_strcmp(mblk->mblk_name, "info")) continue;
+
+        os_strncpy(device_name, mblk->device_name, sizeof(device_name));
+        osal_int_to_str(nbuf, sizeof(nbuf), mblk->device_nr);
+        os_strncat(device_name, nbuf, sizeof(device_name));
+
+        pydevname = PyUnicode_FromString(device_name);
+        PyList_Append(rval, pydevname);
+        Py_DECREF(pydevname);
+    }
+
+    ioc_unlock(root);
+    return rval;
+}
+
+
 /**
 ****************************************************************************************************
 
@@ -345,7 +417,8 @@ static void Root_callback(
   @param   root Pointer to the root object.
   @param   dnetwork Pointer to dynamic network object which has just been connected or is
            about to be removed.
-  @param   event Either IOC_NEW_DYNAMIC_NETWORK or IOC_DYNAMIC_NETWORK_REMOVED.
+  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
+  @param   arg IOC_NEW_DEVICE: Device name with serial number
   @param   context Application specific pointer passed to this callback function.
 
   @return  None.
@@ -356,6 +429,7 @@ static void Root_network_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
+    const os_char *arg,
     void *context)
 {
     Root *pyroot;
@@ -363,14 +437,18 @@ static void Root_network_callback(
 
     switch (event)
     {
-        case IOC_NEW_DYNAMIC_NETWORK:
-            osal_trace2("IOC_NEW_DYNAMIC_NETWORK");
+        case IOC_NEW_NETWORK:
+            osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
 
             Root_do_callback(pyroot, "new_network", dnetwork->network_name);
             break;
 
-        case IOC_DYNAMIC_NETWORK_REMOVED:
-            osal_trace2("IOC_DYNAMIC_NETWORK_REMOVED");
+        case IOC_NEW_DEVICE:
+            osal_trace2_str("IOC_NEW_DEVICE ", arg);
+            break;
+
+        case IOC_NETWORK_DISCONNECTED:
+            osal_trace2("IOC_NETWORK_DISCONNECTED");
             break;
     }
 }
@@ -563,6 +641,7 @@ static PyMemberDef Root_members[] = {
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
     {"set_callback", (PyCFunction)Root_set_callback, METH_VARARGS, "Set IOCOM root callback function"},
+    {"list_devices", (PyCFunction)Root_list_devices, METH_VARARGS, "List devices in spefified network"},
     {"print", (PyCFunction)Root_print, METH_VARARGS, "Print internal state of IOCOM"},
     {NULL} /* Sentinel */
 };

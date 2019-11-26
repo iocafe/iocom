@@ -41,6 +41,7 @@ static void network_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
+    const os_char *arg,
     void *context);
 
 
@@ -241,7 +242,8 @@ static void info_callback(
   @param   root Pointer to the root object.
   @param   dnetwork Pointer to dynamic network object which has just been connected or is
            about to be removed.
-  @param   event Either IOC_NEW_DYNAMIC_NETWORK or IOC_DYNAMIC_NETWORK_REMOVED.
+  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
+  @param   arg IOC_NEW_DEVICE: Device name with serial number
   @param   context Application specific pointer passed to this callback function.
 
   @return  None.
@@ -252,17 +254,22 @@ static void network_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
+    const os_char *arg,
     void *context)
 {
     switch (event)
     {
-        case IOC_NEW_DYNAMIC_NETWORK:
-            osal_trace2("IOC_NEW_DYNAMIC_NETWORK");
+        case IOC_NEW_NETWORK:
+            osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
             frank_main->launch_app(dnetwork->network_name);
             break;
 
-        case IOC_DYNAMIC_NETWORK_REMOVED:
-            osal_trace2("IOC_DYNAMIC_NETWORK_REMOVED");
+        case IOC_NEW_DEVICE:
+            osal_trace2_str("IOC_NEW_DEVICE ", arg);
+            break;
+
+        case IOC_NETWORK_DISCONNECTED:
+            osal_trace2("IOC_NETWORK_DISCONNECTED");
             break;
     }
 }

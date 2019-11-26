@@ -60,7 +60,7 @@ void ioc_initialize_root(
   @brief Release communication root object.
   @anchor ioc_release_root
 
-  The ioc_release_root() function releases resources allocated for the root object. 
+  The ioc_release_root() function releases resources allocated for the root object.
 
   @param   root Pointer to the root structure.
   @return  None.

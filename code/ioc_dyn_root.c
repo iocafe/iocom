@@ -174,7 +174,7 @@ void ioc_remove_dynamic_network(
      */
     if (droot->func)
     {
-        droot->func(droot->root, dnetwork, IOC_DYNAMIC_NETWORK_REMOVED, droot->context);
+        droot->func(droot->root, dnetwork, IOC_NETWORK_DISCONNECTED, OS_NULL, droot->context);
     }
 
     /* Fond out who has pointer to dnetwork in prev_dn.
@@ -478,6 +478,8 @@ osalStatus ioc_add_dynamic_info(
     osalJsonIndex jindex;
     osalStatus s;
     iocAddDinfoState state;
+    os_char device_name[IOC_NAME_SZ + 8]; /* +8 for device number */
+    os_char nbuf[OSAL_NBUF_SZ];
 
     /* Get memory block pointer and start synchronization.
      */
@@ -501,16 +503,31 @@ osalStatus ioc_add_dynamic_info(
         state.new_network = OS_TRUE;
     }
 
-    // ioc_add_mblk_to_network(); ???
-
     s = ioc_dinfo_process_block(droot, &state, "", &jindex);
     if (s) goto getout;
 
-    /* If new network was created and we have application callback function.
+    /* Add info block to dynamic shortcuts (if not somehow already there)
      */
-    if (state.new_network && droot->func)
+    if (ioc_find_mblk_shortcut(state.dnetwork, mblk->mblk_name,
+        mblk->device_name, mblk->device_nr) == OS_NULL)
     {
-        droot->func(root, state.dnetwork, IOC_NEW_DYNAMIC_NETWORK, droot->context);
+        ioc_add_mblk_shortcut(state.dnetwork, mblk);
+    }
+
+    /* If we have application callback function: Informn application about new dynamic
+       networks and devices.
+     */
+    if (droot->func)
+    {
+        if (state.new_network)
+        {
+            droot->func(root, state.dnetwork, IOC_NEW_NETWORK, OS_NULL, droot->context);
+        }
+
+        os_strncpy(device_name, mblk->device_name, sizeof(device_name));
+        osal_int_to_str(nbuf, sizeof(nbuf), mblk->device_nr);
+        os_strncat(device_name, nbuf, sizeof(device_name));
+        droot->func(root, state.dnetwork, IOC_NEW_DEVICE, device_name, droot->context);
     }
 
     /* End syncronization and return.

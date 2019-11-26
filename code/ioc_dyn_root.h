@@ -36,8 +36,9 @@ struct iocDynamicNetwork;
 */
 typedef enum
 {
-    IOC_NEW_DYNAMIC_NETWORK,
-    IOC_DYNAMIC_NETWORK_REMOVED
+    IOC_NEW_NETWORK,
+    IOC_NEW_DEVICE,
+    IOC_NETWORK_DISCONNECTED
 }
 iocDynamicNetworkEvent;
 
@@ -51,6 +52,7 @@ typedef void ioc_dnetwork_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
     iocDynamicNetworkEvent event,
+    const os_char *arg,
     void *context);
 
 
@@ -80,7 +82,6 @@ typedef struct iocDynamicRoot
     void *context;
 }
 iocDynamicRoot;
-
 
 
 /**
