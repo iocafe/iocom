@@ -13,9 +13,9 @@ def main():
     hor = Signal(root, "hor", "pekkanet")
 
     while (ioterminal.run(root)):
-        time.sleep(0.5) 
+        time.sleep(0.01) 
         seven_segment.set(1, 0, 1, 0, 1, 0, 1)
-        print(seven_segment.get())
+#        print(seven_segment.get())
         print(hor.get())
 
     seven_segment.delete()

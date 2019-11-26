@@ -53,8 +53,11 @@ def main():
 
     hor = Signal(root, "hor", "pekkanet")
 
+    i = 1
+
     while (ioterminal.run(root)):
-        hor.set(11)
+        hor.set(i)
+        i = i + 1
         time.sleep(0.01) 
 
     root.delete()
