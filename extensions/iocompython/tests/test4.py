@@ -29,7 +29,7 @@ def main():
         time.sleep(0.1) 
         seven_segment.set(1, 0, 1, 0, 1, 0, 1)
 
-        coords.set(x, 10)
+        coords.set(1, x, x+30, 45, 1)
         x = x + 1
         if  x > 100:
             x = 0
