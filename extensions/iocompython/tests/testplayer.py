@@ -24,10 +24,9 @@ class TestPlayer(object):
         if state_bits & 2:
             self.rotation = data[0]
             self.force_x = data[1]
-            self.force_x = data[2]
+            self.force_y = data[2]
             self.engine_visible = data[3]
             self.resurrect_me = data[4]
-            print(data)
 
         dt = 0.1
         self.velocity_x += self.force_x * dt
