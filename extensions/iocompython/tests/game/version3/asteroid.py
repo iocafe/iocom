@@ -1,5 +1,42 @@
 import pyglet, random, math
 from game import load, player, resources
+from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
+
+
+signal_conf = ('{'
+  '"mblk": ['
+  '{'
+    '"name": "exp",'
+    '"groups": ['
+       '{'
+         '"name": "control",'
+         '"signals": ['
+           '{"name": "ver", "type": "short"},'
+           '{"name": "hor"}'
+         ']'
+       '}'
+    ']'
+  '},'
+  '{'
+    '"name": "imp",'
+    '"groups": ['
+      '{'
+        '"name": "world",'
+        '"signals": ['
+           '{"name": "", "type": "int", "array": 8}'
+         ']'
+      '},'
+      '{'
+        '"name": "me",'
+        '"signals": ['
+          '{"name": "x", "type": "short"},'
+          '{"name": "y"}'
+        ']'
+      '}'
+    ']'
+  '}'
+  ']'
+'}')
 
 # Set up a window
 game_window = pyglet.window.Window(800, 600)
@@ -61,8 +98,20 @@ def update(dt):
 
 
 if __name__ == "__main__":
+    global root, exp, imp
+
+    root = Root('mygame', device_nr=4, network_name='pekkanet')
+    exp = MemoryBlock(root, 'source,auto', 'exp', nbytes=256)
+    imp = MemoryBlock(root, 'target,auto', 'imp', nbytes=256)
+    data = json2bin(signal_conf)
+    info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
+    info.publish(data)
+
+    connection = Connection(root, "192.168.1.220", "socket")
+
     # Update the game 120 times per second
     pyglet.clock.schedule_interval(update, 1 / 120.0)
 
     # Tell pyglet to do its thing
     pyglet.app.run()
+
