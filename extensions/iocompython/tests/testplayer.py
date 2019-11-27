@@ -1,7 +1,5 @@
 # Module: testplayer.py
 from iocompython import Root, Signal
-# import threading
-# import time
 
 class TestPlayer(object):
     def __init__(self, root, player_name, network_name):

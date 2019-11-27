@@ -286,7 +286,6 @@ void ioc_network_mblk_is_deleted(
      */
     ioc_clean_mblk_shortcuts(dnetwork, mblk);
 
-osal_debug_error("HERE1");
     /* If this was the last memory block of the network.
      */
     if (dnetwork->mlist_first == OS_NULL)
@@ -295,7 +294,6 @@ osal_debug_error("HERE1");
         if (root) if (root->droot)
         {
             ioc_remove_dynamic_network(root->droot, dnetwork);
-osal_debug_error("HERE2");
         }
     }
 }
