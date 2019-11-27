@@ -116,7 +116,7 @@ def keyboard_input(dt):
     if key_handler[key.SPACE]:
         resurrect_me = True
 
-    userctrl.set( (1, 1, 1, 0, 0, my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me) )
+    userctrl.set( (my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me) )
      
 def set_player(player_nr, data):
     ix = (player_nr-1) * data_vector_n
