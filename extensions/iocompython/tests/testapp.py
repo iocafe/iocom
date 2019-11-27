@@ -29,7 +29,7 @@ class TestApp(object):
             p = self.players.get(player_name)
             if p == None:
                 print ("new player " + player_name)
-                self.players[player_name] = TestPlayer(player_name, self.network_name)
+                self.players[player_name] = TestPlayer(self.root, player_name, self.network_name)
 
         # Remove players who dropped off
         remove_these = []
@@ -40,6 +40,10 @@ class TestApp(object):
 
         for player_name in remove_these:
             self.players.pop(player_name)
+
+        test_players = self.players.values()
+        for tplayer in test_players:
+            tplayer.run()
 
         return True
 

@@ -17,7 +17,6 @@ def main():
 
     network_name = 'pekkanet'
     seven_segment = Signal(root, "seven_segment", network_name)
-    hor = Signal(root, "hor", network_name)
     coords = Signal(root, "coords", network_name)
     x = 10;
 
@@ -34,12 +33,7 @@ def main():
         if  x > 100:
             x = 0
 #        print(root.list_devices("pekkanet"))
-
 #        print(seven_segment.get())
-#        print(hor.get())
-
-#    seven_segment.delete()
-#    hor.delete()
 
     root.delete()
 
