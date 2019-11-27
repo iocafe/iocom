@@ -3,7 +3,6 @@ from pyglet.window import key
 from game import load, player, resources
 from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
 
-
 signal_conf = ('{'
   '"mblk": ['
   '{'
@@ -33,7 +32,7 @@ signal_conf = ('{'
 
 
 # Dimension 40 in JSON should match (max_players+max_asteroids)*data_vector_n
-my_player_nr = time.time_ns() % 10000  # Bad way to make unique device number (not really unique)
+my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device number (not really unique)
 max_players = 5 
 max_asteroids = 3
 data_vector_n = 5
@@ -70,6 +69,9 @@ asteroids = load.asteroids(myworld, max_asteroids, player_ship.position, main_ba
 # Store all objects that update each frame in a list
 game_objects = [player_ship] + asteroids
 
+# Store all objects that update each frame in a list
+space_ships = {}
+
 # Let pyglet handle keyboard events for us
 key_handler = key.KeyStateHandler()
 
@@ -86,7 +88,6 @@ my_force_x = 0.0
 my_force_y = 0
 my_engine_visible = False
 resurrect_me = False
-
 
 @game_window.event
 def on_draw():
@@ -118,13 +119,13 @@ def keyboard_input(dt):
 
     userctrl.set( (my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me) )
      
-def set_player(player_nr, data):
-    ix = (player_nr-1) * data_vector_n + 1
-    if player_nr == 0:
-        player_ship.mysetplayer(data[ix:ix+2], my_rotation, my_engine_visible);
+def set_player(ship, player_ix0, data):
+    ix = player_ix0 * data_vector_n + 1
+    if player_ix0 == 0:
+        ship.mysetplayer(data[ix], data[ix+1], data[ix+2], my_rotation, my_engine_visible);
 
     else:
-        player_ship.mysetplayer(data[ix:ix+4]);
+        ship.mysetplayer(data[ix], data[ix+1], data[ix+2], data[ix+3], data[ix+4]);
 
 def update(dt):
     keyboard_input(dt)
@@ -133,24 +134,32 @@ def update(dt):
 
     if state_bits & 2:
         nro_players = data[0]
-        set_player(0, data)
 
-    for obj in game_objects:
-        obj.update(dt)
+        for player_ix0 in range(nro_players): 
+            ship = space_ships.get(str(player_ix0), None)
+            if ship == None:
+                ship = player.Player(myworld=myworld, x=400, y=300, batch=main_batch)
+                space_ships[str(player_ix0)] = ship
+
+            set_player(ship, player_ix0, data)
+            ship.update(dt)
+
+    #for obj in game_objects:
+    #    obj.update(dt)
 
     # To avoid handling collisions twice, we employ nested loops of ranges.
     # This method also avoids the problem of colliding an object with itself.
-    for i in range(len(game_objects)):
-        for j in range(i + 1, len(game_objects)):
+    #for i in range(len(game_objects)):
+    #    for j in range(i + 1, len(game_objects)):
 
-            obj_1 = game_objects[i]
-            obj_2 = game_objects[j]
+    #        obj_1 = game_objects[i]
+    #        obj_2 = game_objects[j]
 
             # Make sure the objects haven't already been killed
-            if not obj_1.dead and not obj_2.dead:
-                if obj_1.collides_with(obj_2):
-                    obj_1.handle_collision_with(obj_2)
-                    obj_2.handle_collision_with(obj_1)
+    #        if not obj_1.dead and not obj_2.dead:
+    #            if obj_1.collides_with(obj_2):
+    #                obj_1.handle_collision_with(obj_2)
+    #                obj_2.handle_collision_with(obj_1)
 
     # Get rid of dead objects
     #for to_remove in [obj for obj in game_objects if obj.dead]:
