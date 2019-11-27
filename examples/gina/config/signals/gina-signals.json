@@ -23,6 +23,7 @@
        {
          "name": "dev_ctrl_outputs",
          "signals": [
+           {"name": "testfloat", "addr": 0, "type": "float", "array": 5},
            {"name": "A", "type": "boolean"},
            {"name": "B"},
            {"name": "C"},

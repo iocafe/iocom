@@ -10,6 +10,7 @@ typedef struct gina_t
     iocSignal dip_switch_4;
     iocSignal touch_sensor;
     iocSignal potentiometer;
+    iocSignal testfloat;
     iocSignal A;
     iocSignal B;
     iocSignal C;
@@ -33,12 +34,13 @@ typedef struct gina_t
 }
 gina_t;
 
-#define GINA_EXP_MBLK_SZ 44
+#define GINA_EXP_MBLK_SZ 36
 #define GINA_IMP_MBLK_SZ 32
 
 extern const gina_t gina;
 extern const iocDeviceHdr gina_hdr;
 
+#define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 
 #ifndef IOBOARD_DEVICE_NAME

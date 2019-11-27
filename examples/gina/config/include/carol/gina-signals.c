@@ -2,19 +2,20 @@
 const struct gina_t gina = 
 {
   {
-    {"exp", &ioboard_export, 12, GINA_EXP_MBLK_SZ, (iocSignal*)&gina.exp.dip_switch_3},
+    {"exp", &ioboard_export, 13, GINA_EXP_MBLK_SZ, (iocSignal*)&gina.exp.dip_switch_3},
     {30, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.inputs.dip_switch_3}, /* dip_switch_3 */
     {31, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.inputs.dip_switch_4}, /* dip_switch_4 */
     {32, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.inputs.touch_sensor}, /* touch_sensor */
     {33, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_export, &pins.analog_inputs.potentiometer}, /* potentiometer */
-    {36, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.A}, /* A */
-    {37, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.B}, /* B */
-    {38, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.C}, /* C */
-    {39, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.D}, /* D */
-    {40, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.E}, /* E */
-    {41, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.F}, /* F */
-    {42, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.G}, /* G */
-    {43, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.H} /* H */
+    {0, 5, OS_FLOAT, &ioboard_export, OS_NULL}, /* testfloat */
+    {21, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.A}, /* A */
+    {22, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.B}, /* B */
+    {23, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.C}, /* C */
+    {24, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.D}, /* D */
+    {25, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.E}, /* E */
+    {26, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.F}, /* F */
+    {27, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.G}, /* G */
+    {28, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_export, &pins.outputs.H} /* H */
   },
 
   {

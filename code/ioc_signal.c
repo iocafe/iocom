@@ -897,7 +897,7 @@ os_char ioc_movex_array_signal(
         else
         {
             *(p++) = state_bits;
-            ioc_byte_ordered_copy(p, array, n, type_sz);
+            ioc_byte_ordered_copy(p, array, n * type_sz, type_sz);
             ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n * type_sz) /* no -1, we need also state byte */);
         }
     }
@@ -942,7 +942,7 @@ os_char ioc_movex_array_signal(
         }
         else
         {
-            ioc_byte_ordered_copy(array, p, n, type_sz);
+            ioc_byte_ordered_copy(array, p, n * type_sz, type_sz);
         }
     }
 
