@@ -13,8 +13,8 @@ class TestPlayer(object):
         self.force_y = 0.0
         self.velocity_x = 0.3
         self.velocity_y = 0.05
-        self.x = 0.1
-        self.y = 0.01
+        self.x = 100.0
+        self.y = 100.0
         self.rotation = 0
         self.engine_visible = 0
         self.resurrect_me = 0
@@ -27,6 +27,7 @@ class TestPlayer(object):
             self.force_x = data[2]
             self.engine_visible = data[3]
             self.resurrect_me = data[4]
+            print(data)
 
         dt = 0.1
         self.velocity_x += self.force_x * dt

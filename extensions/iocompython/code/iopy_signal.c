@@ -397,7 +397,7 @@ static void Signal_store_double(
                 break;
 
             case OS_FLOAT:
-                ((os_float*)p)[i] = os_round_long(x);
+                ((os_float*)p)[i] = (os_float)x;
                 break;
 
             case OS_DOUBLE:
