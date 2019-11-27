@@ -2,7 +2,6 @@ from iocompython import Root, EndPoint, Signal
 import ioterminal
 import testapp
 import time
-
 import queue
 
 def main():
@@ -17,7 +16,7 @@ def main():
 
     network_name = 'pekkanet'
 #    seven_segment = Signal(root, "seven_segment", network_name)
-    coords = Signal(root, "coords", network_name)
+#    coords = Signal(root, "coords", network_name)
 #    x = 10;
 
     while (ioterminal.run(root)):
@@ -25,7 +24,7 @@ def main():
             network_name = callback_queue.get()
             testapp.start(root, network_name)
 
-#        time.sleep(0.1) 
+        time.sleep(0.3) 
 #        seven_segment.set(1, 0, 1, 0, 1, 0, 1)
 
 #        coords.set(1, x, x+30, 45, 1)

@@ -42,14 +42,19 @@ class TestApp(object):
             self.players.pop(player_name)
 
         test_players = self.players.values()
+        coords = []
         for tplayer in test_players:
-            tplayer.run()
+            coords += tplayer.run()
+
+        print(coords)
+        for tplayer in test_players:
+            tplayer.set_coords(coords)
 
         return True
 
 def run_testapp(myapp):
     while (myapp.run()):
-        time.sleep(0.3)
+        time.sleep(0.03)
 
 def start(proot, network_name):
     global root
