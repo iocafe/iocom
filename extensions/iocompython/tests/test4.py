@@ -18,7 +18,8 @@ def main():
     network_name = 'pekkanet'
     seven_segment = Signal(root, "seven_segment", network_name)
     hor = Signal(root, "hor", network_name)
-
+    coords = Signal(root, "coords", network_name)
+    x = 10;
 
     while (ioterminal.run(root)):
         if callback_queue.qsize() > 0:
@@ -27,6 +28,11 @@ def main():
 
         time.sleep(0.1) 
         seven_segment.set(1, 0, 1, 0, 1, 0, 1)
+
+        coords.set(x, 10)
+        x = x + 1
+        if  x > 100:
+            x = 0
 #        print(root.list_devices("pekkanet"))
 
 #        print(seven_segment.get())
