@@ -33,12 +33,12 @@ signal_conf = ('{'
 
 
 # Dimension 40 in JSON should match (max_players+max_asteroids)*data_vector_n
-my_player_nr = 0 
+my_player_nr = 1 
 max_players = 5 
 max_asteroids = 3
 data_vector_n = 5
 
-root = Root('mygame', device_nr=4, network_name='pekkanet')
+root = Root('mygame', device_nr=my_player_nr, network_name='pekkanet')
 exp = MemoryBlock(root, 'source,auto', 'exp', nbytes=24)
 imp = MemoryBlock(root, 'target,auto', 'imp', nbytes=2*(max_players+max_asteroids)*data_vector_n + 1)
 data = json2bin(signal_conf)
@@ -63,7 +63,6 @@ player_ship = player.Player(myworld=myworld, x=400, y=300, batch=main_batch)
 
 # Make three sprites to represent remaining lives
 player_lives = load.player_lives(2, main_batch)
-
 
 # Make three asteroids so we have something to shoot at 
 asteroids = load.asteroids(myworld, max_asteroids, player_ship.position, main_batch)
@@ -117,10 +116,10 @@ def keyboard_input(dt):
     if key_handler[key.SPACE]:
         resurrect_me = True
 
-    userctrl.set(my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me)
+    userctrl.set( (1, 2, my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me) )
      
 def set_player(player_nr, data):
-    ix = player_nr * data_vector_n
+    ix = (player_nr-1) * data_vector_n
     if player_nr == my_player_nr:
         player_ship.mysetplayer(data[ix], data[ix+1], data[ix+2], my_rotation, my_engine_visible);
 
