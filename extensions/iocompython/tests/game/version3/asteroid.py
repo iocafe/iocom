@@ -1,4 +1,4 @@
-import pyglet, random, math
+import pyglet, random, math, time
 from pyglet.window import key
 from game import load, player, resources
 from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
@@ -33,14 +33,14 @@ signal_conf = ('{'
 
 
 # Dimension 40 in JSON should match (max_players+max_asteroids)*data_vector_n
-my_player_nr = 1 
+my_player_nr = time.time_ns() % 10000  # Bad way to make unique device number (not really unique)
 max_players = 5 
 max_asteroids = 3
 data_vector_n = 5
 
 root = Root('mygame', device_nr=my_player_nr, network_name='pekkanet')
 exp = MemoryBlock(root, 'source,auto', 'exp', nbytes=24)
-imp = MemoryBlock(root, 'target,auto', 'imp', nbytes=2*(max_players+max_asteroids)*data_vector_n + 1)
+imp = MemoryBlock(root, 'target,auto', 'imp', nbytes=2*(max_players+max_asteroids)*data_vector_n + 3)
 data = json2bin(signal_conf)
 info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
 info.publish(data)
@@ -119,12 +119,12 @@ def keyboard_input(dt):
     userctrl.set( (my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me) )
      
 def set_player(player_nr, data):
-    ix = (player_nr-1) * data_vector_n
-    if player_nr == my_player_nr:
-        player_ship.mysetplayer(data[ix], data[ix+1], data[ix+2], my_rotation, my_engine_visible);
+    ix = (player_nr-1) * data_vector_n + 1
+    if player_nr == 0:
+        player_ship.mysetplayer(data[ix:ix+2], my_rotation, my_engine_visible);
 
     else:
-        player_ship.mysetplayer(data[ix], data[ix+1], data[ix+2], data[ix+3], data[ix+4]);
+        player_ship.mysetplayer(data[ix:ix+4]);
 
 def update(dt):
     keyboard_input(dt)
@@ -132,7 +132,8 @@ def update(dt):
     state_bits, data = myworld.get()
 
     if state_bits & 2:
-        set_player(my_player_nr, data)
+        nro_players = data[0]
+        set_player(0, data)
 
     for obj in game_objects:
         obj.update(dt)
