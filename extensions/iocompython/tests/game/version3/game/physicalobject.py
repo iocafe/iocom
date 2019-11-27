@@ -1,25 +1,41 @@
 import pyglet
 from . import util
+# from iocompython import Root, Signal
 
 
 class PhysicalObject(pyglet.sprite.Sprite):
     """A sprite with physical properties such as velocity"""
 
     def __init__(self, *args, **kwargs):
+        self.myworld = kwargs.pop('myworld')
         super(PhysicalObject, self).__init__(*args, **kwargs)
 
         # In addition to position, we have velocity
-        self.velocity_x, self.velocity_y = 0.0, 0.0
+        self.x = 0
+        self.y = 0
 
         # And a flag to remove this object from the game_object list
         self.dead = False
 
+    def myset(self, visible, x, y, rotation):
+        self.dead = not visible
+        self.x = x
+        self.y = y
+        self.rotation = rotation
+
     def update(self, dt):
+ #       global mycoords
         """This method should be called every frame."""
 
         # Update position according to velocity and time
-        self.x += self.velocity_x * dt
-        self.y += self.velocity_y * dt
+        # self.x += self.velocity_x * dt
+        # self.y += self.velocity_y * dt
+
+#        cc = self.myworld.get()
+#        if cc != None:
+#            if cc[0] & 2:
+#                dcc = cc[1]
+#                self.x = dcc[0]
 
         # Wrap around the screen if necessary
         self.check_bounds()
