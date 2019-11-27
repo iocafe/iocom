@@ -813,6 +813,7 @@ static PyObject *Signal_get_array(
                 break;
 
             default:
+                PyList_SetItem(list, i, Py_BuildValue("i", (int)0));
                 break;
         }
     }
@@ -897,7 +898,10 @@ static PyObject *Signal_get(
     if (rval) return rval;
 
 getout:
-    Py_RETURN_NONE;
+    rval = PyList_New(2);
+    PyList_SetItem(rval, 0, Py_BuildValue("i", (int)0));
+    PyList_SetItem(rval, 1, Py_BuildValue("i", (int)0));
+    return rval;
 }
 
 
