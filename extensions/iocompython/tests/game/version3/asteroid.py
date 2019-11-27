@@ -12,8 +12,7 @@ signal_conf = ('{'
        '{'
          '"name": "control",'
          '"signals": ['
-           '{"name": "ver", "type": "short"},'
-           '{"name": "hor"}'
+           '{"name": "userctrl", "type": "float", "array": 5}'
          ']'
        '}'
     ']'
@@ -24,15 +23,8 @@ signal_conf = ('{'
       '{'
         '"name": "world",'
         '"signals": ['
-           '{"name": "coords", "type": "short", "array": 8}'
+           '{"name": "coords", "type": "short", "array": 40}'
          ']'
-      '},'
-      '{'
-        '"name": "me",'
-        '"signals": ['
-          '{"name": "x", "type": "short"},'
-          '{"name": "y"}'
-        ']'
       '}'
     ']'
   '}'
@@ -40,14 +32,21 @@ signal_conf = ('{'
 '}')
 
 
+# Dimension 40 in JSON should match (max_players+max_asteroids)*data_vector_n
+my_player_nr = 0 
+max_players = 5 
+max_asteroids = 3
+data_vector_n = 5
+
 root = Root('mygame', device_nr=4, network_name='pekkanet')
-exp = MemoryBlock(root, 'source,auto', 'exp', nbytes=256)
-imp = MemoryBlock(root, 'target,auto', 'imp', nbytes=256)
+exp = MemoryBlock(root, 'source,auto', 'exp', nbytes=24)
+imp = MemoryBlock(root, 'target,auto', 'imp', nbytes=2*(max_players+max_asteroids)*data_vector_n + 1)
 data = json2bin(signal_conf)
 info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
 info.publish(data)
 connection = Connection(root, "192.168.1.220", "socket")
 myworld = Signal(root, "coords", "pekkanet")
+userctrl = Signal(root, "userctrl", "pekkanet")
 
 # Set up a window
 game_window = pyglet.window.Window(1200, 800)
@@ -65,8 +64,9 @@ player_ship = player.Player(myworld=myworld, x=400, y=300, batch=main_batch)
 # Make three sprites to represent remaining lives
 player_lives = load.player_lives(2, main_batch)
 
+
 # Make three asteroids so we have something to shoot at 
-asteroids = load.asteroids(myworld, 3, player_ship.position, main_batch)
+asteroids = load.asteroids(myworld, max_asteroids, player_ship.position, main_batch)
 
 # Store all objects that update each frame in a list
 game_objects = [player_ship] + asteroids
@@ -88,6 +88,7 @@ my_force_y = 0
 my_engine_visible = False
 resurrect_me = False
 
+
 @game_window.event
 def on_draw():
     game_window.clear()
@@ -96,7 +97,7 @@ def on_draw():
 def keyboard_input(dt):
     global resurrect_me, my_rotation, my_force_x, my_force_y
     global my_engine_visible, my_rotate_speed, my_thrust
-    global key_handler
+    global key_handler, userctrl
 
     if key_handler[key.LEFT]:
         my_rotation -= my_rotate_speed * dt
@@ -116,14 +117,23 @@ def keyboard_input(dt):
     if key_handler[key.SPACE]:
         resurrect_me = True
 
+    userctrl.set(my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me)
+     
+def set_player(player_nr, data):
+    ix = player_nr * data_vector_n
+    if player_nr == my_player_nr:
+        player_ship.mysetplayer(data[ix], data[ix+1], data[ix+2], my_rotation, my_engine_visible);
+
+    else:
+        player_ship.mysetplayer(data[ix], data[ix+1], data[ix+2], data[ix+3], data[ix+4]);
+
 def update(dt):
     keyboard_input(dt)
 
-    state_bits, d = myworld.get()
-    print (state_bits)
-    print (d)
+    state_bits, data = myworld.get()
 
-    player_ship.mysetplayer(True, 100, 100, my_rotation, my_engine_visible);
+    if state_bits & 2:
+        set_player(my_player_nr, data)
 
     for obj in game_objects:
         obj.update(dt)
@@ -143,12 +153,12 @@ def update(dt):
                     obj_2.handle_collision_with(obj_1)
 
     # Get rid of dead objects
-    for to_remove in [obj for obj in game_objects if obj.dead]:
+    #for to_remove in [obj for obj in game_objects if obj.dead]:
         # Remove the object from any batches it is a member of
-        to_remove.delete()
+    #    to_remove.delete()
 
         # Remove the object from our list
-        game_objects.remove(to_remove)
+    #    game_objects.remove(to_remove)
 
 
 if __name__ == "__main__":
