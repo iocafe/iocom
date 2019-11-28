@@ -38,7 +38,7 @@ max_asteroids = 3
 data_vector_n = 5
 
 root = Root('mygame', device_nr=my_player_nr, network_name='pekkanet')
-exp = MemoryBlock(root, 'source,auto', 'exp', nbytes=24)
+exp = MemoryBlock(root, 'source,auto', 'exp', nbytes=32)
 imp = MemoryBlock(root, 'target,auto', 'imp', nbytes=2*(max_players+max_asteroids)*data_vector_n + 3)
 data = json2bin(signal_conf)
 info = MemoryBlock(root, 'source,auto', 'info', nbytes=len(data))
