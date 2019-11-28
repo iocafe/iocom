@@ -234,10 +234,7 @@ void ioc_mbinfo_received(
     iocHandle handle;
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf, *next_tbuf;
-    os_boolean device_name_matches, device_nr_matches;
-    os_boolean network_matches, mblk_matches;
     os_short source_flag, target_flag;
-
 
 #if IOC_DYNAMIC_MBLK_CODE
     iocMemoryBlockParams mbprm;
@@ -299,23 +296,14 @@ void ioc_mbinfo_received(
            Notice that accepting empty names needs to be treated the same way for
            both ends.
          */
-        mblk_matches = !os_strcmp(info->mblk_name, mblk->mblk_name);
-        device_name_matches = !os_strcmp(info->device_name, mblk->device_name)
-            || mblk->device_name[0] =='\0' || info->device_name[0] =='\0';
-        device_nr_matches = info->device_nr == mblk->device_nr
-            || mblk->device_nr == 0 || info->device_nr == 0;
-        network_matches = !os_strcmp(info->network_name, mblk->network_name)  /* HERE WE ARE RELAXED ABOUT NETWORK NAME MATCH, THIS IS A SECURITY CONCERN. WE MAY NOT WANT TO EXECPT EMPTY BUT IN TESTERS, ETC */
-            || mblk->network_name[0] =='\0' || info->network_name[0] =='\0';
+        if (info->device_nr != mblk->device_nr) goto goon;
+        if (os_strcmp(info->mblk_name, mblk->mblk_name)) goto goon;
+        if (os_strcmp(info->device_name, mblk->device_name)) goto goon;
+        if (os_strcmp(info->network_name, mblk->network_name)) goto goon;
 
-        if (device_name_matches &&
-            device_nr_matches &&
-            network_matches &&
-            mblk_matches)
-        {
-            osal_trace3("Memory block matched");
-            break;
-        }
-
+        osal_trace3("Memory block matched");
+        break;
+goon:
         mblk = mblk->link.next;
     }
 
@@ -380,10 +368,10 @@ void ioc_mbinfo_received(
 
         /* If memory block has no name, copy name from info (if there is one).
          */
-        if (mblk->mblk_name[0] == '\0')
+        /* if (mblk->mblk_name[0] == '\0')
         {
             os_strncpy(mblk->mblk_name, info->mblk_name, IOC_NAME_SZ);
-        }
+        } */
 
         /* Create source buffer to link the connection and memory block together.
          */
@@ -441,10 +429,10 @@ skip1:
 
         /* If memory block has no name, copy name from info (if there is one).
          */
-        if (mblk->mblk_name[0] == '\0')
+        /* if (mblk->mblk_name[0] == '\0')
         {
             os_strncpy(mblk->mblk_name, info->mblk_name, IOC_NAME_SZ);
-        }
+        } */
 
         /* Create source buffer to link the connection and memory block together.
          */
