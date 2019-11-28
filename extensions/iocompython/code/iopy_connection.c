@@ -151,10 +151,15 @@ static PyObject *Connection_new(
         goto failed;
     }
 
-    /* if (os_strstr(flags, "listen", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "upward", OSAL_STRING_SEARCH_ITEM_NAME))
     {
-        prm.flags |= 0;
-    } */
+        prm.flags |= IOC_CONNECT_UPWARDS;
+    }
+    else if (os_strstr(flags, "downward", OSAL_STRING_SEARCH_ITEM_NAME) == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "Either downward or upward flag must be given");
+        goto failed;
+    }
 
     self->con = ioc_initialize_connection(OS_NULL, iocroot);
     self->status = (int)ioc_connect(self->con, &prm);

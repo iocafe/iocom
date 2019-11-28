@@ -43,7 +43,7 @@ imp = MemoryBlock(root, 'downward,auto', 'imp', nbytes=2*(max_players+max_astero
 data = json2bin(signal_conf)
 info = MemoryBlock(root, 'upward,auto', 'info', nbytes=len(data))
 info.publish(data)
-connection = Connection(root, "192.168.1.220", "socket")
+connection = Connection(root, "192.168.1.220", "socket,upward")
 myworld = Signal(root, "coords", "pekkanet")
 userctrl = Signal(root, "userctrl", "pekkanet")
 
