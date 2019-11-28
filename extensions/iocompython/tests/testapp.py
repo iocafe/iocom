@@ -42,11 +42,10 @@ class TestApp(object):
             self.players.pop(player_name)
 
         test_players = self.players.values()
-        coords = []
+        coords = [len(test_players)]
         for tplayer in test_players:
             coords += tplayer.run()
 
-        print(coords)
         for tplayer in test_players:
             tplayer.set_coords(coords)
 
