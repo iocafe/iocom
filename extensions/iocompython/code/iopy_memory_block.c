@@ -103,7 +103,7 @@ static PyObject *MemoryBlock_new(
     }
     if (prm.flags == 0)
     {
-        PyErr_SetString(iocomError, "Memory block must have either target or source flag");
+        PyErr_SetString(iocomError, "Memory block must have either downward or upward flag");
         goto failed;
     }
     if (os_strstr(flags, "auto", OSAL_STRING_SEARCH_ITEM_NAME))
