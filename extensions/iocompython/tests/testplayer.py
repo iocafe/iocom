@@ -34,6 +34,8 @@ class TestPlayer(object):
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
         
+        print(state_bits, data, self.player_name)
+
         visible = 1
         return (visible, self.x, self.y, self.rotation, self.engine_visible)
 

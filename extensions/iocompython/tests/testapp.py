@@ -44,7 +44,9 @@ class TestApp(object):
         test_players = self.players.values()
         coords = [len(test_players)]
         for tplayer in test_players:
-            coords += tplayer.run()
+            coords.append(tplayer.run())
+
+#        print (coords)
 
         for tplayer in test_players:
             tplayer.set_coords(coords)

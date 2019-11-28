@@ -105,8 +105,14 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     {
         if (!os_strcmp(signal_name, dsignal->signal_name))
         {
-            return dsignal;
+            if (!os_strcmp(mblk_name, dsignal->mblk_name) &&
+                !os_strcmp(device_name, dsignal->device_name) &&
+                device_nr == dsignal->device_nr)
+            {
+                return dsignal;
+            }
         }
+
         prev_dsignal = dsignal;
     }
 
