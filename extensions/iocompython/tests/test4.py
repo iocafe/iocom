@@ -45,4 +45,3 @@ def root_callback(event_text, arg_text):
 
 if (__name__ == '__main__'): 
     main()
-
