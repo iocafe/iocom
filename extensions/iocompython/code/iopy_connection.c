@@ -102,10 +102,15 @@ static PyObject *Connection_new(
         goto failed;
     }
 
+    if (os_strstr(flags, "dynamic", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        prm.flags |= IOC_DYNAMIC_MBLKS;
+    }
+
     if (os_strstr(flags, "tls", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_TLS_SUPPORT
-        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD;
         prm.iface = OSAL_TLS_IFACE;
 #else
         PyErr_SetString(iocomError, "TLS support if not included in eosal build");
@@ -116,7 +121,7 @@ static PyObject *Connection_new(
     else if (os_strstr(flags, "socket", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_SOCKET_SUPPORT
-        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD;
         prm.iface = OSAL_SOCKET_IFACE;
 #else
         PyErr_SetString(iocomError, "Socket support if not included in eosal build");
@@ -127,7 +132,7 @@ static PyObject *Connection_new(
     else if (os_strstr(flags, "bluetooth", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_BLUETOOTH_SUPPORT
-        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD;
         prm.iface = OSAL_BLUETOOTH_IFACE;
 #else
         PyErr_SetString(iocomError, "Bluetooth support if not included in eosal build");
@@ -138,7 +143,7 @@ static PyObject *Connection_new(
     else if (os_strstr(flags, "serial", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_SERIAL_SUPPORT
-        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        prm.flags |= IOC_SERIAL|IOC_CREATE_THREAD;
         prm.iface = OSAL_SERIAL_IFACE;
 #else
         PyErr_SetString(iocomError, "Serial port support if not included in eosal build");

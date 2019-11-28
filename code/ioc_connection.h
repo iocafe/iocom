@@ -89,6 +89,7 @@
 /** Flags for ioc_connect() and ioc_listen() functions. Bit fields.
  - IOC_SERIAL_LISTENER Listening end of serial communication. Effects to line negotiation
  - IOC_CONNECT_UPWARDS Connect upward to upper level of IO device hierarchy.
+ - IOC_DYNAMIC_MBLKS Dynamically create dynamic memory blocks as needed.
  */
 /*@{*/
 #define IOC_SERIAL 0

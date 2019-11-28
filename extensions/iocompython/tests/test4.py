@@ -12,7 +12,7 @@ def main():
 
     callback_queue = queue.Queue()
     root.set_callback(root_callback)
-    epoint = EndPoint(root, flags='socket')
+    epoint = EndPoint(root, flags='socket,dynamic')
 
     network_name = 'pekkanet'
 #    seven_segment = Signal(root, "seven_segment", network_name)
