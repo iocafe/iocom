@@ -52,7 +52,7 @@ static os_short ioc_get_unique_mblk_id(
              If buf argument is given, it must be pointer to buffer which can hold nro_bytes
              data.
            - nbytes. Memory block size in bytes (data size).
-           - flags IOC_TARGET, IOC_SOURCE, IOC_AUTO_SYNC.
+           - flags IOC_MBLK_DOWN, IOC_MBLK_UP, IOC_AUTO_SYNC.
 
   @return  OSAL_SUCCESS to indicate success, other values indicate an error.
 
@@ -343,15 +343,8 @@ void ioc_memory_block_set_int_param(
      */
     if (value)
     {
-        if (mblk->flags & IOC_TARGET)
-        {
-            ioc_receive(handle);
-        }
-
-        if (mblk->flags & IOC_SOURCE)
-        {
-            ioc_send(handle);
-        }
+        ioc_receive(handle);
+        ioc_send(handle);
     }
 
     /* End syncronization.

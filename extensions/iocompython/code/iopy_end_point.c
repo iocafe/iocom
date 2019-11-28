@@ -129,7 +129,7 @@ static PyObject *EndPoint_new(
     else if (os_strstr(flags, "bluetooth", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_BLUETOOTH_SUPPORT
-        cprm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        cprm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_SERIAL_LISTENER;
         cprm.iface = OSAL_BLUETOOTH_IFACE;
 #else
         PyErr_SetString(iocomError, "Bluetooth support if not included in eosal build");
@@ -140,7 +140,7 @@ static PyObject *EndPoint_new(
     else if (os_strstr(flags, "serial", OSAL_STRING_SEARCH_ITEM_NAME))
     {
 #ifdef OSAL_SERIAL_SUPPORT
-        cprm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        cprm.flags |= IOC_SERIAL|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_SERIAL_LISTENER;
         cprm.iface = OSAL_SERIAL_IFACE;
 #else
         PyErr_SetString(iocomError, "Serial port support if not included in eosal build");

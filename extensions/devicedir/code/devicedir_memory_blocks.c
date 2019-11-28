@@ -93,8 +93,8 @@ void devicedir_memory_blocks(
         osal_stream_print_str(list, ", \"flags\":\"", 0);
         isfirst = OS_TRUE;
         mflags = mblk->flags;
-        if (mflags & IOC_TARGET) devicedir_append_flag(list, "target", &isfirst);
-        if (mflags & IOC_SOURCE) devicedir_append_flag(list, "source", &isfirst);
+        if (mflags & IOC_MBLK_UP) devicedir_append_flag(list, "upward", &isfirst);
+        if (mflags & IOC_MBLK_DOWN) devicedir_append_flag(list, "downward", &isfirst);
         if (mflags & IOC_AUTO_SYNC) devicedir_append_flag(list, "auto", &isfirst);
         if (mflags & IOC_ALLOW_RESIZE) devicedir_append_flag(list, "resize", &isfirst);
         if (mflags & IOC_STATIC) devicedir_append_flag(list, "static", &isfirst);

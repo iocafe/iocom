@@ -68,10 +68,10 @@ osalStatus osal_main(
      */
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.nbytes = input_block_sz;
-    blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
     ioc_initialize_memory_block(&inputs, OS_NULL, &root, &blockprm);
     blockprm.nbytes = output_block_sz;
-    blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
     ioc_initialize_memory_block(&outputs, OS_NULL, &root, &blockprm);
 
     /* Set callback to count received data packages.

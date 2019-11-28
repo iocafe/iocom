@@ -93,13 +93,13 @@ static PyObject *MemoryBlock_new(
         goto failed;
     }
 
-    if (os_strstr(flags, "source", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "downward", OSAL_STRING_SEARCH_ITEM_NAME))
     {
-        prm.flags |= IOC_SOURCE;
+        prm.flags |= IOC_MBLK_DOWN;
     }
-    if (os_strstr(flags, "target", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "upward", OSAL_STRING_SEARCH_ITEM_NAME))
     {
-        prm.flags |= IOC_TARGET;
+        prm.flags |= IOC_MBLK_UP;
     }
     if (prm.flags == 0)
     {

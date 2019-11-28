@@ -236,6 +236,8 @@ void ioc_mbinfo_received(
     iocTargetBuffer *tbuf, *next_tbuf;
     os_boolean device_name_matches, device_nr_matches;
     os_boolean network_matches, mblk_matches;
+    os_short source_flag, target_flag;
+
 
 #if IOC_DYNAMIC_MBLK_CODE
     iocMemoryBlockParams mbprm;
@@ -268,9 +270,8 @@ void ioc_mbinfo_received(
                 mbprm.network_name = info->network_name;
                 mbprm.device_name = info->device_name;
                 mbprm.device_nr = info->device_nr;
-                mbprm.flags = (info->flags & IOC_SOURCE)
-                    ? (IOC_TARGET|IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC_MBLK)
-                    : (IOC_SOURCE|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC_MBLK);
+                mbprm.flags = (info->flags & (IOC_MBLK_DOWN|IOC_MBLK_UP))
+                    | (IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC_MBLK);
                 mbprm.mblk_name = info->mblk_name;
                 mbprm.nbytes = info->nbytes;
 
@@ -341,13 +342,24 @@ void ioc_mbinfo_received(
     }
 #endif
 
+    if (con->flags & IOC_CONNECT_UPWARDS)
+    {
+        source_flag = IOC_MBLK_UP;
+        target_flag = IOC_MBLK_DOWN;
+    }
+    else
+    {
+        target_flag = IOC_MBLK_UP;
+        source_flag = IOC_MBLK_DOWN;
+    }
+
     /* If we have a memory block which can be a source?
      */
-    if (mblk->flags & IOC_SOURCE)
+    if (mblk->flags & source_flag)
     {
         /* If the other memory block cannot be a target, do nothing more
          */
-        if ((info->flags & IOC_TARGET) == 0)
+        if ((info->flags & source_flag) == 0)
         {
             osal_trace3("source - source skipped");
             goto skip1;
@@ -394,11 +406,11 @@ skip1:
 
     /* If we have memory block which can be a target
      */
-    if (mblk->flags & IOC_TARGET)
+    if (mblk->flags & target_flag)
     {
         /* If the other memory block cannot be a source
          */
-        if ((info->flags & IOC_SOURCE) == 0)
+        if ((info->flags & target_flag) == 0)
         {
             osal_trace3("target - target skippes");
             goto skip2;

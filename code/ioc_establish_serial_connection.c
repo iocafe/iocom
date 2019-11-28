@@ -65,9 +65,9 @@ osalStatus ioc_establish_serial_connection(
        checking for received control frames is in ioc_connection_receive.c.
      */
 
-    /* Client end of the connection.
+    /* Client end of the serial connection.
      */
-    if ((con->flags & IOC_LISTENER) == 0)
+    if ((con->flags & IOC_SERIAL_LISTENER) == 0)
     {
         switch (con->sercon_state)
         {

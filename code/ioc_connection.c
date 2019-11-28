@@ -440,7 +440,7 @@ osalStatus ioc_connect(
     if (prm->newsocket)
     {
         con->stream = prm->newsocket;
-        con->flags |= IOC_CLOSE_CONNECTION_ON_ERROR|IOC_LISTENER;
+        con->flags |= IOC_CLOSE_CONNECTION_ON_ERROR|IOC_SERIAL_LISTENER;
 
         /* Reset connection state
          */

@@ -94,12 +94,12 @@ gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_short devi
 
     blockprm.mblk_name = m_gina_def.exp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.exp.hdr.mblk_sz;
-    blockprm.flags = IOC_TARGET|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
     ioc_initialize_memory_block(&m_gina_export, OS_NULL, &tito_root, &blockprm);
 
     blockprm.mblk_name = m_gina_def.imp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.imp.hdr.mblk_sz;
-    blockprm.flags = IOC_SOURCE|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
     ioc_initialize_memory_block(&m_gina_import, OS_NULL, &tito_root, &blockprm);
 
 

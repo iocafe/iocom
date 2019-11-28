@@ -80,12 +80,12 @@ void ioboard_start_communication(
 
     blockprm.mblk_name = "exp";
     blockprm.nbytes = prm->send_block_sz ? prm->send_block_sz : 256;
-    blockprm.flags = prm->auto_synchronization ? (IOC_SOURCE|IOC_AUTO_SYNC) : IOC_SOURCE;
+    blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
     ioc_initialize_memory_block(&ioboard_export, &ioboard_export_mblk, &ioboard_communication, &blockprm);
  
     blockprm.mblk_name = "imp";
     blockprm.nbytes = prm->receive_block_sz ? prm->receive_block_sz : 256;
-    blockprm.flags = prm->auto_synchronization ? (IOC_TARGET|IOC_AUTO_SYNC) : IOC_TARGET;
+    blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
     ioc_initialize_memory_block(&ioboard_import, &ioboard_import_mblk, &ioboard_communication, &blockprm);
 
     /* Do we publish device information?
@@ -95,7 +95,7 @@ void ioboard_start_communication(
         blockprm.mblk_name = "info";
         blockprm.buf = (char*)prm->device_info;
         blockprm.nbytes = prm->device_info_sz;
-        blockprm.flags = IOC_SOURCE|IOC_STATIC;
+        blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
         ioc_initialize_memory_block(&ioboard_dinfo, OS_NULL, &ioboard_communication, &blockprm);
     }
 
@@ -113,23 +113,24 @@ void ioboard_start_communication(
 
             os_memclear(&epprm, sizeof(epprm));
             epprm.iface = prm->iface;
-            epprm.flags = IOC_SOCKET;
+            epprm.flags = IOC_SOCKET | IOC_CONNECT_UPWARDS;
 			ioc_listen(ioboard_epoint, &epprm);
 			return;
 
 		case IOBOARD_CTRL_CONNECT_SOCKET:
             conprm.parameters = prm->socket_con_str;
-            conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT;
+            conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS;
 			break;
 
         case IOBOARD_CTRL_CONNECT_SERIAL:
             conprm.parameters = prm->serial_con_str;
-            conprm.flags = IOC_SERIAL | IOC_DISABLE_SELECT;
+            conprm.flags = IOC_SERIAL | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS;
             break;
 
         case IOBOARD_CTRL_LISTEN_SERIAL:
             conprm.parameters = prm->serial_con_str;
-            conprm.flags = IOC_LISTENER | IOC_SERIAL | IOC_DISABLE_SELECT;
+            conprm.flags = IOC_SERIAL_LISTENER | IOC_SERIAL
+                | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS;
             break;
 	}
 
