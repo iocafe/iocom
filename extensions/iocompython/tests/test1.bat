@@ -1,2 +1,2 @@
-set PATH=c:\coderoot\bin\win32\;%PATH%
+set PYTHONPATH=c:\coderoot\bin\win64
 python test1.py
