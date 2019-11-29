@@ -35,7 +35,7 @@ signal_conf = ('{'
 my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device number (not really unique)
 max_players = 5 
 max_asteroids = 3
-data_vector_n = 5
+data_vector_n = 6
 
 root = Root('mygame', device_nr=my_player_nr, network_name='pekkanet')
 exp = MemoryBlock(root, 'upward,auto', 'exp', nbytes=32)
@@ -49,7 +49,7 @@ myworld = Signal(root, "coords", "pekkanet")
 userctrl = Signal(root, "userctrl", "pekkanet")
 
 # Set up a window
-game_window = pyglet.window.Window(1200, 800)
+game_window = pyglet.window.Window(900, 600)
 
 main_batch = pyglet.graphics.Batch()
 
@@ -59,13 +59,13 @@ level_label = pyglet.text.Label(text="Version 3: Basic Collision",
                                 x=400, y=575, anchor_x='center', batch=main_batch)
 
 # Initialize the player sprite
-player_ship = player.Player(myworld=myworld, x=400, y=300, batch=main_batch)
+player_ship = player.Player(x=400, y=300, batch=main_batch)
 
 # Make three sprites to represent remaining lives
 player_lives = load.player_lives(2, main_batch)
 
 # Make three asteroids so we have something to shoot at 
-asteroids = load.asteroids(myworld, max_asteroids, player_ship.position, main_batch)
+asteroids = load.asteroids(max_asteroids, player_ship.position, main_batch)
 
 # Store all objects that update each frame in a list
 game_objects = [player_ship] + asteroids
@@ -122,11 +122,11 @@ def keyboard_input(dt):
      
 def set_player(ship, player_ix0, data):
     ix = player_ix0 * data_vector_n + 1
-    if player_ix0 == 0:
-        ship.mysetplayer(data[ix], data[ix+1], data[ix+2], my_rotation, my_engine_visible);
+    if player_ix0 == data[ix]:
+        ship.mysetplayer(data[ix+1], data[ix+2], data[ix+3], my_rotation, my_engine_visible);
 
     else:
-        ship.mysetplayer(data[ix], data[ix+1], data[ix+2], data[ix+3], data[ix+4]);
+        ship.mysetplayer(data[ix+1], data[ix+2], data[ix+3], data[ix+4], data[ix+5]);
 
 def update(dt):
     keyboard_input(dt)
@@ -139,7 +139,7 @@ def update(dt):
         for player_ix0 in range(nro_players): 
             ship = space_ships.get(str(player_ix0), None)
             if ship == None:
-                ship = player.Player(myworld=myworld, x=400, y=300, batch=main_batch)
+                ship = player.Player(x=400, y=300, batch=main_batch)
                 space_ships[str(player_ix0)] = ship
 
             set_player(ship, player_ix0, data)

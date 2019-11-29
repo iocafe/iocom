@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\code\ioc_compress.h" />
-    <ClInclude Include="..\..\code\ioc_com_status.h" />
     <ClInclude Include="..\..\code\ioc_connection.h" />
     <ClInclude Include="..\..\code\ioc_debug.h" />
     <ClInclude Include="..\..\code\ioc_dyn_mblk_list.h" />
@@ -45,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\code\ioc_compress.c" />
-    <ClCompile Include="..\..\code\ioc_com_status.c" />
     <ClCompile Include="..\..\code\ioc_connection.c" />
     <ClCompile Include="..\..\code\ioc_connection_receive.c" />
     <ClCompile Include="..\..\code\ioc_connection_send.c" />

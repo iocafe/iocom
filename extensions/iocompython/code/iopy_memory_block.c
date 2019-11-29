@@ -260,7 +260,7 @@ static PyObject *MemoryBlock_get_param(
     iocRoot *root;
     PyObject *py_list, *py_item;
 
-    os_memclear(param_name, sizeof(param_name));
+    os_memclear((os_char**)param_name, sizeof(param_name));
 
     if (!PyArg_ParseTuple(args, "s|sssssss",
          param_name, param_name + 1, param_name + 2, param_name + 3, param_name + 4, param_name + 5, param_name + 6, param_name + 7))

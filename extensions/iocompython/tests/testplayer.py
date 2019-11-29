@@ -1,10 +1,13 @@
 # Module: testplayer.py
 from iocompython import Root, Signal
+import re
 
 class TestPlayer(object):
     def __init__(self, root, player_name, network_name):
         self.root = root
         self.player_name = player_name
+        tmp = re.findall(r'\d+', player_name)
+        self.player_nr = int(tmp[0])
         self.network_name = network_name
         self.userctrl = Signal(root, 'userctrl.*.' + player_name, network_name);
         self.coords = Signal(root, 'coords.*.' + player_name, network_name)
@@ -34,10 +37,26 @@ class TestPlayer(object):
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
         
-        print(state_bits, data, self.player_name)
+        if self.x < 0:
+            self.x = 0
+            self.velocity_x = 0.1
+
+        if self.x > 800:
+            self.x = 800
+            self.velocity_x = -0.1
+        
+        if self.y < 0:
+            self.y = 0
+            self.velocity_y = 0.1
+
+        if self.y > 600:
+            self.y = 600
+            self.velocity_y = -0.1
+        
+        # print(state_bits, data, self.player_name)
 
         visible = 1
-        return (visible, self.x, self.y, self.rotation, self.engine_visible)
+        return (self.player_nr, visible, self.x, self.y, self.rotation, self.engine_visible)
 
     def set_coords(self, x):
         self.coords.set(x)

@@ -217,6 +217,60 @@ static PyObject *Root_delete(
 }
 
 
+/**
+****************************************************************************************************
+  List IO device networks.
+****************************************************************************************************
+*/
+static PyObject *Root_list_networks(
+    Root *self,
+    PyObject *args)
+{
+    iocRoot *root;
+    iocDynamicRoot *droot;
+    iocDynamicNetwork *dnetwork;
+    PyObject *pynetname, *rval;
+    const char *reserved = OS_NULL;
+    os_int i;
+
+    root = self->root;
+    if (root == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "no IOCOM root object");
+        return NULL;
+    }
+    droot = root->droot;
+    if (droot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "no dynamic objects");
+        Py_RETURN_NONE;
+    }
+
+    if (!PyArg_ParseTuple(args, "|s", &reserved))
+    {
+        PyErr_SetString(iocomError, "xxx");
+        return NULL;
+    }
+
+    ioc_lock(root);
+
+    rval = PyList_New(0);
+
+    for (i = 0; i < IOC_DROOT_HASH_TAB_SZ; i++)
+    {
+        for (dnetwork = droot->hash[i];
+             dnetwork;
+             dnetwork = dnetwork->next)
+        {
+            pynetname = PyUnicode_FromString(dnetwork->network_name);
+            PyList_Append(rval, pynetname);
+            Py_DECREF(pynetname);
+        }
+    }
+
+    ioc_unlock(root);
+    return rval;
+}
 
 /**
 ****************************************************************************************************
@@ -236,7 +290,6 @@ static PyObject *Root_list_devices(
     const char *network_name = OS_NULL;
     os_char device_name[IOC_NAME_SZ + 8]; /* +8 for device number */
     os_char nbuf[OSAL_NBUF_SZ];
-
 
     root = self->root;
     if (root == OS_NULL)
@@ -286,7 +339,6 @@ static PyObject *Root_list_devices(
     ioc_unlock(root);
     return rval;
 }
-
 
 /**
 ****************************************************************************************************
@@ -641,6 +693,7 @@ static PyMemberDef Root_members[] = {
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
     {"set_callback", (PyCFunction)Root_set_callback, METH_VARARGS, "Set IOCOM root callback function"},
+    {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},
     {"list_devices", (PyCFunction)Root_list_devices, METH_VARARGS, "List devices in spefified network"},
     {"print", (PyCFunction)Root_print, METH_VARARGS, "Print internal state of IOCOM"},
     {NULL} /* Sentinel */

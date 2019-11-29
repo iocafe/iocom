@@ -9,7 +9,6 @@ class Player(physicalobject.PhysicalObject):
         super(Player, self).__init__(img=resources.player_image, *args, **kwargs)
 
         # Create a child sprite to show when the ship is thrusting
-        dummy = kwargs.pop('myworld')
         self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, *args, **kwargs)
         self.engine_sprite.visible = False
 
