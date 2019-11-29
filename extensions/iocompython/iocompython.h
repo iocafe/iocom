@@ -18,9 +18,18 @@
 #ifndef IOCOMPYTHON_INCLUDED
 #define IOCOMPYTHON_INCLUDED
 
+/* Include eosal, just to get operating system before including Python headers.
+ */
+#include "eosal.h"
+
 #define PY_SSIZE_T_CLEAN
+#ifdef OSAL_WINDOWS
+#include <Python.h>
+#include <structmember.h>
+#else
 #include <python3.5/Python.h>
 #include <python3.5/structmember.h>
+#endif
 
 /* Include iocom and operating system abstraction layer.
  */

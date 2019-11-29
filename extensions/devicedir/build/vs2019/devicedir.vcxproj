@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\code\devicedir_connections.c" />
     <ClCompile Include="..\..\code\devicedir_console.c" />
+    <ClCompile Include="..\..\code\devicedir_dynamic.c" />
     <ClCompile Include="..\..\code\devicedir_end_points.c" />
     <ClCompile Include="..\..\code\devicedir_helper.c" />
     <ClCompile Include="..\..\code\devicedir_memory_blocks.c" />

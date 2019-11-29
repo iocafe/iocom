@@ -98,7 +98,7 @@ osalStatus io_device_console(
 
         case 'm':
         case 'M':
-            iocom_state_list(root, c);
+            iocom_state_list(root, (os_char)c);
             break;
 
         case 'd':

@@ -289,8 +289,7 @@ static osalStatus ioc_new_signal_by_info(
     iocAddDinfoState *state)
 {
     osalTypeId signal_type_id;
-    os_memsz sz;
-    os_int n;
+    os_int n, sz;
 
     if (state->signal_type_str)
     {
@@ -334,7 +333,7 @@ static osalStatus ioc_new_signal_by_info(
     }
     else
     {
-        sz = osal_typeid_size(signal_type_id);
+        sz = (os_int)osal_typeid_size(signal_type_id);
         state->current_addr += n * sz + 1;
     }
 
@@ -579,7 +578,7 @@ os_uint ioc_hash(
 {
     const os_uint primes[] = {47, 2, 43, 3, 41, 5, 37, 7, 31, 11, 29, 13, 23, 17, 19};
     const os_int n_primes = sizeof(primes) / sizeof(os_uint);
-    os_ulong hash_sum;
+    os_uint hash_sum;
     os_int prime_ix;
     os_uchar c;
 
