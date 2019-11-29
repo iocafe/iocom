@@ -97,10 +97,18 @@
     <Import Project="..\..\..\..\..\eosal\build\vs2019\release-vs2019.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetExt>.pyd</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetExt>.pyd</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetExt>.pyd</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetExt>.pyd</TargetExt>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>

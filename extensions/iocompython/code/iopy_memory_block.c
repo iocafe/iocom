@@ -503,9 +503,9 @@ static PyMemberDef MemoryBlock_members[] = {
 static PyMethodDef MemoryBlock_methods[] = {
     {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
     {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS, "Get memory block parameters"},
-    {"read", (PyCFunction)MemoryBlock_read, METH_VARARGS, "Read data from memory block"},
-    {"write", (PyCFunction)MemoryBlock_write, METH_VARARGS, "Write data to memory block"},
-    {"publish", (PyCFunction)MemoryBlock_publish, METH_VARARGS, "Publish as dynamic IO info"},
+    {"read", (PyCFunction)MemoryBlock_read, METH_VARARGS|METH_KEYWORDS, "Read data from memory block"},
+    {"write", (PyCFunction)MemoryBlock_write, METH_VARARGS|METH_KEYWORDS, "Write data to memory block"},
+    {"publish", (PyCFunction)MemoryBlock_publish, METH_VARARGS|METH_KEYWORDS, "Publish as dynamic IO info"},
 
     {NULL} /* Sentinel */
 };

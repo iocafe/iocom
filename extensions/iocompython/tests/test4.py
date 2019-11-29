@@ -11,7 +11,7 @@ def main():
     root = Root('pythoncontrol')
 
     callback_queue = queue.Queue()
-    root.set_callback(root_callback)
+#    root.set_callback(root_callback)
     epoint = EndPoint(root, flags='socket,dynamic')
 
     network_name = 'pekkanet'
