@@ -54,7 +54,7 @@ osalStatus ioc_initialize_event_queue(
 
     ioc_release_event_queue(root);
 
-    queue = os_malloc(sizeof(iocEventQueue), OS_NULL);
+    queue = (iocEventQueue*)os_malloc(sizeof(iocEventQueue), OS_NULL);
     if (queue == OS_NULL) 
     {
         ioc_unlock(root);
@@ -98,7 +98,7 @@ void ioc_release_event_queue(
 
     while (queue->first)
     {
-        ioc_pop_event(queue);
+        ioc_pop_event(root);
     }
 
     os_free(queue, sizeof(iocEventQueue));
@@ -135,6 +135,7 @@ osalStatus ioc_queue_event(
     os_short device_nr,
     const os_char *mblk_name)
 {
+    iocEventQueue *queue;
     iocQueuedEvent *e;
 
     ioc_lock(root);
@@ -150,7 +151,7 @@ osalStatus ioc_queue_event(
 
     /* Allocate new event structure and fill it.
      */
-    e = osal_malloc(sizeof(iocQueuedEvent), OS_NULL);
+    e = (iocQueuedEvent*)os_malloc(sizeof(iocQueuedEvent), OS_NULL);
     if (e == OS_NULL) 
     {
         ioc_unlock(root);
@@ -169,13 +170,13 @@ osalStatus ioc_queue_event(
     }
     else
     {
-        queue->fist = e;
+        queue->first = e;
     }
     queue->last = e;
 
     if (queue->event)
     {
-        osal_set_event(queue->event);
+        osal_event_set(queue->event);
     }
 
     ioc_unlock(root);
@@ -210,7 +211,7 @@ iocQueuedEvent *ioc_get_event(
         ioc_unlock(root);
         return OS_NULL;
     }
-    e = queue->first
+    e = queue->first;
     ioc_unlock(root);
     return e;
 }

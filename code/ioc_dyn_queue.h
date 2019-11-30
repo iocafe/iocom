@@ -85,7 +85,7 @@ typedef struct iocEventQueue
         just to avoid allocating all memory of application doesn't
         process the events.
      */
-    os_int max_nro_events
+    os_int max_nro_events;
 }
 iocEventQueue;
 
