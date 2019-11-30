@@ -39,7 +39,7 @@ static void root_callback(
     iocRoot *root,
     iocConnection *con,
     iocHandle *mblk_handle,
-    iocRootCallbackEvent event,
+    iocEvent event,
     void *context);
 
 static void info_callback(
@@ -116,7 +116,7 @@ static void root_callback(
     iocRoot *root,
     iocConnection *con,
     iocHandle *mblk_handle,
-    iocRootCallbackEvent event,
+    iocEvent event,
     void *context)
 {
     os_char text[128], mblk_name[IOC_NAME_SZ];
@@ -125,7 +125,7 @@ static void root_callback(
     {
         /* Process "new dynamic memory block" callback.
          */
-        case IOC_NEW_DYNAMIC_MBLK:
+        case IOC_NEW_MEMORY_BLOCK:
             ioc_memory_block_get_string_param(mblk_handle, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
 
             os_strncpy(text, "Memory block ", sizeof(text));

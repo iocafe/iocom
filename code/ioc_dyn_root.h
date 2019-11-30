@@ -31,27 +31,13 @@ struct iocDynamicNetwork;
 
 /**
 ****************************************************************************************************
-    Root callback event enumeration, reason why the callback?
-****************************************************************************************************
-*/
-typedef enum
-{
-    IOC_NEW_NETWORK,
-    IOC_NEW_DEVICE,
-    IOC_NETWORK_DISCONNECTED
-}
-iocDynamicNetworkEvent;
-
-
-/**
-****************************************************************************************************
     Dynamic network connect/disconnect callback function type.
 ****************************************************************************************************
 */
 typedef void ioc_dnetwork_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
-    iocDynamicNetworkEvent event,
+    iocEvent event,
     const os_char *arg,
     void *context);
 

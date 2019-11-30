@@ -20,13 +20,13 @@ static void Root_callback(
     struct iocRoot *root,
     struct iocConnection *con,
     struct iocHandle *mblk_handle,
-    iocRootCallbackEvent event,
+    iocEvent event,
     void *context);
 
 static void Root_network_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
-    iocDynamicNetworkEvent event,
+    iocEvent event,
     const os_char *arg,
     void *context);
 
@@ -423,7 +423,7 @@ static void Root_callback(
     struct iocRoot *root,
     struct iocConnection *con,
     struct iocHandle *mblk_handle,
-    iocRootCallbackEvent event,
+    iocEvent event,
     void *context)
 {
     os_char text[128], mblk_name[IOC_NAME_SZ];
@@ -434,7 +434,7 @@ static void Root_callback(
     {
         /* Process "new dynamic memory block" callback.
          */
-        case IOC_NEW_DYNAMIC_MBLK:
+        case IOC_NEW_MEMORY_BLOCK:
             ioc_memory_block_get_string_param(mblk_handle, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
 
             os_strncpy(text, "Memory block ", sizeof(text));
@@ -480,7 +480,7 @@ static void Root_callback(
 static void Root_network_callback(
     struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
-    iocDynamicNetworkEvent event,
+    iocEvent event,
     const os_char *arg,
     void *context)
 {

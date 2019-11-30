@@ -281,7 +281,7 @@ void ioc_mbinfo_received(
                 if (root->callback_func)
                 {
                     root->callback_func(root, con, &handle,
-                        IOC_NEW_DYNAMIC_MBLK, root->callback_context);
+                        IOC_NEW_MEMORY_BLOCK, root->callback_context);
                 }
                 ioc_release_handle(&handle);
                 break;

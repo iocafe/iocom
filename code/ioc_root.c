@@ -138,6 +138,8 @@ void ioc_release_root(
      */
     ioc_release_dynamic_root(root->droot);
     root->droot = OS_NULL;
+
+    ioc_release_event_queue(root);
 #endif
 
     /* Release all initialized end points.

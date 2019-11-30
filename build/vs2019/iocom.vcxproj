@@ -24,6 +24,7 @@
     <ClInclude Include="..\..\code\ioc_debug.h" />
     <ClInclude Include="..\..\code\ioc_dyn_mblk_list.h" />
     <ClInclude Include="..\..\code\ioc_dyn_network.h" />
+    <ClInclude Include="..\..\code\ioc_dyn_queue.h" />
     <ClInclude Include="..\..\code\ioc_dyn_root.h" />
     <ClInclude Include="..\..\code\ioc_dyn_signal.h" />
     <ClInclude Include="..\..\code\ioc_end_point.h" />
@@ -49,6 +50,7 @@
     <ClCompile Include="..\..\code\ioc_connection_send.c" />
     <ClCompile Include="..\..\code\ioc_dyn_mblk_list.c" />
     <ClCompile Include="..\..\code\ioc_dyn_network.c" />
+    <ClCompile Include="..\..\code\ioc_dyn_queue.c" />
     <ClCompile Include="..\..\code\ioc_dyn_root.c" />
     <ClCompile Include="..\..\code\ioc_dyn_signal.c" />
     <ClCompile Include="..\..\code\ioc_end_point.c" />

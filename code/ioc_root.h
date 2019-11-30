@@ -40,6 +40,7 @@ typedef os_ushort ioc_tbuf_item;
 struct iocFreeBlk;
 struct iocDeviceHdr;
 struct iocDynamicRoot;
+struct iocEventQueue;
 
 /**
 ****************************************************************************************************
@@ -102,10 +103,14 @@ iocRootsEndPointList;
 */
 typedef enum
 {
-    IOC_NEW_DYNAMIC_MBLK
-    /* IOC_MBLK_CONNECTED */
+    IOC_NEW_MEMORY_BLOCK,
+
+    IOC_NEW_NETWORK,
+    IOC_NETWORK_DISCONNECTED,
+
+    IOC_NEW_DEVICE
 }
-iocRootCallbackEvent;
+iocEvent;
 
 
 /**
@@ -117,7 +122,7 @@ typedef void ioc_root_callback(
     struct iocRoot *root,
     struct iocConnection *con,
     struct iocHandle *mblk_handle,
-    iocRootCallbackEvent event,
+    iocEvent event,
     void *context);
 
 
@@ -188,6 +193,12 @@ typedef struct iocRoot
     /** Pointer to dynamic IO network configuration, if any.
      */
     struct iocDynamicRoot *droot;
+
+    /** Pointer to communication event queue. The application processess
+        these events to know about connected/disconnected device IO 
+        networks, devices, etc.
+     */
+    struct iocEventQueue *event_queue;
 #endif
 }
 iocRoot;
