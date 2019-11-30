@@ -116,6 +116,8 @@ void ioc_release_event_queue(
   The ioc_queue_event() function creates a new communication event into queue and sets
   application defined OS event (if not NULL) to trigger the application.
 
+  ioc_lock must be on when calling this function.
+
   @param   root Pointer to IOCOM root object.
   @param   event  Which event: IOC_NEW_MEMORY_BLOCK, IOC_NEW_NETWORK...
   @param   network_name Network name.
@@ -138,13 +140,13 @@ osalStatus ioc_queue_event(
     iocEventQueue *queue;
     iocQueuedEvent *e;
 
-    ioc_lock(root);
+    // ioc_lock(root);
     queue = root->event_queue;
 
     if (queue->event_count >= queue->max_nro_events)
     {
         osal_debug_error("Communication event queue overflow.");
-        ioc_unlock(root);
+        // ioc_unlock(root);
         return OSAL_STATUS_FAILED;
     }
     queue->event_count++;
@@ -179,7 +181,7 @@ osalStatus ioc_queue_event(
         osal_event_set(queue->event);
     }
 
-    ioc_unlock(root);
+    // ioc_unlock(root);
     return OSAL_SUCCESS;
 }
 

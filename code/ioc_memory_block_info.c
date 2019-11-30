@@ -275,14 +275,16 @@ void ioc_mbinfo_received(
                 if (ioc_initialize_memory_block(&handle, OS_NULL, root, &mbprm)) return;
                 mblk = handle.mblk;
 
-                /* If we have callback function, application may want to know about
-                   the new memory block, so call it.
-                 */
-                if (root->callback_func)
+                /* if (root->callback_func)
                 {
+
                     root->callback_func(root, con, &handle,
                         IOC_NEW_MEMORY_BLOCK, root->callback_context);
-                }
+                } */
+
+                ioc_new_root_event(root, IOC_NEW_MEMORY_BLOCK, OS_NULL, mblk,
+                    root->callback_context);
+
                 ioc_release_handle(&handle);
                 break;
             }

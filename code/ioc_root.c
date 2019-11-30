@@ -337,3 +337,84 @@ void ioc_set_root_callback(
     root->callback_func = func;
     root->callback_context = context;
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief Inform application about a communication event.
+  @anchor ioc_new_root_event
+
+  The TOCOM library can inform application about new/deleted memory blocks, connected IO networks
+  and devices. This is much more efficient than polling for changes, especially in large IO
+  device networks (IoT applications). 
+
+  This function generates the event, using method selected for the application:
+
+  Application can be informed either by callback qunction, or queueing the event information
+  and setting operating system event to trigger the application. These methods are alternatives:
+  Callbacks are generally better suited for signle thread model, while queues are typically 
+  better choice in complex multithread environments. Event queues are exclusively used with 
+  Python API.
+
+  ioc_lock must be on when calling this function.
+
+  @param   root Pointer to the root structure.
+  @param   event Which event: IOC_NEW_MEMORY_BLOCK, IOC_NEW_NETWORK...
+  @param   dnetwork Dynamic network structure, OS_NULL if not available.
+  @param   mblk Memory block structure, OS_NULL if not available.
+  @param   context Application callback context.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_new_root_event(
+    iocRoot *root,
+    iocEvent event,
+    struct iocDynamicNetwork *dnetwork,
+    struct iocMemoryBlock *mblk,    
+    void *context)
+{
+#if IOC_DYNAMIC_MBLK_CODE
+    const os_char 
+        *network_name,
+        *device_name,
+        *mblk_name;
+    
+    os_short 
+        device_nr;
+#endif
+
+    if (root->callback_func)
+    {
+        root->callback_func(root, event, dnetwork, mblk, root->callback_context);
+    }
+
+#if IOC_DYNAMIC_MBLK_CODE
+    if (root->event_queue)
+    {
+        network_name = OS_NULL;
+        if (dnetwork)
+        {
+            network_name = dnetwork->network_name;
+        }
+        if (mblk)
+        {
+            network_name = mblk->network_name;
+            device_name = mblk->device_name;
+            device_nr = mblk->device_nr;
+            mblk_name = mblk->mblk_name;
+        }
+        else
+        {
+            device_name = OS_NULL;
+            device_nr = 0;
+            mblk_name = OS_NULL;
+        }
+
+        ioc_queue_event(root, event, network_name,
+            device_name, device_nr, mblk_name);
+    }
+#endif
+}
+

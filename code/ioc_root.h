@@ -115,14 +115,14 @@ iocEvent;
 
 /**
 ****************************************************************************************************
-    Root callback function type.
+    Root callback function type (network and device connect/disconnect, etc).
 ****************************************************************************************************
 */
 typedef void ioc_root_callback(
     struct iocRoot *root,
-    struct iocConnection *con,
-    struct iocHandle *mblk_handle,
     iocEvent event,
+    struct iocDynamicNetwork *dnetwork,
+    struct iocMemoryBlock *mblk,    
     void *context);
 
 
@@ -237,6 +237,15 @@ void ioc_run(
 void ioc_set_root_callback(
     iocRoot *root,
     ioc_root_callback func,
+    void *context);
+
+/* Inform application about a communication event.
+ */
+void ioc_new_root_event(
+    iocRoot *root,
+    iocEvent event,
+    struct iocDynamicNetwork *dnetwork,
+    struct iocMemoryBlock *mblk,    
     void *context);
 
 /*@}*/

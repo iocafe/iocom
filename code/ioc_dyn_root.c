@@ -116,7 +116,7 @@ void ioc_release_dynamic_root(
    connect and disconnects.
    LOCK SHOULD BE ON IF COMMUNICATION IS RUNNING
  */
-void ioc_set_dnetwork_callback(
+/* void ioc_set_dnetwork_callback(
     iocRoot *root,
     ioc_dnetwork_callback func,
     void *context)
@@ -129,7 +129,7 @@ void ioc_set_dnetwork_callback(
         droot->context = context;
     }
 }
-
+*/
 
 /* Add a dynamic network.
  * Calling twice will add network twice, check with find first.
@@ -172,10 +172,13 @@ void ioc_remove_dynamic_network(
 
     /* If we have application callback function, call it.
      */
-    if (droot->func)
+    /* if (droot->func)
     {
         droot->func(droot->root, dnetwork, IOC_NETWORK_DISCONNECTED, OS_NULL, droot->context);
-    }
+    } */
+
+    ioc_new_root_event(droot->root, IOC_NETWORK_DISCONNECTED, dnetwork, 
+        OS_NULL, droot->root->callback_context);
 
     /* Fond out who has pointer to dnetwork in prev_dn.
      * If none, dnetwork is first in list and prev_dn is OS_NULL.
@@ -477,8 +480,8 @@ osalStatus ioc_add_dynamic_info(
     osalJsonIndex jindex;
     osalStatus s;
     iocAddDinfoState state;
-    os_char device_name[IOC_NAME_SZ + 8]; /* +8 for device number */
-    os_char nbuf[OSAL_NBUF_SZ];
+//    os_char device_name[IOC_NAME_SZ + 8]; /* +8 for device number */
+//    os_char nbuf[OSAL_NBUF_SZ];
 
     /* Get memory block pointer and start synchronization.
      */
@@ -516,7 +519,7 @@ osalStatus ioc_add_dynamic_info(
     /* If we have application callback function: Informn application about new dynamic
        networks and devices.
      */
-    if (droot->func)
+    /* if (droot->func)
     {
         if (state.new_network)
         {
@@ -527,7 +530,9 @@ osalStatus ioc_add_dynamic_info(
         osal_int_to_str(nbuf, sizeof(nbuf), mblk->device_nr);
         os_strncat(device_name, nbuf, sizeof(device_name));
         droot->func(root, state.dnetwork, IOC_NEW_DEVICE, device_name, droot->context);
-    }
+    } */
+    ioc_new_root_event(root, IOC_NEW_NETWORK, state.dnetwork, OS_NULL, root->callback_context);
+    ioc_new_root_event(root, IOC_NEW_DEVICE, state.dnetwork, mblk, root->callback_context);
 
     /* End syncronization and return.
      */

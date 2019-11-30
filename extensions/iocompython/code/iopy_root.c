@@ -18,16 +18,9 @@
 
 static void Root_callback(
     struct iocRoot *root,
-    struct iocConnection *con,
-    struct iocHandle *mblk_handle,
     iocEvent event,
-    void *context);
-
-static void Root_network_callback(
-    struct iocRoot *root,
     struct iocDynamicNetwork *dnetwork,
-    iocEvent event,
-    const os_char *arg,
+    struct iocMemoryBlock *mblk,    
     void *context);
 
 static void Root_do_callback(
@@ -95,10 +88,6 @@ static PyObject *Root_new(
     self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
     ioc_initialize_root(self->root);
     ioc_initialize_dynamic_root(self->root);
-
-    /* Set callback function to receive information about created or removed dynamic IO networks.
-     */
-    ioc_set_dnetwork_callback(self->root, Root_network_callback, self);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
@@ -405,28 +394,31 @@ static PyObject *Root_set_callback(
 /**
 ****************************************************************************************************
 
-  @brief Call Python when new memory block is created, etc.
+  @brief Callback when dynamic IO network has been connected or disconnected.
 
-  The Root_callback function gets called by iocom library on event related to whole root,
-  like when new memory block is created.
+  The info_callback() function is called when device information data is received from connection
+  or when connection status changes.
 
-  @param   root Root object.
-  @param   con Connection.
-  @param   handle Memory block handle.
-  @param   event Why the callback?
-  @param   context ?
+  @param   root Pointer to the root object.
+  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
+  @param   dnetwork Pointer to dynamic network object which has just been connected or is
+           about to be removed.
+  @param   mblk Pointer to memory block structure, OS_NULL if not available for the event.
+  @param   context Application specific pointer passed to this callback function.
+
   @return  None.
 
 ****************************************************************************************************
 */
 static void Root_callback(
     struct iocRoot *root,
-    struct iocConnection *con,
-    struct iocHandle *mblk_handle,
     iocEvent event,
+    struct iocDynamicNetwork *dnetwork,
+    struct iocMemoryBlock *mblk,    
     void *context)
 {
-    os_char text[128], mblk_name[IOC_NAME_SZ];
+    os_char *mblk_name; 
+    iocHandle handle;
     Root *pyroot;
     pyroot = (Root*)context;
 
@@ -435,60 +427,18 @@ static void Root_callback(
         /* Process "new dynamic memory block" callback.
          */
         case IOC_NEW_MEMORY_BLOCK:
-            ioc_memory_block_get_string_param(mblk_handle, IOC_MBLK_NAME, mblk_name, sizeof(mblk_name));
-
-            os_strncpy(text, "Memory block ", sizeof(text));
-            os_strncat(text, mblk_name, sizeof(text));
-            os_strncat(text, " dynamically allocated\n", sizeof(text));
-            osal_console_write(text);
+            mblk_name = mblk->mblk_name;
 
             if (!os_strcmp(mblk_name, "info"))
             {
-                ioc_add_callback(mblk_handle, Root_info_callback, OS_NULL);
+                ioc_setup_handle(&handle, root, mblk);
+                ioc_add_callback(&handle, Root_info_callback, OS_NULL);
+                ioc_release_handle(&handle);
             }
 
             Root_do_callback(pyroot, "new_mblk", mblk_name);
             break;
 
-        /* Ignore unknown callbacks. More callback events may be introduced in future.
-         */
-        default:
-            break;
-    }
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Callback when dynamic IO network has been connected or disconnected.
-
-  The info_callback() function is called when device information data is received from connection
-  or when connection status changes.
-
-  @param   root Pointer to the root object.
-  @param   dnetwork Pointer to dynamic network object which has just been connected or is
-           about to be removed.
-  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
-  @param   arg IOC_NEW_DEVICE: Device name with serial number
-  @param   context Application specific pointer passed to this callback function.
-
-  @return  None.
-
-****************************************************************************************************
-*/
-static void Root_network_callback(
-    struct iocRoot *root,
-    struct iocDynamicNetwork *dnetwork,
-    iocEvent event,
-    const os_char *arg,
-    void *context)
-{
-    Root *pyroot;
-    pyroot = (Root*)context;
-
-    switch (event)
-    {
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
 
