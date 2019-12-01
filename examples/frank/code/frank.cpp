@@ -23,13 +23,8 @@ iocRoot frank_root;
 static FrankMain *frank_main;
 
 
-static void root_callback(
-    struct iocRoot *root,
-    struct iocConnection *con,
-    struct iocHandle *handle,
-    iocEvent event,
-    void *context);
-
+/* Forward referred static functions.
+ */
 static void info_callback(
     struct iocHandle *handle,
     os_int start_addr,
@@ -37,11 +32,11 @@ static void info_callback(
     os_ushort flags,
     void *context);
 
-static void network_callback(
+static void root_callback(
     struct iocRoot *root,
-    struct iocDynamicNetwork *dnetwork,
     iocEvent event,
-    const os_char *arg,
+    struct iocDynamicNetwork *dnetwork,
+    struct iocMemoryBlock *mblk,
     void *context);
 
 
@@ -73,10 +68,6 @@ osalStatus osal_main(
     /* Create frank main object
      */
     frank_main = new FrankMain;
-
-    /* Set callback function to receive information about created or removed dynamic IO networks.
-     */
-    ioc_set_dnetwork_callback(&frank_root, network_callback, OS_NULL);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
@@ -135,65 +126,12 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    ioc_set_dnetwork_callback(&frank_root, OS_NULL, OS_NULL);
     ioc_set_root_callback(&frank_root, OS_NULL, OS_NULL);
     delete frank_main;
 
     ioc_release_root(&frank_root);
     osal_tls_shutdown();
     osal_serial_shutdown();
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Callback from iocom root object.
-
-  The root_callback() function is used to detect new dynamically allocated memory blocks.
-
-  @param   root Root object.
-  @param   con Connection.
-  @param   handle Memory block handle.
-  @param   event Why the callback?
-  @param   context Not used.
-  @return  None.
-
-****************************************************************************************************
-*/
-static void root_callback(
-    struct iocRoot *root,
-    struct iocConnection *con,
-    struct iocHandle *handle,
-    iocEvent event,
-    void *context)
-{
-    os_char text[128], mblk_name[IOC_NAME_SZ];
-
-    switch (event)
-    {
-        /* Process "new dynamic memory block" callback.
-         */
-        case IOC_NEW_MEMORY_BLOCK:
-            ioc_memory_block_get_string_param(handle, IOC_MBLK_NAME,
-                mblk_name, sizeof(mblk_name));
-
-            os_strncpy(text, "Memory block ", sizeof(text));
-            os_strncat(text, mblk_name, sizeof(text));
-            os_strncat(text, " dynamically allocated\n", sizeof(text));
-            osal_console_write(text);
-
-            if (!os_strcmp(mblk_name, "info"))
-            {
-                ioc_add_callback(handle, info_callback, OS_NULL);
-            }
-            break;
-
-        /* Ignore unknown callbacks. More callback events may be introduced in future.
-         */
-        default:
-            break;
-    }
 }
 
 
@@ -234,31 +172,47 @@ static void info_callback(
 /**
 ****************************************************************************************************
 
-  @brief Callback when dynamic IO network has been connected or disconnected.
+  @brief Callback when dynamic IO network, device, etc has been connected or disconnected.
 
-  The info_callback() function is called when device information data is received from connection
-  or when connection status changes.
+  The root_callback() function is called when memory block, io device network or io device is
+  added or removed.
 
   @param   root Pointer to the root object.
+  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
   @param   dnetwork Pointer to dynamic network object which has just been connected or is
            about to be removed.
-  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
-  @param   arg IOC_NEW_DEVICE: Device name with serial number
+  @param   mblk Pointer to memory block structure, OS_NULL if not available for the event.
   @param   context Application specific pointer passed to this callback function.
 
   @return  None.
 
 ****************************************************************************************************
 */
-static void network_callback(
+static void root_callback(
     struct iocRoot *root,
-    struct iocDynamicNetwork *dnetwork,
     iocEvent event,
-    const os_char *arg,
+    struct iocDynamicNetwork *dnetwork,
+    struct iocMemoryBlock *mblk,
     void *context)
 {
+    os_char *mblk_name;
+    iocHandle handle;
+
     switch (event)
     {
+        /* Process "new dynamic memory block" callback.
+         */
+        case IOC_NEW_MEMORY_BLOCK:
+            mblk_name = mblk->mblk_name;
+
+            if (!os_strcmp(mblk_name, "info"))
+            {
+                ioc_setup_handle(&handle, root, mblk);
+                ioc_add_callback(&handle, info_callback, OS_NULL);
+                ioc_release_handle(&handle);
+            }
+            break;
+
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
             frank_main->launch_app(dnetwork->network_name);

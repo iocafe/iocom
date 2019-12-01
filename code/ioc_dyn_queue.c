@@ -67,6 +67,8 @@ osalStatus ioc_initialize_event_queue(
     root->event_queue = queue;
 
     ioc_unlock(root);
+
+    return OSAL_SUCCESS;
 }
 
 
@@ -140,13 +142,11 @@ osalStatus ioc_queue_event(
     iocEventQueue *queue;
     iocQueuedEvent *e;
 
-    // ioc_lock(root);
     queue = root->event_queue;
 
     if (queue->event_count >= queue->max_nro_events)
     {
         osal_debug_error("Communication event queue overflow.");
-        // ioc_unlock(root);
         return OSAL_STATUS_FAILED;
     }
     queue->event_count++;
@@ -181,7 +181,6 @@ osalStatus ioc_queue_event(
         osal_event_set(queue->event);
     }
 
-    // ioc_unlock(root);
     return OSAL_SUCCESS;
 }
 

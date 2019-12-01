@@ -40,6 +40,7 @@ typedef os_ushort ioc_tbuf_item;
 struct iocFreeBlk;
 struct iocDeviceHdr;
 struct iocDynamicRoot;
+struct iocDynamicNetwork;
 struct iocEventQueue;
 
 /**

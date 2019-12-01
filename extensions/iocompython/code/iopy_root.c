@@ -394,10 +394,10 @@ static PyObject *Root_set_callback(
 /**
 ****************************************************************************************************
 
-  @brief Callback when dynamic IO network has been connected or disconnected.
+  @brief Callback when dynamic IO network, device, etc has been connected or disconnected.
 
-  The info_callback() function is called when device information data is received from connection
-  or when connection status changes.
+  The info_Root_callback() function is called when memory block, io device network or io device is
+  added or removed.
 
   @param   root Pointer to the root object.
   @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
