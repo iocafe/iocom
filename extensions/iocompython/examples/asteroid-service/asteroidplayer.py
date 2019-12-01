@@ -55,8 +55,8 @@ class AsteroidPlayer(object):
         
         # print(state_bits, data, self.player_name)
 
-        visible = 1
-        return (self.player_nr, visible, self.x, self.y, self.rotation, self.engine_visible)
+        scale = 100
+        return (self.player_nr, scale, self.x, self.y, self.rotation, self.engine_visible, 1, 50)
 
     def set_coords(self, x):
         self.coords.set(x)

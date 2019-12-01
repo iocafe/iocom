@@ -1,6 +1,6 @@
 import pyglet
 import random
-from . import physicalobject, resources, util
+from . import resources, util
 
 
 def player_lives(num_icons, batch=None):

@@ -1,43 +1,55 @@
-import pyglet, math
-from . import physicalobject, resources
+import pyglet
+# , math
+from . import resources
 
 
 class Player:
-    """Physical object that responds to user input"""
-
     def __init__(self, *args, **kwargs):
-        # super(Player, self).__init__(img=resources.player_image, *args, **kwargs)
 
-        self.my_sprite = pyglet.sprite.Sprite(img=resources.asteroid_image, *args, **kwargs)
+        self.image_nr = 0
 
         # Create a child sprite to show when the ship is thrusting
-        self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, *args, **kwargs)
-        self.engine_sprite.visible = False
+        #self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, *args, **kwargs)
+        # self.engine_sprite.visible = False
 
-    # def set_sprite(self, visible, x, y, rotation, engine_visible):
-    #    self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, *args, **kwargs)
-    #    self.engine_sprite.visible = False
+    def mysetplayer(self, scale, x, y, rotation, engine_visible, image_nr, opacity, batch):
+        if x > 300:
+            image_nr = 1
 
+        else:
+            image_nr = 2
 
-    def mysetplayer(self, visible, x, y, rotation, engine_visible):
-#        super(Player, self).myset(visible, x, y, rotation)
+        if image_nr != self.image_nr:
+            if self.image_nr != 0:
+                self.my_sprite.delete()
+                self.engine_sprite.delete()
+
+            self.image_nr = image_nr
+
+            if image_nr == 1:
+                img=resources.player_image
+            if image_nr == 2:
+                img=resources.asteroid_image
+            if image_nr == 3:
+                img=resources.player_image
+
+            self.my_sprite = pyglet.sprite.Sprite(img=img, batch=batch)
+            self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, batch=batch)
+
+        self.my_sprite.x = x;
+        self.my_sprite.y = y;
+        self.my_sprite.rotation = rotation
+
+        self.my_sprite.scale = 0.01 * scale
 
         self.engine_sprite.rotation = rotation
         self.engine_sprite.x = x
         self.engine_sprite.y = y
         self.engine_sprite.visible = engine_visible
 
-        self.my_sprite.x = x;
-        self.my_sprite.y = y;
-        self.my_sprite.rotation = rotation
-
-
-#    def update(self, dt):
-        # Do all the normal physics stuff
-#        super(Player, self).update(dt)
-
     def delete(self):
-        # We have a child sprite which must be deleted when this object
-        # is deleted from batches, etc.
-        self.engine_sprite.delete()
- #       super(Player, self).delete()
+        if self.image_nr != 0:
+            self.my_sprite.delete()
+            self.engine_sprite.delete()
+            
+        self.image_nr = 0            
