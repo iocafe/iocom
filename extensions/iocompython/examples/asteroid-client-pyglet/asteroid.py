@@ -1,7 +1,12 @@
 import pyglet, random, math, time
 from pyglet.window import key
-from game import load, player, resources
+from game import physicalobject, resources
 from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
+
+
+my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device number (not really unique)
+max_physicalobjects = 50
+data_vector_n = 8
 
 signal_conf = ('{'
   '"mblk": ['
@@ -22,7 +27,7 @@ signal_conf = ('{'
       '{'
         '"name": "world",'
         '"signals": ['
-           '{"name": "coords", "type": "short", "array": 40}'
+           '{"name": "coords", "type": "short", "array": ' + str (max_physicalobjects * data_vector_n + 1) + '}'
          ']'
       '}'
     ']'
@@ -31,13 +36,10 @@ signal_conf = ('{'
 '}')
 
 
-my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device number (not really unique)
-max_players = 50 
-data_vector_n = 8
 
 root = Root('mygame', device_nr=my_player_nr, network_name='pekkanet')
 exp = MemoryBlock(root, 'upward,auto', 'exp', nbytes=32)
-imp = MemoryBlock(root, 'downward,auto', 'imp', nbytes=2*max_players*data_vector_n + 2)
+imp = MemoryBlock(root, 'downward,auto', 'imp', nbytes=2*max_physicalobjects*data_vector_n + 3)
 data = json2bin(signal_conf)
 info = MemoryBlock(root, 'upward,auto', 'info', nbytes=len(data))
 info.publish(data)
@@ -57,7 +59,7 @@ level_label = pyglet.text.Label(text="Version 3: Basic Collision",
                                 x=400, y=575, anchor_x='center', batch=main_batch)
 
 # Store all objects that update each frame in a list
-space_ships = []
+game_objects = []
 
 # Let pyglet handle keyboard events for us
 key_handler = key.KeyStateHandler()
@@ -106,13 +108,13 @@ def keyboard_input(dt):
 
     userctrl.set( (my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me) )
      
-def set_player(ship, player_ix0, data):
-    ix = player_ix0 * data_vector_n + 1
-    if player_ix0 == data[ix]:
-        ship.mysetplayer(data[ix+1], data[ix+2], data[ix+3], my_rotation, my_engine_visible, data[ix+6], data[ix+7], main_batch);
+def set_physicalobject(o, ix, data):
+    ix = ix * data_vector_n + 1
+    if my_player_nr == data[ix]:
+        o.set(data[ix+1], data[ix+2], data[ix+3], my_rotation, my_engine_visible, data[ix+6], data[ix+7], main_batch);
 
     else:
-        ship.mysetplayer(data[ix+1], data[ix+2], data[ix+3], data[ix+4], data[ix+5], data[ix+6],  data[ix+7], main_batch);
+        o.set(data[ix+1], data[ix+2], data[ix+3], data[ix+4], data[ix+5], data[ix+6],  data[ix+7], main_batch);
 
 def update(dt):
     keyboard_input(dt)
@@ -120,18 +122,18 @@ def update(dt):
     state_bits, data = myworld.get()
 
     if state_bits & 2:
-        nro_players = data[0]
+        nro_physicalobjects = data[0]
 
-        for player_ix0 in range(len(space_ships), nro_players): 
-            ship = player.Player(batch=main_batch)
-            space_ships.append(ship)
+        for ix in range(len(game_objects), nro_physicalobjects):
+            o = physicalobject.PhysicalObject(batch=main_batch)
+            game_objects.append(o)
 
-        for player_ix0 in range(nro_players): 
-            set_player(space_ships[player_ix0], player_ix0, data)
+        for ix in range(nro_physicalobjects):
+            set_physicalobject(game_objects[ix], ix, data)
 
-        while len(space_ships) > nro_players:
-          space_ships[-1].delete()
-          del space_ships[-1]
+        while len(game_objects) > nro_physicalobjects:
+          game_objects[-1].delete()
+          del game_objects[-1]
 
 if __name__ == "__main__":
     # Update the game 60 times per second

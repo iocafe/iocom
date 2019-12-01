@@ -1,1 +1,1 @@
-from . import load, player, resources
+from . import physicalobject, resources

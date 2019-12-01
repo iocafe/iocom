@@ -1,18 +1,12 @@
 import pyglet
-# , math
 from . import resources
 
 
-class Player:
+class PhysicalObject:
     def __init__(self, *args, **kwargs):
-
         self.image_nr = 0
 
-        # Create a child sprite to show when the ship is thrusting
-        #self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, *args, **kwargs)
-        # self.engine_sprite.visible = False
-
-    def mysetplayer(self, scale, x, y, rotation, engine_visible, image_nr, opacity, batch):
+    def set(self, scale, x, y, rotation, engine_visible, image_nr, opacity, batch):
         if x > 300:
             image_nr = 1
 
@@ -31,7 +25,7 @@ class Player:
             if image_nr == 2:
                 img=resources.asteroid_image
             if image_nr == 3:
-                img=resources.player_image
+                img=resources.bullet_image
 
             self.my_sprite = pyglet.sprite.Sprite(img=img, batch=batch)
             self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, batch=batch)
@@ -39,7 +33,6 @@ class Player:
         self.my_sprite.x = x;
         self.my_sprite.y = y;
         self.my_sprite.rotation = rotation
-
         self.my_sprite.scale = 0.01 * scale
 
         self.engine_sprite.rotation = rotation
