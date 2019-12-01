@@ -36,7 +36,6 @@ signal_conf = ('{'
 '}')
 
 
-
 root = Root('mygame', device_nr=my_player_nr, network_name='pekkanet')
 exp = MemoryBlock(root, 'upward,auto', 'exp', nbytes=32)
 imp = MemoryBlock(root, 'downward,auto', 'imp', nbytes=2*max_physicalobjects*data_vector_n + 3)
@@ -49,7 +48,7 @@ myworld = Signal(root, "coords", "pekkanet")
 userctrl = Signal(root, "userctrl", "pekkanet")
 
 # Set up a window
-game_window = pyglet.window.Window(900, 600)
+game_window = pyglet.window.Window(800, 600)
 
 main_batch = pyglet.graphics.Batch()
 
@@ -68,8 +67,8 @@ key_handler = key.KeyStateHandler()
 game_window.push_handlers(key_handler)
 
 # Set some easy-to-tweak constants
-my_thrust = 300.0
-my_rotate_speed = 200.0
+my_thrust = 6300.0
+my_rotate_speed = 300.0
 
 # We control the game by sending force and rotation
 my_rotation = 0.0

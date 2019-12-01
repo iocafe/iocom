@@ -7,12 +7,6 @@ class PhysicalObject:
         self.image_nr = 0
 
     def set(self, scale, x, y, rotation, engine_visible, image_nr, opacity, batch):
-        if x > 300:
-            image_nr = 1
-
-        else:
-            image_nr = 2
-
         if image_nr != self.image_nr:
             if self.image_nr != 0:
                 self.my_sprite.delete()
@@ -30,11 +24,13 @@ class PhysicalObject:
             self.my_sprite = pyglet.sprite.Sprite(img=img, batch=batch)
             self.engine_sprite = pyglet.sprite.Sprite(img=resources.engine_image, batch=batch)
 
+        self.my_sprite.opacity = opacity
         self.my_sprite.x = x;
         self.my_sprite.y = y;
         self.my_sprite.rotation = rotation
         self.my_sprite.scale = 0.01 * scale
 
+        self.engine_sprite.opacity = opacity
         self.engine_sprite.rotation = rotation
         self.engine_sprite.x = x
         self.engine_sprite.y = y

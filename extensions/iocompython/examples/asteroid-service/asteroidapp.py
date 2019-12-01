@@ -3,12 +3,20 @@ from iocompython import Root, Signal
 import threading
 import time
 from asteroidplayer import AsteroidPlayer 
+from asteroidrock import AsteroidRock
 
 class AsteroidApp(object):
     def __init__(self, root, network_name):
         self.root = root
         self.network_name = network_name
         self.players = {}
+
+        self.rocks = []
+        self.rocks.append(AsteroidRock())
+        self.rocks.append(AsteroidRock())
+        self.rocks.append(AsteroidRock())
+
+        self.mytimer = time.time()
 
 #    def getnetwork_name(self):
 #        return self.network_name
@@ -18,6 +26,11 @@ class AsteroidApp(object):
 
     def run(self):
         global root
+
+        timer_now = time.time()
+        dt = timer_now - self.mytimer
+        self.mytimer = timer_now
+
         # Make sure that our player list is up to date
         player_list = root.list_devices(self.network_name)
         if player_list == None:
@@ -42,9 +55,15 @@ class AsteroidApp(object):
             self.players.pop(player_name)
 
         asteroid_players = self.players.values()
-        coords = [len(asteroid_players)]
+        n_rocks = len(self.rocks)
+        coords = [len(asteroid_players) + n_rocks]
         for player in asteroid_players:
-            coords.append(player.run())
+            coords.append(player.run(dt))
+
+        for i in range(n_rocks):
+            coords.append(self.rocks[i].run(dt))
+
+#        print(coords)
 
         for player in asteroid_players:
             player.set_coords(coords)

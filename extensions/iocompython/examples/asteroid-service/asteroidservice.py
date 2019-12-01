@@ -2,7 +2,7 @@
 from iocompython import Root, EndPoint
 import ioterminal
 import asteroidapp
-import queue
+import queue, random, time
 
 def main():
     global root, callback_queue
@@ -11,6 +11,7 @@ def main():
     root = Root('asteroid')
     root.queue_events()
     epoint = EndPoint(root, flags='socket,dynamic')
+    random.seed(time.time())
 
     while (ioterminal.run(root)):
         e = root.wait_com_event(500)

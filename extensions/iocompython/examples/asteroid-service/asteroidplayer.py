@@ -1,6 +1,6 @@
 # Module: asteroidplayer.py
 from iocompython import Root, Signal
-import re
+import re, math
 
 class AsteroidPlayer(object):
     def __init__(self, root, player_name, network_name):
@@ -20,9 +20,11 @@ class AsteroidPlayer(object):
         self.y = 100.0
         self.rotation = 0
         self.engine_visible = 0
-        self.resurrect_me = 0
+        self.opacity = 0;
 
-    def run(self):
+        self.timeline = 0;
+
+    def run(self, dt):
         state_bits, data = self.userctrl.get()
         if state_bits & 2:
             self.rotation = data[0]
@@ -31,12 +33,11 @@ class AsteroidPlayer(object):
             self.engine_visible = data[3]
             self.resurrect_me = data[4]
 
-        dt = 0.1
         self.velocity_x += self.force_x * dt
         self.velocity_y += self.force_y * dt
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
-        
+
         if self.x < 0:
             self.x = 0
             self.velocity_x = 0.1
@@ -53,15 +54,17 @@ class AsteroidPlayer(object):
             self.y = 600
             self.velocity_y = -0.1
         
+        self.opacity += dt * 930.0;
+        if self.opacity > 255:
+                self.opacity = 255
+
+        self.timeline += dt
+        scale = 100
+        # + 5 * math.sin(6.3 * self.timeline)
+
         # print(state_bits, data, self.player_name)
 
-        scale = 100
-        return (self.player_nr, scale, self.x, self.y, self.rotation, self.engine_visible, 1, 50)
+        return (self.player_nr, scale, self.x, self.y, self.rotation, self.engine_visible, 1, self.opacity)
 
     def set_coords(self, x):
         self.coords.set(x)
-
-        # my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me
-
-        # print ("Hello, World " + self.network_name)
-
