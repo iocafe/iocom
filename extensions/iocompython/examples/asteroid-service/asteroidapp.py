@@ -1,20 +1,20 @@
-# Module: testapp.py
+# Module: asteroidapp.py
 from iocompython import Root, Signal
 import threading
 import time
-from testplayer import TestPlayer 
+from asteroidplayer import AsteroidPlayer 
 
-class TestApp(object):
+class AsteroidApp(object):
     def __init__(self, root, network_name):
         self.root = root
         self.network_name = network_name
         self.players = {}
 
-    def getnetwork_name(self):
-        return self.network_name
+#    def getnetwork_name(self):
+#        return self.network_name
 
-    def setnetwork_name(self, network_name):
-        self.network_name = network_name
+#    def setnetwork_name(self, network_name):
+#        self.network_name = network_name
 
     def run(self):
         global root
@@ -29,7 +29,7 @@ class TestApp(object):
             p = self.players.get(player_name)
             if p == None:
                 print ("new player " + player_name)
-                self.players[player_name] = TestPlayer(self.root, player_name, self.network_name)
+                self.players[player_name] = AsteroidPlayer(self.root, player_name, self.network_name)
 
         # Remove players who dropped off
         remove_these = []
@@ -41,15 +41,13 @@ class TestApp(object):
         for player_name in remove_these:
             self.players.pop(player_name)
 
-        test_players = self.players.values()
-        coords = [len(test_players)]
-        for tplayer in test_players:
-            coords.append(tplayer.run())
+        asteroid_players = self.players.values()
+        coords = [len(asteroid_players)]
+        for player in asteroid_players:
+            coords.append(player.run())
 
-#        print (coords)
-
-        for tplayer in test_players:
-            tplayer.set_coords(coords)
+        for player in asteroid_players:
+            player.set_coords(coords)
 
         return True
 
@@ -60,8 +58,8 @@ def run_testapp(myapp):
 def start(proot, network_name):
     global root
     root = proot
-    print("new: starting application for " + network_name)
-    myapp = TestApp(root, network_name)
-    testAppThread = threading.Thread(target=run_testapp, args=(myapp,), daemon=True)
-    testAppThread.start()
+    print("Asteroids started for " + network_name)
+    myapp = AsteroidApp(root, network_name)
+    asteroidAppThread = threading.Thread(target=run_testapp, args=(myapp,), daemon=True)
+    asteroidAppThread.start()
 

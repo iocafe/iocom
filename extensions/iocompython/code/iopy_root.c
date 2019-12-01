@@ -23,11 +23,6 @@ static void Root_callback(
     struct iocMemoryBlock *mblk,    
     void *context);
 
-/* static void Root_do_callback(
-    Root *pyroot,
-    os_char *event_text,
-    os_char *arg_text); */
-
 static void Root_info_callback(
     struct iocHandle *handle,
     os_int start_addr,
@@ -327,69 +322,6 @@ static PyObject *Root_list_devices(
     return rval;
 }
 
-/**
-****************************************************************************************************
-
-  @brief Set python function as root callback.
-
-  The Root_set_callback function sets function to call when IOCOM root object has information
-  to pass to the Python application.
-
-  @param   self Pointer to the python object.
-  @param   args Callback function (Python callable).
-  @return  None.
-
-****************************************************************************************************
-*/
-#if 0
-static PyObject *Root_set_callback(
-    Root *self,
-    PyObject *args)
-{
-    PyObject *temp;
-
-    if (self->root == OS_NULL)
-    {
-        PyErr_SetString(iocomError, "no IOCOM root object");
-        return NULL;
-    }
-
-    if (!PyArg_ParseTuple(args, "O", &temp))
-    {
-        PyErr_SetString(PyExc_TypeError, "parsing argument failed");
-        return NULL;
-    }
-
-    if (!PyCallable_Check(temp))
-    {
-        PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-        return NULL;
-    }
-
-    /* Add a reference to new callback.
-     */
-    Py_XINCREF(temp);
-
-    /* Dispose of the previous callback.
-     */
-    if (self->root_callback)
-    {
-        Py_XDECREF(self->root_callback);
-        self->root_callback = NULL;
-    }
-
-    /* Remember the new callback.
-     */
-    self->root_callback = temp;
-    PySys_WriteStdout("Root.set_callback()\n");
-
-    /* Return "None".
-     */
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-#endif
-
 
 /**
 ****************************************************************************************************
@@ -597,77 +529,8 @@ static void Root_callback(
 
         default:
             break;
-#if 0
-        case IOC_NEW_NETWORK:
-            osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
-
-            // Root_do_callback(pyroot, "new_network", dnetwork->network_name);
-            break;
-
-        case IOC_NEW_DEVICE:
-            osal_trace2_str("IOC_NEW_DEVICE ", arg);
-            break;
-
-        case IOC_NETWORK_DISCONNECTED:
-            osal_trace2("IOC_NETWORK_DISCONNECTED");
-            break;
-#endif
     }
 }
-
-
-/**
-****************************************************************************************************
-
-  @brief Do call the Python callback function.
-
-  The Root_do_callback() function is called when device information data is received from connection
-  or when connection status changes.
-  @return  None.
-
-****************************************************************************************************
-*/
-#if 0
-static void Root_do_callback(
-    Root *pyroot,
-    os_char *event_text,
-    os_char *arg_text)
-{
-    PyObject *arglist, *result;
-    PyGILState_STATE gstate;
-
-    /* If we have no python application callback function, then do nothing more.
-     */
-    if (pyroot->root_callback == OS_NULL) return;
-
-    gstate = PyGILState_Ensure();
-
-    /* Call the callback.
-     */
-    arglist = Py_BuildValue("(ss)", event_text, arg_text);
-    result = PyObject_CallObject(pyroot->root_callback, arglist);
-    Py_DECREF(arglist);
-
-    /* What is that callback function reported an error?
-     */
-    if (result == NULL)
-    {
-        PyErr_Clear();
-        PyGILState_Release(gstate);
-        return;
-        /* Pass error back ?? */
-    }
-
-    /* ...use result ... here we don't ...
-     */
-
-    Py_DECREF(result);
-
-    /* Release the thread. No Python API allowed beyond this point.
-     */
-    PyGILState_Release(gstate);
-}
-#endif
 
 
 /**
@@ -804,7 +667,6 @@ static PyMemberDef Root_members[] = {
 */
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
-    /* {"set_callback", (PyCFunction)Root_set_callback, METH_VARARGS, "Set IOCOM root callback function"}, */
     {"queue_events", (PyCFunction)Root_initialize_event_queue, METH_VARARGS, "Start queueing connect/disconnect, etc. events"},
     {"wait_com_event", (PyCFunction)Root_wait_for_com_event, METH_VARARGS, "Wait for a communication event"},
     {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},

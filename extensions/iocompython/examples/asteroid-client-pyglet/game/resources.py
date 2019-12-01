@@ -8,7 +8,7 @@ def center_image(image):
 
 
 # Tell pyglet where to find the resources
-pyglet.resource.path = ['../resources']
+pyglet.resource.path = ['resources']
 pyglet.resource.reindex()
 
 # Load the three main resources and get them to draw centered

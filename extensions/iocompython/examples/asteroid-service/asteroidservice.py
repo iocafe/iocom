@@ -1,14 +1,14 @@
+# Module: asteroidservice.py
 from iocompython import Root, EndPoint
 import ioterminal
-import testapp
-# import time
+import asteroidapp
 import queue
 
 def main():
     global root, callback_queue
     ioterminal.start()
 
-    root = Root('pythoncontrol')
+    root = Root('asteroid')
     root.queue_events()
     epoint = EndPoint(root, flags='socket,dynamic')
 
@@ -16,7 +16,7 @@ def main():
         e = root.wait_com_event(500)
         if e != None:
             if e[0] == 'new_network':
-                testapp.start(root, e[1])
+                asteroidapp.start(root, e[1])
 
     root.delete()
 

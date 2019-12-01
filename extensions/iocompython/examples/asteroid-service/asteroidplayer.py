@@ -1,8 +1,8 @@
-# Module: testplayer.py
+# Module: asteroidplayer.py
 from iocompython import Root, Signal
 import re
 
-class TestPlayer(object):
+class AsteroidPlayer(object):
     def __init__(self, root, player_name, network_name):
         self.root = root
         self.player_name = player_name
