@@ -252,15 +252,16 @@ iocQueuedEvent *ioc_get_event(
   event returned by ioc_get_event().
 
   @param   root Pointer to IOCOM root object.
-  @return  None.
+  @return  OS_TRUE if queue became empty, OS_FALSE if not.
 
 ****************************************************************************************************
 */
-void ioc_pop_event(
+os_boolean ioc_pop_event(
     iocRoot *root)
 {
     iocEventQueue *queue;    
     iocQueuedEvent *e;
+    os_boolean is_empty;
 
     ioc_lock(root);
     queue = root->event_queue;
@@ -268,11 +269,27 @@ void ioc_pop_event(
     e = queue->first;
     osal_debug_assert(e);
     queue->first = e->next;
-    if (e->next == OS_NULL) queue->last = OS_NULL;
+    if (e->next == OS_NULL)
+    {
+        queue->last = OS_NULL;
+        is_empty = OS_TRUE;
+    }
+    else
+    {
+        is_empty = OS_FALSE;
+    }
 
     os_free(e, sizeof(iocQueuedEvent)); 
     queue->event_count--;
+
+    if (queue->event)
+    {
+        osal_event_set(queue->event);
+    }
+
     ioc_unlock(root);
+
+    return is_empty;
 }
 
 #endif

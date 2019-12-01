@@ -425,7 +425,6 @@ static PyObject *Root_wait_for_com_event(
     iocQueuedEvent *e;
     os_char device_name[IOC_NAME_SZ+8];
     os_char nbuf[OSAL_NBUF_SZ], *event_name;
-    os_timer start_t;
 
     root = self->root;
     if (root == OS_NULL)
@@ -440,80 +439,71 @@ static PyObject *Root_wait_for_com_event(
         return NULL;
     }
 
-
     if (self->queue_event == OS_NULL)
     {
         PyErr_SetString(PyExc_TypeError, "Communication events are not queues, call queue_events()");
         return NULL;
     }
 
-    os_get_timer(&start_t);
-    while (OS_TRUE) {
-        e = ioc_get_event(root);
+    Py_BEGIN_ALLOW_THREADS
+    osal_event_wait(self->queue_event, timeout_ms);
+    Py_END_ALLOW_THREADS
 
-        if (e)
+    e = ioc_get_event(root);
+
+    if (e)
+    {
+        rval = PyList_New(4);
+        switch (e->event)
         {
-            rval = PyList_New(4);
-            switch (e->event)
-            {
-                case IOC_NEW_MEMORY_BLOCK:
-                    event_name = "new_mblk";
-                    break;
+            case IOC_NEW_MEMORY_BLOCK:
+                event_name = "new_mblk";
+                break;
 
-                case IOC_MBLK_CONNECTED_AS_SOURCE:
-                    event_name = "mblk_as_source";
-                    break;
+            case IOC_MBLK_CONNECTED_AS_SOURCE:
+                event_name = "mblk_as_source";
+                break;
 
-                case IOC_MBLK_CONNECTED_AS_TARGET:
-                    event_name = "mblk_as_target";
-                    break;
+            case IOC_MBLK_CONNECTED_AS_TARGET:
+                event_name = "mblk_as_target";
+                break;
 
-                case IOC_MEMORY_BLOCK_DELETED:
-                    event_name = "mblk_deleted";
-                    break;
+            case IOC_MEMORY_BLOCK_DELETED:
+                event_name = "mblk_deleted";
+                break;
 
-                case IOC_NEW_NETWORK:
-                    event_name = "new_network";
-                    break;
+            case IOC_NEW_NETWORK:
+                event_name = "new_network";
+                break;
 
-                case IOC_NETWORK_DISCONNECTED:
-                    event_name = "network_disconnected";
-                    break;
+            case IOC_NETWORK_DISCONNECTED:
+                event_name = "network_disconnected";
+                break;
 
-                case IOC_NEW_DEVICE:
-                    event_name = "new_device";
-                    break;
+            case IOC_NEW_DEVICE:
+                event_name = "new_device";
+                break;
 
-                case IOC_DEVICE_DISCONNECTED:
-                    event_name = "device_disconnected";
-                    break;
+            case IOC_DEVICE_DISCONNECTED:
+                event_name = "device_disconnected";
+                break;
 
-                default:
-                    event_name = "unknown";
-                    break;
-            }
-
-            PyList_SetItem(rval, 0, Py_BuildValue("s", (char *)event_name));
-            PyList_SetItem(rval, 1, Py_BuildValue("s", (char *)e->network_name));
-
-            osal_int_to_str(nbuf, sizeof(nbuf), e->device_nr);
-            os_strncpy(device_name, e->device_name, sizeof(device_name));
-            os_strncat(device_name, nbuf, sizeof(device_name));
-            PyList_SetItem(rval, 2, Py_BuildValue("s", (char *)device_name));
-            PyList_SetItem(rval, 3, Py_BuildValue("s", (char *)e->mblk_name));
-
-            ioc_pop_event(root);
-            return rval;
+            default:
+                event_name = "unknown";
+                break;
         }
 
-        /* eosal event wait implementation not complete for timeouts,
-           use poll for now instead of osal_event_wait(self->queue_event, timeout_ms);
-         */
-        if (os_elapsed(&start_t, timeout_ms)) break;
+        PyList_SetItem(rval, 0, Py_BuildValue("s", (char *)event_name));
+        PyList_SetItem(rval, 1, Py_BuildValue("s", (char *)e->network_name));
 
-        Py_BEGIN_ALLOW_THREADS
-        os_sleep(100);
-        Py_END_ALLOW_THREADS
+        osal_int_to_str(nbuf, sizeof(nbuf), e->device_nr);
+        os_strncpy(device_name, e->device_name, sizeof(device_name));
+        os_strncat(device_name, nbuf, sizeof(device_name));
+        PyList_SetItem(rval, 2, Py_BuildValue("s", (char *)device_name));
+        PyList_SetItem(rval, 3, Py_BuildValue("s", (char *)e->mblk_name));
+
+        ioc_pop_event(root);
+        return rval;
     }
 
     /* Return "None".

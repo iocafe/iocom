@@ -140,7 +140,7 @@ iocQueuedEvent *ioc_get_event(
 /* Pop event away from queue. Called after processing
    event returned by ioc_get_event().
  */
-void ioc_pop_event(
+os_boolean ioc_pop_event(
     iocRoot *root);
 
 #endif
