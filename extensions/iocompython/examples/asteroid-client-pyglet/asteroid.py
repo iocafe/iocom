@@ -59,16 +59,16 @@ level_label = pyglet.text.Label(text="Version 3: Basic Collision",
                                 x=400, y=575, anchor_x='center', batch=main_batch)
 
 # Initialize the player sprite
-player_ship = player.Player(x=400, y=300, batch=main_batch)
+# player_ship = player.Player(x=400, y=300, batch=main_batch)
 
 # Make three sprites to represent remaining lives
 player_lives = load.player_lives(2, main_batch)
 
 # Make three asteroids so we have something to shoot at 
-asteroids = load.asteroids(max_asteroids, player_ship.position, main_batch)
+# asteroids = load.asteroids(max_asteroids, player_ship.position, main_batch)
 
 # Store all objects that update each frame in a list
-game_objects = [player_ship] + asteroids
+# game_objects = [player_ship] + asteroids
 
 # Store all objects that update each frame in a list
 space_ships = {}
@@ -139,11 +139,12 @@ def update(dt):
         for player_ix0 in range(nro_players): 
             ship = space_ships.get(str(player_ix0), None)
             if ship == None:
-                ship = player.Player(x=400, y=300, batch=main_batch)
+                #ship = player.Player(x=400, y=300, batch=main_batch)
+                ship = player.Player(batch=main_batch)
                 space_ships[str(player_ix0)] = ship
 
             set_player(ship, player_ix0, data)
-            ship.update(dt)
+#            ship.update(dt)
 
     #for obj in game_objects:
     #    obj.update(dt)
