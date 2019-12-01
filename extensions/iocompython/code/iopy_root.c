@@ -335,11 +335,20 @@ static PyObject *Root_list_devices(
 */
 static PyObject *Root_initialize_event_queue(
     Root *self,
-    PyObject *args)
+    PyObject *args,
+    PyObject *kwds)
 {
     iocRoot *root;
     osalEvent event = OS_NULL;
-    PyObject *temp;
+    char *py_flags = OS_NULL;
+    int py_max_events = 0;
+    os_int flags;
+
+    static char *kwlist[] = {
+        "flags",
+        "n",
+        NULL
+    };
 
     root = self->root;
     if (root == OS_NULL)
@@ -348,15 +357,12 @@ static PyObject *Root_initialize_event_queue(
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "|O", &temp))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|si",
+         kwlist, &py_flags, &py_max_events))
     {
         PyErr_SetString(PyExc_TypeError, "parsing argument failed");
         return NULL;
     }
-
-    /* Add a reference to new callback.
-     */
-//    Py_XINCREF(temp);
 
     if (self->queue_event)
     {
@@ -370,7 +376,27 @@ static PyObject *Root_initialize_event_queue(
         self->queue_event = event;
     }
 
-    ioc_initialize_event_queue(root, event, 0);
+    flags = 0;
+    if (py_flags)
+    {
+        if (os_strstr(py_flags, "mblk", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_DEVDIR_DATA;
+
+        if (os_strstr(py_flags, "device", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_DEVICE_EVENTS;
+
+        if (os_strstr(py_flags, "network", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_NETWORK_EVENTS;
+    }
+
+    /* Default to receiving network and device evnts
+     */
+    if (flags == 0)
+    {
+        flags = IOC_DEVICE_EVENTS|IOC_NETWORK_EVENTS;
+    }
+
+    ioc_initialize_event_queue(root, event, py_max_events, flags);
 
     /* Return "None".
      */
@@ -683,7 +709,8 @@ static PyMemberDef Root_members[] = {
 */
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
-    {"queue_events", (PyCFunction)Root_initialize_event_queue, METH_VARARGS, "Start queueing connect/disconnect, etc. events"},
+    {"queue_events", (PyCFunction)Root_initialize_event_queue, METH_VARARGS||METH_KEYWORDS,
+        "Start queueing connect/disconnect, etc. events"},
     {"wait_com_event", (PyCFunction)Root_wait_for_com_event, METH_VARARGS, "Wait for a communication event"},
     {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},
     {"list_devices", (PyCFunction)Root_list_devices, METH_VARARGS, "List devices in spefified network"},

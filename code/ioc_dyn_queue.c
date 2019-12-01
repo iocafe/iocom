@@ -38,6 +38,8 @@
   @param   max_events Maximum number of events to queue. This shoud be big number which can
            never be exceed, and is there just to avoid running out of memory in case
            application error prevents processing events. Set 0 to use default.
+  @param   flags Which communication events we wish to queue, bits: IOC_MBLK_EVENTS,
+           IOC_DEVICE_EVENTS, IOC_NETWORK_EVENTS.
   @return  OSAL_SUCCESS to indicate success or OSAL_STATUS_MEMORY_ALLOCATION_FAILED if
            memory allocation has failed.
 
@@ -46,7 +48,8 @@
 osalStatus ioc_initialize_event_queue(
     iocRoot *root,
     osalEvent event,
-    os_int max_nro_events)
+    os_int max_nro_events,
+    os_int flags)
 {
     iocEventQueue *queue;
 
@@ -63,6 +66,7 @@ osalStatus ioc_initialize_event_queue(
     os_memclear(queue, sizeof(iocEventQueue));
     queue->root = root;
     queue->event = event;
+    queue->flags = flags;
     queue->max_nro_events = max_nro_events ? max_nro_events : 1000;
     root->event_queue = queue;
 
@@ -143,6 +147,27 @@ osalStatus ioc_queue_event(
     iocQueuedEvent *e;
 
     queue = root->event_queue;
+
+    switch (event)
+    {
+        default:
+        case IOC_NEW_MEMORY_BLOCK:
+        case IOC_MBLK_CONNECTED_AS_SOURCE:
+        case IOC_MBLK_CONNECTED_AS_TARGET:
+        case IOC_MEMORY_BLOCK_DELETED:
+            if ((queue->flags & IOC_MBLK_EVENTS) == 0) return OSAL_SUCCESS;
+            break;
+
+        case IOC_NEW_NETWORK:
+        case IOC_NETWORK_DISCONNECTED:
+            if ((queue->flags & IOC_NETWORK_EVENTS) == 0) return OSAL_SUCCESS;
+            break;
+
+        case IOC_NEW_DEVICE:
+        case IOC_DEVICE_DISCONNECTED:
+            if ((queue->flags & IOC_DEVICE_EVENTS) == 0) return OSAL_SUCCESS;
+            break;
+    }
 
     if (queue->event_count >= queue->max_nro_events)
     {

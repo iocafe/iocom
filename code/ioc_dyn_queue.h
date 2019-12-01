@@ -71,10 +71,15 @@ typedef struct iocEventQueue
      */
     iocQueuedEvent *first, *last;
 
-    /* Operating system event to set when new event is
-       placed into queue.
+    /** Operating system event to set when new event is
+        placed into queue.
      */
     osalEvent event;
+
+    /** Which communication events we wish to queue, bits: IOC_MBLK_EVENTS,
+        IOC_DEVICE_EVENTS, IOC_NETWORK_EVENTS.
+     */
+    os_int flags;
     
     /** Number of events queued at the moment.
      */
@@ -96,12 +101,19 @@ iocEventQueue;
 ****************************************************************************************************
 */
 
+/* Flags for ioc_initialize_event_queue
+ */
+#define IOC_MBLK_EVENTS 1
+#define IOC_DEVICE_EVENTS 2
+#define IOC_NETWORK_EVENTS 4
+
 /* Start queueing communication events for the application.
  */
 osalStatus ioc_initialize_event_queue(
     iocRoot *root,
     osalEvent event,
-    os_int max_nro_events);
+    os_int max_nro_events,
+    os_int flags);
 
 /* Release any resources allocated for the event queue
    (doesn't free flat memory allocated for the queue structure)
