@@ -263,6 +263,15 @@ void ioc_network_mblk_is_deleted(
     iocDynamicSignal *dsignal, *prev_dsignal, *next_dsignal;
     os_int i;
 
+    root = mblk->link.root;
+
+    /* If this is info block, device is being disconnected.
+     */
+    if (!os_strcmp(mblk->mblk_name, "info") && root)
+    {
+        ioc_new_root_event(root, IOC_DEVICE_DISCONNECTED, dnetwork, mblk, root->callback_context);
+    }
+
     for (i = 0; i < IOC_DNETWORK_HASH_TAB_SZ; i++)
     {
         prev_dsignal = OS_NULL;
@@ -296,7 +305,6 @@ void ioc_network_mblk_is_deleted(
      */
     if (dnetwork->mlist_first == OS_NULL)
     {
-        root = mblk->link.root;
         if (root) if (root->droot)
         {
             ioc_remove_dynamic_network(root->droot, dnetwork);

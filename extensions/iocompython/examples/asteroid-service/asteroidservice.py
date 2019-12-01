@@ -15,6 +15,7 @@ def main():
     while (ioterminal.run(root)):
         e = root.wait_com_event(500)
         if e != None:
+            print(e)
             if e[0] == 'new_network':
                 asteroidapp.start(root, e[1])
 

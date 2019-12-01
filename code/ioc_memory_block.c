@@ -199,6 +199,11 @@ void ioc_release_memory_block(
     ioc_droot_mblk_is_deleted(root->droot, mblk);
 #endif
 
+    /* Application may want to know that the memory block is being deleted.
+     */
+    ioc_new_root_event(root, IOC_MEMORY_BLOCK_DELETED, OS_NULL, mblk,
+        root->callback_context);
+
     /* Terminate all handles to this memory block including the contained one.
      */
     ioc_terminate_handles(&mblk->handle);
@@ -570,23 +575,6 @@ void ioc_write_internal(
      */
     osal_debug_assert(buf != OS_NULL || (flags & IOC_CLEAR_MBLK_RANGE));
     osal_debug_assert(n > 0);
-
-#if 0
-    /* Handle status data writes.
-     */
-    if (addr < 0)
-    {
-        nstat = (n > -addr) ? -addr : n;
-        if (buf)
-        {
-            ioc_status_write(mblk, addr, buf, nstat);
-            buf += nstat;
-        }
-        if (nstat == n) goto getout;
-        addr = 0;
-        n -= nstat;
-    }
-#endif
 
     /* Clip address and nuber of bytes to write within internal buffer.
      */

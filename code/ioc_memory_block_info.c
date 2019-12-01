@@ -275,13 +275,6 @@ void ioc_mbinfo_received(
                 if (ioc_initialize_memory_block(&handle, OS_NULL, root, &mbprm)) return;
                 mblk = handle.mblk;
 
-                /* if (root->callback_func)
-                {
-
-                    root->callback_func(root, con, &handle,
-                        IOC_NEW_MEMORY_BLOCK, root->callback_context);
-                } */
-
                 ioc_new_root_event(root, IOC_NEW_MEMORY_BLOCK, OS_NULL, mblk,
                     root->callback_context);
 
@@ -368,13 +361,6 @@ goon:
             }
         }
 
-        /* If memory block has no name, copy name from info (if there is one).
-         */
-        /* if (mblk->mblk_name[0] == '\0')
-        {
-            os_strncpy(mblk->mblk_name, info->mblk_name, IOC_NAME_SZ);
-        } */
-
         /* Create source buffer to link the connection and memory block together.
          */
         sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
@@ -383,14 +369,10 @@ goon:
          */
         ioc_sbuf_synchronize(sbuf);
 
-        /* If we have callback function, application may want to know that the
-           memory block has been connected.
+        /* Application may want to know that the memory block has been connected.
          */
-        /* if (root->callback_func)
-        {
-            root->callback_func(root, con, mblk,
-                IOC_MBLK_CONNECTED, root->callback_context);
-        } */
+        ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_SOURCE, OS_NULL, mblk,
+            root->callback_context);
     }
 skip1:
 
@@ -429,25 +411,14 @@ skip1:
             ioc_release_target_buffer(tbuf);
         }
 
-        /* If memory block has no name, copy name from info (if there is one).
-         */
-        /* if (mblk->mblk_name[0] == '\0')
-        {
-            os_strncpy(mblk->mblk_name, info->mblk_name, IOC_NAME_SZ);
-        } */
-
         /* Create source buffer to link the connection and memory block together.
          */
         ioc_initialize_target_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
 
-        /* If we have callback function, application may want to know that the
-           memory block has been connected.
+        /* Application may want to know that the memory block has been connected.
          */
-        /* if (root->callback_func)
-        {
-            root->callback_func(root, con, mblk,
-                IOC_MBLK_CONNECTED, root->callback_context);
-        } */
+        ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_TARGET, OS_NULL, mblk,
+            root->callback_context);
 
         return;
     }

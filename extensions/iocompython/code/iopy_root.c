@@ -434,6 +434,18 @@ static PyObject *Root_wait_for_com_event(
                     event_name = "new_mblk";
                     break;
 
+                case IOC_MBLK_CONNECTED_AS_SOURCE:
+                    event_name = "mblk_as_source";
+                    break;
+
+                case IOC_MBLK_CONNECTED_AS_TARGET:
+                    event_name = "mblk_as_target";
+                    break;
+
+                case IOC_MEMORY_BLOCK_DELETED:
+                    event_name = "mblk_deleted";
+                    break;
+
                 case IOC_NEW_NETWORK:
                     event_name = "new_network";
                     break;
@@ -444,6 +456,10 @@ static PyObject *Root_wait_for_com_event(
 
                 case IOC_NEW_DEVICE:
                     event_name = "new_device";
+                    break;
+
+                case IOC_DEVICE_DISCONNECTED:
+                    event_name = "device_disconnected";
                     break;
 
                 default:
