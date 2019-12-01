@@ -480,8 +480,6 @@ osalStatus ioc_add_dynamic_info(
     osalJsonIndex jindex;
     osalStatus s;
     iocAddDinfoState state;
-//    os_char device_name[IOC_NAME_SZ + 8]; /* +8 for device number */
-//    os_char nbuf[OSAL_NBUF_SZ];
 
     /* Get memory block pointer and start synchronization.
      */
@@ -516,22 +514,12 @@ osalStatus ioc_add_dynamic_info(
         ioc_add_mblk_shortcut(state.dnetwork, mblk);
     }
 
-    /* If we have application callback function: Informn application about new dynamic
-       networks and devices.
+    /* Informn application about new networks and devices.
      */
-    /* if (droot->func)
+    if (state.new_network)
     {
-        if (state.new_network)
-        {
-            droot->func(root, state.dnetwork, IOC_NEW_NETWORK, OS_NULL, droot->context);
-        }
-
-        os_strncpy(device_name, mblk->device_name, sizeof(device_name));
-        osal_int_to_str(nbuf, sizeof(nbuf), mblk->device_nr);
-        os_strncat(device_name, nbuf, sizeof(device_name));
-        droot->func(root, state.dnetwork, IOC_NEW_DEVICE, device_name, droot->context);
-    } */
-    ioc_new_root_event(root, IOC_NEW_NETWORK, state.dnetwork, OS_NULL, root->callback_context);
+        ioc_new_root_event(root, IOC_NEW_NETWORK, state.dnetwork, OS_NULL, root->callback_context);
+    }
     ioc_new_root_event(root, IOC_NEW_DEVICE, state.dnetwork, mblk, root->callback_context);
 
     /* End syncronization and return.

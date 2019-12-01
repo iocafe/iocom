@@ -40,7 +40,6 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 {
     PyObject *m;
 
-
     Py_Initialize(); // ????????
 
     m = PyModule_Create(&iocompythonmodule);
@@ -82,29 +81,10 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
     Py_INCREF(&SignalType);
     PyModule_AddObject(m, "Signal", (PyObject *)&SignalType);
 
-
     module_init_count = 0;
 
     return m;
 }
-
-#if 0
-static PyObject *
-spam_system(PyObject *self, PyObject *args)
-{
-    const char *command;
-    int sts;
-
-    if (!PyArg_ParseTuple(args, "s", &command))
-        return NULL;
-    sts = system(command);
-    if (sts < 0) {
-        PyErr_SetString(iocomError, "System command failed");
-        return NULL;
-    }
-    return PyLong_FromLong(sts);
-}
-#endif
 
 
 /**
@@ -181,7 +161,6 @@ void iocom_python_release(void)
 ****************************************************************************************************
 */
 static PyMethodDef iocomPythonMethods[] = {
-//    {"system",  spam_system, METH_VARARGS, "Execute a shell command."},
     {"json2bin", iocom_python_json2bin, METH_VARARGS, "Convert JSON to packed binary format."},
 
     {NULL, NULL, 0, NULL}        /* Sentinel */

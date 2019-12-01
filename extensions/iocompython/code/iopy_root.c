@@ -23,10 +23,10 @@ static void Root_callback(
     struct iocMemoryBlock *mblk,    
     void *context);
 
-static void Root_do_callback(
+/* static void Root_do_callback(
     Root *pyroot,
     os_char *event_text,
-    os_char *arg_text);
+    os_char *arg_text); */
 
 static void Root_info_callback(
     struct iocHandle *handle,
@@ -98,8 +98,6 @@ static PyObject *Root_new(
     os_strncpy(self->network_name, network_name, IOC_NETWORK_NAME_SZ);
     os_strncpy(self->device_name, device_name, IOC_NAME_SZ);
     self->device_nr = device_nr;
-
-    self->number = 1;
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("Root.new(%s%d.%s)\n",
@@ -343,6 +341,7 @@ static PyObject *Root_list_devices(
 
 ****************************************************************************************************
 */
+#if 0
 static PyObject *Root_set_callback(
     Root *self,
     PyObject *args)
@@ -355,7 +354,7 @@ static PyObject *Root_set_callback(
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "O:set_callback", &temp))
+    if (!PyArg_ParseTuple(args, "O", &temp))
     {
         PyErr_SetString(PyExc_TypeError, "parsing argument failed");
         return NULL;
@@ -383,6 +382,165 @@ static PyObject *Root_set_callback(
      */
     self->root_callback = temp;
     PySys_WriteStdout("Root.set_callback()\n");
+
+    /* Return "None".
+     */
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+#endif
+
+
+/**
+****************************************************************************************************
+
+  @brief Start queueing IO network, device and memory block connects and disconnects.
+
+  The Root_initialize_event_queue function sets up queue for connect/disconnect, etc. events.
+  This keeps the Python application informed about the events.
+
+****************************************************************************************************
+*/
+static PyObject *Root_initialize_event_queue(
+    Root *self,
+    PyObject *args)
+{
+    iocRoot *root;
+    osalEvent event = OS_NULL;
+    PyObject *temp;
+
+    root = self->root;
+    if (root == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "no IOCOM root object");
+        return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "|O", &temp))
+    {
+        PyErr_SetString(PyExc_TypeError, "parsing argument failed");
+        return NULL;
+    }
+
+    /* Add a reference to new callback.
+     */
+//    Py_XINCREF(temp);
+
+    if (self->queue_event)
+    {
+        osal_event_delete(self->queue_event);
+        self->queue_event = OS_NULL;
+    }
+
+    if (event == OS_NULL)
+    {
+        event = osal_event_create();
+        self->queue_event = event;
+    }
+
+    ioc_initialize_event_queue(root, event, 0);
+
+    /* Return "None".
+     */
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Wait for network, device and memory block connect/disconnects, etc event.
+
+  The Root_wait_for_com_event function waits for communication event for given amount of time
+  If no event, the function returns None.
+
+****************************************************************************************************
+*/
+static PyObject *Root_wait_for_com_event(
+    Root *self,
+    PyObject *args)
+{
+    iocRoot *root;
+    PyObject *rval;
+    int timeout_ms;
+    iocQueuedEvent *e;
+    os_char device_name[IOC_NAME_SZ+8];
+    os_char nbuf[OSAL_NBUF_SZ], *event_name;
+    os_timer start_t;
+
+    root = self->root;
+    if (root == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "no IOCOM root object");
+        return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "|i", &timeout_ms))
+    {
+        PyErr_SetString(PyExc_TypeError, "parsing argument failed");
+        return NULL;
+    }
+
+
+    if (self->queue_event == OS_NULL)
+    {
+        PyErr_SetString(PyExc_TypeError, "Communication events are not queues, call queue_events()");
+        return NULL;
+    }
+
+    os_get_timer(&start_t);
+    while (OS_TRUE) {
+        e = ioc_get_event(root);
+
+        if (e)
+        {
+            rval = PyList_New(4);
+            switch (e->event)
+            {
+                case IOC_NEW_MEMORY_BLOCK:
+                    event_name = "new_mblk";
+                    break;
+
+                case IOC_NEW_NETWORK:
+                    event_name = "new_network";
+                    break;
+
+                case IOC_NETWORK_DISCONNECTED:
+                    event_name = "network_disconnected";
+                    break;
+
+                case IOC_NEW_DEVICE:
+                    event_name = "new_device";
+                    break;
+
+                default:
+                    event_name = "unknown";
+                    break;
+            }
+
+            PyList_SetItem(rval, 0, Py_BuildValue("s", (char *)event_name));
+            PyList_SetItem(rval, 1, Py_BuildValue("s", (char *)e->network_name));
+
+            osal_int_to_str(nbuf, sizeof(nbuf), e->device_nr);
+            os_strncpy(device_name, e->device_name, sizeof(device_name));
+            os_strncat(device_name, nbuf, sizeof(device_name));
+            PyList_SetItem(rval, 2, Py_BuildValue("s", (char *)device_name));
+            PyList_SetItem(rval, 3, Py_BuildValue("s", (char *)e->mblk_name));
+
+            ioc_pop_event(root);
+            return rval;
+        }
+
+        /* eosal event wait implementation not complete for timeouts,
+           use poll for now instead of osal_event_wait(self->queue_event, timeout_ms);
+         */
+        if (os_elapsed(&start_t, timeout_ms)) break;
+
+        Py_BEGIN_ALLOW_THREADS
+        os_sleep(100);
+        Py_END_ALLOW_THREADS
+    }
 
     /* Return "None".
      */
@@ -419,8 +577,6 @@ static void Root_callback(
 {
     os_char *mblk_name; 
     iocHandle handle;
-    Root *pyroot;
-    pyroot = (Root*)context;
 
     switch (event)
     {
@@ -436,13 +592,16 @@ static void Root_callback(
                 ioc_release_handle(&handle);
             }
 
-            Root_do_callback(pyroot, "new_mblk", mblk_name);
+            // Root_do_callback(pyroot, "new_mblk", mblk_name);
             break;
 
+        default:
+            break;
+#if 0
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
 
-            Root_do_callback(pyroot, "new_network", dnetwork->network_name);
+            // Root_do_callback(pyroot, "new_network", dnetwork->network_name);
             break;
 
         case IOC_NEW_DEVICE:
@@ -452,6 +611,7 @@ static void Root_callback(
         case IOC_NETWORK_DISCONNECTED:
             osal_trace2("IOC_NETWORK_DISCONNECTED");
             break;
+#endif
     }
 }
 
@@ -467,6 +627,7 @@ static void Root_callback(
 
 ****************************************************************************************************
 */
+#if 0
 static void Root_do_callback(
     Root *pyroot,
     os_char *event_text,
@@ -506,6 +667,7 @@ static void Root_do_callback(
      */
     PyGILState_Release(gstate);
 }
+#endif
 
 
 /**
@@ -630,7 +792,7 @@ static PyObject *Root_print(
 ****************************************************************************************************
 */
 static PyMemberDef Root_members[] = {
-    {(char*)"number", T_INT, offsetof(Root, number), 0, (char*)"classy number"},
+    {(char*)"status", T_INT, offsetof(Root, status), 0, (char*)"Status code"},
     {NULL} /* Sentinel */
 };
 
@@ -642,7 +804,9 @@ static PyMemberDef Root_members[] = {
 */
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
-    {"set_callback", (PyCFunction)Root_set_callback, METH_VARARGS, "Set IOCOM root callback function"},
+    /* {"set_callback", (PyCFunction)Root_set_callback, METH_VARARGS, "Set IOCOM root callback function"}, */
+    {"queue_events", (PyCFunction)Root_initialize_event_queue, METH_VARARGS, "Start queueing connect/disconnect, etc. events"},
+    {"wait_com_event", (PyCFunction)Root_wait_for_com_event, METH_VARARGS, "Wait for a communication event"},
     {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},
     {"list_devices", (PyCFunction)Root_list_devices, METH_VARARGS, "List devices in spefified network"},
     {"print", (PyCFunction)Root_print, METH_VARARGS, "Print internal state of IOCOM"},

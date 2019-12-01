@@ -37,35 +37,18 @@ typedef struct
      */
     int device_nr;
 
-
     /** Python root callback function.
      */
     PyObject *root_callback;
 
-    int number;
+    /** Operating system event to trigger when new communication event happends,
+        OS_NULL if not needed or application specified one is used.
+     */
+    osalEvent queue_event;
+
+    int status;
 }
 Root;
 
 extern PyTypeObject RootType;
-
-
-#if 0
-/* Initialize communication root object.
- */
-void ioc_initialize_root(
-    iocRoot *root);
-
-/* Release communication root object.
- */
-void ioc_release_root(
-    iocRoot *root);
-
-/* Set callback function for iocRoot object.
- */
-void ioc_set_root_callback(
-    iocRoot *root,
-    ioc_root_callback func,
-    void *context);
-#endif
-
 
