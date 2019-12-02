@@ -23,15 +23,21 @@ class AsteroidPlayer(object):
         self.opacity = 0;
 
         self.timeline = 0;
+        self.prev_fire_button = 0;
+        self.fire_now = False;
 
     def run(self, dt):
         state_bits, data = self.userctrl.get()
+        self.fire_now = False
         if state_bits & 2:
             self.rotation = data[0]
             self.force_x = data[1]
             self.force_y = data[2]
             self.engine_visible = data[3]
-            self.resurrect_me = data[4]
+            if self.prev_fire_button != data[4]:
+                if int(data[4]) != 0:
+                    self.fire_now = True
+                self.prev_fire_button != data[4];
 
         self.velocity_x += self.force_x * dt
         self.velocity_y += self.force_y * dt
@@ -65,6 +71,13 @@ class AsteroidPlayer(object):
         # print(state_bits, data, self.player_name)
 
         return (self.player_nr, scale, self.x, self.y, self.rotation, self.engine_visible, 1, self.opacity)
+
+    def fires(self):
+        if self.fire_now:
+            self.fire_now = False
+            return (self.x, self.y, self.velocity_x, self.velocity_y)
+
+        return None
 
     def set_coords(self, x):
         self.coords.set(x)

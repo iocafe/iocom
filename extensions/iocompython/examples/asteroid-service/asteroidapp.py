@@ -4,6 +4,7 @@ import threading
 import time
 from asteroidplayer import AsteroidPlayer 
 from asteroidrock import AsteroidRock
+from asteroidbullet import AsteroidBullet
 
 class AsteroidApp(object):
     def __init__(self, root, network_name):
@@ -16,13 +17,9 @@ class AsteroidApp(object):
         self.rocks.append(AsteroidRock())
         self.rocks.append(AsteroidRock())
 
+        self.bullets = []
+
         self.mytimer = time.time()
-
-#    def getnetwork_name(self):
-#        return self.network_name
-
-#    def setnetwork_name(self, network_name):
-#        self.network_name = network_name
 
     def run(self):
         global root
@@ -56,14 +53,28 @@ class AsteroidApp(object):
 
         asteroid_players = self.players.values()
         n_rocks = len(self.rocks)
-        coords = [len(asteroid_players) + n_rocks]
+        n_bullets = len(self.bullets)
+        coords = [len(asteroid_players) + n_rocks + n_bullets]
         for player in asteroid_players:
             coords.append(player.run(dt))
+            shot = player.fires()
+            if shot != None:
+                self.bullets.append(AsteroidBullet(shot))
 
         for i in range(n_rocks):
             coords.append(self.rocks[i].run(dt))
 
-#        print(coords)
+        remove_bullets = []
+        for b in self.bullets:
+            c = b.run(dt)
+            if c != None:
+                coords.append(c)
+
+            else:
+                remove_bullets.append(b)
+
+        for b in remove_bullets:
+            self.bullets.remove(b)
 
         for player in asteroid_players:
             player.set_coords(coords)

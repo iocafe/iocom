@@ -1,10 +1,10 @@
-# Module: asteroidrock.py
+# Module: asteroidbullet.py
 import re, random
 
-class AsteroidRock(object):
-    def __init__(self):
-        self.x = random.random() * 800;
-        self.y = random.random() * 600;
+class AsteroidBullet(object):
+    def __init__(self, shot):
+        self.x = shot[0];
+        self.y = shot[1];
         self.rotation = random.random() * 360;
         self.opacity = 0;
         self.scale = 60
@@ -28,20 +28,7 @@ class AsteroidRock(object):
         if self.opacity > 255:
             self.opacity = 255
         
-        if self.x < -50:
-            self.x += 900
-
-        if self.x > 850:
-            self.x -= 900
+        if self.x < -10 or self.x > 810 or self.y < -10 or self.y > 610:
+            return None
         
-        if self.y < -50:
-            self.y += 700
-
-        if self.y > 650:
-            self.y -= 700
-
-        self.scale += dt * 10.0;
-        if self.scale > 100:
-            self.scale = 100
-        
-        return (0, self.scale, self.x, self.y, self.rotation, self.engine_visible, 2, self.opacity)
+        return (0, self.scale, self.x, self.y, self.rotation, self.engine_visible, 3, self.opacity)

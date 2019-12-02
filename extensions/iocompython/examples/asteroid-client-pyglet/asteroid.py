@@ -5,7 +5,7 @@ from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
 
 
 my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device number (not really unique)
-max_physicalobjects = 50
+max_physicalobjects = 250
 data_vector_n = 8
 
 signal_conf = ('{'
@@ -54,7 +54,7 @@ main_batch = pyglet.graphics.Batch()
 
 # Set up the two top labels
 score_label = pyglet.text.Label(text="Score: 0", x=10, y=575, batch=main_batch)
-level_label = pyglet.text.Label(text="Version 3: Basic Collision",
+level_label = pyglet.text.Label(text="asteroids vs space ships - collison course",
                                 x=400, y=575, anchor_x='center', batch=main_batch)
 
 # Store all objects that update each frame in a list
@@ -70,12 +70,10 @@ game_window.push_handlers(key_handler)
 my_thrust = 6300.0
 my_rotate_speed = 300.0
 
-# We control the game by sending force and rotation
 my_rotation = 0.0
 my_force_x = 0.0
 my_force_y = 0
 my_engine_visible = False
-resurrect_me = False
 
 @game_window.event
 def on_draw():
@@ -83,7 +81,7 @@ def on_draw():
     main_batch.draw()
 
 def keyboard_input(dt):
-    global resurrect_me, my_rotation, my_force_x, my_force_y
+    global my_rotation, my_force_x, my_force_y
     global my_engine_visible, my_rotate_speed, my_thrust
     global key_handler, userctrl
 
@@ -102,10 +100,11 @@ def keyboard_input(dt):
         my_force_y = 0.0
         my_engine_visible = False
 
+    shoot = False
     if key_handler[key.SPACE]:
-        resurrect_me = True
+        shoot = True
 
-    userctrl.set( (my_rotation, my_force_x, my_force_y, my_engine_visible, resurrect_me) )
+    userctrl.set( (my_rotation, my_force_x, my_force_y, my_engine_visible, shoot) )
      
 def set_physicalobject(o, ix, data):
     ix = ix * data_vector_n + 1
@@ -122,6 +121,8 @@ def update(dt):
 
     if state_bits & 2:
         nro_physicalobjects = data[0]
+        if nro_physicalobjects > max_physicalobjects:
+            nro_physicalobjects = max_physicalobjects
 
         for ix in range(len(game_objects), nro_physicalobjects):
             o = physicalobject.PhysicalObject(batch=main_batch)
