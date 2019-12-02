@@ -835,6 +835,7 @@ os_char ioc_movex_array_signal(
     if (addr < 0 || addr + nn * type_sz >= mblk->nbytes)
     {
         state_bits = 0;
+        osal_debug_error("Write out of memory block's' address space");
         goto goon;
     }
 

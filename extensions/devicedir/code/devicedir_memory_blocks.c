@@ -51,7 +51,7 @@ void devicedir_memory_blocks(
 
     /* Split IO path
      */
-    ioc_iopath_to_identifiers(&ids, iopath, IOC_EXPECT_MEMORY_BLOCK);
+    ioc_iopath_to_identifiers(root, &ids, iopath, IOC_EXPECT_MEMORY_BLOCK);
 
     osal_stream_print_str(list, "{\"mblk\": [\n", 0);
     sep = "{";

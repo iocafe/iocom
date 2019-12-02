@@ -3,7 +3,6 @@ import threading
 import queue
 
 def read_kbd_input(inputQueue):
-    print('Ready for keyboard input:')
     while (True):
         input_str = input()
         inputQueue.put(input_str)

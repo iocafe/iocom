@@ -26,6 +26,7 @@
   expect selects what we expect from IO path, do we expect a signal, memory block, device
   or network selection.
 
+  @param   root Pointer to the IOCOM root object.
   @param   identifiers Structure to fill in with separate identifiers. If something is not
            specified by path, it is set to empty string or 0 in case of device number.
   @param   iopath Path to split
@@ -36,12 +37,12 @@
 ****************************************************************************************************
 */
 void ioc_iopath_to_identifiers(
+    iocRoot *root,
     iocIdentifiers *identifiers,
     const os_char *iopath,
     iocExpectIoPath expect)
 {
     os_char *p, *e, *ee;
-    os_boolean has_more;
 
     /* Clear the identifier structure.
      */
@@ -50,19 +51,19 @@ void ioc_iopath_to_identifiers(
 
     if (expect == IOC_EXPECT_SIGNAL)
     {
-        if (!ioc_get_part_of_iopath(&iopath, identifiers->signal_name, IOC_SIGNAL_NAME_SZ)) return;
+        if (!ioc_get_part_of_iopath(&iopath, identifiers->signal_name, IOC_SIGNAL_NAME_SZ)) goto only_network;
         expect = IOC_EXPECT_MEMORY_BLOCK;
     }
 
     if (expect == IOC_EXPECT_MEMORY_BLOCK)
     {
-        if (!ioc_get_part_of_iopath(&iopath, identifiers->mblk_name, IOC_NAME_SZ)) return;
+        if (!ioc_get_part_of_iopath(&iopath, identifiers->mblk_name, IOC_NAME_SZ)) goto only_network;
         expect = IOC_EXPECT_DEVICE;
     }
 
     if (expect == IOC_EXPECT_DEVICE)
     {
-        has_more = ioc_get_part_of_iopath(&iopath, identifiers->device_name, IOC_NAME_SZ);
+        ioc_get_part_of_iopath(&iopath, identifiers->device_name, IOC_NAME_SZ);
 
         /* Get device number, if any
          */
@@ -78,11 +79,11 @@ void ioc_iopath_to_identifiers(
             identifiers->device_nr = (os_short)osal_str_to_int(e, OS_NULL);
             *e = '\0';
         }
-
-        if (!has_more) return;
     }
 
-    os_strncpy(identifiers->network_name, iopath, IOC_NETWORK_NAME_SZ);
+only_network:
+    os_strncpy(identifiers->network_name,
+        *iopath != '\0' ? iopath : root->network_name, IOC_NETWORK_NAME_SZ);
 }
 
 
@@ -120,6 +121,12 @@ os_boolean ioc_get_part_of_iopath(
     os_strncpy(buf, b, n);
     if (!os_strcmp(buf, "*")) buf[0] = '\0';
 
-    *iopath = e + 1;
-    return p ? OS_TRUE : OS_FALSE;
+    if (p)
+    {
+        *iopath = e + 1;
+        return OS_TRUE;
+    }
+
+    *iopath = e;
+    return OS_FALSE;
 }

@@ -145,19 +145,22 @@ static void ioc_setup_signal(
     iocIdentifiers identifiers;
     const os_char *topnet, *req_topnet;
 
-    ioc_iopath_to_identifiers(&identifiers, iopath, IOC_EXPECT_SIGNAL);
+    ioc_iopath_to_identifiers(root, &identifiers, iopath, IOC_EXPECT_SIGNAL);
 
     /* We do allow access between device networks, as long as these are subnets of the same
        top level network. This is useful to allow subnets in large IO networks. Care must be
        taken because here this could become a security vunerability.
      */
-    topnet = os_strchr((os_char*)network_name, '.');
-    topnet = topnet ? topnet + 1 : network_name;
-    req_topnet = os_strchr(identifiers.network_name, '.');
-    req_topnet = req_topnet ? req_topnet + 1 : req_topnet;
-    if (os_strcmp(topnet, req_topnet))
+    if (network_name) if (*network_name != '\0')
     {
-        os_strncpy(identifiers.network_name, network_name, IOC_NETWORK_NAME_SZ);
+        topnet = os_strchr((os_char*)network_name, '.');
+        topnet = topnet ? topnet + 1 : network_name;
+        req_topnet = os_strchr(identifiers.network_name, '.');
+        req_topnet = req_topnet ? req_topnet + 1 : req_topnet;
+        if (os_strcmp(topnet, req_topnet))
+        {
+            os_strncpy(identifiers.network_name, network_name, IOC_NETWORK_NAME_SZ);
+        }
     }
 
     ioc_setup_signal_by_identifiers(root, &identifiers, signal);

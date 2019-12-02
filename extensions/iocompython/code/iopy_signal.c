@@ -49,7 +49,8 @@ typedef struct
 {
     iocSignal *signal;
     osalTypeId type_id;
-    os_int max_values;
+    os_int max_values, nro_values;
+    os_boolean no_state_bits;
 }
 SignalGetState;
 
@@ -147,13 +148,13 @@ static PyObject *Signal_new(
         goto failed;
     }
 
-    ioc_iopath_to_identifiers(identifiers, io_path, IOC_EXPECT_SIGNAL);
+    ioc_iopath_to_identifiers(iocroot, identifiers, io_path, IOC_EXPECT_SIGNAL);
 
     /* We do allow access between device networks, as long as these are subnets of the same
        top level network. This is useful to allow subnets in large IO networks. Care must be
        taken because here this could become a security vunerability.
      */
-    if (network_name)
+    if (network_name) if (*network_name != '\0')
     {
         topnet = os_strchr((os_char*)network_name, '.');
         topnet = topnet ? topnet + 1 : network_name;
@@ -592,6 +593,7 @@ static void Signal_set_array(
         os_memclear(state->buf, buf_sz);
     }
 
+
     /* Process the Python arguments into format we need.
      */
     Signal_set_sequence(args, state);
@@ -689,16 +691,17 @@ getout:
 ****************************************************************************************************
 */
 static PyObject *Signal_get_one_value(
-    PyObject *args,
     SignalGetState *state)
 {
     iocValue vv;
-    PyObject *rval;
+    PyObject *rval, *value;
 
     ioc_movex_signals(state->signal, &vv, 1, IOC_SIGNAL_NO_THREAD_SYNC);
 
-    rval = PyList_New(2);
-    PyList_SetItem(rval, 0, Py_BuildValue("i", (int)vv.state_bits));
+    if ((vv.state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
+    {
+        return Py_BuildValue("i", (int)0);
+    }
 
     switch (state->type_id)
     {
@@ -709,25 +712,35 @@ static PyObject *Signal_get_one_value(
         case OS_USHORT:
         case OS_INT:
         case OS_UINT:
-            PyList_SetItem(rval, 1, Py_BuildValue("i", (int)vv.value.i));
+            value = Py_BuildValue("i", (int)vv.value.i);
             break;
 
         case OS_INT64:
         case OS_LONG:
-            PyList_SetItem(rval, 1, Py_BuildValue("l", (long long)vv.value.l));
+            value = Py_BuildValue("l", (long long)vv.value.l);
             break;
 
         case OS_FLOAT:
-            PyList_SetItem(rval, 1, Py_BuildValue("d", (double)vv.value.f));
+            value = Py_BuildValue("d", (double)vv.value.f);
             break;
 
         case OS_DOUBLE:
-            PyList_SetItem(rval, 1, Py_BuildValue("d", (double)vv.value.d));
+            value = Py_BuildValue("d", (double)vv.value.d);
             break;
 
         default:
+            value = Py_BuildValue("i", (int)0);
             break;
     }
+
+    if (state->no_state_bits)
+    {
+        return value;
+    }
+
+    rval = PyList_New(2);
+    PyList_SetItem(rval, 0, Py_BuildValue("i", (int)vv.state_bits));
+    PyList_SetItem(rval, 1, value);
 
     return rval;
 }
@@ -744,11 +757,10 @@ static PyObject *Signal_get_one_value(
 ****************************************************************************************************
 */
 static PyObject *Signal_get_array(
-    PyObject *args,
     SignalGetState *state)
 {
     os_memsz buf_sz, type_sz;
-    PyObject *rval, *list;
+    PyObject *rval, *list, *value;
     os_int i;
     os_char state_bits, *buf;
     os_char fixbuf[64];
@@ -769,58 +781,82 @@ static PyObject *Signal_get_array(
     state_bits = ioc_movex_array_signal(state->signal, buf, state->max_values,
         OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC);
 
-    list = PyList_New(state->max_values);
-    for(i = 0; i < state->max_values; i++)
+    if (!state->nro_values)
+        state->nro_values = state->max_values;
+
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
     {
-        switch (state->type_id)
-        {
-            case OS_BOOLEAN:
-            case OS_CHAR:
-                PyList_SetItem(list, i, Py_BuildValue("i", (int)((os_char*)buf)[i]));
-                break;
-
-            case OS_UCHAR:
-                PyList_SetItem(list, i, Py_BuildValue("i", (unsigned int)((os_uchar*)buf)[i]));
-                break;
-
-            case OS_SHORT:
-                PyList_SetItem(list, i, Py_BuildValue("i", (int)((os_short*)buf)[i]));
-                break;
-
-            case OS_USHORT:
-                PyList_SetItem(list, i, Py_BuildValue("i", (int)((os_ushort*)buf)[i]));
-                break;
-
-            case OS_INT:
-                PyList_SetItem(list, i, Py_BuildValue("i", (int)((os_int*)buf)[i]));
-                break;
-
-            case OS_UINT:
-                PyList_SetItem(list, i, Py_BuildValue("l", (unsigned long)((os_uint*)buf)[i]));
-                break;
-
-            case OS_INT64:
-            case OS_LONG:
-                PyList_SetItem(list, i, Py_BuildValue("l", (long long)((os_long*)buf)[i]));
-                break;
-
-            case OS_FLOAT:
-                PyList_SetItem(list, i, Py_BuildValue("d", (double)((os_float*)buf)[i]));
-                break;
-
-            case OS_DOUBLE:
-                PyList_SetItem(list, i, Py_BuildValue("d", (double)((os_double*)buf)[i]));
-                break;
-
-            default:
-                PyList_SetItem(list, i, Py_BuildValue("i", (int)0));
-                break;
-        }
+        state->max_values = 0;
     }
 
-    rval = PyList_New(2);
-    PyList_SetItem(rval, 0, Py_BuildValue("i", (int)state_bits));
-    PyList_SetItem(rval, 1, list);
+    list = PyList_New(state->nro_values);
+    for(i = 0; i < state->nro_values; i++)
+    {
+        if (i < state->max_values)
+        {
+            switch (state->type_id)
+            {
+                case OS_BOOLEAN:
+                case OS_CHAR:
+                    value = Py_BuildValue("i", (int)((os_char*)buf)[i]);
+                    break;
+
+                case OS_UCHAR:
+                    value = Py_BuildValue("i", (unsigned int)((os_uchar*)buf)[i]);
+                    break;
+
+                case OS_SHORT:
+                    value = Py_BuildValue("i", (int)((os_short*)buf)[i]);
+                    break;
+
+                case OS_USHORT:
+                    value = Py_BuildValue("i", (int)((os_ushort*)buf)[i]);
+                    break;
+
+                case OS_INT:
+                    value = Py_BuildValue("i", (int)((os_int*)buf)[i]);
+                    break;
+
+                case OS_UINT:
+                    value = Py_BuildValue("l", (unsigned long)((os_uint*)buf)[i]);
+                    break;
+
+                case OS_INT64:
+                case OS_LONG:
+                    value = Py_BuildValue("l", (long long)((os_long*)buf)[i]);
+                    break;
+
+                case OS_FLOAT:
+                    value = Py_BuildValue("d", (double)((os_float*)buf)[i]);
+                    break;
+
+                case OS_DOUBLE:
+                    value = Py_BuildValue("d", (double)((os_double*)buf)[i]);
+                    break;
+
+                default:
+                    value = Py_BuildValue("i", (int)0);
+                    break;
+            }
+        }
+        else
+        {
+            value = Py_BuildValue("i", (int)0);
+        }
+
+        PyList_SetItem(list, i, value);
+    }
+
+    if (state->no_state_bits)
+    {
+        rval = list;
+    }
+    else
+    {
+        rval = PyList_New(2);
+        PyList_SetItem(rval, 0, Py_BuildValue("i", (int)state_bits));
+        PyList_SetItem(rval, 1, list);
+    }
 
     /* If we allocated extra buffer space, free it.
      */
@@ -845,12 +881,11 @@ static PyObject *Signal_get_array(
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get(
+static PyObject *Signal_get_internal(
     Signal *self,
-    PyObject *args)
+    SignalGetState *state)
 {
     iocRoot *iocroot;
-    SignalGetState state;
     PyObject *rval = OS_NULL;
 
     /* Get IOC root pointer. Check not to crash on exceptional situations.
@@ -862,10 +897,9 @@ static PyObject *Signal_get(
 
     /* Find dynamic information for this signal.
      */
-    os_memclear(&state, sizeof(state));
-    state.signal = &self->signal;
-    ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state.signal);
-    if (state.signal->handle->mblk == OS_NULL)
+    state->signal = &self->signal;
+    ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state->signal);
+    if (state->signal->handle->mblk == OS_NULL)
     {
         ioc_unlock(iocroot);
         goto getout;
@@ -873,24 +907,27 @@ static PyObject *Signal_get(
 
     /* If the signal is string.
      */
-    state.type_id = (state.signal->flags & OSAL_TYPEID_MASK);
-    state.max_values = state.signal->n;
-    if (state.type_id == OS_STR)
+    state->type_id = (state->signal->flags & OSAL_TYPEID_MASK);
+    if (!state->max_values || state->signal->n < state->max_values)
+    {
+        state->max_values = state->signal->n;
+    }
+    if (state->type_id == OS_STR)
     {
     }
 
     /* If this signal is an array
      */
-    if (state.max_values > 1)
+    if (state->signal->n > 1)
     {
-        rval = Signal_get_array(args, &state);
+        rval = Signal_get_array(state);
     }
 
     /* Otherwise this is single value signal.
      */
     else
     {
-        rval = Signal_get_one_value(args, &state);
+        rval = Signal_get_one_value(state);
     }
 
     ioc_unlock(iocroot);
@@ -898,11 +935,90 @@ static PyObject *Signal_get(
     if (rval) return rval;
 
 getout:
+    if (state->no_state_bits)
+    {
+        return Py_BuildValue("i", (int)0);
+    }
     rval = PyList_New(2);
     PyList_SetItem(rval, 0, Py_BuildValue("i", (int)0));
     PyList_SetItem(rval, 1, Py_BuildValue("i", (int)0));
     return rval;
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief Get signal value from memory block.
+
+****************************************************************************************************
+*/
+static PyObject *Signal_get(
+    Signal *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    SignalGetState state;
+    int nro_values = 0, max_values = 0;
+
+    static char *kwlist[] = {
+        "nro_values",
+        "max_values",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ii",
+         kwlist, &nro_values, &max_values))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    os_memclear(&state, sizeof(state));
+    state.max_values = max_values;
+    state.nro_values = nro_values;
+
+    return Signal_get_internal(self, &state);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Get signal value from memory block without state bits.
+
+****************************************************************************************************
+*/
+static PyObject *Signal_get0(
+    Signal *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    SignalGetState state;
+    int nro_values = 0, max_values = 0;
+
+    static char *kwlist[] = {
+        "nro_values",
+        "max_values",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ii",
+         kwlist, &nro_values, &max_values))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    os_memclear(&state, sizeof(state));
+    state.max_values = max_values;
+    state.nro_values = nro_values;
+    state.no_state_bits = OS_TRUE;
+
+    return Signal_get_internal(self, &state);
+}
+
+
 
 
 /**
@@ -924,7 +1040,8 @@ static PyMemberDef Signal_members[] = {
 static PyMethodDef Signal_methods[] = {
     {"delete", (PyCFunction)Signal_delete, METH_NOARGS, "Deletes IOCOM signal"},
     {"set", (PyCFunction)Signal_set, METH_VARARGS, "Store signal data"},
-    {"get", (PyCFunction)Signal_get, METH_VARARGS, "Get signal data"},
+    {"get", (PyCFunction)Signal_get, METH_VARARGS|METH_KEYWORDS, "Get signal data"},
+    {"get0", (PyCFunction)Signal_get0, METH_VARARGS|METH_KEYWORDS, "Get signal data without state bits"},
     {NULL} /* Sentinel */
 };
 

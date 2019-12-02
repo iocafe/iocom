@@ -59,6 +59,7 @@ iocExpectIoPath;
 /* Split IO path to separate identifiers.
 */
 void ioc_iopath_to_identifiers(
+    iocRoot *root,
     iocIdentifiers *identifiers,
     const os_char *iopath,
     iocExpectIoPath expect);

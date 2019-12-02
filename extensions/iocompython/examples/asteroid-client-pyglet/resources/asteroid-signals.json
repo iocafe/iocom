@@ -5,12 +5,6 @@
     "name": "exp",
     "title": "Exported by 'asteroid' client",
     "groups": [
-      {
-        "name": "general",
-         "signals": [
-           {"name": "version", "type": "short"}
-         ]
-       },
        {
          "name": "user controls",
          "signals": [
@@ -31,7 +25,7 @@
         "name": "display objects",
         "signals": [
            {"name": "nro_objects", "type": "short"},
-           {"name": "object_data", "type": "short", "array": 800, "width" : 8}
+           {"name": "object_data", "type": "short", "array": 500, "width" : 8}
          ]
       }
     ]

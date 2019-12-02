@@ -82,6 +82,7 @@ static PyObject *Root_new(
      */
     self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
     ioc_initialize_root(self->root);
+    ioc_set_network_name(self->root, network_name);
     ioc_initialize_dynamic_root(self->root);
 
     /* Set callback function to receive information about new dynamic memory blocks.

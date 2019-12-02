@@ -54,21 +54,22 @@ class AsteroidApp(object):
         asteroid_players = self.players.values()
         n_rocks = len(self.rocks)
         n_bullets = len(self.bullets)
-        coords = [len(asteroid_players) + n_rocks + n_bullets]
+        n_objects = len(asteroid_players) + n_rocks + n_bullets
+        object_data = []
         for player in asteroid_players:
-            coords.append(player.run(dt))
+            object_data.append(player.run(dt))
             shot = player.fires()
             if shot != None:
                 self.bullets.append(AsteroidBullet(shot))
 
         for i in range(n_rocks):
-            coords.append(self.rocks[i].run(dt))
+            object_data.append(self.rocks[i].run(dt))
 
         remove_bullets = []
         for b in self.bullets:
             c = b.run(dt)
             if c != None:
-                coords.append(c)
+                object_data.append(c)
 
             else:
                 remove_bullets.append(b)
@@ -77,7 +78,7 @@ class AsteroidApp(object):
             self.bullets.remove(b)
 
         for player in asteroid_players:
-            player.set_coords(coords)
+            player.set_object_data(object_data, n_objects)
 
         return True
 

@@ -184,6 +184,29 @@ void ioc_release_root(
 /**
 ****************************************************************************************************
 
+  @brief Set network name for the IOCOM root.
+  @anchor ioc_set_network_name
+
+  The ioc_set_network_name() is called for an IO board, etc, to set up network name for all
+  communication.
+
+  @param   root Pointer to root structure.
+  @param   network_name Network name to set. OS_NULL to clear network name.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_set_network_name(
+    iocRoot *root,
+    const os_char *network_name)
+{
+    os_strncpy(root->network_name, network_name, IOC_NETWORK_NAME_SZ);
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Run the communication.
   @anchor ioc_run
 

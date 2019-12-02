@@ -163,6 +163,10 @@ typedef struct iocRoot
     iocRootsEndPointList epoint;
 #endif
 
+    /** Network name.
+     */
+    os_char network_name[IOC_NETWORK_NAME_SZ];
+
     /** Pointer to static memory pool, OS_NULL is not used.
         Pool size is in bytes.
      */
@@ -231,6 +235,12 @@ void ioc_initialize_root(
  */
 void ioc_release_root(
     iocRoot *root);
+
+/* Set network name for the IOCOM root.
+ */
+void ioc_set_network_name(
+    iocRoot *root,
+    const os_char *network_name);
 
 /* Run the communication.
  */
