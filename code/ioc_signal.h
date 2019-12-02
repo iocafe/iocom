@@ -103,9 +103,9 @@ typedef struct iocValue
 
     union
     {
-        os_int i;
+        // os_int i;
         os_long l; // not yet
-        os_float f;
+        // os_float f;
         os_double d;
     }
     value;
@@ -141,12 +141,12 @@ iocValue;
 
 /* Set one signal.
  */
-#define ioc_set_boolean(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_BOOLEAN)
-#define ioc_set_char(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_CHAR)
+#define ioc_set_boolean(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_BOOLEAN)
+#define ioc_set_char(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_CHAR)
 #define ioc_set_uchar ioc_set_char
-#define ioc_set_short(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_SHORT)
+#define ioc_set_short(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_SHORT)
 #define ioc_set_ushort ioc_set_short
-#define ioc_set_int(h,a,v) ioc_setx_int((h), (a), (os_int)(v), OSAL_STATE_CONNECTED, OS_INT)
+#define ioc_set_int(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_INT)
 #define ioc_set_uint ioc_set_int
 #define ioc_set_str(h,a,st,ss) ioc_setx_str((h), (a), (st), (os_int)(ss), OSAL_STATE_CONNECTED, OS_STR)
 #define ioc_set_float(h,a,st,ss) ??
@@ -217,7 +217,7 @@ iocValue;
  */
 os_char ioc_sets_int(
     const iocSignal *signal,
-    os_int value,
+    os_long value,
     os_char state_bits);
 
 /* Set floating point value as a signal.
@@ -232,7 +232,7 @@ os_char ioc_sets_double(
 os_char ioc_setx_int(
     iocHandle *handle,
     os_int addr,
-    os_int value,
+    os_long value,
     os_char state_bits,
     os_short flags);
 
@@ -247,7 +247,7 @@ os_char ioc_setx_double(
 
 /* Get integer signal value.
  */
-os_int ioc_gets_int(
+os_long ioc_gets_int(
     const iocSignal *signal,
     os_char *state_bits);
 
@@ -259,7 +259,7 @@ os_double ioc_gets_double(
 
 /* Get integer signal value.
  */
-os_int ioc_getx_int(
+os_long ioc_getx_int(
     iocHandle *handle,
     os_int addr,
     os_char *state_bits,

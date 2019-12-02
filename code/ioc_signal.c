@@ -16,6 +16,20 @@
 #include "iocom.h"
 
 
+typedef union
+{
+    os_char c;
+    os_uchar uc;
+    os_short s;
+    os_short us;
+    os_int i;
+    os_int ui;
+    os_long l;
+    os_float f;
+    os_double d;
+}
+iocTypeConvUnion;
+
 /**
 ****************************************************************************************************
 
@@ -61,9 +75,11 @@ void ioc_movex_signals(
     const iocSignal *sig;
     os_char *p, nbuf[OSAL_NBUF_SZ], sb;
     os_memsz type_sz;
-    os_int addr, i, v;
+    os_int addr, i;
+    os_long v;
     os_short type_id;
     iocHandle *handle;
+    iocTypeConvUnion tconv;
     os_boolean handle_tried = OS_FALSE, unlock_now;
 
     /* Check function arguments.
@@ -113,13 +129,13 @@ void ioc_movex_signals(
         {
             if (flags & IOC_SIGNAL_WRITE)
             {
-                osal_int_to_str(nbuf, sizeof(nbuf), vv[i].value.i);
+                osal_int_to_str(nbuf, sizeof(nbuf), vv[i].value.l);
                 vv[i].state_bits = ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
             }
             else
             {
                 vv[i].state_bits = ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
-                vv[i].value.i = (os_int)osal_str_to_int(nbuf, OS_NULL);
+                vv[i].value.l = osal_str_to_int(nbuf, OS_NULL);
             }
             goto nextone;
         }
@@ -152,7 +168,7 @@ void ioc_movex_signals(
 
             /* Set boolean value (works only for integers)
              */
-            v = vv[i].value.i;
+            v = vv[i].value.l;
             if (v) sb |= OSAL_STATE_BOOLEAN_VALUE;
             else  sb &= ~OSAL_STATE_BOOLEAN_VALUE;
 
@@ -188,11 +204,26 @@ void ioc_movex_signals(
              */
             if (type_id == OS_BOOLEAN)
             {
-                vv[i].value.i = (sb & OSAL_STATE_BOOLEAN_VALUE) ? 1 : 0;
+                vv[i].value.l = (sb & OSAL_STATE_BOOLEAN_VALUE) ? 1 : 0;
             }
             else
             {
-                ioc_byte_ordered_copy((os_char*)&vv[i].value, p, type_sz, type_sz);
+                ioc_byte_ordered_copy((os_char*)&tconv, p, type_sz, type_sz);
+                switch (type_id)
+                {
+                    default:
+                    case OS_CHAR:   vv[i].value.l = tconv.c; break;
+                    case OS_UCHAR:  vv[i].value.l = tconv.uc; break;
+                    case OS_SHORT:  vv[i].value.l = tconv.s; break;
+                    case OS_USHORT: vv[i].value.l = tconv.us; break;
+                    case OS_INT:    vv[i].value.l = tconv.i; break;
+                    case OS_UINT:   vv[i].value.l = tconv.ui; break;
+                    case OS_INT64:
+                    case OS_LONG:   vv[i].value.l = tconv.l; break;
+
+                    case OS_FLOAT:  vv[i].value.d = tconv.f; break;
+                    case OS_DOUBLE: vv[i].value.d = tconv.d; break;
+                }
             }
         }
 
@@ -242,17 +273,24 @@ nextone:
 */
 os_char ioc_sets_int(
     const iocSignal *signal,
-    os_int value,
+    os_long value,
     os_char state_bits)
 {
     iocValue vv;
-
     if (signal == OS_NULL) return 0;
 
-    if ((signal->flags & OSAL_TYPEID_MASK) == OS_FLOAT) vv.value.f = (os_float)value;
-    else vv.value.i = value;
-    vv.state_bits = state_bits;
+    switch (signal->flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            vv.value.d = value;
+            break;
 
+        default:
+            vv.value.l = value;
+            break;
+    }
+    vv.state_bits = state_bits;
     ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_WRITE);
     return vv.state_bits;
 }
@@ -264,18 +302,20 @@ os_char ioc_sets_double(
     os_char state_bits)
 {
     iocValue vv;
-
     if (signal == OS_NULL) return 0;
 
     switch (signal->flags & OSAL_TYPEID_MASK)
     {
-        case OS_FLOAT: vv.value.f = (os_float)value; break;
-        case OS_DOUBLE: vv.value.d = value; break;
-        case OS_LONG: vv.value.l = os_round_long(value); break;
-        default: vv.value.i = os_round_int(value); break;
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            vv.value.d = value;
+            break;
+
+        default:
+            vv.value.l = os_round_long(value);
+            break;
     }
     vv.state_bits = state_bits;
-
     ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_WRITE);
     return vv.state_bits;
 }
@@ -307,15 +347,24 @@ os_char ioc_sets_double(
 os_char ioc_setx_int(
     iocHandle *handle,
     os_int addr,
-    os_int value,
+    os_long value,
     os_char state_bits,
     os_short flags)
 {
     iocSignal signal;
     iocValue vv;
 
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) vv.value.f = (os_float)value;
-    else vv.value.i = value;
+    switch (flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            vv.value.d = value;
+            break;
+
+        default:
+            vv.value.l = value;
+            break;
+    }
     vv.state_bits = state_bits;
 
     os_memclear(&signal, sizeof(signal));
@@ -353,10 +402,10 @@ os_char ioc_setx_int(
 
 ****************************************************************************************************
 */
-os_char ioc_setx_float(
+os_char ioc_setx_double(
     iocHandle *handle,
     os_int addr,
-    os_float value,
+    os_double value,
     os_char state_bits,
     os_short flags)
 {
@@ -365,8 +414,17 @@ os_char ioc_setx_float(
 
     os_memclear(&signal, sizeof(signal));
 
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) vv.value.f = value;
-    else vv.value.i = os_round_int(value);
+    switch (flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            vv.value.d = value;
+            break;
+
+        default:
+            vv.value.l = os_round_long(value);
+            break;
+    }
     vv.state_bits = state_bits;
 
     signal.handle = handle;
@@ -397,7 +455,7 @@ os_char ioc_setx_float(
 
 ****************************************************************************************************
 */
-os_int ioc_gets_int(
+os_long ioc_gets_int(
     const iocSignal *signal,
     os_char *state_bits)
 {
@@ -408,9 +466,15 @@ os_int ioc_gets_int(
     ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_DEFAULT);
     if (state_bits) *state_bits = vv.state_bits;
 
+    switch (signal->flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            return os_round_long(vv.value.d);
 
-    if ((signal->flags & OSAL_TYPEID_MASK) == OS_FLOAT) return os_round_int(vv.value.f);
-    else return vv.value.i;
+        default:
+            return vv.value.l;
+    }
 }
 
 
@@ -425,10 +489,12 @@ os_double ioc_gets_double(
 
     switch (signal->flags & OSAL_TYPEID_MASK)
     {
-        case OS_FLOAT: return vv.value.f; break;
-        case OS_DOUBLE: return vv.value.d; break;
-        case OS_LONG: return (os_double)vv.value.l; break;
-        default: return vv.value.i; break;
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            return vv.value.d;
+
+        default:
+            return (os_double)vv.value.l;
     }
 }
 
@@ -456,7 +522,7 @@ os_double ioc_gets_double(
 
 ****************************************************************************************************
 */
-os_int ioc_getx_int(
+os_long ioc_getx_int(
     iocHandle *handle,
     os_int addr,
     os_char *state_bits,
@@ -475,8 +541,15 @@ os_int ioc_getx_int(
     ioc_movex_signals(&signal, &vv, 1, flags);
     if (state_bits) *state_bits = vv.state_bits;
 
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) return os_round_int(vv.value.f);
-    else return vv.value.i;
+    switch (flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            return os_round_long(vv.value.d);
+
+        default:
+            return vv.value.l;
+    }
 }
 
 
@@ -521,8 +594,15 @@ os_float ioc_getx_float(
     ioc_movex_signals(&signal, &vv, 1, flags);
     if (state_bits) *state_bits = vv.state_bits;
 
-    if ((flags & OSAL_TYPEID_MASK) == OS_FLOAT) return vv.value.f;
-    else return (os_float)vv.value.i;
+    switch (flags & OSAL_TYPEID_MASK)
+    {
+        case OS_FLOAT:
+        case OS_DOUBLE:
+            return vv.value.d;
+
+        default:
+            return (os_double)vv.value.l;
+    }
 }
 
 

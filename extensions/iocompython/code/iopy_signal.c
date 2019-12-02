@@ -326,18 +326,12 @@ static void Signal_store_long(
             case OS_USHORT:
             case OS_INT:
             case OS_UINT:
-                state->storage.vv.value.i = (os_int)x;
-                break;
-
             case OS_INT64:
             case OS_LONG:
                 state->storage.vv.value.l = x;
                 break;
 
             case OS_FLOAT:
-                state->storage.vv.value.f = (os_float)x;
-                break;
-
             case OS_DOUBLE:
                 state->storage.vv.value.d = (os_double)x;
                 break;
@@ -422,18 +416,12 @@ static void Signal_store_double(
             case OS_USHORT:
             case OS_INT:
             case OS_UINT:
-                state->storage.vv.value.i = os_round_int(x);
-                break;
-
             case OS_INT64:
             case OS_LONG:
                 state->storage.vv.value.l = os_round_long(x);
                 break;
 
             case OS_FLOAT:
-                state->storage.vv.value.f = (os_float)x;
-                break;
-
             case OS_DOUBLE:
                 state->storage.vv.value.d = x;
                 break;
@@ -712,7 +700,7 @@ static PyObject *Signal_get_one_value(
         case OS_USHORT:
         case OS_INT:
         case OS_UINT:
-            value = Py_BuildValue("i", (int)vv.value.i);
+            value = Py_BuildValue("i", (int)vv.value.l);
             break;
 
         case OS_INT64:
@@ -721,9 +709,6 @@ static PyObject *Signal_get_one_value(
             break;
 
         case OS_FLOAT:
-            value = Py_BuildValue("d", (double)vv.value.f);
-            break;
-
         case OS_DOUBLE:
             value = Py_BuildValue("d", (double)vv.value.d);
             break;

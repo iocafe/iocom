@@ -49,7 +49,7 @@ key_handler = key.KeyStateHandler()
 game_window.push_handlers(key_handler)
 
 # Set some easy-to-tweak constants
-my_thrust = 50.0
+my_thrust = 300.0
 my_rotate_speed = 300.0
 my_engine_visible = False
 
@@ -104,7 +104,6 @@ def update(dt):
     state_bits, nro_objects = imp_nro_objects.get()
     data = imp_object_data.get0(nro_values = nro_objects * data_vector_n)
 
-    print(nro_objects, data)
     if state_bits & 2:
         if nro_objects > max_physicalobjects:
             nro_objects = max_physicalobjects
