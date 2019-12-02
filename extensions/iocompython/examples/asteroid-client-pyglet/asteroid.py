@@ -8,6 +8,9 @@ my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device numbe
 max_physicalobjects = 250
 data_vector_n = 8
 
+with open('resources/asteroid-signals.json', 'r') as file:
+    signal_conf = file.read()
+
 signal_conf = ('{'
   '"mblk": ['
   '{'
@@ -36,7 +39,7 @@ signal_conf = ('{'
 '}')
 
 
-root = Root('mygame', device_nr=my_player_nr, network_name='pekkanet')
+root = Root('asteroidclient', device_nr=my_player_nr, network_name='pekkanet')
 exp = MemoryBlock(root, 'upward,auto', 'exp', nbytes=32)
 imp = MemoryBlock(root, 'downward,auto', 'imp', nbytes=2*max_physicalobjects*data_vector_n + 3)
 data = json2bin(signal_conf)

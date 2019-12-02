@@ -3,7 +3,6 @@
 "mblk": [
 	{
 		"name": "exp",
-		"handle": "&ioboard_export",
 		"groups": [
 			{
 				"name": "inputs",
@@ -22,7 +21,7 @@
 				]
 			},
 			{
-				"name": "analog_inputs",
+				"name": "analog inputs",
 				"signals": [
 					{
 						"name": "potentiometer"
@@ -30,7 +29,7 @@
 				]
 			},
 			{
-				"name": "dev_ctrl_outputs",
+				"name": "device state",
 				"signals": [
 					{
 						"name": "testfloat",
@@ -69,7 +68,6 @@
 	},
 	{
 		"name": "imp",
-		"handle": "&ioboard_import",
 		"groups": [
 			{
 				"name": "controls",

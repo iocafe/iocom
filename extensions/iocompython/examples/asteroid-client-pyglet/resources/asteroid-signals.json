@@ -1,0 +1,41 @@
+{
+  "name": "asteroidclient",
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Exported by 'asteroid' client",
+    "groups": [
+      {
+        "name": "general",
+         "signals": [
+           {"name": "version", "type": "short"}
+         ]
+       },
+       {
+         "name": "user controls",
+         "signals": [
+         {"name": "force_x", "type": "short"},
+         {"name": "force_y"},
+         {"name": "rotation"},
+         {"name": "engine_visible", "type": "boolean"},
+         {"name": "shoot"}
+       ]
+     }
+    ]
+  },
+  {
+    "name": "imp",
+    "title": "Imported by 'asteroid' client",
+    "groups": [
+      {
+        "name": "display objects",
+        "signals": [
+           {"name": "nro_objects", "type": "short"},
+           {"name": "object_data", "type": "short", "array": 800, "width" : 8}
+         ]
+      }
+    ]
+  }
+  ]
+}
+

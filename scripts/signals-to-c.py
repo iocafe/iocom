@@ -134,7 +134,6 @@ def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
     if signal_nr == 1:
         my_name = '  s->' + block_name + '.hdr'
         cfile.write(my_name + '.mblk_name = "' + block_name + '";\n')
-        # cfile.write(my_name + '.handle = prm->' + block_name + ';\n')
         cfile.write(my_name + '.n_signals = ' + str(nro_signals)  + ';\n')
         if not is_dynamic:
             define_name = device_name + '_' + block_name + "_MBLK_SZ"
@@ -147,7 +146,6 @@ def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
         cfile.write(my_name + '.addr = ' + str(addr) + ';\n')
         cfile.write(my_name + '.n = ' + str(array_n) + ';\n')
         cfile.write(my_name + '.flags = OS_' + type.upper() + ';\n')
-    # cfile.write(my_name + '.handle = prm->' + block_name + ';\n')
 
     if is_dynamic:
         cfile.write(my_name + '.ptr = \"' + signal_name + '\";\n')
@@ -192,6 +190,12 @@ def process_mblk(mblk):
 
     block_name = mblk.get("name", "MBLK")
     handle = mblk.get("handle", "OS_NULL")
+    if handle == "OS_NULL":
+        if block_name == "exp":
+           handle = "&ioboard_export"
+        if block_name == "imp":
+           handle = "&ioboard_import"
+            
     groups = mblk.get("groups", None)
     if groups == None:
         print("'groups' not found for " + block_name)
