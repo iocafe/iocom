@@ -699,7 +699,7 @@ static PyMemberDef Root_members[] = {
 */
 static PyMethodDef Root_methods[] = {
     {"delete", (PyCFunction)Root_delete, METH_NOARGS, "Delete IOCOM root object"},
-    {"queue_events", (PyCFunction)Root_initialize_event_queue, METH_VARARGS||METH_KEYWORDS,
+    {"queue_events", (PyCFunction)Root_initialize_event_queue, METH_VARARGS|METH_KEYWORDS,
         "Start queueing connect/disconnect, etc. events"},
     {"wait_com_event", (PyCFunction)Root_wait_for_com_event, METH_VARARGS, "Wait for a communication event"},
     {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},
