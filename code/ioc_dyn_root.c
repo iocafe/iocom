@@ -42,10 +42,6 @@ typedef struct
      */
     os_short device_nr;
 
-    /** TRUE if new dynamic network was created and application callback is needed.
-     */
-    os_boolean new_network;
-
     osalTypeId current_type_id;
     os_int current_addr;
 
@@ -112,35 +108,23 @@ void ioc_release_dynamic_root(
 }
 
 
-/* Set callback function for iocRoot object to inform application about IO network
-   connect and disconnects.
-   LOCK SHOULD BE ON IF COMMUNICATION IS RUNNING
- */
-/* void ioc_set_dnetwork_callback(
-    iocRoot *root,
-    ioc_dnetwork_callback func,
-    void *context)
-{
-    iocDynamicRoot *droot;
-    droot = root->droot;
-    if (droot)
-    {
-        droot->func = func;
-        droot->context = context;
-    }
-}
-*/
-
 /* Add a dynamic network.
  * Calling twice will add network twice, check with find first.
  * LOCK must be on.
  */
 iocDynamicNetwork *ioc_add_dynamic_network(
     iocDynamicRoot *droot,
-    const os_char *network_name)
+    const os_char *network_name,
+    os_boolean check_if_exists)
 {
     iocDynamicNetwork *dnetwork;
     os_uint hash_ix;
+
+    if (check_if_exists)
+    {
+        dnetwork = ioc_find_dynamic_network(droot, network_name);
+        if (dnetwork) return dnetwork;
+    }
 
     /* If we have existing IO network with this name,
        just return pointer to it.
@@ -151,6 +135,7 @@ iocDynamicNetwork *ioc_add_dynamic_network(
      */
     dnetwork = ioc_initialize_dynamic_network();
     os_strncpy(dnetwork->network_name, network_name, IOC_NETWORK_NAME_SZ);
+    dnetwork->new_network = OS_TRUE;
 
     /* Join it as last to linked list for the hash index.
      */
@@ -170,13 +155,8 @@ void ioc_remove_dynamic_network(
     iocDynamicNetwork *dn, *prev_dn;
     os_uint hash_ix;
 
-    /* If we have application callback function, call it.
+    /* If we application needs to be informed?
      */
-    /* if (droot->func)
-    {
-        droot->func(droot->root, dnetwork, IOC_NETWORK_DISCONNECTED, OS_NULL, droot->context);
-    } */
-
     ioc_new_root_event(droot->root, IOC_NETWORK_DISCONNECTED, dnetwork, 
         OS_NULL, droot->root->callback_context);
 
@@ -218,6 +198,8 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 {
     iocDynamicNetwork *dnetwork;
     os_uint hash_ix;
+
+    if (droot == OS_NULL) return OS_NULL;
 
     hash_ix = ioc_hash(network_name) % IOC_DROOT_HASH_TAB_SZ;
     for (dnetwork = droot->hash[hash_ix];
@@ -496,12 +478,7 @@ osalStatus ioc_add_dynamic_info(
 
     /* Make sure that we have network with this name.
      */
-    state.dnetwork = ioc_find_dynamic_network(droot, mblk->network_name);
-    if (state.dnetwork == OS_NULL)
-    {
-        state.dnetwork = ioc_add_dynamic_network(droot, mblk->network_name);
-        state.new_network = OS_TRUE;
-    }
+    state.dnetwork = ioc_add_dynamic_network(droot, mblk->network_name, OS_TRUE);
 
     s = ioc_dinfo_process_block(droot, &state, "", &jindex);
     if (s) goto getout;
@@ -516,9 +493,10 @@ osalStatus ioc_add_dynamic_info(
 
     /* Informn application about new networks and devices.
      */
-    if (state.new_network)
+    if (state.dnetwork->new_network)
     {
         ioc_new_root_event(root, IOC_NEW_NETWORK, state.dnetwork, OS_NULL, root->callback_context);
+        state.dnetwork->new_network = OS_FALSE;
     }
     ioc_new_root_event(root, IOC_NEW_DEVICE, state.dnetwork, mblk, root->callback_context);
 

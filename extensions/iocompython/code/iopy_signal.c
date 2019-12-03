@@ -112,19 +112,12 @@ static PyObject *Signal_new(
 
     os_memclear(signal, sizeof(iocSignal));
     os_memclear(handle, sizeof(iocHandle));
-    os_memclear(identifiers, sizeof(iocIdentifiers));
     signal->handle = handle;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ss",
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os|s",
          kwlist, &pyroot, &io_path, &network_name))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
-        goto failed;
-    }
-
-    if (pyroot == OS_NULL)
-    {
-        PyErr_SetString(iocomError, "A root object is not given as argument");
         goto failed;
     }
 
@@ -142,19 +135,13 @@ static PyObject *Signal_new(
         goto failed;
     }
 
-    if (io_path == OS_NULL)
-    {
-        PyErr_SetString(iocomError, "No IO path");
-        goto failed;
-    }
-
     ioc_iopath_to_identifiers(iocroot, identifiers, io_path, IOC_EXPECT_SIGNAL);
 
     /* We do allow access between device networks, as long as these are subnets of the same
        top level network. This is useful to allow subnets in large IO networks. Care must be
        taken because here this could become a security vunerability.
      */
-    if (network_name) if (*network_name != '\0')
+    if (network_name) if (*network_name != '\0') /* ?????????????????????? IS THIS REALLY NEEDED, CAN WE JUST HAVE NETWORK NAME IN PATH ONLY ?????????????????? */
     {
         topnet = os_strchr((os_char*)network_name, '.');
         topnet = topnet ? topnet + 1 : network_name;

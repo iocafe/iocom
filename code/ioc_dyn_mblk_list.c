@@ -20,6 +20,7 @@
 
 
 /* Allocate and initialize memory block list item.
+ * LOCK MUST BE ON
  */
 iocMblkShortcut *ioc_add_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
@@ -47,6 +48,7 @@ iocMblkShortcut *ioc_add_mblk_shortcut(
 }
 
 /* Release memory block list item.
+ * LOCK MUST BE ON
  */
 void ioc_release_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
@@ -78,14 +80,16 @@ void ioc_release_mblk_shortcut(
 /* Find a shortcut to memory block.
  * LOCK MUST BE ON
  */
-iocMemoryBlock *ioc_find_mblk_shortcut(
+iocHandle *ioc_find_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
-    os_char *mblk_name,
-    os_char *device_name,
+    const os_char *mblk_name,
+    const os_char *device_name,
     os_short device_nr)
 {
     iocMblkShortcut *item, *next_item;
     iocMemoryBlock *mblk;
+
+    if (dnetwork == OS_NULL) return OS_NULL;
 
     for (item = dnetwork->mlist_first;
          item;
@@ -107,7 +111,7 @@ iocMemoryBlock *ioc_find_mblk_shortcut(
                 if (!os_strcmp(mblk_name, mblk->mblk_name) &&
                     !os_strcmp(device_name, mblk->device_name))
                 {
-                    return mblk;
+                    return &item->mblk_handle;
                 }
             }
         }

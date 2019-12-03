@@ -609,6 +609,102 @@ static void Root_info_callback(
 /**
 ****************************************************************************************************
 
+  @brief Set memory block parameter value.
+  @anchor MemoryBlock_set_param
+
+  The MemoryBlock.set_param() function gets value of memory block's parameter.
+
+  param_name Currently only "auto" can be set. Controlles wether to use automatic (value 1)
+  or synchronous sending/receiving (value 0).
+
+****************************************************************************************************
+*/
+static PyObject *Root_set_mblk_param(
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    const char *mblk_path = NULL;
+    const char *param_name = OS_NULL;
+    int param_value = 0;
+    iocMemoryBlockParamIx param_ix;
+
+    PyObject *pyroot = NULL;
+    Root *root;
+
+    iocRoot *iocroot;
+    iocIdentifiers identifiers;
+    iocDynamicNetwork *dnetwork;
+    iocHandle *handle;
+
+    static char *kwlist[] = {
+        "root",
+        "io_path",
+        "param",
+        "value",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Ossi",
+         kwlist, &pyroot, &mblk_path, &param_name, &param_value))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    if (!PyObject_IsInstance(pyroot, (PyObject *)&RootType))
+    {
+        PyErr_SetString(iocomError, "The root argument is not an instance of the Root class");
+        return NULL;
+    }
+
+    root = (Root*)pyroot;
+    iocroot = root->root;
+    if (iocroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        return NULL;
+    }
+
+    if (!os_strcmp(param_name, "auto"))
+    {
+        param_ix = IOC_MBLK_AUTO_SYNC_FLAG;
+    }
+    else
+    {
+        PyErr_SetString(iocomError, "Unknown parameter");
+        return NULL;
+    }
+
+    ioc_lock(iocroot);
+
+    ioc_iopath_to_identifiers(iocroot, &identifiers, mblk_path, IOC_EXPECT_MEMORY_BLOCK);
+    dnetwork = ioc_find_dynamic_network(iocroot->droot, identifiers.network_name);
+    if (dnetwork)
+    {
+        osal_debug_error("??");
+    }
+    handle = ioc_find_mblk_shortcut(dnetwork, identifiers.mblk_name,
+        identifiers.device_name, identifiers.device_nr);
+
+    if (handle == OS_NULL)
+    {
+
+        osal_trace("Warning: Memory block was not found for parameter setting (may be just deleted)");
+    }
+    else
+    {
+        ioc_memory_block_set_int_param(handle, param_ix, param_value);
+    }
+    ioc_unlock(iocroot);
+
+    Py_RETURN_NONE;
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Return IOCOM internal state printout.
 
   The Root_print function initializes an object.
@@ -708,6 +804,7 @@ static PyMethodDef Root_methods[] = {
     {"wait_com_event", (PyCFunction)Root_wait_for_com_event, METH_VARARGS, "Wait for a communication event"},
     {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},
     {"list_devices", (PyCFunction)Root_list_devices, METH_VARARGS, "List devices in spefified network"},
+    {"set_mblk_param", (PyCFunction)Root_set_mblk_param, METH_VARARGS|METH_KEYWORDS, "Set memory block parameter"},
     {"print", (PyCFunction)Root_print, METH_VARARGS, "Print internal state of IOCOM"},
     {NULL} /* Sentinel */
 };

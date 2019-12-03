@@ -31,22 +31,14 @@ struct iocDynamicNetwork;
 
 /**
 ****************************************************************************************************
-    Dynamic network connect/disconnect callback function type.
+    Dynamic root structure.
 ****************************************************************************************************
-*/
-/* typedef void ioc_dnetwork_callback(
-    struct iocRoot *root,
-    struct iocDynamicNetwork *dnetwork,
-    iocEvent event,
-    const os_char *arg,
-    void *context);
 */
 
 /** We use fixed hash table size for now. Memory use/performance ratio can be improved
     in futute by adopting hash table memory allocation to number of signals.
  */
 #define IOC_DROOT_HASH_TAB_SZ 128
-
 
 /** The dynamic root class structure.
  */
@@ -57,15 +49,6 @@ typedef struct iocDynamicRoot
     /** Pointer back to root object.
      */
     iocRoot *root;
-
-    /** Callback function pointer. Calback is used to inform application about dynamic
-        IO network connects and disconnects. OS_NULL if not used.
-     */
-//    ioc_dnetwork_callback *func;
-
-    /** Callback context for callback function. OS_NULL if not used.
-     */
-//    void *context;
 }
 iocDynamicRoot;
 
@@ -86,20 +69,12 @@ iocDynamicRoot *ioc_initialize_dynamic_root(
 void ioc_release_dynamic_root(
     iocDynamicRoot *droot);
 
-/* Set callback function for iocRoot object to inform application about IO network
-   connect and disconnects.
- */
-/* void ioc_set_dnetwork_callback(
-    iocRoot *root,
-    ioc_dnetwork_callback func,
-    void *context);
-*/
-
 /* Add a dynamic network.
  */
 iocDynamicNetwork *ioc_add_dynamic_network(
     iocDynamicRoot *droot,
-    const os_char *network_name);
+    const os_char *network_name,
+    os_boolean check_if_exists);
 
 /* Remove a dynamic network.
  */

@@ -178,6 +178,7 @@ void ioc_setup_signal_by_identifiers(
     iocDynamicNetwork *dnetwork;
     iocDynamicSignal *dsignal;
     iocMemoryBlock *mblk;
+    iocHandle *handle;
 
     if (root->droot == OS_NULL)
     {
@@ -198,12 +199,12 @@ void ioc_setup_signal_by_identifiers(
     /* Check if we already have shortcut. This is much faster than
      * doing tough all memory blocks if there is many networks.
      */
-    mblk = ioc_find_mblk_shortcut(dnetwork, dsignal->mblk_name,
+    handle = ioc_find_mblk_shortcut(dnetwork, dsignal->mblk_name,
         dsignal->device_name, dsignal->device_nr);
-    if (mblk)
+    if (handle)
     {
         ioc_release_handle(signal->handle);
-        ioc_setup_handle(signal->handle, root, mblk);
+        ioc_setup_handle(signal->handle, root, handle->mblk);
         return;
     }
 

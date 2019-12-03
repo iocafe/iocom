@@ -36,6 +36,11 @@ typedef struct iocDynamicNetwork
 
     iocDynamicSignal *hash[IOC_DNETWORK_HASH_TAB_SZ];
 
+    /* Set to TRUE when new dynamic network structure is allocated. Set to false, once
+       application has been informed about the new network.
+     */
+    os_boolean new_network;
+
     struct iocDynamicNetwork *next;
 
     /** Two directional list of memory blocks handles belonging to this IO network.

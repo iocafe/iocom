@@ -45,10 +45,10 @@ void ioc_release_mblk_shortcut(
 
 /* Find a shortcut to memory block.
  */
-iocMemoryBlock *ioc_find_mblk_shortcut(
+iocHandle *ioc_find_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
-    os_char *mblk_name,
-    os_char *device_name,
+    const os_char *mblk_name,
+    const os_char *device_name,
     os_short device_nr);
 
 /* Remove memory block short cuts which are no longer needed.

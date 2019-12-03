@@ -238,6 +238,7 @@ void ioc_mbinfo_received(
 
 #if IOC_DYNAMIC_MBLK_CODE
     iocMemoryBlockParams mbprm;
+    iocDynamicNetwork *dnetwork;
 #endif
 
 #if IOC_RESIZE_MBLK_CODE
@@ -274,6 +275,20 @@ void ioc_mbinfo_received(
 
                 if (ioc_initialize_memory_block(&handle, OS_NULL, root, &mbprm)) return;
                 mblk = handle.mblk;
+
+                /* If we are maintaining dynamic information, create dynamic information
+                   structures for network and memory block already now.
+                 */
+                if (root->droot)
+                {
+                    dnetwork = ioc_add_dynamic_network(root->droot, mbprm.network_name, OS_TRUE);
+
+                    if (ioc_find_mblk_shortcut(dnetwork, mbprm.mblk_name,
+                        mbprm.device_name, mbprm.device_nr) == OS_NULL)
+                    {
+                        ioc_add_mblk_shortcut(dnetwork, mblk);
+                    }
+                }
 
                 ioc_new_root_event(root, IOC_NEW_MEMORY_BLOCK, OS_NULL, mblk,
                     root->callback_context);
