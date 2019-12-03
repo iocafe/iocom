@@ -11,7 +11,8 @@ class AsteroidPlayer(object):
         self.player_nr = int(tmp[0])
     
         # Setup Python access to exported IO signals. These pass user keyboard control to the asteroid service.
-        dev_select = ".*." + player_name + "." + network_name
+        self.device_path = player_name + "." + network_name
+        dev_select = ".*." + self.device_path
         print("force_y" + dev_select)
         self.exp_force_x = Signal(root, "force_x" + dev_select)
         self.exp_force_y = Signal(root, "force_y" + dev_select)
@@ -37,8 +38,8 @@ class AsteroidPlayer(object):
     # Get user's keyboard control state, move the space ship and return the
     # data vector for the space ship.
     def run(self, dt):
+        # self.root.receive(self.device_path)
         force_x = self.exp_force_x.get0()
-
         force_y = self.exp_force_y.get0()
         self.rotation = self.exp_rotation.get0()
         engine_visible = self.exp_engine_visible.get0()
@@ -77,6 +78,8 @@ class AsteroidPlayer(object):
         return None
 
     # Send object position and outlook data to the client application.
+    # Send data synchronously to device "player name"
     def set_object_data(self, x, n):
         self.imp_nro_objects.set(n)
         self.imp_object_data.set(x)
+        # self.root.send(self.device_path)

@@ -150,12 +150,15 @@ osalStatus ioc_queue_event(
 
     switch (event)
     {
-        default:
-        case IOC_NEW_MEMORY_BLOCK:
         case IOC_MBLK_CONNECTED_AS_SOURCE:
         case IOC_MBLK_CONNECTED_AS_TARGET:
+            if ((queue->flags & (IOC_MBLK_CONNECT_EVENTS|IOC_ALL_MBLK_EVENTS)) == 0) return OSAL_SUCCESS;
+            break;
+
+        default:
+        case IOC_NEW_MEMORY_BLOCK:
         case IOC_MEMORY_BLOCK_DELETED:
-            if ((queue->flags & IOC_MBLK_EVENTS) == 0) return OSAL_SUCCESS;
+            if ((queue->flags & IOC_ALL_MBLK_EVENTS) == 0) return OSAL_SUCCESS;
             break;
 
         case IOC_NEW_NETWORK:
