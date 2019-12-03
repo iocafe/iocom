@@ -283,7 +283,7 @@ os_char ioc_sets_int(
     {
         case OS_FLOAT:
         case OS_DOUBLE:
-            vv.value.d = value;
+            vv.value.d = (os_double)value;
             break;
 
         default:
@@ -358,7 +358,7 @@ os_char ioc_setx_int(
     {
         case OS_FLOAT:
         case OS_DOUBLE:
-            vv.value.d = value;
+            vv.value.d = (os_double)value;
             break;
 
         default:
@@ -576,7 +576,7 @@ os_long ioc_getx_int(
 
 ****************************************************************************************************
 */
-os_float ioc_getx_float(
+os_double ioc_getx_double(
     iocHandle *handle,
     os_int addr,
     os_char *state_bits,
@@ -650,7 +650,8 @@ os_char ioc_movex_str_signal(
     iocMemoryBlock *mblk;
     os_char *p;
     os_double dvalue;
-    os_int addr, value;
+    os_int addr;
+    os_long value;
     os_memsz len;
     iocHandle *handle;
     handle = signal->handle;
