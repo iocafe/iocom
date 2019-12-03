@@ -27,38 +27,4 @@ MemoryBlock;
 
 extern PyTypeObject MemoryBlockType;
 
-#if 0
 
-/* Write data to memory block.
- */
-void ioc_write(
-    iocMemoryBlock *mblk,
-    int addr,
-    const os_uchar *buf,
-    int n);
-
-/* Read data from memory block.
- */
-void ioc_read(
-    iocMemoryBlock *mblk,
-    int addr,
-    os_uchar *buf,
-    int n);
-
-/* Send data synchronously.
- */
-void ioc_send(
-    iocMemoryBlock *mblk);
-
-/* Receive data synchronously.
- */
-void ioc_receive(
-    iocMemoryBlock *mblk);
-
-/* Add callback function.
- */
-void ioc_add_callback(
-    iocMemoryBlock *mblk,
-    ioc_callback func,
-    void *context);
-#endif

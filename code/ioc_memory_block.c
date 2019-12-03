@@ -602,11 +602,6 @@ void ioc_write_internal(
     }
     ioc_mblk_invalidate(mblk, addr, addr + n - 1);
 
-    /* NOT NEEDED, INVALIDATE ALREADY DOES THIS if (mblk->flags & IOC_AUTO_SYNC)
-    {
-        ioc_send(handle);
-    } */
-
 getout:
     ioc_unlock(root);
 }

@@ -252,82 +252,107 @@ static PyObject *MemoryBlock_get_param(
     MemoryBlock *self,
     PyObject *args)
 {
-    #define GET_PARAM_N 8
-    const char *param_name[GET_PARAM_N], *p;
+    const char *param_name = OS_NULL;
     os_char buf[128];
-    os_int i, n;
     iocMemoryBlockParamIx param_ix;
-    iocRoot *root;
-    PyObject *py_list, *py_item;
+    PyObject *rval;
+    os_boolean is_int = OS_FALSE;
 
     os_memclear((os_char**)param_name, sizeof(param_name));
 
-    if (!PyArg_ParseTuple(args, "s|sssssss",
-         param_name, param_name + 1, param_name + 2, param_name + 3, param_name + 4, param_name + 5, param_name + 6, param_name + 7))
+    if (!PyArg_ParseTuple(args, "s", param_name))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         return NULL;
     }
 
-    /* Count parameters.
-     */
-    for (n = 0; n < GET_PARAM_N; ++n)
+    if (!os_strcmp(param_name, "auto"))
     {
-        if (param_name[n] == NULL) break;
+        param_ix = IOC_MBLK_AUTO_SYNC_FLAG;
+        is_int = OS_TRUE;
+    }
+    else if (!os_strcmp(param_name, "network_name"))
+    {
+        param_ix = IOC_NETWORK_NAME;
+    }
+    else if (!os_strcmp(param_name, "device_name"))
+    {
+        param_ix = IOC_DEVICE_NAME;
+    }
+    else if (!os_strcmp(param_name, "device_nr"))
+    {
+        param_ix = IOC_DEVICE_NR;
+        is_int = OS_TRUE;
+    }
+    else if (!os_strcmp(param_name, "mblk_name"))
+    {
+        param_ix = IOC_MBLK_NAME;
+    }
+    else if (!os_strcmp(param_name, "mblk_sz"))
+    {
+        param_ix = IOC_MBLK_SZ;
+        is_int = OS_TRUE;
+    }
+    else
+    {
+        PyErr_SetString(iocomError, "Unknown parameter name");
+        return NULL;
     }
 
-    /* Get memory block pointer, start synchronization and
-     */
-    if (ioc_handle_lock_to_mblk(&self->mblk_handle, &root) == OS_NULL)
+    if (is_int)
     {
-        Py_RETURN_NONE;
+        rval = Py_BuildValue("i", (int)ioc_memory_block_get_int_param(&self->mblk_handle, param_ix));
     }
-
-    py_list = PyList_New(n);
-    for (i = 0; i < n; ++i)
+    else
     {
-        p = param_name[i];
-        if (!os_strcmp(p, "network_name"))
-        {
-            param_ix = IOC_NETWORK_NAME;
-        }
-        else if (!os_strcmp(p, "device_name"))
-        {
-            param_ix = IOC_DEVICE_NAME;
-        }
-        else if (!os_strcmp(p, "device_nr"))
-        {
-            param_ix = IOC_DEVICE_NR;
-        }
-        else if (!os_strcmp(p, "mblk_name"))
-        {
-            param_ix = IOC_MBLK_NAME;
-        }
-        else if (!os_strcmp(p, "mblk_sz"))
-        {
-            param_ix = IOC_MBLK_SZ;
-        }
-        else
-        {
-            Py_XDECREF(py_list);
-            PyErr_SetString(iocomError, "Unknown parameter name");
-            ioc_unlock(root);
-            return NULL;
-        }
-
         ioc_memory_block_get_string_param(&self->mblk_handle, param_ix, buf, sizeof(buf));
-
-        py_item = Py_BuildValue("s", buf);
-        PyList_SetItem(py_list, i, py_item);
+        rval = Py_BuildValue("s", buf);
     }
 
-    ioc_unlock(root);
+    return rval;
+}
 
-#if IOPYTHON_TRACE
-    PySys_WriteStdout("MemoryBlock.get_param()\n");
-#endif
 
-    return py_list;
+/**
+****************************************************************************************************
+
+  @brief Set memory block parameter value.
+  @anchor MemoryBlock_set_param
+
+  The MemoryBlock.set_param() function gets value of memory block's parameter.
+
+  param_name Currently only "auto" can be set. Controlles wether to use automatic (value 1)
+  or synchronous sending/receiving (value 0).
+
+****************************************************************************************************
+*/
+static PyObject *MemoryBlock_set_param(
+    MemoryBlock *self,
+    PyObject *args)
+{
+    const char *param_name = OS_NULL;
+    int param_value = 0;
+    iocMemoryBlockParamIx param_ix;
+
+    if (!PyArg_ParseTuple(args, "si", &param_name, &param_value))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    if (!os_strcmp(param_name, "auto"))
+    {
+        param_ix = IOC_MBLK_AUTO_SYNC_FLAG;
+    }
+    else
+    {
+        PyErr_SetString(iocomError, "Unknown parameter");
+        return NULL;
+    }
+
+    ioc_memory_block_set_int_param(&self->mblk_handle, param_ix, param_value);
+
+    Py_RETURN_NONE;
 }
 
 
@@ -484,6 +509,28 @@ static PyObject *MemoryBlock_publish(
 }
 
 
+/* Send data synchronously.
+ */
+static PyObject *MemoryBlock_send(
+    MemoryBlock *self)
+{
+    ioc_send(&self->mblk_handle);
+
+    Py_RETURN_NONE;
+}
+
+
+/* Receive data synchronously.
+ */
+static PyObject *MemoryBlock_receive(
+    MemoryBlock *self)
+{
+    ioc_receive(&self->mblk_handle);
+
+    Py_RETURN_NONE;
+}
+
+
 /**
 ****************************************************************************************************
   Member variables.
@@ -502,10 +549,13 @@ static PyMemberDef MemoryBlock_members[] = {
 */
 static PyMethodDef MemoryBlock_methods[] = {
     {"delete", (PyCFunction)MemoryBlock_delete, METH_NOARGS, "Deletes IOCOM memory block"},
-    {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS, "Get memory block parameters"},
+    {"get_param", (PyCFunction)MemoryBlock_get_param, METH_VARARGS, "Get memory block parameter"},
+    {"set_param", (PyCFunction)MemoryBlock_set_param, METH_VARARGS, "Set memory block parameter"},
     {"read", (PyCFunction)MemoryBlock_read, METH_VARARGS|METH_KEYWORDS, "Read data from memory block"},
     {"write", (PyCFunction)MemoryBlock_write, METH_VARARGS|METH_KEYWORDS, "Write data to memory block"},
     {"publish", (PyCFunction)MemoryBlock_publish, METH_VARARGS|METH_KEYWORDS, "Publish as dynamic IO info"},
+    {"send", (PyCFunction)MemoryBlock_send, METH_NOARGS, "Send data synchronously"},
+    {"receive", (PyCFunction)MemoryBlock_receive, METH_NOARGS, "Receive data synchronously"},
 
     {NULL} /* Sentinel */
 };

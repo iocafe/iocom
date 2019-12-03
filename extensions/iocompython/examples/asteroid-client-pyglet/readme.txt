@@ -11,3 +11,4 @@ Note 1: Besides of python, this example client depends on iocompython and on pyg
 
 Note 2: To run this asteroidservice.py needs to be running on some computer, and IP address of the asteroid client needs to point that computer.
 
+Note 3: This app uses synchronous receive and send. Receive makes sure that all inputs (number of objects and data for objects) are pair and from same transfer frame. Synchronous send ensures that all changes are sent as one TCP packet (as far as feasible).
