@@ -170,7 +170,7 @@ static void ioc_setup_signal(
 /* Set up a dynamic signal.
  * LOCK must be on when calling this function.
  */
-void ioc_setup_signal_by_identifiers(
+iocDynamicSignal *ioc_setup_signal_by_identifiers(
     iocRoot *root,
     iocIdentifiers *identifiers,
     iocSignal *signal)
@@ -183,14 +183,14 @@ void ioc_setup_signal_by_identifiers(
     if (root->droot == OS_NULL)
     {
         osal_debug_error("The application is not using dynamic network structure, root->dapp is NULL");
-        return;
+        return OS_NULL;
     }
 
     dnetwork = ioc_find_dynamic_network(root->droot, identifiers->network_name);
-    if (dnetwork == OS_NULL) return;
+    if (dnetwork == OS_NULL) return OS_NULL;
 
     dsignal = ioc_find_first_dynamic_signal(dnetwork, identifiers);
-    if (dsignal == OS_NULL) return;
+    if (dsignal == OS_NULL) return OS_NULL;
 
     signal->addr = dsignal->addr;
     signal->n = dsignal->n;
@@ -205,7 +205,7 @@ void ioc_setup_signal_by_identifiers(
     {
         ioc_release_handle(signal->handle);
         ioc_setup_handle(signal->handle, root, handle->mblk);
-        return;
+        return dsignal;
     }
 
     /* Search trough all memory blocks. This will be slow if there are very many IO device networks,
@@ -226,8 +226,10 @@ void ioc_setup_signal_by_identifiers(
         /* Add shortcut to memory block list for faster search
          */
         ioc_add_mblk_shortcut(dnetwork, mblk);
-        break;
+        return dsignal;
     }
+
+    return OS_NULL;
 }
 
 

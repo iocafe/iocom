@@ -17,7 +17,7 @@
 */
 #include "iocompython.h"
 
-/* Used to store data parsed from arguments.
+/* Working state structure used to store data parsed from arguments.
  */
 #define IOPY_FIXBUF_SZ 64
 typedef struct
@@ -43,7 +43,7 @@ typedef struct
 SignalSetParseState;
 
 
-/* Used to store data parsed from arguments.
+/* Working state structure used to read data.
  */
 typedef struct
 {
@@ -54,6 +54,12 @@ typedef struct
 }
 SignalGetState;
 
+
+/* Forward referred static functions.
+ */
+static osalStatus Signal_try_setup(
+    Signal *self,
+    iocRoot *iocroot);
 
 
 /**
@@ -113,6 +119,7 @@ static PyObject *Signal_new(
     os_memclear(signal, sizeof(iocSignal));
     os_memclear(handle, sizeof(iocHandle));
     signal->handle = handle;
+    self->ncolumns = 1;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os|s",
          kwlist, &pyroot, &io_path, &network_name))
@@ -263,7 +270,6 @@ static void Signal_store_long(
 
     if (state->is_array)
     {
-//        PySys_WriteStdout("TYPE: %d\n", (int)state->type_id); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         p = state->buf;
         i = state->n_values;
         switch (state->type_id)
@@ -303,7 +309,6 @@ static void Signal_store_long(
     }
     else
     {
-//        PySys_WriteStdout("TYPE II: %d\n", (int)state->type_id); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         switch (state->type_id)
         {
             case OS_BOOLEAN:
@@ -393,7 +398,6 @@ static void Signal_store_double(
 
     else
     {
-//        PySys_WriteStdout("TYPE II: %d\n", (int)state->type_id); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         switch (state->type_id)
         {
             case OS_BOOLEAN:
@@ -465,7 +469,6 @@ static void Signal_set_sequence(
             str = PyBytes_AS_STRING(py_str);
 
             os_strncpy(value_str, str, sizeof(value_str));
-//            PySys_WriteStdout("String: %s\n", str);
             Py_XDECREF(py_repr);
             Py_XDECREF(py_str);
         }
@@ -473,36 +476,16 @@ static void Signal_set_sequence(
         else if (PyLong_Check(a)) {
             l = PyLong_AsLong(a);
             Signal_store_long(l, state);
-//            PySys_WriteStdout("Long %d\n", (int)l);
         }
 
         else if (PyFloat_Check(a)) {
             double d = PyFloat_AsDouble(a);
             Signal_store_double(d, state);
-//            PySys_WriteStdout("Float %f\n", d);
         }
 
         else if (PySequence_Check(a))
         {
-//            PySys_WriteStdout("Sequence\n");
-
             Signal_set_sequence(a, state);
-
-            /* long bn = PySequence_Length(a);
-            for (int j = 0; j<bn; j++)
-            {
-                PyObject *b = PySequence_GetItem(a, j);
-                if (PyLong_Check(b)) {
-                    int  elem = PyLong_AsLong(b);
-                    PySys_WriteStdout("LL %d\n", elem);
-                }
-
-                if (PyFloat_Check(b)) {
-                    double d = PyFloat_AsDouble(b);
-                    PySys_WriteStdout("FF %f\n", d);
-                }
-                Py_DECREF(b);
-            } */
         }
 
         Py_DECREF(a);
@@ -535,7 +518,6 @@ static void Signal_set_one_value(
         state->storage.vv.state_bits = OSAL_STATE_CONNECTED;
         ioc_movex_signals(state->signal, &state->storage.vv, 1,
             IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
-//        PySys_WriteStdout("WRITING : %d\n", state->storage.vv.value.i); // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     }
 }
 
@@ -567,7 +549,6 @@ static void Signal_set_array(
         state->buf = os_malloc(buf_sz, OS_NULL);
         os_memclear(state->buf, buf_sz);
     }
-
 
     /* Process the Python arguments into format we need.
      */
@@ -617,8 +598,9 @@ static PyObject *Signal_set(
      */
     os_memclear(&state, sizeof(state));
     state.signal = &self->signal;
-    ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state.signal);
-    if (state.signal->handle->mblk == OS_NULL)
+    if (Signal_try_setup(self, iocroot))
+//    ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state.signal);
+//    if (state.signal->handle->mblk == OS_NULL)
     {
         ioc_unlock(iocroot);
         goto getout;
@@ -652,6 +634,28 @@ static PyObject *Signal_set(
 
 getout:
     Py_RETURN_NONE;
+}
+
+/* Lock must be on
+ * */
+static osalStatus Signal_try_setup(
+    Signal *self,
+    iocRoot *iocroot)
+{
+    iocDynamicSignal *dsignal;
+
+    dsignal = ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, &self->signal);
+    if (self->signal.handle->mblk == OS_NULL)
+    {
+        return OSAL_STATUS_FAILED;
+    }
+
+    if (dsignal)
+    {
+        self->ncolumns = dsignal->ncolumns;
+    }
+
+    return OSAL_SUCCESS;
 }
 
 
@@ -870,8 +874,9 @@ static PyObject *Signal_get_internal(
     /* Find dynamic information for this signal.
      */
     state->signal = &self->signal;
-    ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state->signal);
-    if (state->signal->handle->mblk == OS_NULL)
+    if (Signal_try_setup(self, iocroot))
+    // ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state->signal);
+    // if (state->signal->handle->mblk == OS_NULL)
     {
         ioc_unlock(iocroot);
         goto getout;
@@ -991,6 +996,75 @@ static PyObject *Signal_get0(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Get signal value from memory block without state bits.
+
+****************************************************************************************************
+*/
+static PyObject *Signal_get_attribute(
+    Signal *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    char *attrib_name = OS_NULL;
+    PyObject *rval;
+    iocRoot *iocroot;
+    int w;
+
+    static char *kwlist[] = {
+        "name",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s",
+         kwlist, &attrib_name))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    /* Get IOC root pointer. Check not to crash on exceptional situations.
+     */
+    if (self->pyroot == OS_NULL) goto getout;
+    iocroot = self->pyroot->root;
+    if (iocroot == OS_NULL) goto getout;
+    ioc_lock(iocroot);
+
+    /* Find dynamic information for this signal.
+     */
+    if (Signal_try_setup(self, iocroot))
+    {
+        ioc_unlock(iocroot);
+        goto getout;
+    }
+
+    if (!os_strcmp(attrib_name, "n"))
+    {
+        rval = Py_BuildValue("i", (int)self->signal.n);
+    }
+    else if (!os_strcmp(attrib_name, "ncolumns"))
+    {
+        w = self->ncolumns;
+        rval = Py_BuildValue("i", (int)(w >= 1 ? w : 1));
+    }
+    else if (!os_strcmp(attrib_name, "type"))
+    {
+        rval = Py_BuildValue("s", osal_typeid_to_name(self->signal.flags & OSAL_TYPEID_MASK));
+    }
+    else
+    {
+        Py_INCREF(Py_None);
+        rval = Py_None;
+    }
+
+    ioc_unlock(iocroot);
+    return rval;
+
+getout:
+    Py_RETURN_NONE;
+}
 
 
 /**
@@ -1014,6 +1088,7 @@ static PyMethodDef Signal_methods[] = {
     {"set", (PyCFunction)Signal_set, METH_VARARGS, "Store signal data"},
     {"get", (PyCFunction)Signal_get, METH_VARARGS|METH_KEYWORDS, "Get signal data"},
     {"get0", (PyCFunction)Signal_get0, METH_VARARGS|METH_KEYWORDS, "Get signal data without state bits"},
+    {"get_attribute", (PyCFunction)Signal_get_attribute, METH_VARARGS|METH_KEYWORDS, "Get signal attribute"},
     {NULL} /* Sentinel */
 };
 

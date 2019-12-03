@@ -87,9 +87,9 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     const os_char *device_name,
     short device_nr,
     os_int addr,
-    os_ushort n,
-    os_char flags,
-    iocHandle *mblk_handle)
+    os_int n,
+    os_int ncolumns,
+    os_char flags)
 {
     iocDynamicSignal *dsignal, *prev_dsignal;
     os_uint hash_ix;
@@ -125,6 +125,7 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     dsignal->device_nr = device_nr;
     dsignal->addr = addr;
     dsignal->n = n;
+    dsignal->ncolumns = ncolumns;
     dsignal->flags = flags;
 
     /* Join it as last to linked list for the hash index.

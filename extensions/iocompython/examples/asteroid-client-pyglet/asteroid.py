@@ -4,8 +4,7 @@ from game import physicalobject, resources
 from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
 
 my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device number (not really unique)
-max_physicalobjects = 250
-data_vector_n = 8
+data_vector_n = 0
 
 with open('resources/asteroid-signals.json', 'r') as file:
     signal_conf = file.read()
@@ -99,16 +98,21 @@ def set_physical_object(o, ix, data):
         o.set(data[ix+1], data[ix+2], data[ix+3], data[ix+4], data[ix+5], data[ix+6],  data[ix+7], main_batch);
 
 def update(dt):
+    global total_array_n, data_vector_n, nro_objects
+
     keyboard_input(dt)
     exp.send();
 
     imp.receive();
     state_bits, nro_objects = imp_nro_objects.get()
-    data = imp_object_data.get0(nro_values = nro_objects * data_vector_n)
 
-    if state_bits & 2:
-        if nro_objects > max_physicalobjects:
-            nro_objects = max_physicalobjects
+    total_array_n = imp_object_data.get_attribute("n")
+    data_vector_n = imp_object_data.get_attribute("ncolumns")
+
+    if (state_bits & 2) and data_vector_n != None and total_array_n != None:
+        nro_objects = total_array_n // data_vector_n
+    
+        data = imp_object_data.get0(nro_values = nro_objects * data_vector_n)
 
         for ix in range(len(game_objects), nro_objects):
             o = physicalobject.PhysicalObject(batch=main_batch)

@@ -79,7 +79,47 @@ class AsteroidPlayer(object):
 
     # Send object position and outlook data to the client application.
     # Send data synchronously to device "player name"
-    def set_object_data(self, x, n):
-        self.imp_nro_objects.set(n)
-        self.imp_object_data.set(x)
+    def set_object_data(self, x):
+        total_array_n = self.imp_object_data.get_attribute("n")
+        player_ncols = self.imp_object_data.get_attribute("ncolumns")
+        if total_array_n == None or player_ncols == None:
+            return
+        player_nrows = total_array_n // player_ncols
+
+        world_nrows = len(x)
+        if world_nrows < 1:
+            return
+
+        world_ncols = len(x[0])
+
+        # if we are good and no need to reformat the data, just set it
+        if world_nrows <= player_nrows and world_ncols == player_ncols:
+            self.imp_nro_objects.set(world_nrows)
+            self.imp_object_data.set(x)
+            self.root.send(self.device_path)
+            return
+
+        # --- Rest of this function is resizing data matrix for possible
+        #     future changes in data matrix format - NON ESSENTAL FOR EXAMPLE ---
+        if player_nrows > world_nrows:
+             player_nrows = world_nrows
+
+        min_cols = world_ncols
+        if player_ncols < min_cols:
+            min_cols = player_ncols
+
+        new_x = []
+        for y in range(player_nrows):
+            row = x[y]
+            new_row = []
+            for i in range(min_cols):
+                new_row.append(row[i])
+
+            for i in range(min_cols, player_ncols):
+                new_row.append(0)
+
+            new_x.append(new_row)
+
+        self.imp_nro_objects.set(player_nrows)
+        self.imp_object_data.set(new_x)
         self.root.send(self.device_path)

@@ -45,6 +45,11 @@ typedef struct iocDynamicSignal
      */
     os_short device_nr;
 
+    /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
+        or OS_STR. Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.
+     */
+    os_char flags;
+
     /** Pointer to dynamic network, can be used for network name.
      */
     struct iocDynamicNetwork *dnetwork;
@@ -55,14 +60,13 @@ typedef struct iocDynamicSignal
 
     /** For strings n can be number of bytes in memory block for the string. For arrays n is
         number of elements reserved in memory block. Either 0 or 1 for single variables.
-        Unsigned type used for reason, we want to have max 65535 items.
      */
-    os_ushort n;
+    os_int n;
 
-    /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
-        or OS_STR. Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.
+    /** If array represents matrix, the width is number of columns in the matrix.
+        If vector or sigle variable, ncolumns is 1.
      */
-    os_char flags;
+    os_int ncolumns;
 
     /** Next dynamic signal with same hash key.
      */
@@ -91,7 +95,7 @@ void ioc_new_signal(
 
 /* Allocate and initialize dynamic signal using identifiers structure.
  */
-void ioc_setup_signal_by_identifiers(
+iocDynamicSignal *ioc_setup_signal_by_identifiers(
     iocRoot *root,
     iocIdentifiers *identifiers,
     iocSignal *signal);

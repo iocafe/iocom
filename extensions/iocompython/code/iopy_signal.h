@@ -41,6 +41,11 @@ typedef struct
      */
     iocIdentifiers identifiers;
 
+    /** If signal is matrix formulated as array, number of columns. For one
+        dimensional arrays and single variables ncolumns is 1.
+     */
+    os_int ncolumns;
+
     /** Connection initialization status: 0 = all good, other values are errors.
         Set by the constructor function.
      */

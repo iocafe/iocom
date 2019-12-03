@@ -25,7 +25,7 @@
         "name": "display objects",
         "signals": [
            {"name": "nro_objects", "type": "short"},
-           {"name": "object_data", "type": "short", "array": 500, "width" : 8}
+           {"name": "object_data", "type": "short", "array": 500, "ncolumns" : 8}
          ]
       }
     ]

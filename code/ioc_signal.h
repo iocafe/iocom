@@ -103,14 +103,13 @@ typedef struct iocValue
 
     union
     {
-        // os_int i;
-        os_long l; // not yet
-        // os_float f;
+        os_long l;
         os_double d;
     }
     value;
 }
 iocValue;
+
 
 /**
 ****************************************************************************************************

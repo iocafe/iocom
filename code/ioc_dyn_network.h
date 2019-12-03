@@ -78,9 +78,9 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     const os_char *device_name,
     short device_nr,
     os_int addr,
-    os_ushort n,
-    os_char flags,
-    iocHandle *mblk_handle);
+    os_int n,
+    os_int ncolumns,
+    os_char flags);
 
 /* Remove a dynamic signal.
  */

@@ -67,6 +67,7 @@ typedef struct
     const os_char *signal_type_str;
     os_int signal_addr;
     os_int signal_array_n;
+    os_int ncolumns;
 }
 iocAddDinfoState;
 
@@ -315,8 +316,8 @@ static osalStatus ioc_new_signal_by_info(
         state->device_nr,
         state->current_addr,
         n,
-        signal_type_id,
-        OS_NULL);
+        state->ncolumns,
+        signal_type_id);
 
     if (signal_type_id == OS_BOOLEAN)
     {
@@ -414,6 +415,7 @@ static osalStatus ioc_dinfo_process_block(
             is_signal_block = OS_TRUE;
             state->signal_addr = -1;
             state->signal_array_n = 1;
+            state->ncolumns = 1;
             state->signal_type_str = OS_NULL;
             state->signal_name = OS_NULL;
         }
@@ -502,6 +504,10 @@ static osalStatus ioc_dinfo_process_block(
                     else if (!os_strcmp(state->tag, "array"))
                     {
                         state->signal_array_n = (os_int)item.value.l;
+                    }
+                    else if (!os_strcmp(state->tag, "ncolumns"))
+                    {
+                        state->ncolumns = (os_int)item.value.l;
                     }
 
                 }
