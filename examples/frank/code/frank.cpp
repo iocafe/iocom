@@ -164,7 +164,7 @@ static void info_callback(
      */
     if (end_addr >= 0)
     {
-        ioc_add_dynamic_info(handle);
+        ioc_add_dynamic_info(handle, OS_FALSE);
     }
 }
 

@@ -91,7 +91,8 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 /* Add dynamic memory block/signal information.
  */
 osalStatus ioc_add_dynamic_info(
-    iocHandle *mblk_handle);
+    iocHandle *mblk_handle,
+    os_boolean resize_mblks);
 
 /* Memory block is being deleted, remove any references to it from dynamic configuration.
  */

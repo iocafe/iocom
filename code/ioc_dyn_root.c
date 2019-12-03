@@ -27,6 +27,10 @@
 
 typedef struct
 {
+    /* Pointer to iocom root object
+     */
+    iocRoot *root;
+
     /** Pointer to dynamic IO network beging configured.
      */
     iocDynamicNetwork *dnetwork;
@@ -42,8 +46,19 @@ typedef struct
      */
     os_short device_nr;
 
+    /** Resize memory blocks while parsing flag.
+     */
+    os_boolean resize_mblks;
+
     osalTypeId current_type_id;
+
+    /** Current address within memory while parsing.
+     */
     os_int current_addr;
+
+    /** Maximum address within memory block (first unused).
+     */
+    os_int max_addr;
 
     const os_char *tag;
     const os_char *mblk_name;
@@ -244,7 +259,6 @@ static osalStatus ioc_dinfo_process_array(
         switch (item.code)
         {
             case OSAL_JSON_START_BLOCK:
-                // state->block_tag = state->tag;
                 s = ioc_dinfo_process_block(droot, state, array_tag, jindex);
                 if (s) return s;
                 break;
@@ -322,7 +336,57 @@ static osalStatus ioc_new_signal_by_info(
         state->current_addr += n * sz + 1;
     }
 
+    /* Record first unused address to allow automatic resizing
+     */
+    if (state->current_addr > state->max_addr)
+    {
+        state->max_addr = state->current_addr;
+    }
+
     return OSAL_SUCCESS;
+}
+
+
+static void ioc_resize_memory_block_by_info(
+    iocAddDinfoState *state)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_char *newbuf;
+    os_int sz;
+
+    root = state->root;
+    sz = state->max_addr;
+    if (sz < IOC_MIN_MBLK_SZ) sz = IOC_MIN_MBLK_SZ;
+
+    for (mblk = root->mblk.first;
+         mblk;
+         mblk = mblk->link.next)
+    {
+        if (mblk->device_nr != state->device_nr) continue;
+        if (os_strcmp(mblk->mblk_name, state->mblk_name)) continue;
+        if (os_strcmp(mblk->device_name, state->device_name)) continue;
+        if (os_strcmp(mblk->network_name, mblk->network_name)) continue;
+
+        if (sz > mblk->nbytes)
+        {
+            if (mblk->buf_allocated)
+            {
+                newbuf = ioc_malloc(root, sz, OS_NULL);
+                os_memcpy(newbuf, mblk->buf, mblk->nbytes);
+                ioc_free(root, mblk->buf, mblk->nbytes);
+                mblk->buf = newbuf;
+                mblk->nbytes = sz;
+            }
+#if OSAL_DEBUG
+            else
+            {
+                osal_debug_error("Attempt to resize static memory block");
+            }
+#endif
+        }
+        break;
+    }
 }
 
 
@@ -336,12 +400,13 @@ static osalStatus ioc_dinfo_process_block(
 {
     osalJsonItem item;
     osalStatus s;
-    os_boolean is_signal_block;
+    os_boolean is_signal_block, is_mblk_block;
     os_char array_tag_buf[16];
 
     /* If this is beginning of signal block.
      */
     is_signal_block = OS_FALSE;
+    is_mblk_block = OS_FALSE;
     if (!os_strcmp(state->tag, "-"))
     {
         if (!os_strcmp(array_tag, "signals"))
@@ -354,7 +419,9 @@ static osalStatus ioc_dinfo_process_block(
         }
         else if (!os_strcmp(array_tag, "mblk"))
         {
+            is_mblk_block = OS_TRUE;
             state->current_addr = 0;
+            state->max_addr = 0;
             state->current_type_id = OS_USHORT;
         }
     }
@@ -368,6 +435,10 @@ static osalStatus ioc_dinfo_process_block(
             if (is_signal_block)
             {
                 return ioc_new_signal_by_info(state);
+            }
+            if (is_mblk_block && state->resize_mblks)
+            {
+                ioc_resize_memory_block_by_info(state);
             }
             return OSAL_SUCCESS;
         }
@@ -454,7 +525,8 @@ static osalStatus ioc_dinfo_process_block(
 /* Add dynamic memory block/signal information.
  */
 osalStatus ioc_add_dynamic_info(
-    iocHandle *mblk_handle)
+    iocHandle *mblk_handle,
+    os_boolean resize_mblks)
 {
     iocRoot *root;
     iocDynamicRoot *droot;
@@ -470,8 +542,10 @@ osalStatus ioc_add_dynamic_info(
     droot = root->droot;
 
     os_memclear(&state, sizeof(state));
+    state.root = root;
     os_strncpy(state.device_name, mblk->device_name, IOC_NAME_SZ);
     state.device_nr = mblk->device_nr;
+    state.resize_mblks = resize_mblks;
 
     s = osal_create_json_indexer(&jindex, mblk->buf, mblk->nbytes, 0);
     if (s) goto getout;

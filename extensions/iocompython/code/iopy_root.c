@@ -612,7 +612,7 @@ static void Root_info_callback(
      */
     if (end_addr >= 0 && root)
     {
-        ioc_add_dynamic_info(handle);
+        ioc_add_dynamic_info(handle, OS_FALSE);
     }
 }
 

@@ -56,6 +56,9 @@
 #define IOC_MBLK_STRING 16
 #define IOC_CLEAR_MBLK_RANGE 32
 
+/* Minimum memory block size in bytes.
+ */
+#define IOC_MIN_MBLK_SZ 32
 
 /**
 ****************************************************************************************************

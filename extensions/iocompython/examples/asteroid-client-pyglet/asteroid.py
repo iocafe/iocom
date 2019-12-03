@@ -11,8 +11,8 @@ with open('resources/asteroid-signals.json', 'r') as file:
     signal_conf = file.read()
 
 root = Root('spacepilot', device_nr=my_player_nr, network_name='pekkanet')
-exp = MemoryBlock(root, 'upward', 'exp', nbytes=32)
-imp = MemoryBlock(root, 'downward', 'imp', nbytes=2*max_physicalobjects*data_vector_n + 3)
+exp = MemoryBlock(root, 'upward', 'exp')
+imp = MemoryBlock(root, 'downward', 'imp')
 data = json2bin(signal_conf)
 info = MemoryBlock(root, 'upward', 'info', nbytes=len(data))
 info.publish(data)

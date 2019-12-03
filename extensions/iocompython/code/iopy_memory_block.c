@@ -44,7 +44,7 @@ static PyObject *MemoryBlock_new(
         *flags = NULL;
 
     int
-        nbytes = 128,
+        nbytes = IOC_MIN_MBLK_SZ,
         device_nr = 0;
 
     static char *kwlist[] = {
@@ -138,7 +138,7 @@ static PyObject *MemoryBlock_new(
         prm.network_name = network_name;
     }
 
-    if (nbytes < 24) nbytes = 24;
+    if (nbytes < IOC_MIN_MBLK_SZ) nbytes = IOC_MIN_MBLK_SZ;
     prm.nbytes = nbytes;
 
     ioc_initialize_memory_block(&self->mblk_handle, OS_NULL, iocroot, &prm);
@@ -443,7 +443,8 @@ static PyObject *MemoryBlock_write(
 /**
 ****************************************************************************************************
   Publish memory block content as dynamic IO network information.
-  The Python example below sets signal configuration for an IO device.
+  The Python example below sets signal configuration for an IO device. This function should not
+  be called on server side.
 
   \verbatim
   signal_conf = ('{'
@@ -501,9 +502,9 @@ static PyObject *MemoryBlock_publish(
         ioc_write(&self->mblk_handle, pyaddr, buffer, length);
     }
 
-    /* Publish block content as dynamic structure.
+    /* Publish block content as dynamic structure. Resize memory block (make bigger only).
      */
-    ioc_add_dynamic_info(&self->mblk_handle);
+    ioc_add_dynamic_info(&self->mblk_handle, OS_TRUE);
 
     Py_RETURN_NONE;
 }
