@@ -38,7 +38,7 @@ class AsteroidPlayer(object):
     # Get user's keyboard control state, move the space ship and return the
     # data vector for the space ship.
     def run(self, dt):
-        # self.root.receive(self.device_path)
+        self.root.receive(self.device_path)
         force_x = self.exp_force_x.get0()
         force_y = self.exp_force_y.get0()
         self.rotation = self.exp_rotation.get0()
@@ -82,4 +82,4 @@ class AsteroidPlayer(object):
     def set_object_data(self, x, n):
         self.imp_nro_objects.set(n)
         self.imp_object_data.set(x)
-        # self.root.send(self.device_path)
+        self.root.send(self.device_path)

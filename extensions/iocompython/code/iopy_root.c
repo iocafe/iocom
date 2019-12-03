@@ -16,6 +16,14 @@
 #include "iocompython.h"
 
 
+typedef enum
+{
+    IOC_SEND_MBLK,
+    IOC_RECEIVE_MBLK,
+}
+iocSendReceiveOp;
+
+
 static void Root_callback(
     struct iocRoot *root,
     iocEvent event,
@@ -629,7 +637,6 @@ static PyObject *Root_set_mblk_param(
     int param_value = 0;
     iocMemoryBlockParamIx param_ix;
 
-    PyObject *pyroot = NULL;
     Root *root;
 
     iocRoot *iocroot;
@@ -638,27 +645,20 @@ static PyObject *Root_set_mblk_param(
     iocHandle *handle;
 
     static char *kwlist[] = {
-        "root",
         "io_path",
         "param",
         "value",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Ossi",
-         kwlist, &pyroot, &mblk_path, &param_name, &param_value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi",
+         kwlist, &mblk_path, &param_name, &param_value))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         return NULL;
     }
 
-    if (!PyObject_IsInstance(pyroot, (PyObject *)&RootType))
-    {
-        PyErr_SetString(iocomError, "The root argument is not an instance of the Root class");
-        return NULL;
-    }
-
-    root = (Root*)pyroot;
+    root = (Root*)self;
     iocroot = root->root;
     if (iocroot == OS_NULL)
     {
@@ -680,10 +680,6 @@ static PyObject *Root_set_mblk_param(
 
     ioc_iopath_to_identifiers(iocroot, &identifiers, mblk_path, IOC_EXPECT_MEMORY_BLOCK);
     dnetwork = ioc_find_dynamic_network(iocroot->droot, identifiers.network_name);
-    if (dnetwork)
-    {
-        osal_debug_error("??");
-    }
     handle = ioc_find_mblk_shortcut(dnetwork, identifiers.mblk_name,
         identifiers.device_name, identifiers.device_nr);
 
@@ -701,6 +697,131 @@ static PyObject *Root_set_mblk_param(
     Py_RETURN_NONE;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Synchronized data transfers, sen and receive.
+
+****************************************************************************************************
+*/
+static PyObject *Root_send_receive(
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwds,
+    iocSendReceiveOp op)
+{
+    const char *mblk_path = NULL;
+    Root *root;
+
+    iocRoot *iocroot;
+    iocIdentifiers identifiers;
+    iocDynamicNetwork *dnetwork;
+    iocMblkShortcut *item, *next_item;
+    iocMemoryBlock *mblk;
+
+    static char *kwlist[] = {
+        "io_path",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s",
+         kwlist, &mblk_path))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    root = (Root*)self;
+    iocroot = root->root;
+    if (iocroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        return NULL;
+    }
+
+    ioc_lock(iocroot);
+
+    ioc_iopath_to_identifiers(iocroot, &identifiers, mblk_path, IOC_EXPECT_DEVICE);
+    dnetwork = ioc_find_dynamic_network(iocroot->droot, identifiers.network_name);
+
+    if (dnetwork == OS_NULL)
+    {
+        osal_trace("Warning, send/receive: Network was not found");
+    }
+    else
+    {
+        for (item = dnetwork->mlist_first;
+             item;
+             item = next_item)
+        {
+            next_item = item->next;
+
+            /* Clean up memory while searching
+             */
+            mblk = item->mblk_handle.mblk;
+            if (mblk == OS_NULL)
+            {
+                ioc_release_mblk_shortcut(dnetwork, item);
+            }
+            else
+            {
+                if (identifiers.device_nr == mblk->device_nr)
+                {
+                    if (!os_strcmp(identifiers.device_name, mblk->device_name))
+                    {
+                        switch (op)
+                        {
+                            case IOC_SEND_MBLK:
+                                ioc_send(&item->mblk_handle);
+                                break;
+
+                            default:
+                            case IOC_RECEIVE_MBLK:
+                                ioc_receive(&item->mblk_handle);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    ioc_unlock(iocroot);
+
+    Py_RETURN_NONE;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Call synchronized send.
+
+****************************************************************************************************
+*/
+static PyObject *Root_send(
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    return Root_send_receive(self, args, kwds, IOC_SEND_MBLK);
+}
+
+/**
+****************************************************************************************************
+
+  @brief Call synchronized receive.
+
+****************************************************************************************************
+*/
+static PyObject *Root_receive(
+    MemoryBlock *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    return Root_send_receive(self, args, kwds, IOC_RECEIVE_MBLK);
+}
 
 /**
 ****************************************************************************************************
@@ -805,6 +926,8 @@ static PyMethodDef Root_methods[] = {
     {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},
     {"list_devices", (PyCFunction)Root_list_devices, METH_VARARGS, "List devices in spefified network"},
     {"set_mblk_param", (PyCFunction)Root_set_mblk_param, METH_VARARGS|METH_KEYWORDS, "Set memory block parameter"},
+    {"send", (PyCFunction)Root_send, METH_VARARGS|METH_KEYWORDS, "Send data synchronously"},
+    {"receive", (PyCFunction)Root_receive, METH_VARARGS|METH_KEYWORDS, "Receive data synchronously"},
     {"print", (PyCFunction)Root_print, METH_VARARGS, "Print internal state of IOCOM"},
     {NULL} /* Sentinel */
 };

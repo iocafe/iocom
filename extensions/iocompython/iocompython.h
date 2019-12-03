@@ -27,10 +27,10 @@
 #include <Python.h>
 #include <structmember.h>
 #else
-#include <python3.5m/Python.h>
-#include <python3.5m/structmember.h>
-// #include <python3.7m/Python.h>
-// #include <python3.7m/structmember.h>
+// #include <python3.5m/Python.h>
+// #include <python3.5m/structmember.h>
+#include <python3.7m/Python.h>
+#include <python3.7m/structmember.h>
 #endif
 
 /* Include iocom and operating system abstraction layer.

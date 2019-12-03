@@ -27,8 +27,8 @@ def main():
             if e[0] == 'mblk_as_source' or e[0] == 'mblk_as_target':
                 mblk_name = e[3]
                 mblk_path = mblk_name + '.' + e[2] + '.' + e[1]
-                #if mblk_name == 'imp' or mblk_name == 'exp':
-                #    root.set_mblk_param(root, mblk_path, "auto", 0)
+                if mblk_name == 'imp' or mblk_name == 'exp':
+                    root.set_mblk_param(mblk_path, "auto", 0)
                 #if mblk_name == 'info':
                 #    new_player()
 
