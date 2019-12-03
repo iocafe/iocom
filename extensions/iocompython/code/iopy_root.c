@@ -388,6 +388,9 @@ static PyObject *Root_initialize_event_queue(
     flags = 0;
     if (py_flags)
     {
+        if (os_strstr(py_flags, "new_mblk", OSAL_STRING_SEARCH_ITEM_NAME))
+            flags |= IOC_NEW_MBLK_EVENTS;
+
         if (os_strstr(py_flags, "connect_mblk", OSAL_STRING_SEARCH_ITEM_NAME))
             flags |= IOC_MBLK_CONNECT_EVENTS;
 
@@ -405,7 +408,7 @@ static PyObject *Root_initialize_event_queue(
      */
     if (flags == 0)
     {
-        flags = IOC_DEVICE_EVENTS|IOC_NETWORK_EVENTS|IOC_MBLK_CONNECT_EVENTS;
+        flags = IOC_DEVICE_EVENTS|IOC_NETWORK_EVENTS|IOC_NEW_MBLK_EVENTS;
     }
 
     ioc_initialize_event_queue(root, event, py_max_events, flags);

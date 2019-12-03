@@ -76,8 +76,8 @@ typedef struct iocEventQueue
      */
     osalEvent event;
 
-    /** Which communication events we wish to queue, bits: IOC_MBLK_CONNECT_EVENTS,
-        IOC_ALL_MBLK_EVENTS, IOC_DEVICE_EVENTS, IOC_NETWORK_EVENTS.
+    /** Which communication events we wish to queue, bits: IOC_NEW_MBLK_EVENTS,
+        IOC_MBLK_CONNECT_EVENTS, IOC_ALL_MBLK_EVENTS, IOC_DEVICE_EVENTS, IOC_NETWORK_EVENTS.
      */
     os_int flags;
     
@@ -103,10 +103,11 @@ iocEventQueue;
 
 /* Flags for ioc_initialize_event_queue
  */
-#define IOC_MBLK_CONNECT_EVENTS 1
-#define IOC_ALL_MBLK_EVENTS 2
-#define IOC_DEVICE_EVENTS 4
-#define IOC_NETWORK_EVENTS 8
+#define IOC_NEW_MBLK_EVENTS 1
+#define IOC_MBLK_CONNECT_EVENTS 2
+#define IOC_ALL_MBLK_EVENTS 4
+#define IOC_DEVICE_EVENTS 8
+#define IOC_NETWORK_EVENTS 16
 
 /* Start queueing communication events for the application.
  */

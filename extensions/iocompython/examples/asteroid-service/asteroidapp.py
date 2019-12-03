@@ -1,6 +1,6 @@
 # Module: asteroidapp.py
 from iocompython import Root, Signal
-import threading
+import threading, queue
 import time
 from asteroidplayer import AsteroidPlayer 
 from asteroidrock import AsteroidRock
@@ -10,16 +10,16 @@ class AsteroidApp(object):
     def __init__(self, root, network_name):
         self.root = root
         self.network_name = network_name
-        self.players = {}
 
         self.rocks = []
         self.rocks.append(AsteroidRock())
         self.rocks.append(AsteroidRock())
         self.rocks.append(AsteroidRock())
-
         self.bullets = []
 
         self.mytimer = time.time()
+        self.queue = queue.Queue()
+        self.players = {}
 
     def run(self):
         global root
@@ -28,28 +28,20 @@ class AsteroidApp(object):
         dt = timer_now - self.mytimer
         self.mytimer = timer_now
 
-        # Make sure that our player list is up to date
-        player_list = root.list_devices(self.network_name)
-        if player_list == None:
-            print('network closed')
-            return False
-        
-        # Add new players
-        for player_name in player_list:
-            p = self.players.get(player_name)
-            if p == None:
-                print ("new player " + player_name)
-                self.players[player_name] = AsteroidPlayer(self.root, player_name, self.network_name)
+        if self.queue.qsize() > 0:
+            myevent = self.queue.get().split()
+            print (myevent)
+            if myevent[0] == 'new_player':
+                print ("new player " + myevent[1])
+                self.players[myevent[1]] = AsteroidPlayer(self.root, myevent[1], self.network_name)
 
-        # Remove players who dropped off
-        remove_these = []
-        for player_name in self.players:
-            if player_name not in player_list:
-                print ("player " + player_name + ' dropped off')
-                remove_these.append(player_name)
+            if myevent[0] == 'drop_player':
+                player = self.players.get(myevent[1], None)
+                if player != None:
+                    del self.players[myevent[1]]
 
-        for player_name in remove_these:
-            self.players.pop(player_name)
+            if myevent[0] == 'exit':
+                return False
 
         asteroid_players = self.players.values()
         n_rocks = len(self.rocks)
@@ -91,6 +83,8 @@ def start(proot, network_name):
     root = proot
     print("Asteroids started for " + network_name)
     myapp = AsteroidApp(root, network_name)
+    q = myapp.queue
     asteroidAppThread = threading.Thread(target=run_testapp, args=(myapp,), daemon=True)
     asteroidAppThread.start()
 
+    return (asteroidAppThread, q)
