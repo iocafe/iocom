@@ -225,5 +225,8 @@ static void root_callback(
         case IOC_NETWORK_DISCONNECTED:
             osal_trace2("IOC_NETWORK_DISCONNECTED");
             break;
+
+        default:
+            break;
     }
 }

@@ -712,7 +712,7 @@ osalStatus ioc_add_dynamic_info(
     /* Make sure that we have network with this name.
      */
     state.dnetwork = ioc_add_dynamic_network(droot, mblk->network_name);
-    if (state.dnetwork)
+    if (state.dnetwork == OS_NULL)
     {
         s = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
         goto getout;
