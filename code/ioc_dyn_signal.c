@@ -28,9 +28,21 @@ static void ioc_setup_signal(
     iocSignal *signal);
 
 
-/* Allocate and initialize dynamic signal.
- * @return Pointer to dynamic signal structure, or OS_NULL if memory allocation failed.
- */
+/**
+****************************************************************************************************
+
+  @brief Allocate and initialize dynamic signal structure.
+  @anchor ioc_initialize_dynamic_signal
+
+  The ioc_initialize_dynamic_signal() function allocates new dynamic signal structure and
+  stores signal name for it. This function doesn't join allocated structure to any top
+  level structure.
+
+  @param   signal_name Name of the new signal.
+  @return  Pointer to dynamic signal structure, or OS_NULL if memory allocation failed.
+
+****************************************************************************************************
+*/
 iocDynamicSignal *ioc_initialize_dynamic_signal(
     const os_char *signal_name)
 {
@@ -54,8 +66,20 @@ iocDynamicSignal *ioc_initialize_dynamic_signal(
 }
 
 
-/* Release dynamic signal.
- */
+/**
+****************************************************************************************************
+
+  @brief Release dynamic signal structure.
+  @anchor ioc_release_dynamic_signal
+
+  The ioc_release_dynamic_signal() function frees memory allocated for dynamic signal structure
+  and signal name.
+
+  @param   dsignal Pointer to dynamic signal structure to release.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_release_dynamic_signal(
     iocDynamicSignal *dsignal)
 {
@@ -67,9 +91,32 @@ void ioc_release_dynamic_signal(
 }
 
 
-/* Allocate or maintain dynamic signal structure.
- */
-void ioc_new_signal(
+/**
+****************************************************************************************************
+
+  @brief Maintain or allocate signal structure.
+  @anchor ioc_maintain_signal
+
+  The ioc_maintain_signal() function allocates signal structure and container memory block handle
+  structre, unless already allocated. The function fills these by by data (memory block handle,
+  address, n, type, etc) by searching the dynamic information.
+
+  If dynamic information for the signal is not (yet) available, the signal structure is
+  left uninitialized and signal->handle->mblk will be OS_NULL.
+
+  @param   root IOCOM root structure.
+  @param   iopath IO path to the signal, like "lighton.imp.mydev.pekkanet", etc.
+  @param   network_name Network name can also be given separate from IO path, for example
+           "pekkanet". Sometimes this is convinient.
+  @param   psignal Pointer to signal pointer. At entry, the signal pointer can be either
+           OS_NULL and signal structure will be allocated, or pointer to already allocated
+           signal structure. At exit this is set to pointer to signal structure, unless
+           memory allocation fails.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_maintain_signal(
     iocRoot *root,
     const os_char *iopath,
     const os_char *network_name,
@@ -113,9 +160,20 @@ void ioc_new_signal(
 }
 
 
-/* Free signal allocated by ioc_new_signal() function.
-   This function takes care about synchronization.
- */
+/**
+****************************************************************************************************
+
+  @brief Release signal structure allocated by ioc_maintain_signal().
+  @anchor ioc_delete_signal
+
+  The ioc_delete_signal() function frees signal and contained handle structures allocated
+  by ioc_maintain_signal() function.
+
+  @param   signal Pointer to signal structure.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_delete_signal(
     iocSignal *signal)
 {
@@ -140,9 +198,22 @@ void ioc_delete_signal(
 }
 
 
-/* Set up a dynamic signal.
- * LOCK must be on when calling this function.
- */
+/**
+****************************************************************************************************
+
+  @brief Set up a signal.
+  @anchor ioc_setup_signal
+
+  The ioc_delete_signal() function is helper function for ioc_maintain_signal() to fill in
+  the signal structure.
+
+  LOCK must be on when calling this function.
+
+  @param   signal Pointer to signal structure.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_setup_signal(
     iocRoot *root,
     const os_char *iopath,
@@ -174,9 +245,30 @@ static void ioc_setup_signal(
 }
 
 
-/* Set up a dynamic signal.
- * LOCK must be on when calling this function.
- */
+/**
+****************************************************************************************************
+
+  @brief Set up a signal structure, if we have dynamic information for it.
+  @anchor ioc_setup_signal_by_identifiers
+
+  The ioc_setup_signal_by_identifiers() function searces for signal from dynamic information
+  with given identifiers. If one is found, data is stored in signal and contained handle stuctures.
+
+  If dynamic information for the signal is not (yet) available, the signal structure is
+  left uninitialized and signal->handle->mblk will be OS_NULL.
+
+  LOCK must be on when calling this function.
+
+  @param   root IOCOM root structure.
+  @param   identifiers Identifiers from IO path, specify which signal.
+  @param   signal Pointer to signal signal structure to set up. At entry, the signal pointer can be either
+           OS_NULL and signal structure will be allocated, or pointer to already allocated
+           signal structure. At exit this is set to pointer to signal structure, unless
+           memory allocation fails.
+  @return  None.
+
+****************************************************************************************************
+*/
 iocDynamicSignal *ioc_setup_signal_by_identifiers(
     iocRoot *root,
     iocIdentifiers *identifiers,

@@ -50,6 +50,7 @@ def main():
 
             # Player dropped off
             if e[0] == 'device_disconnected':
+                a = running_apps.get(network_name, None)
                 if a != None:
                     a[1].put('drop_player ' + device_name)
 

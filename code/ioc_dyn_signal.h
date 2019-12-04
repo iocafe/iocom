@@ -24,6 +24,11 @@
 struct iocDynamicNetwork;
 
 
+/**
+****************************************************************************************************
+    Dynamic signal structure.
+****************************************************************************************************
+*/
 typedef struct iocDynamicSignal
 {
     /** Signal name. Dynamically allocated, can be up to 31 characters.
@@ -75,6 +80,11 @@ typedef struct iocDynamicSignal
 iocDynamicSignal;
 
 
+/**
+****************************************************************************************************
+    Dynamic signal related functions.
+****************************************************************************************************
+*/
 /* Allocate and initialize dynamic signal.
  */
 iocDynamicSignal *ioc_initialize_dynamic_signal(
@@ -87,7 +97,7 @@ void ioc_release_dynamic_signal(
 
 /* Allocate or maintain signal structure using IO path.
  */
-void ioc_new_signal(
+void ioc_maintain_signal(
     iocRoot *root,
     const os_char *iopath,
     const os_char *network_name,
@@ -100,7 +110,7 @@ iocDynamicSignal *ioc_setup_signal_by_identifiers(
     iocIdentifiers *identifiers,
     iocSignal *signal);
 
-/* Free signal allocated by ioc_new_signal() function.
+/* Free signal allocated by ioc_maintain_signal() function.
  */
 void ioc_delete_signal(
     iocSignal *signal);

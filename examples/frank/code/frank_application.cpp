@@ -88,7 +88,7 @@ void FrankApplication::run()
         segments[i] = !segments[i];
         if (++i >= sizeof(segments)) i = 0;
 
-        ioc_new_signal(&frank_root, "seven_segment", m_network_name, &seven_segment);
+        ioc_maintain_signal(&frank_root, "seven_segment", m_network_name, &seven_segment);
         ioc_sets_array(seven_segment, segments, sizeof(segments));
     }
 
