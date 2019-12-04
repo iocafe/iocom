@@ -4,9 +4,12 @@
   @brief   Dynamically maintain IO network objects.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    20.11.2019
+  @date    3.12.2019
 
-  The dynamic list of memory block handles belonging to the IO network.
+  Dynamic list of memory block handles belonging to an IO device network. This list is used
+  to seach for memory blocks without going trough all memory blocks belonging to the root.
+  This is important in cloud server environment where one service may handle many thousands
+  of memory blocks.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -19,8 +22,11 @@
 #define IOC_DYN_MBLK_LIST_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
-/* Item in memory bloc list
- */
+/**
+****************************************************************************************************
+  Item in memory block shortcut list
+****************************************************************************************************
+*/
 typedef struct iocMblkShortcut
 {
     iocHandle mblk_handle;
@@ -31,6 +37,11 @@ typedef struct iocMblkShortcut
 iocMblkShortcut;
 
 
+/**
+****************************************************************************************************
+  Memory block shortcut functions
+****************************************************************************************************
+*/
 /* Allocate and initialize dynamic signal.
  */
 iocMblkShortcut *ioc_add_mblk_shortcut(
@@ -43,7 +54,7 @@ void ioc_release_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
     iocMblkShortcut *item);
 
-/* Find a shortcut to memory block.
+/* Find memory block.
  */
 iocHandle *ioc_find_mblk_shortcut(
     iocDynamicNetwork *dnetwork,

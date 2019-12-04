@@ -81,19 +81,10 @@ typedef struct iocSignal
         match to an IO pin.
      */
     const void *ptr;
-
-#if IOC_DYNAMIC_MBLK_CODE
-    /** One write could go to multiple devices in network environment, assuming there are
-        multiple devices with same signal name. Need to think how to maintain list for
-        this in dynamic environment.
-     */
-//    struct iocSignal *next;
-#endif
 }
 iocSignal;
 
-/** Current value and state bits for simple types. For ones, this is either integer i or float
-    f, depending on data type (flags).
+/** Current value and state bits for simple types.
  */
 typedef struct iocValue
 {
@@ -101,6 +92,8 @@ typedef struct iocValue
      */
     os_char state_bits;
 
+    /** Value, this is either integer l or floating point value d, depending on data type (flags).
+     */
     union
     {
         os_long l;

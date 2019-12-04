@@ -71,11 +71,7 @@ iocSendInfoInCon;
 
 /** 
 ****************************************************************************************************
-
-  @name Functions related to memory block information
-
-  X...
-
+  Functions for managing memory block information
 ****************************************************************************************************
  */
 /*@{*/
