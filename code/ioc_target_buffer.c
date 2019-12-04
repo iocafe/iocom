@@ -91,10 +91,14 @@ iocTargetBuffer *ioc_initialize_target_buffer(
             ioc_unlock(root);
             return OS_NULL;
         }
-        os_memclear(tbuf->syncbuf.buf, 2 * tbuf->syncbuf.nbytes);
         tbuf->syncbuf.newdata = tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
         tbuf->syncbuf.allocated = OS_TRUE;
     }
+
+    /* Copy data backwars to get the initial situation
+     */
+    os_memcpy(tbuf->syncbuf.buf, mblk->buf, mblk->nbytes);
+    os_memcpy(tbuf->syncbuf.newdata, mblk->buf, mblk->nbytes);
 
     /* Save pointer to connection and memory block objects and join to linked list
        of target buffers for both connection and memory block.
@@ -320,8 +324,6 @@ void ioc_tbuf_synchronize(
     if (end_addr < start_addr) return;
     n = end_addr - start_addr + 1;
 
-    /* Do delta encoding.
-     */
     os_memcpy(syncbuf + start_addr, newdata + start_addr, n);
 
     if (tbuf->syncbuf.buf_used)

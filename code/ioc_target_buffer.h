@@ -135,11 +135,6 @@ typedef struct iocTargetBuffer
      */
     os_short remote_mblk_id;
 
-    /** Target buffers at client side need to request for data to start receiving it.
-        This flag indicates if data has been requested. This is cleared at connection reset.
-     */
-    // os_boolean is_linked;
-
     /** Synchronized buffer.
      */
     iocSynchronizedTargetBuffer syncbuf;

@@ -775,20 +775,19 @@ void ioc_reset_connection_state(
          sbuf;
          sbuf = sbuf->clink.next)
     {
-        sbuf->changed.range_set = OS_FALSE;
-        sbuf->syncbuf.used = OS_FALSE;
+        // sbuf->changed.range_set = OS_FALSE;
+        // sbuf->syncbuf.used = OS_FALSE;
+        // sbuf->syncbuf.start_addr = sbuf->syncbuf.end_addr = 0;
         sbuf->syncbuf.make_keyframe = OS_TRUE;
         sbuf->syncbuf.is_keyframe = OS_TRUE;
-        sbuf->syncbuf.start_addr = sbuf->syncbuf.end_addr = 0;
     }
 
     for (tbuf = con->tbuf.first;
          tbuf;
          tbuf = tbuf->clink.next)
     {
-        // tbuf->is_linked = OS_FALSE;
-        tbuf->syncbuf.buf_start_addr = tbuf->syncbuf.buf_end_addr = 0;
-        tbuf->syncbuf.buf_used = OS_FALSE;
+        // tbuf->syncbuf.buf_start_addr = tbuf->syncbuf.buf_end_addr = 0;
+        // tbuf->syncbuf.buf_used = OS_FALSE;
         tbuf->syncbuf.has_new_data = OS_FALSE;
         tbuf->syncbuf.newdata_start_addr = tbuf->syncbuf.newdata_end_addr = 0;
     }
