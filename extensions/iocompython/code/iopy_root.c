@@ -179,18 +179,18 @@ static PyObject *Root_delete(
 
     if (self->root)
     {
-        /* Dispose of the callback function.
-         */
-        if (self->root_callback)
-        {
-            Py_XDECREF(self->root_callback);
-            self->root_callback = NULL;
-        }
-
         /* Free the root data structure and everything that belong to it.
          */
         ioc_release_root(self->root);
         self->root = OS_NULL;
+
+        /* Delete communication wait event.
+         */
+        if (self->queue_event)
+        {
+            osal_event_delete(self->queue_event);
+            self->queue_event = OS_NULL;
+        }
 
 #if IOPYTHON_TRACE
         PySys_WriteStdout("Root.delete()\n");
@@ -348,7 +348,7 @@ static PyObject *Root_initialize_event_queue(
     PyObject *kwds)
 {
     iocRoot *root;
-    osalEvent event = OS_NULL;
+    osalEvent event;
     char *py_flags = OS_NULL;
     int py_max_events = 0;
     os_int flags;
@@ -373,17 +373,8 @@ static PyObject *Root_initialize_event_queue(
         return NULL;
     }
 
-    if (self->queue_event)
-    {
-        osal_event_delete(self->queue_event);
-        self->queue_event = OS_NULL;
-    }
-
-    if (event == OS_NULL)
-    {
-        event = osal_event_create();
-        self->queue_event = event;
-    }
+    event = osal_event_create();
+    self->queue_event = event;
 
     flags = 0;
     if (py_flags)
@@ -417,6 +408,28 @@ static PyObject *Root_initialize_event_queue(
      */
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/**
+****************************************************************************************************
+
+  @brief Interrupt IOCOM communication queue "wait for event".
+
+  The Root_trig_event() function...
+  @param   self Pointer to the python object.
+  @return  ?.
+
+****************************************************************************************************
+*/
+static PyObject *Root_interrupt_wait(
+    Root *self)
+{
+    if (self->queue_event)
+    {
+        osal_event_set(self->queue_event);
+    }
+
+    Py_RETURN_NONE;
 }
 
 
@@ -570,8 +583,6 @@ static void Root_callback(
                 ioc_add_callback(&handle, Root_info_callback, OS_NULL);
                 ioc_release_handle(&handle);
             }
-
-            // Root_do_callback(pyroot, "new_mblk", mblk_name);
             break;
 
         default:
@@ -926,6 +937,7 @@ static PyMethodDef Root_methods[] = {
     {"queue_events", (PyCFunction)Root_initialize_event_queue, METH_VARARGS|METH_KEYWORDS,
         "Start queueing connect/disconnect, etc. events"},
     {"wait_com_event", (PyCFunction)Root_wait_for_com_event, METH_VARARGS, "Wait for a communication event"},
+    {"interrupt_wait", (PyCFunction)Root_interrupt_wait, METH_NOARGS, "Interrupt \'wait for communication event\'"},
     {"list_networks", (PyCFunction)Root_list_networks, METH_VARARGS, "List IO device networks"},
     {"list_devices", (PyCFunction)Root_list_devices, METH_VARARGS, "List devices in spefified network"},
     {"set_mblk_param", (PyCFunction)Root_set_mblk_param, METH_VARARGS|METH_KEYWORDS, "Set memory block parameter"},

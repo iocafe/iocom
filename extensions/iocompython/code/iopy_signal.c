@@ -599,8 +599,6 @@ static PyObject *Signal_set(
     os_memclear(&state, sizeof(state));
     state.signal = &self->signal;
     if (Signal_try_setup(self, iocroot))
-//    ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state.signal);
-//    if (state.signal->handle->mblk == OS_NULL)
     {
         ioc_unlock(iocroot);
         goto getout;
@@ -643,6 +641,13 @@ static osalStatus Signal_try_setup(
     iocRoot *iocroot)
 {
     iocDynamicSignal *dsignal;
+
+    /* If setup is already good.
+     */
+    if (self->signal.handle->mblk)
+    {
+        return OSAL_SUCCESS;
+    }
 
     dsignal = ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, &self->signal);
     if (self->signal.handle->mblk == OS_NULL)
@@ -875,8 +880,6 @@ static PyObject *Signal_get_internal(
      */
     state->signal = &self->signal;
     if (Signal_try_setup(self, iocroot))
-    // ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, state->signal);
-    // if (state->signal->handle->mblk == OS_NULL)
     {
         ioc_unlock(iocroot);
         goto getout;

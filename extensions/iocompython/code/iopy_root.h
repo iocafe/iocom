@@ -37,10 +37,6 @@ typedef struct
      */
     int device_nr;
 
-    /** Python root callback function.
-     */
-    PyObject *root_callback;
-
     /** Operating system event to trigger when new communication event happends,
         OS_NULL if not needed or application specified one is used.
      */

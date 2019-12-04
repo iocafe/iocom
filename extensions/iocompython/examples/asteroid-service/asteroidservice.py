@@ -8,15 +8,15 @@ running_apps = {}
 
 def main():
     global root, callback_queue
-    ioterminal.start()
 
     root = Root('asteroid')
     root.queue_events()
+    ioterminal.start(root)
     epoint = EndPoint(root, flags='socket,dynamic')
     random.seed(time.time())
 
     while (ioterminal.run(root)):
-        e = root.wait_com_event(300)
+        e = root.wait_com_event(1000)
         if e != None:
             print(e)
 

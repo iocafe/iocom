@@ -1,8 +1,14 @@
-# signals-to-c.py 8.11.2019/pekka
+# signals-to-c.py 3.12.2019/pekka
 # Converts communication signal map written in JSON to C source and header files. 
 import json
 import os
 import sys
+import re
+
+IOC_SIGNAL_NAME_SZ = 32
+IOC_NAME_SZ = 16
+IOC_PIN_NAME_SZ = 64
+IOC_PIN_GROUP_NAME_SZ = 64
 
 # Size excludes signal state byte. 
 osal_typeinfo = {
@@ -23,6 +29,20 @@ osal_typeinfo = {
     "str" : 1, 
     "object" : 0,
     "pointer" : 0}
+
+def check_valid_name(label, name, sz, allow_numbers):
+    if len(name) >= sz:
+        print(label + " name '" + name + "' is too long. Maximum is " + str(sz - 1) + "characters.")
+        exit()
+
+    if allow_numbers:
+        if not re.match(r'^[A-Za-z0-9_]+$', name):
+            print(label + " name '" + name + "' may contain only characters 'A' - 'Z', 'a' - 'z', '0' -'9' and underscore '_'.")
+            exit()
+    else:
+        if not re.match(r'^[A-Za-z_]+$', name):
+            print(label + " name '" + name + "' may contain only characters 'A' - 'Z', 'a' - 'z', and underscore '_'.")
+            exit()
 
 def start_c_files():
     global cfile, hfile, cfilepath, hfilepath
@@ -156,8 +176,11 @@ def process_signal(group_name, signal):
     global block_name
     signal_name = signal.get("name", None)
     if signal_name == None:
-        print("'name' not found for signal in " + block_name + " " + group_name)
+        print("'name' not found for signal in '" + block_name + "' group '" + group_name + "'")
         exit()
+
+    check_valid_name("Signal", signal_name, IOC_SIGNAL_NAME_SZ, True)
+
     write_signal_to_c_header(signal_name)
     if is_controller:
         write_signal_to_c_source_for_controller(group_name, signal_name, signal)
@@ -189,6 +212,7 @@ def process_mblk(mblk):
     global current_addr, max_addr, signal_nr, nro_signals, is_controller
 
     block_name = mblk.get("name", "MBLK")
+    check_valid_name("Memory block", block_name, IOC_NAME_SZ, True)
     handle = mblk.get("handle", "OS_NULL")
     if handle == "OS_NULL":
         if block_name == "exp":
@@ -213,6 +237,10 @@ def process_mblk(mblk):
         if signals != None:
             for signal in signals:
                 nro_signals += 1
+        else:
+            gname = group.get("name", "noname")
+            print("'signals' not found for '" + block_name + "' group '" + gname + "'")
+            exit()
 
     hfile.write('\n  struct ' + '\n  {\n')
     hfile.write('    iocMblkSignalHdr hdr;\n')
@@ -244,7 +272,9 @@ def process_source_file(path):
     if read_file:
         data = json.load(read_file)
         if device_name == None:
-            device_name = data.get("name", "unnamed_device")
+            device_name = data.get("name", "unnameddevice")
+
+        check_valid_name("Device", device_name, IOC_NAME_SZ, False)
 
         mblks = data.get("mblk", None)
         if mblks == None:
@@ -304,12 +334,6 @@ def process_source_file(path):
             hfile.write('extern const iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
 
         else:
-        #    init_struct_name = device_name + '_init_prm_t'
-        #    hfile.write('\ntypedef struct ' + init_struct_name + '\n{\n')
-        #    for mblk in mblks:
-        #        mblk_name = mblk.get("name", "no-name");
-        #        hfile.write('  iocHandle *' + mblk_name + ';\n')
-        #    hfile.write('}\n' + init_struct_name + ';\n')
             hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s);\n')
 
         for p in array_list:
@@ -327,8 +351,10 @@ def list_pins_rootblock(rootblock):
         pins  = group.get("pins", None);
         if pins != None:
             pingroup_name = group.get("name", None);
+            check_valid_name("Pin group", pingroup_name, IOC_PIN_GROUP_NAME_SZ, True)
             for pin in pins:
                 name = pin.get('name', None)
+                check_valid_name("Pin", name, IOC_PIN_NAME_SZ, True)
                 if name is not None:
                     pinlist.update({name : '&' + prins_prefix + '.' + pingroup_name + '.' + name})
 
