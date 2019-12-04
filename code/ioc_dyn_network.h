@@ -6,7 +6,8 @@
   @version 1.0
   @date    20.11.2019
 
-  The dynamic network organizes signals of one network.
+  The dynamic network structure organizes signals of one network. The dynamic configuration is
+  used by server when IO devices are not known and must be accessed as plug and play.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -19,7 +20,6 @@
 #define IOC_DYN_NETWORK_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
-
 struct iocMblkShortcut;
 
 /** We use fixed hash table size for now. Memory use/performance ratio can be improved
@@ -28,8 +28,11 @@ struct iocMblkShortcut;
 #define IOC_DNETWORK_HASH_TAB_SZ 64
 
 
-/** The dynamic network class structure.
- */
+/**
+****************************************************************************************************
+  The dynamic network class structure.
+****************************************************************************************************
+*/
 typedef struct iocDynamicNetwork
 {
     os_char network_name[IOC_NETWORK_NAME_SZ];
@@ -50,6 +53,11 @@ typedef struct iocDynamicNetwork
 iocDynamicNetwork;
 
 
+/**
+****************************************************************************************************
+  Dynamic network information functions
+****************************************************************************************************
+*/
 /* Allocate and initialize dynamic network object.
  */
 iocDynamicNetwork *ioc_initialize_dynamic_network(
@@ -60,17 +68,8 @@ iocDynamicNetwork *ioc_initialize_dynamic_network(
 void ioc_release_dynamic_network(
     iocDynamicNetwork *dnetwork);
 
-/* Add a dynamic signal.
+/* Add a signal to dynamic information.
  */
-    /** @param addr Starting address of the signal in memory block.
-
-        @param n For strings n can be number of bytes in memory block for the string. For arrays n is
-        number of elements reserved in memory block. Either 0 or 1 for single variables.
-        Unsigned type used for reason, we want to have max 65535 items.
-
-        @param flags: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
-        or OS_STR.
-     */
 iocDynamicSignal *ioc_add_dynamic_signal(
     iocDynamicNetwork *dnetwork,
     const os_char *signal_name,
@@ -82,26 +81,10 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     os_int ncolumns,
     os_char flags);
 
-/* Remove a dynamic signal.
+/* Find a signal from dynamic information.
  */
-void ioc_remove_dynamic_signal(
+iocDynamicSignal *ioc_find_dynamic_signal(
     iocDynamicNetwork *dnetwork,
-    iocDynamicSignal *dsignal);
-
-/* Free list of memory blocks in this network
- */
-void ioc_free_dynamic_mblk_list(
-    iocDynamicNetwork *dnetwork);
-
-/* Find a dynamic signal.
- */
-iocDynamicSignal *ioc_find_first_dynamic_signal(
-    iocDynamicNetwork *dnetwork,
-    iocIdentifiers *identifiers);  /* should we have identifiers as separate arguments ? */
-
-iocDynamicSignal *ioc_find_next_dynamic_signal(
-    iocDynamicNetwork *dnetwork,
-    iocDynamicSignal *dsignal,
     iocIdentifiers *identifiers);
 
 /* Delete all dynamic signal information related to a memory block.

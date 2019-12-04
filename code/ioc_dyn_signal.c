@@ -29,6 +29,7 @@ static void ioc_setup_signal(
 
 
 /* Allocate and initialize dynamic signal.
+ * @return Pointer to dynamic signal structure, or OS_NULL if memory allocation failed.
  */
 iocDynamicSignal *ioc_initialize_dynamic_signal(
     const os_char *signal_name)
@@ -37,10 +38,16 @@ iocDynamicSignal *ioc_initialize_dynamic_signal(
     os_memsz sz;
 
     dsignal = (iocDynamicSignal*)os_malloc(sizeof(iocDynamicSignal), OS_NULL);
+    if (dsignal == OS_NULL) return OS_NULL;
     os_memclear(dsignal, sizeof(iocDynamicSignal));
 
     sz = os_strlen(signal_name);
     dsignal->signal_name = os_malloc(sz, OS_NULL);
+    if (dsignal->signal_name == OS_NULL)
+    {
+        os_free(dsignal, sizeof(iocDynamicSignal));
+        return OS_NULL;
+    }
     os_memcpy(dsignal->signal_name, signal_name, sz);
 
     return dsignal;
@@ -189,7 +196,7 @@ iocDynamicSignal *ioc_setup_signal_by_identifiers(
     dnetwork = ioc_find_dynamic_network(root->droot, identifiers->network_name);
     if (dnetwork == OS_NULL) return OS_NULL;
 
-    dsignal = ioc_find_first_dynamic_signal(dnetwork, identifiers);
+    dsignal = ioc_find_dynamic_signal(dnetwork, identifiers);
     if (dsignal == OS_NULL) return OS_NULL;
 
     signal->addr = dsignal->addr;

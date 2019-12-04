@@ -233,6 +233,7 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 
 
 /* Process a packed JSON array.
+ * Synchronization ioc_lock() must be on when this function is called.
  */
 static osalStatus ioc_dinfo_process_array(
     iocDynamicRoot *droot,
@@ -285,6 +286,7 @@ static osalStatus ioc_dinfo_process_array(
     return OSAL_SUCCESS;
 }
 
+// Synchronization ioc_lock() must be on when this function is called.
 static osalStatus ioc_new_signal_by_info(
     iocAddDinfoState *state)
 {
@@ -392,6 +394,7 @@ static void ioc_resize_memory_block_by_info(
 
 
 /* Process a block of packed JSON.
+ * Synchronization ioc_lock() must be on when this function is called.
  */
 static osalStatus ioc_dinfo_process_block(
     iocDynamicRoot *droot,

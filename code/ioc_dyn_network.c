@@ -6,7 +6,14 @@
   @version 1.0
   @date    20.11.2019
 
-  The dynamic network organizes signals of one network.
+  The dynamic network structure organizes signals of one network. The dynamic configuration is
+  used by server when IO devices are not known and must be accessed as plug and play.
+  - Python API (iocompython) uses always dynamic approach to configuration.
+  - server/controller based on C code can use either dynamic or static configuration can be used.
+    Dynamic is more flexible to accept unknown IO device types, static implementation is faster
+    and less resource intensive.
+  - IO boards/devices should almost always use static approach. Exception is IO device implemented
+    in Python. Python is already so resource intensive, that usin dynamic code doesn't change that.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -18,26 +25,58 @@
 #include "iocom.h"
 #if IOC_DYNAMIC_MBLK_CODE
 
-/* Allocate and initialize dynamic network object.
- */
+/**
+****************************************************************************************************
+
+  @brief Allocate and clear dynamic network object.
+  @anchor ioc_initialize_dynamic_network
+
+  The ioc_initialize_dynamic_network() function just allocates clear memory for dynamic IO device
+  network structure. This function is called by ioc_add_dynamic_network(), which is used to
+  initiate storing information about new dynamic network.
+
+  @return  Pointer to newly allocated dynamic network structure, or OS_NULL if memory allocation
+           failed..
+
+****************************************************************************************************
+*/
 iocDynamicNetwork *ioc_initialize_dynamic_network(
     void)
 {
     iocDynamicNetwork *dnetwork;
 
     dnetwork = (iocDynamicNetwork*)os_malloc(sizeof(iocDynamicNetwork), OS_NULL);
-    os_memclear(dnetwork, sizeof(iocDynamicNetwork));
+    if (dnetwork)
+    {
+        os_memclear(dnetwork, sizeof(iocDynamicNetwork));
+    }
     return dnetwork;
 }
 
 
-/* Release dynamic network object.
- */
+/**
+****************************************************************************************************
+
+  @brief Release dynamic network object.
+  @anchor ioc_release_dynamic_network
+
+  The ioc_release_dynamic_network() function releases memory allocated for dynamic IO network
+  structure, and memory allocated for dynamic IO signal and memory block shortcuts.
+  Synchronization ioc_lock() must be on when this function is called.
+
+  @param   dnetwork Pointer to dynamic network structure to release. If OS_NULL, the function
+           does nothing.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_release_dynamic_network(
     iocDynamicNetwork *dnetwork)
 {
     iocDynamicSignal *dsignal, *next_dsignal;
     os_int i;
+
+    if (dnetwork == OS_NULL) return;
 
     for (i = 0; i < IOC_DNETWORK_HASH_TAB_SZ; i++)
     {
@@ -50,36 +89,44 @@ void ioc_release_dynamic_network(
         }
     }
 
-    ioc_free_dynamic_mblk_list(dnetwork);
-
+    while (dnetwork->mlist_first)
+    {
+        ioc_release_mblk_shortcut(dnetwork, dnetwork->mlist_first);
+    }
 
     os_free(dnetwork, sizeof(iocDynamicNetwork));
 }
 
 
-/* Free list of memory blocks in this network
- */
-void ioc_free_dynamic_mblk_list(
-    iocDynamicNetwork *dnetwork)
-{
-    while (dnetwork->mlist_first)
-    {
-        ioc_release_mblk_shortcut(dnetwork, dnetwork->mlist_first);
-    }
-}
+/**
+****************************************************************************************************
 
+  @brief Add a dynamic signal information.
+  @anchor ioc_add_dynamic_signal
 
-/* Add a dynamic signal.
-   Notice that there can be multiple dynamic signals with same name. !!!!!!!!!!!!!!!!!!!!!!!!!!!! MISSING
-    @param addr Starting address of the signal in memory block.
+  The ioc_add_dynamic_signal() function adds information about a signal based on "info" memory
+  block configuration for the IO device network. If signal already exists, function jsut returns
+  pointer to it. Synchronization ioc_lock() must be on when this function is called.
 
-    @param n For strings n can be number of bytes in memory block for the string. For arrays n is
-    number of elements reserved in memory block. Either 0 or 1 for single variables.
-    Unsigned type used for reason, we want to have max 65535 items.
+  @param   dnetwork Pointer to dynamic network structure.
+  @param   signal_name Signal name.
+  @param   mblk_name Memory block name.
+  @param   device_name Device name.
+  @param   device_nr Device number, if there are several same kind of IO devices, they must
+           have different numbers.
+  @param   addr Starting address of the signal in memory block.
 
-    @param flags: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
-    or OS_STR.
- */
+  @param   n For strings n can be number of bytes in memory block for the string. For arrays n is
+           number of elements reserved in memory block. Use value 1 for single variables.
+  @param   ncolumns If a matrix of data is stored as an array, number of matrix columns.
+           Othervise value 1.
+  @param   flags: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT,
+           OS_LONG, OS_FLOAT, OS_DOUBLE, or OS_STR.
+
+  @return  Pointer to dynamic signal. OS_NULL if memory allocation failed.
+
+****************************************************************************************************
+*/
 iocDynamicSignal *ioc_add_dynamic_signal(
     iocDynamicNetwork *dnetwork,
     const os_char *signal_name,
@@ -119,6 +166,7 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     /* Allocate and initialize a new IO network object.
      */
     dsignal = ioc_initialize_dynamic_signal(signal_name);
+    if (dsignal == OS_NULL) return OS_NULL;
     dsignal->dnetwork = dnetwork;
     os_strncpy(dsignal->mblk_name, mblk_name, IOC_NAME_SZ);
     os_strncpy(dsignal->device_name, device_name, IOC_NAME_SZ);
@@ -143,64 +191,28 @@ iocDynamicSignal *ioc_add_dynamic_signal(
 }
 
 
-/* Remove a dynamic signal.
- */
-void ioc_remove_dynamic_signal(
-    iocDynamicNetwork *dnetwork,
-    iocDynamicSignal *dsignal)
-{
-    iocDynamicSignal *ds, *prev_ds;
-    os_uint hash_ix;
+/**
+****************************************************************************************************
 
-    /* Fond out who has pointer to dnetwork in prev_dn.
-     * If none, dnetwork is first in list and prev_dn is OS_NULL.
-     */
-    hash_ix = ioc_hash(dsignal->signal_name) % IOC_DNETWORK_HASH_TAB_SZ;
-    prev_ds = OS_NULL;
-    for (ds = dnetwork->hash[hash_ix];
-         ds && ds != dsignal;
-         ds = ds->next)
-    {
-        prev_ds = ds;
-    }
+  @brief Find matching dynamic signal.
+  @anchor ioc_find_dynamic_signal
 
-    /* Remove from linked list.
-     */
-    if (prev_ds)
-    {
-        prev_ds->next = dsignal->next;
-    }
-    else
-    {
-        dnetwork->hash[hash_ix] = dsignal->next;
-    }
+  The ioc_find_dynamic_signal() function finds first dynamic signal matching to given identifiers.
+  Synchronization ioc_lock() must be on when this function is called.
 
-    /* Release the dynamic network object.
-     */
-    ioc_release_dynamic_signal(dsignal);
-}
+  @param   dnetwork Pointer to dynamic network structure.
+  @param   intentifiers Identifiers like signal name, memory block name, device name and number,
+           network name.
+  @return  None.
 
-
-/* Find first matching dynamic signal.
-   Notice that there can be multiple signals with same set of identifiers.
- */
-iocDynamicSignal *ioc_find_first_dynamic_signal(
+****************************************************************************************************
+*/
+iocDynamicSignal *ioc_find_dynamic_signal(
     iocDynamicNetwork *dnetwork,
     iocIdentifiers *identifiers)
 {
-    return ioc_find_next_dynamic_signal(dnetwork, OS_NULL, identifiers);
-}
-
-
-/* Find next matching dynamic signal.
-   Notice that there can be multiple signals with same set of identifiers.
- */
-iocDynamicSignal *ioc_find_next_dynamic_signal(
-    iocDynamicNetwork *dnetwork,
-    iocDynamicSignal *dsignal,
-    iocIdentifiers *identifiers)
-{
     os_uint hash_ix;
+    iocDynamicSignal *dsignal = OS_NULL;
 
     while (OS_TRUE)
     {
