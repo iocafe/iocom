@@ -281,7 +281,7 @@ void ioc_mbinfo_received(
                  */
                 if (root->droot)
                 {
-                    dnetwork = ioc_add_dynamic_network(root->droot, mbprm.network_name, OS_TRUE);
+                    dnetwork = ioc_add_dynamic_network(root->droot, mbprm.network_name);
 
                     if (ioc_find_mblk_shortcut(dnetwork, mbprm.mblk_name,
                         mbprm.device_name, mbprm.device_nr) == OS_NULL)

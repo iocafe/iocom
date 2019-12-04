@@ -6,7 +6,7 @@
   @version 1.0
   @date    20.11.2019
 
-  The dynamic root holds data structure to managet information about IO networks and signals.
+  The dynamic root holds data structure to manage information about IO networks and signals.
   It is used to convert io path (signal name, memory block name, device name and number, network
   name) to IO signal object pointers, or to memory block pointers.
 
@@ -58,7 +58,6 @@ iocDynamicRoot;
     Dynamic network configuration root functions.
 ****************************************************************************************************
 */
-
 /* Allocate and initialize dynamic root object.
  */
 iocDynamicRoot *ioc_initialize_dynamic_root(
@@ -69,12 +68,11 @@ iocDynamicRoot *ioc_initialize_dynamic_root(
 void ioc_release_dynamic_root(
     iocDynamicRoot *droot);
 
-/* Add a dynamic network.
+/* Add an IO device network to dynamic information.
  */
 iocDynamicNetwork *ioc_add_dynamic_network(
     iocDynamicRoot *droot,
-    const os_char *network_name,
-    os_boolean check_if_exists);
+    const os_char *network_name);
 
 /* Remove a dynamic network.
  */
@@ -100,7 +98,7 @@ void ioc_droot_mblk_is_deleted(
     iocDynamicRoot *droot,
     iocMemoryBlock *mblk);
 
-/* Calculate hash index for the key
+/* Calculate hash index for the key.
  */
 os_uint ioc_hash(
     const os_char *key_str);

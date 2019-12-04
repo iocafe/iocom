@@ -6,7 +6,7 @@
   @version 1.0
   @date    20.11.2019
 
-  The dynamic root holds data structure to managet information about IO networks and signals.
+  The dynamic root holds data structure to manage information about IO networks and signals.
   It is used to convert io path (signal name, memory block name, device name and number, network
   name) to IO signal object pointers, or to memory block pointers.
 
@@ -24,10 +24,11 @@
 #include "iocom.h"
 #if IOC_DYNAMIC_MBLK_CODE
 
-
+/** Working state structure while adding signals to dynamic incormation.
+ */
 typedef struct
 {
-    /* Pointer to iocom root object
+    /** Pointer to iocom root object
      */
     iocRoot *root;
 
@@ -50,9 +51,13 @@ typedef struct
      */
     os_boolean resize_mblks;
 
+    /** Current type as enumeration value, like OS_SHORT. This is set to default
+        at beginning of memory block and modified by "type" tag.
+     */
     osalTypeId current_type_id;
 
-    /** Current address within memory while parsing.
+    /** Current address within memory while parsing. This is updated when a signal
+     *  information is added by signal size, or set by "addr" tag.
      */
     os_int current_addr;
 
@@ -60,18 +65,22 @@ typedef struct
      */
     os_int max_addr;
 
-    const os_char *tag;
-    const os_char *mblk_name;
-    const os_char *group_name;
-    const os_char *signal_name;
-    const os_char *signal_type_str;
-    os_int signal_addr;
-    os_int signal_array_n;
-    os_int ncolumns;
+    /** Latest information parsed from JSON
+     */
+    const os_char *tag;             /* Latest tag or key, '-' for array elements */
+    const os_char *mblk_name;       /* The memory block we are now parsing */
+    const os_char *group_name;      /* The group we are now parsing */
+    const os_char *signal_name;     /* Name of the signal */
+    const os_char *signal_type_str; /* Signal type specified in JSON, like "short" */
+    os_int signal_addr;             /* Signal address specified in JSON */
+    os_int signal_array_n;          /* Number of elements in array, 1 if not array */
+    os_int ncolumns;                /* Number of columns when array holds matrix, 1 otherwise. */
 }
 iocAddDinfoState;
 
 
+/* Forward referred static functions.
+ */
 static osalStatus ioc_dinfo_process_block(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
@@ -79,23 +88,51 @@ static osalStatus ioc_dinfo_process_block(
     osalJsonIndex *jindex);
 
 
-/* Allocate and initialize dynamic root object.
- */
+/**
+****************************************************************************************************
+
+  @brief Allocate and initialize dynamic root object.
+
+  The ioc_initialize_dynamic_root() function allocated and initializes root structure for
+  storing dynamic signal, memory block and network information in quickly searcable format.
+  The allocated structure is bound to IOCOM root. If dynamic information is to be used, this
+  function should be called right after initializing IOCOM root structure with ioc_initialize_root().
+
+  @param   root Pointer to IOCOM root object.
+  @return  Pointer to dynamic information root structure, or OS_NULL if memory allocation failed.
+
+****************************************************************************************************
+*/
 iocDynamicRoot *ioc_initialize_dynamic_root(
     iocRoot *root)
 {
     iocDynamicRoot *droot;
 
     droot = (iocDynamicRoot*)os_malloc(sizeof(iocDynamicRoot), OS_NULL);
+    if (droot == OS_NULL) return OS_NULL;
     os_memclear(droot, sizeof(iocDynamicRoot));
     droot->root = root;
     root->droot = droot;
     return droot;
 }
 
-/* Release dynamic root structure.
-   LOCK MUST BE ON.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Release dynamic root structure.
+
+  The ioc_release_dynamic_root() function releases dynamic information root and all substructures
+  allocated for storing dynamic information. This function is called by ioc_release_root()
+  and must not be called directly from application. Synchronization ioc_lock() must be on
+  when this function is called.
+
+  @param   droot Pointer to dynamic information root structure to release. If OS_NULL, the
+           function does nothing.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_release_dynamic_root(
     iocDynamicRoot *droot)
 {
@@ -124,23 +161,34 @@ void ioc_release_dynamic_root(
 }
 
 
-/* Add a dynamic network.
- * Calling twice will add network twice, check with find first.
- * LOCK must be on.
- */
+/**
+****************************************************************************************************
+
+  @brief Add an IO device network to dynamic information.
+
+  The ioc_add_dynamic_network() function adds a IO device network structure with specified
+  network name to dynamic information. Synchronization ioc_lock() must be on when this
+  function is called.
+
+  @param   droot Pointer to dynamic information root structure. The network information is
+           stored "within" this root.
+  @param   network_name Name of IO device network.
+  @return  Pointer to dynamic network information structure, or OS_NULL if memory allocation
+           failed.
+
+****************************************************************************************************
+*/
 iocDynamicNetwork *ioc_add_dynamic_network(
     iocDynamicRoot *droot,
-    const os_char *network_name,
-    os_boolean check_if_exists)
+    const os_char *network_name)
 {
     iocDynamicNetwork *dnetwork;
     os_uint hash_ix;
 
-    if (check_if_exists)
-    {
-        dnetwork = ioc_find_dynamic_network(droot, network_name);
-        if (dnetwork) return dnetwork;
-    }
+    /* If we already have network with this name.
+     */
+    dnetwork = ioc_find_dynamic_network(droot, network_name);
+    if (dnetwork) return dnetwork;
 
     /* If we have existing IO network with this name,
        just return pointer to it.
@@ -150,6 +198,7 @@ iocDynamicNetwork *ioc_add_dynamic_network(
     /* Allocate and initialize a new IO network object.
      */
     dnetwork = ioc_initialize_dynamic_network();
+    if (dnetwork == OS_NULL) return OS_NULL;
     os_strncpy(dnetwork->network_name, network_name, IOC_NETWORK_NAME_SZ);
     dnetwork->new_network = OS_TRUE;
 
@@ -161,9 +210,23 @@ iocDynamicNetwork *ioc_add_dynamic_network(
     return dnetwork;
 }
 
-/* Remove a dynamic network.
-   LOCK MUST BE ON.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Remove an IO device network from dynamic information.
+
+  The ioc_remove_dynamic_network() function removes an IO device network structure from dynamic
+  information. This gets called by ioc_network_mblk_is_deleted() function when the last memory
+  block of a network is released. Synchronization ioc_lock() must be on when this
+  function is called.
+
+  @param   droot Pointer to dynamic information root structure.
+  @param   dnetwork Pointer to dynamic network structure to remove.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_remove_dynamic_network(
     iocDynamicRoot *droot,
     iocDynamicNetwork *dnetwork)
@@ -205,9 +268,21 @@ void ioc_remove_dynamic_network(
 }
 
 
-/* Find a dynamic network.
-   LOCK MUST BE ON.
- */
+/**
+****************************************************************************************************
+
+  @brief Find dynamic IO device network information.
+
+  The ioc_find_dynamic_network() function searches for an IO device network by name from
+  dynamic information. Synchronization ioc_lock() must be on when this function is called.
+
+  @param   droot Pointer to dynamic information root structure.
+  @param   network_name Network name to search for.
+  @return  Pointer to device IO network information struture, if one is found. OS_NULL if none
+           was found.
+
+****************************************************************************************************
+*/
 iocDynamicNetwork *ioc_find_dynamic_network(
     iocDynamicRoot *droot,
     const os_char *network_name)
@@ -232,9 +307,24 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 }
 
 
-/* Process a packed JSON array.
- * Synchronization ioc_lock() must be on when this function is called.
- */
+/**
+****************************************************************************************************
+
+  @brief Processing packed JSON, handle arrays.
+
+  The ioc_dinfo_process_array() function is called to process array in packed JSON. General goal
+  here is to move IO signals information from packed JSON to dynamic information structures,
+  so this information can be seached quickly when needed. Synchronization ioc_lock() must be on
+  when this function is called.
+
+  @param   droot Pointer to dynamic information root structure.
+  @param   state Structure holding current JSON parsing state.
+  @param   array_tag Name of array from upper level of JSON structure.
+  @param   jindex Current packed JSON parsing position.
+  @return  OSAL_SUCCESS if all is fine, other values indicate an error.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_dinfo_process_array(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
@@ -286,7 +376,21 @@ static osalStatus ioc_dinfo_process_array(
     return OSAL_SUCCESS;
 }
 
-// Synchronization ioc_lock() must be on when this function is called.
+
+/**
+****************************************************************************************************
+
+  @brief Add IO signal to dynamic information.
+
+  The ioc_new_signal_by_info() function adds a new IO signal to dynamic information. This
+  function is called when parting packed JSON in info block. Synchronization ioc_lock()
+  must be on when this function is called.
+
+  @param   state Structure holding current JSON parsing state.
+  @return  OSAL_SUCCESS if all is fine, other values indicate an error.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_new_signal_by_info(
     iocAddDinfoState *state)
 {
@@ -350,6 +454,21 @@ static osalStatus ioc_new_signal_by_info(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Processing packed JSON, resize a memory block.
+
+  The ioc_resize_memory_block_by_info() function resized a memory block (By making it bigger,
+  if needed. Memory block will never be shrunk). This function is used at IO device to
+  configure signals and memory block sizes by information in JSON. Synchronization ioc_lock()
+  must be on when this function is called.
+
+  @param   state Structure holding current JSON parsing state.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_resize_memory_block_by_info(
     iocAddDinfoState *state)
 {
@@ -376,6 +495,7 @@ static void ioc_resize_memory_block_by_info(
             if (mblk->buf_allocated)
             {
                 newbuf = ioc_malloc(root, sz, OS_NULL);
+                if (newbuf == OS_NULL) return;
                 os_memcpy(newbuf, mblk->buf, mblk->nbytes);
                 ioc_free(root, mblk->buf, mblk->nbytes);
                 mblk->buf = newbuf;
@@ -393,9 +513,24 @@ static void ioc_resize_memory_block_by_info(
 }
 
 
-/* Process a block of packed JSON.
- * Synchronization ioc_lock() must be on when this function is called.
- */
+/**
+****************************************************************************************************
+
+  @brief Processing packed JSON, handle {} blocks.
+
+  The ioc_ioc_dinfo_process_block() function is called to process a block in packed JSON. General
+  goal here is to move IO signals information from packed JSON to dynamic information structures,
+  so this information can be seached quickly when needed. Synchronization ioc_lock() must be on
+  when this function is called.
+
+  @param   droot Pointer to dynamic information root structure.
+  @param   state Structure holding current JSON parsing state.
+  @param   array_tag Name of array from upper level of JSON structure.
+  @param   jindex Current packed JSON parsing position.
+  @return  OSAL_SUCCESS if all is fine, other values indicate an error.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_dinfo_process_block(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
@@ -531,8 +666,23 @@ static osalStatus ioc_dinfo_process_block(
 }
 
 
-/* Add dynamic memory block/signal information.
- */
+/**
+****************************************************************************************************
+
+  @brief Add information in packed "info" JSON to searchable dynamic IO information structure.
+
+  The ioc_add_dynamic_info() function adds memory block and signal information for
+  an IO device to searchable dynamic structures. In server, this is called when "info" memory
+  block is received from IO device, and in dynamically implemented IO device this can
+  used to publish information in JSON.
+
+  @param   mblk_handle "info" memory block handle.
+  @param   resize_mblk OS_TRUE to resize memory blocks. This should be OS_TRUE for dynampically
+           implmented IO device and OS_FALSE for server end.
+  @return  OSAL_SUCCESS if all is fine, other values indicate an error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_add_dynamic_info(
     iocHandle *mblk_handle,
     os_boolean resize_mblks)
@@ -561,7 +711,12 @@ osalStatus ioc_add_dynamic_info(
 
     /* Make sure that we have network with this name.
      */
-    state.dnetwork = ioc_add_dynamic_network(droot, mblk->network_name, OS_TRUE);
+    state.dnetwork = ioc_add_dynamic_network(droot, mblk->network_name);
+    if (state.dnetwork)
+    {
+        s = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+        goto getout;
+    }
 
     s = ioc_dinfo_process_block(droot, &state, "", &jindex);
     if (s) goto getout;
@@ -625,8 +780,19 @@ void ioc_droot_mblk_is_deleted(
 }
 
 
-/* Calculate hash index for the key
- */
+/**
+****************************************************************************************************
+
+  @brief Calculate hash index for the key
+
+  The ioc_hash function() calculates hash sum from string key given as argument. Both IO
+  device networks and signal do use hash table to speed up seaching dynamic information.
+
+  @param   key_str Key string, has sum is caluclated from this.
+  @return  Hash sum, final has index is reminder of dividing this value by hash table size.
+
+****************************************************************************************************
+*/
 os_uint ioc_hash(
     const os_char *key_str)
 {
