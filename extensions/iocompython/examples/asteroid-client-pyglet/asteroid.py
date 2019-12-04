@@ -110,7 +110,9 @@ def update(dt):
     data_vector_n = imp_object_data.get_attribute("ncolumns")
 
     if (state_bits & 2) and data_vector_n != None and total_array_n != None:
-        nro_objects = total_array_n // data_vector_n
+        max_objects = total_array_n // data_vector_n
+        if nro_objects > max_objects:
+            nro_objects = max_objects
     
         data = imp_object_data.get0(nro_values = nro_objects * data_vector_n)
 
