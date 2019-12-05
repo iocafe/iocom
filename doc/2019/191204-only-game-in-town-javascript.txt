@@ -1,0 +1,19 @@
+sekalaista pohdintaa,
+
+It seems that today Javascript is only a realistic way to write applications for browser with "game-like" responsiveness and outlook.
+
+Kaikki muut mahdolliset tavat on systemaattisesti eliminoitu browserin tekijoiden toimesta (Google/Microsoft johtavat joukkoa). ActiveX tapettiin jo kauan sitten, joskin hyvasta syysta, sita ei itse pirukaan olisi saanut tietoturvalliseksi. Sitten Java myos turvallisuuden nimissa, hiekkalaatokkomalli jatettiin reikaiseksi niin sita voitiin kayttaa syyna. Viimeisena asennettavat browser pluingit extensionit (vain Java scrip toteutukset jatettiin, eipa pienet paase hyppimaan silmille).
+
+Eli isot pelaajat ovat ottaneet taman kentan omakseen, ja React, node and Javascrip on kontrolloitavissa ja tarpeen vaatiessa tapettavissa, joten ne on toistaiseksi kaytettavissa. Koska pienia kehittajia on nuijittu kuoliaaksi talla areenalla N kertaa, ja minulla on vahva luottamus etta kerta N + 1 on taas edessa, niin jattaisin taman pelin muille. Valmet DNA on nyt 100% mukana, janna nahda kuinka aijien kay. 
+
+Ilman Javascriptia jaljelle jaa server side tekniikat joissa browseri on vain browseri eika siina ajeta koodia. Tama on stabiili ja luotettava tapa tehda asioita, mutta ei mikaan reaaliaikainen vaan sivun paivitukseen voi menna sekuntti tai enemman ja dataa liikkuu paljon turhaan. Hyva lomakkeen tayttoon, rekisteroitymiseen ja sen semmoiseen. Minusta Django vaikuttaa hyva valinnalta tahan.
+
+Toinen mika jaa jaljelle on "app", eli perinteinen sovellutus joka ei ole browserin osa. PC maailmassa en naa tassa ongelmia, kentta on aika vapaa, ja Android puolella appien kaytto on niin laajaa etta Google ei voi laittaa sita hanaa kiinni (sota syttyisi). 
+
+Apple, seka MAC etta puhelin puolella, on sitten toista maata. Heil Cookerin maata. Sopimukset kehittajien kanssa ja EULA paperit antavat Applelle oikeudet kieltaa tekijoilta tai kayttajilta melkein mita vain. Apple maailma on kehittajalle aika vaikea ymparisto toimia.
+
+Yhteenvetona tasta sekavasta ajatusten jarjestelysta, IoT ja automaatio kayttoliittymina voi kayttaa Web liittymaa jos reaaliaikaisuus tai luotettavuus vaatimusta ei ole. Saa kestaa muutaman sekunnin ja menna kiinni jos internet yhteys katkeaa.  Jos nama vaatimuksen on, niin sitten applikaationa. Yksityiskohtia applikaatio asennuksissa on aivan riittavasti, kuin taas server pohjainen web kayttoliittyma ei vaadi mitaan asennusta loppukayttajan laitteeseen.
+
+Joku muu saa sorvata ja yllapitaa Java Skrip web kayttoliittymia, se on niin tuhottoman aikaa viepaa puuhaa joka jatkuu ikuisesti, tai siihen asti kun nykyinen Java Script korvataan taas jollain uudemmalla versiolla tai toisella tekniikalla "kun siina on tietoturvaongelmia" ja halutaan nollata kilpailu.
+
+Terveisin Pekka

@@ -294,10 +294,6 @@ typedef struct iocMemoryBlock
     /** Flag indicating that the data buffer was dynamically allocated.
      */
     os_boolean buf_allocated;
-
-    /** Buffer for communication status.
-     */
-    /* os_char status[IOC_STATUS_MEMORY_SZ]; */
 }
 iocMemoryBlock;
 
@@ -364,14 +360,6 @@ void ioc_write(
     iocHandle *handle,
     os_int addr,
     const os_char *buf,
-    os_int n);
-
-/* Write data to memory block (internal function for the iocom library).
- */
-void ioc_write_internal(
-    iocHandle *handle,
-    os_int addr,
-    const os_char *buf,
     os_int n,
     os_short flags);
 
@@ -381,154 +369,8 @@ void ioc_read(
     iocHandle *handle,
     os_int addr,
     os_char *buf,
-    os_int n);
-
-/* Read data from memory block (internal function for the iocom library).
- */
-void ioc_read_internal(
-    iocHandle *handle,
-    os_int addr,
-    os_char *buf,
     os_int n,
     os_short flags);
-
-#ifndef IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS
-#define IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS 0
-#endif
-
-#if IOC_SUPPORT_LOW_LEVEL_MBLK_FUNCTIONS
-
-/* Write one bit to the memory block.
- */
-void ioc_setp_bit(
-    iocHandle *handle,
-    os_int addr,
-    os_int bit_nr,
-    os_int value);
-
-/* Read one bit from the memory block.
- */
-os_boolean ioc_getp_bit(
-    iocHandle *handle,
-    os_int addr,
-    os_int bit_nr);
-
-/* Read one unsigned byte from the memory block.
- */
-os_uchar ioc_getp_uchar(
-    iocHandle *handle,
-    os_int addr);
-
-/* Write 16 bit integer to the memory block.
- */
-void ioc_setp_short(
-    iocHandle *handle,
-    os_int addr,
-    os_int value);
-
-/* Read signed 16 bit integer from the memory block.
- */
-os_short ioc_getp_short(
-    iocHandle *handle,
-    os_int addr);
-
-/* Read unsigned 16 bit integer from the memory block.
- */
-os_ushort ioc_getp_ushort(
-    iocHandle *handle,
-    os_int addr);
-
-/* Write 32 bit integer (os_int) to the memory block.
- */
-void ioc_setp_int(
-    iocHandle *handle,
-    os_int addr,
-    os_int value);
-
-/* Read 32 bit integer from the memory block.
- */
-os_int ioc_getp_int(
-    iocHandle *handle,
-    os_int addr);
-
-/* Write 32 bit floating point value to the memory block.
- */
-void ioc_setp_float(
-    iocHandle *handle,
-    os_int addr,
-    os_float value);
-
-/* Read 32 bit floating point value from the memory block.
- */
-os_float ioc_getp_float(
-    iocHandle *handle,
-    os_int addr);
-
-/* Write string to the memory block.
- */
-void ioc_setp_str(
-    iocHandle *handle,
-    os_int addr,
-    const os_char *str,
-    os_int n);
-
-/* Read string from the memory block.
- */
-void ioc_getp_str(
-    iocHandle *handle,
-    os_int addr,
-    os_char *str,
-    os_int n);
-
-/* Store array of 16 bit integers to the memory block.
- */
-void ioc_setp_short_array(
-    iocHandle *handle,
-    os_int addr,
-    const os_short *arr,
-    os_int n);
-
-/* Read array of 16 bit integers from the memory block.
- */
-void ioc_getp_short_array(
-    iocHandle *handle,
-    os_int addr,
-    os_short *arr,
-    os_int n);
-
-/* Store array of 32 bit integers to the memory block.
- */
-void ioc_setp_int_array(
-    iocHandle *handle,
-    os_int addr,
-    const os_int *arr,
-    os_int n);
-
-/* Read array of 32 bit integers from the memory block.
- */
-void ioc_getp_int_array(
-    iocHandle *handle,
-    os_int addr,
-    os_int *arr,
-    os_int n);
-
-/* Store array of 32 bit floating point values to the memory block.
- */
-void ioc_setp_float_array(
-    iocHandle *handle,
-    os_int addr,
-    const os_float *arr,
-    os_int n);
-
-/* Read array of 32 bit floating point values from the memory block.
- */
-void ioc_getp_float_array(
-    iocHandle *handle,
-    os_int addr,
-    os_float *arr,
-    os_int n);
-
-#endif
 
 /* Clear N bytes of memory block starting from specified address.
  */
@@ -553,13 +395,6 @@ void ioc_add_callback(
     iocHandle *handle,
     ioc_callback func,
     void *context);
-
-/* Remove callback function.
- */
-/* void ioc_remove_callback(
-    iocHandle *handle,
-    ioc_callback func,
-    void *context); */
 
 /* Mark address range of changed values.
  */

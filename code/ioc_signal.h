@@ -131,38 +131,40 @@ iocValue;
 #define ioc_is_value_orange(s) (((s).state_bits & OSAL_STATE_ERROR_MASK) == OSAL_STATE_ORANGE)
 #define ioc_is_value_red(s) (((s).state_bits & OSAL_STATE_ERROR_MASK) == OSAL_STATE_RED)
 
-/* Set one signal.
+/* Set signal to memory block without initialized signal structure.
  */
 #define ioc_set_boolean(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_BOOLEAN)
 #define ioc_set_char(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_CHAR)
-#define ioc_set_uchar ioc_set_char
+#define ioc_set_uchar(h,a,v) ioc_setx_int((h), (a), (os_uchar)(v), OSAL_STATE_CONNECTED, OS_UCHAR)
 #define ioc_set_short(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_SHORT)
-#define ioc_set_ushort ioc_set_short
+#define ioc_set_ushort ioc_setx_int((h), (a), (os_ushort)(v), OSAL_STATE_CONNECTED, OS_USHORT)
 #define ioc_set_int(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_INT)
-#define ioc_set_uint ioc_set_int
+#define ioc_set_uint(h,a,v) ioc_setx_int((h), (a), (os_uint)(v), OSAL_STATE_CONNECTED, OS_UINT)
+#define ioc_set_long(h,a,v) ioc_setx_int((h), (a), (v), OSAL_STATE_CONNECTED, OS_LONG)
 #define ioc_set_str(h,a,st,ss) ioc_setx_str((h), (a), (st), (os_int)(ss), OSAL_STATE_CONNECTED, OS_STR)
-#define ioc_set_float(h,a,st,ss) ??
-#define ioc_set_double(h,a,st,ss) ??
+#define ioc_set_float(h,a,v) ioc_setx_double((h), (a), (v), OSAL_STATE_CONNECTED, OS_FLOAT)
+#define ioc_set_double(h,a,v) ioc_setx_double((h), (a), (v), OSAL_STATE_CONNECTED, OS_DOUBLE)
 
-/* Get one signal state.
+/* Get signal from memory block without initialized signal structure.
  */
 #define ioc_get_boolean(h,a,sb) (os_boolean)ioc_getx_int((h), (a), (sb), OS_BOOLEAN)
 #define ioc_get_char(h,a,sb) (os_char)ioc_getx_int((h), (a), (sb), OS_CHAR)
 #define ioc_get_uchar(h,a,sb) (os_uchar)ioc_getx_int((h), (a), (sb), OS_UCHAR)
 #define ioc_get_short(h,a,sb) (os_short)ioc_getx_int((h), (a), (sb), OS_SHORT)
 #define ioc_get_ushort(h,a,sb) (os_ushort)ioc_getx_int((h), (a), (sb), OS_USHORT)
-#define ioc_get_int(h,a,sb) ioc_getx_int((h), (a), (sb), OS_INT)
+#define ioc_get_int(h,a,sb) (os_int)ioc_getx_int((h), (a), (sb), OS_INT)
 #define ioc_get_uint(h,a,sb) (os_uint)ioc_getx_uint((h), (a), (sb), OS_UINT)
+#define ioc_get_long(h,a,sb) ioc_getx_int((h), (a), (sb), OS_LONG)
 #define ioc_get_str(h,a,st,ss) ioc_getx_str((h), (a), (st), (os_int)(ss), OS_STR)
-#define ioc_get_float(h,a,st,ss) ??
-#define ioc_get_double(h,a,st,ss) ??
+#define ioc_get_float(h,a,sb) (os_float)ioc_getx_double((h), (a), (sb), OS_FLOAT);
+#define ioc_get_double(h,a,sb) ioc_getx_double((h), (a), (sb), OS_DOUBLE);
 
 /* Set or get a string using initialized signal structure.
  */
 #define ioc_sets_str(s,st) ioc_movex_str_signal((s), (st), 0, IOC_SIGNAL_WRITE|OS_STR)
 #define ioc_gets_str(s,st,ss) ioc_movex_str_signal((s), (st), (ss), OS_STR)
 
-/* Set array of values.
+/* Set array of values without initialized signal structure..
  */
 #define ioc_set_boolean_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_BOOLEAN)
 #define ioc_set_char_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_CHAR)
@@ -173,7 +175,7 @@ iocValue;
 #define ioc_set_uint_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_UINT)
 #define ioc_set_float_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_FLOAT)
 
-/* Get array of values.
+/* Get array of values without initialized signal structure.
  */
 #define ioc_get_boolean_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_BOOLEAN)
 #define ioc_get_char_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_CHAR)
@@ -184,7 +186,7 @@ iocValue;
 #define ioc_get_uint_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_UINT)
 #define ioc_get_float_array(h,a,v,n) ioc_movex_array((h), (a), (v), (n), OS_FLOAT)
 
-/* Set or get array of values using initialized signal structure.
+/* Set or get array of values using initialized signal structure. Array type must match to JSON configuration.
  */
 #define ioc_sets_array(s,v,n) ioc_movex_array_signal((s), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE)
 #define ioc_gets_array(s,v,n) ioc_movex_array_signal((s), (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT)
