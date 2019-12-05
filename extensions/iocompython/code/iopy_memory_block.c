@@ -392,7 +392,7 @@ static PyObject *MemoryBlock_read(
     if (n <= 0) goto getout;
 
     data = os_malloc(n, OS_NULL);
-    ioc_read(&self->mblk_handle, pyaddr, data, n);
+    ioc_read(&self->mblk_handle, pyaddr, data, n, 0);
     rval = PyBytes_FromStringAndSize(data, n);
 
     os_free(data, n);
@@ -434,7 +434,7 @@ static PyObject *MemoryBlock_write(
     }
 
     PyBytes_AsStringAndSize(pydata, &buffer, &length);
-    ioc_write(&self->mblk_handle, pyaddr, buffer, length);
+    ioc_write(&self->mblk_handle, pyaddr, buffer, length, 0);
 
     Py_RETURN_NONE;
 }
@@ -499,7 +499,7 @@ static PyObject *MemoryBlock_publish(
     if (pydata)
     {
         PyBytes_AsStringAndSize(pydata, &buffer, &length);
-        ioc_write(&self->mblk_handle, pyaddr, buffer, length);
+        ioc_write(&self->mblk_handle, pyaddr, buffer, length, 0);
     }
 
     /* Publish block content as dynamic structure. Resize memory block (make bigger only).
