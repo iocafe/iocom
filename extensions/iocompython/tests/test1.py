@@ -41,7 +41,7 @@ signal_conf = ('{'
 
 def main():
     ioterminal.start()
-    root = Root('mydevice', device_nr=3, network_name='pekkanet')
+    root = Root('mydevice', device_nr=3, network_name='iocafenet')
     myinputs = MemoryBlock(root, 'upward,auto', 'exp', nbytes=256)
 
     data = json2bin(signal_conf)
@@ -50,7 +50,7 @@ def main():
     
     connection = Connection(root, "127.0.0.1", "socket")
 
-    hor = Signal(root, "hor", "pekkanet")
+    hor = Signal(root, "hor")
 
     i = 1
 

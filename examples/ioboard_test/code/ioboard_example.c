@@ -176,7 +176,7 @@ osalStatus osal_main(
     prm.ctrl_type = IOBOARD_CTRL_CON;
 //    prm.device_name = "ulle";
 //    prm.device_nr = 1;
-    //prm.network_name = "pekkanet";
+    //prm.network_name = "iocafenet";
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     prm.socket_con_str = EXAMPLE_IP_ADDRESS ":" EXAMPLE_TLS_SOCKET_PORT;
 #else

@@ -30,12 +30,12 @@
 TitoMain::TitoMain()
 {
     TitoApplication *app;
-    /* Lauch tour 'tito' applications, one for pekkanet, one for markkunet and two for surfnet.
+    /* Lauch tour 'tito' applications, one for iocafenet, one for markkunet and two for surfnet.
      */
     m_nro_apps = 0;
 
     app = new TitoTestApplication();
-    app->start("pekkanet", 1);
+    app->start("iocafenet", 1);
     m_app[m_nro_apps++] = app;
 
     /* app = new TitoTestApplication();

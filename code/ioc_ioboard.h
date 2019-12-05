@@ -103,7 +103,7 @@ typedef struct
      */
     os_short device_nr;
 
-    /** IO device network name, like "pekkanet". Devices in same "network" can speak to each
+    /** IO device network name, like "iocafenet". Devices in same "network" can speak to each
         others.
      */
     const os_char *network_name;

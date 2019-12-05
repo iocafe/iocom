@@ -9,7 +9,7 @@ data_vector_n = 0
 with open('resources/asteroid-signals.json', 'r') as file:
     signal_conf = file.read()
 
-root = Root('spacepilot', device_nr=my_player_nr, network_name='pekkanet')
+root = Root('spacepilot', device_nr=my_player_nr, network_name='iocafenet')
 exp = MemoryBlock(root, 'upward', 'exp')
 imp = MemoryBlock(root, 'downward', 'imp')
 data = json2bin(signal_conf)

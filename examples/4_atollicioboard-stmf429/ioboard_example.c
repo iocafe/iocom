@@ -133,7 +133,7 @@ osalStatus osal_main(
 
     //prm.device_name = "tropic";
     //prm.device_nr = 1;
-    //prm.network_name = "pekkanet";
+    //prm.network_name = "iocafenet";
 
     // prm.socket_con_str = "127.0.0.1";
     prm.socket_con_str = "192.168.1.229";

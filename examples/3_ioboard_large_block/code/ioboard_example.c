@@ -103,7 +103,7 @@ osalStatus osal_main(
     prm.ctrl_type = IOBOARD_CTRL_CON;
     //prm.device_name = "fatman";
     //prm.device_nr = 1;
-    //prm.network_name = "pekkanet";
+    //prm.network_name = "iocafenet";
     prm.socket_con_str = "127.0.0.1"; /**************** SET IP ADDRESS HERE ***************/
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = IOBOARD_EXPORT_MBLK_SZ;
