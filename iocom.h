@@ -4,9 +4,11 @@
   @brief   Main iocom header file.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    29.7.2018
+  @date    5.12.2019
 
-  iocom library main header file. If further includes rest of base iocom headers. 
+  Main iocom library base header file. If further includes rest of base iocom headers.
+  If dynamic extensions for server side or Python API are needed, include "iocomx.h" header
+  instead of this file.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -29,17 +31,19 @@ OSAL_C_HEADER_BEGINS
 
 /* Enable/disable dynamic allocation of memory blocks and resizing
    the memory blocks, if dynamic memory allocation is supported.
-   There may be cases when there is reason to do otherwise, so this
+   There are cases when there is reason to do otherwise, so this
    can be overridden by compiler define.
  */
 #ifndef IOC_DYNAMIC_MBLK_CODE
 #define IOC_DYNAMIC_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
 #endif
 
+/* If we are using dynamic memory allocation, include code to
+ * resize memory blocks.
+ */
 #ifndef IOC_RESIZE_MBLK_CODE
 #define IOC_RESIZE_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
 #endif
-
 
 /* Include all base iocom headers.
  */
@@ -58,17 +62,19 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_target_buffer.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
-#include "code/ioc_identifiers.h"
-#include "code/ioc_dyn_signal.h"
-#include "code/ioc_dyn_network.h"
-#include "code/ioc_dyn_root.h"
-#include "code/ioc_dyn_mblk_list.h"
-#include "code/ioc_dyn_queue.h"
 #include "code/ioc_ioboard.h"
 #include "code/ioc_poolsize.h"
 
 /* If C++ compilation, end the undecorated code.
  */
 OSAL_C_HEADER_ENDS
+
+/* Be sure to include iocomx.h, if dynamic configuration code is used.
+ */
+#if IOC_DYNAMIC_MBLK_CODE
+#ifndef IOCOMX_INCLUDED
+#include "iocomx.h"
+#endif
+#endif
 
 #endif
