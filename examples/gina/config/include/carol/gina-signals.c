@@ -24,13 +24,35 @@ const struct gina_t gina =
     {2, 1, OS_SHORT|IOC_PIN_PTR, &ioboard_import, &pins.pwm.servo}, /* servo */
     {5, 1, OS_SHORT|IOC_PIN_PTR, &ioboard_import, &pins.pwm.dimmer_led}, /* dimmer_led */
     {8, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_import, &pins.outputs.led_builtin} /* led_builtin */
+  },
+
+  {
+    {"conf_exp", OS_NULL, 5, GINA_CONF_EXP_MBLK_SZ, (iocSignal*)&gina.conf_exp.tod_state},
+    {0, 1, OS_CHAR, OS_NULL, OS_NULL}, /* tod_state */
+    {2, 1, OS_SHORT, OS_NULL, OS_NULL}, /* tod_tail */
+    {5, 1, OS_CHAR, OS_NULL, OS_NULL}, /* frd_state */
+    {7, 257, OS_UCHAR, OS_NULL, OS_NULL}, /* frd_buf */
+    {265, 1, OS_SHORT, OS_NULL, OS_NULL} /* frd_head */
+  },
+
+  {
+    {"conf_imp", OS_NULL, 7, GINA_CONF_IMP_MBLK_SZ, (iocSignal*)&gina.conf_imp.tod_cmd},
+    {0, 1, OS_CHAR, OS_NULL, OS_NULL}, /* tod_cmd */
+    {2, 1, OS_CHAR, OS_NULL, OS_NULL}, /* tod_select */
+    {4, 513, OS_UCHAR, OS_NULL, OS_NULL}, /* tod_buf */
+    {518, 1, OS_SHORT, OS_NULL, OS_NULL}, /* tod_head */
+    {521, 1, OS_CHAR, OS_NULL, OS_NULL}, /* frd_cmd */
+    {523, 1, OS_UCHAR, OS_NULL, OS_NULL}, /* frd_select */
+    {525, 1, OS_SHORT, OS_NULL, OS_NULL} /* frd_tail */
   }
 };
 
 static const iocMblkSignalHdr *gina_mblk_list[] =
 {
   &gina.exp.hdr,
-  &gina.imp.hdr
+  &gina.imp.hdr,
+  &gina.conf_exp.hdr,
+  &gina.conf_imp.hdr
 };
 
 const iocDeviceHdr gina_hdr = {(iocMblkSignalHdr**)gina_mblk_list, sizeof(gina_mblk_list)/sizeof(iocMblkSignalHdr*)};

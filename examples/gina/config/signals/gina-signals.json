@@ -7,32 +7,32 @@
     "groups": [
       {
         "name": "inputs",
-         "signals": [
-           {"name": "dip_switch_3", "addr": 30, "type": "boolean"},
-           {"name": "dip_switch_4"},
-           {"name": "touch_sensor"}
-         ]
-       },
-       {
-         "name": "analog inputs",
-         "signals": [
-           {"name": "potentiometer"}
-         ]
-       },
-       {
-         "name": "device state",
-         "signals": [
-           {"name": "testfloat", "addr": 0, "type": "float", "array": 5},
-           {"name": "A", "type": "boolean"},
-           {"name": "B"},
-           {"name": "C"},
-           {"name": "D"},
-           {"name": "E"},
-           {"name": "F"},
-           {"name": "G"},
-           {"name": "H"}
-         ]
-       }
+        "signals": [
+          {"name": "dip_switch_3", "addr": 30, "type": "boolean"},
+          {"name": "dip_switch_4"},
+          {"name": "touch_sensor"}
+        ]
+      },
+      {
+        "name": "analog inputs",
+        "signals": [
+          {"name": "potentiometer"}
+        ]
+      },
+      {
+        "name": "device state",
+        "signals": [
+          {"name": "testfloat", "addr": 0, "type": "float", "array": 5},
+          {"name": "A", "type": "boolean"},
+          {"name": "B"},
+          {"name": "C"},
+          {"name": "D"},
+          {"name": "E"},
+          {"name": "F"},
+          {"name": "G"},
+          {"name": "H"}
+        ]
+      }
     ]
   },
 
@@ -57,6 +57,52 @@
         "name": "outputs",
         "signals": [
           {"name": "led_builtin", "type": "boolean"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "conf_exp",
+    "title": "Exported configuration signals by 'gina' IO device",
+    "groups": [
+      {
+        "name": "transfer to device",
+        "signals": [
+          {"name": "tod_state", "type": "char"},
+          {"name": "tod_tail", "type": "short"}
+        ]
+      },
+      {
+        "name": "transfer from device",
+        "signals": [
+          {"name": "frd_state", "type": "char"},
+          {"name": "frd_buf", "type": "uchar", "array": 257},
+          {"name": "frd_head", "type": "short"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "conf_imp",
+    "title": "Imported configuration signals by 'gina' IO device",
+    "groups": [
+      {
+        "name": "transfer to device",
+        "signals": [
+          {"name": "tod_cmd", "type": "char"},
+          {"name": "tod_select", "type": "char"},
+          {"name": "tod_buf", "type": "uchar", "array": 513},
+          {"name": "tod_head", "type": "short"}
+        ]
+      },
+      {
+        "name": "transfer from device",
+        "signals": [
+          {"name": "frd_cmd", "type": "char"},
+          {"name": "frd_select", "type": "uchar"},
+          {"name": "frd_tail", "type": "short"}
         ]
       }
     ]
