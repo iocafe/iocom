@@ -65,6 +65,7 @@ void ioboard_start_communication(
         prm = &defaultprm;
     }
 
+    ioc_streamer_initialize();
     ioc_initialize_root(&ioboard_communication);
     ioc_set_network_name(&ioboard_communication, prm->network_name);
     ioboard_communication.device_signal_hdr = prm->device_signal_hdr;

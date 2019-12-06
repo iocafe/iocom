@@ -20,13 +20,70 @@
 /** Stream interface structure for streamers.
  */
 #if OSAL_FUNCTION_POINTER_SUPPORT
-extern const osalStreamInterface osal_streamer_iface;
+extern const osalStreamInterface ioc_streamer_iface;
 #endif
 
 /** Define to get streamer interface pointer. The define is used so that this can
     be converted to function call.
  */
-#define OSAL_STREAMER_IFACE &osal_streamer_iface
+#define OSAL_STREAMER_IFACE &ioc_streamer_iface
+
+
+/* Define 1 to enable bidirectional streamer support.
+ */
+#define IOC_SUPPORT_BIDIRECTIONAL_STREAMER 1
+
+/* Maximum number of streamers when using static memory allocation.
+ */
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION == 0
+#define IOC_MAX_STREAMERS 4
+#endif
+
+/**
+****************************************************************************************************
+
+  @name Parameter structure for opening a streamer (options).
+
+****************************************************************************************************
+ */
+typedef struct iocStreamerSignals
+{
+    iocSignal *cmd;
+    iocSignal *select;
+    iocSignal *buf;
+    iocSignal *head;
+    iocSignal *tail;
+    iocSignal *state;
+    os_boolean to_device;
+}
+iocStreamerSignals;
+
+
+/**
+****************************************************************************************************
+
+  @name Parameter structure for opening a streamer (options).
+
+  is_device set to OS_TRUE if this is IO device end of communication. This effects logic of
+  streaming and who is initiating the transfers. Other end of stream must be marked as device
+  and the other not.
+
+  static_signals Signals are allocated statically, do not allocate copies. If not set, signal
+  structures are duplicated in case originals are deleted.
+
+****************************************************************************************************
+ */
+typedef struct iocStreamerParams
+{
+    os_boolean is_device;
+    // os_boolean static_signals;
+
+    iocStreamerSignals s1;
+#if IOC_SUPPORT_BIDIRECTIONAL_STREAMER
+    iocStreamerSignals s2;
+#endif
+}
+iocStreamerParams;
 
 
 /**
@@ -43,33 +100,11 @@ typedef struct iocStreamer
      */
     osalStreamHeader hdr;
 
-    iocSignal *cmd;
-    iocSignal *select;
-    iocSignal *buf;
-    iocSignal *head;
-    iocSignal *tail;
-    iocSignal *state;
+    iocStreamerParams prm;
+
+    os_boolean used;
 }
 iocStreamer;
-
-
-/**
-****************************************************************************************************
-
-  @name Parameter structure for opening a streamer (options).
-
-****************************************************************************************************
- */
-typedef struct iocStreamerParams
-{
-    iocSignal *cmd;
-    iocSignal *select;
-    iocSignal *buf;
-    iocSignal *head;
-    iocSignal *tail;
-    iocSignal *state;
-}
-iocStreamerParams;
 
 
 
@@ -87,7 +122,7 @@ iocStreamerParams;
 
 /* Open streamer.
  */
-osalStream osal_streamer_open(
+osalStream ioc_streamer_open(
     const os_char *parameters,
     void *option,
     osalStatus *status,
@@ -95,25 +130,25 @@ osalStream osal_streamer_open(
 
 /* Close streamer.
  */
-void osal_streamer_close(
+void ioc_streamer_close(
     osalStream stream);
 
 /* Accept connection from listening streamer.
  */
-osalStream osal_streamer_accept(
+osalStream ioc_streamer_accept(
     osalStream stream,
     osalStatus *status,
     os_int flags);
 
 /* Flush written data to streamer.
  */
-osalStatus osal_streamer_flush(
+osalStatus ioc_streamer_flush(
     osalStream stream,
     os_int flags);
 
 /* Write data to streamer.
  */
-osalStatus osal_streamer_write(
+osalStatus ioc_streamer_write(
     osalStream stream,
     const os_char *buf,
     os_memsz n,
@@ -122,7 +157,7 @@ osalStatus osal_streamer_write(
 
 /* Read data from streamer.
  */
-osalStatus osal_streamer_read(
+osalStatus ioc_streamer_read(
     osalStream stream,
     os_char *buf,
     os_memsz n,
@@ -131,13 +166,13 @@ osalStatus osal_streamer_read(
 
 /* Get streamer parameter.
  */
-os_long osal_streamer_get_parameter(
+os_long ioc_streamer_get_parameter(
     osalStream stream,
     osalStreamParameterIx parameter_ix);
 
 /* Set streamer parameter.
  */
-void osal_streamer_set_parameter(
+void ioc_streamer_set_parameter(
     osalStream stream,
     osalStreamParameterIx parameter_ix,
     os_long value);
@@ -145,7 +180,7 @@ void osal_streamer_set_parameter(
 /* Wait for new data to read, time to write or operating system event, etc.
  */
 #if OSAL_STREAMER_SELECT_SUPPORT
-osalStatus osal_streamer_select(
+osalStatus ioc_streamer_select(
     osalStream *streams,
     os_int nstreams,
     osalEvent evnt,
@@ -155,30 +190,12 @@ osalStatus osal_streamer_select(
 #endif
 
 
+/* Initialize streamer data structure.
+ */
+void ioc_streamer_initialize(
+    void);
+
 /*@}*/
-
-
-
-/* Setup signals for streaming.
-*/
-void ioc_set_streamer_xxpool(
-    iocStreamer *streamer,
-    iocSignal *cmd,
-    iocSignal *select,
-    iocSignal *buf,
-    iocSignal *head,
-    iocSignal *tail,
-    iocSignal *state);
-
-os_memsz write(
-    iocStreamer *streamer,
-    const os_char *buf,
-    os_memsz buf_sz);
-
-os_memsz read(
-    iocStreamer *streamer,
-    const os_char *buf,
-    os_memsz buf_sz);
 
 
 #endif
