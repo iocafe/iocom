@@ -17,16 +17,21 @@
 #define IOC_STREAMER_INCLUDED
 
 
+#define IOC_DEVICE_STREAMER 1
+#define IOC_CONTROLLER_STREAMER 1
+
+#define IOC_STREAMER_SUPPORT (IOC_DEVICE_STREAMER || IOC_CONTROLLER_STREAMER)
+#define IOC_STREAMER_SELECT_SUPPORT 0
+#if IOC_STREAMER_SUPPORT
+
 /** Stream interface structure for streamers.
  */
-#if OSAL_FUNCTION_POINTER_SUPPORT
 extern const osalStreamInterface ioc_streamer_iface;
-#endif
 
 /** Define to get streamer interface pointer. The define is used so that this can
     be converted to function call.
  */
-#define OSAL_STREAMER_IFACE &ioc_streamer_iface
+#define IOC_STREAMER_IFACE &ioc_streamer_iface
 
 /* Maximum number of streamers when using static memory allocation.
  */
@@ -100,6 +105,9 @@ iocStreamerParams;
 
   @name Streamer structure (pointer to this structure is casted to osalStream for interface).
 
+  tod = to IO device
+  frd = from IO device
+
 ****************************************************************************************************
  */
 typedef struct iocStreamer
@@ -112,7 +120,16 @@ typedef struct iocStreamer
     iocStreamerParams prm;
 
     iocStreamerState frd_state;
+    iocStreamerState frd_cmd;
+    os_char frd_select;
     os_int frd_head;
+    os_int frd_tail;
+
+    iocStreamerState tod_state;
+    iocStreamerState tod_cmd;
+    os_char tod_select;
+    os_int tod_head;
+    os_int tod_tail;
 
     os_boolean used;
 }
@@ -191,7 +208,7 @@ void ioc_streamer_set_parameter(
 
 /* Wait for new data to read, time to write or operating system event, etc.
  */
-#if OSAL_STREAMER_SELECT_SUPPORT
+#if IOC_STREAMER_SELECT_SUPPORT
 osalStatus ioc_streamer_select(
     osalStream *streams,
     os_int nstreams,
@@ -209,5 +226,5 @@ void ioc_streamer_initialize(
 
 /*@}*/
 
-
+#endif
 #endif

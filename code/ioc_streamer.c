@@ -14,6 +14,8 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#if IOC_STREAMER_SUPPORT
+
 
 /* Maximum number of streamers when using static memory allocation.
  */
@@ -28,6 +30,27 @@ static osalStatus ioc_streamer_device_write(
     const os_char *buf,
     os_memsz n,
     os_memsz *n_written);
+
+static osalStatus ioc_streamer_device_read(
+    iocStreamer *streamer,
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_memsz n,
+    os_memsz *n_read);
+
+static osalStatus ioc_streamer_controller_write(
+    iocStreamer *streamer,
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_memsz n,
+    os_memsz *n_written);
+
+static osalStatus ioc_streamer_controller_read(
+    iocStreamer *streamer,
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_memsz n,
+    os_memsz *n_read);
 
 
 /**
@@ -58,7 +81,7 @@ static osalStatus ioc_streamer_device_write(
           - OSAL_STREAM_SELECT: Open streamer with select functionality (default).
 
           At the moment, select support flag has no impact on Linux. If define ??????????????????????????????????????????????????????????????
-          OSAL_STREAMER_SELECT_SUPPORT is 1 and select is called, it works. Anyhow flag should
+          IOC_STREAMER_SELECT_SUPPORT is 1 and select is called, it works. Anyhow flag should
           be set correctly for compatibility with other operating systems. If there are
           flags which are unknown to this function, these are simply ignored.
           See @ref osalStreamFlags "Flags for Stream Functions" for full list of stream flags.
@@ -267,7 +290,7 @@ osalStatus ioc_streamer_write(
     }
     else
     {
-        // s = ioc_streamer_controller_write(streamer, streamer->prm.tod, buf, n, n_written);
+        s = ioc_streamer_controller_write(streamer, &streamer->prm.tod, buf, n, n_written);
     }
 
     /* Return success/failure code.
@@ -307,6 +330,7 @@ osalStatus ioc_streamer_read(
     os_int flags)
 {
     iocStreamer *streamer;
+    osalStatus s;
 
     *n_read = 0;
     if (stream == OS_NULL || buf == OS_NULL || n < 0) return OSAL_STATUS_FAILED;
@@ -317,20 +341,31 @@ osalStatus ioc_streamer_read(
     streamer = (iocStreamer*)stream;
     osal_debug_assert(streamer->hdr.iface == &ioc_streamer_iface);
 
-    /* Success, set number of bytes read.
+    /* Move data
      */
-    *n_read = 0; // rval;
-    return OSAL_SUCCESS;
+    if (streamer->prm.is_device)
+    {
+        s = ioc_streamer_device_read(streamer, &streamer->prm.tod, buf, n, n_read);
+    }
+    else
+    {
+        s = ioc_streamer_controller_read(streamer, &streamer->prm.frd, buf, n, n_read);
+    }
+
+    /* Return success/failure code.
+     */
+    return s;
 }
 
 
+#if IOC_DEVICE_STREAMER
 /**
 ****************************************************************************************************
 
   @brief Transfer from the IO device
   @anchor ioc_streamer_device_write
 
-  The ioc_streamer_device_write() function implements IO device writing data to stream.
+  The ioc_streamer_device_write() function handles IO device writing data to stream.
   Stream transfer has three states, IOC_STREAM_IDLE, IOC_STREAM_RUNNING and IOSTREAM_COMPLETED.
   This is in "state" signal.
 
@@ -476,7 +511,436 @@ switch_to_idle:
 }
 
 
-#if OSAL_STREAMER_SELECT_SUPPORT
+/**
+****************************************************************************************************
+
+  @brief Receive by device
+  @anchor ioc_streamer_device_read
+
+  The ioc_streamer_device_read() function handles controller reveiving data from
+  IO device. Stream transfer has two states, IOC_STREAM_IDLE and IOC_STREAM_RUNNING. This is in "state" signal.
+
+  If in IOC_STREAM_IDLE state:
+    If "cmd" is IOC_STREAM_IDLE, do nothing
+    Otherwise set "tail" to zero and switch to "state" = IOC_STREAM_RUNNING
+
+  If in IOC_STREAM_RUNNING state:
+    If "cmd" is IOC_STREAM_IDLE, the transfer has been interrupted: set "state" = IOC_STREAM_IDLE. Same if "cmd" signal is disconnected?
+    Otherwise move as much data as we can from tail position, and update tail.
+    if "cmd" is IOC_STREAM_COMPLETED, set "state" = IOC_STREAM_IDLE.
+
+
+  @param   streamer Pointer to streamer structure.
+  @param   signals Pointer to signals structure. These are signals used for the transfer.
+  @param   buf Pointer to buffer where to store data.
+  @param   n Buffer size, maximum number of bytes to read.
+  @param   n_read Pointer to integer into which the function stores the number of bytes
+           actually read, which may be less than n if there is no more in incoming buffer.
+           If the function fails n_read is set to zero.
+
+  @return  OSAL_SUCCESS to indicate success.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_streamer_device_read(
+    iocStreamer *streamer,
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_memsz n,
+    os_memsz *n_read)
+{
+    iocStreamerState
+        cmd;
+
+    os_char
+        state_bits;
+
+    os_int
+        buf_sz,
+        head,
+        tail,
+        rdnow,
+        nbytes;
+
+    cmd = (iocStreamerState)ioc_gets_int(signals->cmd, &state_bits);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0) cmd = IOC_STREAM_IDLE;
+
+    nbytes = 0;
+    switch (streamer->tod_state)
+    {
+        default:
+        case IOC_STREAM_IDLE:
+            if (cmd == IOC_STREAM_IDLE) break;
+            streamer->tod_tail = 0;
+            ioc_sets_int0(signals->tail, 0);
+            streamer->tod_state = IOC_STREAM_RUNNING;
+            ioc_sets_int0(signals->state, IOC_STREAM_RUNNING);
+            /* continues ... */
+
+        case IOC_STREAM_RUNNING:
+            if (cmd == IOC_STREAM_IDLE)
+            {
+                goto switch_to_idle;
+            }
+
+            buf_sz = signals->buf->n;
+            head = (os_int)ioc_gets_int(signals->head, &state_bits);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
+            {
+                goto switch_to_idle;
+            }
+            else
+            {
+                tail = streamer->tod_tail;
+
+                if (tail > head)
+                {
+                    rdnow = buf_sz - tail;
+                    if (rdnow > n) rdnow = n;
+                    if (rdnow > 0)
+                    {
+                        state_bits = ioc_moves_array(signals->buf, tail, (os_char*)buf, rdnow,
+                            OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+                        if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto switch_to_idle;
+
+                        tail += rdnow;
+                        if (tail >= buf_sz) tail = 0;
+
+                        streamer->tod_tail = tail;
+                        ioc_sets_int0(signals->tail, tail);
+
+                        buf += rdnow;
+                        n -= rdnow;
+                        nbytes += rdnow;
+                    }
+                }
+
+                if (tail < head)
+                {
+                    rdnow = head - tail;
+                    if (rdnow > n) rdnow = n;
+
+                    if (rdnow > 0)
+                    {
+                        state_bits = ioc_moves_array(signals->buf, tail, (os_char*)buf, rdnow,
+                            OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+                        if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto switch_to_idle;
+
+                        tail += rdnow;
+                        streamer->tod_tail = tail;
+                        ioc_sets_int0(signals->tail, tail);
+
+                        buf += rdnow;
+                        n -= rdnow;
+                        nbytes += rdnow;
+                    }
+                }
+            }
+            break;
+    }
+
+    *n_read = nbytes;
+    return OSAL_SUCCESS;
+
+switch_to_idle:
+    streamer->tod_state = IOC_STREAM_IDLE;
+    ioc_sets_int0(signals->state, IOC_STREAM_IDLE);
+    return OSAL_STATUS_FAILED;
+}
+#endif
+
+
+#if IOC_CONTROLLER_STREAMER
+/**
+****************************************************************************************************
+
+  @brief Transfer from the controller
+  @anchor ioc_streamer_controller_write
+
+  The ioc_streamer_controller_write() function handles a controller writing data to stream.
+  Controller can be in IOC_STREAM_IDLE, IOC_STREAM_RUNNING or IOC_STREAM_COMPLETED command (in "cmd")
+
+  If "cmd" is IOC_STREAM_IDLE:
+      If "state" is not IOC_STREAM_IDLE, do nothing. We are waiting for IO device to finish.
+      Otherwise if controller wants to start the transfer, set "select" to ? (app spefific), "head" = 0 and "cmd" = IOSTREAM_RUNNING
+
+  if "cmd" is IOC_STREAM_RUNNING:
+      If "state" is IOC_STREAM_RUNNING: Write as much data to buffer as available and fits between tail and head and move head.
+      If all data has been written and "state" is IOC_STREAM_RUNNING, set "cmd" to IOC_STREAM_COMPLETED.
+      If controller want to interrupt the transfer, it sets "cmd" to IOC_STREAM_IDLE.
+
+  Is cmd is IOC_STREAM_COMPLETED:
+      If "state" is IOC_STREAM_IDLE, set cmd = IOC_STREAM_IDLE. All done.
+
+  @param   streamer Pointer to streamer structure.
+  @param   signals Pointer to signals structure. These are signals used for the transfer.
+  @param   buf Pointer to buffer to write from.
+  @param   n Maximum number of bytes to write.
+  @param   n_written Pointer to integer into which the function stores the number of bytes
+           actually written, which may be less than n if there is not space (yet) in outgoing buffer.
+           If the function fails n_written is set to zero.
+
+  @return  OSAL_SUCCESS to indicate success.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_streamer_controller_write(
+    iocStreamer *streamer,
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_memsz n,
+    os_memsz *n_written)
+{
+    iocStreamerState
+        state;
+
+    os_char
+        state_bits;
+
+    os_int
+        buf_sz,
+        head,
+        tail,
+        wrnow,
+        nbytes;
+
+    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0) state = IOC_STREAM_IDLE;
+
+    nbytes = 0;
+    switch (streamer->tod_cmd)
+    {
+        case IOC_STREAM_COMPLETED:
+            if (state != IOC_STREAM_RUNNING)
+            {
+                goto switch_to_idle;
+            }
+            break;
+
+        case IOC_STREAM_IDLE:
+            if (state != IOC_STREAM_IDLE) break;
+            streamer->tod_head = 0;
+            ioc_sets_int0(signals->select, 115);
+            ioc_sets_int0(signals->head, 0);
+            streamer->tod_state = IOC_STREAM_RUNNING;
+            ioc_sets_int0(signals->state, IOC_STREAM_RUNNING);
+            /* continues ... */
+
+        case IOC_STREAM_RUNNING:
+            if (state != IOC_STREAM_RUNNING)
+            {
+                goto switch_to_idle;
+            }
+
+            buf_sz = signals->buf->n;
+            tail = (os_int)ioc_gets_int(signals->tail, &state_bits);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+            {
+                goto switch_to_idle;
+            }
+            else
+            {
+                head = streamer->tod_head;
+
+                if (head >= tail)
+                {
+                    wrnow = buf_sz - head;
+                    if (!tail) wrnow--;
+                    if (wrnow > n) wrnow = n;
+                    if (wrnow > 0)
+                    {
+                        ioc_moves_array(signals->buf, head, (os_char*)buf, wrnow,
+                            OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
+
+                        head += wrnow;
+                        if (head >= buf_sz) head = 0;
+
+                        streamer->tod_head = head;
+                        ioc_sets_int0(signals->head, head);
+
+                        buf += wrnow;
+                        n -= wrnow;
+                        nbytes += wrnow;
+                    }
+                }
+
+                if (head < tail)
+                {
+                    wrnow = tail - head - 1;
+                    if (wrnow > n) wrnow = n;
+
+                    if (wrnow > 0)
+                    {
+                        ioc_moves_array(signals->buf, head, (os_char*)buf, wrnow,
+                            OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
+
+                        head += wrnow;
+                        streamer->tod_head = head;
+                        ioc_sets_int0(signals->head, head);
+
+                        buf += wrnow;
+                        n -= wrnow;
+                        nbytes += wrnow;
+                    }
+                }
+            }
+            break;
+    }
+
+    *n_written = nbytes;
+    return OSAL_SUCCESS;
+
+switch_to_idle:
+    streamer->tod_cmd = IOC_STREAM_IDLE;
+    ioc_sets_int0(signals->cmd, IOC_STREAM_IDLE);
+    return OSAL_STATUS_FAILED;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Receive by controller
+  @anchor ioc_streamer_controller_read
+
+  The ioc_streamer_controller_read() function handles controller reveiving data from
+  IO device.
+
+  Controller can be in IOC_STREAM_IDLE or IOC_STREAM_RUNNING command (in "cmd")
+
+  If "cmd" is IOSTREAM_IDLE:
+      If state is IOSTREAM_RUNNING, do nothing. We are waiting for IO device to finish.
+      Otherwise if controller wants to start the transfer, set "select" to ? (app spefific),
+      "tail" = 0 and "cmd" = IOSTREAM_RUNNING
+
+  if "cmd" is IOSTREAM_RUNNING:
+      if "state" is IOC_STREAM_RUNNING or IOSTREAM_COMPLETED: Read all available data and move "tail".
+      If "state" is IOSTREAM_COMPLETED, the transfer has succesfully finished. Set "cmd" = IOSTREAM_IDLE.
+      Otherwise if "state" is IOSTREAM_IDLE, the transfer has been interrupted, set "cmd" = IOSTREAM_IDLE.
+      If controller wants to interrupt the transfer, set "cmd" = IOSTREAM_IDLE.
+
+  @param   streamer Pointer to streamer structure.
+  @param   signals Pointer to signals structure. These are signals used for the transfer.
+  @param   buf Pointer to buffer where to store data.
+  @param   n Buffer size, maximum number of bytes to read.
+  @param   n_read Pointer to integer into which the function stores the number of bytes
+           actually read, which may be less than n if there is no more in incoming buffer.
+           If the function fails n_read is set to zero.
+
+  @return  OSAL_SUCCESS to indicate success.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_streamer_controller_read(
+    iocStreamer *streamer,
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_memsz n,
+    os_memsz *n_read)
+{
+    iocStreamerState
+        state;
+
+    os_char
+        state_bits;
+
+    os_int
+        buf_sz,
+        head,
+        tail,
+        rdnow,
+        nbytes;
+
+    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0) state = IOC_STREAM_IDLE;
+
+    nbytes = 0;
+    switch (streamer->frd_cmd)
+    {
+        default:
+        case IOC_STREAM_IDLE:
+            if (state == IOC_STREAM_RUNNING) break;
+            ioc_sets_int0(signals->select, 111);
+            streamer->frd_tail = 0;
+            ioc_sets_int0(signals->tail, 0);
+            streamer->frd_cmd = IOC_STREAM_RUNNING;
+            ioc_sets_int0(signals->cmd, IOC_STREAM_RUNNING);
+            /* continues ... */
+
+        case IOC_STREAM_RUNNING:
+            if (state == IOC_STREAM_IDLE)
+            {
+                goto switch_to_idle;
+            }
+
+            buf_sz = signals->buf->n;
+            head = (os_int)ioc_gets_int(signals->head, &state_bits);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
+            {
+                goto switch_to_idle;
+            }
+            else
+            {
+                tail = streamer->frd_tail;
+
+                if (tail > head)
+                {
+                    rdnow = buf_sz - tail;
+                    if (rdnow > n) rdnow = n;
+                    if (rdnow > 0)
+                    {
+                        state_bits = ioc_moves_array(signals->buf, tail, (os_char*)buf, rdnow,
+                            OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+                        if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto switch_to_idle;
+
+                        tail += rdnow;
+                        if (tail >= buf_sz) tail = 0;
+
+                        streamer->frd_tail = tail;
+                        ioc_sets_int0(signals->tail, tail);
+
+                        buf += rdnow;
+                        n -= rdnow;
+                        nbytes += rdnow;
+                    }
+                }
+
+                if (tail < head)
+                {
+                    rdnow = head - tail;
+                    if (rdnow > n) rdnow = n;
+
+                    if (rdnow > 0)
+                    {
+                        state_bits = ioc_moves_array(signals->buf, tail, (os_char*)buf, rdnow,
+                            OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+                        if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto switch_to_idle;
+
+                        tail += rdnow;
+                        streamer->frd_tail = tail;
+                        ioc_sets_int0(signals->tail, tail);
+
+                        buf += rdnow;
+                        n -= rdnow;
+                        nbytes += rdnow;
+                    }
+                }
+            }
+            break;
+    }
+
+    *n_read = nbytes;
+    return OSAL_SUCCESS;
+
+switch_to_idle:
+    streamer->frd_cmd = IOC_STREAM_IDLE;
+    ioc_sets_int0(signals->cmd, IOC_STREAM_IDLE);
+    return OSAL_STATUS_FAILED;
+}
+#endif
+
+
+#if IOC_STREAMER_SELECT_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -528,7 +992,7 @@ osalStatus ioc_streamer_select(
   @anchor ioc_streamer_initialize
 
   The ioc_streamer_initialize() clears static memory allocated for streamers. This is needed
-  in some microcontroller when RAM is not cleared in soft rebooths.
+  in some microcontroller when RAM is not cleared in soft reboot.
 
   @return  None.
 
@@ -558,9 +1022,10 @@ const osalStreamInterface ioc_streamer_iface
     osal_stream_default_read_value,
     osal_stream_default_get_parameter,
     osal_stream_default_set_parameter,
-#if OSAL_STREAMER_SELECT_SUPPORT
+#if IOC_STREAMER_SELECT_SUPPORT
     ioc_streamer_select};
 #else
     osal_stream_default_select};
 #endif
 
+#endif

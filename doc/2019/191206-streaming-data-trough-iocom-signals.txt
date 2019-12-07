@@ -100,7 +100,7 @@ Stream transfer has two states, IOC_STREAM_IDLE and IOC_STREAM_RUNNING. This is 
 
 If in IOC_STREAM_IDLE state:
     If "cmd" is IOC_STREAM_IDLE, do nothing
-    Otherwise set "head" to zero and switch to "state" = IOC_STREAM_RUNNING
+    Otherwise set "tail" to zero and switch to "state" = IOC_STREAM_RUNNING
 
 If in IOC_STREAM_RUNNING state:
     If "cmd" is IOC_STREAM_IDLE, the transfer has been interrupted: set "state" = IOC_STREAM_IDLE. Same if "cmd" signal is disconnected?
