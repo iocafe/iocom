@@ -21,7 +21,6 @@
 #define IOC_CONTROLLER_STREAMER 1
 
 #define IOC_STREAMER_SUPPORT (IOC_DEVICE_STREAMER || IOC_CONTROLLER_STREAMER)
-#define IOC_STREAMER_SELECT_SUPPORT 0
 #if IOC_STREAMER_SUPPORT
 
 /** Stream interface structure for streamers.
@@ -48,12 +47,12 @@ extern const osalStreamInterface ioc_streamer_iface;
  */
 typedef struct iocStreamerSignals
 {
-    iocSignal *cmd;
-    iocSignal *select;
-    iocSignal *buf;
-    iocSignal *head;
-    iocSignal *tail;
-    iocSignal *state;
+    const iocSignal *cmd;
+    const iocSignal *select;
+    const iocSignal *buf;
+    const iocSignal *head;
+    const iocSignal *tail;
+    const iocSignal *state;
     os_boolean to_device;
 }
 iocStreamerSignals;
@@ -84,15 +83,15 @@ iocStreamerState;
   streaming and who is initiating the transfers. Other end of stream must be marked as device
   and the other not.
 
-  static_signals Signals are allocated statically, do not allocate copies. If not set, signal
-  structures are duplicated in case originals are deleted.
+  static_memory_allocation Signals and parameter structure are allocated statically, do not make
+  copies. If not set, then signal structures are duplicated in case originals are deleted.
 
 ****************************************************************************************************
  */
 typedef struct iocStreamerParams
 {
     os_boolean is_device;
-    // os_boolean static_signals;
+    os_boolean static_memory_allocation;
 
     iocStreamerSignals frd;
     iocStreamerSignals tod;
@@ -117,7 +116,7 @@ typedef struct iocStreamer
      */
     osalStreamHeader hdr;
 
-    iocStreamerParams prm;
+    iocStreamerParams *prm;
 
     iocStreamerState frd_state;
     iocStreamerState frd_cmd;
@@ -206,23 +205,15 @@ void ioc_streamer_set_parameter(
     osalStreamParameterIx parameter_ix,
     os_long value);
 
-/* Wait for new data to read, time to write or operating system event, etc.
- */
-#if IOC_STREAMER_SELECT_SUPPORT
-osalStatus ioc_streamer_select(
-    osalStream *streams,
-    os_int nstreams,
-    osalEvent evnt,
-    osalSelectData *selectdata,
-    os_int timeout_ms,
-    os_int flags);
-#endif
-
-
 /* Initialize streamer data structure.
  */
 void ioc_streamer_initialize(
     void);
+
+/* Keep control stream alive.
+ */
+void ioc_run_control_stream(
+    iocStreamerParams *params);
 
 /*@}*/
 

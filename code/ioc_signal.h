@@ -193,8 +193,11 @@ iocValue;
 
 /* Shorter markings when we dot care to set state bits ourselves.
  */
-#define ioc_sets_int0(s, v) ioc_sets_int((s), (v), OSAL_STATE_CONNECTED);
-#define ioc_sets_double0(s, v) ioc_sets_double((s), (v), OSAL_STATE_CONNECTED);
+#define ioc_sets0_int(s, v) ioc_sets_int((s), (v), OSAL_STATE_CONNECTED);
+#define ioc_sets0_double(s, v) ioc_sets_double((s), (v), OSAL_STATE_CONNECTED);
+#define ioc_gets0_int(s, v) ioc_gets_int((s), (v), OS_NULL);
+#define ioc_gets0_double(s, v) ioc_gets_double((s), (v), OS_NULL);
+
 
 /** 
 ****************************************************************************************************

@@ -47,6 +47,12 @@ static os_char
         GINA_EXP_MBLK_SZ, GINA_IMP_MBLK_SZ)
         + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)];
 
+/* Streamer for transferring IO device configuration and flash program. The streamer is used
+   to transfer a stream using buffer within memory block. This static structure selects which
+   signals are used for straming data between the controller and IO device.
+ */
+static iocStreamerParams ioc_ctrl_stream = IOBOARD_DEFAULT_CTRL_STREAM;
+
 
 /**
 ****************************************************************************************************
@@ -151,13 +157,12 @@ osalStatus osal_loop(
     void *app_context)
 {
     /* Keep the communication alive. If data is received from communication, the
-       ioboard_communication_callback() will be called.
+       ioboard_communication_callback() will be called. Move data data synchronously
+       to incomong memory block.
      */
     ioc_run(&ioboard_communication);
-
-    /* Move data data synchronously to incomong memory block.
-     */
     ioc_receive(&ioboard_import);
+    ioc_run_control_stream(&ioc_ctrl_stream);
 
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
@@ -172,7 +177,6 @@ osalStatus osal_loop(
     /* The devicedir call is here for testing only, take away.
      */
     io_device_console(&ioboard_communication);
-
 
     /* Move data synchronously from outgoing memory block.
      */
