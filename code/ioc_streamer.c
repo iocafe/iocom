@@ -6,6 +6,10 @@
   @version 1.0
   @date    6.12.2019
 
+  Ther end of the stream routed trough memory block is flagged as controller and the other as
+  device. Controller is the "boss" who starts the transfers. Transfer ends either when the
+  while file, etc, has been transferred, or the controller interrupts the transfer.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -56,19 +60,10 @@ static osalStatus ioc_streamer_controller_read(
 /**
 ****************************************************************************************************
 
-  @brief Open a streamer port.
+  @brief Open a stream.
   @anchor ioc_streamer_open
 
-  The ioc_streamer_open() function opens a streamer port.
-
-  Example:
-    osalStream handle;
-    handle = ioc_streamer_open("ttyS30,baud=115200", OS_NULL, OS_NULL, OSAL_STREAM_SELECT);
-    if (handle == OS_NULL)
-    {
-        osal_debug_error("Unable to open streamer port");
-        ...
-    }
+  The ioc_streamer_open() function opens a stream trough memory buffer.
 
   @param  parameters Not used.
   @param  option Pointer to streamer set parameter up structure.
@@ -77,16 +72,10 @@ static osalStatus ioc_streamer_controller_read(
           This parameter can be OS_NULL, if no status code is needed.
 
   @param  flags Flags for creating the streamer. Bit fields, combination of:
-          - OSAL_STREAM_NO_SELECT: Open streamer without select functionality.
-          - OSAL_STREAM_SELECT: Open streamer with select functionality (default).
+          - OSAL_STREAM_WRITE
+          - OSAL_STREAM_READ
 
-          At the moment, select support flag has no impact on Linux. If define ??????????????????????????????????????????????????????????????
-          IOC_STREAMER_SELECT_SUPPORT is 1 and select is called, it works. Anyhow flag should
-          be set correctly for compatibility with other operating systems. If there are
-          flags which are unknown to this function, these are simply ignored.
-          See @ref osalStreamFlags "Flags for Stream Functions" for full list of stream flags.
-
-  @return Stream pointer representing the streamer port, or OS_NULL if memory allocation failed.
+  @return Stream handle, or OS_NULL if memory allocation failed.
 
 ****************************************************************************************************
 */
@@ -136,14 +125,14 @@ getout:
 /**
 ****************************************************************************************************
 
-  @brief Close streamer port.
+  @brief Close the stream,
   @anchor ioc_streamer_close
 
   The ioc_streamer_close() function closes a streamer port, earlier opened by the ioc_streamer_open()
   function. All resource related to the streamer port are freed. Any attemp to use the streamer after
   this call may result in crash.
 
-  @param   stream Stream pointer representing the streamer port. After this call stream
+  @param   stream Stream handle. After this call stream
            pointer will point to invalid memory location.
   @return  None.
 
@@ -181,7 +170,7 @@ void ioc_streamer_close(
 /**
 ****************************************************************************************************
 
-  @brief Flush data to the stream.
+  @brief Flush data to the stream
   @anchor ioc_streamer_flush
 
   Some implementations of the ioc_streamer_flush() function flushes data to be written to stream
@@ -193,7 +182,7 @@ void ioc_streamer_close(
   previously, the stream may have stored buffered data to avoid blocking. This is not necessary
   for every stream implementation, but call it anyhow for code portability.
 
-  @param   stream Stream pointer representing the streamer port.
+  @param   stream Stream handle.
   @param   flags Bit fields. OSAL_STREAM_CLEAR_RECEIVE_BUFFER clears receive
            buffer and OSAL_STREAM_CLEAR_TRANSMIT_BUFFER transmit buffer.
            See @ref osalStreamFlags "Flags for Stream Functions" for full list of flags.
@@ -245,13 +234,13 @@ osalStatus ioc_streamer_flush(
 /**
 ****************************************************************************************************
 
-  @brief Write data to streamer port.
+  @brief Write data to the stream
   @anchor ioc_streamer_write
 
-  The ioc_streamer_write() function writes up to n bytes of data from buffer to streamer port.
+  The ioc_streamer_write() function writes up to n bytes of data from buffer to the stream,
 
-  @param   stream Stream pointer representing the streamer port.
-  @param   buf Pointer to the beginning of data to place into the streamer port.
+  @param   stream Stream handle.
+  @param   buf Pointer to the beginning of data to place into the the stream,
   @param   n Maximum number of bytes to write.
   @param   n_written Pointer to integer into which the function stores the number of bytes
            actually written to streamer port, which may be less than n if there is not enough space
@@ -302,12 +291,12 @@ osalStatus ioc_streamer_write(
 /**
 ****************************************************************************************************
 
-  @brief Read data from streamer port.
+  @brief Read data from the stream
   @anchor ioc_streamer_read
 
   The ioc_streamer_read() function reads up to n bytes of data from streamer port into buffer.
 
-  @param   stream Stream pointer representing the streamer port.
+  @param   stream Stream handle.
   @param   buf Pointer to buffer to read into.
   @param   n Maximum number of bytes to read. The data buffer must large enough to hold
            at least this many bytes.
@@ -518,14 +507,15 @@ switch_to_idle:
   @anchor ioc_streamer_device_read
 
   The ioc_streamer_device_read() function handles controller reveiving data from
-  IO device. Stream transfer has two states, IOC_STREAM_IDLE and IOC_STREAM_RUNNING. This is in "state" signal.
+  IO device. Stream transfer has two "states", IOC_STREAM_IDLE and IOC_STREAM_RUNNING.
 
   If in IOC_STREAM_IDLE state:
     If "cmd" is IOC_STREAM_IDLE, do nothing
     Otherwise set "tail" to zero and switch to "state" = IOC_STREAM_RUNNING
 
   If in IOC_STREAM_RUNNING state:
-    If "cmd" is IOC_STREAM_IDLE, the transfer has been interrupted: set "state" = IOC_STREAM_IDLE. Same if "cmd" signal is disconnected?
+    If "cmd" is IOC_STREAM_IDLE, the transfer has been interrupted: set "state" = IOC_STREAM_IDLE.
+     Same if "cmd" signal is disconnected?
     Otherwise move as much data as we can from tail position, and update tail.
     if "cmd" is IOC_STREAM_COMPLETED, set "state" = IOC_STREAM_IDLE.
 
@@ -658,15 +648,17 @@ switch_to_idle:
   @anchor ioc_streamer_controller_write
 
   The ioc_streamer_controller_write() function handles a controller writing data to stream.
-  Controller can be in IOC_STREAM_IDLE, IOC_STREAM_RUNNING or IOC_STREAM_COMPLETED command (in "cmd")
+  Controller can be in IOC_STREAM_IDLE, IOC_STREAM_RUNNING or IOC_STREAM_COMPLETED command "cmd".
 
   If "cmd" is IOC_STREAM_IDLE:
       If "state" is not IOC_STREAM_IDLE, do nothing. We are waiting for IO device to finish.
-      Otherwise if controller wants to start the transfer, set "select" to ? (app spefific), "head" = 0 and "cmd" = IOSTREAM_RUNNING
+      Otherwise if controller wants to start the transfer, set "select" to ? (app spefific),
+      "head" = 0 and "cmd" = IOSTREAM_RUNNING
 
   if "cmd" is IOC_STREAM_RUNNING:
-      If "state" is IOC_STREAM_RUNNING: Write as much data to buffer as available and fits between tail and head and move head.
-      If all data has been written and "state" is IOC_STREAM_RUNNING, set "cmd" to IOC_STREAM_COMPLETED.
+      If "state" is IOC_STREAM_RUNNING: Write as much data to buffer as available and fits
+      between tail and head and move head. If all data has been written and "state" is
+      IOC_STREAM_RUNNING, set "cmd" to IOC_STREAM_COMPLETED.
       If controller want to interrupt the transfer, it sets "cmd" to IOC_STREAM_IDLE.
 
   Is cmd is IOC_STREAM_COMPLETED:
@@ -677,8 +669,8 @@ switch_to_idle:
   @param   buf Pointer to buffer to write from.
   @param   n Maximum number of bytes to write.
   @param   n_written Pointer to integer into which the function stores the number of bytes
-           actually written, which may be less than n if there is not space (yet) in outgoing buffer.
-           If the function fails n_written is set to zero.
+           actually written, which may be less than n if there is not space (yet) in outgoing
+           buffer. If the function fails n_written is set to zero.
 
   @return  OSAL_SUCCESS to indicate success.
 
@@ -988,7 +980,7 @@ osalStatus ioc_streamer_select(
 /**
 ****************************************************************************************************
 
-  @brief Initialize streamer data structure.
+  @brief Initialize memory block streamer data structure.
   @anchor ioc_streamer_initialize
 
   The ioc_streamer_initialize() clears static memory allocated for streamers. This is needed
