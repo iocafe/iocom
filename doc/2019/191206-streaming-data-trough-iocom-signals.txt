@@ -1,20 +1,6 @@
 Streaming data,
 sketching notes 6.12.2019/pekka
 
-** IO device flash program transfer signals (-> IO device)
-
-conf_exp
-
-  prog_state
-  prog_tail
-
-conf_imp
-
-  prog_cmd
-  prog_select
-  prog_buf
-  prog_head
-
 
 ** Signals for camera stream transfer from IO device (<- IO device)
 
@@ -32,6 +18,7 @@ imp
   
 
 ** Signals for configuration file transfer to IO device (-> IO device, tod = to device)
+   Flso IO device flash program transfer 
 
 conf_exp
 
@@ -46,7 +33,7 @@ conf_imp
   tod_head
 
 
-** Signals for configuration file transfer frin  IO device (<- IO device, frd = from device)
+** Signals for configuration file transfer from IO device (<- IO device, frd = from device)
 
 conf_exp
 

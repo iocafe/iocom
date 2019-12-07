@@ -538,6 +538,7 @@ static void Signal_set_array(
     SignalSetParseState *state)
 {
     os_memsz buf_sz, type_sz;
+    os_int offset = 0;
 
     /* If we need more space than we have in small fixed buffer, allocate.
      */
@@ -556,7 +557,7 @@ static void Signal_set_array(
 
     /* Write always all values in array, even if caller would provides fewer. Rest will be zeros.
      */
-    ioc_movex_array_signal(state->signal, state->buf, state->max_values,
+    ioc_moves_array(state->signal, offset, state->buf, state->max_values,
         OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
 
     /* If we allocated extra buffer space, free it.
@@ -745,6 +746,7 @@ static PyObject *Signal_get_array(
     os_int i;
     os_char state_bits, *buf;
     os_char fixbuf[64];
+    os_int offset = 0;
 
     /* If we need more space than we have in small fixed buffer, allocate.
      */
@@ -759,7 +761,7 @@ static PyObject *Signal_get_array(
 
     /* Read values.
      */
-    state_bits = ioc_movex_array_signal(state->signal, buf, state->max_values,
+    state_bits = ioc_moves_array(state->signal, offset, buf, state->max_values,
         OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC);
 
     if (!state->nro_values)

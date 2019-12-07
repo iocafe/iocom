@@ -130,11 +130,11 @@ void ioc_movex_signals(
             if (flags & IOC_SIGNAL_WRITE)
             {
                 osal_int_to_str(nbuf, sizeof(nbuf), vv[i].value.l);
-                vv[i].state_bits = ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
+                vv[i].state_bits = ioc_moves_str(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
             }
             else
             {
-                vv[i].state_bits = ioc_movex_str_signal(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
+                vv[i].state_bits = ioc_moves_str(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
                 vv[i].value.l = osal_str_to_int(nbuf, OS_NULL);
             }
             goto nextone;
@@ -610,9 +610,9 @@ os_double ioc_getx_double(
 ****************************************************************************************************
 
   @brief Read or write one string from/to memory block.
-  @anchor ioc_movex_str_signal
+  @anchor ioc_moves_str
 
-  The ioc_movex_str_signal() function reads or writes one string signal from or to memory
+  The ioc_moves_str() function reads or writes one string signal from or to memory
   block.
 
   The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string
@@ -639,7 +639,7 @@ os_double ioc_getx_double(
 
 ****************************************************************************************************
 */
-os_char ioc_movex_str_signal(
+os_char ioc_moves_str(
     const iocSignal *signal,
     os_char *str,
     os_memsz str_sz,
@@ -820,7 +820,7 @@ os_char ioc_movex_str(
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = (os_short)str_sz;
 
-    state_bits = ioc_movex_str_signal(&signal, str, str_sz, state_bits, flags);
+    state_bits = ioc_moves_str(&signal, str, str_sz, state_bits, flags);
 
     return state_bits;
 }
@@ -830,9 +830,9 @@ os_char ioc_movex_str(
 ****************************************************************************************************
 
   @brief Read or write array from/to memory block.
-  @anchor ioc_movex_str_signal
+  @anchor ioc_moves_str
 
-  The ioc_movex_array_signal() function reads or writes array as one from or to memory
+  The ioc_moves_array() function reads or writes array as one from or to memory
   block.
 
   The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string
@@ -848,7 +848,10 @@ os_char ioc_movex_str(
 
   @param   signal Pointer to signal structure. This holds memory address, value,
            state bits and data type.
-  @param   str Pointer to array buffer
+  @param   offset 0 to start write from beginning of array. But there can be offset to write
+           if less than array size elements are written. Thisis needed for ring buffers, etc.
+           Offset cannot be used for OS_BOOLEAN type.
+  @param   array Pointer to array buffer
   @param   Number of elements in array.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
            operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT and
@@ -860,8 +863,9 @@ os_char ioc_movex_str(
 
 ****************************************************************************************************
 */
-os_char ioc_movex_array_signal(
+os_char ioc_moves_array(
     const iocSignal *signal,
+    os_int offset,
     void *array,
     os_int n,
     os_char state_bits,
@@ -910,10 +914,10 @@ os_char ioc_movex_array_signal(
     /* If address is outside the memory block.
      */
     addr = signal->addr;
-    nn = signal->n;
+    nn = n;
     if (type_id == OS_BOOLEAN) nn = (nn == 1 ? 0 : (nn + 7) >> 3);
 
-    if (addr < 0 || addr + nn * type_sz >= mblk->nbytes)
+    if (addr < 0 || addr + (offset + nn) * type_sz >= mblk->nbytes)
     {
         state_bits = 0;
         osal_debug_error("Write out of memory block's' address space");
@@ -938,7 +942,7 @@ os_char ioc_movex_array_signal(
         {
             state_bits &= ~OSAL_STATE_CONNECTED;
         }
-        if (signal->n < n) n = signal->n;
+        if (signal->n < n + offset) n = signal->n - offset;
 
         /* Pack os_boolean as bits.
          */
@@ -973,12 +977,12 @@ os_char ioc_movex_array_signal(
             }
 
             ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n) /* no -1, we need also state byte */);
-
         }
 
         else
         {
             *(p++) = state_bits;
+            p += offset * type_sz;
             ioc_byte_ordered_copy(p, array, n * type_sz, type_sz);
             ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n * type_sz) /* no -1, we need also state byte */);
         }
@@ -994,7 +998,7 @@ os_char ioc_movex_array_signal(
         {
             state_bits &= ~OSAL_STATE_CONNECTED;
         }
-        if (signal->n < n) n = signal->n;
+        if (signal->n < n + offset) n = signal->n - offset;
 
         /* Unpack os_boolean array from bits.
          */
@@ -1024,6 +1028,7 @@ os_char ioc_movex_array_signal(
         }
         else
         {
+            p += offset;
             ioc_byte_ordered_copy(array, p, n * type_sz, type_sz);
         }
     }
@@ -1049,10 +1054,11 @@ goon:
   The ioc_movex_array() function reads or writes an array as one signal.
 
   @param   handle Memory block handle.
-  @param   signal Pointer to signal structure. This holds memory address, value,
-           state bits and data type.
-  @param   str Pointer to string buffer
-  @param   str_sz String buffer size in bytes (including terminating NULL character).
+  @param   addr Memory address where array begins (position of state bits),
+  @param   offset 0 to start write from beginning of array. But there can be offset to write
+           if less than array size elements are written. Thisis needed for ring buffers, etc.
+  @param   array Pointer to array data
+  @param   n Number of elements in array.
   @oaram   state_bits State bits. This can have OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
@@ -1067,6 +1073,7 @@ goon:
 os_char ioc_movex_array(
     iocHandle *handle,
     os_int addr,
+    os_int offset,
     void *array,
     os_int n,
     os_char state_bits,
@@ -1080,7 +1087,7 @@ os_char ioc_movex_array(
     signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
     signal.n = n;
 
-    return ioc_movex_array_signal(&signal, array, n, state_bits, flags);
+    return ioc_moves_array(&signal, offset, array, n, state_bits, flags);
 }
 
 

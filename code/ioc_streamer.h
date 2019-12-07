@@ -28,11 +28,6 @@ extern const osalStreamInterface ioc_streamer_iface;
  */
 #define OSAL_STREAMER_IFACE &ioc_streamer_iface
 
-
-/* Define 1 to enable bidirectional streamer support.
- */
-#define IOC_SUPPORT_BIDIRECTIONAL_STREAMER 1
-
 /* Maximum number of streamers when using static memory allocation.
  */
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION == 0
@@ -62,6 +57,22 @@ iocStreamerSignals;
 /**
 ****************************************************************************************************
 
+  @name Streamer states.
+
+****************************************************************************************************
+ */
+typedef enum
+{
+    IOC_STREAM_IDLE = 0,
+    IOC_STREAM_RUNNING = 1,
+    IOC_STREAM_COMPLETED = 2
+}
+iocStreamerState;
+
+
+/**
+****************************************************************************************************
+
   @name Parameter structure for opening a streamer (options).
 
   is_device set to OS_TRUE if this is IO device end of communication. This effects logic of
@@ -78,10 +89,8 @@ typedef struct iocStreamerParams
     os_boolean is_device;
     // os_boolean static_signals;
 
-    iocStreamerSignals s1;
-#if IOC_SUPPORT_BIDIRECTIONAL_STREAMER
-    iocStreamerSignals s2;
-#endif
+    iocStreamerSignals frd;
+    iocStreamerSignals tod;
 }
 iocStreamerParams;
 
@@ -101,6 +110,9 @@ typedef struct iocStreamer
     osalStreamHeader hdr;
 
     iocStreamerParams prm;
+
+    iocStreamerState frd_state;
+    os_int frd_head;
 
     os_boolean used;
 }

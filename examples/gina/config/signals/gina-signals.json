@@ -70,7 +70,7 @@
         "name": "transfer to device",
         "signals": [
           {"name": "tod_state", "type": "char"},
-          {"name": "tod_tail", "type": "short"}
+          {"name": "tod_tail", "type": "int"}
         ]
       },
       {
@@ -78,7 +78,7 @@
         "signals": [
           {"name": "frd_state", "type": "char"},
           {"name": "frd_buf", "type": "uchar", "array": 257},
-          {"name": "frd_head", "type": "short"}
+          {"name": "frd_head", "type": "int"}
         ]
       }
     ]
@@ -94,7 +94,7 @@
           {"name": "tod_cmd", "type": "char"},
           {"name": "tod_select", "type": "char"},
           {"name": "tod_buf", "type": "uchar", "array": 513},
-          {"name": "tod_head", "type": "short"}
+          {"name": "tod_head", "type": "int"}
         ]
       },
       {
@@ -102,7 +102,7 @@
         "signals": [
           {"name": "frd_cmd", "type": "char"},
           {"name": "frd_select", "type": "uchar"},
-          {"name": "frd_tail", "type": "short"}
+          {"name": "frd_tail", "type": "int"}
         ]
       }
     ]
