@@ -27,9 +27,6 @@
 static iocStreamer ioc_streamer[IOC_MAX_STREAMERS];
 #endif
 
-/* Control stream
- */
-static osalStream ioc_cs;
 
 static osalStatus ioc_streamer_device_write(
     iocStreamer *streamer,
@@ -59,6 +56,14 @@ static osalStatus ioc_streamer_controller_read(
     os_memsz n,
     os_memsz *n_read);
 
+
+void ioc_ctrl_stream_from_device(
+    iocControlStreamState *ctrl,
+    iocStreamerParams *params);
+
+void ioc_ctrl_stream_to_device(
+    iocControlStreamState *ctrl,
+    iocStreamerParams *params);
 
 /**
 ****************************************************************************************************
@@ -946,6 +951,65 @@ switch_to_idle:
 /**
 ****************************************************************************************************
 
+  @brief Get serial port parameter.
+  @anchor osal_streamer_get_parameter
+
+  The osal_streamer_get_parameter() function gets a parameter value. Here we just call the default
+  implementation for streams.
+
+  @param   stream Stream pointer representing the serial.
+  @param   parameter_ix Index of parameter to get. Use OSAL_STREAM_TX_AVAILABLE to get
+           how much empty space there is in write buffer.
+           See @ref osalStreamParameterIx "stream parameter enumeration" for the list.
+  @return  Parameter value.
+
+****************************************************************************************************
+*/
+os_long osal_streamer_get_parameter(
+    osalStream stream,
+    osalStreamParameterIx parameter_ix)
+{
+    iocStreamer *streamer;
+    iocStreamerSignals *signals;
+    os_int buf_sz, head, tail, space_available, buffered_bytes;
+    os_boolean is_device;
+    os_char state_bits;
+
+    if (parameter_ix == OSAL_STREAM_TX_AVAILABLE)
+    {
+        if (stream == OS_NULL) return 0;
+        streamer = (iocStreamer*)stream;
+
+        is_device = streamer->prm->is_device;
+
+        signals = is_device ? &streamer->prm->frd : &streamer->prm->tod;
+
+        buf_sz = signals->buf->n;
+        tail = (os_int)ioc_gets_int(signals->tail, &state_bits);
+
+        if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+        {
+            return 0;
+        }
+        else
+        {
+            head = is_device ? streamer->frd_head : streamer->tod_head;
+
+            buffered_bytes = head - tail;
+            if (buffered_bytes < 0) buffered_bytes += buf_sz;
+
+            space_available = buf_sz - buffered_bytes - 1;
+        }
+        return space_available;
+    }
+
+    return osal_stream_default_get_parameter(stream, parameter_ix);
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Initialize memory block streamer data structure.
   @anchor ioc_streamer_initialize
 
@@ -962,8 +1026,6 @@ void ioc_streamer_initialize(
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION == 0
     os_memclear(ioc_streamer, sizeof(ioc_streamer));
 #endif
-
-    ioc_cs = OS_NULL;
 }
 
 
@@ -977,39 +1039,114 @@ void ioc_streamer_initialize(
   to transfer a stream using buffer within memory block. This static structure selects which
   signals are used for straming data between the controller and IO device.
 
+  This function must be called from one thread at a time.
+
+  @param   ctrl IO device control stream transfer state structure.
   @param   params Parameters for the streamer.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_run_control_stream(
+    iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
     iocStreamerState cmd;
+    osPersistentBlockNr select;
     os_char state_bits;
 
-    /* If we do not have open control stream, see if we need to open one
+
+    /* If we do not have open device->controller stream, check if we can open one.
      */
-    if (ioc_cs == OS_NULL)
+    if (ctrl->frd == OS_NULL)
     {
         cmd = (iocStreamerState)ioc_gets_int(params->frd.cmd, &state_bits);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
-            ioc_cs = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_WRITE);
-        }
+            select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
+            ctrl->frd = ioc_streamer_open(OS_NULL, params, &ctrl->frd_status, OSAL_STREAM_WRITE);
 
-        else
+            ctrl->fdr_persistent = os_persistent_open(select, OSAL_STREAM_READ);
+        }
+    }
+
+    /* If we do not have open controller->device stream, check if we can open one.
+     */
+    if (ctrl->frd)
+    {
+        ioc_ctrl_stream_from_device(ctrl, params);
+    }
+
+
+    /* If we do not have open controller->device stream, check if we can open one.
+     */
+    if (ctrl->tod == OS_NULL)
+    {
+        cmd = (iocStreamerState)ioc_gets_int(params->tod.cmd, &state_bits);
+        if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
-            cmd = (iocStreamerState)ioc_gets_int(params->tod.cmd, &state_bits);
-            if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
-            {
-                ioc_cs = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_READ);
-            }
-        }
+            select = (osPersistentBlockNr)ioc_gets0_int(params->tod.select);
 
-        if (ioc_cs == OS_NULL) return;
+            ctrl->tod = ioc_streamer_open(OS_NULL, params, &ctrl->tod_status, OSAL_STREAM_READ);
+
+            ctrl->tod_persistent = os_persistent_open(select, OSAL_STREAM_WRITE);
+        }
+   }
+
+    /* If we do not have open controller->device stream, check if we can open one.
+     */
+    if (ctrl->tod)
+    {
+        ioc_ctrl_stream_to_device(ctrl, params);
     }
 }
+
+
+void ioc_ctrl_stream_from_device(
+    iocControlStreamState *ctrl,
+    iocStreamerParams *params)
+{
+    os_char buf[256];
+    os_memsz n_written;
+    os_memsz bytes;
+
+    /* If we need to can read more data
+     */
+    if (ctrl->frd_status == OSAL_SUCCESS)
+    {
+        bytes = osal_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
+
+        if (bytes > sizeof(buf)) bytes = sizeof(buf);
+        ctrl->frd_status = os_persistent_read(ctrl->fdr_persistent, buf, bytes);
+        ctrl->tod_status = ioc_streamer_write(ctrl->frd, buf, bytes, &n_written, OSAL_STREAM_DEFAULT);
+        // if (n_written != bytes) ??;
+
+        os_persistent_close(ctrl->fdr_persistent, 0);
+        ioc_streamer_close(ctrl->frd);
+        ctrl->frd = OS_NULL;
+    }
+}
+
+void ioc_ctrl_stream_to_device(
+    iocControlStreamState *ctrl,
+    iocStreamerParams *params)
+{
+    os_char buf[256];
+    os_memsz n_read;
+
+    /* If we need to can read more data
+     */
+    if (ctrl->tod_status == OSAL_SUCCESS)
+    {
+        ctrl->tod_status = ioc_streamer_read(ctrl->tod, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
+        ctrl->tod_status = os_persistent_write(ctrl->tod_persistent, buf, n_read);
+
+        os_persistent_close(ctrl->tod_persistent, 0);
+        ioc_streamer_close(ctrl->tod);
+        ctrl->tod = OS_NULL;
+    }
+}
+
 
 /** Stream interface for OSAL streamers. This is structure is filled with
     function pointers to memory block streamer implementation.
@@ -1024,7 +1161,7 @@ const osalStreamInterface ioc_streamer_iface
     ioc_streamer_read,
     osal_stream_default_write_value,
     osal_stream_default_read_value,
-    osal_stream_default_get_parameter,
+    osal_streamer_get_parameter,
     osal_stream_default_set_parameter,
     osal_stream_default_select};
 

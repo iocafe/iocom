@@ -676,7 +676,7 @@ static PyObject *Root_set_mblk_param(
     iocroot = root->root;
     if (iocroot == OS_NULL)
     {
-        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
         return NULL;
     }
 
@@ -750,7 +750,7 @@ static PyObject *Root_send_receive(
     iocroot = root->root;
     if (iocroot == OS_NULL)
     {
-        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
         return NULL;
     }
 

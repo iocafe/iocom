@@ -25,7 +25,7 @@ typedef struct
 {
     PyObject_HEAD
 
-    /* Pointer to python toot object, notice reference counting.
+    /** Pointer to python toot object, notice reference counting.
      */
     Root *pyroot;
 

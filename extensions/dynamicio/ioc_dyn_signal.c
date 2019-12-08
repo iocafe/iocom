@@ -295,6 +295,10 @@ iocDynamicSignal *ioc_setup_signal_by_identifiers(
     signal->n = dsignal->n;
     signal->flags = dsignal->flags;
 
+    /* If we already got handle resolved by another signal using same handle, no need to redo.
+     */
+    if (signal->handle->mblk) return dsignal;
+
     /* Check if we already have shortcut. This is much faster than
      * doing tough all memory blocks if there is many networks.
      */

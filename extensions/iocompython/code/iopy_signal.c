@@ -93,17 +93,11 @@ static PyObject *Signal_new(
     iocIdentifiers *identifiers;
 
     const char
-        *io_path = NULL,
-        *network_name = NULL;
-
-    const os_char
-        *topnet,
-        *req_topnet;
+        *io_path = NULL;
 
     static char *kwlist[] = {
         "root",
         "io_path",
-        "network_name",
         NULL
     };
 
@@ -121,8 +115,8 @@ static PyObject *Signal_new(
     signal->handle = handle;
     self->ncolumns = 1;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os|s",
-         kwlist, &pyroot, &io_path, &network_name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os",
+         kwlist, &pyroot, &io_path))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         goto failed;
@@ -130,7 +124,7 @@ static PyObject *Signal_new(
 
     if (!PyObject_IsInstance(pyroot, (PyObject *)&RootType))
     {
-        PyErr_SetString(iocomError, "The root argument is not an instance of the Root class");
+        PyErr_SetString(iocomError, "Root argument is invalid");
         goto failed;
     }
 
@@ -138,32 +132,16 @@ static PyObject *Signal_new(
     iocroot = root->root;
     if (iocroot == OS_NULL)
     {
-        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
         goto failed;
     }
 
     ioc_iopath_to_identifiers(iocroot, identifiers, io_path, IOC_EXPECT_SIGNAL);
 
-    /* We do allow access between device networks, as long as these are subnets of the same
-       top level network. This is useful to allow subnets in large IO networks. Care must be
-       taken because here this could become a security vunerability.
-     */
-    if (network_name) if (*network_name != '\0') /* ?????????????????????? IS THIS REALLY NEEDED, CAN WE JUST HAVE NETWORK NAME IN PATH ONLY ?????????????????? */
-    {
-        topnet = os_strchr((os_char*)network_name, '.');
-        topnet = topnet ? topnet + 1 : network_name;
-        req_topnet = os_strchr(identifiers->network_name, '.');
-        req_topnet = req_topnet ? req_topnet + 1 : req_topnet;
-        if (os_strcmp(topnet, req_topnet))
-        {
-            os_strncpy(identifiers->network_name, network_name, IOC_NETWORK_NAME_SZ);
-        }
-    }
-
     self->status = OSAL_SUCCESS;
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Signal.new(%s, %s)\n", io_path, network_name);
+    PySys_WriteStdout("Signal.new(%s)\n", io_path);
 #endif
 
     /* Save root pointer and increment reference count.
@@ -184,8 +162,7 @@ failed:
 
   @brief Destructor.
 
-  The Signal_dealloc function releases the associated Python object. It doesn't do anything
-  for the actual IOCOM signal.
+  The Signal_dealloc function releases the associated Python object.
 
   @param   self Pointer to the python object.
   @return  None.

@@ -83,7 +83,7 @@ static PyObject *EndPoint_new(
 
     if (!PyObject_IsInstance(pyroot, (PyObject *)&RootType))
     {
-        PyErr_SetString(iocomError, "The root argument is not an instance of the Root class");
+        PyErr_SetString(iocomError, "Root argument is invalid");
         goto failed;
     }
 
@@ -91,7 +91,7 @@ static PyObject *EndPoint_new(
     iocroot = root->root;
     if (iocroot == OS_NULL)
     {
-        PyErr_SetString(iocomError, "The root object has been internally deleted");
+        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
         goto failed;
     }
 

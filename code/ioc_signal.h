@@ -195,8 +195,8 @@ iocValue;
  */
 #define ioc_sets0_int(s, v) ioc_sets_int((s), (v), OSAL_STATE_CONNECTED);
 #define ioc_sets0_double(s, v) ioc_sets_double((s), (v), OSAL_STATE_CONNECTED);
-#define ioc_gets0_int(s, v) ioc_gets_int((s), (v), OS_NULL);
-#define ioc_gets0_double(s, v) ioc_gets_double((s), (v), OS_NULL);
+#define ioc_gets0_int(s) ioc_gets_int((s), OS_NULL);
+#define ioc_gets0_double(s) ioc_gets_double((s), OS_NULL);
 
 
 /** 

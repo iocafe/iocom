@@ -38,6 +38,7 @@ extern const osalStreamInterface ioc_streamer_iface;
 #define IOC_MAX_STREAMERS 4
 #endif
 
+
 /**
 ****************************************************************************************************
 
@@ -139,6 +140,30 @@ iocStreamer;
 /**
 ****************************************************************************************************
 
+  @name IO device control stream transfer state structure.
+
+****************************************************************************************************
+ */
+typedef struct
+{
+    /* Fom device
+     */
+    osalStream frd;
+    osalStatus frd_status;
+    osPersistentHandle *fdr_persistent;
+
+    /* To device
+     */
+    osalStream tod;
+    osalStatus tod_status;
+    osPersistentHandle *tod_persistent;
+}
+iocControlStreamState;
+
+
+/**
+****************************************************************************************************
+
   @name OSAL Streamer Functions.
 
   These functions implement streamers as OSAL stream. These functions can either be called
@@ -198,21 +223,15 @@ os_long ioc_streamer_get_parameter(
     osalStream stream,
     osalStreamParameterIx parameter_ix);
 
-/* Set streamer parameter.
- */
-void ioc_streamer_set_parameter(
-    osalStream stream,
-    osalStreamParameterIx parameter_ix,
-    os_long value);
-
 /* Initialize streamer data structure.
  */
 void ioc_streamer_initialize(
     void);
 
-/* Keep control stream alive.
+/* Keep control stream alive, move data to/from persistent memory (on IO device).
  */
 void ioc_run_control_stream(
+    iocControlStreamState *ctrl,
     iocStreamerParams *params);
 
 /*@}*/

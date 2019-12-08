@@ -51,8 +51,8 @@ static os_char
    to transfer a stream using buffer within memory block. This static structure selects which
    signals are used for straming data between the controller and IO device.
  */
-static iocStreamerParams ioc_ctrl_stream = IOBOARD_DEFAULT_CTRL_STREAM;
-
+static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM;
+static iocControlStreamState ioc_ctrl_state;
 
 /**
 ****************************************************************************************************
@@ -131,6 +131,10 @@ osalStatus osal_main(
      */
     pins_connect_iocom_library(&pins_hdr);
 
+    /* Make sure that control stream state is clear even after soft reboot.
+     */
+    os_memclear(&ioc_ctrl_state, sizeof(&ioc_ctrl_state));
+
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
@@ -162,7 +166,7 @@ osalStatus osal_loop(
      */
     ioc_run(&ioboard_communication);
     ioc_receive(&ioboard_import);
-    ioc_run_control_stream(&ioc_ctrl_stream);
+    ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.

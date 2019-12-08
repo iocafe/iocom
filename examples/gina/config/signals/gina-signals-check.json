@@ -114,7 +114,7 @@
 					},
 					{
 						"name": "tod_tail",
-						"type": "short"
+						"type": "int"
 					}
 				]
 			},
@@ -132,7 +132,7 @@
 					},
 					{
 						"name": "frd_head",
-						"type": "short"
+						"type": "int"
 					}
 				]
 			}
@@ -159,7 +159,7 @@
 					},
 					{
 						"name": "tod_head",
-						"type": "short"
+						"type": "int"
 					}
 				]
 			},
@@ -176,7 +176,7 @@
 					},
 					{
 						"name": "frd_tail",
-						"type": "short"
+						"type": "int"
 					}
 				]
 			}
