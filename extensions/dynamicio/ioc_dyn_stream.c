@@ -43,6 +43,9 @@ static iocSignal *ioc_stream_set_handle(
     iocSignal *signal,
     iocHandle *handle);
 
+static void ioc_stream_cleanup(
+    iocStream *stream);
+
 static osalStatus ioc_stream_setup_signals(
     iocStream *stream,
     iocStreamSignals *sigs,
@@ -71,18 +74,18 @@ static osalStatus ioc_stream_setup_one(
 iocStream *ioc_open_stream(
     iocRoot *root,
     os_int select,
-    os_char *read_buf_name,
-    os_char *write_buf_name,
-    os_char *exp_mblk_path,
-    os_char *imp_mblk_path,
-    os_char *device_name, /* Optional, may be NULL If in path */
+    const os_char *read_buf_name,
+    const os_char *write_buf_name,
+    const os_char *exp_mblk_path,
+    const os_char *imp_mblk_path,
+    const os_char *device_name, /* Optional, may be NULL If in path */
     os_short device_nr,
-    os_char *network_name, /* Optional, may be NULL If in path */
+    const os_char *network_name, /* Optional, may be NULL If in path */
     os_int flags)
 {
     iocStream *stream;
     iocStreamerParams *prm;
-    os_char *p, nbuf[OSAL_NBUF_SZ];
+    os_char *p;
 
     osal_debug_assert(exp_mblk_path && imp_mblk_path);
 
@@ -99,7 +102,6 @@ iocStream *ioc_open_stream(
         &stream->imp_handle, OS_FALSE);
     prm->tod.to_device = OS_TRUE;
     prm->is_device = OS_FALSE;
-    prm->static_memory_allocation = OS_TRUE;
 
     os_strncpy(stream->frd_signal_name_prefix, read_buf_name, IOC_SIGNAL_NAME_SZ);
     p = os_strchr(stream->frd_signal_name_prefix, '_');
@@ -115,11 +117,10 @@ iocStream *ioc_open_stream(
 
     if (device_name)
     {
-        osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
-        os_strncpy(stream->exp_identifiers.device_name, network_name, IOC_NETWORK_NAME_SZ);
-        os_strncat(stream->exp_identifiers.device_name, nbuf, IOC_NETWORK_NAME_SZ);
-        os_strncpy(stream->imp_identifiers.device_name, network_name, IOC_NETWORK_NAME_SZ);
-        os_strncat(stream->imp_identifiers.device_name, nbuf, IOC_NETWORK_NAME_SZ);
+        os_strncpy(stream->exp_identifiers.device_name, device_name, IOC_NAME_SZ);
+        stream->exp_identifiers.device_nr = device_nr;
+        os_strncpy(stream->imp_identifiers.device_name, device_name, IOC_NAME_SZ);
+        stream->imp_identifiers.device_nr = device_nr;
     }
     if (network_name)
     {
@@ -170,14 +171,34 @@ static iocSignal *ioc_stream_set_handle(
 void ioc_release_stream(
     iocStream *stream)
 {
-    ioc_streamer_close(stream->streamer);
-
-    ioc_release_handle(&stream->exp_handle);
-    ioc_release_handle(&stream->imp_handle);
-
+    ioc_stream_cleanup(stream);
     os_free(stream, sizeof(iocStream));
 }
 
+/* Start writing data to stream.
+ */
+static void ioc_stream_cleanup(
+    iocStream *stream)
+{
+    ioc_streamer_close(stream->streamer);
+    stream->streamer_opened = OS_FALSE;
+    stream->streamer = OS_NULL;
+
+    if (stream->read_buf)
+    {
+
+    }
+
+    if (stream->write_buf)
+    {
+        os_free(stream->write_buf, stream->write_buf_sz);
+        stream->write_buf = OS_NULL;
+    }
+
+
+    ioc_release_handle(&stream->exp_handle);
+    ioc_release_handle(&stream->imp_handle);
+}
 
 
 /* Lock must be on
@@ -226,7 +247,7 @@ static osalStatus ioc_stream_setup_signals(
 
     if (ioc_stream_setup_one(&sigs->cmd, prefix, "cmd", ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->select, prefix, "select", ii, root)) return OSAL_STATUS_FAILED;
-    if (ioc_stream_setup_one(&sigs->buf, prefix, "select", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
+    if (ioc_stream_setup_one(&sigs->buf, prefix, "buf", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->head, prefix, "head", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->tail, prefix, "tail", is_frd ? ii : ei, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->state, prefix, "state", ei, root)) return OSAL_STATUS_FAILED;
@@ -258,17 +279,31 @@ static osalStatus ioc_stream_setup_one(
 void ioc_start_stream_read(
     iocStream *stream)
 {
+    ioc_stream_cleanup(stream);
+    stream->flags = OSAL_STREAM_READ;
 
+    stream->read_buf = osal_stream_buffer_open(OS_NULL,
+        OS_NULL, OS_NULL, OSAL_STREAM_WRITE);
 }
+
 
 /* Start writing data to stream.
  */
 void ioc_start_stream_write(
     iocStream *stream,
     os_char *buf,
-    os_memsz *buf_sz)
+    os_memsz buf_sz)
 {
+    ioc_stream_cleanup(stream);
+    stream->flags = OSAL_STREAM_WRITE;
+
+    stream->write_buf_sz = buf_sz;
+    stream->write_buf = os_malloc(buf_sz, OS_NULL);
+    stream->write_buf_pos = 0;
+    if (stream->write_buf == OS_NULL) return;
+    os_memcpy(stream->write_buf, buf, buf_sz);
 }
+
 
 /* Call run repeatedly until data transfer is complete or has failed.
  */
@@ -276,12 +311,13 @@ osalStatus ioc_run_stream(
     iocStream *stream)
 {
     os_char buf[256];
-    os_memsz n_read;
+    os_memsz n_read, n_written, n;
     osalStatus s;
 
-    if (ioc_stream_try_setup(stream))
+    s = ioc_stream_try_setup(stream);
+    if (s)
     {
-        goto getout;
+        return OSAL_STATUS_PENDING;
     }
 
     if (!stream->streamer_opened)
@@ -289,26 +325,45 @@ osalStatus ioc_run_stream(
         // status->select = ??
 
         stream->streamer = ioc_streamer_open(OS_NULL, &stream->prm, OS_NULL,
-            OSAL_STREAM_READ|OSAL_STREAM_WRITE);
+            stream->flags);
 
         if (stream->streamer == OS_NULL)
         {
-            goto getout;
+            return OSAL_STATUS_FAILED;
         }
         stream->streamer_opened = OS_TRUE;
     }
 
-    // if (flags & OSAL_STREAM_READ)
+    if (stream->streamer == OS_NULL) return OSAL_STATUS_FAILED;
+
+    if (stream->flags & OSAL_STREAM_READ)
     {
         s = ioc_streamer_read(stream->streamer, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
+        if (n_read > 0)
+        {
+            s = osal_stream_buffer_write(stream->read_buf, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
+        }
         if (s)
         {
-            goto getout;
+            ioc_streamer_close(stream->streamer);
+            stream->streamer = OS_NULL;
         }
     }
+    else
+    {
+        n = stream->write_buf_sz - stream->write_buf_pos;
+        if (n > 0)
+        {
+            s = ioc_streamer_write(stream->streamer,
+                stream->write_buf + stream->write_buf_pos,
+                n, &n_written, OSAL_STREAM_DEFAULT);
 
-getout:
-    return OSAL_STATUS_FAILED;
+            stream->write_buf_pos += n_written;
+        }
+
+    }
+
+    return s;
 }
 
 
@@ -320,6 +375,10 @@ os_char *ioc_get_stream_data(
     iocStream *stream,
     os_memsz *buf_sz)
 {
+    if (stream->read_buf)
+    {
+        return osal_stream_buffer_content(stream->read_buf, buf_sz);
+    }
     *buf_sz = 0;
     return OS_NULL;
 }

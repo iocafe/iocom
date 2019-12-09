@@ -52,7 +52,13 @@ iocStreamSignals;
 */
 typedef struct iocStream
 {
+    /** Pointer to IOCOM root object
+     */
     iocRoot *root;
+
+    /** Flags, either OSAL_STREAM_READ or OSAL_STREAM_WRITE.
+     */
+    os_int flags;
 
     /** IOCOM stream parameters.
      */
@@ -89,6 +95,16 @@ typedef struct iocStream
      */
     iocIdentifiers exp_identifiers;
     iocIdentifiers imp_identifiers;
+
+    /** Write buffer, plain buffer allocated with os_malloc. OS_NULL if none.
+     */
+    os_char *write_buf;
+    os_int write_buf_sz;
+    os_int write_buf_pos;
+
+    /** Read buffer, stream buffer class. OS_NULL if none.
+     */
+    osalStream read_buf;
 }
 iocStream;
 
@@ -103,13 +119,13 @@ iocStream;
 iocStream *ioc_open_stream(
     iocRoot *root,
     os_int select,
-    os_char *read_buf_name,
-    os_char *write_buf_name,
-    os_char *exp_mblk_name,
-    os_char *imp_mblk_name,
-    os_char *device_name,
+    const os_char *read_buf_name,
+    const os_char *write_buf_name,
+    const os_char *exp_mblk_name,
+    const os_char *imp_mblk_name,
+    const os_char *device_name,
     os_short device_nr,
-    os_char *network_name,
+    const os_char *network_name,
     os_int flags);
 
 /* Release stream structure.
@@ -127,7 +143,7 @@ void ioc_start_stream_read(
 void ioc_start_stream_write(
     iocStream *stream,
     os_char *buf,
-    os_memsz *buf_sz);
+    os_memsz buf_sz);
 
 /* Call run repeatedly until data transfer is complete or has failed.
  */

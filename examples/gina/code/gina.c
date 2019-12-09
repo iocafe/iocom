@@ -106,6 +106,7 @@ osalStatus osal_main(
     prm.device_name = IOBOARD_DEVICE_NAME;
     os_time(&ti);
     prm.device_nr = ti % 9998 + 1; /* Bad way to create unique device number, very unreliable */
+prm.device_nr = 1;
     prm.network_name = "iocafenet";
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = GINA_IP_ADDRESS;

@@ -102,7 +102,7 @@ extern iocHandle
 
 /* Define for default control stream, to avoid typing it for every IO board.
  */
-#define IOBOARD_DEFAULT_CTRL_STREAM {OS_TRUE, OS_TRUE, \
+#define IOBOARD_DEFAULT_CTRL_STREAM {OS_TRUE, \
     {&gina.conf_imp.frd_cmd, &gina.conf_imp.frd_select, &gina.conf_exp.frd_buf, &gina.conf_exp.frd_head, &gina.conf_imp.frd_tail, &gina.conf_exp.frd_state, OS_FALSE}, \
     {&gina.conf_imp.tod_cmd, &gina.conf_imp.tod_select, &gina.conf_imp.tod_buf, &gina.conf_imp.tod_head, &gina.conf_exp.tod_tail, &gina.conf_exp.tod_state, OS_TRUE}}
 

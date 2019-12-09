@@ -84,15 +84,11 @@ iocStreamerState;
   streaming and who is initiating the transfers. Other end of stream must be marked as device
   and the other not.
 
-  static_memory_allocation Signals and parameter structure are allocated statically, do not make
-  copies. If not set, then signal structures are duplicated in case originals are deleted.
-
 ****************************************************************************************************
  */
 typedef struct iocStreamerParams
 {
     os_boolean is_device;
-    os_boolean static_memory_allocation;
 
     iocStreamerSignals frd;
     iocStreamerSignals tod;

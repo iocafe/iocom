@@ -108,7 +108,6 @@ static PyObject *Stream_new(
     Stream_init_signals(&prm->tod, &self->tod, &self->exp_handle, &self->imp_handle, OS_FALSE);
     prm->tod.to_device = OS_TRUE;
     prm->is_device = OS_FALSE;
-    prm->static_memory_allocation = OS_TRUE;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|sssss",
          kwlist, &pyroot, &read_buf_name, &write_buf_name,
