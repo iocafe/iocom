@@ -24,15 +24,21 @@
 extern iocRoot
     ioboard_communication;
 
-/* To and from controller memory blocks.
+/* To and from controller memory blocks amd handles.
  */
 extern iocMemoryBlock
     ioboard_import_mblk,
     ioboard_export_mblk;
 
 extern iocHandle
-    ioboard_import,
-    ioboard_export;
+    ioboard_imp,
+    ioboard_exp;
+
+/* Configuration memory block handles.
+ */
+extern iocHandle
+    ioboard_conf_imp,
+    ioboard_conf_exp;
 
 /* Communication between controller and the IO board.
  */
@@ -68,7 +74,16 @@ extern iocHandle
 /* Macro to calculate how much additional memory pool we need to publish static device information.
  */
 #define IOBOARD_POOL_DEVICE_INFO(MAX_CONNECTIONS) \
-    sizeof(iocMemoryBlock) + IOBOARD_MAX_CONNECTIONS * sizeof(iocSourceBuffer)
+    sizeof(iocMemoryBlock) + MAX_CONNECTIONS * sizeof(iocSourceBuffer)
+
+/* Macro to calculate how much additional memory pool is needed for conf_imp and conf_exp memory blocks.
+ */
+#define IOBOARD_POOL_IMP_EXP_CONF(MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
+    2 * sizeof(iocMemoryBlock) \
+    + MAX_CONNECTIONS * sizeof(iocSourceBuffer) \
+    + MAX_CONNECTIONS * SEND_BLOCK_SZ * sizeof(ioc_sbuf_item) \
+    + MAX_CONNECTIONS * sizeof(iocTargetBuffer) \
+    + MAX_CONNECTIONS * RECEIVE_BLOCK_SZ * sizeof(ioc_tbuf_item)
 
 /* Macro to get interface by other defines.
  */
@@ -138,6 +153,8 @@ typedef struct
     os_int send_block_sz;
     os_int receive_block_sz;
 
+    /** Static memory pool.
+     */
     os_char *pool;
     os_int pool_sz;
 
@@ -156,6 +173,12 @@ typedef struct
     /** Pointer to static structure defining signals.
      */
     const struct iocDeviceHdr *device_signal_hdr;
+
+    /** Enable configuration import and export memory blocks by setting
+        nonzero block sizes.
+     */
+     os_int conf_send_block_sz;
+     os_int conf_receive_block_sz;
 }
 ioboardParams;
 

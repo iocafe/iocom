@@ -161,7 +161,7 @@ osalStatus osal_main(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_import, ioboard_callback, OS_NULL);
+    ioc_add_callback(&ioboard_imp, ioboard_callback, OS_NULL);
 
     os_get_timer(&ti);
 
@@ -178,13 +178,13 @@ osalStatus osal_main(
            some operation of IO board. The command is eached back in address 2 to allow 
            controller to know that command has been regognized.
          */
-        command = ioc_getp_short(&ioboard_import, 2);
+        command = ioc_getp_short(&ioboard_imp, 2);
         if (command != prev_command) {
             if (command == 1) {
                 // osal_console_write("Command 1, working on it.\n");
             }
             prev_command = command;
-            // ioc_setp_short(&ioboard_export, 2, command);
+            // ioc_setp_short(&ioboard_exp, 2, command);
         }
 
         if (os_elapsed(&ti, 100))

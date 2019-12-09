@@ -52,7 +52,7 @@ typedef struct
      */
     iocStreamSignalsStruct tod;
 
-    /* Buffer names
+    /** Buffer names
      */
     os_char frd_signal_name_prefix[IOC_SIGNAL_NAME_SZ];
     os_char tod_signal_name_prefix[IOC_SIGNAL_NAME_SZ];
@@ -62,10 +62,14 @@ typedef struct
     iocHandle exp_handle;
     iocHandle imp_handle;
 
-    /** Streamer handles
+    /** Streamer handle (ioc_streamer)
      */
-    osalStream frd_strean;
-    osalStream tod_strean;
+    osalStream streamer;
+
+    /** Flag indicating the streamer has been opened successfully and cannot be opened again
+        for this instance of Python API stream object.
+     */
+    os_boolean streamer_opened;
 
     /** Identifiers for the signals.
      */

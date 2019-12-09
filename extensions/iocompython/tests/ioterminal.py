@@ -2,11 +2,11 @@
 import threading
 import queue
 
-def read_kbd_input(inputQueue):
-    print('Ready for keyboard input:')
+def read_kbd_input(root, inputQueue):
     while (True):
         input_str = input()
         inputQueue.put(input_str)
+        root.interrupt_wait()
 
 def run(root):
     global inputQueue
@@ -30,20 +30,23 @@ def run(root):
         if input_str[0] == 'm':
             print(root.print('memory_blocks', arg, arg2))
 
-        if input_str[0] == 'e':
+        elif input_str[0] == 'e':
             print(root.print('end_points'))
 
-        if input_str[0] == 'c':
+        elif input_str[0] == 'c':
             print(root.print('connections'))
 
-        if input_str[0] == 'd':
+        elif input_str[0] == 'd':
             print(root.print('signals', arg, arg2))
+
+        else:
+            print("Unknown command, use something like 'm', 'm data', 'm exp buffers', 'e', 'c', 'd'")
 
     return True
 
-def start():
+def start(root):
     global inputQueue
     inputQueue = queue.Queue()
-    inputThread = threading.Thread(target=read_kbd_input, args=(inputQueue,), daemon=True)
+    inputThread = threading.Thread(target=read_kbd_input, args=(root,inputQueue,), daemon=True)
     inputThread.start()
 

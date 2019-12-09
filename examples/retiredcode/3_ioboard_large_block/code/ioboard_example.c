@@ -17,7 +17,7 @@
     connections.
   - Data transfer synchronized precisely by ioc_receive() and ioc_send() calls - no
     "prm.auto_synchronization = OS_TRUE" -> IOC_AUTO_SYNC flags not set.
-  - Relatively large 10k memory blocks and input memory block ioboard_import is changed as quickly
+  - Relatively large 10k memory blocks and input memory block ioboard_imp is changed as quickly
     as computer can change it.
   - Unnanamed device, device name is empty string and device number is 0.
 
@@ -153,7 +153,7 @@ osalStatus osal_loop(
 
     /* Received data fame up to date.
      */
-    ioc_receive(&ioboard_import);
+    ioc_receive(&ioboard_imp);
 
     /* Write lot of random stuff to simulate vast number of inputs changing
        very quickly.
@@ -162,13 +162,13 @@ osalStatus osal_loop(
     for (i = 0; i<IOBOARD_EXPORT_MBLK_SZ/2; i++)
     {
         j = rand() % IOBOARD_EXPORT_MBLK_SZ;
-        ioc_setp_short(&ioboard_export, j, k);
+        ioc_setp_short(&ioboard_exp, j, k);
         k += 7;
     }
 
     /* Send changes trough communication.
      */
-    ioc_send(&ioboard_export);
+    ioc_send(&ioboard_exp);
 
     return OSAL_SUCCESS;
 }

@@ -40,8 +40,9 @@ signal_conf = ('{'
 
 
 def main():
-    ioterminal.start()
     root = Root('mydevice', device_nr=3, network_name='iocafenet')
+    root.queue_events()
+    ioterminal.start(root)
     myinputs = MemoryBlock(root, 'upward,auto', 'exp', nbytes=256)
 
     data = json2bin(signal_conf)
@@ -55,6 +56,7 @@ def main():
     i = 1
 
     while (ioterminal.run(root)):
+
         hor.set(i)
         i = i + 1
         time.sleep(0.01) 

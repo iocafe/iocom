@@ -105,6 +105,12 @@ void ioc_movex_signals(
          */
         if (!handle_tried)
         {
+            if (handle == OS_NULL)
+            {
+                osal_debug_error("Serious: Moving signal with NULL handle pointer");
+                return;
+            }
+
             handle_tried = OS_TRUE;
             if (flags & IOC_SIGNAL_NO_THREAD_SYNC)
             {

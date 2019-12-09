@@ -18,6 +18,9 @@
 #include "iocompython.h"
 
 
+static void Stream_close_stremer(
+    Stream *self);
+
 static void Stream_init_signals(
     iocStreamerSignals *ptrs,
     iocStreamSignalsStruct *signal_struct,
@@ -98,6 +101,8 @@ static PyObject *Stream_new(
     os_memclear(prm, sizeof(iocStreamerParams));
     os_memclear(&self->exp_handle, sizeof(iocHandle));
     os_memclear(&self->imp_handle, sizeof(iocHandle));
+    self->streamer = OS_NULL;
+    self->streamer_opened = OS_FALSE;
 
     Stream_init_signals(&prm->frd, &self->frd, &self->exp_handle, &self->imp_handle, OS_TRUE);
     Stream_init_signals(&prm->tod, &self->tod, &self->exp_handle, &self->imp_handle, OS_FALSE);
@@ -105,8 +110,8 @@ static PyObject *Stream_new(
     prm->is_device = OS_FALSE;
     prm->static_memory_allocation = OS_TRUE;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|sss",
-         kwlist, &pyroot,  &read_buf_name, &write_buf_name,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|sssss",
+         kwlist, &pyroot, &read_buf_name, &write_buf_name,
         &exp_mblk_path, &imp_mblk_path, &select))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
@@ -197,6 +202,8 @@ static iocSignal *Stream_clear_signal(
 static void Stream_dealloc(
     Stream *self)
 {
+    Stream_close_stremer(self);
+
     ioc_release_handle(&self->exp_handle);
     ioc_release_handle(&self->imp_handle);
 
@@ -231,6 +238,8 @@ static void Stream_dealloc(
 static PyObject *Stream_delete(
     Stream *self)
 {
+    Stream_close_stremer(self);
+
     ioc_release_handle(&self->exp_handle);
     ioc_release_handle(&self->imp_handle);
 
@@ -247,6 +256,14 @@ static PyObject *Stream_delete(
      */
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+
+static void Stream_close_stremer(
+    Stream *self)
+{
+    ioc_streamer_close(self->streamer);
+    self->streamer = OS_NULL;
 }
 
 
@@ -329,9 +346,15 @@ static PyObject *Stream_read_or_write(
     PyObject *kwds,
     os_int flags)
 {
+    PyObject *rval, *bytedata = NULL;
     int nro_bytes = 0;
     Root *root;
     iocRoot *iocroot;
+    os_char *status_text = "hmm";
+    os_char *status_info = "hmm more";
+    os_char buf[256];
+    os_memsz n_read;
+    osalStatus s;
 
     static char *kwlist[] = {
         "n",
@@ -349,36 +372,58 @@ static PyObject *Stream_read_or_write(
     iocroot = root->root;
     if (iocroot == OS_NULL)
     {
-        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
-        Py_RETURN_NONE;
+        status_text = "failed";
+        status_info = "IOCOM root object has been deleted";
+        goto getout;
     }
 
     if (Stream_try_setup(self,  iocroot))
     {
-        osal_trace2("Unable to setup stream transfer, maybe not ready yet");
-        Py_RETURN_NONE;
+        status_text = "pending";
+        status_info = "Unable to setup stream transfer, maybe not ready yet";
+        goto getout;
     }
-#if 0
-    if (never opened)
+
+    if (!self->streamer_opened)
     {
         // status->select = ??
 
-        osalStream ioc_streamer_open(
-            const os_char *parameters,
-            void *option,
-            osalStatus *status,
-            os_int flags);
+        self->streamer = ioc_streamer_open(OS_NULL, &self->prm, OS_NULL,
+            OSAL_STREAM_READ|OSAL_STREAM_WRITE);
+
+        if (self->streamer == OS_NULL)
+        {
+            status_text = "failed";
+            status_info = "Unable to open streamer";
+            goto getout;
+        }
+        self->streamer_opened = OS_TRUE;
     }
 
+    if (flags & OSAL_STREAM_READ)
+    {
+        s = ioc_streamer_read(self->streamer, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
+        if (s)
+        {
+            status_text = "failed";
+            status_info = "Streamer read failed";
+            goto getout;
+        }
+
+        bytedata = PyBytes_FromStringAndSize(buf, n_read);
+    }
+
+getout:
+    rval = PyList_New(2);
+    PyList_SetItem(rval, 0, Py_BuildValue("s", (char *)status_text));
+    PyList_SetItem(rval, 1, bytedata ? bytedata  : Py_BuildValue("s", (char*)status_info));
+    return rval;
 
 /* Close streamer.
- */
 void ioc_streamer_close(
     osalStream stream);
+ */
 
-#endif
-
-    Py_RETURN_NONE;
 }
 
 

@@ -95,11 +95,11 @@ static MyAppContext ioboard_app_context;
 /* Here I create signal structures from C code by hand. Code to create these can
    be also generated from XML by script.
  */
-static iocSignal my_tc_count = {20, 1, OS_SHORT, &ioboard_export};
+static iocSignal my_tc_count = {20, 1, OS_SHORT, &ioboard_exp};
 static os_short my_signal_count;
 static os_timer my_signal_timer;
 
-static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, &ioboard_import};
+static iocSignal my_fc_7_segments = {0, N_LEDS, OS_BOOLEAN, &ioboard_imp};
 
 
 /* Static function prototypes.
@@ -206,7 +206,7 @@ osalStatus osal_main(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_import, ioboard_fc_callback, OS_NULL);
+    ioc_add_callback(&ioboard_imp, ioboard_fc_callback, OS_NULL);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -247,13 +247,13 @@ osalStatus osal_loop(
        some operation of IO board. The command is eached back in address 2 to allow
        controller to know that command has been regognized.
      */
-    command = ioc_getp_short(&ioboard_import, 2);
+    command = ioc_getp_short(&ioboard_imp, 2);
     if (command != acontext->prev_command) {
         if (command == 1) {
             osal_console_write("Command 1, working on it.\n");
         }
         acontext->prev_command = command;
-        ioc_setp_short(&ioboard_export, 2, command);
+        ioc_setp_short(&ioboard_exp, 2, command);
     }
 
     /* Send periodic signal to controller.
@@ -359,8 +359,8 @@ static void ioboard_show_communication_status(
     os_char
         nbuf[32];
 
-    nro_connections = ioc_getp_short(&ioboard_import, IOC_NRO_CONNECTED_STREAMS);
-    drop_count = ioc_getp_int(&ioboard_import, IOC_CONNECTION_DROP_COUNT);
+    nro_connections = ioc_getp_short(&ioboard_imp, IOC_NRO_CONNECTED_STREAMS);
+    drop_count = ioc_getp_int(&ioboard_imp, IOC_CONNECTION_DROP_COUNT);
     if (nro_connections != acontext->prev_nro_connections ||
         drop_count != acontext->prev_drop_count)
     {

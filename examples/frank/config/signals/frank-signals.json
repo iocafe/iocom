@@ -3,7 +3,7 @@
   "mblk": [
   {
     "name": "exp",
-    "handle": "&ioboard_export",
+    "handle": "&ioboard_exp",
     "title": "Exported by 'gina' IO device",
     "groups": [
       {
@@ -38,7 +38,7 @@
 
   {
     "name": "imp",
-    "handle": "&ioboard_import",
+    "handle": "&ioboard_imp",
     "title": "Imported by 'gina' IO device",
     "groups": [
       {

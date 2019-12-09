@@ -215,10 +215,7 @@ def process_mblk(mblk):
     check_valid_name("Memory block", block_name, IOC_NAME_SZ, True)
     handle = mblk.get("handle", "OS_NULL")
     if handle == "OS_NULL":
-        if block_name == "exp":
-           handle = "&ioboard_export"
-        if block_name == "imp":
-           handle = "&ioboard_import"
+        handle = "&ioboard_" + block_name
             
     groups = mblk.get("groups", None)
     if groups == None:

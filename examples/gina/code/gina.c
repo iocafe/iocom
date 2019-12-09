@@ -45,7 +45,9 @@
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
         GINA_EXP_MBLK_SZ, GINA_IMP_MBLK_SZ)
-        + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)];
+        + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)
+        + IOBOARD_POOL_IMP_EXP_CONF(IOBOARD_MAX_CONNECTIONS,
+            GINA_CONF_EXP_MBLK_SZ, GINA_CONF_IMP_MBLK_SZ)];
 
 /* Streamer for transferring IO device configuration and flash program. The streamer is used
    to transfer a stream using buffer within memory block. This static structure selects which
@@ -119,13 +121,16 @@ osalStatus osal_main(
     prm.device_info = gina_config;
     prm.device_info_sz = sizeof(gina_config);
 
+    prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
+    prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
+
     /* Start communication.
      */
     ioboard_start_communication(&prm);
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_import, ioboard_communication_callback, OS_NULL);
+    ioc_add_callback(&ioboard_imp, ioboard_communication_callback, OS_NULL);
 
     /* Connect PINS library to IOCOM library
      */
@@ -165,7 +170,7 @@ osalStatus osal_loop(
        to incomong memory block.
      */
     ioc_run(&ioboard_communication);
-    ioc_receive(&ioboard_import);
+    ioc_receive(&ioboard_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
     /* Read all input pins from hardware into global pins structures. Reading will forward
@@ -184,7 +189,7 @@ osalStatus osal_loop(
 
     /* Move data synchronously from outgoing memory block.
      */
-    ioc_send(&ioboard_export);
+    ioc_send(&ioboard_exp);
 
     return OSAL_SUCCESS;
 }

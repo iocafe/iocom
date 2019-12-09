@@ -1055,7 +1055,6 @@ void ioc_run_control_stream(
     osPersistentBlockNr select;
     os_char state_bits;
 
-
     /* If we do not have open device->controller stream, check if we can open one.
      */
     if (ctrl->frd == OS_NULL)

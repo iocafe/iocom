@@ -2,15 +2,16 @@ from iocompython import Root, EndPoint, Signal, Stream, json2bin
 import ioterminal 
 import time
 
-def network_conf(mblk_name, device_name, network_name):
+def network_conf(device_name, network_name):
     global root, callback_queue
 
     exp_mblk_path = 'conf_exp.' + device_name + '.' + network_name
     imp_mblk_path = 'conf_imp.' + device_name + '.' + network_name
 
     frd = Stream(root, read = "frd_buf", exp = exp_mblk_path, imp = imp_mblk_path, select = 'netconf')
+    print ('UKEMI', frd)
 
-    while True;
+    while True:
         rval, bytedata = frd.read()
         print('Stream: ', rval, bytedata)
 

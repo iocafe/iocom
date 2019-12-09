@@ -9,8 +9,8 @@
   The ioboard_start_communication() should be called at entry to IO board's program and
   if clean up is needed ioboard_end_communication() at exit.
 
-  Memory blocks initialized are ioboard_export (tc = to controller) and
-  ioboard_import (fc = from controller).
+  Memory blocks initialized are ioboard_exp (tc = to controller) and
+  ioboard_imp (fc = from controller).
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -30,9 +30,11 @@ iocMemoryBlock
     ioboard_export_mblk;
 
 iocHandle
-    ioboard_import,
-    ioboard_export,
-    ioboard_dinfo;
+    ioboard_imp,
+    ioboard_exp,
+    ioboard_dinfo,
+    ioboard_conf_imp,
+    ioboard_conf_exp;
 
 static iocEndPoint
     *ioboard_epoint;
@@ -81,14 +83,30 @@ void ioboard_start_communication(
     blockprm.network_name = prm->network_name;
 
     blockprm.mblk_name = "exp";
-    blockprm.nbytes = prm->send_block_sz ? prm->send_block_sz : 256;
+    blockprm.nbytes = prm->send_block_sz;
     blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
-    ioc_initialize_memory_block(&ioboard_export, &ioboard_export_mblk, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_exp, &ioboard_export_mblk, &ioboard_communication, &blockprm);
  
     blockprm.mblk_name = "imp";
-    blockprm.nbytes = prm->receive_block_sz ? prm->receive_block_sz : 256;
+    blockprm.nbytes = prm->receive_block_sz;
     blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
-    ioc_initialize_memory_block(&ioboard_import, &ioboard_import_mblk, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_imp, &ioboard_import_mblk, &ioboard_communication, &blockprm);
+
+    if (prm->conf_send_block_sz)
+    {
+        blockprm.mblk_name = "conf_exp";
+        blockprm.nbytes = prm->conf_send_block_sz;
+        blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
+        ioc_initialize_memory_block(&ioboard_conf_exp, OS_NULL, &ioboard_communication, &blockprm);
+    }
+
+    if (prm->conf_receive_block_sz)
+    {
+        blockprm.mblk_name = "conf_imp";
+        blockprm.nbytes = prm->conf_receive_block_sz;
+        blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
+        ioc_initialize_memory_block(&ioboard_conf_imp, OS_NULL, &ioboard_communication, &blockprm);
+    }
 
     /* Do we publish device information?
      */
