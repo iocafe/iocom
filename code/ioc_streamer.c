@@ -163,7 +163,6 @@ void ioc_streamer_close(
 
     if (streamer->used)
     {
-
         streamer->used = OS_FALSE;
     }
 

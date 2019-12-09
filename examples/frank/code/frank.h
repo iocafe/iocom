@@ -16,5 +16,6 @@
 #include "iocom.h"
 #include "frank_main.h"
 #include "frank_application.h"
+#include "frank_get_netconf.h"
 
 extern iocRoot frank_root;
