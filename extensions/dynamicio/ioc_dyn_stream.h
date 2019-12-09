@@ -52,6 +52,8 @@ iocStreamSignals;
 */
 typedef struct iocStream
 {
+    iocRoot *root;
+
     /** IOCOM stream parameters.
      */
     iocStreamerParams prm;
@@ -101,10 +103,13 @@ iocStream;
 iocStream *ioc_open_stream(
     iocRoot *root,
     os_int select,
-    os_char *read_buf_signal_name,
-    os_char *write_buf_signal_name,
-    os_char *exp_mblk_path,
-    os_char *imp_mblk_path,
+    os_char *read_buf_name,
+    os_char *write_buf_name,
+    os_char *exp_mblk_name,
+    os_char *imp_mblk_name,
+    os_char *device_name,
+    os_short device_nr,
+    os_char *network_name,
     os_int flags);
 
 /* Release stream structure.

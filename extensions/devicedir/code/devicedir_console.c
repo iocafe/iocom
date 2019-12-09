@@ -106,6 +106,11 @@ osalStatus io_device_console(
             iocom_state_list(root, 'd');
             break;
 
+        case 'g':
+        case 'G':
+            return OSAL_STATUS_COMPLETED;
+            break;
+
         default:
             break;
     }

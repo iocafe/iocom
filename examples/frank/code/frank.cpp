@@ -22,6 +22,9 @@
 iocRoot frank_root;
 static FrankMain *frank_main;
 
+/* Remove this, for testing only
+ */
+static FrankGetNetConf *netconf;
 
 /* Forward referred static functions.
  */
@@ -102,8 +105,32 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+    osalStatus s;
+
     os_sleep(100);
-    return io_device_console(&frank_root);
+    s = io_device_console(&frank_root);
+
+    /* testing, remove this =====>
+     */
+    if (s == OSAL_STATUS_COMPLETED)
+    {
+        if (netconf == OS_NULL)
+        {
+            netconf = new FrankGetNetConf();
+            netconf->start("gina", 1, "iocafenet");
+        }
+        else
+        {
+            netconf->stop();
+            netconf = OS_NULL;
+        }
+
+        return OSAL_SUCCESS;
+    }
+    /* <==== */
+
+
+    return s;
 }
 
 

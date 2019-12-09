@@ -54,19 +54,13 @@ FrankGetNetConf::~FrankGetNetConf()
 void FrankGetNetConf::run()
 {
     iocStream *stream;
-    os_char *buf;
+    // os_char *buf;
     os_memsz buf_sz;
     osalStatus s;
 
-stream = OS_NULL;
-    /* stream = ioc_open_stream(
-    iocRoot *root,
-    os_int select,
-    os_char *read_buf_signal_name,
-    os_char *write_buf_signal_name,
-    os_char *exp_mblk_path,
-    os_char *imp_mblk_path,
-    os_int flags) */
+    stream = ioc_open_stream(&frank_root, OS_PBNR_IO_DEVICE_CONFIG,
+        "frd_buf", "tod_buf", "conf_exp", "conf_imp",
+        m_device_name, m_device_nr, m_network_name, 0);
 
     ioc_start_stream_read(stream);
 
@@ -78,7 +72,8 @@ stream = OS_NULL;
 
     if (s == OSAL_STATUS_COMPLETED)
     {
-        buf = ioc_get_stream_data(stream, &buf_sz);
+        /* buf = */ ioc_get_stream_data(stream, &buf_sz);
+        osal_trace_int("ioc_get_stream_data returned ", buf_sz);
     }
 
     ioc_release_stream(stream);

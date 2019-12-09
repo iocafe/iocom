@@ -83,7 +83,9 @@ extern iocHandle
     + MAX_CONNECTIONS * sizeof(iocSourceBuffer) \
     + MAX_CONNECTIONS * SEND_BLOCK_SZ * sizeof(ioc_sbuf_item) \
     + MAX_CONNECTIONS * sizeof(iocTargetBuffer) \
-    + MAX_CONNECTIONS * RECEIVE_BLOCK_SZ * sizeof(ioc_tbuf_item)
+    + MAX_CONNECTIONS * RECEIVE_BLOCK_SZ * sizeof(ioc_tbuf_item) \
+    + SEND_BLOCK_SZ \
+    + RECEIVE_BLOCK_SZ
 
 /* Macro to get interface by other defines.
  */
