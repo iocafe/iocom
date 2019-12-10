@@ -40,7 +40,7 @@ static osalStatus ioc_streamer_device_write(
 static osalStatus ioc_streamer_device_read(
     iocStreamer *streamer,
     iocStreamerSignals *signals,
-    const os_char *buf,
+    os_char *buf,
     os_memsz n,
     os_memsz *n_read);
 
@@ -54,10 +54,25 @@ static osalStatus ioc_streamer_controller_write(
 static osalStatus ioc_streamer_controller_read(
     iocStreamer *streamer,
     iocStreamerSignals *signals,
-    const os_char *buf,
+    os_char *buf,
     os_memsz n,
     os_memsz *n_read);
 
+static os_int osal_streamer_read_internal(
+    iocStreamerSignals *signals,
+    os_char *buf,
+    os_int buf_sz,
+    os_int n,
+    os_int head,
+    os_int *tail);
+
+static os_int osal_streamer_write_internal(
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_int buf_sz,
+    os_int n,
+    os_int *head,
+    os_int tail);
 
 void ioc_ctrl_stream_from_device(
     iocControlStreamState *ctrl,
@@ -66,6 +81,7 @@ void ioc_ctrl_stream_from_device(
 void ioc_ctrl_stream_to_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
+
 
 /**
 ****************************************************************************************************
@@ -97,7 +113,6 @@ osalStream ioc_streamer_open(
 {
     iocStreamer *streamer;
 
-
     /* Allocate streamer structure, either dynamic or static.
      */
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION
@@ -124,7 +139,6 @@ osalStream ioc_streamer_open(
     streamer->prm = (iocStreamerParams*)option;
     streamer->hdr.iface = &ioc_streamer_iface;
     streamer->used = OS_TRUE;
-    // streamer->flags = flags;
 
     osal_trace3_int("ioc_streamer_open()", (os_long)streamer);
 
@@ -211,39 +225,6 @@ osalStatus ioc_streamer_flush(
     osalStream stream,
     os_int flags)
 {
-#if 0
-    iocStreamer *streamer;
-
-    /* If called with NULL argument, do nothing.
-     */
-    if (stream == OS_NULL) return OSAL_STATUS_FAILED;
-
-    /* Cast stream type to streamer structure pointer, get operating system's streamer port handle.
-     */
-    streamer = (iocStreamer*)stream;
-    osal_debug_assert(streamer->hdr.iface == &ioc_streamer_iface);
-
-    if (flags & (OSAL_STREAM_CLEAR_RECEIVE_BUFFER|OSAL_STREAM_CLEAR_TRANSMIT_BUFFER))
-    {
-        switch (flags & (OSAL_STREAM_CLEAR_RECEIVE_BUFFER|OSAL_STREAM_CLEAR_TRANSMIT_BUFFER))
-        {
-            /* Flushes data received but not read.
-             */
-            case OSAL_STREAM_CLEAR_RECEIVE_BUFFER:
-                break;
-
-            /* Flushes data written but not transmitted.
-             */
-            case OSAL_STREAM_CLEAR_TRANSMIT_BUFFER:
-                break;
-
-            /* Flushes both data received but not read, and data written but not transmitted.
-             */
-            default:
-                break;
-        }
-    }
-#endif
     return OSAL_SUCCESS;
 }
 
@@ -420,24 +401,29 @@ static osalStatus ioc_streamer_device_write(
     os_memsz *n_written)
 {
     iocStreamerState
-        cmd;
+        cmd,
+        state;
 
     os_char
         state_bits;
 
     os_int
         buf_sz,
-        head,
+        // head,
         tail,
-        wrnow,
+        // wrnow,
         nbytes;
 
     cmd = (iocStreamerState)ioc_gets_int(signals->cmd, &state_bits);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) cmd = IOC_STREAM_IDLE;
 
     nbytes = 0;
-    switch (streamer->frd_state)
+    state = ioc_gets0_int(signals->state);
+    switch (state)
     {
+        case IOC_STREAM_INTERRUPT:
+            goto switch_to_idle;
+
         case IOC_STREAM_COMPLETED:
             if (cmd != IOC_STREAM_RUNNING)
             {
@@ -451,7 +437,6 @@ static osalStatus ioc_streamer_device_write(
 
             streamer->frd_head = 0;
             ioc_sets0_int(signals->head, 0);
-            streamer->frd_state = IOC_STREAM_RUNNING;
             ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
             osal_trace3("state: IDLE->RUNNING");
             /* continues ... */
@@ -472,6 +457,9 @@ static osalStatus ioc_streamer_device_write(
             }
             else
             {
+                nbytes = osal_streamer_write_internal(signals, buf, buf_sz, n, &streamer->tod_head, tail);
+
+#if 0
                 head = streamer->frd_head;
 
                 if (head >= tail)
@@ -517,6 +505,7 @@ static osalStatus ioc_streamer_device_write(
                         osal_trace3_int("DATA MOVED 2, bytes = ", wrnow);
                     }
                 }
+#endif
             }
             break;
     }
@@ -525,7 +514,6 @@ static osalStatus ioc_streamer_device_write(
     return OSAL_SUCCESS;
 
 switch_to_idle:
-    streamer->frd_state = IOC_STREAM_IDLE;
     ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
     return OSAL_STATUS_FAILED;
 }
@@ -566,12 +554,13 @@ switch_to_idle:
 static osalStatus ioc_streamer_device_read(
     iocStreamer *streamer,
     iocStreamerSignals *signals,
-    const os_char *buf,
+    os_char *buf,
     os_memsz n,
     os_memsz *n_read)
 {
     iocStreamerState
-        cmd;
+        cmd,
+        state;
 
     os_char
         state_bits;
@@ -579,22 +568,22 @@ static osalStatus ioc_streamer_device_read(
     os_int
         buf_sz,
         head,
-        tail,
-        rdnow,
+//        tail,
+//        rdnow,
         nbytes;
 
     cmd = (iocStreamerState)ioc_gets_int(signals->cmd, &state_bits);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) cmd = IOC_STREAM_IDLE;
 
     nbytes = 0;
-    switch (streamer->tod_state)
+    state = ioc_gets0_int(signals->state);
+    switch (state)
     {
         default:
         case IOC_STREAM_IDLE:
             if (cmd == IOC_STREAM_IDLE) break;
             streamer->tod_tail = 0;
             ioc_sets0_int(signals->tail, 0);
-            streamer->tod_state = IOC_STREAM_RUNNING;
             ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
             osal_trace3("state: IDLE->RUNNING");
             /* continues ... */
@@ -615,6 +604,10 @@ static osalStatus ioc_streamer_device_read(
             }
             else
             {
+nbytes = osal_streamer_read_internal(signals, buf, buf_sz, n, head, &streamer->frd_tail);
+if (nbytes < 0) goto switch_to_idle;
+
+#if 0
                 tail = streamer->tod_tail;
 
                 if (tail > head)
@@ -661,6 +654,7 @@ static osalStatus ioc_streamer_device_read(
                         osal_trace3_int("DATA MOVED 2, bytes = ", rdnow);
                     }
                 }
+#endif
             }
             break;
     }
@@ -669,7 +663,6 @@ static osalStatus ioc_streamer_device_read(
     return OSAL_SUCCESS;
 
 switch_to_idle:
-    streamer->tod_state = IOC_STREAM_IDLE;
     ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
     return OSAL_STATUS_FAILED;
 }
@@ -720,24 +713,29 @@ static osalStatus ioc_streamer_controller_write(
     os_memsz *n_written)
 {
     iocStreamerState
-        state;
+        state,
+        cmd;
 
     os_char
         state_bits;
 
     os_int
         buf_sz,
-        head,
+        // head,
         tail,
-        wrnow,
+        // wrnow,
         nbytes;
 
     state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) state = IOC_STREAM_IDLE;
 
     nbytes = 0;
-    switch (streamer->tod_cmd)
+    cmd = ioc_gets0_int(signals->cmd);
+    switch (cmd)
     {
+        case IOC_STREAM_INTERRUPT:
+            goto switch_to_idle;
+
         case IOC_STREAM_COMPLETED:
             if (state != IOC_STREAM_RUNNING)
             {
@@ -750,7 +748,6 @@ static osalStatus ioc_streamer_controller_write(
             streamer->tod_head = 0;
             ioc_sets0_int(signals->select, 115);
             ioc_sets0_int(signals->head, 0);
-            streamer->tod_state = IOC_STREAM_RUNNING;
             ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
             /* continues ... */
 
@@ -768,6 +765,8 @@ static osalStatus ioc_streamer_controller_write(
             }
             else
             {
+                nbytes = osal_streamer_write_internal(signals, buf, buf_sz, n, &streamer->tod_head, tail);
+#if 0
                 head = streamer->tod_head;
 
                 if (head >= tail)
@@ -811,6 +810,8 @@ static osalStatus ioc_streamer_controller_write(
                         nbytes += wrnow;
                     }
                 }
+#endif
+
             }
             break;
     }
@@ -819,7 +820,6 @@ static osalStatus ioc_streamer_controller_write(
     return OSAL_SUCCESS;
 
 switch_to_idle:
-    streamer->tod_cmd = IOC_STREAM_IDLE;
     ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
     return OSAL_STATUS_FAILED;
 }
@@ -861,12 +861,13 @@ switch_to_idle:
 static osalStatus ioc_streamer_controller_read(
     iocStreamer *streamer,
     iocStreamerSignals *signals,
-    const os_char *buf,
+    os_char *buf,
     os_memsz n,
     os_memsz *n_read)
 {
     iocStreamerState
-        state;
+        state,
+        cmd;
 
     os_char
         state_bits;
@@ -874,8 +875,8 @@ static osalStatus ioc_streamer_controller_read(
     os_int
         buf_sz,
         head,
-        tail,
-        rdnow,
+//        tail,
+//        rdnow,
         nbytes;
 
     osalStatus
@@ -890,7 +891,8 @@ static osalStatus ioc_streamer_controller_read(
     }
 
     nbytes = 0;
-    switch (streamer->frd_cmd)
+    cmd = ioc_gets0_int(signals->cmd);
+    switch (cmd)
     {
         default:
         case IOC_STREAM_IDLE:
@@ -898,7 +900,6 @@ static osalStatus ioc_streamer_controller_read(
             ioc_sets0_int(signals->select, 111);
             streamer->frd_tail = 0;
             ioc_sets0_int(signals->tail, 0);
-            streamer->frd_cmd = IOC_STREAM_RUNNING;
             ioc_sets0_int(signals->cmd, IOC_STREAM_RUNNING);
             osal_trace3("state: IDLE->RUNNING");
             /* continues ... */
@@ -916,6 +917,10 @@ static osalStatus ioc_streamer_controller_read(
                 goto switch_to_idle;
             }
 
+nbytes = osal_streamer_read_internal(signals, buf, buf_sz, n, head, &streamer->frd_tail);
+if (nbytes < 0) goto switch_to_idle;
+
+#if 0
             tail = streamer->frd_tail;
 
             if (tail > head)
@@ -962,10 +967,10 @@ static osalStatus ioc_streamer_controller_read(
                     osal_trace3_int("DATA MOVED 2, bytes = ", rdnow);
                 }
             }
+#endif
 
             if (state == IOC_STREAM_COMPLETED)
             {
-                streamer->frd_cmd = IOC_STREAM_IDLE;
                 ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
                 s = OSAL_STATUS_COMPLETED;
                 osal_trace3("TRANSFER SUCCESSFULL");
@@ -979,11 +984,126 @@ static osalStatus ioc_streamer_controller_read(
 
 switch_to_idle:
     osal_trace3("state: TRANSFER INTERRUPTED");
-    streamer->frd_cmd = IOC_STREAM_IDLE;
     ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
     return OSAL_STATUS_FAILED;
 }
 #endif
+
+
+
+static os_int osal_streamer_read_internal(
+    iocStreamerSignals *signals,
+    os_char *buf,
+    os_int buf_sz,
+    os_int n,
+    os_int head,
+    os_int *tail)
+{
+    os_int nbytes, rdnow;
+    os_char state_bits;
+
+    nbytes = 0;
+
+    if (*tail > head)
+    {
+        rdnow = buf_sz - *tail;
+        if (rdnow > n) rdnow = n;
+        if (rdnow > 0)
+        {
+            state_bits = ioc_moves_array(signals->buf, *tail, buf, rdnow,
+                OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0) return -1;
+
+            *tail += rdnow;
+            if (*tail >= buf_sz) *tail = 0;
+
+//            streamer->frd_tail = tail;
+            ioc_sets0_int(signals->tail, *tail);
+
+            buf += rdnow;
+            n -= rdnow;
+            nbytes += rdnow;
+            osal_trace3_int("DATA MOVED 1, bytes = ", rdnow);
+        }
+    }
+
+    if (*tail < head)
+    {
+        rdnow = head - *tail;
+        if (rdnow > n) rdnow = n;
+
+        if (rdnow > 0)
+        {
+            state_bits = ioc_moves_array(signals->buf, *tail, buf, rdnow,
+                OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0) return -1;
+
+            *tail += rdnow;
+            // streamer->frd_tail = tail;
+            ioc_sets0_int(signals->tail, *tail);
+
+            buf += rdnow;
+            n -= rdnow;
+            nbytes += rdnow;
+            osal_trace3_int("DATA MOVED 2, bytes = ", rdnow);
+        }
+    }
+
+    return nbytes;
+}
+
+
+static os_int osal_streamer_write_internal(
+    iocStreamerSignals *signals,
+    const os_char *buf,
+    os_int buf_sz,
+    os_int n,
+    os_int *head,
+    os_int tail)
+{
+    os_int nbytes, wrnow;
+
+    nbytes = 0;
+
+    if (*head >= tail)
+    {
+        wrnow = buf_sz - *head;
+        if (!tail) wrnow--;
+        if (wrnow > n) wrnow = n;
+        if (wrnow > 0)
+        {
+            ioc_moves_array(signals->buf, *head, (os_char*)buf, wrnow,
+                OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
+
+            *head += wrnow;
+            if (*head >= buf_sz) *head = 0;
+
+            ioc_sets0_int(signals->head, *head);
+
+            buf += wrnow;
+            n -= wrnow;
+            nbytes += wrnow;
+        }
+    }
+
+    if (*head < tail)
+    {
+        wrnow = tail - *head - 1;
+        if (wrnow > n) wrnow = n;
+
+        if (wrnow > 0)
+        {
+            ioc_moves_array(signals->buf, *head, (os_char*)buf, wrnow,
+                OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
+
+            *head += wrnow;
+            ioc_sets0_int(signals->head, *head);
+            nbytes += wrnow;
+        }
+    }
+
+    return nbytes;
+}
 
 
 /**
@@ -1132,7 +1252,7 @@ void ioc_run_control_stream(
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
             select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
-            ctrl->frd = ioc_streamer_open(OS_NULL, params, &ctrl->frd_status, OSAL_STREAM_WRITE);
+            ctrl->frd = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_WRITE);
 
             if (ctrl->frd)
             {
@@ -1149,8 +1269,6 @@ void ioc_run_control_stream(
         }
     }
 
-    /* If we do not have open controller->device stream, check if we can open one.
-     */
     if (ctrl->frd_running)
     {
         if (ctrl->frd)
@@ -1168,85 +1286,150 @@ void ioc_run_control_stream(
         }
     }
 
-
-    /* If we do not have open controller->device stream, check if we can open one.
-     */
-    if (ctrl->tod == OS_NULL)
+    cmd = (iocStreamerState)ioc_gets_int(params->tod.cmd, &state_bits);
+    if (!ctrl->tod_running)
     {
-        cmd = (iocStreamerState)ioc_gets_int(params->tod.cmd, &state_bits);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
             select = (osPersistentBlockNr)ioc_gets0_int(params->tod.select);
 
-            ctrl->tod = ioc_streamer_open(OS_NULL, params, &ctrl->tod_status, OSAL_STREAM_READ);
+            ctrl->tod = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_READ);
 
-            ctrl->tod_persistent = os_persistent_open(select, OSAL_STREAM_WRITE);
+            if (ctrl->tod)
+            {
+                ctrl->tod_persistent = os_persistent_open(select, OSAL_STREAM_WRITE);
+                if (ctrl->tod_persistent == OS_NULL)
+                {
+                    ioc_streamer_close(ctrl->tod, OSAL_STREAM_DEFAULT);
+                    ioc_sets0_int(params->tod.state, IOC_STREAM_INTERRUPT);
+                    ctrl->tod = OS_NULL;
+                }
+            }
+
+            ctrl->tod_running = OS_TRUE;
         }
    }
 
-    /* If we do not have open controller->device stream, check if we can open one.
-     */
-    if (ctrl->tod)
+    if (ctrl->tod_running)
     {
-        ioc_ctrl_stream_to_device(ctrl, params);
+        if (ctrl->tod)
+        {
+            ioc_ctrl_stream_to_device(ctrl, params);
+        }
+        else
+        {
+            state = (iocStreamerState)ioc_gets0_int(params->tod.state);
+            if (cmd != IOC_STREAM_RUNNING && state != IOC_STREAM_IDLE)
+            {
+                ioc_sets0_int(params->tod.state, IOC_STREAM_IDLE);
+                ctrl->tod_running = OS_FALSE;
+            }
+        }
     }
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Move data from controller to IO device.
+  @anchor ioc_ctrl_stream_from_device
+
+  This code is used in IO device. The function is called repeatedly to run data transfer
+  from controller to IO device. The function reads data from persistent storage and
+  writes it to stream buffer in memory block. When the data ends, the device will show
+  IOC_STREAM_COMPLETED state. If transfer is interrupted (for example reading persistent
+  storage fails, the IOC_STREAM_INTERRUPT state is set to memory block.
+
+  @param   ctrl IO device control stream transfer state structure.
+  @param   params Parameters for the streamer.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_ctrl_stream_from_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
     os_char buf[256];
-    os_memsz n_written, n_read, bytes;
-    osalStatus s;
+    os_memsz rdnow, n_written, n_read, bytes;
 
-    /* If we need to can read more data
-     */
-    if (ctrl->frd_status == OSAL_SUCCESS)
+    bytes = osal_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
+
+    while (OS_TRUE)
     {
-        bytes = osal_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
+        if (bytes <= 0) return;
 
-        if (bytes > sizeof(buf)) bytes = sizeof(buf);
-        n_read = os_persistent_read(ctrl->fdr_persistent, buf, bytes);
+        rdnow = bytes;
+        if (rdnow > sizeof(buf)) rdnow = sizeof(buf);
+        n_read = os_persistent_read(ctrl->fdr_persistent, buf, rdnow);
         if (n_read > 0)
         {
-            ioc_streamer_write(ctrl->frd, buf, bytes < n_read ? bytes : n_read,
-                &n_written, OSAL_STREAM_DEFAULT);
-
-            osal_debug_assert(n_written == bytes);
+            ioc_streamer_write(ctrl->frd, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
+            if (n_written != n_read) { n_read = -1; break; }
         }
 
-        if (n_read < bytes)
-        {
-            os_persistent_close(ctrl->fdr_persistent, 0);
-            ctrl->fdr_persistent = OS_NULL;
-            ioc_streamer_close(ctrl->frd, OSAL_STREAM_DEFAULT);
-            ctrl->frd = OS_NULL;
-            ioc_sets0_int(params->frd.state, n_read >= 0
-                ? IOC_STREAM_COMPLETED : IOC_STREAM_INTERRUPT);
-        }
+        if (n_read < rdnow) break;
+        bytes -= n_read;
     }
+
+    os_persistent_close(ctrl->fdr_persistent, 0);
+    ctrl->fdr_persistent = OS_NULL;
+    ioc_streamer_close(ctrl->frd, OSAL_STREAM_DEFAULT);
+    ctrl->frd = OS_NULL;
+    ioc_sets0_int(params->frd.state, n_read >= 0
+        ? IOC_STREAM_COMPLETED : IOC_STREAM_INTERRUPT);
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Move data from controller to IO device.
+  @anchor ioc_ctrl_stream_to_device
+
+  Called repeatedly to run data transfer from controller IO device. The function reads data from
+  the stream buffer in memory block (as much as there is) and writes it to persistent storage.
+  If the function detects IOC_STREAM_COMPLETED or IOC_STREAM_INTERRUPTED command, or if
+  connection has broken, it closes the persistent storage and memory block streamer.
+  Closing persistent object is flagged with success OSAL_STREAM_DEFAULT only on
+  IOC_STREAM_COMPLETED command, otherwise persistent object is closed with OSAL_STREAM_INTERRUPT
+  flag (in this case persient object may not want to use newly received data, especially if
+  it is flash program for micro-controller.
+
+  @param   ctrl IO device control stream transfer state structure.
+  @param   params Parameters for the streamer.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_ctrl_stream_to_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
-    os_char buf[256];
+    iocStreamerState cmd;
+    os_char buf[256], state_bits;
     os_memsz n_read;
+    os_int ok, close_flags;
 
-    /* If we need to can read more data
-     */
-    if (ctrl->tod_status == OSAL_SUCCESS)
+    do
     {
-        ctrl->tod_status = ioc_streamer_read(ctrl->tod, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
-        ctrl->tod_status = os_persistent_write(ctrl->tod_persistent, buf, n_read);
+        ioc_streamer_read(ctrl->tod, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
+        os_persistent_write(ctrl->tod_persistent, buf, n_read);
+    }
+    while (n_read == sizeof(buf));
 
-        os_persistent_close(ctrl->tod_persistent, 0);
+    cmd = ioc_gets_int(params->tod.cmd, &state_bits);
+    if (cmd != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0)
+    {
+        ok = ((cmd == IOC_STREAM_COMPLETED) && (state_bits & OSAL_STATE_CONNECTED) != 0);
+        close_flags = ok ? OSAL_STREAM_DEFAULT : OSAL_STREAM_INTERRUPT;
+
+        os_persistent_close(ctrl->tod_persistent, close_flags);
         ctrl->tod_persistent = OS_NULL;
-        ioc_streamer_close(ctrl->tod, OSAL_STREAM_DEFAULT);
+        ioc_streamer_close(ctrl->tod, close_flags);
         ctrl->tod = OS_NULL;
+        ioc_sets0_int(params->tod.state, ok ? IOC_STREAM_COMPLETED : IOC_STREAM_INTERRUPT);
     }
 }
 

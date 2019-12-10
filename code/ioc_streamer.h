@@ -35,7 +35,9 @@ extern const osalStreamInterface ioc_streamer_iface;
 /* Maximum number of streamers when using static memory allocation.
  */
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION == 0
+#ifndef IOC_MAX_STREAMERS
 #define IOC_MAX_STREAMERS 4
+#endif
 #endif
 
 
@@ -116,14 +118,14 @@ typedef struct iocStreamer
 
     iocStreamerParams *prm;
 
-    iocStreamerState frd_state;
-    iocStreamerState frd_cmd;
+//    iocStreamerState frd_state;
+    // iocStreamerState frd_cmd;
     os_char frd_select;
     os_int frd_head;
     os_int frd_tail;
 
-    iocStreamerState tod_state;
-    iocStreamerState tod_cmd;
+    // iocStreamerState tod_state;
+    //iocStreamerState tod_cmd;
     os_char tod_select;
     os_int tod_head;
     os_int tod_tail;
@@ -149,20 +151,16 @@ typedef struct
     os_boolean initialized;
 #endif
 
-    /* Transfer from device to controller running.
+    /* Transfer from device to controller.
      */
     os_boolean frd_running;
-
-    /* Fom device
-     */
     osalStream frd;
-    osalStatus frd_status;
     osPersistentHandle *fdr_persistent;
 
-    /* To device
+    /* To device from controller.
      */
+    os_boolean tod_running;
     osalStream tod;
-    osalStatus tod_status;
     osPersistentHandle *tod_persistent;
 }
 iocControlStreamState;
