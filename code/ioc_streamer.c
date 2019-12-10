@@ -913,8 +913,7 @@ static os_int osal_streamer_write_internal(
   @brief Get serial port parameter.
   @anchor osal_streamer_get_parameter
 
-  The osal_streamer_get_parameter() function gets a parameter value. Here we just call the default
-  implementation for streams.
+  The osal_streamer_get_parameter() function gets a parameter value.
 
   @param   stream Stream pointer representing the serial.
   @param   parameter_ix Index of parameter to get. Use OSAL_STREAM_TX_AVAILABLE to get
