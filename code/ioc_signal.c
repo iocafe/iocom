@@ -179,19 +179,6 @@ void ioc_movex_signals(
             if (v) sb |= OSAL_STATE_BOOLEAN_VALUE;
             else  sb &= ~OSAL_STATE_BOOLEAN_VALUE;
 
-            /* If memory block is connected as source, we may turn OSAL_STATE_CONNECTED
-             * bit on. If memory block is disconnected, we sure turn it off.
-             */
-            if (mblk->sbuf.first)
-            {
-                if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
-                    sb |= OSAL_STATE_CONNECTED;
-            }
-            else
-            {
-                sb &= ~OSAL_STATE_CONNECTED;
-            }
-
             *(p++) = vv[i].state_bits = sb;
             ioc_byte_ordered_copy(p, (os_char*)&vv[i].value, type_sz, type_sz);
             ioc_mblk_invalidate(mblk, addr, (os_int)(addr + type_sz) /* no -1, we need also state byte */);
