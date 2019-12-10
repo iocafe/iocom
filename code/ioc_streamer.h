@@ -70,7 +70,8 @@ typedef enum
 {
     IOC_STREAM_IDLE = 0,
     IOC_STREAM_RUNNING = 1,
-    IOC_STREAM_COMPLETED = 2
+    IOC_STREAM_COMPLETED = 2,
+    IOC_STREAM_INTERRUPT = 3
 }
 iocStreamerState;
 
@@ -147,6 +148,10 @@ typedef struct
      */
     os_boolean initialized;
 #endif
+
+    /* Transfer from device to controller running.
+     */
+    os_boolean frd_running;
 
     /* Fom device
      */

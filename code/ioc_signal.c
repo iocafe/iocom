@@ -43,10 +43,6 @@ iocTypeConvUnion;
   The IOC_SIGNAL_WRITE Write signals to memory block. If this flag is not given, signals
   are read.
 
-  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
-  if it as off, leave it off. This flag is meaningfull only when combined with IOC_SIGNAL_WRITE
-  flag.
-
   If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
@@ -56,8 +52,7 @@ iocTypeConvUnion;
   @param   vv Array where signal values and state bits are stored, n_signals elements.
   @oaram   n_signals Number of elements in signals array.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT,
-           and IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_WRITE and IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
            the signals array.
   @return  None.
@@ -329,10 +324,9 @@ os_char ioc_sets_double(
   @param   value Integer value to write.
   @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT and IOC_SIGNAL_NO_THREAD_SYNC.
-           Storage type to be used in memory block needs to be specified here by setting one
-           of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
+  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
+           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
+           with type.
 
   @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
 
@@ -387,10 +381,9 @@ os_char ioc_setx_int(
   @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit. Can be OS_NULL if
            not needed.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT and IOC_SIGNAL_NO_THREAD_SYNC.
-           Storage type to be used in memory block needs to be specified here by setting one
-           of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT or OS_FLOAT
+  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
+           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
+           with type.
 
   @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
 
@@ -507,10 +500,9 @@ os_double ioc_gets_double(
   @oaram   state_bits Pointer to integer where to store state bits.
            OSAL_STATE_CONNECTED indicates that we have the signal value. HW errors are indicated
            by OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bits.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flag can be combined by or
-           operator: IOC_SIGNAL_NO_THREAD_SYNC. Storage type to be used in memory block needs to
-           be specified here by setting one of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT,
-           OS_INT, OS_UINT or OS_FLOAT
+  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
+           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
+           with type.
 
   @return  Integer value.
 
@@ -561,10 +553,9 @@ os_long ioc_getx_int(
   @oaram   state_bits Pointer to integer where to store state bits.
            OSAL_STATE_CONNECTED indicates that we have the signal value. HW errors are indicated
            by OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bits. Can be OS_NULL if not needed.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flag can be combined by or
-           operator: IOC_SIGNAL_NO_THREAD_SYNC. Storage type to be used in memory block needs to
-           be specified here by setting one of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT,
-           OS_INT, OS_UINT or OS_FLOAT
+  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
+           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
+           with type.
 
   @return  Floating point value.
 
@@ -612,10 +603,6 @@ os_double ioc_getx_double(
   The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string
   is read.
 
-  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
-  if it as off, leave it off. This flag is meaningfull only when combined with IOC_SIGNAL_WRITE
-  flag.
-
   If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
@@ -625,8 +612,7 @@ os_double ioc_getx_double(
   @param   str Pointer to string buffer
   @param   str_sz String buffer size in bytes (including terminating NULL character).
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT and
-           IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
            the signals array.
   @return  State bits.
@@ -727,19 +713,6 @@ os_char ioc_moves_str(
 
     if (flags & IOC_SIGNAL_WRITE)
     {
-        /* If memory block is connected as source, we may turn OSAL_STATE_CONNECTED
-         * bit on. If memory block is disconnected, we sure turn it off.
-         */
-        if (mblk->sbuf.first)
-        {
-            if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
-                state_bits |= OSAL_STATE_CONNECTED;
-        }
-        else
-        {
-            state_bits &= ~OSAL_STATE_CONNECTED;
-        }
-
         *(p++) = state_bits;
         len = os_strlen(str);
         if (signal->n < len) len = signal->n;
@@ -790,8 +763,7 @@ goon:
   @oaram   state_bits State bits. This can have OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT and
-           IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_WRITE, and IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
            the signals array.
   @return  Updated state bits.
@@ -832,10 +804,6 @@ os_char ioc_movex_str(
   The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string
   is read.
 
-  IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT: Do not try to set OSAL_STATE_CONNECTED in state bits:
-  if it as off, leave it off. This flag is meaningfull only when combined with IOC_SIGNAL_WRITE
-  flag.
-
   If IOC_SIGNAL_NO_THREAD_SYNC is specified, this function does no thread synchronization.
   The caller must take care of synchronization by calling ioc_lock()/iocom_unlock() to
   synchronize thread access to IOCOM data structures.
@@ -848,8 +816,7 @@ os_char ioc_movex_str(
   @param   array Pointer to array buffer
   @param   Number of elements in array.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT and
-           IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_WRITE, and IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
            the signals array.
 
@@ -917,27 +884,13 @@ os_char ioc_moves_array(
         osal_debug_error("Write out of memory block's' address space");
         goto goon;
     }
+    if (signal->n < n + offset) n = signal->n - offset;
 
     /* Copy the state bits.
      */
     p = mblk->buf + addr;
-
     if (flags & IOC_SIGNAL_WRITE)
     {
-        /* If memory block is connected as source, we may turn OSAL_STATE_CONNECTED
-         * bit on. If memory block is disconnected, we sure turn it off.
-         */
-        if (mblk->sbuf.first)
-        {
-            if ((flags & IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT) == 0)
-                state_bits |= OSAL_STATE_CONNECTED;
-        }
-        else
-        {
-            state_bits &= ~OSAL_STATE_CONNECTED;
-        }
-        if (signal->n < n + offset) n = signal->n - offset;
-
         /* Pack os_boolean as bits.
          */
         if (type_id == OS_BOOLEAN)
@@ -992,7 +945,6 @@ os_char ioc_moves_array(
         {
             state_bits &= ~OSAL_STATE_CONNECTED;
         }
-        if (signal->n < n + offset) n = signal->n - offset;
 
         /* Unpack os_boolean array from bits.
          */
@@ -1056,8 +1008,7 @@ goon:
   @oaram   state_bits State bits. This can have OSAL_STATE_CONNECTED and if we have a problem
            with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_DO_NOT_SET_CONNECTED_BIT and
-           IOC_SIGNAL_NO_THREAD_SYNC.
+           operator: IOC_SIGNAL_WRITE, and IOC_SIGNAL_NO_THREAD_SYNC.
            Array element type must be here, one of OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT,
            OS_USHORT, OS_INT, OS_UINT or OS_FLOAT. This is used for type checking.
   @return  Updated state bits.

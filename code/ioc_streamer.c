@@ -17,11 +17,11 @@
 
 ****************************************************************************************************
 */
+#define OSAL_TRACE 3
+
 #include "iocom.h"
 #if IOC_STREAMER_SUPPORT
 
-#undef OSAL_TRACE
-#define OSAL_TRACE 3
 
 /* Maximum number of streamers when using static memory allocation.
  */
@@ -124,6 +124,7 @@ osalStream ioc_streamer_open(
     streamer->prm = (iocStreamerParams*)option;
     streamer->hdr.iface = &ioc_streamer_iface;
     streamer->used = OS_TRUE;
+    // streamer->flags = flags;
 
     osal_trace3_int("ioc_streamer_open()", (os_long)streamer);
 
@@ -893,7 +894,7 @@ static osalStatus ioc_streamer_controller_read(
     {
         default:
         case IOC_STREAM_IDLE:
-            if (state == IOC_STREAM_RUNNING) break;
+            if (state == IOC_STREAM_RUNNING || state == IOC_STREAM_INTERRUPT) break;
             ioc_sets0_int(signals->select, 111);
             streamer->frd_tail = 0;
             ioc_sets0_int(signals->tail, 0);
@@ -904,6 +905,10 @@ static osalStatus ioc_streamer_controller_read(
 
         case IOC_STREAM_RUNNING:
             if (state == IOC_STREAM_IDLE) break;
+            if (state == IOC_STREAM_INTERRUPT)
+            {
+                goto switch_to_idle;
+            }
             buf_sz = signals->buf->n;
             head = (os_int)ioc_gets_int(signals->head, &state_bits);
             if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
@@ -1113,7 +1118,7 @@ void ioc_run_control_stream(
     iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
-    iocStreamerState cmd;
+    iocStreamerState cmd, state;
     osPersistentBlockNr select;
     os_char state_bits;
 
@@ -1121,25 +1126,46 @@ void ioc_run_control_stream(
      */
     osal_debug_assert(ctrl->initialized == 'I');
 
-    /* If we do not have open device->controller stream, check if we can open one.
-     */
-    if (ctrl->frd == OS_NULL)
+    cmd = (iocStreamerState)ioc_gets_int(params->frd.cmd, &state_bits);
+    if (!ctrl->frd_running)
     {
-        cmd = (iocStreamerState)ioc_gets_int(params->frd.cmd, &state_bits);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
             select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
             ctrl->frd = ioc_streamer_open(OS_NULL, params, &ctrl->frd_status, OSAL_STREAM_WRITE);
 
-            ctrl->fdr_persistent = os_persistent_open(select, OSAL_STREAM_READ);
+            if (ctrl->frd)
+            {
+                ctrl->fdr_persistent = os_persistent_open(select, OSAL_STREAM_READ);
+                if (ctrl->fdr_persistent == OS_NULL)
+                {
+                    ioc_streamer_close(ctrl->frd, OSAL_STREAM_DEFAULT);
+                    ioc_sets0_int(params->frd.state, IOC_STREAM_INTERRUPT);
+                    ctrl->frd = OS_NULL;
+                }
+            }
+
+            ctrl->frd_running = OS_TRUE;
         }
     }
 
     /* If we do not have open controller->device stream, check if we can open one.
      */
-    if (ctrl->frd)
+    if (ctrl->frd_running)
     {
-        ioc_ctrl_stream_from_device(ctrl, params);
+        if (ctrl->frd)
+        {
+            ioc_ctrl_stream_from_device(ctrl, params);
+        }
+        else
+        {
+            state = (iocStreamerState)ioc_gets0_int(params->frd.state);
+            if (cmd != IOC_STREAM_RUNNING && state != IOC_STREAM_IDLE)
+            {
+                ioc_sets0_int(params->frd.state, IOC_STREAM_IDLE);
+                ctrl->frd_running = OS_FALSE;
+            }
+        }
     }
 
 
@@ -1172,8 +1198,8 @@ void ioc_ctrl_stream_from_device(
     iocStreamerParams *params)
 {
     os_char buf[256];
-    os_memsz n_written;
-    os_memsz bytes;
+    os_memsz n_written, n_read, bytes;
+    osalStatus s;
 
     /* If we need to can read more data
      */
@@ -1182,13 +1208,24 @@ void ioc_ctrl_stream_from_device(
         bytes = osal_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
 
         if (bytes > sizeof(buf)) bytes = sizeof(buf);
-        ctrl->frd_status = os_persistent_read(ctrl->fdr_persistent, buf, bytes);
-        ctrl->tod_status = ioc_streamer_write(ctrl->frd, buf, bytes, &n_written, OSAL_STREAM_DEFAULT);
-        // if (n_written != bytes) ??;
+        n_read = os_persistent_read(ctrl->fdr_persistent, buf, bytes);
+        if (n_read > 0)
+        {
+            ioc_streamer_write(ctrl->frd, buf, bytes < n_read ? bytes : n_read,
+                &n_written, OSAL_STREAM_DEFAULT);
 
-        os_persistent_close(ctrl->fdr_persistent, 0);
-        ioc_streamer_close(ctrl->frd, OSAL_STREAM_DEFAULT);
-        ctrl->frd = OS_NULL;
+            osal_debug_assert(n_written == bytes);
+        }
+
+        if (n_read < bytes)
+        {
+            os_persistent_close(ctrl->fdr_persistent, 0);
+            ctrl->fdr_persistent = OS_NULL;
+            ioc_streamer_close(ctrl->frd, OSAL_STREAM_DEFAULT);
+            ctrl->frd = OS_NULL;
+            ioc_sets0_int(params->frd.state, n_read >= 0
+                ? IOC_STREAM_COMPLETED : IOC_STREAM_INTERRUPT);
+        }
     }
 }
 
@@ -1207,6 +1244,7 @@ void ioc_ctrl_stream_to_device(
         ctrl->tod_status = os_persistent_write(ctrl->tod_persistent, buf, n_read);
 
         os_persistent_close(ctrl->tod_persistent, 0);
+        ctrl->tod_persistent = OS_NULL;
         ioc_streamer_close(ctrl->tod, OSAL_STREAM_DEFAULT);
         ctrl->tod = OS_NULL;
     }
