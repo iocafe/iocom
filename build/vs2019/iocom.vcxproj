@@ -32,6 +32,7 @@
     <ClInclude Include="..\..\code\ioc_root.h" />
     <ClInclude Include="..\..\code\ioc_signal.h" />
     <ClInclude Include="..\..\code\ioc_source_buffer.h" />
+    <ClInclude Include="..\..\code\ioc_streamer.h" />
     <ClInclude Include="..\..\code\ioc_target_buffer.h" />
     <ClInclude Include="..\..\code\ioc_timing.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_mblk_list.h" />
@@ -39,6 +40,7 @@
     <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_queue.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_root.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_signal.h" />
+    <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_stream.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_identifiers.h" />
     <ClInclude Include="..\..\iocom.h" />
     <ClInclude Include="..\..\iocomx.h" />
@@ -58,12 +60,14 @@
     <ClCompile Include="..\..\code\ioc_root.c" />
     <ClCompile Include="..\..\code\ioc_signal.c" />
     <ClCompile Include="..\..\code\ioc_source_buffer.c" />
+    <ClCompile Include="..\..\code\ioc_streamer.c" />
     <ClCompile Include="..\..\code\ioc_target_buffer.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_mblk_list.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_network.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_queue.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_root.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_signal.c" />
+    <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_stream.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_identifiers.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

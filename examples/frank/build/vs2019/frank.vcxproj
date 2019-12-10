@@ -20,24 +20,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\code\config.cpp" />
-    <ClCompile Include="..\..\code\tito.cpp" />
-    <ClCompile Include="..\..\code\tito_application.cpp" />
-    <ClCompile Include="..\..\code\tito_gina_io_device.cpp" />
-    <ClCompile Include="..\..\code\tito_io_device.cpp" />
-    <ClCompile Include="..\..\code\tito_main.cpp" />
-    <ClCompile Include="..\..\code\tito_sequence.cpp" />
-    <ClCompile Include="..\..\code\tito_test_application.cpp" />
-    <ClCompile Include="..\..\code\tito_test_sequence1.cpp" />
+    <ClCompile Include="..\..\code\frank.cpp" />
+    <ClCompile Include="..\..\code\frank_application.cpp" />
+    <ClCompile Include="..\..\code\frank_get_netconf.cpp" />
+    <ClCompile Include="..\..\code\frank_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\tito.h" />
-    <ClInclude Include="..\..\code\tito_application.h" />
-    <ClInclude Include="..\..\code\tito_gina_io_device.h" />
-    <ClInclude Include="..\..\code\tito_io_device.h" />
-    <ClInclude Include="..\..\code\tito_main.h" />
-    <ClInclude Include="..\..\code\tito_sequence.h" />
-    <ClInclude Include="..\..\code\tito_test_application.h" />
-    <ClInclude Include="..\..\code\tito_test_sequence1.h" />
+    <ClInclude Include="..\..\code\frank.h" />
+    <ClInclude Include="..\..\code\frank_application.h" />
+    <ClInclude Include="..\..\code\frank_get_netconf.h" />
+    <ClInclude Include="..\..\code\frank_main.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -456,7 +456,7 @@ static osalStatus ioc_streamer_device_write(
             else
             {
                 nbytes = osal_streamer_write_internal(signals, buf, buf_sz,
-                    n, &streamer->tod_head, tail);
+                    (os_int)n, &streamer->tod_head, tail);
             }
             break;
     }
@@ -554,7 +554,7 @@ static osalStatus ioc_streamer_device_read(
             else
             {
                 nbytes = osal_streamer_read_internal(signals, buf, buf_sz,
-                    n, head, &streamer->frd_tail);
+                    (os_int)n, head, &streamer->frd_tail);
 
                 if (nbytes < 0) goto switch_to_idle;
             }
@@ -666,7 +666,7 @@ static osalStatus ioc_streamer_controller_write(
             else
             {
                 nbytes = osal_streamer_write_internal(signals, buf, buf_sz,
-                    n, &streamer->tod_head, tail);
+                    (os_int)n, &streamer->tod_head, tail);
             }
             break;
     }
@@ -771,7 +771,7 @@ static osalStatus ioc_streamer_controller_read(
             }
 
             nbytes = osal_streamer_read_internal(signals, buf, buf_sz,
-                n, head, &streamer->frd_tail);
+                (os_int)n, head, &streamer->frd_tail);
             if (nbytes < 0) goto switch_to_idle;
 
             if (state == IOC_STREAM_COMPLETED)

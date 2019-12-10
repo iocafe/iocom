@@ -297,7 +297,7 @@ void ioc_start_stream_write(
     ioc_stream_cleanup(stream);
     stream->flags = OSAL_STREAM_WRITE;
 
-    stream->write_buf_sz = buf_sz;
+    stream->write_buf_sz = (os_int)buf_sz;
     stream->write_buf = os_malloc(buf_sz, OS_NULL);
     stream->write_buf_pos = 0;
     if (stream->write_buf == OS_NULL) return;
@@ -358,7 +358,7 @@ osalStatus ioc_run_stream(
                 stream->write_buf + stream->write_buf_pos,
                 n, &n_written, OSAL_STREAM_DEFAULT);
 
-            stream->write_buf_pos += n_written;
+            stream->write_buf_pos += (os_int)n_written;
         }
 
     }

@@ -258,8 +258,6 @@ static PyObject *MemoryBlock_get_param(
     PyObject *rval;
     os_boolean is_int = OS_FALSE;
 
-    os_memclear((os_char**)param_name, sizeof(param_name));
-
     if (!PyArg_ParseTuple(args, "s", param_name))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");

@@ -25,6 +25,7 @@
     <ClCompile Include="..\..\code\iopy_module.c" />
     <ClCompile Include="..\..\code\iopy_root.c" />
     <ClCompile Include="..\..\code\iopy_signal.c" />
+    <ClCompile Include="..\..\code\iopy_stream.c" />
     <ClCompile Include="..\..\code\iopy_util.c" />
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +35,7 @@
     <ClInclude Include="..\..\code\iopy_module.h" />
     <ClInclude Include="..\..\code\iopy_root.h" />
     <ClInclude Include="..\..\code\iopy_signal.h" />
+    <ClInclude Include="..\..\code\iopy_stream.h" />
     <ClInclude Include="..\..\code\iopy_util.h" />
     <ClInclude Include="..\..\iocompython.h" />
   </ItemGroup>
