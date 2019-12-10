@@ -142,6 +142,12 @@ iocStreamer;
  */
 typedef struct
 {
+#if OSAL_DEBUG
+    /* Initial signal values set flag, used for debugging.
+     */
+    os_boolean initialized;
+#endif
+
     /* Fom device
      */
     osalStream frd;
@@ -180,7 +186,8 @@ osalStream ioc_streamer_open(
 /* Close streamer.
  */
 void ioc_streamer_close(
-    osalStream stream);
+    osalStream stream,
+    os_int flags);
 
 /* Accept connection from listening streamer.
  */
@@ -223,6 +230,12 @@ os_long ioc_streamer_get_parameter(
  */
 void ioc_streamer_initialize(
     void);
+
+/* Initialize control stream.
+ */
+void ioc_init_control_stream(
+    iocControlStreamState *ctrl,
+    iocStreamerParams *params);
 
 /* Keep control stream alive, move data to/from persistent memory (on IO device).
  */

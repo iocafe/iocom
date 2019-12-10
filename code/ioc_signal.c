@@ -119,6 +119,7 @@ void ioc_movex_signals(
             else
             {
                 mblk = ioc_handle_lock_to_mblk(handle, &root);
+                osal_debug_assert(root);
             }
         }
 
@@ -252,7 +253,7 @@ nextone:
         {
             if ((flags & IOC_SIGNAL_NO_THREAD_SYNC) == 0)
             {
-                ioc_unlock(root);
+                if (root) ioc_unlock(root);
             }
             handle_tried = OS_FALSE;
         }

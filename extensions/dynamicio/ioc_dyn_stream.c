@@ -180,7 +180,7 @@ void ioc_release_stream(
 static void ioc_stream_cleanup(
     iocStream *stream)
 {
-    ioc_streamer_close(stream->streamer);
+    ioc_streamer_close(stream->streamer, OSAL_STREAM_DEFAULT);
     stream->streamer_opened = OS_FALSE;
     stream->streamer = OS_NULL;
 
@@ -345,7 +345,7 @@ osalStatus ioc_run_stream(
         }
         if (s)
         {
-            ioc_streamer_close(stream->streamer);
+            ioc_streamer_close(stream->streamer, OSAL_STREAM_DEFAULT);
             stream->streamer = OS_NULL;
         }
     }

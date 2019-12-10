@@ -460,7 +460,7 @@ static osalStatus ioc_try_accept_new_sockets(
             osal_trace("end point: connection accepted");
             if (!ioc_establish_connection(epoint, newsocket, remote_ip_addr)) break;
             osal_debug_error("Out of connection pool");
-            osal_stream_close(epoint->socket);
+            osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
             epoint->socket = OS_NULL;
             break;
 
@@ -469,7 +469,7 @@ static osalStatus ioc_try_accept_new_sockets(
 
         default: /* failed, close the listening socket */
             osal_debug_error("Listening socket broken");
-            osal_stream_close(epoint->socket);
+            osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
             epoint->socket = OS_NULL;
             return status;
     }
@@ -586,7 +586,7 @@ static void ioc_endpoint_thread(
             if (status)
             {
                 osal_debug_error("osal_stream_select failed");
-                osal_stream_close(epoint->socket);
+                osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
                 epoint->socket = OS_NULL;
             }
         }

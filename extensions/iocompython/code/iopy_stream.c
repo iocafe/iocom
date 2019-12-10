@@ -261,7 +261,7 @@ static PyObject *Stream_delete(
 static void Stream_close_stremer(
     Stream *self)
 {
-    ioc_streamer_close(self->streamer);
+    ioc_streamer_close(self->streamer, OSAL_STREAM_DEFAULT);
     self->streamer = OS_NULL;
 }
 

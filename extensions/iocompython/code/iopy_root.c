@@ -911,7 +911,7 @@ static PyObject *Root_print(
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
     p = osal_stream_buffer_content(stream, &n);
     rval = PyUnicode_FromString(p);
-    osal_stream_close(stream);
+    osal_stream_close(stream, OSAL_STREAM_DEFAULT);
     return rval;
 }
 

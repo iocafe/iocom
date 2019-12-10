@@ -40,6 +40,6 @@ PyObject *iocom_python_json2bin(
     osal_compress_json(compressed, json_text, "title", OSAL_JSON_SIMPLIFY);
     data = osal_stream_buffer_content(compressed, &data_sz);
     rval = PyBytes_FromStringAndSize(data, data_sz);
-    osal_stream_close(compressed);
+    osal_stream_close(compressed, OSAL_STREAM_DEFAULT);
     return rval;
 }

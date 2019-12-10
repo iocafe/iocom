@@ -813,7 +813,7 @@ void ioc_close_stream(
     if (con->stream)
     {
         osal_trace2("stream closed");
-        osal_stream_close(con->stream);
+        osal_stream_close(con->stream, OSAL_STREAM_DEFAULT);
         con->stream = OS_NULL;
 #if OSAL_SERIAL_SUPPORT
         con->sercon_state = OSAL_SERCON_STATE_INIT_1;

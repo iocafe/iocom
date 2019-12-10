@@ -60,8 +60,8 @@ gina_t;
 
 #define GINA_EXP_MBLK_SZ 36
 #define GINA_IMP_MBLK_SZ 32
-#define GINA_CONF_EXP_MBLK_SZ 270
-#define GINA_CONF_IMP_MBLK_SZ 530
+#define GINA_CONF_EXP_MBLK_SZ 272
+#define GINA_CONF_IMP_MBLK_SZ 532
 
 extern const gina_t gina;
 extern const iocDeviceHdr gina_hdr;

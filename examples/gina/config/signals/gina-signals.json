@@ -93,7 +93,7 @@
         "signals": [
           {"name": "tod_cmd", "type": "char"},
           {"name": "tod_select", "type": "char"},
-          {"name": "tod_buf", "type": "uchar", "array": 513},
+          {"name": "tod_buf", "type": "uchar", "array": 257},
           {"name": "tod_head", "type": "int"}
         ]
       },

@@ -58,7 +58,7 @@ static void iocom_state_list(
 
     osal_console_write(p);
 
-    osal_stream_close(stream);
+    osal_stream_close(stream, OSAL_STREAM_DEFAULT);
 }
 
 

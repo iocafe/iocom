@@ -139,7 +139,7 @@ prm.device_nr = 1;
 
     /* Make sure that control stream state is clear even after soft reboot.
      */
-    os_memclear(&ioc_ctrl_state, sizeof(&ioc_ctrl_state));
+    ioc_init_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -172,6 +172,7 @@ osalStatus osal_loop(
      */
     ioc_run(&ioboard_communication);
     ioc_receive(&ioboard_imp);
+    ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
     /* Read all input pins from hardware into global pins structures. Reading will forward
@@ -191,6 +192,7 @@ osalStatus osal_loop(
     /* Move data synchronously from outgoing memory block.
      */
     ioc_send(&ioboard_exp);
+    ioc_send(&ioboard_conf_exp);
 
     return OSAL_SUCCESS;
 }

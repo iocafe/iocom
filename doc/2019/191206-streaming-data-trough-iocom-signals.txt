@@ -59,7 +59,6 @@ If "cmd" is IOSTREAM_IDLE:
 if "cmd" is IOSTREAM_RUNNING:
     if "state" is IOC_STREAM_RUNNING or IOSTREAM_COMPLETED: Read all available data and move "tail".
     If "state" is IOSTREAM_COMPLETED, the transfer has succesfully finished. Set "cmd" = IOSTREAM_IDLE.
-    Otherwise if "state" is IOSTREAM_IDLE, the transfer has been interrupted, set "cmd" = IOSTREAM_IDLE.
     If controller wants to interrupt the transfer, set "cmd" = IOSTREAM_IDLE.
 
 IO device: 

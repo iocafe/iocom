@@ -30,9 +30,9 @@ const struct gina_t gina =
     {"conf_exp", &ioboard_conf_exp, 5, GINA_CONF_EXP_MBLK_SZ, (iocSignal*)&gina.conf_exp.tod_state},
     {0, 1, OS_CHAR, &ioboard_conf_exp, OS_NULL}, /* tod_state */
     {2, 1, OS_INT, &ioboard_conf_exp, OS_NULL}, /* tod_tail */
-    {6, 1, OS_CHAR, &ioboard_conf_exp, OS_NULL}, /* frd_state */
-    {8, 257, OS_UCHAR, &ioboard_conf_exp, OS_NULL}, /* frd_buf */
-    {266, 1, OS_INT, &ioboard_conf_exp, OS_NULL} /* frd_head */
+    {7, 1, OS_CHAR, &ioboard_conf_exp, OS_NULL}, /* frd_state */
+    {9, 257, OS_UCHAR, &ioboard_conf_exp, OS_NULL}, /* frd_buf */
+    {267, 1, OS_INT, &ioboard_conf_exp, OS_NULL} /* frd_head */
   },
 
   {
@@ -41,9 +41,9 @@ const struct gina_t gina =
     {2, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* tod_select */
     {4, 513, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* tod_buf */
     {518, 1, OS_INT, &ioboard_conf_imp, OS_NULL}, /* tod_head */
-    {522, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* frd_cmd */
-    {524, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
-    {526, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
+    {523, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* frd_cmd */
+    {525, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
+    {527, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
   }
 };
 
