@@ -50,7 +50,8 @@ static osalStatus ioc_streamer_controller_write(
     iocStreamerSignals *signals,
     const os_char *buf,
     os_memsz n,
-    os_memsz *n_written);
+    os_memsz *n_written,
+    os_int flags);
 
 static osalStatus ioc_streamer_controller_read(
     iocStreamer *streamer,
@@ -322,7 +323,7 @@ osalStatus ioc_streamer_write(
     }
     else
     {
-        s = ioc_streamer_controller_write(streamer, &streamer->prm->tod, buf, n, n_written);
+        s = ioc_streamer_controller_write(streamer, &streamer->prm->tod, buf, n, n_written, flags);
     }
 #else
     s = ioc_streamer_device_write(streamer, &streamer->prm->frd, buf, n, n_written, flags);
@@ -352,7 +353,7 @@ osalStatus ioc_streamer_write(
   @param   n_read Pointer to integer into which the function stores the number of bytes read,
            which may be less than n if there are fewer bytes available. If the function fails
            n_read is set to zero.
-  @param   flags Flags for the function, ignored. Set OSAL_STREAM_DEFAULT (0).
+  @param   flags Flags for the function, set OSAL_STREAM_DEFAULT (0).
 
   @return  OSAL_SUCCESS if transfer is still running.
            OSAL_STATUS_COMPLETED transnsfer has been completed.
@@ -733,6 +734,8 @@ getout:
   @param   n_written Pointer to integer into which the function stores the number of bytes
            actually written, which may be less than n if there is not space (yet) in outgoing
            buffer. If the function fails n_written is set to zero.
+  @param   flags Flags for the function. Set OSAL_STREAM_DEFAULT (0) for normal operation
+           or OSAL_STREAM_INTERRUPT to interrupt the transfer as failed.
 
   @return  OSAL_SUCCESS to indicate success.
 
@@ -743,71 +746,117 @@ static osalStatus ioc_streamer_controller_write(
     iocStreamerSignals *signals,
     const os_char *buf,
     os_memsz n,
-    os_memsz *n_written)
+    os_memsz *n_written,
+    os_int flags)
 {
-    iocStreamerState
-        state,
-        cmd;
-
-    os_char
-        state_bits;
-
-    os_int
-        buf_sz,
-        tail,
-        nbytes;
-
-    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
-    if ((state_bits & OSAL_STATE_CONNECTED) == 0) state = IOC_STREAM_IDLE;
+    iocStreamerState state;
+    os_char state_bits;
+    os_int buf_sz, tail, nbytes;
+    osalStatus s;
 
     nbytes = 0;
-    cmd = ioc_gets0_int(signals->cmd);
-    switch (cmd)
+
+    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0)
     {
-        case IOC_STREAM_INTERRUPT:
-            goto switch_to_idle;
+        streamer->step = IOC_SSTEP_FAILED;
+        goto getout;
+    }
 
-        case IOC_STREAM_COMPLETED:
-            if (state != IOC_STREAM_RUNNING)
-            {
-                goto switch_to_idle;
-            }
-            break;
-
-        case IOC_STREAM_IDLE:
-            if (state != IOC_STREAM_IDLE) break;
+    switch (streamer->step)
+    {
+        case IOC_SSTEP_INITIALIZED:
+            osal_trace3("IOC_SSTEP_INITIALIZED");
             streamer->head = 0;
-            ioc_sets0_int(signals->select, 115);
             ioc_sets0_int(signals->head, 0);
-            ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
-            /* continues ... */
+            ioc_sets0_int(signals->select, streamer->select);
+            ioc_sets0_int(signals->cmd, IOC_STREAM_RUNNING);
+            if (state != IOC_STREAM_RUNNING) break;
+            streamer->step = IOC_SSTEP_TRANSFER_DATA;
+            osal_trace3("IOC_SSTEP_TRANSFER_DATA");
+            /* continues... */
 
-        case IOC_STREAM_RUNNING:
-            if (state != IOC_STREAM_RUNNING)
+        case IOC_SSTEP_TRANSFER_DATA:
+            if (state != IOC_STREAM_RUNNING || flags & OSAL_STREAM_INTERRUPT)
             {
-                goto switch_to_idle;
+                osal_trace3("IOC_SSTEP_FAILED, state != RUNNING or interrupted");
+                streamer->step = IOC_SSTEP_FAILED;
+                goto getout;
             }
 
-            buf_sz = signals->buf->n;
-            tail = (os_int)ioc_gets_int(signals->tail, &state_bits);
-            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+            if (n > 0)
             {
-                goto switch_to_idle;
-            }
-            else
-            {
+                buf_sz = signals->buf->n;
+                tail = (os_int)ioc_gets_int(signals->tail, &state_bits);
+                if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+                {
+                    osal_trace3("IOC_SSTEP_FAILED, no tail");
+                    streamer->step = IOC_SSTEP_FAILED;
+                    goto getout;
+                }
+
                 nbytes = ioc_streamer_write_internal(signals, buf, buf_sz,
                     (os_int)n, &streamer->head, tail);
+                if (nbytes < 0)
+                {
+                    osal_trace3("IOC_SSTEP_FAILED, buffer write failed");
+                    streamer->step = IOC_SSTEP_FAILED;
+                    goto getout;
+                }
+
+                /* More data to come, break.
+                 */
+                break;
             }
+            if (n == 0) break;
+
+            ioc_sets0_int(signals->cmd, IOC_STREAM_COMPLETED);
+            streamer->step = IOC_SSTEP_TRANSFER_DONE;
+            osal_trace3("IOC_SSTEP_TRANSFER_DONE");
+            /* continues... */
+
+        case IOC_SSTEP_TRANSFER_DONE:
+            if (state == IOC_STREAM_RUNNING) break;
+            ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
+            streamer->step = IOC_SSTEP_ALL_COMPLETED;
+            osal_trace3("IOC_SSTEP_ALL_COMPLETED");
+            /* continues... */
+
+        case IOC_SSTEP_ALL_COMPLETED:
+            break;
+
+        case IOC_SSTEP_FAILED:
+            ioc_sets0_int(signals->cmd, IOC_STREAM_INTERRUPT);
+            if (state == IOC_STREAM_RUNNING) break;
+            ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
+            streamer->step = IOC_SSTEP_FAILED_AND_IDLE_SET;
+            osal_trace3("IOC_SSTEP_FAILED_AND_IDLE_SET");
+            /* continues... */
+
+        case IOC_SSTEP_FAILED_AND_IDLE_SET:
             break;
     }
 
-    *n_written = nbytes;
-    return OSAL_SUCCESS;
+getout:
+    switch (streamer->step)
+    {
+        case IOC_SSTEP_INITIALIZED:
+        case IOC_SSTEP_TRANSFER_DATA:
+        case IOC_SSTEP_TRANSFER_DONE:
+        case IOC_SSTEP_FAILED:
+            s = OSAL_SUCCESS;
+            break;
 
-switch_to_idle:
-    ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
-    return OSAL_STATUS_FAILED;
+        case IOC_SSTEP_ALL_COMPLETED:
+            s = OSAL_STATUS_COMPLETED;
+            break;
+
+        default:
+            s = OSAL_STATUS_FAILED;
+            break;
+    }
+    *n_written = nbytes;
+    return s;
 }
 
 

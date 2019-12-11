@@ -292,7 +292,7 @@ void ioc_start_stream_read(
  */
 void ioc_start_stream_write(
     iocStream *stream,
-    os_char *buf,
+    const os_char *buf,
     os_memsz buf_sz)
 {
     ioc_stream_cleanup(stream);

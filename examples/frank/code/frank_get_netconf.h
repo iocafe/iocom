@@ -33,6 +33,7 @@ public:
     void start(const os_char *device_name, os_short device_nr, const os_char *network_name);
     void stop();
     void run();
+    void run_write();
 
     /* Which IO device?
      */

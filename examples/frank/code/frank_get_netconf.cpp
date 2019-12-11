@@ -81,6 +81,32 @@ void FrankGetNetConf::run()
 }
 
 
+void FrankGetNetConf::run_write()
+{
+    iocStream *stream;
+    osalStatus s;
+
+    stream = ioc_open_stream(&frank_root, OS_PBNR_IO_DEVICE_CONFIG,
+        "frd_buf", "tod_buf", "conf_exp", "conf_imp",
+        m_device_name, m_device_nr, m_network_name, 0);
+
+    ioc_start_stream_write(stream, "NAKSU DATAA", 10);
+
+    while ((s = ioc_run_stream(stream)) == OSAL_SUCCESS)
+    {
+        os_timeslice();
+        if (m_stop_thread) break;
+    }
+
+    if (s == OSAL_STATUS_COMPLETED)
+    {
+        osal_trace("data written");
+    }
+
+    ioc_release_stream(stream);
+}
+
+
 void FrankGetNetConf::start(const os_char *device_name, os_short device_nr, const os_char *network_name)
 {
     os_strncpy(m_device_name, device_name, IOC_NAME_SZ);
@@ -103,11 +129,10 @@ void FrankGetNetConf::stop()
     m_started = OS_FALSE;
 }
 
-
-
 static void frank_get_netconf_thread_func(void *prm, osalEvent done)
 {
     FrankGetNetConf *app = (FrankGetNetConf*)prm;
     osal_event_set(done);
-    app->run();
+//    app->run();
+    app->run_write();
 }
