@@ -166,6 +166,7 @@ typedef struct
      */
     osalStream frd;
     osPersistentHandle *fdr_persistent;
+    os_boolean fdr_persistent_ok;
 
     /* To device from controller.
      */

@@ -35,7 +35,8 @@ static osalStatus ioc_streamer_device_write(
     iocStreamerSignals *signals,
     const os_char *buf,
     os_memsz n,
-    os_memsz *n_written);
+    os_memsz *n_written,
+    os_int flags);
 
 static osalStatus ioc_streamer_device_read(
     iocStreamer *streamer,
@@ -58,7 +59,7 @@ static osalStatus ioc_streamer_controller_read(
     os_memsz n,
     os_memsz *n_read);
 
-static os_int osal_streamer_read_internal(
+static os_int ioc_streamer_read_internal(
     iocStreamerSignals *signals,
     os_char *buf,
     os_int buf_sz,
@@ -66,7 +67,7 @@ static os_int osal_streamer_read_internal(
     os_int head,
     os_int *tail);
 
-static os_int osal_streamer_write_internal(
+static os_int ioc_streamer_write_internal(
     iocStreamerSignals *signals,
     const os_char *buf,
     os_int buf_sz,
@@ -141,6 +142,13 @@ osalStream ioc_streamer_open(
     streamer->flags = flags;
     streamer->used = OS_TRUE;
     streamer->step = IOC_SSTEP_INITIALIZED;
+
+    /* Get select parameter, like block number
+     */
+    if (parameters)
+    {
+        streamer->select = osal_str_to_int(parameters, OS_NULL);
+    }
 
     osal_trace3_int("ioc_streamer_open()", (os_long)streamer);
 
@@ -231,7 +239,9 @@ void ioc_streamer_close(
   X
 
   @param   stream Stream handle.
-  @param   flags Bit fields.
+  @param   flags Flags for the function, bits. Set OSAL_STREAM_DEFAULT (0) for normal operation
+           or OSAL_STREAM_INTERRUPT to interrupt the transfer (final handshake) as failed.
+
   @return  Function status code. Value OSAL_SUCCESS (0) indicates success and OSAL_STATUS_PENDING
            that finald closing handshake is still going on. All other values indicate an error.
 
@@ -276,7 +286,8 @@ osalStatus ioc_streamer_flush(
   @param   n_written Pointer to integer into which the function stores the number of bytes
            actually written to streamer port, which may be less than n if there is not enough space
            left in write buffer. If the function fails n_written is set to zero.
-  @param   flags Flags for the function, ignored. Set OSAL_STREAM_DEFAULT (0).
+  @param   flags Flags for the function. Set OSAL_STREAM_DEFAULT (0) for normal operation
+           or OSAL_STREAM_INTERRUPT to interrupt the transfer as failed.
 
   @return  OSAL_SUCCESS if transfer is still running.
            OSAL_STATUS_COMPLETED transnsfer has been completed.
@@ -307,14 +318,14 @@ osalStatus ioc_streamer_write(
 #if IOC_CONTROLLER_STREAMER
     if (streamer->prm->is_device)
     {
-        s = ioc_streamer_device_write(streamer, &streamer->prm->frd, buf, n, n_written);
+        s = ioc_streamer_device_write(streamer, &streamer->prm->frd, buf, n, n_written, flags);
     }
     else
     {
         s = ioc_streamer_controller_write(streamer, &streamer->prm->tod, buf, n, n_written);
     }
 #else
-    s = ioc_streamer_device_write(streamer, &streamer->prm->frd, buf, n, n_written);
+    s = ioc_streamer_device_write(streamer, &streamer->prm->frd, buf, n, n_written, flags);
 #endif
 
     /* Return success/failure code.
@@ -410,6 +421,8 @@ osalStatus ioc_streamer_read(
   @param   n_written Pointer to integer into which the function stores the number of bytes
            actually written, which may be less than n if there is not space (yet) in outgoing buffer.
            If the function fails n_written is set to zero.
+  @param   flags Flags for the function. Set OSAL_STREAM_DEFAULT (0) for normal operation
+           or OSAL_STREAM_INTERRUPT to interrupt the transfer as failed.
 
   @return  OSAL_SUCCESS if transfer is still running.
            OSAL_STATUS_COMPLETED transnsfer has been completed.
@@ -422,7 +435,8 @@ static osalStatus ioc_streamer_device_write(
     iocStreamerSignals *signals,
     const os_char *buf,
     os_memsz n,
-    os_memsz *n_written)
+    os_memsz *n_written,
+    os_int flags)
 {
     iocStreamerState cmd;
     os_char state_bits;
@@ -458,9 +472,9 @@ static osalStatus ioc_streamer_device_write(
             /* continues... */
 
         case IOC_SSTEP_TRANSFER_DATA:
-            if (cmd != IOC_STREAM_RUNNING)
+            if (cmd != IOC_STREAM_RUNNING || flags & OSAL_STREAM_INTERRUPT)
             {
-                osal_trace3("IOC_SSTEP_FAILED, cmd != RUNNING");
+                osal_trace3("IOC_SSTEP_FAILED, cmd != RUNNING or interrupted");
                 streamer->step = IOC_SSTEP_FAILED;
                 goto getout;
             }
@@ -476,7 +490,7 @@ static osalStatus ioc_streamer_device_write(
                     goto getout;
                 }
 
-                nbytes = osal_streamer_write_internal(signals, buf, buf_sz,
+                nbytes = ioc_streamer_write_internal(signals, buf, buf_sz,
                     (os_int)n, &streamer->head, tail);
                 if (nbytes < 0)
                 {
@@ -507,6 +521,7 @@ static osalStatus ioc_streamer_device_write(
             break;
 
         case IOC_SSTEP_FAILED:
+            ioc_sets0_int(signals->state, IOC_STREAM_INTERRUPT);
             if (cmd == IOC_STREAM_RUNNING) break;
             ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
             streamer->step = IOC_SSTEP_FAILED_AND_IDLE_SET;
@@ -622,7 +637,7 @@ static osalStatus ioc_streamer_device_read(
                 goto getout;
             }
 
-            nbytes = osal_streamer_read_internal(signals, buf, buf_sz,
+            nbytes = ioc_streamer_read_internal(signals, buf, buf_sz,
                 (os_int)n, head, &streamer->tail);
             if (nbytes < 0)
             {
@@ -781,7 +796,7 @@ static osalStatus ioc_streamer_controller_write(
             }
             else
             {
-                nbytes = osal_streamer_write_internal(signals, buf, buf_sz,
+                nbytes = ioc_streamer_write_internal(signals, buf, buf_sz,
                     (os_int)n, &streamer->head, tail);
             }
             break;
@@ -879,7 +894,7 @@ static osalStatus ioc_streamer_controller_read(
                 goto getout;
             }
 
-            nbytes = osal_streamer_read_internal(signals, buf, buf_sz,
+            nbytes = ioc_streamer_read_internal(signals, buf, buf_sz,
                 (os_int)n, head, &streamer->tail);
             if (nbytes < 0)
             {
@@ -946,7 +961,7 @@ getout:
 #endif
 
 
-static os_int osal_streamer_read_internal(
+static os_int ioc_streamer_read_internal(
     iocStreamerSignals *signals,
     os_char *buf,
     os_int buf_sz,
@@ -1004,7 +1019,7 @@ static os_int osal_streamer_read_internal(
 }
 
 
-static os_int osal_streamer_write_internal(
+static os_int ioc_streamer_write_internal(
     iocStreamerSignals *signals,
     const os_char *buf,
     os_int buf_sz,
@@ -1061,9 +1076,9 @@ static os_int osal_streamer_write_internal(
 ****************************************************************************************************
 
   @brief Get serial port parameter.
-  @anchor osal_streamer_get_parameter
+  @anchor ioc_streamer_get_parameter
 
-  The osal_streamer_get_parameter() function gets a parameter value.
+  The ioc_streamer_get_parameter() function gets a parameter value.
 
   @param   stream Stream pointer representing the serial.
   @param   parameter_ix Index of parameter to get. Use OSAL_STREAM_TX_AVAILABLE to get
@@ -1073,7 +1088,7 @@ static os_int osal_streamer_write_internal(
 
 ****************************************************************************************************
 */
-os_long osal_streamer_get_parameter(
+os_long ioc_streamer_get_parameter(
     osalStream stream,
     osalStreamParameterIx parameter_ix)
 {
@@ -1208,6 +1223,13 @@ void ioc_run_control_stream(
             {
                 select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
                 ctrl->fdr_persistent = os_persistent_open(select, OSAL_STREAM_READ);
+                ctrl->fdr_persistent_ok = (ctrl->fdr_persistent != OS_NULL);
+#if OSAL_DEBUG
+                if (ctrl->fdr_persistent == OS_NULL)
+                {
+                    osal_debug_error_int("Reading persistent block failed", select);
+                }
+#endif
             }
         }
     }
@@ -1228,6 +1250,12 @@ void ioc_run_control_stream(
             {
                 select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
                 ctrl->tod_persistent = os_persistent_open(select, OSAL_STREAM_WRITE);
+#if OSAL_DEBUG
+                if (ctrl->fdr_persistent == OS_NULL)
+                {
+                    osal_debug_error_int("Writing persistent block failed", select);
+                }
+#endif
             }
         }
     }
@@ -1267,7 +1295,7 @@ void ioc_ctrl_stream_from_device(
 
     if (ctrl->fdr_persistent)
     {
-        bytes = osal_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
+        bytes = ioc_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
         while (OS_TRUE)
         {
             if (bytes <= 0) return;
@@ -1284,7 +1312,11 @@ void ioc_ctrl_stream_from_device(
 
             /* If everythin has been read.
              */
-            if (n_read < rdnow) break;
+            if (n_read < rdnow)
+            {
+                if (n_read < 0) ctrl->fdr_persistent_ok = OS_FALSE;
+                break;
+            }
             bytes -= n_read;
         }
 
@@ -1294,7 +1326,10 @@ void ioc_ctrl_stream_from_device(
 
     /* Finalize any handshaking signal stuff.
      */
-    s = ioc_streamer_flush(ctrl->frd, OSAL_STREAM_FINAL_HANDSHAKE);
+    s = ioc_streamer_flush(ctrl->frd, ctrl->fdr_persistent_ok
+        ? OSAL_STREAM_FINAL_HANDSHAKE
+        : OSAL_STREAM_FINAL_HANDSHAKE|OSAL_STREAM_INTERRUPT);
+
     if (s == OSAL_STATUS_PENDING) return;
 
     /* Close the stream
@@ -1363,7 +1398,7 @@ const osalStreamInterface ioc_streamer_iface
     ioc_streamer_read,
     osal_stream_default_write_value,
     osal_stream_default_read_value,
-    osal_streamer_get_parameter,
+    ioc_streamer_get_parameter,
     osal_stream_default_set_parameter,
     osal_stream_default_select};
 

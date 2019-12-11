@@ -93,6 +93,7 @@ iocStream *ioc_open_stream(
     if (stream == OS_NULL) return OS_NULL;
     os_memclear(stream, sizeof(iocStream));
     stream->root = root;
+    stream->select = select;
 
     prm = &stream->prm;
 
@@ -310,7 +311,7 @@ void ioc_start_stream_write(
 osalStatus ioc_run_stream(
     iocStream *stream)
 {
-    os_char buf[256];
+    os_char buf[256], nbuf[OSAL_NBUF_SZ];
     os_memsz n_read, n_written, n;
     osalStatus s;
 
@@ -322,9 +323,8 @@ osalStatus ioc_run_stream(
 
     if (!stream->streamer_opened)
     {
-        // status->select = ??
-
-        stream->streamer = ioc_streamer_open(OS_NULL, &stream->prm, OS_NULL,
+        osal_int_to_str(nbuf, sizeof(nbuf), stream->select);
+        stream->streamer = ioc_streamer_open(nbuf, &stream->prm, OS_NULL,
             stream->flags);
 
         if (stream->streamer == OS_NULL)

@@ -60,6 +60,10 @@ typedef struct iocStream
      */
     os_int flags;
 
+    /** Select persistent block number, etc, transfer option.
+     */
+    os_int select;
+
     /** IOCOM stream parameters.
      */
     iocStreamerParams prm;

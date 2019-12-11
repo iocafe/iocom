@@ -73,7 +73,12 @@ osalStatus osal_main(
     osalNetworkInterface nic;
     ioboardParams prm;
     const osalStreamInterface *iface;
+    osPersistentParams persistentprm;
     os_int64 ti;
+
+    os_memclear(&persistentprm, sizeof(persistentprm));
+    persistentprm.device_name = IOBOARD_DEVICE_NAME;
+    os_persistent_initialze(&persistentprm);
 
     /* Setup IO pins.
      */
