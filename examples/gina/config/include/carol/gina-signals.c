@@ -39,11 +39,11 @@ const struct gina_t gina =
     {"conf_imp", &ioboard_conf_imp, 7, GINA_CONF_IMP_MBLK_SZ, (iocSignal*)&gina.conf_imp.tod_cmd},
     {0, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* tod_cmd */
     {2, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* tod_select */
-    {4, 513, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* tod_buf */
-    {518, 1, OS_INT, &ioboard_conf_imp, OS_NULL}, /* tod_head */
-    {523, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* frd_cmd */
-    {525, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
-    {527, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
+    {4, 257, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* tod_buf */
+    {262, 1, OS_INT, &ioboard_conf_imp, OS_NULL}, /* tod_head */
+    {267, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* frd_cmd */
+    {269, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
+    {271, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
   }
 };
 

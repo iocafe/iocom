@@ -155,7 +155,7 @@
 					{
 						"name": "tod_buf",
 						"type": "uchar",
-						"array": 513
+						"array": 257
 					},
 					{
 						"name": "tod_head",

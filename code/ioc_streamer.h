@@ -17,8 +17,12 @@
 #define IOC_STREAMER_INCLUDED
 
 
+#ifndef IOC_DEVICE_STREAMER
 #define IOC_DEVICE_STREAMER 1
+#endif
+#ifndef IOC_CONTROLLER_STREAMER
 #define IOC_CONTROLLER_STREAMER 1
+#endif
 
 #define IOC_STREAMER_SUPPORT (IOC_DEVICE_STREAMER || IOC_CONTROLLER_STREAMER)
 #if IOC_STREAMER_SUPPORT
@@ -99,6 +103,18 @@ typedef struct iocStreamerParams
 iocStreamerParams;
 
 
+typedef enum
+{
+    IOC_SSTEP_INITIALIZED,
+    IOC_SSTEP_TRANSFER_DATA,
+    IOC_SSTEP_TRANSFER_DONE,
+    IOC_SSTEP_ALL_COMPLETED,
+    IOC_SSTEP_FAILED,
+    IOC_SSTEP_FAILED_AND_IDLE_SET
+}
+iocStreamerStep;
+
+
 /**
 ****************************************************************************************************
 
@@ -118,18 +134,13 @@ typedef struct iocStreamer
 
     iocStreamerParams *prm;
 
-//    iocStreamerState frd_state;
-    // iocStreamerState frd_cmd;
-    os_char frd_select;
-    os_int frd_head;
-    os_int frd_tail;
+    iocStreamerStep step;
+    os_int select;
 
-    // iocStreamerState tod_state;
-    //iocStreamerState tod_cmd;
-    os_char tod_select;
-    os_int tod_head;
-    os_int tod_tail;
+    os_int head;
+    os_int tail;
 
+    os_int flags;
     os_boolean used;
 }
 iocStreamer;
@@ -153,13 +164,11 @@ typedef struct
 
     /* Transfer from device to controller.
      */
-    os_boolean frd_running;
     osalStream frd;
     osPersistentHandle *fdr_persistent;
 
     /* To device from controller.
      */
-    os_boolean tod_running;
     osalStream tod;
     osPersistentHandle *tod_persistent;
 }
