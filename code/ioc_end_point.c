@@ -569,7 +569,7 @@ static void ioc_endpoint_thread(
 #if OSAL_SOCKET_SELECT_SUPPORT
     /* Run the end point.
      */
-    while (!epoint->stop_worker_thread)
+    while (!epoint->stop_worker_thread && osal_go())
     {
         ioc_run_endpoint(epoint);
 
@@ -599,7 +599,7 @@ static void ioc_endpoint_thread(
 #else
     /* Run the end point.
      */
-    while (!epoint->stop_worker_thread)
+    while (!epoint->stop_worker_thread && osal_go())
     {
         ioc_run_endpoint(epoint);
         os_sleep(100);

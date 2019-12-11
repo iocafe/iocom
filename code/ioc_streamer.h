@@ -106,10 +106,12 @@ iocStreamerParams;
 typedef enum
 {
     IOC_SSTEP_INITIALIZED,
+    IOC_SSTEP_INITIALIZED2,
     IOC_SSTEP_TRANSFER_DATA,
     IOC_SSTEP_TRANSFER_DONE,
     IOC_SSTEP_ALL_COMPLETED,
     IOC_SSTEP_FAILED,
+    IOC_SSTEP_FAILED2,
     IOC_SSTEP_FAILED_AND_IDLE_SET
 }
 iocStreamerStep;
@@ -141,6 +143,7 @@ typedef struct iocStreamer
     os_int tail;
 
     os_int flags;
+    os_timer mytimer;
     os_boolean used;
 }
 iocStreamer;

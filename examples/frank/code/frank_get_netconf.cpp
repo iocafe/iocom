@@ -64,7 +64,7 @@ void FrankGetNetConf::run()
 
     ioc_start_stream_read(stream);
 
-    while ((s = ioc_run_stream(stream)) == OSAL_SUCCESS)
+    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS)
     {
         os_timeslice();
         if (m_stop_thread) break;
@@ -92,7 +92,7 @@ void FrankGetNetConf::run_write()
 
     ioc_start_stream_write(stream, "NAKSU DATAA", 10);
 
-    while ((s = ioc_run_stream(stream)) == OSAL_SUCCESS)
+    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS)
     {
         os_timeslice();
         if (m_stop_thread) break;
@@ -133,6 +133,6 @@ static void frank_get_netconf_thread_func(void *prm, osalEvent done)
 {
     FrankGetNetConf *app = (FrankGetNetConf*)prm;
     osal_event_set(done);
-//    app->run();
-    app->run_write();
+    app->run();
+    // app->run_write();
 }

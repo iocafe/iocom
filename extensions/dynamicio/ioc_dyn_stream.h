@@ -45,6 +45,8 @@ typedef struct
 iocStreamSignals;
 
 
+#define IOC_CALL_SYNC 1
+
 /**
 ****************************************************************************************************
     Stream structure.
@@ -152,7 +154,8 @@ void ioc_start_stream_write(
 /* Call run repeatedly until data transfer is complete or has failed.
  */
 osalStatus ioc_run_stream(
-    iocStream *stream);
+    iocStream *stream,
+    os_int flags);
 
 /* Get pointer to received data, valid until next stream function call.
    Does not allocate new copy, returns the pointer to data stored

@@ -307,9 +307,11 @@ void ioc_start_stream_write(
 
 
 /* Call run repeatedly until data transfer is complete or has failed.
+ * @param  flags IOC_CALL_SYNC cal ioc_receive() and ioc_send()
  */
 osalStatus ioc_run_stream(
-    iocStream *stream)
+    iocStream *stream,
+    os_int flags)
 {
     os_char buf[256], nbuf[OSAL_NBUF_SZ];
     os_memsz n_read, n_written, n;
@@ -319,6 +321,11 @@ osalStatus ioc_run_stream(
     if (s)
     {
         return OSAL_STATUS_PENDING;
+    }
+
+    if (flags & IOC_CALL_SYNC)
+    {
+        ioc_receive(&stream->exp_handle);
     }
 
     if (!stream->streamer_opened)
@@ -360,6 +367,15 @@ osalStatus ioc_run_stream(
 
             stream->write_buf_pos += (os_int)n_written;
         }
+        else
+        {
+            s = ioc_streamer_write(stream->streamer, "", -1, &n_written, OSAL_STREAM_DEFAULT);
+        }
+    }
+
+    if (flags & IOC_CALL_SYNC)
+    {
+        ioc_send(&stream->imp_handle);
     }
 
     return s;
@@ -374,6 +390,10 @@ os_char *ioc_get_stream_data(
     iocStream *stream,
     os_memsz *buf_sz)
 {
+    /* Verify that ioc_start_stream_read() has been called.
+     */
+    osal_debug_assert(stream->flags & OSAL_STREAM_READ);
+
     if (stream->read_buf)
     {
         return osal_stream_buffer_content(stream->read_buf, buf_sz);
