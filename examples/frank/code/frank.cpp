@@ -232,12 +232,17 @@ static void root_callback(
         case IOC_NEW_MEMORY_BLOCK:
             mblk_name = mblk->mblk_name;
 
+            ioc_setup_handle(&handle, root, mblk);
             if (!os_strcmp(mblk_name, "info"))
             {
-                ioc_setup_handle(&handle, root, mblk);
                 ioc_add_callback(&handle, info_callback, OS_NULL);
-                ioc_release_handle(&handle);
             }
+            else
+            {
+                ioc_memory_block_set_int_param(&handle,
+                    IOC_MBLK_AUTO_SYNC_FLAG, OS_FALSE);
+            }
+            ioc_release_handle(&handle);
             break;
 
         case IOC_NEW_NETWORK:

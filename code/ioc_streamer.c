@@ -239,7 +239,7 @@ void ioc_streamer_close(
   @brief Flush data to the stream
   @anchor ioc_streamer_flush
 
-  X
+  The flush function can be used to do the final handshake of data transfer.
 
   @param   stream Stream handle.
   @param   flags Flags for the function, bits. Set OSAL_STREAM_DEFAULT (0) for normal operation
@@ -738,21 +738,6 @@ getout:
   @anchor ioc_streamer_controller_write
 
   The ioc_streamer_controller_write() function handles a controller writing data to stream.
-  Controller can be in IOC_STREAM_IDLE, IOC_STREAM_RUNNING or IOC_STREAM_COMPLETED command "cmd".
-
-  If "cmd" is IOC_STREAM_IDLE:
-      If "state" is not IOC_STREAM_IDLE, do nothing. We are waiting for IO device to finish.
-      Otherwise if controller wants to start the transfer, set "select" to ? (app spefific),
-      "head" = 0 and "cmd" = IOSTREAM_RUNNING
-
-  if "cmd" is IOC_STREAM_RUNNING:
-      If "state" is IOC_STREAM_RUNNING: Write as much data to buffer as available and fits
-      between tail and head and move head. If all data has been written and "state" is
-      IOC_STREAM_RUNNING, set "cmd" to IOC_STREAM_COMPLETED.
-      If controller want to interrupt the transfer, it sets "cmd" to IOC_STREAM_IDLE.
-
-  Is cmd is IOC_STREAM_COMPLETED:
-      If "state" is IOC_STREAM_IDLE, set cmd = IOC_STREAM_IDLE. All done.
 
   @param   streamer Pointer to streamer structure.
   @param   signals Pointer to signals structure. These are signals used for the transfer.
@@ -904,18 +889,6 @@ getout:
   The ioc_streamer_controller_read() function handles controller reveiving data from
   IO device.
 
-  Controller can be in IOC_STREAM_IDLE or IOC_STREAM_RUNNING command (in "cmd")
-
-  If "cmd" is IOSTREAM_IDLE:
-      If state is IOSTREAM_RUNNING, do nothing. We are waiting for IO device to finish.
-      Otherwise if controller wants to start the transfer, set "select" to ? (app spefific),
-      "tail" = 0 and "cmd" = IOSTREAM_RUNNING
-
-  if "cmd" is IOSTREAM_RUNNING:
-      if "state" is IOC_STREAM_RUNNING or IOSTREAM_COMPLETED: Read all available data and move "tail".
-      If "state" is IOSTREAM_COMPLETED, the transfer has succesfully finished. Set "cmd" = IOSTREAM_IDLE.
-      If controller wants to interrupt the transfer, set "cmd" = IOSTREAM_IDLE.
-
   @param   streamer Pointer to streamer structure.
   @param   signals Pointer to signals structure. These are signals used for the transfer.
   @param   buf Pointer to buffer where to store data.
@@ -1003,13 +976,7 @@ static osalStatus ioc_streamer_controller_read(
                 break;
             }
 
-            // ioc_sets0_int(signals->cmd, IOC_STREAM_COMPLETED);
-            // streamer->step = IOC_SSTEP_TRANSFER_DONE;
-            // osal_trace3("IOC_SSTEP_TRANSFER_DONE");
-            /* continues... */
-
         case IOC_SSTEP_TRANSFER_DONE:
-            // if (cmd == IOC_STREAM_COMPLETED) break;
             ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
             streamer->step = IOC_SSTEP_ALL_COMPLETED;
             osal_trace3("IOC_SSTEP_ALL_COMPLETED");
@@ -1017,7 +984,6 @@ static osalStatus ioc_streamer_controller_read(
 
         case IOC_SSTEP_FAILED:
             ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
-            // if (cmd == IOC_STREAM_RUNNING || cmd == IOC_STREAM_COMPLETED) break;
             streamer->step = IOC_SSTEP_FAILED_AND_IDLE_SET;
             osal_trace3("IOC_SSTEP_FAILED_AND_IDLE_SET");
             break;
@@ -1051,6 +1017,19 @@ getout:
 #endif
 
 
+/**
+****************************************************************************************************
+
+  @brief Read data from ring buffer.
+  @anchor ioc_streamer_read_internal
+
+  The ioc_streamer_read_internal() function read data from ring buffer in memory block and
+  moves tail.
+
+  @return  Number of bytes stored.
+
+****************************************************************************************************
+*/
 static os_int ioc_streamer_read_internal(
     iocStreamerSignals *signals,
     os_char *buf,
@@ -1109,6 +1088,19 @@ static os_int ioc_streamer_read_internal(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Write data to ring buffer.
+  @anchor ioc_streamer_write_internal
+
+  The ioc_streamer_write_internal() function stores data to ring buffer in memory block and
+  moves head.
+
+  @return  Number of bytes stored.
+
+****************************************************************************************************
+*/
 static os_int ioc_streamer_write_internal(
     iocStreamerSignals *signals,
     const os_char *buf,
@@ -1274,12 +1266,26 @@ void ioc_init_control_stream(
 /**
 ****************************************************************************************************
 
-  @brief Keep control stream alive.
+  @brief Keep control stream for transferring IO device configuration and flash program alive.
   @anchor ioc_run_control_stream
 
-  Streamer for transferring IO device configuration and flash program. The streamer is used
-  to transfer a stream using buffer within memory block. This static structure selects which
-  signals are used for straming data between the controller and IO device.
+  This is IO device end function, which handles transfer of configuration and flash software,
+  etc. The device configuration included device identification, network configuration and
+  security configuration, like certificates, etc.
+
+  The streamer is used  to transfer a stream using buffer within memory block. This static
+  params structure selects which signals are used for straming.
+
+  The function is called repeatedly to run data this data transfer between the  controller and
+  the IO device. The function reads data from the stream buffer in memory block (as much as
+  there is) and writes it to persistent storage.
+
+  If the function detects IOC_STREAM_COMPLETED or IOC_STREAM_INTERRUPTED command, or if
+  connection has broken, it closes the persistent storage and memory block streamer.
+  Closing persistent object is flagged with success OSAL_STREAM_DEFAULT only on
+  IOC_STREAM_COMPLETED command, otherwise persistent object is closed with OSAL_STREAM_INTERRUPT
+  flag (in this case persient object may not want to use newly received data, especially if
+  it is flash program for micro-controller.
 
   This function must be called from one thread at a time.
 
@@ -1360,14 +1366,13 @@ void ioc_run_control_stream(
 /**
 ****************************************************************************************************
 
-  @brief Move data from controller to IO device.
+  @brief Move data from IO device tp controller.
   @anchor ioc_ctrl_stream_from_device
 
   This code is used in IO device. The function is called repeatedly to run data transfer
-  from controller to IO device. The function reads data from persistent storage and
+  from IO device to controller. The function reads data from persistent storage and
   writes it to stream buffer in memory block. When the data ends, the device will show
-  IOC_STREAM_COMPLETED state. If transfer is interrupted (for example reading persistent
-  storage fails, the IOC_STREAM_INTERRUPT state is set to memory block.
+  IOC_STREAM_COMPLETED state.
 
   @param   ctrl IO device control stream transfer state structure.
   @param   params Parameters for the streamer.
@@ -1435,14 +1440,11 @@ void ioc_ctrl_stream_from_device(
   @brief Move data from controller to IO device.
   @anchor ioc_ctrl_stream_to_device
 
-  Called repeatedly to run data transfer from controller IO device. The function reads data from
-  the stream buffer in memory block (as much as there is) and writes it to persistent storage.
-  If the function detects IOC_STREAM_COMPLETED or IOC_STREAM_INTERRUPTED command, or if
-  connection has broken, it closes the persistent storage and memory block streamer.
-  Closing persistent object is flagged with success OSAL_STREAM_DEFAULT only on
-  IOC_STREAM_COMPLETED command, otherwise persistent object is closed with OSAL_STREAM_INTERRUPT
-  flag (in this case persient object may not want to use newly received data, especially if
-  it is flash program for micro-controller.
+  This code is used in IO device. The function is called repeatedly to run data transfer
+  from controller to IO device. The function reads data from persistent storage and
+  writes it to stream buffer in memory block. When the data ends, the device will show
+  IOC_STREAM_COMPLETED state. If transfer is interrupted (for example reading persistent
+  storage fails, the IOC_STREAM_INTERRUPT state is set to memory block.
 
   @param   ctrl IO device control stream transfer state structure.
   @param   params Parameters for the streamer.
