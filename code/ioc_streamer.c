@@ -451,7 +451,7 @@ static osalStatus ioc_streamer_device_write(
 
             streamer->head = 0;
             ioc_sets0_int(signals->head, 0);
-            ioc_sets0_int(signals->select, streamer->select);
+            streamer->select = ioc_gets0_int(signals->select);
             ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
             streamer->step = IOC_SSTEP_TRANSFER_DATA;
             osal_trace3("IOC_SSTEP_TRANSFER_DATA");
@@ -836,80 +836,114 @@ static osalStatus ioc_streamer_controller_read(
     os_memsz n,
     os_memsz *n_read)
 {
-    iocStreamerState
-        state,
-        cmd;
+    iocStreamerState state;
+    os_char state_bits;
+    os_int buf_sz, head, nbytes;
+    osalStatus s;
 
-    os_char
-        state_bits;
-
-    os_int
-        buf_sz,
-        head,
-        nbytes;
-
-    osalStatus
-        s;
-
-    s = OSAL_SUCCESS;
+    nbytes = 0;
 
     state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0)
     {
-        goto switch_to_idle;
+        streamer->step = IOC_SSTEP_FAILED;
+        goto getout;
     }
 
-    nbytes = 0;
-    cmd = ioc_gets0_int(signals->cmd);
-    switch (cmd)
+    switch (streamer->step)
     {
-        default:
-        case IOC_STREAM_IDLE:
-            if (state == IOC_STREAM_RUNNING || state == IOC_STREAM_INTERRUPT) break;
-            ioc_sets0_int(signals->select, 111);
+        case IOC_SSTEP_INITIALIZED:
             streamer->tail = 0;
             ioc_sets0_int(signals->tail, 0);
+            ioc_sets0_int(signals->select, streamer->select);
             ioc_sets0_int(signals->cmd, IOC_STREAM_RUNNING);
-            osal_trace3("state: IDLE->RUNNING");
-            /* continues ... */
+            if (state != IOC_STREAM_RUNNING && state != IOC_STREAM_COMPLETED) break;
+            streamer->step = IOC_SSTEP_TRANSFER_DATA;
+            osal_trace3("IOC_SSTEP_TRANSFER_DATA");
+            break;
 
-        case IOC_STREAM_RUNNING:
-            if (state == IOC_STREAM_IDLE) break;
-            if (state == IOC_STREAM_INTERRUPT)
+        case IOC_SSTEP_TRANSFER_DATA:
+            if (state != IOC_STREAM_RUNNING && state != IOC_STREAM_COMPLETED)
             {
-                goto switch_to_idle;
+                osal_trace3("IOC_SSTEP_FAILED, state != RUNNING,COMPLETED");
+                streamer->step = IOC_SSTEP_FAILED;
+                goto getout;
             }
+
             buf_sz = signals->buf->n;
             head = (os_int)ioc_gets_int(signals->head, &state_bits);
             if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
             {
-                goto switch_to_idle;
+                osal_trace3("IOC_SSTEP_FAILED, no head");
+                streamer->step = IOC_SSTEP_FAILED;
+                goto getout;
             }
 
             nbytes = osal_streamer_read_internal(signals, buf, buf_sz,
                 (os_int)n, head, &streamer->tail);
-            if (nbytes < 0) goto switch_to_idle;
-
-            if (state == IOC_STREAM_COMPLETED)
+            if (nbytes < 0)
             {
-                ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
-                s = OSAL_STATUS_COMPLETED;
-                osal_trace3("TRANSFER SUCCESSFULL");
+                osal_trace3("IOC_SSTEP_FAILED, buffer read failed");
+                streamer->step = IOC_SSTEP_FAILED;
+                goto getout;
             }
 
+            /* If more data to come, break.
+             */
+            if (state == IOC_STREAM_RUNNING)
+            {
+                break;
+            }
+
+            ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
+            streamer->step = IOC_SSTEP_ALL_COMPLETED;
+            osal_trace3("IOC_SSTEP_TRANSFER_DONE");
+            /* continues... */
+
+        case IOC_SSTEP_TRANSFER_DONE:
+            // if (cmd == IOC_STREAM_COMPLETED) break;
+            ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
+            streamer->step = IOC_SSTEP_ALL_COMPLETED;
+            osal_trace3("IOC_SSTEP_ALL_COMPLETED");
+            /* continues... */
+
+        case IOC_SSTEP_ALL_COMPLETED:
+            break;
+
+        case IOC_SSTEP_FAILED:
+            ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
+            // if (cmd == IOC_STREAM_RUNNING || cmd == IOC_STREAM_COMPLETED) break;
+            streamer->step = IOC_SSTEP_FAILED_AND_IDLE_SET;
+            osal_trace3("IOC_SSTEP_FAILED_AND_IDLE_SET");
+            /* continues... */
+
+        case IOC_SSTEP_FAILED_AND_IDLE_SET:
             break;
     }
 
+getout:
+    switch (streamer->step)
+    {
+        case IOC_SSTEP_INITIALIZED:
+        case IOC_SSTEP_TRANSFER_DATA:
+        case IOC_SSTEP_TRANSFER_DONE:
+        case IOC_SSTEP_FAILED:
+            s = OSAL_SUCCESS;
+            break;
+
+        case IOC_SSTEP_ALL_COMPLETED:
+            s = OSAL_STATUS_COMPLETED;
+            break;
+
+        default:
+            s = OSAL_STATUS_FAILED;
+            break;
+    }
     *n_read = nbytes;
     return s;
-
-switch_to_idle:
-    osal_trace3("state: TRANSFER INTERRUPTED");
-    ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
-    return OSAL_STATUS_FAILED;
 }
-#endif
 
+#endif
 
 
 static os_int osal_streamer_read_internal(
@@ -1168,11 +1202,11 @@ void ioc_run_control_stream(
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
             osal_trace3("IOC_STREAM_RUNNING command");
-            select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
             ctrl->frd = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_WRITE);
 
             if (ctrl->frd)
             {
+                select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
                 ctrl->fdr_persistent = os_persistent_open(select, OSAL_STREAM_READ);
             }
         }
@@ -1192,6 +1226,7 @@ void ioc_run_control_stream(
 
             if (ctrl->tod)
             {
+                select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
                 ctrl->tod_persistent = os_persistent_open(select, OSAL_STREAM_WRITE);
             }
         }

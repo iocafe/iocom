@@ -186,7 +186,8 @@ static void ioc_stream_cleanup(
 
     if (stream->read_buf)
     {
-
+        osal_stream_buffer_close(stream->read_buf, OSAL_STREAM_DEFAULT);
+        stream->read_buf = OS_NULL;
     }
 
     if (stream->write_buf)
@@ -194,7 +195,6 @@ static void ioc_stream_cleanup(
         os_free(stream->write_buf, stream->write_buf_sz);
         stream->write_buf = OS_NULL;
     }
-
 
     ioc_release_handle(&stream->exp_handle);
     ioc_release_handle(&stream->imp_handle);
@@ -341,7 +341,7 @@ osalStatus ioc_run_stream(
         s = ioc_streamer_read(stream->streamer, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
         if (n_read > 0)
         {
-            s = osal_stream_buffer_write(stream->read_buf, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
+            osal_stream_buffer_write(stream->read_buf, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
         }
         if (s)
         {
@@ -360,7 +360,6 @@ osalStatus ioc_run_stream(
 
             stream->write_buf_pos += (os_int)n_written;
         }
-
     }
 
     return s;
