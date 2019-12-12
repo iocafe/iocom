@@ -18,18 +18,6 @@
 struct Root;
 
 
-typedef struct
-{
-    iocSignal cmd;
-    iocSignal select;
-    iocSignal buf;
-    iocSignal head;
-    iocSignal tail;
-    iocSignal state;
-}
-iocStreamSignalsStruct;
-
-
 /** Python stream class.
  */
 typedef struct
@@ -40,41 +28,9 @@ typedef struct
      */
     Root *pyroot;
 
-    /** IOCOM stream parameters.
+    /** Contained IOCOM stream object.
      */
-    iocStreamerParams prm;
-
-    /** Signals for transferring data from device.
-     */
-    iocStreamSignalsStruct frd;
-
-    /** Signals for transferring data to device.
-     */
-    iocStreamSignalsStruct tod;
-
-    /** Buffer names
-     */
-    os_char frd_signal_name_prefix[IOC_SIGNAL_NAME_SZ];
-    os_char tod_signal_name_prefix[IOC_SIGNAL_NAME_SZ];
-
-    /** Memory block handles.
-     */
-    iocHandle exp_handle;
-    iocHandle imp_handle;
-
-    /** Streamer handle (ioc_streamer)
-     */
-    osalStream streamer;
-
-    /** Flag indicating the streamer has been opened successfully and cannot be opened again
-        for this instance of Python API stream object.
-     */
-    os_boolean streamer_opened;
-
-    /** Identifiers for the signals.
-     */
-    iocIdentifiers exp_identifiers;
-    iocIdentifiers imp_identifiers;
+    iocStream *stream;
 
     /** Connection initialization status: 0 = all good, other values are errors.
         Set by the constructor function.

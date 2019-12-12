@@ -2,28 +2,55 @@ from iocompython import Root, EndPoint, Signal, Stream, json2bin
 import ioterminal 
 import time
 
-def network_conf(device_name, network_name):
+def get_network_conf(device_name, network_name):
     global root, callback_queue
 
     exp_mblk_path = 'conf_exp.' + device_name + '.' + network_name
     imp_mblk_path = 'conf_imp.' + device_name + '.' + network_name
 
-    frd = Stream(root, read = "frd_buf", exp = exp_mblk_path, imp = imp_mblk_path, select = 'netconf')
-    print ('UKEMI', frd)
+    stream = Stream(root, frd = "frd_buf", tod = "tod_buf", exp = exp_mblk_path, imp = imp_mblk_path, select = 2)
+    stream.start_read()
 
     while True:
-        rval, bytedata = frd.read()
-        print('Stream: ', rval, bytedata)
-
-        if rval == 'completed':
+        s = stream.run()
+        if s != None:
             break
-
-        if rval != 'ok':
-            break
-        
         time.sleep(0.01) 
 
-    frd.delete()
+    if s == 'completed':
+        data = stream.get_data();
+        print(data)
+
+    else:
+        print(s)
+
+    stream.delete()
+
+
+def set_network_conf(device_name, network_name):
+    global root, callback_queue
+
+    exp_mblk_path = 'conf_exp.' + device_name + '.' + network_name
+    imp_mblk_path = 'conf_imp.' + device_name + '.' + network_name
+
+    stream = Stream(root, frd = "frd_buf", tod = "tod_buf", exp = exp_mblk_path, imp = imp_mblk_path, select = 2)
+
+    my_conf_bytes = str.encode("My dummy network configuration string")
+    stream.start_write(my_conf_bytes)
+
+    while True:
+        s = stream.run()
+        if s != None:
+            break
+        time.sleep(0.01) 
+
+    if s == 'completed':
+        print("success")
+
+    else:
+        print(s)
+
+    stream.delete()
 
 
 def main():
@@ -44,13 +71,12 @@ def main():
             device_name = e[2]
             network_name = e[1]
 
-            if event == 'new_mblk':
-                if mblk_name == 'conf_exp':
-                    network_conf(device_name, network_name)
-
-            # New device
-            # if event == 'new_device':
-            #    network_conf(device_name, network_name)
+            # New device. This has a potential problem. It is not guaranteed that
+            # new_device event comes after information about both conf_exp and conf_imp
+            # memory blocks has been received. 
+            if event == 'new_device':
+                #get_network_conf(device_name, network_name)
+                set_network_conf(device_name, network_name)
 
     root.delete()
 

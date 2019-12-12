@@ -4,9 +4,63 @@
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.12.2019
+  @date    11.12.2019
 
   Streaming data trough memory block.
+
+  from iocompython import Root, EndPoint, Signal, Stream, json2bin
+  import ioterminal
+  import time
+
+  def get_network_conf(device_name, network_name):
+    global root, callback_queue
+
+    exp_mblk_path = 'conf_exp.' + device_name + '.' + network_name
+    imp_mblk_path = 'conf_imp.' + device_name + '.' + network_name
+
+    stream = Stream(root, frd = "frd_buf", tod = "tod_buf", exp = exp_mblk_path, imp = imp_mblk_path, select = 2)
+    stream.start_read()
+
+    while True:
+        s = stream.run()
+        if s != None:
+            break
+        time.sleep(0.01)
+
+    if s == 'completed':
+        data = stream.get_data();
+        print(data)
+
+    else:
+        print(s)
+
+    stream.delete()
+
+
+  def set_network_conf(device_name, network_name):
+    global root, callback_queue
+
+    exp_mblk_path = 'conf_exp.' + device_name + '.' + network_name
+    imp_mblk_path = 'conf_imp.' + device_name + '.' + network_name
+
+    stream = Stream(root, frd = "frd_buf", tod = "tod_buf", exp = exp_mblk_path, imp = imp_mblk_path, select = 2)
+
+    my_conf_bytes = str.encode("My dummy network configuration string")
+    stream.start_write(my_conf_bytes)
+
+    while True:
+        s = stream.run()
+        if s != None:
+            break
+        time.sleep(0.01)
+
+    if s == 'completed':
+        print("success")
+
+    else:
+        print(s)
+
+    stream.delete()
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -21,29 +75,6 @@
 static void Stream_close_stremer(
     Stream *self);
 
-static void Stream_init_signals(
-    iocStreamerSignals *ptrs,
-    iocStreamSignalsStruct *signal_struct,
-    iocHandle *exp_handle,
-    iocHandle *imp_handle,
-    os_boolean is_frd);
-
-static iocSignal *Stream_clear_signal(
-    iocSignal *signal,
-    iocHandle *handle);
-
-static osalStatus Stream_setup_signals(
-    Stream *self,
-    iocStreamSignalsStruct *sigs,
-    os_boolean is_frd,
-    iocRoot *iocroot);
-
-static osalStatus Stream_setup_one(
-    iocSignal *signal,
-    char *signal_name_prefix,
-    char *signal_name_end,
-    iocIdentifiers *identifiers,
-    iocRoot *iocroot);
 
 
 /**
@@ -70,21 +101,21 @@ static PyObject *Stream_new(
     Stream *self;
     PyObject *pyroot = NULL;
     Root *root;
-    iocStreamerParams *prm;
     iocRoot *iocroot;
-    os_char *p;
 
     const char
-        *read_buf_name = NULL,
-        *write_buf_name = NULL,
+        *frd_buf_name = NULL,
+        *tod_buf_name = NULL,
         *exp_mblk_path = NULL,
-        *imp_mblk_path = NULL,
-        *select = NULL;
+        *imp_mblk_path = NULL;
+
+    int
+        select = 0;
 
     static char *kwlist[] = {
         "root",
-        "read",
-        "write",
+        "frd",
+        "tod",
         "exp",
         "imp",
         "select",
@@ -96,21 +127,11 @@ static PyObject *Stream_new(
     {
         return PyErr_NoMemory();
     }
+    self->stream = OS_NULL;
 
-    prm = &self->prm;
-    os_memclear(prm, sizeof(iocStreamerParams));
-    os_memclear(&self->exp_handle, sizeof(iocHandle));
-    os_memclear(&self->imp_handle, sizeof(iocHandle));
-    self->streamer = OS_NULL;
-    self->streamer_opened = OS_FALSE;
 
-    Stream_init_signals(&prm->frd, &self->frd, &self->exp_handle, &self->imp_handle, OS_TRUE);
-    Stream_init_signals(&prm->tod, &self->tod, &self->exp_handle, &self->imp_handle, OS_FALSE);
-    prm->tod.to_device = OS_TRUE;
-    prm->is_device = OS_FALSE;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|sssss",
-         kwlist, &pyroot, &read_buf_name, &write_buf_name,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ssssi",
+         kwlist, &pyroot, &frd_buf_name, &tod_buf_name,
         &exp_mblk_path, &imp_mblk_path, &select))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
@@ -137,15 +158,9 @@ static PyObject *Stream_new(
         goto failed;
     }
 
-    os_strncpy(self->frd_signal_name_prefix, read_buf_name, IOC_SIGNAL_NAME_SZ);
-    p = os_strchr(self->frd_signal_name_prefix, '_');
-    if (p) p[1] = '\0';
-    os_strncpy(self->tod_signal_name_prefix, write_buf_name, IOC_SIGNAL_NAME_SZ);
-    p = os_strchr(self->tod_signal_name_prefix, '_');
-    if (p) p[1] = '\0';
-
-    ioc_iopath_to_identifiers(iocroot, &self->exp_identifiers, exp_mblk_path, IOC_EXPECT_MEMORY_BLOCK);
-    ioc_iopath_to_identifiers(iocroot, &self->imp_identifiers, imp_mblk_path, IOC_EXPECT_MEMORY_BLOCK);
+    self->stream = ioc_open_stream(
+        iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
+        OS_NULL, 0, OS_NULL, 0);
 
     self->status = OSAL_SUCCESS;
 
@@ -161,29 +176,6 @@ failed:
     return NULL;
 }
 
-static void Stream_init_signals(
-    iocStreamerSignals *ptrs,
-    iocStreamSignalsStruct *signal_struct,
-    iocHandle *exp_handle,
-    iocHandle *imp_handle,
-    os_boolean is_frd)
-{
-    ptrs->cmd = Stream_clear_signal(&signal_struct->cmd, imp_handle);
-    ptrs->select = Stream_clear_signal(&signal_struct->select, imp_handle);
-    ptrs->buf = Stream_clear_signal(&signal_struct->buf, is_frd ? exp_handle : imp_handle);
-    ptrs->head = Stream_clear_signal(&signal_struct->head, is_frd ? exp_handle : imp_handle);
-    ptrs->tail = Stream_clear_signal(&signal_struct->tail, is_frd ? imp_handle : exp_handle);
-    ptrs->state = Stream_clear_signal(&signal_struct->state, exp_handle);
-}
-
-static iocSignal *Stream_clear_signal(
-    iocSignal *signal,
-    iocHandle *handle)
-{
-    os_memclear(signal, sizeof(iocSignal));
-    signal->handle = handle;
-    return signal;
-}
 
 
 /**
@@ -202,9 +194,6 @@ static void Stream_dealloc(
     Stream *self)
 {
     Stream_close_stremer(self);
-
-    ioc_release_handle(&self->exp_handle);
-    ioc_release_handle(&self->imp_handle);
 
     if (self->pyroot)
     {
@@ -237,10 +226,8 @@ static void Stream_dealloc(
 static PyObject *Stream_delete(
     Stream *self)
 {
-    Stream_close_stremer(self);
 
-    ioc_release_handle(&self->exp_handle);
-    ioc_release_handle(&self->imp_handle);
+    Stream_close_stremer(self);
 
     if (self->pyroot)
     {
@@ -261,186 +248,86 @@ static PyObject *Stream_delete(
 static void Stream_close_stremer(
     Stream *self)
 {
-    ioc_streamer_close(self->streamer, OSAL_STREAM_DEFAULT);
-    self->streamer = OS_NULL;
-}
-
-
-/* Lock must be on
- * */
-static osalStatus Stream_try_setup(
-    Stream *self,
-    iocRoot *iocroot)
-{
-    /* If we have all set up already ?
-     */
-    if (self->exp_handle.mblk && self->imp_handle.mblk)
+    if (self->stream)
     {
-        return OSAL_SUCCESS;
+        ioc_release_stream(self->stream);
+        self->stream = OS_NULL;
     }
-
-    if (self->frd_signal_name_prefix[0] != '\0')
-    {
-        if (Stream_setup_signals(self, &self->frd, OS_TRUE, iocroot)) goto failed;
-    }
-    if (self->tod_signal_name_prefix[0] != '\0')
-    {
-        if (Stream_setup_signals(self, &self->tod, OS_FALSE, iocroot)) goto failed;
-    }
-
-    return OSAL_SUCCESS;
-
-failed:
-    ioc_release_handle(&self->exp_handle);
-    ioc_release_handle(&self->imp_handle);
-    return OSAL_STATUS_FAILED;
 }
 
 
-static osalStatus Stream_setup_signals(
-    Stream *self,
-    iocStreamSignalsStruct *sigs,
-    os_boolean is_frd,
-    iocRoot *iocroot)
-{
-    os_char *prefix;
-    iocIdentifiers *ei, *ii;
-
-    ei = &self->exp_identifiers;
-    ii = &self->imp_identifiers;
-
-    prefix = is_frd ? self->frd_signal_name_prefix : self->tod_signal_name_prefix;
-
-    if (Stream_setup_one(&sigs->cmd, prefix, "cmd", ii, iocroot)) return OSAL_STATUS_FAILED;
-    if (Stream_setup_one(&sigs->select, prefix, "select", ii, iocroot)) return OSAL_STATUS_FAILED;
-    if (Stream_setup_one(&sigs->buf, prefix, "select", is_frd ? ei : ii, iocroot)) return OSAL_STATUS_FAILED;
-    if (Stream_setup_one(&sigs->head, prefix, "head", is_frd ? ei : ii, iocroot)) return OSAL_STATUS_FAILED;
-    if (Stream_setup_one(&sigs->tail, prefix, "tail", is_frd ? ii : ei, iocroot)) return OSAL_STATUS_FAILED;
-    if (Stream_setup_one(&sigs->state, prefix, "state", ei, iocroot)) return OSAL_STATUS_FAILED;
-
-    return OSAL_SUCCESS;
-}
-
-
-static osalStatus Stream_setup_one(
-    iocSignal *signal,
-    char *signal_name_prefix,
-    char *signal_name_end,
-    iocIdentifiers *identifiers,
-    iocRoot *iocroot)
-{
-    iocDynamicSignal *dsignal;
-
-    os_strncpy(identifiers->signal_name, signal_name_prefix, IOC_SIGNAL_NAME_SZ);
-    os_strncat(identifiers->signal_name, signal_name_end, IOC_SIGNAL_NAME_SZ);
-
-    dsignal = ioc_setup_signal_by_identifiers(iocroot, identifiers, signal);
-    return dsignal ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
-}
-
-
-static PyObject *Stream_read_or_write(
+static PyObject *Stream_start_write(
     Stream *self,
     PyObject *args,
-    PyObject *kwds,
-    os_int flags)
+    PyObject *kwds)
 {
-    PyObject *rval, *bytedata = NULL;
-    int nro_bytes = 0;
-    Root *root;
-    iocRoot *iocroot;
-    os_char *status_text = "hmm";
-    os_char *status_info = "hmm more";
-    os_char buf[256];
-    os_memsz n_read;
-    osalStatus s;
+    PyObject *pydata = NULL;
+    char *buffer;
+    Py_ssize_t length;
+    int count = -1;
+    int pos = 0;
 
     static char *kwlist[] = {
+        "data",
+        "pos",
         "n",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i",
-         kwlist, &nro_bytes))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ii",
+         kwlist, &pydata, &pos, &count))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         return NULL;
     }
 
-    root = (Root*)self;
-    iocroot = root->root;
-    if (iocroot == OS_NULL)
-    {
-        status_text = "failed";
-        status_info = "IOCOM root object has been deleted";
-        goto getout;
-    }
+    PyBytes_AsStringAndSize(pydata, &buffer, &length);
+    if (count < 0) count = length;
+    if (pos + count > length) count = length - pos;
+    if (count < 0) count = 0;
+    ioc_start_stream_write(self->stream, buffer + pos, count);
 
-    if (Stream_try_setup(self,  iocroot))
-    {
-        status_text = "pending";
-        status_info = "Unable to setup stream transfer, maybe not ready yet";
-        goto getout;
-    }
-
-    if (!self->streamer_opened)
-    {
-        // status->select = ??
-
-        self->streamer = ioc_streamer_open(OS_NULL, &self->prm, OS_NULL,
-            OSAL_STREAM_READ|OSAL_STREAM_WRITE);
-
-        if (self->streamer == OS_NULL)
-        {
-            status_text = "failed";
-            status_info = "Unable to open streamer";
-            goto getout;
-        }
-        self->streamer_opened = OS_TRUE;
-    }
-
-    if (flags & OSAL_STREAM_READ)
-    {
-        s = ioc_streamer_read(self->streamer, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
-        if (s)
-        {
-            status_text = "failed";
-            status_info = "Streamer read failed";
-            goto getout;
-        }
-
-        bytedata = PyBytes_FromStringAndSize(buf, n_read);
-    }
-
-getout:
-    rval = PyList_New(2);
-    PyList_SetItem(rval, 0, Py_BuildValue("s", (char *)status_text));
-    PyList_SetItem(rval, 1, bytedata ? bytedata  : Py_BuildValue("s", (char*)status_info));
-    return rval;
-
-/* Close streamer.
-void ioc_streamer_close(
-    osalStream stream);
- */
-
+    Py_RETURN_NONE;
 }
 
 
-static PyObject *Stream_read(
-    Stream *self,
-    PyObject *args,
-    PyObject *kwds)
+static PyObject *Stream_start_read(
+    Stream *self)
 {
-    return Stream_read_or_write(self, args, kwds, OSAL_STREAM_READ);
+    ioc_start_stream_read(self->stream);
+    Py_RETURN_NONE;
 }
 
 
-static PyObject *Stream_write(
-    Stream *self,
-    PyObject *args,
-    PyObject *kwds)
+static PyObject *Stream_run(
+    Stream *self)
 {
-    return Stream_read_or_write(self, args, kwds, OSAL_STREAM_WRITE);
+    osalStatus s;
+    s = ioc_run_stream(self->stream, IOC_CALL_SYNC);
+
+    switch (s)
+    {
+        case OSAL_SUCCESS:
+            Py_RETURN_NONE;
+
+        case OSAL_STATUS_COMPLETED:
+            return Py_BuildValue("s", "completed");
+
+        default:
+            return Py_BuildValue("s", "failed");
+    }
+}
+
+
+static PyObject *Stream_get_data(
+    Stream *self)
+{
+    os_char *data;
+    os_memsz sz;
+
+    data = ioc_get_stream_data(self->stream, &sz);
+    if (data == NULL) data = "";
+    return PyBytes_FromStringAndSize(data, sz);
 }
 
 
@@ -462,8 +349,10 @@ static PyMemberDef Stream_members[] = {
 */
 static PyMethodDef Stream_methods[] = {
     {"delete", (PyCFunction)Stream_delete, METH_NOARGS, "Deletes IOCOM signal"},
-    {"read", (PyCFunction)Stream_read, METH_VARARGS|METH_KEYWORDS, "Read data from stream"},
-    {"write", (PyCFunction)Stream_write, METH_VARARGS|METH_KEYWORDS, "Write data to stream"},
+    {"start_write", (PyCFunction)Stream_start_write, METH_VARARGS|METH_KEYWORDS, "Start write"},
+    {"start_read", (PyCFunction)Stream_start_read, METH_NOARGS, "Start read"},
+    {"run", (PyCFunction)Stream_run, METH_NOARGS, "Transfer the data"},
+    {"get_data", (PyCFunction)Stream_get_data, METH_NOARGS, "Get received data"},
     {NULL} /* Sentinel */
 };
 

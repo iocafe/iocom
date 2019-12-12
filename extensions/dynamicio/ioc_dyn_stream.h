@@ -125,8 +125,8 @@ iocStream;
 iocStream *ioc_open_stream(
     iocRoot *root,
     os_int select,
-    const os_char *read_buf_name,
-    const os_char *write_buf_name,
+    const os_char *frd_buf_name,
+    const os_char *tod_buf_name,
     const os_char *exp_mblk_name,
     const os_char *imp_mblk_name,
     const os_char *device_name,

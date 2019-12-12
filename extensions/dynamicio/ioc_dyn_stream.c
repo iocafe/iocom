@@ -74,8 +74,8 @@ static osalStatus ioc_stream_setup_one(
 iocStream *ioc_open_stream(
     iocRoot *root,
     os_int select,
-    const os_char *read_buf_name,
-    const os_char *write_buf_name,
+    const os_char *frd_buf_name,
+    const os_char *tod_buf_name,
     const os_char *exp_mblk_path,
     const os_char *imp_mblk_path,
     const os_char *device_name, /* Optional, may be NULL If in path */
@@ -104,10 +104,10 @@ iocStream *ioc_open_stream(
     prm->tod.to_device = OS_TRUE;
     prm->is_device = OS_FALSE;
 
-    os_strncpy(stream->frd_signal_name_prefix, read_buf_name, IOC_SIGNAL_NAME_SZ);
+    os_strncpy(stream->frd_signal_name_prefix, frd_buf_name, IOC_SIGNAL_NAME_SZ);
     p = os_strchr(stream->frd_signal_name_prefix, '_');
     if (p) p[1] = '\0';
-    os_strncpy(stream->tod_signal_name_prefix, write_buf_name, IOC_SIGNAL_NAME_SZ);
+    os_strncpy(stream->tod_signal_name_prefix, tod_buf_name, IOC_SIGNAL_NAME_SZ);
     p = os_strchr(stream->tod_signal_name_prefix, '_');
     if (p) p[1] = '\0';
 
@@ -172,8 +172,11 @@ static iocSignal *ioc_stream_set_handle(
 void ioc_release_stream(
     iocStream *stream)
 {
-    ioc_stream_cleanup(stream);
-    os_free(stream, sizeof(iocStream));
+    if (stream)
+    {
+        ioc_stream_cleanup(stream);
+        os_free(stream, sizeof(iocStream));
+    }
 }
 
 /* Start writing data to stream.
