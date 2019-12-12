@@ -172,10 +172,12 @@ failed:
 static void Signal_dealloc(
     Signal *self)
 {
-    ioc_release_handle(&self->handle);
-
     if (self->pyroot)
     {
+        if (self->handle.mblk)
+        {
+            ioc_release_handle(&self->handle);
+        }
         Py_DECREF(self->pyroot);
         self->pyroot = OS_NULL;
     }
@@ -205,10 +207,12 @@ static void Signal_dealloc(
 static PyObject *Signal_delete(
     Signal *self)
 {
-    ioc_release_handle(&self->handle);
-
     if (self->pyroot)
     {
+        if (self->handle.mblk)
+        {
+            ioc_release_handle(&self->handle);
+        }
         Py_DECREF(self->pyroot);
         self->pyroot = OS_NULL;
     }

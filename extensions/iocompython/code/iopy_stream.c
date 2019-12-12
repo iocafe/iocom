@@ -190,10 +190,9 @@ static void Stream_close_stremer(
 static void Stream_dealloc(
     Stream *self)
 {
-    Stream_close_stremer(self);
-
     if (self->pyroot)
     {
+        Stream_close_stremer(self);
         Py_DECREF(self->pyroot);
         self->pyroot = OS_NULL;
     }
@@ -214,11 +213,9 @@ static void Stream_dealloc(
 static PyObject *Stream_delete(
     Stream *self)
 {
-
-    Stream_close_stremer(self);
-
     if (self->pyroot)
     {
+        Stream_close_stremer(self);
         Py_DECREF(self->pyroot);
         self->pyroot = OS_NULL;
     }

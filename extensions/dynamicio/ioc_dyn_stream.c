@@ -200,8 +200,14 @@ static void ioc_stream_cleanup(
         stream->write_buf = OS_NULL;
     }
 
-    ioc_release_handle(&stream->exp_handle);
-    ioc_release_handle(&stream->imp_handle);
+    if (stream->exp_handle.mblk)
+    {
+        ioc_release_handle(&stream->exp_handle);
+    }
+    if (stream->imp_handle.mblk)
+    {
+        ioc_release_handle(&stream->imp_handle);
+    }
 }
 
 

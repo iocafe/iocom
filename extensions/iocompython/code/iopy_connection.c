@@ -187,8 +187,9 @@ failed:
 
   @brief Destructor.
 
-  The Connection_dealloc function releases the associated Python object. It doesn't do anything
-  for the actual IOCOM connection.
+  The Connection_dealloc function releases the associated Python object. The function doesn't
+  release actual IOCOM connection. That will be deteted when root is deleted or explisitely
+  by calling conn.delete().
 
   @param   self Pointer to the python object.
   @return  None.

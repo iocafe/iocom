@@ -162,8 +162,10 @@ failed:
 
   @brief Destructor.
 
-  The MemoryBlock_dealloc function releases the associated Python object. It doesn't do anything
-  for the actual IOCOM memory block.
+  The MemoryBlock_dealloc function releases the associated Python object.
+
+  It doesn't do release actual IOCOM memory block. The IOCOM memory block will be deleted once
+  the root is deleted or explicetely by calling mblk.delete()
 
   @param   self Pointer to the Python MemoryBlock object.
   @return  None.
@@ -173,8 +175,6 @@ failed:
 static void MemoryBlock_dealloc(
     MemoryBlock *self)
 {
-    ioc_release_handle(&self->mblk_handle);
-
     Py_TYPE(self)->tp_free((PyObject *)self);
 
 #if IOPYTHON_TRACE

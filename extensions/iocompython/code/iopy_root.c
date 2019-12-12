@@ -179,11 +179,6 @@ static PyObject *Root_delete(
 
     if (self->root)
     {
-        /* Free the root data structure and everything that belong to it.
-         */
-        ioc_release_root(self->root);
-        self->root = OS_NULL;
-
         /* Delete communication wait event.
          */
         if (self->queue_event)
@@ -191,6 +186,11 @@ static PyObject *Root_delete(
             osal_event_delete(self->queue_event);
             self->queue_event = OS_NULL;
         }
+
+        /* Free the root data structure and everything that belong to it.
+         */
+        ioc_release_root(self->root);
+        self->root = OS_NULL;
 
 #if IOPYTHON_TRACE
         PySys_WriteStdout("Root.delete()\n");

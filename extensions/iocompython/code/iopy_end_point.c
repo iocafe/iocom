@@ -192,8 +192,9 @@ failed:
 
   @brief Destructor.
 
-  The EndPoint_dealloc function releases the associated Python object. It doesn't do anything
-  for the actual IOCOM end point.
+  The EndPoint_dealloc function releases the associated Python object. It doesn't release
+  the actual IOCOM end point. That will be released by when root object is deleted or
+  explicitely by calling epoint.delete().
 
   @param   self Pointer to the python object.
   @return  None.

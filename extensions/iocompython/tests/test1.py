@@ -49,7 +49,7 @@ def main():
     info = MemoryBlock(root, 'upward,auto', 'info', nbytes=len(data))
     info.publish(data)
     
-    connection = Connection(root, "127.0.0.1", "socket")
+    connection = Connection(root, "127.0.0.1", "socket,upward")
 
     hor = Signal(root, "hor")
 
