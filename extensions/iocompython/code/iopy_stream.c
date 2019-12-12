@@ -72,25 +72,9 @@
 #include "iocompython.h"
 
 
-static void Stream_close_stremer(
-    Stream *self);
-
-
-
 /**
 ****************************************************************************************************
-
-  @brief Constructor.
-
-  The Stream_new function starts running the signal. Running signal will keep
-  on running until the signal is deleted. It will attempt repeatedly to connect socket,
-  etc transport to other IOCOM device and will move the data when transport is there.
-
-  Note: Application must not delete and create new signal to reestablish the transport.
-  This is handled by the running signal object.
-
-  @return  Pointer to the new Python object.
-
+  Constructor creates a new stream object.
 ****************************************************************************************************
 */
 static PyObject *Stream_new(
@@ -154,7 +138,7 @@ static PyObject *Stream_new(
 
     if (exp_mblk_path == OS_NULL || imp_mblk_path == OS_NULL)
     {
-        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
+        PyErr_SetString(iocomError, "no imp or exp memory block path");
         goto failed;
     }
 
@@ -177,17 +161,25 @@ failed:
 }
 
 
+/**
+****************************************************************************************************
+  Internal cleanup function called by Stream_delete and destructor.
+****************************************************************************************************
+*/
+static void Stream_close_stremer(
+    Stream *self)
+{
+    if (self->stream)
+    {
+        ioc_release_stream(self->stream);
+        self->stream = OS_NULL;
+    }
+}
+
 
 /**
 ****************************************************************************************************
-
-  @brief Destructor.
-
-  The Stream_dealloc function releases the associated Python object.
-
-  @param   self Pointer to the python object.
-  @return  None.
-
+  DestructorStream_dealloc function releases Python object and reseures associated to it.
 ****************************************************************************************************
 */
 static void Stream_dealloc(
@@ -211,16 +203,7 @@ static void Stream_dealloc(
 
 /**
 ****************************************************************************************************
-
-  @brief Delete an IOCOM stream.
-
-  The Stream_delete function closes the signal and releases any ressources for it.
-  The signal must be explisitly closed by calling .delete() function, or by calling
-  .delete() on the root object. But not both.
-
-  @param   self Pointer to the python object.
-  @return  None.
-
+  The "delete" function closes the stream and releases any ressources for it.
 ****************************************************************************************************
 */
 static PyObject *Stream_delete(
@@ -245,17 +228,11 @@ static PyObject *Stream_delete(
 }
 
 
-static void Stream_close_stremer(
-    Stream *self)
-{
-    if (self->stream)
-    {
-        ioc_release_stream(self->stream);
-        self->stream = OS_NULL;
-    }
-}
-
-
+/**
+****************************************************************************************************
+  The "start_write" function prepares to start writing data to stream.
+****************************************************************************************************
+*/
 static PyObject *Stream_start_write(
     Stream *self,
     PyObject *args,
@@ -291,6 +268,11 @@ static PyObject *Stream_start_write(
 }
 
 
+/**
+****************************************************************************************************
+  The "start_read" function prepares to start reading data from stream.
+****************************************************************************************************
+*/
 static PyObject *Stream_start_read(
     Stream *self)
 {
@@ -299,6 +281,11 @@ static PyObject *Stream_start_read(
 }
 
 
+/**
+****************************************************************************************************
+  The "run" function does actual data transfer. Call until function returns something but None.
+****************************************************************************************************
+*/
 static PyObject *Stream_run(
     Stream *self)
 {
@@ -319,6 +306,11 @@ static PyObject *Stream_run(
 }
 
 
+/**
+****************************************************************************************************
+  The "get_data" function returns received data as bytes object.
+****************************************************************************************************
+*/
 static PyObject *Stream_get_data(
     Stream *self)
 {
