@@ -39,6 +39,20 @@ typedef struct
 }
 Stream;
 
+/* Global blocking function to get configuration.
+ */
+PyObject *iocom_stream_getconf(
+    PyObject *self,
+    PyObject *args,
+    PyObject *kwds);
+
+/* Global blocking function to set configuration.
+ */
+PyObject *iocom_stream_setconf(
+    PyObject *self,
+    PyObject *args,
+    PyObject *kwds);
+
 /* For setting up the class within Python module.
  */
 extern PyTypeObject StreamType;

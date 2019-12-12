@@ -459,7 +459,7 @@ static osalStatus ioc_streamer_device_write(
     {
         case IOC_SSTEP_INITIALIZED:
             osal_trace3("IOC_SSTEP_INITIALIZED");
-            if (cmd != IOC_STREAM_RUNNING)
+            if (cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED)
             {
                 osal_trace3("IOC_SSTEP_FAILED, cmd != RUNNING");
                 streamer->step = IOC_SSTEP_FAILED;
@@ -475,7 +475,7 @@ static osalStatus ioc_streamer_device_write(
             /* continues... */
 
         case IOC_SSTEP_TRANSFER_DATA:
-            if (cmd != IOC_STREAM_RUNNING || flags & OSAL_STREAM_INTERRUPT)
+            if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED) || flags & OSAL_STREAM_INTERRUPT)
             {
                 osal_trace3("IOC_SSTEP_FAILED, cmd != RUNNING or interrupted");
                 streamer->step = IOC_SSTEP_FAILED;
@@ -677,13 +677,11 @@ static osalStatus ioc_streamer_device_read(
                 break;
             }
 
-            ioc_sets0_int(signals->state, IOC_STREAM_COMPLETED);
             streamer->step = IOC_SSTEP_TRANSFER_DONE;
             osal_trace3("IOC_SSTEP_TRANSFER_DONE");
             break;
 
         case IOC_SSTEP_TRANSFER_DONE:
-            if (cmd == IOC_STREAM_COMPLETED) break;
             ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
             streamer->step = IOC_SSTEP_ALL_COMPLETED;
             osal_trace3("IOC_SSTEP_ALL_COMPLETED");

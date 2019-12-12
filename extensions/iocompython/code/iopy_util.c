@@ -33,6 +33,7 @@ PyObject *iocom_python_json2bin(
 
     if (!PyArg_ParseTuple(args, "s", &json_text))
     {
+        PyErr_SetString(iocomError, "JSON string expected as argument");
         return NULL;
     }
 

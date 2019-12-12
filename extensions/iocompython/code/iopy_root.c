@@ -944,6 +944,9 @@ static PyMethodDef Root_methods[] = {
     {"send", (PyCFunction)Root_send, METH_VARARGS|METH_KEYWORDS, "Send data synchronously"},
     {"receive", (PyCFunction)Root_receive, METH_VARARGS|METH_KEYWORDS, "Receive data synchronously"},
     {"print", (PyCFunction)Root_print, METH_VARARGS, "Print internal state of IOCOM"},
+
+    {"getconf", (PyCFunction)iocom_stream_getconf, METH_VARARGS|METH_KEYWORDS, "Read configuration."},
+    {"setconf", (PyCFunction)iocom_stream_setconf, METH_VARARGS|METH_KEYWORDS, "Write configuration."},
     {NULL} /* Sentinel */
 };
 

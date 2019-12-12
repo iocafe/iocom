@@ -166,8 +166,7 @@ void iocom_python_release(void)
 ****************************************************************************************************
 */
 static PyMethodDef iocomPythonMethods[] = {
-    {"json2bin", iocom_python_json2bin, METH_VARARGS, "Convert JSON to packed binary format."},
-
+    {"json2bin", (PyCFunction)iocom_python_json2bin, METH_VARARGS, "Convert JSON to packed binary format."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

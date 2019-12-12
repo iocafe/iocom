@@ -8,6 +8,12 @@
 
   Streaming data trough memory block.
 
+  ** SIMPLE BLOCKING CALL
+  from iocompython import Root
+  print(root.getconf(device_name + "." + network_name))
+  print(root.setconf(device_name + "." + network_name, str.encode("Dummy config data")))
+
+  ** USING STREAM OBJECT
   from iocompython import Root, EndPoint, Signal, Stream, json2bin
   import ioterminal
   import time
@@ -88,8 +94,8 @@ static PyObject *Stream_new(
     iocRoot *iocroot;
 
     const char
-        *frd_buf_name = NULL,
-        *tod_buf_name = NULL,
+        *frd_buf_name = "frd_buf",
+        *tod_buf_name = "tod_buf",
         *exp_mblk_path = NULL,
         *imp_mblk_path = NULL;
 
@@ -112,7 +118,6 @@ static PyObject *Stream_new(
         return PyErr_NoMemory();
     }
     self->stream = OS_NULL;
-
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ssssi",
          kwlist, &pyroot, &frd_buf_name, &tod_buf_name,
@@ -393,3 +398,169 @@ PyTypeObject StreamType = {
     0,                                        /* tp_alloc */
     Stream_new,                               /* tp_new */
 };
+
+
+/**
+****************************************************************************************************
+  Global blocking function, get configuration.
+****************************************************************************************************
+*/
+PyObject *iocom_stream_getconf(
+    PyObject *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    const char
+        *frd_buf_name = "frd_buf",
+        *tod_buf_name = "tod_buf",
+        *device_path = OS_NULL;
+
+    int
+        select = OS_PBNR_IO_DEVICE_CONFIG;
+
+    os_char
+        exp_mblk_path[64],
+        imp_mblk_path[64],
+        *data;
+
+    os_memsz sz;
+    osalStatus s;
+    PyObject *rval;
+    iocStream *stream;
+    Root *root;
+    iocRoot *iocroot;
+
+    static char *kwlist[] = {
+        "path",
+        "select",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i",
+         kwlist, &device_path, &select))
+    {
+        PyErr_SetString(iocomError, "Device path mydevice.mynetwork is expected as argument.");
+        return NULL;
+    }
+
+    root = (Root*)self;
+    iocroot = root->root;
+    if (iocroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
+        return NULL;
+    }
+
+    os_strncpy(exp_mblk_path, "conf_exp.", sizeof(exp_mblk_path));
+    os_strncat(exp_mblk_path, device_path, sizeof(exp_mblk_path));
+    os_strncpy(imp_mblk_path, "conf_imp.", sizeof(imp_mblk_path));
+    os_strncat(imp_mblk_path, device_path, sizeof(imp_mblk_path));
+
+    stream = ioc_open_stream(
+        iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
+        OS_NULL, 0, OS_NULL, 0);
+
+    ioc_start_stream_read(stream);
+
+    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS)
+    {
+        os_timeslice();
+    }
+
+    if (s == OSAL_STATUS_COMPLETED)
+    {
+        data = ioc_get_stream_data(stream, &sz);
+        if (data == NULL) data = "";
+        rval = PyBytes_FromStringAndSize(data, sz);
+    }
+    else
+    {
+        Py_INCREF(Py_None);
+        rval = Py_None;
+    }
+
+    ioc_release_stream(stream);
+
+    return rval;
+}
+
+
+/**
+****************************************************************************************************
+  Global blocking function, set configuration.
+****************************************************************************************************
+*/
+PyObject *iocom_stream_setconf(
+    PyObject *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    const char
+        *frd_buf_name = "frd_buf",
+        *tod_buf_name = "tod_buf",
+        *device_path = OS_NULL;
+
+    int
+        select = OS_PBNR_IO_DEVICE_CONFIG;
+
+    os_char
+        exp_mblk_path[64],
+        imp_mblk_path[64];
+
+    osalStatus s;
+    iocStream *stream;
+    Root *root;
+    iocRoot *iocroot;
+    PyObject *pydata = NULL;
+    char *buffer;
+    Py_ssize_t length;
+    int count = -1;
+    int pos = 0;
+
+    static char *kwlist[] = {
+        "path",
+        "data",
+        "pos",
+        "n",
+        "select",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|iii",
+         kwlist, &device_path, &pydata, &pos, &count, &select))
+    {
+        PyErr_SetString(iocomError, "Device path mydevice.mynetwork and byte data to send are expected as arguments.");
+        return NULL;
+    }
+
+    root = (Root*)self;
+    iocroot = root->root;
+    if (iocroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
+        return NULL;
+    }
+
+    os_strncpy(exp_mblk_path, "conf_exp.", sizeof(exp_mblk_path));
+    os_strncat(exp_mblk_path, device_path, sizeof(exp_mblk_path));
+    os_strncpy(imp_mblk_path, "conf_imp.", sizeof(imp_mblk_path));
+    os_strncat(imp_mblk_path, device_path, sizeof(imp_mblk_path));
+
+    stream = ioc_open_stream(
+        iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
+        OS_NULL, 0, OS_NULL, 0);
+
+    PyBytes_AsStringAndSize(pydata, &buffer, &length);
+    if (count < 0) count = length;
+    if (pos + count > length) count = length - pos;
+    if (count < 0) count = 0;
+    ioc_start_stream_write(stream, buffer + pos, count);
+
+    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS)
+    {
+        os_timeslice();
+    }
+
+    ioc_release_stream(stream);
+    return Py_BuildValue("s", s == OSAL_STATUS_COMPLETED ? "completed" : "failed");
+}
