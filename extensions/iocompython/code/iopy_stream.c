@@ -97,7 +97,8 @@ static PyObject *Stream_new(
         *frd_buf_name = "frd_buf",
         *tod_buf_name = "tod_buf",
         *exp_mblk_path = NULL,
-        *imp_mblk_path = NULL;
+        *imp_mblk_path = NULL,
+        *flags = "";
 
     int
         select = 0;
@@ -109,6 +110,7 @@ static PyObject *Stream_new(
         "exp",
         "imp",
         "select",
+        "flags",
         NULL
     };
 
@@ -119,9 +121,9 @@ static PyObject *Stream_new(
     }
     self->stream = OS_NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ssssi",
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ssssis",
          kwlist, &pyroot, &frd_buf_name, &tod_buf_name,
-        &exp_mblk_path, &imp_mblk_path, &select))
+        &exp_mblk_path, &imp_mblk_path, &select, &flags))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         goto failed;
@@ -149,7 +151,9 @@ static PyObject *Stream_new(
 
     self->stream = ioc_open_stream(
         iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
-        OS_NULL, 0, OS_NULL, 0);
+        OS_NULL, 0, OS_NULL,
+        os_strstr(flags, "device", OSAL_STRING_SEARCH_ITEM_NAME)
+        ? IOC_IS_DEVICE : IOC_IS_CONTROLLER);
 
     self->status = OSAL_SUCCESS;
 
@@ -410,7 +414,8 @@ PyObject *iocom_stream_getconf(
     const char
         *frd_buf_name = "frd_buf",
         *tod_buf_name = "tod_buf",
-        *device_path = OS_NULL;
+        *device_path = OS_NULL,
+        *flags = "";
 
     int
         select = OS_PBNR_IO_DEVICE_CONFIG;
@@ -430,11 +435,12 @@ PyObject *iocom_stream_getconf(
     static char *kwlist[] = {
         "path",
         "select",
+        "flags",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i",
-         kwlist, &device_path, &select))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|is",
+         kwlist, &device_path, &select, &flags))
     {
         PyErr_SetString(iocomError, "Device path mydevice.mynetwork is expected as argument.");
         return NULL;
@@ -455,7 +461,8 @@ PyObject *iocom_stream_getconf(
 
     stream = ioc_open_stream(
         iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
-        OS_NULL, 0, OS_NULL, 0);
+        OS_NULL, 0, OS_NULL, os_strstr(flags, "device",
+        OSAL_STRING_SEARCH_ITEM_NAME) ?  IOC_IS_DEVICE : IOC_IS_CONTROLLER);
 
     ioc_start_stream_read(stream);
 
@@ -497,7 +504,8 @@ PyObject *iocom_stream_setconf(
     const char
         *frd_buf_name = "frd_buf",
         *tod_buf_name = "tod_buf",
-        *device_path = OS_NULL;
+        *device_path = OS_NULL,
+        *flags = "";
 
     int
         select = OS_PBNR_IO_DEVICE_CONFIG;
@@ -522,11 +530,12 @@ PyObject *iocom_stream_setconf(
         "pos",
         "n",
         "select",
+        "flags",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|iii",
-         kwlist, &device_path, &pydata, &pos, &count, &select))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|iiis",
+         kwlist, &device_path, &pydata, &pos, &count, &select, &flags))
     {
         PyErr_SetString(iocomError, "Device path mydevice.mynetwork and byte data to send are expected as arguments.");
         return NULL;
@@ -547,7 +556,8 @@ PyObject *iocom_stream_setconf(
 
     stream = ioc_open_stream(
         iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
-        OS_NULL, 0, OS_NULL, 0);
+        OS_NULL, 0, OS_NULL, os_strstr(flags, "device",
+        OSAL_STRING_SEARCH_ITEM_NAME) ?  IOC_IS_DEVICE : IOC_IS_CONTROLLER);
 
     PyBytes_AsStringAndSize(pydata, &buffer, &length);
     if (count < 0) count = length;
@@ -564,4 +574,66 @@ PyObject *iocom_stream_setconf(
 
     ioc_release_stream(stream);
     return Py_BuildValue("s", s == OSAL_STATUS_COMPLETED ? "completed" : "failed");
+}
+
+
+/**
+****************************************************************************************************
+  Initialize configuration stream signals.
+****************************************************************************************************
+*/
+PyObject *iocom_initconf(
+    PyObject *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    const char
+        *frd_buf_name = "frd_buf",
+        *tod_buf_name = "tod_buf",
+        *device_path = OS_NULL,
+        *flags = "";
+
+    os_char
+        exp_mblk_path[64],
+        imp_mblk_path[64];
+
+    iocStream *stream;
+    Root *root;
+    iocRoot *iocroot;
+
+    static char *kwlist[] = {
+        "path",
+        "flags",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss",
+         kwlist, &device_path, &flags))
+    {
+        PyErr_SetString(iocomError, "Device path and flags are expected as arguments.");
+        return NULL;
+    }
+
+    root = (Root*)self;
+    iocroot = root->root;
+    if (iocroot == OS_NULL)
+    {
+        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
+        return NULL;
+    }
+
+    os_strncpy(exp_mblk_path, "conf_exp.", sizeof(exp_mblk_path));
+    os_strncat(exp_mblk_path, device_path, sizeof(exp_mblk_path));
+    os_strncpy(imp_mblk_path, "conf_imp.", sizeof(imp_mblk_path));
+    os_strncat(imp_mblk_path, device_path, sizeof(imp_mblk_path));
+
+    stream = ioc_open_stream(
+        iocroot, 0, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
+        OS_NULL, 0, OS_NULL, os_strstr(flags, "device",
+        OSAL_STRING_SEARCH_ITEM_NAME) ?  IOC_IS_DEVICE : IOC_IS_CONTROLLER);
+
+    ioc_stream_initconf(stream, IOC_CALL_SYNC);
+    ioc_release_stream(stream);
+
+    Py_RETURN_NONE;
 }

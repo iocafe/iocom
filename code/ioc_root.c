@@ -114,8 +114,6 @@ void ioc_release_root(
     }
 #endif
 
-osal_debug_error("HERE z1");
-
     /* Terminate all connection worker threads.
      */
     while (OS_TRUE)
@@ -135,8 +133,6 @@ osal_debug_error("HERE z1");
     }
 #endif
 
-osal_debug_error("HERE z2");
-
 #if IOC_DYNAMIC_MBLK_CODE
     /* If we have dynamic IO network configuration, release it.
      */
@@ -155,8 +151,6 @@ osal_debug_error("HERE z2");
     }
 #endif
 
-osal_debug_error("HERE z3");
-
     /* Release all initialized connections.
      */
     while (root->con.first)
@@ -164,16 +158,12 @@ osal_debug_error("HERE z3");
         ioc_release_connection(root->con.first);
     }
 
-osal_debug_error("HERE z4");
-
     /* Release all initialized memory blocks.
      */
     while (root->mblk.first)
     {
         ioc_release_memory_block(&root->mblk.first->handle);
     }
-
-osal_debug_error("HERE z5");
 
     /* End syncronization.
      */

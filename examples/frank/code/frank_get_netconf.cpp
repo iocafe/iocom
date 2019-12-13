@@ -60,7 +60,7 @@ void FrankGetNetConf::run()
 
     stream = ioc_open_stream(&frank_root, OS_PBNR_IO_DEVICE_CONFIG,
         "frd_buf", "tod_buf", "conf_exp", "conf_imp",
-        m_device_name, m_device_nr, m_network_name, 0);
+        m_device_name, m_device_nr, m_network_name, IOC_IS_CONTROLLER);
 
     ioc_start_stream_read(stream);
 
@@ -88,7 +88,7 @@ void FrankGetNetConf::run_write()
 
     stream = ioc_open_stream(&frank_root, OS_PBNR_IO_DEVICE_CONFIG,
         "frd_buf", "tod_buf", "conf_exp", "conf_imp",
-        m_device_name, m_device_nr, m_network_name, 0);
+        m_device_name, m_device_nr, m_network_name, IOC_IS_CONTROLLER);
 
     ioc_start_stream_write(stream, "NAKSU DATAA", 10);
 

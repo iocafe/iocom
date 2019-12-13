@@ -78,10 +78,7 @@ def main():
                 print(root.setconf(device_name + "." + network_name, str.encode("Dummy config data")))
 #                print(root.getconf(device_name + "." + network_name))
 
-#    epoint.delete()
-    print("HERE1")
     root.delete()
-    print("HERE2")
 
 
 if (__name__ == '__main__'): 

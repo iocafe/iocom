@@ -102,7 +102,7 @@ iocStream *ioc_open_stream(
     ioc_stream_init_signals(&prm->tod, &stream->tod, &stream->exp_handle,
         &stream->imp_handle, OS_FALSE);
     prm->tod.to_device = OS_TRUE;
-    prm->is_device = OS_FALSE;
+    prm->is_device = (flags & IOC_IS_DEVICE) ? OS_TRUE : OS_FALSE;
 
     os_strncpy(stream->frd_signal_name_prefix, frd_buf_name, IOC_SIGNAL_NAME_SZ);
     p = os_strchr(stream->frd_signal_name_prefix, '_');
@@ -334,7 +334,7 @@ osalStatus ioc_run_stream(
 
     if (flags & IOC_CALL_SYNC)
     {
-        ioc_receive(&stream->exp_handle);
+        ioc_receive(stream->prm.is_device ? &stream->imp_handle : &stream->exp_handle);
     }
 
     if (!stream->streamer_opened)
@@ -384,7 +384,7 @@ osalStatus ioc_run_stream(
 
     if (flags & IOC_CALL_SYNC)
     {
-        ioc_send(&stream->imp_handle);
+        ioc_send(stream->prm.is_device ? &stream->exp_handle : &stream->imp_handle);
     }
 
     return s;
@@ -410,5 +410,64 @@ os_char *ioc_get_stream_data(
     *buf_sz = 0;
     return OS_NULL;
 }
+
+
+/* Setup initial stream signal states, either for device or controller */
+osalStatus ioc_stream_initconf(
+    iocStream *stream,
+    os_int flags)
+{
+    os_char nbuf[OSAL_NBUF_SZ];
+    osalStatus s;
+
+    s = ioc_stream_try_setup(stream);
+    if (s)
+    {
+        return OSAL_STATUS_PENDING;
+    }
+
+    if (!stream->streamer_opened)
+    {
+        osal_int_to_str(nbuf, sizeof(nbuf), stream->select);
+        stream->streamer = ioc_streamer_open(nbuf, &stream->prm, OS_NULL,
+            stream->flags);
+
+        if (stream->streamer == OS_NULL)
+        {
+            return OSAL_STATUS_FAILED;
+        }
+        stream->streamer_opened = OS_TRUE;
+    }
+
+    if (stream->streamer == OS_NULL) return OSAL_STATUS_FAILED;
+
+    if (stream->prm.is_device)
+    {
+        ioc_sets0_int(stream->prm.frd.state, 0);
+        ioc_sets0_int(stream->prm.frd.head, 0);
+        ioc_sets0_int(stream->prm.tod.state, 0);
+        ioc_sets0_int(stream->prm.tod.tail, 0);
+
+        if (flags & IOC_CALL_SYNC)
+        {
+            ioc_send(&stream->exp_handle);
+        }
+    }
+    else
+    {
+        ioc_sets0_int(stream->prm.frd.cmd, 0);
+        ioc_sets0_int(stream->prm.frd.tail, 0);
+        ioc_sets0_int(stream->prm.tod.cmd, 0);
+        ioc_sets0_int(stream->prm.tod.head, 0);
+
+        if (flags & IOC_CALL_SYNC)
+        {
+            ioc_send(&stream->imp_handle);
+        }
+    }
+    return OSAL_SUCCESS;
+}
+
+
 
 #endif

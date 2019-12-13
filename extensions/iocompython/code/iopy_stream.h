@@ -53,6 +53,13 @@ PyObject *iocom_stream_setconf(
     PyObject *args,
     PyObject *kwds);
 
+/* Initialize configuration stream signals.
+ */
+PyObject *iocom_initconf(
+    PyObject *self,
+    PyObject *args,
+    PyObject *kwds);
+
 /* For setting up the class within Python module.
  */
 extern PyTypeObject StreamType;

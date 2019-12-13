@@ -947,6 +947,8 @@ static PyMethodDef Root_methods[] = {
 
     {"getconf", (PyCFunction)iocom_stream_getconf, METH_VARARGS|METH_KEYWORDS, "Read configuration."},
     {"setconf", (PyCFunction)iocom_stream_setconf, METH_VARARGS|METH_KEYWORDS, "Write configuration."},
+    {"initconf", (PyCFunction)iocom_initconf, METH_VARARGS|METH_KEYWORDS, "Initialize conf stream signals."},
+
     {NULL} /* Sentinel */
 };
 

@@ -46,6 +46,8 @@ iocStreamSignals;
 
 
 #define IOC_CALL_SYNC 1
+#define IOC_IS_CONTROLLER 2
+#define IOC_IS_DEVICE 4
 
 /**
 ****************************************************************************************************
@@ -164,6 +166,12 @@ osalStatus ioc_run_stream(
 os_char *ioc_get_stream_data(
     iocStream *stream,
     os_memsz *buf_sz);
+
+/* Setup initial stream signal states, either for device or controller.
+ */
+osalStatus ioc_stream_initconf(
+    iocStream *stream,
+    os_int flags);
 
 #endif
 #endif
