@@ -1346,9 +1346,9 @@ void ioc_init_control_stream(
     os_memclear(ctrl, sizeof(iocControlStreamState));
 
     ioc_sets0_int(params->frd.state, 0);
-    ioc_sets0_int(params->frd.head, 0);
+    // ioc_sets0_int(params->frd.head, 0);
     ioc_sets0_int(params->tod.state, 0);
-    ioc_sets0_int(params->tod.tail, 0);
+    // ioc_sets0_int(params->tod.tail, 0);
 
 #if OSAL_DEBUG
     ctrl->initialized = 'I';

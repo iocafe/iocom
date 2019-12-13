@@ -75,8 +75,8 @@ def main():
             if event == 'new_device':
                 #set_network_conf(device_name, network_name)
 #                get_network_conf(device_name, network_name)
-                print(root.setconf(device_name + "." + network_name, str.encode("Dummy config data")))
-#                print(root.getconf(device_name + "." + network_name))
+#                print(root.setconf(device_name + "." + network_name, str.encode("Dummy config data")))
+                print(root.getconf(device_name + "." + network_name))
 
     root.delete()
 

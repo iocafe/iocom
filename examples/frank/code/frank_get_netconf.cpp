@@ -72,7 +72,7 @@ void FrankGetNetConf::run()
 
     if (s == OSAL_STATUS_COMPLETED)
     {
-        buf = ioc_get_stream_data(stream, &buf_sz);
+        buf = ioc_get_stream_data(stream, &buf_sz, 0);
         // osal_trace_int("ioc_get_stream_data returned ", buf_sz);
         osal_trace_str("ioc_get_stream_data returned ", buf);
     }

@@ -6,7 +6,11 @@
   @version 1.0
   @date    9.12.2019
 
-  This is interface to ioc_streamer function to implement typical functionality easier.
+  This is interface to ioc_streamer function to implement typical functionality easier
+  in environment where use dynamic memory allocation is feasible. This interface is
+  not suitable for microcontrollers with limited resources: In limited resource environment
+  use ioc_streamer directly, it doesn't need dynamic memory allocation and doesn't make
+  buffer all data to be transferred in RAM.
 
   Read:
     call ioc_open_stream
@@ -32,6 +36,8 @@
 #include "iocom.h"
 #if IOC_DYNAMIC_MBLK_CODE
 
+/* Forward referred static functions.
+ */
 static void ioc_stream_init_signals(
     iocStreamerSignals *ptrs,
     iocStreamSignals *signal_struct,
@@ -62,10 +68,38 @@ static osalStatus ioc_stream_setup_one(
 /**
 ****************************************************************************************************
 
-  @brief Allocate and initialize stream.
-  @anchor ioc_initialize_dynamic_signal
+  @brief Open and initialize IOC stream.
+  @anchor ioc_open_stream
 
-  The ioc_open_stream() function allocates and sets up a new stream structure.
+  The ioc_open_stream() function allocates and sets up a new IOC stream structure. The IOC
+  stream is higher level object used to present underlyin streamer trough easier API.
+
+  @param   root IOCOM root object.
+  @param   select Select what to transfer, typically persistant parameter block number like
+           OS_PBNR_FLASH_PROGRAM (1) for microcontroller flash program, OS_PBNR_IO_DEVICE_CONFIG (2)
+           for network configuration, like device identification, network addresses, security
+           certificates, etc.
+  @param   frd_buf_name Name of signal (char array) used as ring buffer for transfers from
+           device to controller, typically "frd_buf".
+  @param   toc_buf_name Name of signal (char array) used as ring buffer for transfers from
+           controller to IO device, typically "tod_buf".
+  @param   exp_mblk_path IO path to memory block expored by IO device and used for transfer.
+           An device end, this could simply be "conf_exp" or in controller end more
+           precisely "conf_exp.gina7.iocafenet", etc.
+  @param   imp_mblk_path IO path to memory block imported by IO device and used for transfer,
+           An device end, this could be "conf_imp" or "conf_imp.gina7.iocafenet" in controller.
+
+  @param   device_name Optional: Sometimes it is more convinient to give device_name,
+           device_number and network name as separate arguments. Device name without serial
+           number, like "gina", can be here and the device names in exp_mblk_path and imp_mblk_path
+           are ignored. Set to OS_NULL to use device name in path.
+  @param   device_nr See "device_name" above. If device name is given as separate argument,
+           device number in this argument is used. If not needed, set 0.
+  @param   network_name See "device_name" above, alternative way to give network name as
+           separate argument. Set OS_NULL if not needed.
+
+  @param   flags Set IOC_IS_DEVICE if this is device end, or IOC_IS_CONTROLLER if this is
+           controller end.
 
   @return  Pointer to stream structure, or OS_NULL if memory allocation failed.
 
@@ -78,9 +112,9 @@ iocStream *ioc_open_stream(
     const os_char *tod_buf_name,
     const os_char *exp_mblk_path,
     const os_char *imp_mblk_path,
-    const os_char *device_name, /* Optional, may be NULL If in path */
+    const os_char *device_name,
     os_short device_nr,
-    const os_char *network_name, /* Optional, may be NULL If in path */
+    const os_char *network_name,
     os_int flags)
 {
     iocStream *stream;
@@ -132,6 +166,25 @@ iocStream *ioc_open_stream(
     return stream;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Setup "ptrs" structure and set handles (internal for this module)
+  @anchor ioc_stream_set_handle
+
+  Set signal pointers with within "ptrs" structure and store appropriate memory block
+  handle for each signal. This function takes care of signals to one direction.
+
+  @param   ptrs Pointers structure to set up. This will be needed as argument to lower
+           level streamer.
+  @param   signal_struct Structure which allocates memory for signals.
+  @param   exp_handle Memory block handle for signals exported by IO device.
+  @param   imp_handle Memory block handle for signals imposted by IO device.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_stream_init_signals(
     iocStreamerSignals *ptrs,
     iocStreamSignals *signal_struct,
@@ -147,6 +200,23 @@ static void ioc_stream_init_signals(
     ptrs->state = ioc_stream_set_handle(&signal_struct->state, exp_handle);
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Just set the stream handle (internal for this module)
+  @anchor ioc_stream_set_handle
+
+  This function exists only to make ioc_stream_init_signals more readable. It sets the
+  memory block handle pointer within signal structure and return pointer to signal
+  structure given as argument.
+
+  @param   signal Pointer to signal sturture.
+  @param   handle Pointer to memory block handle to set within signal structure.
+  @return  Same signal structure pointer as was given as argument.
+
+****************************************************************************************************
+*/
 static iocSignal *ioc_stream_set_handle(
     iocSignal *signal,
     iocHandle *handle)
@@ -162,9 +232,10 @@ static iocSignal *ioc_stream_set_handle(
   @brief Release stream structure.
   @anchor ioc_release_stream
 
-  The ioc_release_stream() function frees memory allocated for the stream structure.
+  The ioc_release_stream() function deleted the stream object and releases all resources
+  associated with it. Stream pointer is not valid after this call.
 
-  @param   dsignal Pointer to stream structure to release.
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
   @return  None.
 
 ****************************************************************************************************
@@ -179,8 +250,21 @@ void ioc_release_stream(
     }
 }
 
-/* Start writing data to stream.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Release up allocated resources (internal for the code file).
+  @anchor ioc_stream_cleanup
+
+  Close contained IOC streamer, release any memory allocated for read or write buffers and
+  release memory block handles.
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_stream_cleanup(
     iocStream *stream)
 {
@@ -211,8 +295,21 @@ static void ioc_stream_cleanup(
 }
 
 
-/* Lock must be on
- * */
+/**
+****************************************************************************************************
+
+  @brief Setup all signals for the stream (internal for the code file).
+  @anchor ioc_stream_try_setup
+
+  This function sets up memory block handle, signal address within memory block, data type, etc
+  for all signals used for the stream in either direction.
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @return  If successfull, the function returns OSAL_SUCCESS. If it was not possible to set up
+           all the signals, the function returns error code (!= OSAL_SUCCESS).
+
+****************************************************************************************************
+*/
 static osalStatus ioc_stream_try_setup(
     iocStream *stream)
 {
@@ -241,6 +338,18 @@ failed:
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Setup one signals to stream to one direction (internal for the code file).
+  @anchor ioc_stream_setup_signals
+
+  This function calls ioc_stream_setup_one for "cmd", "select", "buf", "head", "tail" and
+  "state" to set memory block handle, signal address within memory block, data type, etc
+  witin the signal structure.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_stream_setup_signals(
     iocStream *stream,
     iocStreamSignals *sigs,
@@ -266,6 +375,17 @@ static osalStatus ioc_stream_setup_signals(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Setup one signal (internal for the code file).
+  @anchor ioc_stream_setup_one
+
+  This function sets memory block handle, signal address within memory block, data type, etc
+  witin the signal structure for one signal.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_stream_setup_one(
     iocSignal *signal,
     char *signal_name_prefix,
@@ -283,9 +403,20 @@ static osalStatus ioc_stream_setup_one(
 }
 
 
+/**
+****************************************************************************************************
 
-/* Start reading data from stream.
- */
+  @brief Prepare to start reading data from stream.
+  @anchor ioc_start_stream_read
+
+  This function prepares stream object for reading data. Call ioc_run_stream() function
+  to actually transfer the data.
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_start_stream_read(
     iocStream *stream)
 {
@@ -297,8 +428,23 @@ void ioc_start_stream_read(
 }
 
 
-/* Start writing data to stream.
- */
+/**
+****************************************************************************************************
+
+  @brief Prepare to start writing data to stream.
+  @anchor ioc_start_stream_write
+
+  This function stores data to write into buffer within the IOC stream object and prepares
+  stream object for writing. Call ioc_run_stream() function to actually transfer the data.
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @param   buf Pointer to data to write. This can be network configuration as packed JSON
+           or flash program, etc.
+  @param   buf_sz Data size in bytes.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_start_stream_write(
     iocStream *stream,
     const os_char *buf,
@@ -315,9 +461,28 @@ void ioc_start_stream_write(
 }
 
 
-/* Call run repeatedly until data transfer is complete or has failed.
- * @param  flags IOC_CALL_SYNC cal ioc_receive() and ioc_send()
- */
+/**
+****************************************************************************************************
+
+  @brief Transfer the data
+  @anchor ioc_run_stream
+
+  Nonblocking function to do data transfer initiated either by ioc_start_stream_read() or
+  ioc_start_stream_write() function call. Call run repeatedly until data transfer is complete
+  or has failed.
+  Send: Data is written from buffer within the IOC stream object, initialized by
+  ioc_start_stream_write() call.
+  Receive: Received data is buffered within stream object.
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @param   flags If IOC_CALL_SYNC flags is given, the function calls ioc_send() and ioc_receive()
+           to move data between memory block and transport (sync buffers).
+  @return  As long as transfer is still going on, the function returns OSAL_SUCCESS.
+           Once the transfer has successfully been completed, the function returns
+           OSAL_STATUS_COMPLETED. Other values indicate an error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_run_stream(
     iocStream *stream,
     os_int flags)
@@ -391,28 +556,63 @@ osalStatus ioc_run_stream(
 }
 
 
-/* Get pointer to received data, valid until next stream function call.
-   Does not allocate new copy, returns the pointer to data stored
-   within the stream object.
- */
+/**
+****************************************************************************************************
+
+  @brief Get pointer to received data
+  @anchor ioc_get_stream_data
+
+  Pointer to received data is valid until next IOC stream function call. The function not
+  allocate new copy of data, it returns the pointer to data stored within the stream object.
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @param   buf_sz Pointer to integer where to store number of buffered data bytes.
+  @param   flags Reserved for future, set 0.
+  @return  Pointer to received data.
+
+****************************************************************************************************
+*/
 os_char *ioc_get_stream_data(
     iocStream *stream,
-    os_memsz *buf_sz)
+    os_memsz *buf_sz,
+    os_int flags)
 {
     /* Verify that ioc_start_stream_read() has been called.
      */
     osal_debug_assert(stream->flags & OSAL_STREAM_READ);
 
+    /* If we have received data, return pointer to it.
+     */
     if (stream->read_buf)
     {
         return osal_stream_buffer_content(stream->read_buf, buf_sz);
     }
+
+    /* No data, return NULL pointer and zero size.
+     */
     *buf_sz = 0;
     return OS_NULL;
 }
 
 
-/* Setup initial stream signal states, either for device or controller */
+/**
+****************************************************************************************************
+
+  @brief Initialize IO device stream state states
+  @anchor ioc_stream_initconf
+
+  IO device needs to initialize "state" signals to both direction to idle state (0). This
+  enables OSAL_STATE_CONNECTED bit for the signals, indicating to controller that IO device is
+  ready for streaming.
+  This function sets "frd_state" and "tod_state" in "conf_exp" and "conf_imp memory blocks
+  used to transfer flash program and network configration, etc.
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @param   flags IOC_CALL_SYNC to call ioc_send() to transfer the initial signal values.
+  @return  If successfull, the function returns OSAL_SUCCESS. Other values indicate an error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_stream_initconf(
     iocStream *stream,
     os_int flags)
@@ -444,30 +644,14 @@ osalStatus ioc_stream_initconf(
     if (stream->prm.is_device)
     {
         ioc_sets0_int(stream->prm.frd.state, 0);
-        ioc_sets0_int(stream->prm.frd.head, 0);
         ioc_sets0_int(stream->prm.tod.state, 0);
-        ioc_sets0_int(stream->prm.tod.tail, 0);
 
         if (flags & IOC_CALL_SYNC)
         {
             ioc_send(&stream->exp_handle);
         }
     }
-    else
-    {
-        ioc_sets0_int(stream->prm.frd.cmd, 0);
-        ioc_sets0_int(stream->prm.frd.tail, 0);
-        ioc_sets0_int(stream->prm.tod.cmd, 0);
-        ioc_sets0_int(stream->prm.tod.head, 0);
-
-        if (flags & IOC_CALL_SYNC)
-        {
-            ioc_send(&stream->imp_handle);
-        }
-    }
     return OSAL_SUCCESS;
 }
-
-
 
 #endif

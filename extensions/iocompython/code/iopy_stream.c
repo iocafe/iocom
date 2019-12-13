@@ -323,7 +323,7 @@ static PyObject *Stream_get_data(
     os_char *data;
     os_memsz sz;
 
-    data = ioc_get_stream_data(self->stream, &sz);
+    data = ioc_get_stream_data(self->stream, &sz, 0);
     if (data == NULL) data = "";
     return PyBytes_FromStringAndSize(data, sz);
 }
@@ -475,7 +475,7 @@ PyObject *iocom_stream_getconf(
 
     if (s == OSAL_STATUS_COMPLETED)
     {
-        data = ioc_get_stream_data(stream, &sz);
+        data = ioc_get_stream_data(stream, &sz, 0);
         if (data == NULL) data = "";
         rval = PyBytes_FromStringAndSize(data, sz);
     }

@@ -6,7 +6,11 @@
   @version 1.0
   @date    9.12.2019
 
-  This is interface to ioc_streamer function to implement typical functionality easier.
+  This is interface to ioc_streamer function to implement typical functionality easier
+  in environment where use dynamic memory allocation is feasible. This interface is
+  not suitable for microcontrollers with limited resources: In limited resource environment
+  use ioc_streamer directly, it doesn't need dynamic memory allocation and doesn't make
+  buffer all data to be transferred in RAM.
 
   Read:
     call ioc_open_stream
@@ -33,6 +37,8 @@
 #if IOC_DYNAMIC_MBLK_CODE
 
 
+/* Structure to allocate memory for signals.
+ */
 typedef struct
 {
     iocSignal cmd;
@@ -44,10 +50,12 @@ typedef struct
 }
 iocStreamSignals;
 
-
+/* Flags for functions.
+ */
 #define IOC_CALL_SYNC 1
 #define IOC_IS_CONTROLLER 2
 #define IOC_IS_DEVICE 4
+
 
 /**
 ****************************************************************************************************
@@ -165,7 +173,8 @@ osalStatus ioc_run_stream(
  */
 os_char *ioc_get_stream_data(
     iocStream *stream,
-    os_memsz *buf_sz);
+    os_memsz *buf_sz,
+    os_int flags);
 
 /* Setup initial stream signal states, either for device or controller.
  */
