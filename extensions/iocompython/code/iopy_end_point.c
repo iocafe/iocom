@@ -246,8 +246,7 @@ static PyObject *EndPoint_delete(
 #endif
     /* Return "None".
      */
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 

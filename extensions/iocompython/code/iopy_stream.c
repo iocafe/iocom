@@ -184,7 +184,7 @@ static void Stream_close_stremer(
 
 /**
 ****************************************************************************************************
-  DestructorStream_dealloc function releases Python object and reseures associated to it.
+  DestructorStream_dealloc function releases Python object and IOCOM stream associated to it.
 ****************************************************************************************************
 */
 static void Stream_dealloc(
@@ -459,9 +459,11 @@ PyObject *iocom_stream_getconf(
 
     ioc_start_stream_read(stream);
 
-    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS)
+    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS && osal_go())
     {
+        Py_BEGIN_ALLOW_THREADS
         os_timeslice();
+        Py_END_ALLOW_THREADS
     }
 
     if (s == OSAL_STATUS_COMPLETED)
@@ -553,9 +555,11 @@ PyObject *iocom_stream_setconf(
     if (count < 0) count = 0;
     ioc_start_stream_write(stream, buffer + pos, count);
 
-    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS)
+    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS && osal_go())
     {
+        Py_BEGIN_ALLOW_THREADS
         os_timeslice();
+        Py_END_ALLOW_THREADS
     }
 
     ioc_release_stream(stream);

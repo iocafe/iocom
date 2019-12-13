@@ -101,6 +101,11 @@ iocEndPoint *ioc_initialize_end_point(
     }
     root->epoint.last = epoint;
 
+
+#if OSAL_MULTITHREAD_SUPPORT
+    epoint->trig = osal_event_create();
+#endif
+
     /* Mark end_point structure as initialized end_point object (for debugging).
      */
     IOC_SET_DEBUG_ID(epoint, 'E')
@@ -144,7 +149,7 @@ void ioc_release_end_point(
 #if OSAL_MULTITHREAD_SUPPORT
     /* If we are running end point thread, stop it.
      */
-    ioc_terminate_end_point_thread(epoint);
+    while (ioc_terminate_end_point_thread(epoint)) os_timeslice();
 #endif
 
     /* Synchronize.
@@ -170,6 +175,11 @@ void ioc_release_end_point(
     {
         epoint->link.root->epoint.last = epoint->link.prev;
     }
+
+#if OSAL_MULTITHREAD_SUPPORT
+    osal_event_delete(epoint->trig);
+    epoint->trig = OS_NULL;
+#endif
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
        for primitive static allocation schema).
@@ -265,7 +275,6 @@ osalStatus ioc_listen(
            Mark that worker thread is running and thread stop has
            not been requested.
          */
-        epoint->trig = osal_event_create();
         epoint->worker_thread_running = OS_TRUE;
         epoint->stop_worker_thread = OS_FALSE;
 
@@ -357,6 +366,7 @@ osalStatus ioc_terminate_end_point_thread(
 
     return status;
 }
+
 #endif
 
 
@@ -542,8 +552,8 @@ static void ioc_endpoint_thread(
     void *prm,
     osalEvent done)
 {
-    iocRoot
-        *root;
+//    iocRoot
+//        *root;
 
     iocEndPoint
         *epoint;
@@ -608,12 +618,10 @@ static void ioc_endpoint_thread(
 
     /* Delete the event and that this thread is no longer running.
      */
-    root = epoint->link.root;
-    ioc_lock(root);
-    osal_event_delete(epoint->trig);
-    epoint->trig = OS_NULL;
+//    root = epoint->link.root;
+//    ioc_lock(root);
     epoint->worker_thread_running = OS_FALSE;
-    ioc_unlock(root);
+//    ioc_unlock(root);
 
     osal_trace("end point: worker thread exited");
 }

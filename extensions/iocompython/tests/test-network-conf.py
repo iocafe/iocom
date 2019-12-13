@@ -71,16 +71,17 @@ def main():
             device_name = e[2]
             network_name = e[1]
 
-            # New device. This has a potential problem. It is not guaranteed that
-            # new_device event comes after information about both conf_exp and conf_imp
-            # memory blocks has been received. 
+            # New device. This has a potential problem. 
             if event == 'new_device':
                 #set_network_conf(device_name, network_name)
-                #get_network_conf(device_name, network_name)
-                # print(root.setconf(device_name + "." + network_name, str.encode("Dummy config data")))
-                print(root.getconf(device_name + "." + network_name))
+#                get_network_conf(device_name, network_name)
+                print(root.setconf(device_name + "." + network_name, str.encode("Dummy config data")))
+#                print(root.getconf(device_name + "." + network_name))
 
+#    epoint.delete()
+    print("HERE1")
     root.delete()
+    print("HERE2")
 
 
 if (__name__ == '__main__'): 

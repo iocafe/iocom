@@ -162,7 +162,7 @@ failed:
 
   @brief Destructor.
 
-  The Signal_dealloc function releases the associated Python object.
+  The Signal_dealloc function releases the associated Python object and IOCOM signal.
 
   @param   self Pointer to the python object.
   @return  None.
