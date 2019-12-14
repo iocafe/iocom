@@ -151,7 +151,7 @@ osalStatus osal_main(
      */
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
   #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-    static osalTLSParam tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
+    static osalSecurityConfig tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
     osal_tls_initialize(&nic, 1, &tlsprm);
     iface = OSAL_TLS_IFACE;
   #else

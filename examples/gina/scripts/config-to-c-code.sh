@@ -16,4 +16,7 @@ python3 ${MYSCRIPTS}/signals-to-c.py ${MYCONFIG}/signals/${MYAPP}-signals.json -
 
 ${MYCODEROOT}/bin/linux/json --t2b -title ${MYCONFIG}/network/${MYAPP}-network-defaults.json ${MYCONFIG}/network/${MYAPP}-network-defaults.binjson
 ${MYCODEROOT}/bin/linux/json --b2t  ${MYCONFIG}/network/${MYAPP}-network-defaults.binjson ${MYCONFIG}/network/${MYAPP}-network-defaults-check.json
-python3 ${MYCODEROOT}/eosal/scripts/bin-to-c.py -v ${MYAPP}_network ${MYCONFIG}/network/${MYAPP}-network-defaults.binjson -o ${MYCONFIG}/include/${MYHW}/${MYAPP}-network-defaults.c
+python3 ${MYCODEROOT}/eosal/scripts/bin-to-c.py -v ${MYAPP}_network_defaults ${MYCONFIG}/network/${MYAPP}-network-defaults.binjson -o ${MYCONFIG}/include/${MYHW}/${MYAPP}-network-defaults.c
+
+echo "*** Check that the output files have been generated (error checks are still missing)."
+echo "*** You may need to recompile all C code since generated files in config/include/<hw> folder are not in compiler dependencies."

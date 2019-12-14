@@ -198,7 +198,7 @@ osalStatus osal_main(
 #endif
 
 #if MY_TRANSPORT==EXAMPLE_USE_TLS_SOCKET
-    static osalTLSParam prm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
+    static osalSecurityConfig prm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
     osal_tls_initialize(&nic, 1, &prm);
     iface = OSAL_TLS_IFACE;
 #if MY_ROLE==EXAMPLE_CONNECT

@@ -20,4 +20,5 @@
 #include "gina-io.c"
 #include "gina-signals.c"
 #include "gina-info-mblk.c"
+#include "gina-network-defaults.c"
 

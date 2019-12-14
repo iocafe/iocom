@@ -70,7 +70,7 @@ iocMblkShortcut *ioc_add_mblk_shortcut(
 
   @brief Release memory block list item.
   @anchor ioc_release_mblk_shortcut
-
+`
   The ioc_release_mblk_shortcut() function detaches shortcut from memory block and from memory
   block shortcut list and frees memory allocated for it. Synchronization ioc_lock() must be on
   when calling this function.

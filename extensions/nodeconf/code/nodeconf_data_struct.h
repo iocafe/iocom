@@ -1,10 +1,10 @@
 /**
 
-  @file    nodeconf_conf.h
-  @brief   Data structures, defines and functions for managing network node configuration and security.
+  @file    nodeconf_data_struct.h
+  @brief   Data structures, defines and functions for accessing network node configuration.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    20.10.2019
+  @date    14.12.2019
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -14,103 +14,126 @@
 ****************************************************************************************************
 */
 
-/* Enumeration of features to check.
+
+/* Maximum number of network interfaces.
  */
-typedef enum
+#define IOC_MAX_NODECOM_NICS 2
+
+/* Maximum number of connection points
+ */
+#define IOC_MAX_CONNECT_POINTS 3
+
+/* Structure for passing information about all network interfaces
+ */
+typedef struct osalNetworkInterfaces
 {
-    NODECONF_TCP,
-    NODECONF_TLS,
-    NODECONF_SERIAL
+    osalNetworkInterface2 *nic;
+    os_int n_nics;
 }
-nodeconfFeatureEnum;
+iocNetworkInterfaces;
+
+/* Transport types.
+ */
+typedef enum iocTransportEnum
+{
+    IOC_TCP_SOCKET,
+    IOC_TLS_SOCKET,
+    IOC_SERIAL_PORT,
+    IOC_BLUETOOTH
+}
+iocTransportEnum;
 
 
-/** X
+/** Structure for passing information about all network interfaces
+ */
+typedef struct iocConnectionConfig
+{
+    /** IP address and optional TCP port, serial port and parameters, etc.
+     */
+    const char *parameters;
+
+    /** Which transport to use: socket, TLS, serial or blue tooth.
+     */
+    iocTransportEnum transport;
+
+    /** This is connection downwards in network hierarchy
+     */
+    os_boolean downward;
+
+    /** This connection point listens for incoming connections and
+        doesn't actively connect.
+     */
+    os_boolean listen;
+}
+iocConnectPoint;
+
+
+/** Structure for passing information about all connection points
+ */
+typedef struct iocConnectPoints
+{
+    iocConnectPoint *connect_point;
+    os_int n_connect_points;
+}
+iocConnectPoints;
+
+
+/** Node configuration state structure.
+ */
+typedef struct iocNodeConf
+{
+    /* Array of network interfaces.
+     */
+    osalNetworkInterface2 nic[IOC_MAX_NODECOM_NICS];
+
+    /* Strtucture to map network interfaces in array together.
+     */
+    iocNetworkInterfaces nics;
+
+    /* Security configuration, user name, password, trusted parties, certificates.
+     */
+    osalSecurityConfig security_conf;
+
+    /* Array of connection points.
+     */
+    iocConnectPoint cpoint[IOC_MAX_CONNECT_POINTS];
+
+    /* Strtucture to map connection points together.
+     */
+    iocConnectPoints cpoints;
+}
+iocNodeConf;
+
+
+/* Applications usually include custom configuration related how the board is used, etc.
+ * Instead of trying to imagine and list all possibilities, unfixed customization
+ * parameters can be added.
 */
-void nodeconf_initialize_node_configuration(
-    nodeconfNode *node);
+/* void nodeconf_get_custom_conf(
+    iocNodeConf *node,
+    osalCusomNodeConf *conf); */
 
-void nodeconf_release_node_configuration(
-    nodeconfNode *node);
-
-#if OSAL_MULTITHREAD_SUPPORT
-    #define nodeconf_lock_node_configuration(n) osal_mutex_lock((n)->lock)
-    #define nodeconf_unlock_node_configuration(n) osal_mutex_unlock((n)->lock)
-#else
-    #define nodeconf_lock_node_configuration(node)
-    #define nodeconf_unlock_node_configuration(node)
-#endif
-
-/* Set application name and version.
+/* Get network interface configuration.
  */
-void nodeconf_set_application_name(
-    nodeconfNode *node,
-    const os_char *app_name,
-    const os_char *app_version);
+iocNetworkInterfaces *ioc_get_nics(
+    iocNodeConf *node);
 
-/* Get network interface configuration from node's nconf data.
+/* Get network interface configuration.
  */
-void nodeconf_get_nic_conf(
-    nodeconfNode *node,
-    osalNetworkInterface *nic,
-    os_int n_nics);
+osalSecurityConfig *ioc_get_security_conf(
+    iocNodeConf *node);
 
-os_boolean nodeconf_is_feature_used(
-    nodeconfNode *node,
-    nodeconfFeatureEnum feature);
+/* Get connection configuration.
+ */
+iocConnectPoints *ioc_get_connect_conf(
+    iocNodeConf *node);
 
-void nodeconf_set_node_name(
-    nodeconfNode *node,
-    const os_char *node_name);
 
-const os_char *nodeconf_get_node_name(
-    nodeconfNode *node);
 
-void nodeconf_set_network_name(
-    nodeconfNode *node,
-    const os_char *network_name);
-
-os_char *nodeconf_get_network_name(
-    nodeconfNode *node);
-
-void nodeconf_set_connection(
-    nodeconfNode *node,
-    os_int connection_nr,
-    os_short flags,
-    const os_char *parameters);
-
-os_int nodeconf_get_connection(
-    nodeconfNode *node,
-    os_int connection_nr,
-    os_char *parameters,
-    os_memsz parameters_sz);
-
-void nodeconf_set_key_pair(
-    nodeconfNode *node,
-    os_char *private_key,
-    os_char *public_key);
-
-os_char *nodeconf_get_private_key(
-    nodeconfNode *node);
-
-os_char *nodeconf_get_public_key(
-    nodeconfNode *node);
-
-void nodeconf_set_client_certificate(
-    nodeconfNode *node,
-    os_char *client_cert);
-
-os_char *nodeconf_get_client_certificate(
-    nodeconfNode *node);
-
-void nodeconf_autohorize(
-    nodeconfNode *node,
+/* void nodeconf_verify_server(
+    iocNodeConf *node,
     os_char *node_name,
-    os_char *network_name);
+    os_char *network_name); */
 
-os_boolean nodeconf_is_authorized(
-    nodeconfNode *node,
-    os_char *node_name,
-    os_char *network_name,
-    os_char *client_cert_signed_by);
-
+/* Server side client authentication elsewhere, not in nodeconf
+ */

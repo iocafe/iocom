@@ -16,10 +16,13 @@
 #define IOCOM_IOBOARD
 #include "iocom.h"
 #include "pinsx.h"
+#include "nodeconf.h"
 
 #include "gina-io.h"
 #include "gina-signals.h"
 #include "gina-info-mblk.h"
+#include "gina-network-defaults.h"
+
 
 void ioboard_communication_callback(
     struct iocHandle *mblk,

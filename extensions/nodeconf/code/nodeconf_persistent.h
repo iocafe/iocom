@@ -17,8 +17,13 @@
 
 /** X
 */
-void nodeconf_load_node_configuration(
-    nodeconfNode *node);
+void ioc_load_node_config(
+    iocNodeConf *node,
+    const os_char *default_config);
 
-void nodeconf_save_node_configuration(
-    nodeconfNode *node);
+void ioc_save_node_config(
+    iocNodeConf *node);
+
+/* void ioc_release_node_config(
+    iocNodeConf *node);
+ */

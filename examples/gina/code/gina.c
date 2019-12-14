@@ -36,6 +36,10 @@
 #define GINA_IP_ADDRESS "192.168.1.220"
 #define GINA_SERIAL_PORT "COM3,baud=115200"
 
+/* Gina IO board configuration.
+ */
+iocNodeConf gina_device_conf;
+
 /* Maximum number of sockets, etc.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
@@ -76,6 +80,8 @@ osalStatus osal_main(
     osPersistentParams persistentprm;
     os_int64 ti;
 
+    /* Initialize persistent storage (typically flash is running in micro-controller)
+     */
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.device_name = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
@@ -83,6 +89,11 @@ osalStatus osal_main(
     /* Setup IO pins.
      */
     pins_setup(&pins_hdr, 0);
+
+    /* Load device configuration from peristant storage, or if not available use
+       defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
+     */
+    ioc_load_node_config(&gina_device_conf, gina_network_defaults);
 
     /* Setup network interface configuration for micro-controller environment. This is ignored
        if network interfaces are managed by operating system (Linux/Windows,etc), or if we are

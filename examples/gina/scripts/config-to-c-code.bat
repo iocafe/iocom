@@ -17,4 +17,4 @@ python %MYSCRIPTS%/signals-to-c.py %MYCONFIG%/signals/%MYAPP%-signals.json -p %M
 
 %MYCODEROOT%/bin/%MYDEVOS%/json --t2b -title %MYCONFIG%/network/%MYAPP%-network-defaults.json %MYCONFIG%/network/%MYAPP%-network-defaults.binjson
 %MYCODEROOT%/bin/%MYDEVOS%/json --b2t  %MYCONFIG%/network/%MYAPP%-network-defaults.binjson %MYCONFIG%/network/%MYAPP%-network-defaults-check.json
-python %MYCODEROOT%/eosal/scripts/bin-to-c.py -v %MYAPP%_network %MYCONFIG%/network/%MYAPP%-network-defaults.binjson -o %MYCONFIG%/include/%MYHW%/%MYAPP%-network-defaults.c
+python %MYCODEROOT%/eosal/scripts/bin-to-c.py -v %MYAPP%_network_defaults %MYCONFIG%/network/%MYAPP%-network-defaults.binjson -o %MYCONFIG%/include/%MYHW%/%MYAPP%-network-defaults.c
