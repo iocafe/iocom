@@ -18,6 +18,26 @@
  */
 #define IOC_MAX_NCONF_CONNECTIONS 3
 
+
+typedef struct iocDeviceId
+{
+    const os_char *device_name;
+    os_int device_nr;
+    const os_char *network_name;
+
+    /* User name is often device name and serial number, but can be something else
+       for GUI client, etc, which discover's its device number automatically.
+     */
+    const os_char *user_name;
+    const os_char *password;
+
+    /* Custom parmeters.
+     */
+    const os_char *cust1;
+    const os_char *cust2;
+}
+iocDeviceId;
+
 /* Structure for passing information about all network interfaces
  */
 typedef struct osalNetworkInterfaces
@@ -31,13 +51,13 @@ iocNetworkInterfaces;
  */
 typedef enum iocTransportEnum
 {
+    IOC_DEFAULT_TRANSPORT = 0, /* Undefined */
     IOC_TCP_SOCKET,
     IOC_TLS_SOCKET,
     IOC_SERIAL_PORT,
     IOC_BLUETOOTH
 }
 iocTransportEnum;
-
 
 /** Structure for passing information about all network interfaces
  */
@@ -72,20 +92,6 @@ typedef struct iocConnectionConfig
 }
 iocConnectionConfig;
 
-typedef struct iocDeviceId
-{
-    const os_char *device_name;
-    os_int device_nr;
-    const os_char *network_name;
-
-    /* User name is often device name and serial number, but can be something else
-       for GUI client, etc, which discover's its device number automatically.
-     */
-    const os_char *user_name;
-    const os_char *password;
-}
-iocDeviceId;
-
 
 /** Node configuration state structure.
  */
@@ -115,14 +121,10 @@ typedef struct iocNodeConf
 }
 iocNodeConf;
 
-
-/* Applications usually include custom configuration related how the board is used, etc.
- * Instead of trying to imagine and list all possibilities, unfixed customization
- * parameters can be added.
-*/
-/* void nodeconf_get_custom_conf(
-    iocNodeConf *node,
-    osalCusomNodeConf *conf); */
+/* Get device identification and custom parameters.
+ */
+iocDeviceId *ioc_get_device_id(
+    iocNodeConf *node);
 
 /* Get network interface configuration.
  */

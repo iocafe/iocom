@@ -24,12 +24,10 @@ typedef struct
      */
     iocNodeConf *node;
 
-    /** Current network interface index
+    /** Current network interface, wifi network and connection indices
      */
     os_int nic_ix;
-
-    /** Current network interface index
-     */
+    os_int wifi_ix;
     os_int connection_ix;
 
     /** Latest information parsed from JSON
@@ -54,10 +52,14 @@ static void ioc_nconf_setup_structure(
 /**
 ****************************************************************************************************
 
-  @brief Load node's network node configuration from persistent storage.
+  @brief Load network node configuration from persistent storage.
 
-  The ioc_load_node_config()
+  The ioc_load_node_config() function loads node's network configuration from persistent storage.
+  If loading network configuration fails, the default configuration given as argumen is used.
 
+  @param   node Node (IO device) configuration to set up.
+  @param   default_config Congifuration as packed JSON.
+  @param   default_config_sz Default configuration size in bytes.
   @return  None.
 
 ****************************************************************************************************
@@ -78,10 +80,7 @@ void ioc_load_node_config(
 
   @brief Processing packed JSON, handle arrays.
 
-  The ioc_nconf_process_array() function is called to process array in packed JSON. General goal
-  here is to move IO signals information from packed JSON to dynamic information structures,
-  so this information can be seached quickly when needed. Synchronization ioc_lock() must be on
-  when this function is called.
+  The ioc_nconf_process_array() function is called to process array in packed JSON.
 
   @param   state Structure holding current JSON parsing state.
   @param   array_tag Name of array from upper level of JSON structure.
@@ -146,10 +145,7 @@ static osalStatus ioc_nconf_process_array(
 
   @brief Processing packed JSON, handle {} blocks.
 
-  The ioc_ioc_nconf_process_block() function is called to process a block in packed JSON. General
-  goal here is to move IO signals information from packed JSON to dynamic information structures,
-  so this information can be seached quickly when needed. Synchronization ioc_lock() must be on
-  when this function is called.
+  The ioc_ioc_nconf_process_block() function is called to process a block in packed JSON.
 
   @param   state Structure holding current JSON parsing state.
   @param   array_tag Name of array from upper level of JSON structure.
@@ -165,27 +161,44 @@ static osalStatus ioc_nconf_process_block(
 {
     osalJsonItem item;
     osalStatus s;
-    os_boolean is_nic_block, is_connect_block;
-    os_char array_tag_buf[16];
     osalNetworkInterface2 *nic;
+    osalWifiNetworkConfig *wifi;
+    iocOneConnectionConf *conn;
+    os_boolean is_nic_block;
+    os_boolean is_wifi_block;
+    os_boolean is_connect_block;
+    os_boolean is_security_block;
+    os_char array_tag_buf[16];
     iocNodeConf *node;
     node = state->node;
 
     /* If this is beginning of signal block.
      */
     is_nic_block = OS_FALSE;
+    is_wifi_block = OS_FALSE;
     is_connect_block = OS_FALSE;
+    is_security_block = OS_FALSE;
     if (!os_strcmp(state->tag, "-"))
     {
         if (!os_strcmp(array_tag, "nic"))
         {
             is_nic_block = OS_TRUE;
             state->nic_ix++;
+            state->wifi_ix = 0;
+        }
+        else if (!os_strcmp(array_tag, "wifi"))
+        {
+            is_wifi_block = OS_TRUE;
+            state->wifi_ix++;
         }
         else if (!os_strcmp(array_tag, "connect"))
         {
             is_connect_block = OS_TRUE;
             state->connection_ix++;
+        }
+        else if (!os_strcmp(array_tag, "security"))
+        {
+            is_security_block = OS_TRUE;
         }
     }
 
@@ -238,6 +251,14 @@ static osalStatus ioc_nconf_process_block(
                     {
                         node->device_id.password = item.value.s;
                     }
+                    else if (!os_strcmp(state->tag, "cust1"))
+                    {
+                        node->device_id.cust1 = item.value.s;
+                    }
+                    else if (!os_strcmp(state->tag, "cust2"))
+                    {
+                        node->device_id.cust2 = item.value.s;
+                    }
                 }
 
                 if (is_nic_block && state->nic_ix <= OSAL_MAX_NRO_NICS)
@@ -273,12 +294,59 @@ static osalStatus ioc_nconf_process_block(
                     }
                 }
 
-                if (is_connect_block && state->connection_ix <= OSAL_MAX_NRO_NICS)
+                if (is_wifi_block &&
+                    state->nic_ix <= OSAL_MAX_NRO_NICS &&
+                    state->wifi_ix <= OSAL_MAX_NRO_WIFI_NETWORKS)
                 {
+                    nic = node->nic + state->nic_ix - 1;
+                    wifi = nic->wifinet + state->wifi_ix - 1;
+                    if (!os_strcmp(state->tag, "network"))
+                    {
+                        wifi->wifi_net_name = item.value.s;
+                    }
+                    else if (!os_strcmp(state->tag, "password"))
+                    {
+                        wifi->wifi_net_password = item.value.s;
+                    }
+                }
 
+                if (is_connect_block && state->connection_ix <= IOC_MAX_NCONF_CONNECTIONS)
+                {
+                    conn = node->connection + state->connection_ix - 1;
+                    if (!os_strcmp(state->tag, "transport"))
+                    {
+                        if (!strcmp(item.value.s, "tls"))
+                        {
+                            conn->transport = IOC_TLS_SOCKET;
+                        }
+                        if (!strcmp(item.value.s, "socket"))
+                        {
+                            conn->transport = IOC_TCP_SOCKET;
+                        }
+                        else if (!strcmp(item.value.s, "serial"))
+                        {
+                            conn->transport = IOC_SERIAL_PORT;
+                        }
+                        else if (!strcmp(item.value.s, "bluetooth"))
+                        {
+                            conn->transport = IOC_BLUETOOTH;
+                        }
+                    }
+                    else if (!os_strcmp(state->tag, "ip") ||
+                        !os_strcmp(state->tag, "port"))
+                    {
+                        conn->parameters = item.value.s;
+                    }
+                }
+
+                if (is_security_block)
+                {
+                    if (!os_strcmp(state->tag, "certfile"))
+                    {
+                        node->security_conf.certfile = item.value.s;
+                    }
                 }
                 break;
-
 
             case OSAL_JSON_VALUE_INTEGER:
                 if (array_tag[0] == '\0')
@@ -295,6 +363,19 @@ static osalStatus ioc_nconf_process_block(
                     if (!os_strcmp(state->tag, "dhcp"))
                     {
                         nic->no_dhcp = (os_boolean)!item.value.l;
+                    }
+                }
+
+                if (is_connect_block && state->connection_ix <= IOC_MAX_NCONF_CONNECTIONS)
+                {
+                    conn = node->connection + state->connection_ix - 1;
+                    if (!os_strcmp(state->tag, "downward"))
+                    {
+                        conn->downward = (os_boolean)item.value.l;
+                    }
+                    else if (!os_strcmp(state->tag, "listen"))
+                    {
+                        conn->listen = (os_boolean)item.value.l;
                     }
                 }
                 break;
@@ -317,9 +398,16 @@ static osalStatus ioc_nconf_process_block(
 /**
 ****************************************************************************************************
 
-  @brief Add information in packed "info" JSON to searchable dynamic IO information structure.
+  @brief Set up node configuuration search structure (pointers).
 
-  X...
+  Call this function when device configuration has been loaded or default configuration is seleted
+  for use. The function sets. Pointers to configuration data so that it is easy to use it
+  from application.
+
+  @param   node Pointer to node configuration in which to set the pointer.
+  @param   config Pointer to packed JSON configuration loaded from persistent storage or
+           to default configuration.
+  @param   config_sz Configuration size in bytes.
   @return  OSAL_SUCCESS if all is fine, other values indicate an error.
 
 ****************************************************************************************************

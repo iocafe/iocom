@@ -16,44 +16,44 @@
 #include "extensions/nodeconf/nodeconf.h"
 
 
+/**
+****************************************************************************************************
+  Get device identification and custom parameters.
+****************************************************************************************************
+*/
+iocDeviceId *ioc_get_device_id(
+    iocNodeConf *node)
+{
+    return &node->device_id;
+}
 
 /**
 ****************************************************************************************************
-
-  @brief Get network interface configuration from node's nconf data.
-
-  The ioc_get_nics() function fills in the network interface structure NIC by
-  information in the nconf configuration.
-
-  @param   node Pointer to node's network node configuration.
-  @param   nic Pointer to array of network interface structure to fill in.
-  @param   n_nics Number of network interfaces in nic array.
-  @return  None.
-
+  Get network interface configuration.
 ****************************************************************************************************
 */
-
-
-
-
-/* Get network interface configuration.
- */
 iocNetworkInterfaces *ioc_get_nics(
     iocNodeConf *node)
 {
     return &node->nics;
 }
 
-/* Get network interface configuration.
- */
+/**
+****************************************************************************************************
+  Get security configuration.
+****************************************************************************************************
+*/
 osalSecurityConfig *ioc_get_security_conf(
     iocNodeConf *node)
 {
     return &node->security_conf;
 }
 
-/* Get connection configuration.
- */
+/**
+****************************************************************************************************
+  Get connection configuration.
+****************************************************************************************************
+*/
 iocConnectionConfig *ioc_get_connection_conf(
     iocNodeConf *node)
 {
