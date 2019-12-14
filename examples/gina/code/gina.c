@@ -31,11 +31,6 @@
  */
 #include "devicedir.h"
 
-/* Transport parameters, IP address to connect to, serial port settings.
- */
-#define GINA_IP_ADDRESS "192.168.1.220"
-#define GINA_SERIAL_PORT "COM3,baud=115200"
-
 /* Gina IO board configuration.
  */
 iocNodeConf gina_device_conf;
@@ -74,7 +69,12 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    osalNetworkInterface nic;
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
+    osalSecurityConfig *security;
+#endif
+    iocNetworkInterfaces *nics;
+    iocDeviceId *device_id;
+    iocConnectionConfig *connconf;
     ioboardParams prm;
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
@@ -94,21 +94,20 @@ osalStatus osal_main(
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
     ioc_load_node_config(&gina_device_conf, gina_network_defaults, sizeof(gina_network_defaults));
+    device_id = ioc_get_device_id(&gina_device_conf);
+    connconf = ioc_get_connection_conf(&gina_device_conf);
 
-    /* Setup network interface configuration for micro-controller environment. This is ignored
-       if network interfaces are managed by operating system (Linux/Windows,etc), or if we are
-       connecting trough wired Ethernet. If only one subnet, set wifi_net_name_1.
+    /* Setup network interface configuration for micro-controller environment and initialize
+       transport library. This is partyly ignored if network interfaces are managed by operating
+       system (Linux/Windows,etc),
      */
-    os_memclear(&nic, sizeof(osalNetworkInterface));
-    os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
-
-    /* Initialize the transport, socket, TLS-socket, serial port, etc.
-     */
-//    osal_tls_initialize(OS_NULL, &nic, OS_NULL);
-    osal_socket_initialize(&nic, 1);
+    nics = ioc_get_nics(&gina_device_conf);
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
+    security = ioc_get_security_conf(&gina_device_conf);
+    osal_tls_initialize(nics->nic, nics->n_nics, security);
+#else
+    osal_socket_initialize(nics->nic, nics->n_nics);
+#endif
     osal_serial_initialize();
 
     /* Get stream interface by IOBOARD_CTRL_CON define.
@@ -119,14 +118,14 @@ osalStatus osal_main(
      */
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
-    prm.device_name = IOBOARD_DEVICE_NAME;
+    prm.device_name = IOBOARD_DEVICE_NAME; /* or device_id->device name to allow change */
     os_time(&ti);
     prm.device_nr = ti % 9998 + 1; /* Bad way to create unique device number, very unreliable */
-prm.device_nr = 1;
-    prm.network_name = "iocafenet";
+prm.device_nr = device_id->device_nr;
+    prm.network_name = device_id->network_name;
     prm.ctrl_type = IOBOARD_CTRL_CON;
-    prm.socket_con_str = GINA_IP_ADDRESS;
-    prm.serial_con_str = GINA_SERIAL_PORT;
+    prm.socket_con_str = connconf->connection[0].parameters;
+    prm.serial_con_str = connconf->connection[0].parameters;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = GINA_EXP_MBLK_SZ;
     prm.receive_block_sz = GINA_IMP_MBLK_SZ;
@@ -234,7 +233,11 @@ void osal_main_cleanup(
     void *app_context)
 {
     ioboard_end_communication();
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     osal_tls_shutdown();
+#else
+    osal_socket_shutdown();
+#endif
     osal_serial_shutdown();
 }
 
