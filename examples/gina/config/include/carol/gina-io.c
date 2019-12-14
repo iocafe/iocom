@@ -18,7 +18,7 @@ static os_short pins_outputs_G_prm[]= {PIN_RV, PIN_RV};
 static os_short pins_outputs_H_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for analog_inputs */
-static os_short pins_analog_inputs_potentiometer_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 3, PIN_DELAY, 11};
+static os_short pins_analog_inputs_potentiometer_prm[]= {PIN_RV, PIN_RV, PIN_DELAY, 11, PIN_SPEED, 3};
 
 /* Parameters for pwm */
 static os_short pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_RESOLUTION, 12, PIN_INIT, 2048, PIN_FREQENCY, 50};
