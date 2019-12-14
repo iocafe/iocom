@@ -14,11 +14,6 @@
 ****************************************************************************************************
 */
 
-
-/* Maximum number of network interfaces.
- */
-#define IOC_MAX_NODECOM_NICS 2
-
 /* Maximum number of connection points
  */
 #define IOC_MAX_CONNECT_POINTS 3
@@ -77,14 +72,25 @@ typedef struct iocConnectPoints
 }
 iocConnectPoints;
 
+typedef struct iocDeviceId
+{
+    const os_char *device_name;
+    os_int device_nr;
+    const os_char *network_name;
+    const os_char *password;
+}
+iocDeviceId;
+
 
 /** Node configuration state structure.
  */
 typedef struct iocNodeConf
 {
+    iocDeviceId device_id;
+
     /* Array of network interfaces.
      */
-    osalNetworkInterface2 nic[IOC_MAX_NODECOM_NICS];
+    osalNetworkInterface2 nic[OSAL_MAX_NRO_NICS];
 
     /* Strtucture to map network interfaces in array together.
      */

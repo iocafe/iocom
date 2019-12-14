@@ -93,7 +93,7 @@ osalStatus osal_main(
     /* Load device configuration from peristant storage, or if not available use
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
-    ioc_load_node_config(&gina_device_conf, gina_network_defaults);
+    ioc_load_node_config(&gina_device_conf, gina_network_defaults, sizeof(gina_network_defaults));
 
     /* Setup network interface configuration for micro-controller environment. This is ignored
        if network interfaces are managed by operating system (Linux/Windows,etc), or if we are

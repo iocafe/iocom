@@ -1,6 +1,6 @@
 /**
 
-  @file    nodeconf_persistent.h
+  @file    nodeconf_setup.h
   @brief   Data structures, defines and functions for managing network node configuration and security.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -19,7 +19,8 @@
 */
 void ioc_load_node_config(
     iocNodeConf *node,
-    const os_char *default_config);
+    const os_char *default_config,
+    os_memsz default_config_sz);
 
 void ioc_save_node_config(
     iocNodeConf *node);
