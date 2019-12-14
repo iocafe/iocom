@@ -4,6 +4,7 @@
     "device_name": "gina",
     "device_nr": "auto",
     "network_name": "iocafenet",
+    "user_name": "pekka",
     "password": "auto",
 
     "connect": [
@@ -13,10 +14,9 @@
       }
     ],
 
-    "interfaces": [
+    "nic": [
       {
         "name": "default_nic",
-        "type": "wifi",
         "wifi": [
           {
             "network": "bean",

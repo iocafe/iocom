@@ -2,7 +2,7 @@
 "network" : {
 	"device_name": "gina",
 	"device_nr": "auto",
-	"io_network": "iocafenet",
+	"network_name": "iocafenet",
 	"password": "auto",
 	"connect": [
 		{
@@ -10,7 +10,7 @@
 			"ip": "*.*.*.220"
 		}
 	],
-	"interfaces": [
+	"nic": [
 		{
 			"name": "default_nic",
 			"type": "wifi",

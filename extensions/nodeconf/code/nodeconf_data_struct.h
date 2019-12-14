@@ -16,7 +16,7 @@
 
 /* Maximum number of connection points
  */
-#define IOC_MAX_CONNECT_POINTS 3
+#define IOC_MAX_NCONF_CONNECTIONS 3
 
 /* Structure for passing information about all network interfaces
  */
@@ -41,7 +41,7 @@ iocTransportEnum;
 
 /** Structure for passing information about all network interfaces
  */
-typedef struct iocConnectionConfig
+typedef struct iocOneConnectionConf
 {
     /** IP address and optional TCP port, serial port and parameters, etc.
      */
@@ -60,23 +60,28 @@ typedef struct iocConnectionConfig
      */
     os_boolean listen;
 }
-iocConnectPoint;
+iocOneConnectionConf;
 
 
 /** Structure for passing information about all connection points
  */
-typedef struct iocConnectPoints
+typedef struct iocConnectionConfig
 {
-    iocConnectPoint *connect_point;
-    os_int n_connect_points;
+    iocOneConnectionConf *connection;
+    os_int n_connections;
 }
-iocConnectPoints;
+iocConnectionConfig;
 
 typedef struct iocDeviceId
 {
     const os_char *device_name;
     os_int device_nr;
     const os_char *network_name;
+
+    /* User name is often device name and serial number, but can be something else
+       for GUI client, etc, which discover's its device number automatically.
+     */
+    const os_char *user_name;
     const os_char *password;
 }
 iocDeviceId;
@@ -100,13 +105,13 @@ typedef struct iocNodeConf
      */
     osalSecurityConfig security_conf;
 
-    /* Array of connection points.
+    /* Array of connections points.
      */
-    iocConnectPoint cpoint[IOC_MAX_CONNECT_POINTS];
+    iocOneConnectionConf connection[IOC_MAX_NCONF_CONNECTIONS];
 
     /* Strtucture to map connection points together.
      */
-    iocConnectPoints cpoints;
+    iocConnectionConfig connections;
 }
 iocNodeConf;
 
@@ -131,7 +136,7 @@ osalSecurityConfig *ioc_get_security_conf(
 
 /* Get connection configuration.
  */
-iocConnectPoints *ioc_get_connect_conf(
+iocConnectionConfig *ioc_get_connection_conf(
     iocNodeConf *node);
 
 

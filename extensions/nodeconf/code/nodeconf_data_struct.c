@@ -54,8 +54,8 @@ osalSecurityConfig *ioc_get_security_conf(
 
 /* Get connection configuration.
  */
-iocConnectPoints *ioc_get_connect_conf(
+iocConnectionConfig *ioc_get_connection_conf(
     iocNodeConf *node)
 {
-    return &node->cpoints;
+    return &node->connections;
 }
