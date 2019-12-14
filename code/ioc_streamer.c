@@ -154,7 +154,7 @@ osalStream ioc_streamer_open(
      */
     if (parameters)
     {
-        streamer->select = osal_str_to_int(parameters, OS_NULL);
+        streamer->select = (os_int)osal_str_to_int(parameters, OS_NULL);
     }
 
     osal_trace3_int("ioc_streamer_open()", (os_long)streamer);
@@ -475,7 +475,7 @@ static osalStatus ioc_streamer_device_write(
 
             streamer->head = 0;
             ioc_sets0_int(signals->head, 0);
-            streamer->select = ioc_gets0_int(signals->select);
+            streamer->select = (os_int)ioc_gets0_int(signals->select);
             ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
             streamer->step = IOC_SSTEP_TRANSFER_DATA;
             os_get_timer(&streamer->mytimer);
@@ -643,7 +643,7 @@ static osalStatus ioc_streamer_device_read(
     {
         case IOC_SSTEP_INITIALIZED:
             osal_trace3("IOC_SSTEP_INITIALIZED");
-            streamer->select = ioc_gets_int(signals->select, &state_bits);
+            streamer->select = (os_int)ioc_gets_int(signals->select, &state_bits);
             if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED) ||
                 (state_bits & OSAL_STATE_CONNECTED) == 0)
             {
