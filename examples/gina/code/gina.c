@@ -78,7 +78,6 @@ osalStatus osal_main(
     ioboardParams prm;
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
-    os_int64 ti;
 
     /* Initialize persistent storage (typically flash is running in micro-controller)
      */
@@ -119,9 +118,7 @@ osalStatus osal_main(
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
     prm.device_name = IOBOARD_DEVICE_NAME; /* or device_id->device name to allow change */
-    os_time(&ti);
-    prm.device_nr = ti % 9998 + 1; /* Bad way to create unique device number, very unreliable */
-prm.device_nr = device_id->device_nr;
+    prm.device_nr = device_id->device_nr;
     prm.network_name = device_id->network_name;
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = connconf->connection[0].parameters;
