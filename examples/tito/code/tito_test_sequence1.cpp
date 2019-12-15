@@ -85,7 +85,7 @@ void TitoTestSequence1::run()
         if (os_elapsed(&start_t, 50))
         {
             touch_sensor = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits);
-            osal_trace_int("touch = ", touch_sensor);
+            //osal_trace_int("touch = ", touch_sensor);
 
             if (up) brig *= 2;
             else brig /= 2;
