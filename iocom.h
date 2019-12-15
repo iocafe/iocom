@@ -35,7 +35,11 @@ OSAL_C_HEADER_BEGINS
    can be overridden by compiler define.
  */
 #ifndef IOC_DYNAMIC_MBLK_CODE
-#define IOC_DYNAMIC_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
+  #if OSAL_MICROCONTROLLER
+    #define IOC_DYNAMIC_MBLK_CODE 0
+  #else
+    #define IOC_DYNAMIC_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
+  #endif
 #endif
 
 /* If we are using dynamic memory allocation, include code to

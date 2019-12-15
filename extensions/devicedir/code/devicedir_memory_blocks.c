@@ -38,8 +38,10 @@ void devicedir_memory_blocks(
     const os_char *iopath,
     os_short flags)
 {
-    iocMemoryBlock *mblk;
+#if IOC_DYNAMIC_MBLK_CODE
     iocIdentifiers ids;
+#endif
+    iocMemoryBlock *mblk;
     os_char *sep;
     os_short mflags;
     os_boolean isfirst;
@@ -51,8 +53,9 @@ void devicedir_memory_blocks(
 
     /* Split IO path
      */
+#if IOC_DYNAMIC_MBLK_CODE
     ioc_iopath_to_identifiers(root, &ids, iopath, IOC_EXPECT_MEMORY_BLOCK);
-
+#endif
     osal_stream_print_str(list, "{\"mblk\": [\n", 0);
     sep = "{";
 
@@ -64,6 +67,7 @@ void devicedir_memory_blocks(
          mblk;
          mblk = mblk->link.next)
     {
+#if IOC_DYNAMIC_MBLK_CODE
         if (ids.network_name[0] != '\0')
         {
             if (os_strcmp(ids.network_name, mblk->network_name)) continue;
@@ -80,7 +84,7 @@ void devicedir_memory_blocks(
         {
             if (os_strcmp(ids.mblk_name, mblk->mblk_name)) continue;
         }
-
+#endif
         osal_stream_print_str(list, sep, 0);
         devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_TRUE);
         devicedir_append_int_param(list, "dev_nr", mblk->device_nr, OS_FALSE);
@@ -350,6 +354,7 @@ void devicedir_append_mblk_binary(
 }
 
 
+#if OSAL_JSON_TEXT_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -376,3 +381,4 @@ osalStatus devicedir_static_mblk_to_json(
     ioc_unlock(mblk->link.root);
     return s;
 }
+#endif

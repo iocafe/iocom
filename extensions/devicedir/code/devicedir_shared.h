@@ -57,9 +57,11 @@ void devicedir_append_mblk_binary(
     osalStream list,
     os_short flags);
 
+#if OSAL_JSON_TEXT_SUPPORT
 osalStatus devicedir_static_mblk_to_json(
     iocMemoryBlock *mblk,
     osalStream list);
+#endif
 
 void devicedir_append_flag(
     osalStream list,

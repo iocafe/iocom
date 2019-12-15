@@ -315,19 +315,19 @@ static osalStatus ioc_nconf_process_block(
                     conn = node->connection + state->connection_ix - 1;
                     if (!os_strcmp(state->tag, "transport"))
                     {
-                        if (!strcmp(item.value.s, "tls"))
+                        if (!os_strcmp(item.value.s, "tls"))
                         {
                             conn->transport = IOC_TLS_SOCKET;
                         }
-                        if (!strcmp(item.value.s, "socket"))
+                        if (!os_strcmp(item.value.s, "socket"))
                         {
                             conn->transport = IOC_TCP_SOCKET;
                         }
-                        else if (!strcmp(item.value.s, "serial"))
+                        else if (!os_strcmp(item.value.s, "serial"))
                         {
                             conn->transport = IOC_SERIAL_PORT;
                         }
-                        else if (!strcmp(item.value.s, "bluetooth"))
+                        else if (!os_strcmp(item.value.s, "bluetooth"))
                         {
                             conn->transport = IOC_BLUETOOTH;
                         }

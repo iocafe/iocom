@@ -157,8 +157,6 @@ osalStream ioc_streamer_open(
         streamer->select = (os_int)osal_str_to_int(parameters, OS_NULL);
     }
 
-    osal_trace3_int("ioc_streamer_open()", (os_long)streamer);
-
     /* Set status code and return stream pointer.
      */
 getout:
@@ -232,8 +230,6 @@ void ioc_streamer_close(
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION
     os_free(streamer, sizeof(iocStreamer));
 #endif
-
-    osal_trace3_int("ioc_streamer_close()", (os_long)streamer);
 }
 
 

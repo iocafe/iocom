@@ -231,12 +231,12 @@ void ioc_mbinfo_received(
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
-    iocHandle handle;
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf, *next_tbuf;
     os_short source_flag, target_flag;
 
 #if IOC_DYNAMIC_MBLK_CODE
+    iocHandle handle;
     iocMemoryBlockParams mbprm;
     iocDynamicNetwork *dnetwork;
 #endif
