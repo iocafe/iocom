@@ -74,7 +74,13 @@ void TitoTestApplication::run()
 
     while (!m_stop_thread && osal_go())
     {
-        osal_event_wait(m_event, OSAL_EVENT_INFINITE);
+//        osal_event_wait(m_event, OSAL_EVENT_INFINITE);
+
+        os_sleep(5);
+        ioc_send(&m_gina1.m_gina_import);
+        ioc_send(&m_gina2.m_gina_import);
+        ioc_receive(&m_gina1.m_gina_export);
+        ioc_receive(&m_gina2.m_gina_export);
     }
 
     m_test_seq1.stop();

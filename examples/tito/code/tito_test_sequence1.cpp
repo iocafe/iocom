@@ -75,27 +75,56 @@ void TitoTestSequence1::run()
 {
     os_boolean led_on = OS_TRUE;
     os_char state_bits;
-    os_int dip, elap;
+    os_int dip, elap, touch_sensor, brig = 1, up = 1;
     os_timer end_t, start_t;
+
+    os_get_timer(&start_t);
 
     while (!m_stop_thread && osal_go())
     {
+        if (os_elapsed(&start_t, 50))
+        {
+            touch_sensor = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits);
+            osal_trace_int("touch = ", touch_sensor);
 
-        os_get_timer(&start_t);
+            if (up) brig *= 2;
+            else brig /= 2;
+            if (brig > 4090) brig = 4090;
+            if (touch_sensor) brig = 1;
+            ioc_sets_int(&gina2->imp.dimmer_led, brig, OSAL_STATE_CONNECTED);
+            ioc_sets_int(&gina1->imp.dimmer_led, brig, OSAL_STATE_CONNECTED);
+            if (brig >= 4090) up = 0;
+            if (brig == 0) {up = 1; brig = 1;}
+
+
+            os_get_timer(&start_t);
+            led_on = !led_on;
+            // if (touch_sensor > 0) led_on = OS_FALSE;
+            ioc_sets_int(&gina2->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
+            ioc_sets_int(&gina1->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
+        }
+
+
+        /* os_get_timer(&start_t);
         ioc_sets_int(&gina2->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
         do {
             os_timeslice();
             if (os_elapsed(&start_t, 1000)) break;
             dip = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits);
         } while (dip != led_on);
+
         os_get_timer(&end_t);
         elap = (end_t - start_t);
+
+
 
         osal_trace_int("elap = ", elap);
         osal_trace_int("led = ", led_on);
         osal_trace_int("dip = ", dip);
         os_sleep(500);
         led_on = !led_on;
+        */
+        os_timeslice();
     }
 }
 
