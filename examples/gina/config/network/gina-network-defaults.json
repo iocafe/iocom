@@ -19,7 +19,7 @@
         "name": "default_nic",
         "wifi": [
           {
-            "network": "bean",
+            "network": "bean24",
             "password": "talvi333"
           },
           {
