@@ -2,7 +2,7 @@
   "network": {
     "title": "Network configuration defaults for IO device 'gina'",
     "device_name": "gina",
-    "device_nr": "auto",
+    "device_nr": 2,
     "network_name": "iocafenet",
     "user_name": "pekka",
     "password": "auto",
