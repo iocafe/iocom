@@ -195,7 +195,7 @@ osalStatus osal_loop(
     /* Run the IO device functionality.
      */
     static os_float f[5] = {1, 2, 3, 4, 5};
-    ioc_sets_array(&gina.exp.testfloat, f, 5);
+    // ioc_sets_array(&gina.exp.testfloat, f, 5);
 
     /* The devicedir call is here for testing only, take away.
      */
@@ -265,6 +265,8 @@ void ioboard_communication_callback(
     void *context)
 {
     os_char sb;
+
+#undef PINS_SEGMENT7_GROUP
 
     /* '#ifdef' is used to compile code in only if 7-segment display is configured
        for the hardware.

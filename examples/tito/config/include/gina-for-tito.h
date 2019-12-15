@@ -4,7 +4,7 @@ OSAL_C_HEADER_BEGINS
 typedef struct gina_t
 {
   iocDeviceHdr hdr;
-  iocMblkSignalHdr *mblk_list[2];
+  iocMblkSignalHdr *mblk_list[4];
 
   struct 
   {
@@ -13,6 +13,7 @@ typedef struct gina_t
     iocSignal dip_switch_4;
     iocSignal touch_sensor;
     iocSignal potentiometer;
+    iocSignal testfloat;
     iocSignal A;
     iocSignal B;
     iocSignal C;
@@ -33,13 +34,42 @@ typedef struct gina_t
     iocSignal led_builtin;
   }
   imp;
+
+  struct 
+  {
+    iocMblkSignalHdr hdr;
+    iocSignal tod_state;
+    iocSignal tod_tail;
+    iocSignal frd_state;
+    iocSignal frd_buf;
+    iocSignal frd_head;
+  }
+  conf_exp;
+
+  struct 
+  {
+    iocMblkSignalHdr hdr;
+    iocSignal tod_cmd;
+    iocSignal tod_select;
+    iocSignal tod_buf;
+    iocSignal tod_head;
+    iocSignal frd_cmd;
+    iocSignal frd_select;
+    iocSignal frd_tail;
+  }
+  conf_imp;
 }
 gina_t;
 
-#define GINA_EXP_MBLK_SZ 44
+#define GINA_EXP_MBLK_SZ 36
 #define GINA_IMP_MBLK_SZ 32
+#define GINA_CONF_EXP_MBLK_SZ 272
+#define GINA_CONF_IMP_MBLK_SZ 276
 
 void gina_init_signal_struct(gina_t *s);
+#define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
+#define GINA_CONF_EXP_FRD_BUF_ARRAY_SZ 257
+#define GINA_CONF_IMP_TOD_BUF_ARRAY_SZ 257
 
 OSAL_C_HEADER_ENDS
