@@ -30,7 +30,7 @@ public:
 
     /* Functions to start, stop and thread function to run the application.
      */
-    virtual void start(const os_char *network_name, os_short device_nr) {};
+    virtual void start(const os_char *network_name, os_uint device_nr) {};
     virtual void stop();
     virtual void run();
 
@@ -38,7 +38,7 @@ public:
      */
     os_char m_controller_device_name[IOC_NAME_SZ];
     os_char m_network_name[IOC_NETWORK_NAME_SZ];
-    os_short m_controller_device_nr;
+    os_uint m_controller_device_nr;
 
     /* Thread control.
      */
@@ -48,6 +48,6 @@ public:
     os_boolean m_started;
 
 // protected:
-    void initialize(const os_char *network_name, os_short device_nr);
+    void initialize(const os_char *network_name, os_uint device_nr);
     void startapp();
 };

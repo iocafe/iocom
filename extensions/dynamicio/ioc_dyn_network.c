@@ -132,7 +132,7 @@ iocDynamicSignal *ioc_add_dynamic_signal(
     const os_char *signal_name,
     const os_char *mblk_name,
     const os_char *device_name,
-    short device_nr,
+    os_uint device_nr,
     os_int addr,
     os_int n,
     os_int ncolumns,

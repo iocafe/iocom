@@ -126,7 +126,7 @@ typedef struct
         this identifies the device. This number is often written in 
         context as device name, like "TEMPCTRL1".
      */
-    os_short device_nr;
+    os_uint device_nr;
 
     /** IO device network name, like "iocafenet". Devices in same "network" can speak to each
         others.

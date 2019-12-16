@@ -69,7 +69,7 @@ void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
 }
 
 
-gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_short device_nr)
+gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr)
 {
     iocMemoryBlockParams blockprm;
 

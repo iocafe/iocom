@@ -107,7 +107,7 @@ void FrankGetNetConf::run_write()
 }
 
 
-void FrankGetNetConf::start(const os_char *device_name, os_short device_nr, const os_char *network_name)
+void FrankGetNetConf::start(const os_char *device_name, os_uint device_nr, const os_char *network_name)
 {
     os_strncpy(m_device_name, device_name, IOC_NAME_SZ);
     m_device_nr = device_nr;

@@ -47,7 +47,7 @@ struct iocConnection;
 typedef struct
 {
     os_char device_name[IOC_NAME_SZ];
-    os_ushort device_nr;
+    os_uint device_nr;
     os_char network_name[IOC_NETWORK_NAME_SZ];
     os_char mblk_name[IOC_NAME_SZ];
     os_uint mblk_id;

@@ -27,7 +27,7 @@ public:
     TitoGinaIoDevice();
     virtual ~TitoGinaIoDevice();
 
-    gina_t *inititalize(const os_char *network_name, os_short device_nr);
+    gina_t *inititalize(const os_char *network_name, os_uint device_nr);
     virtual void release();
 
     os_boolean

@@ -405,13 +405,10 @@ void ioc_new_root_event(
     void *context)
 {
 #if IOC_DYNAMIC_MBLK_CODE
-    const os_char 
-        *network_name,
-        *device_name,
-        *mblk_name;
-    
-    os_short 
-        device_nr;
+    const os_char *network_name;
+    const os_char *device_name;
+    const os_char *mblk_name;
+    os_uint device_nr;
 #endif
 
     if (root->callback_func)
@@ -447,3 +444,54 @@ void ioc_new_root_event(
 #endif
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Create unique identifier for device.
+  @anchor ioc_get_unique_mblk_id
+
+  Some devices, like UI clients, games, etc, may not have device number associate with them
+  and return IOC_AUTO_DEVICE_NR as device number to controller. Controller uses this
+  function to assign unique device ID for the device.
+
+  ioc_lock() must be on before calling this function.
+
+  @param   root Pointer to the root object.
+  @return  Unique device identifier IOC_AUTO_DEVICE_NR + 1 .. 0xFFFFFFFF.
+
+****************************************************************************************************
+*/
+os_uint ioc_get_unique_device_id(
+    iocRoot *root)
+{
+    iocConnection *con;
+    os_uint id;
+    os_int count;
+
+    /* Just return next number
+     */
+    if (root->auto_device_nr)
+    {
+        return root->auto_device_nr++;
+    }
+
+    /* We run out of numbers. Strange, this can be possible only if special effort is
+       made for this to happen. Handle anyhow.
+     */
+    count = 100000;
+    while (count--)
+    {
+        id = osal_rand(IOC_AUTO_DEVICE_NR + 1, 0xFFFFFFFFL);
+        for (con = root->con.first;
+             con;
+             con = con->link.next)
+        {
+            if (id == con->auto_device_nr) break;
+        }
+        if (con == OS_NULL) return id;
+    }
+
+    osal_debug_error("Out of numbers (devices)");
+    return 1;
+}

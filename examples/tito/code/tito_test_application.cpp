@@ -48,7 +48,7 @@ TitoTestApplication::~TitoTestApplication()
 }
 
 
-void TitoTestApplication::start(const os_char *network_name, os_short device_nr)
+void TitoTestApplication::start(const os_char *network_name, os_uint device_nr)
 {
     if (m_started) return;
 

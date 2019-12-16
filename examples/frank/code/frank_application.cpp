@@ -51,7 +51,7 @@ FrankApplication::~FrankApplication()
 }
 
 
-void FrankApplication::start(const os_char *network_name, os_short device_nr)
+void FrankApplication::start(const os_char *network_name, os_uint device_nr)
 {
     os_strncpy(m_controller_device_name, "frank", IOC_NAME_SZ);
     os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);

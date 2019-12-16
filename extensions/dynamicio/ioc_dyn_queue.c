@@ -140,7 +140,7 @@ osalStatus ioc_queue_event(
     iocEvent event,
     const os_char *network_name,
     const os_char *device_name,
-    os_short device_nr,
+    os_uint device_nr,
     const os_char *mblk_name)
 {
     iocEventQueue *queue;

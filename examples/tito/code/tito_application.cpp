@@ -55,7 +55,7 @@ TitoApplication::~TitoApplication()
 }
 
 
-void TitoApplication::initialize(const os_char *network_name, os_short device_nr)
+void TitoApplication::initialize(const os_char *network_name, os_uint device_nr)
 {
 
     os_strncpy(m_controller_device_name, "tito", IOC_NAME_SZ);

@@ -80,7 +80,7 @@ typedef struct
         this identifies the device. This number is often written in 
         context as device name, like "TEMPCTRL1".
      */
-    os_short device_nr;
+    os_uint device_nr;
 
     /** Memory block name, max 15 characters.
      */
@@ -260,7 +260,7 @@ typedef struct iocMemoryBlock
         this identifies the device. This number is often written in 
         context as device name, like "TEMPCTRL1".
      */
-    os_short device_nr;
+    os_uint device_nr;
 
     /** Unique memory block identifier (unique for this memory block among
         all memory blocks of this iocRoot).

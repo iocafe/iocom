@@ -113,7 +113,7 @@ iocStream *ioc_open_stream(
     const os_char *exp_mblk_path,
     const os_char *imp_mblk_path,
     const os_char *device_name,
-    os_short device_nr,
+    os_uint device_nr,
     const os_char *network_name,
     os_int flags)
 {

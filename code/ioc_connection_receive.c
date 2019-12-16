@@ -28,10 +28,7 @@ static osalStatus ioc_process_received_data_frame(
 static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
     os_uint mblk_id,
-    os_int addr,
-    os_char *data,
-    os_int data_sz,
-    os_uchar flags);
+    os_char *data);
 
 static osalStatus ioc_store_data_frame(
     iocTargetBuffer *tbuf,
@@ -45,9 +42,15 @@ static osalStatus ioc_msg_getstr(
     os_memsz str_sz,
     os_uchar **p);
 
-static os_ushort ioc_msg_getint(
+static os_ushort ioc_msg_get_ushort(
     os_uchar **p,
-    os_char two_bytes);
+    os_uchar two_bytes);
+
+static os_uint ioc_msg_get_uint(
+    os_uchar **p,
+    os_uchar two_bytes,
+    os_uchar four_bytes);
+
 
 
 /**
@@ -325,7 +328,8 @@ osalStatus ioc_connection_receive(
     /* MBLK: Memory block identifier.
      */
     p = buf + (is_serial ? 5 : 4);
-    mblk_id = *(p++);
+    mblk_id = ioc_msg_get_uint(&p, flags & IOC_MBLK_HAS_TWO_BYTES, flags & IOC_MBLK_HAS_FOUR_BYTES);
+    /* mblk_id = *(p++);
     if (flags & (IOC_MBLK_HAS_FOUR_BYTES|IOC_MBLK_HAS_TWO_BYTES))
     {
         mblk_id |= ((os_uint)*(p++)) << 8;
@@ -334,11 +338,12 @@ osalStatus ioc_connection_receive(
             mblk_id |= ((os_uint)*(p++)) << 16;
             mblk_id |= ((os_uint)*(p++)) << 24;
         }
-    }
+    } */
 
     /* ADDR: Address within memory block.
      */
-    addr = *(p++);
+    addr = ioc_msg_get_uint(&p, flags & IOC_ADDR_HAS_TWO_BYTES, flags & IOC_ADDR_HAS_FOUR_BYTES);
+    /* addr = *(p++);
     if (flags & (IOC_ADDR_HAS_FOUR_BYTES|IOC_ADDR_HAS_TWO_BYTES))
     {
         addr |= ((os_uint)*(p++)) << 8;
@@ -347,7 +352,7 @@ osalStatus ioc_connection_receive(
             addr |= ((os_uint)*(p++)) << 16;
             addr |= ((os_uint)*(p++)) << 24;
         }
-    }
+    } */
 
     /* Save frame number to expect next. Notice that the frame count can
         be zero only for the very first frame. never be zero again.
@@ -362,13 +367,11 @@ osalStatus ioc_connection_receive(
      */
     if (flags & IOC_SYSTEM_FRAME)
     {
-        status = ioc_process_received_system_frame(
-            con, mblk_id, addr, (os_char*)p, data_sz, flags);
+        status = ioc_process_received_system_frame(con, mblk_id, (os_char*)p);
     }
     else
     {
-        status = ioc_process_received_data_frame(
-            con, mblk_id, addr, (os_char*)p, data_sz, flags);
+        status = ioc_process_received_data_frame(con, mblk_id, addr, (os_char*)p, data_sz, flags);
     }
 
 alldone:
@@ -465,13 +468,14 @@ static osalStatus ioc_process_received_data_frame(
 
   ioc_lock() must be on before calling this function.
 
+  Note: data_sz, addr, and flags are not needed for system frame. At least addr could be
+  used to pass some other information in future.
+
+
   @param   con Pointer to the connection object.
   @param   mblk_id Memory block identifier in this end.
-  @param   addr Start address within memory block.
   @param   data Received data, can be compressed and delta encoded, check flags.
-  @param   data_sz Size of received data in bytes.
-  @param   flags Bits IOC_DELTA_ENCODED, IOC_COMPRESESSED and IOC_SYNC_COMPLETE are
-           important here.
+
 
   @return  OSAL_SUCCESS if succesfull. Other values indicate corrupted frame.
 
@@ -480,10 +484,7 @@ static osalStatus ioc_process_received_data_frame(
 static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
     os_uint mblk_id,
-    os_int addr,
-    os_char *data,
-    os_int data_sz,
-    os_uchar flags)
+    os_char *data)
 {
     iocMemoryBlockInfo
         mbinfo;
@@ -500,7 +501,9 @@ static osalStatus ioc_process_received_system_frame(
             p = (os_uchar*)data + 1; /* Skip system frame type. */
             version_and_flags = (os_uchar)*(p++);
             os_memclear(&mbinfo, sizeof(mbinfo));
-            mbinfo.device_nr = ioc_msg_getint(&p, version_and_flags & IOC_INFO_D_2BYTES);
+            mbinfo.device_nr = ioc_msg_get_uint(&p,
+                version_and_flags & IOC_INFO_D_2BYTES,
+                version_and_flags & IOC_INFO_D_4BYTES);
 
             /* If we received message from device which requires automatically given
                device number in conrtoller end, give the number now.
@@ -511,7 +514,7 @@ static osalStatus ioc_process_received_system_frame(
                  */
                 if (!con->auto_device_nr)
                 {
-                    con->auto_device_nr = con->link.root->auto_device_nr++;
+                    con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
                 }
                 mbinfo.device_nr = con->auto_device_nr;
             }
@@ -525,9 +528,9 @@ static osalStatus ioc_process_received_system_frame(
             }
 
             /* unused addr, was mbinfo.mblk_nr = addr; */
-            mbinfo.mblk_id = mblk_id; /* ioc_msg_getint(&p); */
-            mbinfo.nbytes = ioc_msg_getint(&p, version_and_flags & IOC_INFO_N_2BYTES);
-            mbinfo.flags = ioc_msg_getint(&p, version_and_flags & IOC_INFO_F_2BYTES);
+            mbinfo.mblk_id = mblk_id; /* ioc_msg_get_ushort(&p); */
+            mbinfo.nbytes = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_N_2BYTES);
+            mbinfo.flags = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_F_2BYTES);
             if (version_and_flags & IOC_INFO_HAS_DEVICE_NAME)
             {
                 if (ioc_msg_getstr(mbinfo.device_name, IOC_NAME_SZ, &p))
@@ -667,22 +670,60 @@ static osalStatus ioc_msg_getstr(
 ****************************************************************************************************
 
   @brief Get integer from received message.
-  @anchor ioc_msg_getint
+  @anchor ioc_msg_get_ushort
 
-  The ioc_msg_getint() function gets 16 bit integer from message position p and advances
-  p by two bytes.
+  The ioc_msg_get_ushort() function gets 16 bit integer from message position p and advances
+  p by one or two bytes.
 
   @param   p Pointer to message position pointer.
   @return  Integer value 0 .. 65535.
 
 ****************************************************************************************************
 */
-static os_ushort ioc_msg_getint(
+static os_ushort ioc_msg_get_ushort(
     os_uchar **p,
-    os_char two_bytes)
+    os_uchar two_bytes)
 {
     os_ushort li;
     li = *((*p)++);
     if (two_bytes) li |= (((os_ushort)*((*p)++)) << 8);
     return li;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Get integer from received message.
+  @anchor ioc_msg_get_uint
+
+  The ioc_msg_get_uint() function gets 32 bit integer from message position p and advances
+  p by one, two or four bytes.
+
+  @param   p Pointer to message position pointer.
+  @return  Integer value 0 .. 0xFFFFFFFF.
+
+****************************************************************************************************
+*/
+static os_uint ioc_msg_get_uint(
+    os_uchar **p,
+    os_uchar two_bytes,
+    os_uchar four_bytes)
+{
+    os_uint x;
+    os_uchar *q;
+
+    q = *p;
+    x = *(q++);
+    if (two_bytes || four_bytes)
+    {
+        x |= ((os_uint)*(q++)) << 8;
+        if (four_bytes)
+        {
+            x |= ((os_uint)*(q++)) << 16;
+            x |= ((os_uint)*(q++)) << 24;
+        }
+    }
+    *p = q;
+    return x;
 }

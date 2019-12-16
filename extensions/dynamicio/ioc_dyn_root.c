@@ -45,7 +45,7 @@ typedef struct
         this identifies the device. This number is often written in
         context as device name, like "TEMPCTRL1".
      */
-    os_short device_nr;
+    os_uint device_nr;
 
     /** Resize memory blocks while parsing flag.
      */
@@ -812,6 +812,5 @@ os_uint ioc_hash(
 
     return hash_sum;
 }
-
 
 #endif

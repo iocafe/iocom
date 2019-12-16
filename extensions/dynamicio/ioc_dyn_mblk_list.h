@@ -60,7 +60,7 @@ iocHandle *ioc_find_mblk_shortcut(
     iocDynamicNetwork *dnetwork,
     const os_char *mblk_name,
     const os_char *device_name,
-    os_short device_nr);
+    os_uint device_nr);
 
 /* Remove memory block short cuts which are no longer needed.
  */

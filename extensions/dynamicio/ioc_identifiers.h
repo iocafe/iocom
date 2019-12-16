@@ -35,7 +35,7 @@ typedef struct iocIdentifiers
     /** If there are multiple devices of same type (same device name),
         this identifies the device. 0 = any device number.
      */
-    os_short device_nr;
+    os_uint device_nr;
 
     /** Network name. Empty string = any network.
      */

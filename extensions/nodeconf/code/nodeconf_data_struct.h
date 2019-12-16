@@ -22,7 +22,7 @@
 typedef struct iocDeviceId
 {
     const os_char *device_name;
-    os_int device_nr;
+    os_uint device_nr;
     const os_char *network_name;
 
     /* User name is often device name and serial number, but can be something else

@@ -119,7 +119,8 @@
 /** "1/2 byte" and "has string" flags for packing memory block info.
     low bits reserved for version.
  */
-#define IOC_INFO_D_2BYTES 8
+#define IOC_INFO_D_2BYTES 4
+#define IOC_INFO_D_4BYTES 8
 #define IOC_INFO_N_2BYTES 16
 #define IOC_INFO_F_2BYTES 32
 #define IOC_INFO_HAS_DEVICE_NAME 64

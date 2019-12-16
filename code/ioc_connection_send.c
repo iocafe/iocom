@@ -22,17 +22,17 @@ typedef struct
 {
     /** Pointer to check sum in header
      */
-    os_char *checksum_low;
-    os_char *checksum_high;
+    os_uchar *checksum_low;
+    os_uchar *checksum_high;
 
     /** Pointer to flags
      */
-    os_char *flags;
+    os_uchar *flags;
 
     /** Pointers to data size in bytes
      */
-    os_char *data_sz_low;
-    os_char *data_sz_high;
+    os_uchar *data_sz_low;
+    os_uchar *data_sz_high;
 
     /* Header size in bytes.
      */
@@ -63,11 +63,18 @@ static void ioc_generate_header(
 
 static void ioc_msg_setstr(
     os_char *str,
-    os_char **p);
+    os_uchar **p);
 
-static os_boolean ioc_msg_setint(
+static os_boolean ioc_msg_set_ushort(
     os_ushort i,
-    os_char **p);
+    os_uchar **p);
+
+static void ioc_msg_set_uint(
+    os_uint i,
+    os_uchar **p,
+    os_uchar *flags,
+    os_uchar two_bytes_flag,
+    os_uchar four_bytes_flag);
 
 
 /**
@@ -331,14 +338,16 @@ static void ioc_make_mblk_info_frame(
     iocSendHeaderPtrs
         ptrs;
 
-    os_char
+    os_uchar
         *p,
         *start,
         *version_and_flags;
 
     os_int
         content_bytes,
-        used_bytes,
+        used_bytes;
+
+    os_uint
         device_nr;
 
     os_int
@@ -356,7 +365,7 @@ static void ioc_make_mblk_info_frame(
     /* Generate frame content. Here we do not check for buffer overflow,
        we know (and trust) that it fits within one frame.
      */
-    p = start = con->frame_out.buf + ptrs.header_sz;
+    p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
     *(p++) = IOC_SYSRAME_MBLK_INFO;
     version_and_flags = p; /* version, for future additions + flags */
     *(p++) = 0;
@@ -369,14 +378,16 @@ static void ioc_make_mblk_info_frame(
     {
         if (!con->auto_device_nr)
         {
-            con->auto_device_nr = con->link.root->auto_device_nr++;
+            con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
         }
         if (device_nr == con->auto_device_nr) device_nr = IOC_TO_AUTO_DEVICE_NR;
     }
-    if (ioc_msg_setint(device_nr, &p)) *version_and_flags |= IOC_INFO_D_2BYTES;
 
-    if (ioc_msg_setint(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
-    if (ioc_msg_setint(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
+    ioc_msg_set_uint(device_nr, &p, version_and_flags, IOC_INFO_D_2BYTES, IOC_INFO_D_4BYTES);
+    /* if (ioc_msg_set_ushort(device_nr, &p)) *version_and_flags |= IOC_INFO_D_2BYTES; */
+
+    if (ioc_msg_set_ushort(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
+    if (ioc_msg_set_ushort(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
     if (mblk->device_name[0])
     {
         ioc_msg_setstr(mblk->device_name, &p);
@@ -757,16 +768,14 @@ static void ioc_generate_header(
     os_boolean
         is_serial;
 
-    os_char
-        *p;
-
     os_uchar
+        *p,
         flags;
 
     flags = 0;
     os_memclear(ptrs, sizeof(iocSendHeaderPtrs));
     is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
-    p = hdr;
+    p = (os_uchar*)hdr;
 
     /* FRAME_NR: Frame number is used to check that no frame is dropped.
      */
@@ -802,7 +811,8 @@ static void ioc_generate_header(
     /* MBLK: Memory block idenfier. 1 byte if value is less
        than 255, two otherwise.
      */
-    *(p++) = (os_uchar)remote_mblk_id;
+    ioc_msg_set_uint(remote_mblk_id, &p, &flags, IOC_MBLK_HAS_TWO_BYTES, IOC_MBLK_HAS_FOUR_BYTES);
+    /* *(p++) = (os_uchar)remote_mblk_id;
     remote_mblk_id >>= 8;
     if (remote_mblk_id)
     {
@@ -819,11 +829,12 @@ static void ioc_generate_header(
         {
            flags |= IOC_MBLK_HAS_TWO_BYTES;
         }
-    }
+    } */
 
     /* ADDR: Start memory address.
      */
-    *(p++) = (os_uchar)addr;
+    ioc_msg_set_uint(addr, &p, &flags, IOC_ADDR_HAS_TWO_BYTES, IOC_ADDR_HAS_FOUR_BYTES);
+    /* *(p++) = (os_uchar)addr;
     addr >>= 8;
     if (addr)
     {
@@ -840,12 +851,12 @@ static void ioc_generate_header(
         {
            flags |= IOC_ADDR_HAS_TWO_BYTES;
         }
-    }
+    } */
 
     /* Set flags and store header size.
      */
     *ptrs->flags = flags;
-    ptrs->header_sz = (os_int)(p - hdr);
+    ptrs->header_sz = (os_int)(p - (os_uchar*)hdr);
 }
 
 
@@ -866,7 +877,7 @@ static void ioc_generate_header(
 */
 static void ioc_msg_setstr(
     os_char *str,
-    os_char **p)
+    os_uchar **p)
 {
     os_memsz
         len;
@@ -875,7 +886,7 @@ static void ioc_msg_setstr(
     *((*p)++) = (os_char)len;
     while (len-- > 0)
     {
-        *((*p)++) = (os_char)*(str++);
+        *((*p)++) = (os_uchar)*(str++);
     }
 }
 
@@ -883,11 +894,11 @@ static void ioc_msg_setstr(
 /**
 ****************************************************************************************************
 
-  @brief Store integer into message beging generated.
-  @anchor ioc_msg_setint
+  @brief Store 16 bit integer into message beging generated.
+  @anchor ioc_msg_set_ushort
 
-  The ioc_msg_setint() function stores a 16 bit integer i into message position p and advances
-  p by two bytes.
+  The ioc_msg_set_ushort() function stores a 16 bit integer i into message position p and advances
+  p by one or two bytes.
 
   @param   i Integer value to store, 0 .. 65535.
   @param   p Pointer to message position pointer.
@@ -895,12 +906,61 @@ static void ioc_msg_setstr(
 
 ****************************************************************************************************
 */
-static os_boolean ioc_msg_setint(
+static os_boolean ioc_msg_set_ushort(
     os_ushort i,
-    os_char **p)
+    os_uchar **p)
 {
     *((*p)++) = (os_char)i;
     if (i < 256) return OS_FALSE;
     *((*p)++) = (os_char)(i >> 8);
     return OS_TRUE;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Store 32 bit integer into message beging generated.
+  @anchor ioc_msg_set_uint
+
+  The ioc_msg_set_uint() function stores a 32 bit integer i into message position p and advances
+  p by one, two or four bytes.
+
+  @param   i Integer value to store, 0 .. 65535.
+  @param   p Pointer to message position pointer.
+  @param   flags Pointer to message flags to be modified to indicate how many bytes were stored.
+  @param   two_bytes_flag Bit in flags which indicates that two bytes were stored.
+  @param   four_bytes_flag Bit in flags which indicates that four bytes were stored.
+  @return  OS_TRUE if resulting number has 2 bytes, OS_FALSE if 1.
+
+****************************************************************************************************
+*/
+static void ioc_msg_set_uint(
+    os_uint i,
+    os_uchar **p,
+    os_uchar *flags,
+    os_uchar two_bytes_flag,
+    os_uchar four_bytes_flag)
+{
+    os_uchar *q;
+    q = *p;
+    *(q++) = (os_uchar)i;
+    i >>= 8;
+    if (i)
+    {
+        *(q++) = (os_uchar)i;
+        i >>= 8;
+        if (i)
+        {
+           *(q++) = (os_uchar)i;
+            i >>= 8;
+           *(q++) = (os_uchar)i;
+           *flags |= four_bytes_flag;
+        }
+        else
+        {
+           *flags |= two_bytes_flag;
+        }
+    }
+    *p = q;
 }

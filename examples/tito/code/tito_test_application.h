@@ -32,7 +32,7 @@ public:
  	 */
     virtual ~TitoTestApplication();
 
-    virtual void start(const os_char *network_name, os_short device_nr);
+    virtual void start(const os_char *network_name, os_uint device_nr);
     virtual void stop();
     virtual void run();
 

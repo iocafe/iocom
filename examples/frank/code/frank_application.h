@@ -30,7 +30,7 @@ public:
 
     /* Functions to start, stop and thread function to run the application.
      */
-    void start(const os_char *network_name, os_short device_nr);
+    void start(const os_char *network_name, os_uint device_nr);
     void stop();
     void run();
 
@@ -38,7 +38,7 @@ public:
      */
     os_char m_controller_device_name[IOC_NAME_SZ];
     os_char m_network_name[IOC_NETWORK_NAME_SZ];
-    os_short m_controller_device_nr;
+    os_uint m_controller_device_nr;
 
     /* Thread control.
      */

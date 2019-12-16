@@ -48,7 +48,7 @@ typedef struct iocDynamicSignal
         this identifies the device. This number is often written in
         context as device name, like "TEMPCTRL1".
      */
-    os_short device_nr;
+    os_uint device_nr;
 
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
         or OS_STR. Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.

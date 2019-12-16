@@ -276,6 +276,11 @@ void ioc_new_root_event(
     struct iocMemoryBlock *mblk,    
     void *context);
 
+/* Create unique identifier for device.
+ */
+os_uint ioc_get_unique_device_id(
+    iocRoot *root);
+
 /*@}*/
 
 #if OSAL_MULTITHREAD_SUPPORT
