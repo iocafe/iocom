@@ -1,10 +1,10 @@
 /**
 
   @file    nodeconf_setup.h
-  @brief   Data structures, defines and functions for managing network node configuration and security.
+  @brief   Data structures, defines and functions for accessing network node configuration.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    20.10.2019
+  @date    15.12.2019
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -14,17 +14,14 @@
 ****************************************************************************************************
 */
 
-
-/** X
-*/
+/* Load network node configuration.
+ */
 void ioc_load_node_config(
     iocNodeConf *node,
     const os_char *default_config,
     os_memsz default_config_sz);
 
-void ioc_save_node_config(
-    iocNodeConf *node);
-
-/* void ioc_release_node_config(
-    iocNodeConf *node);
+/* Release any memory allocated for node configuration.
  */
+void ioc_release_node_config(
+    iocNodeConf *node);

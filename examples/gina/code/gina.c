@@ -194,7 +194,7 @@ osalStatus osal_loop(
 
     /* Run the IO device functionality.
      */
-    static os_float f[5] = {1, 2, 3, 4, 5};
+    // static os_float f[5] = {1, 2, 3, 4, 5};
     // ioc_sets_array(&gina.exp.testfloat, f, 5);
 
     /* The devicedir call is here for testing only, take away.
@@ -236,6 +236,8 @@ void osal_main_cleanup(
     osal_socket_shutdown();
 #endif
     osal_serial_shutdown();
+
+    ioc_release_node_config(&gina_device_conf);
 }
 
 
@@ -264,7 +266,7 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
-    os_char sb;
+    // os_char sb;
 
 #undef PINS_SEGMENT7_GROUP
 

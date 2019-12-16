@@ -118,6 +118,14 @@ typedef struct iocNodeConf
     /* Strtucture to map connection points together.
      */
     iocConnectionConfig connections;
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    /* Dynamically allocated buffer for loaded persistent configuration.
+       OS_NULL if buffer is not needed.
+     */
+    os_char *allocated_buf;
+    os_memsz allocated_sz;
+#endif
 }
 iocNodeConf;
 

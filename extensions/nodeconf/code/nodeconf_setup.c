@@ -37,7 +37,22 @@ typedef struct
 }
 iocNconfParseState;
 
+/* By default we define really small static node configuration buffer, this should
+ * not typically be used. Normally we can either access data directly from flash
+ * or we have dynamic memory allocated. Anyhow if this buffer is needed, define node
+ * configuration  buffer by compiler define like "-DIOC_NODECONF_STATIC_BUF_SZ=512".
+ */
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION == 0
+#ifndef IOC_NODECONF_STATIC_BUF_SZ
+    #define IOC_NODECONF_STATIC_BUF_SZ 1
+#endif
 
+static os_char nodeconf_static_buf[IOC_NODECONF_STATIC_BUF_SZ];
+#endif
+
+
+/* Forward referred static functions.
+ */
 static osalStatus ioc_nconf_process_block(
     iocNconfParseState *state,
     os_char *array_tag,
@@ -52,7 +67,7 @@ static void ioc_nconf_setup_structure(
 /**
 ****************************************************************************************************
 
-  @brief Load network node configuration from persistent storage.
+  @brief Load network node configuration.
 
   The ioc_load_node_config() function loads node's network configuration from persistent storage.
   If loading network configuration fails, the default configuration given as argumen is used.
@@ -69,9 +84,88 @@ void ioc_load_node_config(
     const os_char *default_config,
     os_memsz default_config_sz)
 {
+    const os_char *block;
+    os_char *loadblock;
+    os_memsz block_sz, n_read;
+    osalStatus s;
+    osPersistentHandle *h;
+
     os_memclear(node, sizeof(iocNodeConf));
 
-    ioc_nconf_setup_structure(node, default_config, default_config_sz);
+    /* If persistant storage is in micro-controller's flash, we can just get pointer to data block
+       and data size.
+     */
+    s = os_persistent_get_ptr(OS_PBNR_IO_DEVICE_CONFIG, &block, &block_sz);
+    if (s == OSAL_SUCCESS) goto gotit;
+
+    /* No success with direct pointer to flash, try loading from persisten storage.
+     */
+    h = os_persistent_open(OS_PBNR_IO_DEVICE_CONFIG, &block_sz, OSAL_STREAM_READ);
+    if (h && block_sz > 0)
+    {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+        loadblock = os_malloc(block_sz, OS_NULL);
+        block  = loadblock;
+#else
+        if (block_sz > sizeof(nodeconf_static_buf))
+        {
+            osal_debug_error("Static node configuration buffer too small, "
+                "set large enough IOC_NODECONF_STATIC_BUF_SZ as compiler define.");
+            block = OS_NULL;
+        }
+        else
+        {
+            block = nodeconf_static_buf;
+        }
+#endif
+        if (block)
+        {
+            n_read = os_persistent_read(h, loadblock, block_sz);
+            os_persistent_close(h, OSAL_STREAM_DEFAULT);
+            if (n_read == block_sz)
+            {
+                node->allocated_buf = loadblock;
+                node->allocated_sz = block_sz;
+                goto gotit;
+            }
+
+            osal_debug_error("Corrupted persistent block");
+            os_free(loadblock, block_sz);
+        }
+    }
+
+    /* No success with persistent storage: Use default configuration.
+     */
+    block = default_config;
+    block_sz = default_config_sz;
+
+    /* Fill in pointers within node structure to access configuation data.
+     */
+gotit:
+    ioc_nconf_setup_structure(node, block, block_sz);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Release any memory allocated for node configuration.
+
+  The ioc_release_node_config() function frees memory allocated for node configuration, but
+  doesn't free node configuration structure itself. One should not use node configuration
+  after this call.
+
+  @param   node Node (IO device) configuration.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_release_node_config(
+    iocNodeConf *node)
+{
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_free(node->allocated_buf, node->allocated_sz);
+#endif
 }
 
 

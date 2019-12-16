@@ -1407,7 +1407,7 @@ void ioc_run_control_stream(
             if (ctrl->frd)
             {
                 select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
-                ctrl->fdr_persistent = os_persistent_open(select, OSAL_STREAM_READ);
+                ctrl->fdr_persistent = os_persistent_open(select, OS_NULL, OSAL_STREAM_READ);
                 ctrl->fdr_persistent_ok = (ctrl->fdr_persistent != OS_NULL);
 #if OSAL_DEBUG
                 if (ctrl->fdr_persistent == OS_NULL)
@@ -1434,7 +1434,7 @@ void ioc_run_control_stream(
             if (ctrl->tod)
             {
                 select = (osPersistentBlockNr)ioc_gets0_int(params->tod.select);
-                ctrl->tod_persistent = os_persistent_open(select, OSAL_STREAM_WRITE);
+                ctrl->tod_persistent = os_persistent_open(select, OS_NULL, OSAL_STREAM_WRITE);
 #if OSAL_DEBUG
                 if (ctrl->tod_persistent == OS_NULL)
                 {
