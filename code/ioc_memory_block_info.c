@@ -257,7 +257,7 @@ void ioc_mbinfo_received(
             osal_trace_str("~MBINFO received, dev name=", info->device_name);
             osal_trace_int("~, dev nr=", info->device_nr);
             osal_trace_str("~, net name=", info->network_name);
-            osal_trace_str("~, mblk name=", info->mblk_name);
+            osal_trace_str(", mblk name=", info->mblk_name);
 
 #if IOC_DYNAMIC_MBLK_CODE
             /* If we can allocate memory blocks dynamically.

@@ -40,7 +40,7 @@ signal_conf = ('{'
 
 
 def main():
-    root = Root('mydevice', device_nr=3, network_name='iocafenet')
+    root = Root('mydevice', device_nr=10000, network_name='iocafenet')
     root.queue_events()
     ioterminal.start(root)
     myinputs = MemoryBlock(root, 'upward,auto', 'exp', nbytes=256)

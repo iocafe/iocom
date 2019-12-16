@@ -3,7 +3,8 @@ from pyglet.window import key
 from game import physicalobject, resources
 from iocompython import Root, MemoryBlock, Connection, Signal, json2bin
 
-my_player_nr = int(time.time()) % 9998 + 1 # Bad way to make unique device number (not really unique)
+my_player_nr = 10000  # 10000 = select device number automatically 
+# my_player_nr = 5  # 10000 = select device number automatically 
 data_vector_n = 0
 
 with open('resources/asteroid-signals.json', 'r') as file:

@@ -43,7 +43,7 @@ void ioc_initialize_root(
 #endif
 
     /* Start automatic device enumeration from 10001 */
-    root->auto_device_nr = IOC_AUTO_DEVICE_NR_BASE + 1;
+    root->auto_device_nr = IOC_AUTO_DEVICE_NR + 1;
 
     /* Mark root structure as initialized (for debugging).
      */

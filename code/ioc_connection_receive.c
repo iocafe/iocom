@@ -286,13 +286,6 @@ osalStatus ioc_connection_receive(
         return OSAL_STATUS_PENDING;
     }
 
-    /* Ifwe do not have automatic device number, reserve one now
-     */
-    if (!con->auto_device_nr)
-    {
-        con->auto_device_nr = root->auto_device_nr++;
-    }
-
     /* If this is acknowledge.
      */
     if (buf[0] == IOC_ACKNOWLEDGE)
@@ -499,7 +492,29 @@ static osalStatus ioc_process_received_system_frame(
             version_and_flags = (os_uchar)*(p++);
             os_memclear(&mbinfo, sizeof(mbinfo));
             mbinfo.device_nr = ioc_msg_getint(&p, version_and_flags & IOC_INFO_D_2BYTES);
-            if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR_BASE) mbinfo.device_nr = con->auto_device_nr;
+
+            /* If we received message from device which requires automatically given
+               device number in conrtoller end, give the number now.
+             */
+            if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR)
+            {
+                /* If we do not have automatic device number, reserve one now
+                 */
+                if (!con->auto_device_nr)
+                {
+                    con->auto_device_nr = con->link.root->auto_device_nr++;
+                }
+                mbinfo.device_nr = con->auto_device_nr;
+            }
+
+            /* If this is device using automatic device number, converto IOC_TO_AUTO_DEVICE_NR
+               to IOC_AUTO_DEVICE_NR (used within the device).
+             */
+            else if (mbinfo.device_nr == IOC_TO_AUTO_DEVICE_NR)
+            {
+                mbinfo.device_nr = IOC_AUTO_DEVICE_NR;
+            }
+
             /* unused addr, was mbinfo.mblk_nr = addr; */
             mbinfo.mblk_id = mblk_id; /* ioc_msg_getint(&p); */
             mbinfo.nbytes = ioc_msg_getint(&p, version_and_flags & IOC_INFO_N_2BYTES);

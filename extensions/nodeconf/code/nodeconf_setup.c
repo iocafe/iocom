@@ -339,7 +339,7 @@ static osalStatus ioc_nconf_process_block(
                     {
                         if (!os_strcmp(item.value.s, "auto"))
                         {
-                            node->device_id.device_nr = IOC_AUTO_DEVICE_NR_BASE;
+                            node->device_id.device_nr = IOC_AUTO_DEVICE_NR;
                         }
                         else
                         {

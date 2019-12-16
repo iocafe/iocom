@@ -338,7 +338,8 @@ static void ioc_make_mblk_info_frame(
 
     os_int
         content_bytes,
-        used_bytes;
+        used_bytes,
+        device_nr;
 
     os_int
         bytes;
@@ -359,7 +360,21 @@ static void ioc_make_mblk_info_frame(
     *(p++) = IOC_SYSRAME_MBLK_INFO;
     version_and_flags = p; /* version, for future additions + flags */
     *(p++) = 0;
-    if (ioc_msg_setint(mblk->device_nr, &p)) *version_and_flags |= IOC_INFO_D_2BYTES;
+
+    /* Set device number. If we are sending to device with automatically
+     * number, mark device number with IOC_TO_AUTO_DEVICE_NR.
+     */
+    device_nr = mblk->device_nr;
+    if (device_nr > IOC_AUTO_DEVICE_NR)
+    {
+        if (!con->auto_device_nr)
+        {
+            con->auto_device_nr = con->link.root->auto_device_nr++;
+        }
+        if (device_nr == con->auto_device_nr) device_nr = IOC_TO_AUTO_DEVICE_NR;
+    }
+    if (ioc_msg_setint(device_nr, &p)) *version_and_flags |= IOC_INFO_D_2BYTES;
+
     if (ioc_msg_setint(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
     if (ioc_msg_setint(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
     if (mblk->device_name[0])
