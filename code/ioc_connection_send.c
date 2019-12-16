@@ -58,7 +58,7 @@ static void ioc_generate_header(
     iocConnection *con,
     os_char *hdr,
     iocSendHeaderPtrs *ptrs,
-    os_short remote_mblk_id,
+    os_int remote_mblk_id,
     os_int addr);
 
 static void ioc_msg_setstr(
@@ -751,7 +751,7 @@ static void ioc_generate_header(
     iocConnection *con,
     os_char *hdr,
     iocSendHeaderPtrs *ptrs,
-    os_short remote_mblk_id,
+    os_int remote_mblk_id,
     os_int addr)
 {
     os_boolean
@@ -763,7 +763,7 @@ static void ioc_generate_header(
     os_uchar
         flags;
 
-    flags = remote_mblk_id > 255 ? IOC_MBLK_HAS_TWO_BYTES : 0;
+    flags = 0;
     os_memclear(ptrs, sizeof(iocSendHeaderPtrs));
     is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
     p = hdr;
@@ -803,9 +803,22 @@ static void ioc_generate_header(
        than 255, two otherwise.
      */
     *(p++) = (os_uchar)remote_mblk_id;
-    if (flags & IOC_MBLK_HAS_TWO_BYTES)
+    remote_mblk_id >>= 8;
+    if (remote_mblk_id)
     {
-        *(p++) = (os_uchar)(remote_mblk_id >> 8);
+        *(p++) = (os_uchar)remote_mblk_id;
+        remote_mblk_id >>= 8;
+        if (remote_mblk_id)
+        {
+           *(p++) = (os_uchar)remote_mblk_id;
+            remote_mblk_id >>= 8;
+           *(p++) = (os_uchar)remote_mblk_id;
+           flags |= IOC_MBLK_HAS_FOUR_BYTES;
+        }
+        else
+        {
+           flags |= IOC_MBLK_HAS_TWO_BYTES;
+        }
     }
 
     /* ADDR: Start memory address.

@@ -19,7 +19,7 @@
  */
 static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
-    os_short mblk_id,
+    os_uint mblk_id,
     os_int addr,
     os_char *data,
     os_int data_sz,
@@ -27,7 +27,7 @@ static osalStatus ioc_process_received_data_frame(
 
 static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
-    os_short mblk_id,
+    os_uint mblk_id,
     os_int addr,
     os_char *data,
     os_int data_sz,
@@ -83,7 +83,9 @@ osalStatus ioc_connection_receive(
         needed = 0;
 
     os_ushort
-        data_sz = 0,
+        data_sz = 0;
+
+    os_uint
         mblk_id;
 
     os_uint
@@ -131,8 +133,9 @@ osalStatus ioc_connection_receive(
                 data_sz = buf[4];
                 needed = data_sz + 7;
                 flags = buf[3];
-                if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
-                if (flags & IOC_ADDR_HAS_FOUR_BYTES) needed+=3;
+                if (flags & IOC_MBLK_HAS_FOUR_BYTES) needed  += 3;
+                else if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
+                if (flags & IOC_ADDR_HAS_FOUR_BYTES) needed += 3;
                 else if (flags & IOC_ADDR_HAS_TWO_BYTES) needed++;
 
                 if (needed > IOC_SERIAL_FRAME_SZ)
@@ -171,7 +174,8 @@ osalStatus ioc_connection_receive(
                 data_sz = buf[2] | (((os_ushort)buf[3]) << 8);
                 needed = data_sz + 6;
                 flags = buf[1];
-                if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
+                if (flags & IOC_MBLK_HAS_FOUR_BYTES) needed  += 3;
+                else if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
                 if (flags & IOC_ADDR_HAS_FOUR_BYTES) needed += 3;
                 else if (flags & IOC_ADDR_HAS_TWO_BYTES) needed++;
 
@@ -322,9 +326,14 @@ osalStatus ioc_connection_receive(
      */
     p = buf + (is_serial ? 5 : 4);
     mblk_id = *(p++);
-    if (flags & IOC_MBLK_HAS_TWO_BYTES)
+    if (flags & (IOC_MBLK_HAS_FOUR_BYTES|IOC_MBLK_HAS_TWO_BYTES))
     {
-        mblk_id |= (((os_ushort)*(p++)) << 8);
+        mblk_id |= ((os_uint)*(p++)) << 8;
+        if (flags & IOC_MBLK_HAS_FOUR_BYTES)
+        {
+            mblk_id |= ((os_uint)*(p++)) << 16;
+            mblk_id |= ((os_uint)*(p++)) << 24;
+        }
     }
 
     /* ADDR: Address within memory block.
@@ -407,7 +416,7 @@ alldone:
 */
 static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
-    os_short mblk_id,
+    os_uint mblk_id,
     os_int addr,
     os_char *data,
     os_int data_sz,
@@ -470,7 +479,7 @@ static osalStatus ioc_process_received_data_frame(
 */
 static osalStatus ioc_process_received_system_frame(
     iocConnection *con,
-    os_short mblk_id,
+    os_uint mblk_id,
     os_int addr,
     os_char *data,
     os_int data_sz,

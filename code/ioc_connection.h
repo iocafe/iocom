@@ -111,8 +111,9 @@
 #define IOC_ADDR_HAS_TWO_BYTES 4
 #define IOC_ADDR_HAS_FOUR_BYTES 8
 #define IOC_MBLK_HAS_TWO_BYTES 16
-#define IOC_SYNC_COMPLETE 32
-#define IOC_SYSTEM_FRAME 64
+#define IOC_MBLK_HAS_FOUR_BYTES 32
+#define IOC_SYNC_COMPLETE 64
+#define IOC_SYSTEM_FRAME 128
 /*@}*/
 
 /** "1/2 byte" and "has string" flags for packing memory block info.

@@ -50,7 +50,7 @@ typedef struct
     os_ushort device_nr;
     os_char network_name[IOC_NETWORK_NAME_SZ];
     os_char mblk_name[IOC_NAME_SZ];
-    os_ushort mblk_id;
+    os_uint mblk_id;
     os_ushort nbytes;
     os_ushort flags;
 }

@@ -60,6 +60,10 @@
  */
 #define IOC_MIN_MBLK_SZ 32
 
+/* Minumin value for unique memory block identifier.
+ */
+#define IOC_MIN_UNIQUE_ID 8
+
 /**
 ****************************************************************************************************
     Parameters for ioc_initialize_memory_block() function.
@@ -261,7 +265,7 @@ typedef struct iocMemoryBlock
     /** Unique memory block identifier (unique for this memory block among
         all memory blocks of this iocRoot).
      */
-    os_short mblk_id;
+    os_uint mblk_id;
 
     /** Memory block name, max 15 characters
      */

@@ -22,7 +22,7 @@
 
 /* Forward referred static functions.
  */
-static os_short ioc_get_unique_mblk_id(
+static os_uint ioc_get_unique_mblk_id(
     iocRoot *root);
 
 
@@ -921,89 +921,43 @@ void ioc_mblk_invalidate(
   ioc_lock() must be on before calling this function.
 
   @param   root Pointer to the root object.
-  @return  Unique memory block identifier 8 .. 32767.
+  @return  Unique memory block identifier 8 .. 0xFFFFFFFF.
 
 ****************************************************************************************************
 */
-static os_short ioc_get_unique_mblk_id(
+static os_uint ioc_get_unique_mblk_id(
     iocRoot *root)
 {
     iocMemoryBlock *mblk;
-    os_int id, max_id, i, j;
+    os_uint id;
+    os_int count;
 
-    #define IOC_MAX_SMALL_UNIQUE_ID 255
-    #define IOC_MIN_UNIQUE_ID 8
-    #define IOC_MAX_UNIQUE_ID 32767
-    os_char mark[IOC_MAX_SMALL_UNIQUE_ID/8 + 1];
-
-    /* Create array which flags used small identidiers and find out the biggest
-       used memory block identifier.
+    /* Just return next number
      */
-    os_memclear(mark, sizeof(mark));
-    max_id = 0;
-    for (mblk = root->mblk.first;
-         mblk;
-         mblk = mblk->link.next)
+    if (root->next_unique_mblk_id)
     {
-        id = mblk->mblk_id;
-        if (id > max_id) max_id = id;
-        if (id < IOC_MIN_UNIQUE_ID || id > IOC_MAX_SMALL_UNIQUE_ID) continue;
-        mark[id >> 3] |= 1 << (id & 7);
+        return root->next_unique_mblk_id++;
     }
 
-    /* No small free identifier, see to reserve
-       next big one which has not been used.
+    /* We run out of numbers. Strange, this can be possible only if special effort is
+       made for this to happen. Handle anyhow.
      */
-    if (max_id < IOC_MAX_SMALL_UNIQUE_ID)
+    count = 100000;
+    while (count--)
     {
-        return max_id >= IOC_MIN_UNIQUE_ID ? max_id + 1 : IOC_MIN_UNIQUE_ID;
-    }
+        id = osal_rand(IOC_MIN_UNIQUE_ID, 0xFFFFFFFFL);
 
-    /* See if we have free one small identifiers
-     */
-    for (i = 1; i < sizeof(mark); i++)
-    {
-        if ((os_uchar)mark[i] == 255) continue;
-        for (j = 0; j < 8; j++)
-        {
-            if ((mark[i] & (1 << j)) == 0)
-            {
-                return 8 * i + j;
-            }
-        }
-    }
-
-    /* No small free identifier, see to reserve
-       next big one which has not been used.
-     */
-    if (max_id < IOC_MAX_UNIQUE_ID)
-    {
-        return max_id + 1;
-    }
-
-    /* Slow trial and error (this should never or extremely rarely be
-       needed in practise)
-     */
-    for (i = IOC_MAX_SMALL_UNIQUE_ID;
-         i <= IOC_MAX_UNIQUE_ID;
-         i++)
-    {
         for (mblk = root->mblk.first;
              mblk;
              mblk = mblk->link.next)
         {
-            if (mblk->mblk_id == i) goto notthis;
+            if (id == mblk->mblk_id) break;
         }
-        return i;
-
-notthis:;
+        if (mblk == OS_NULL) return id;
     }
 
-    /* We should never get here. This indicates that we
-       would have 32760 memory blocks.
-     */
-    osal_debug_error("Too many memory blocks?");
-    return 0;
+    osal_debug_error("Out of numbers");
+    return 1;
 }
 
 

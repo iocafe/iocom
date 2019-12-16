@@ -207,6 +207,10 @@ typedef struct iocRoot
      */
     os_int auto_device_nr;
 
+    /** Next unique memory block identifier to reserve.
+     */
+    os_uint next_unique_mblk_id;
+
 #if IOC_DYNAMIC_MBLK_CODE
     /** Pointer to dynamic IO network configuration, if any.
      */
