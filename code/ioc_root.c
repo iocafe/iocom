@@ -42,6 +42,9 @@ void ioc_initialize_root(
     root->mutex = osal_mutex_create();
 #endif
 
+    /* Start automatic device enumeration from 10001 */
+    root->auto_device_nr = IOC_AUTO_DEVICE_NR_BASE + 1;
+
     /* Mark root structure as initialized (for debugging).
      */
     IOC_SET_DEBUG_ID(root, 'R')

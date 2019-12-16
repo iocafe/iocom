@@ -58,7 +58,7 @@ static osalStatus ioc_nconf_process_block(
     os_char *array_tag,
     osalJsonIndex *jindex);
 
-static void ioc_nconf_setup_structure(
+static osalStatus ioc_nconf_setup_structure(
     iocNodeConf *node,
     const os_char *config,
     os_memsz config_sz);
@@ -140,9 +140,15 @@ void ioc_load_node_config(
     block_sz = default_config_sz;
 
     /* Fill in pointers within node structure to access configuation data.
+       If we are processing configurable data and it fails, revert to
+       default configuration as last measure.
      */
 gotit:
-    ioc_nconf_setup_structure(node, block, block_sz);
+    if (ioc_nconf_setup_structure(node, block, block_sz) != OSAL_SUCCESS &&
+        block != default_config)
+    {
+        ioc_nconf_setup_structure(node, default_config, default_config_sz);
+    }
 }
 
 
@@ -331,7 +337,14 @@ static osalStatus ioc_nconf_process_block(
                     }
                     else if (!os_strcmp(state->tag, "device_nr"))
                     {
-                        node->device_id.device_nr = (os_int)osal_str_to_int(item.value.s, OS_NULL);
+                        if (!os_strcmp(item.value.s, "auto"))
+                        {
+                            node->device_id.device_nr = IOC_AUTO_DEVICE_NR_BASE;
+                        }
+                        else
+                        {
+                            node->device_id.device_nr = (os_int)osal_str_to_int(item.value.s, OS_NULL);
+                        }
                     }
                     else if (!os_strcmp(state->tag, "network_name"))
                     {
@@ -506,7 +519,7 @@ static osalStatus ioc_nconf_process_block(
 
 ****************************************************************************************************
 */
-static void ioc_nconf_setup_structure(
+static osalStatus ioc_nconf_setup_structure(
     iocNodeConf *node,
     const os_char *config,
     os_memsz config_sz)
@@ -539,4 +552,5 @@ static void ioc_nconf_setup_structure(
     {
         osal_debug_error_int("parsing node configuration failed:", s);
     }
+    return s;
 }

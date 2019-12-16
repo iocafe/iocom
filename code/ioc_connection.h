@@ -486,6 +486,10 @@ typedef struct iocConnection
      */
     iocSendInfoInCon sinfo;
 
+    /** Automatic device number, used if device number is 0
+     */
+    os_int auto_device_nr;
+
     /** Flag indicating that stream is connected. Connected
         means that one message has been successfully received.
      */

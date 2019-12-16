@@ -43,6 +43,10 @@ struct iocDynamicRoot;
 struct iocDynamicNetwork;
 struct iocEventQueue;
 
+/* Start automatically given device numbers from here.
+ */
+#define IOC_AUTO_DEVICE_NR_BASE 10000
+
 /**
 ****************************************************************************************************
     Linked list of root's memory blocks
@@ -197,6 +201,10 @@ typedef struct iocRoot
     /** Pointer to static structure defining signals.
      */
     const struct iocDeviceHdr *device_signal_hdr;
+
+    /** Automatic device number, used if device number is 0
+     */
+    os_int auto_device_nr;
 
 #if IOC_DYNAMIC_MBLK_CODE
     /** Pointer to dynamic IO network configuration, if any.
