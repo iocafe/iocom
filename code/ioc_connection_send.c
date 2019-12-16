@@ -384,8 +384,6 @@ static void ioc_make_mblk_info_frame(
     }
 
     ioc_msg_set_uint(device_nr, &p, version_and_flags, IOC_INFO_D_2BYTES, IOC_INFO_D_4BYTES);
-    /* if (ioc_msg_set_ushort(device_nr, &p)) *version_and_flags |= IOC_INFO_D_2BYTES; */
-
     if (ioc_msg_set_ushort(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
     if (ioc_msg_set_ushort(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
     if (mblk->device_name[0])
@@ -808,50 +806,10 @@ static void ioc_generate_header(
         *(p++) = 0;
     }
 
-    /* MBLK: Memory block idenfier. 1 byte if value is less
-       than 255, two otherwise.
+    /* MBLK: Memory block idenfier, ADDR: Start memory address.
      */
     ioc_msg_set_uint(remote_mblk_id, &p, &flags, IOC_MBLK_HAS_TWO_BYTES, IOC_MBLK_HAS_FOUR_BYTES);
-    /* *(p++) = (os_uchar)remote_mblk_id;
-    remote_mblk_id >>= 8;
-    if (remote_mblk_id)
-    {
-        *(p++) = (os_uchar)remote_mblk_id;
-        remote_mblk_id >>= 8;
-        if (remote_mblk_id)
-        {
-           *(p++) = (os_uchar)remote_mblk_id;
-            remote_mblk_id >>= 8;
-           *(p++) = (os_uchar)remote_mblk_id;
-           flags |= IOC_MBLK_HAS_FOUR_BYTES;
-        }
-        else
-        {
-           flags |= IOC_MBLK_HAS_TWO_BYTES;
-        }
-    } */
-
-    /* ADDR: Start memory address.
-     */
     ioc_msg_set_uint(addr, &p, &flags, IOC_ADDR_HAS_TWO_BYTES, IOC_ADDR_HAS_FOUR_BYTES);
-    /* *(p++) = (os_uchar)addr;
-    addr >>= 8;
-    if (addr)
-    {
-        *(p++) = (os_uchar)addr;
-        addr >>= 8;
-        if (addr)
-        {
-           *(p++) = (os_uchar)addr;
-            addr >>= 8;
-           *(p++) = (os_uchar)addr;
-           flags |= IOC_ADDR_HAS_FOUR_BYTES;
-        }
-        else
-        {
-           flags |= IOC_ADDR_HAS_TWO_BYTES;
-        }
-    } */
 
     /* Set flags and store header size.
      */

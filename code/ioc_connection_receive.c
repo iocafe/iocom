@@ -325,34 +325,11 @@ osalStatus ioc_connection_receive(
     }
 #endif
 
-    /* MBLK: Memory block identifier.
+    /* MBLK: Memory block identifier, ADDR: Address within memory block.
      */
     p = buf + (is_serial ? 5 : 4);
     mblk_id = ioc_msg_get_uint(&p, flags & IOC_MBLK_HAS_TWO_BYTES, flags & IOC_MBLK_HAS_FOUR_BYTES);
-    /* mblk_id = *(p++);
-    if (flags & (IOC_MBLK_HAS_FOUR_BYTES|IOC_MBLK_HAS_TWO_BYTES))
-    {
-        mblk_id |= ((os_uint)*(p++)) << 8;
-        if (flags & IOC_MBLK_HAS_FOUR_BYTES)
-        {
-            mblk_id |= ((os_uint)*(p++)) << 16;
-            mblk_id |= ((os_uint)*(p++)) << 24;
-        }
-    } */
-
-    /* ADDR: Address within memory block.
-     */
     addr = ioc_msg_get_uint(&p, flags & IOC_ADDR_HAS_TWO_BYTES, flags & IOC_ADDR_HAS_FOUR_BYTES);
-    /* addr = *(p++);
-    if (flags & (IOC_ADDR_HAS_FOUR_BYTES|IOC_ADDR_HAS_TWO_BYTES))
-    {
-        addr |= ((os_uint)*(p++)) << 8;
-        if (flags & IOC_ADDR_HAS_FOUR_BYTES)
-        {
-            addr |= ((os_uint)*(p++)) << 16;
-            addr |= ((os_uint)*(p++)) << 24;
-        }
-    } */
 
     /* Save frame number to expect next. Notice that the frame count can
         be zero only for the very first frame. never be zero again.
@@ -527,8 +504,7 @@ static osalStatus ioc_process_received_system_frame(
                 mbinfo.device_nr = IOC_AUTO_DEVICE_NR;
             }
 
-            /* unused addr, was mbinfo.mblk_nr = addr; */
-            mbinfo.mblk_id = mblk_id; /* ioc_msg_get_ushort(&p); */
+            mbinfo.mblk_id = mblk_id;
             mbinfo.nbytes = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_N_2BYTES);
             mbinfo.flags = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_F_2BYTES);
             if (version_and_flags & IOC_INFO_HAS_DEVICE_NAME)
