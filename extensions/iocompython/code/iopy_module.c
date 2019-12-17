@@ -24,6 +24,14 @@ PyObject *iocomError;
  */
 static os_int module_init_count;
 
+/* Forward referred static functions.
+ */
+os_char *iocom_get_security_param(
+    os_char *name,
+    os_char **dst,
+    os_memsz *dst_sz,
+    const char *security);
+
 
 /**
 ****************************************************************************************************
@@ -102,14 +110,27 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
 
 ****************************************************************************************************
 */
-void iocom_python_initialize(void)
+void iocom_python_initialize(const char *security)
 {
+    osalSecurityConfig secprm;
+    os_char buf[256], *dst;
+    os_memsz dst_sz;
+
     if (module_init_count++) return;
 
     osal_initialize(OSAL_INIT_NO_LINUX_SIGNAL_INIT);
 
 #if OSAL_TLS_SUPPORT
-    osal_tls_initialize(OS_NULL, 0, OS_NULL);
+    os_memclear(&secprm, sizeof(secprm));
+    buf[0] = '\0';
+
+    dst = buf;
+    dst_sz = sizeof(buf);
+    secprm.certs_dir = iocom_get_security_param("certdir", &dst, &dst_sz, security);
+    secprm.server_cert_file = iocom_get_security_param("certfile", &dst, &dst_sz, security);
+    secprm.server_key_file = iocom_get_security_param("keyfile", &dst, &dst_sz, security);
+    secprm.client_cert_chain_file = iocom_get_security_param("certchainfile", &dst, &dst_sz, security);
+    osal_tls_initialize(OS_NULL, 0, &secprm);
 #else
   #if OSAL_SOCKET_SUPPORT
     osal_socket_initialize(OS_NULL, 0);
@@ -123,6 +144,35 @@ void iocom_python_initialize(void)
 #if OSAL_BLUETOOTH_SUPPORT
     osal_bluetooth_initialize();
 #endif
+}
+
+
+os_char *iocom_get_security_param(
+    os_char *name,
+    os_char **dst,
+    os_memsz *dst_sz,
+    const char *security)
+{
+    const os_char *p;
+    os_char *e;
+    os_memsz n_chars;
+
+    p = osal_str_get_item_value(security, name, &n_chars, OSAL_STRING_DEFAULT);
+    if (p == OS_NULL) return OS_NULL;
+
+    if (n_chars >= *dst_sz)
+    {
+        osal_debug_error("out of security configuration string buffer");
+        return OS_NULL;
+    }
+
+    e = *dst;
+    os_memcpy(e, p, n_chars);
+    e[n_chars] = '\0';
+
+    *dst_sz -= n_chars + 1;
+    *dst += n_chars + 1;
+    return e;
 }
 
 

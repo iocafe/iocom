@@ -58,7 +58,8 @@ static PyObject *Root_new(
 
     const char
         *device_name = NULL,
-        *network_name = NULL;
+        *network_name = NULL,
+        *security = NULL;
 
     int
         device_nr = 0;
@@ -67,11 +68,12 @@ static PyObject *Root_new(
         "device_name",
         "device_nr",
         "network_name",
+        "security",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sis",
-         kwlist, &device_name, &device_nr, &network_name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|siss",
+         kwlist, &device_name, &device_nr, &network_name, &security))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         return NULL;
@@ -83,7 +85,7 @@ static PyObject *Root_new(
         return PyErr_NoMemory();
     }
 
-    iocom_python_initialize();
+    iocom_python_initialize(security);
 
     /* Allocate and initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.

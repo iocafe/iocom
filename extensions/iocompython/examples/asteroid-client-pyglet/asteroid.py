@@ -10,13 +10,13 @@ data_vector_n = 0
 with open('resources/asteroid-signals.json', 'r') as file:
     signal_conf = file.read()
 
-root = Root('spacepilot', device_nr=my_player_nr, network_name='iocafenet')
+root = Root('spacepilot', device_nr=my_player_nr, network_name='iocafenet', security='certchainfile=bob-bundle.crt')
 exp = MemoryBlock(root, 'upward', 'exp')
 imp = MemoryBlock(root, 'downward', 'imp')
 data = json2bin(signal_conf)
 info = MemoryBlock(root, 'upward', 'info', nbytes=len(data))
 info.publish(data)
-connection = Connection(root, "192.168.1.220", "socket,upward")
+connection = Connection(root, "192.168.1.220", "tls,upward")
 # connection = Connection(root, "127.0.0.1", "socket,upward")
 # connection = Connection(root, "3.135.236.95", "socket,upward")
 

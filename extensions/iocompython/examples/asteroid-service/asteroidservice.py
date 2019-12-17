@@ -9,10 +9,10 @@ running_apps = {}
 def main():
     global root, callback_queue
 
-    root = Root('asteroid')
+    root = Root('asteroid', security='certfile=bob.crt,keyfile=bob.key')
     root.queue_events()
     ioterminal.start(root)
-    epoint = EndPoint(root, flags='socket,dynamic')
+    epoint = EndPoint(root, flags='tls,dynamic')
     random.seed(time.time())
 
     while (ioterminal.run(root)):
@@ -36,7 +36,7 @@ def main():
                     a[1].put('exit ' + network_name)
                     del running_apps[network_name]
 
-            # Switch 'inp' and 'exp' memory blocks to manual synchronization
+            # Switch 'imp' and 'exp' memory blocks to manual synchronization
             if event == 'new_mblk':
                 mblk_path = mblk_name + '.' + device_name + '.' + network_name
                 if mblk_name == 'imp' or mblk_name == 'exp':

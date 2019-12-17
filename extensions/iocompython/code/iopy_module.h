@@ -39,7 +39,7 @@ extern PyObject *iocomError;
 
 /* Initialize operating system abstraction layer and communication transport libraries.
  */
-void iocom_python_initialize(void);
+void iocom_python_initialize(const char *security);
 
 /* Shut down operating system abstraction layer and communication transport libraries.
  */
