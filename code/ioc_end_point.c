@@ -253,9 +253,9 @@ osalStatus ioc_listen(
         osal_debug_error("Too long parameter string");
     }
 #endif
-    os_strncpy(epoint->parameters,
-        prm->parameters ? prm->parameters : ":" IOC_DEFAULT_SOCKET_PORT_STR,
-        IOC_END_POINT_PRMSTR_SZ);
+    osal_socket_embed_default_port(prm->parameters,
+        epoint->parameters, IOC_END_POINT_PRMSTR_SZ, OSAL_STREAM_LISTEN,
+        epoint->iface == OSAL_TLS_IFACE ? IOC_DEFAULT_TLS_PORT : IOC_DEFAULT_SOCKET_PORT);
 
 #if OSAL_MULTITHREAD_SUPPORT
     /* If we are already running end point thread, stop it. Wait until it has stopped.

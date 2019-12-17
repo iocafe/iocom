@@ -57,9 +57,15 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
+    osalSecurityConfig security_prm;
+
+    os_memclear(&security_prm, sizeof(security_prm));
+    security_prm.server_certfile = "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/bob.crt";
+    security_prm.server_keyfile = "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/bob.key";
+
     /* Initialize the transport, socket, TLS, serial, etc..
      */
-    osal_tls_initialize(OS_NULL, 0, OS_NULL);
+    osal_tls_initialize(OS_NULL, 0, &security_prm);
     osal_serial_initialize();
 
     /* Initialize communication root and dymanic structure data root objects.

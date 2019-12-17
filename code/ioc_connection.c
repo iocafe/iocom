@@ -696,6 +696,10 @@ static osalStatus ioc_try_to_connect(
     {
         if (!os_elapsed(&con->socket_open_fail_timer, 2000)) return OSAL_STATUS_PENDING;
     }
+    if (!osal_int64_is_zero(&con->socket_open_try_timer))
+    {
+        if (!os_elapsed(&con->socket_open_try_timer, 500)) return OSAL_STATUS_PENDING;
+    }
 
     /* Select serial or socket interface by flags and operating system abstraction layer support.
      */
@@ -715,6 +719,7 @@ static osalStatus ioc_try_to_connect(
     osal_trace3("connection: opening stream...");
     flags = OSAL_STREAM_CONNECT|OSAL_STREAM_TCP_NODELAY;
     flags |= ((con->flags & IOC_DISABLE_SELECT) ? OSAL_STREAM_NO_SELECT : OSAL_STREAM_SELECT);
+    os_get_timer(&con->socket_open_try_timer);
 
     con->stream = osal_stream_open(iface, con->parameters, OS_NULL, &status, flags);
     if (con->stream == OS_NULL)

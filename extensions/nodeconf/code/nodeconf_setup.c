@@ -450,7 +450,11 @@ static osalStatus ioc_nconf_process_block(
                 {
                     if (!os_strcmp(state->tag, "certfile"))
                     {
-                        node->security_conf.certfile = item.value.s;
+                        node->security_conf.server_certfile = item.value.s;
+                    }
+                    else if (!os_strcmp(state->tag, "keyfile"))
+                    {
+                        node->security_conf.server_keyfile = item.value.s;
                     }
                 }
                 break;

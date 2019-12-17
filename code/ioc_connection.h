@@ -423,6 +423,11 @@ typedef struct iocConnection
      */
     os_timer socket_open_fail_timer;
 
+    /** Timer when last open was done. This timer is used to slow down opening
+        a bit if open succeeds but read/write fails immediately.
+     */
+    os_timer socket_open_try_timer;
+
     /** Timer of the last successfull receive.
      */
     os_timer last_receive;

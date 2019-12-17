@@ -58,7 +58,8 @@ osalStatus FrankMain::listen_for_clients()
     iocEndPoint *ep = OS_NULL;
     iocEndPointParams epprm;
 
-    const osalStreamInterface *iface = OSAL_SOCKET_IFACE;
+    // const osalStreamInterface *iface = OSAL_SOCKET_IFACE;
+    const osalStreamInterface *iface = OSAL_TLS_IFACE;
 
     ep = ioc_initialize_end_point(OS_NULL, &frank_root);
     os_memclear(&epprm, sizeof(epprm));
