@@ -482,7 +482,7 @@ os_uint ioc_get_unique_device_id(
     count = 100000;
     while (count--)
     {
-        id = osal_rand(IOC_AUTO_DEVICE_NR + 1, 0xFFFFFFFFL);
+        id = (os_uint)osal_rand(IOC_AUTO_DEVICE_NR + 1, 0xFFFFFFFFL);
         for (con = root->con.first;
              con;
              con = con->link.next)

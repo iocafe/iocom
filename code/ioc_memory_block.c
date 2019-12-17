@@ -945,7 +945,7 @@ static os_uint ioc_get_unique_mblk_id(
     count = 100000;
     while (count--)
     {
-        id = osal_rand(IOC_MIN_UNIQUE_ID, 0xFFFFFFFFL);
+        id = (os_uint)osal_rand(IOC_MIN_UNIQUE_ID, 0xFFFFFFFFL);
 
         for (mblk = root->mblk.first;
              mblk;
