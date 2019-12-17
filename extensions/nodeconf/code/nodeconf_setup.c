@@ -448,13 +448,21 @@ static osalStatus ioc_nconf_process_block(
 
                 if (is_security_block)
                 {
-                    if (!os_strcmp(state->tag, "certfile"))
+                    if (!os_strcmp(state->tag, "certdir"))
                     {
-                        node->security_conf.server_certfile = item.value.s;
+                        node->security_conf.certs_dir = item.value.s;
+                    }
+                    else if (!os_strcmp(state->tag, "certfile"))
+                    {
+                        node->security_conf.server_cert_file = item.value.s;
                     }
                     else if (!os_strcmp(state->tag, "keyfile"))
                     {
-                        node->security_conf.server_keyfile = item.value.s;
+                        node->security_conf.server_key_file = item.value.s;
+                    }
+                    else if (!os_strcmp(state->tag, "certchainfile"))
+                    {
+                        node->security_conf.client_cert_chain_file = item.value.s;
                     }
                 }
                 break;
@@ -471,6 +479,7 @@ static osalStatus ioc_nconf_process_block(
                 if (is_nic_block && state->nic_ix <= OSAL_MAX_NRO_NICS)
                 {
                     nic = node->nic + state->nic_ix - 1;
+
                     if (!os_strcmp(state->tag, "dhcp"))
                     {
                         nic->no_dhcp = (os_boolean)!item.value.l;

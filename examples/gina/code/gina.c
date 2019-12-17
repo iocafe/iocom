@@ -104,10 +104,6 @@ osalStatus osal_main(
     nics = ioc_get_nics(&gina_device_conf);
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     security = ioc_get_security_conf(&gina_device_conf);
-security->client_ca_certfile = "ulle"; // NOT LEGIT
-// security->server_certfile = "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/bob-bundle.crt";
-security->server_keyfile = "/coderoot/eosal/extensions/tls/ssl-test-keys-and-certs/bob.key";
-
     osal_tls_initialize(nics->nic, nics->n_nics, security);
 #else
     osal_socket_initialize(nics->nic, nics->n_nics);
