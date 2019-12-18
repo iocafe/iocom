@@ -60,8 +60,8 @@ osalStatus osal_main(
     osalSecurityConfig security_prm;
 
     os_memclear(&security_prm, sizeof(security_prm));
-    security_prm.server_cert_file = "bob.crt";
-    security_prm.server_key_file = "bob.key";
+    /* security_prm.server_cert_file = "bob.crt";
+    security_prm.server_key_file = "bob.key"; */
     security_prm.server_cert_file = "alice.crt";
     security_prm.server_key_file = "alice.key";
 

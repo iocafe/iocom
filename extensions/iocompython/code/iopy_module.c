@@ -106,6 +106,7 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
   @brief Initialize operating system abstraction layer and communication transport libraries.
 
   The iocom_python_initialize() function...
+  @param   security Pointer to TLS configuration parameter structure.
   @return  None.
 
 ****************************************************************************************************
@@ -147,6 +148,25 @@ void iocom_python_initialize(const char *security)
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Copy a string parameter value out of "security" string.
+
+  The security parameter string is something like "certfile=bob.crt,keyfile=bob.key". The
+  iocom_get_security_param finds a parameter by name from parameter string, makes a '\0'
+  copy of the parameter value string into buffer (dst, dst_sz) and returns pointer returns
+  pointer to this copy.
+
+  @param   name Parameter name to search for.
+  @param   dst Pointer to buffer position pointer where to copy the next value string.
+           Modified by this function.
+  @param   dst_sz Pointer to bumber of bytes left in the buffer. Modified by this function.
+  @return  Pointer to '\0' terminated copy of value string (in buffer), or OS_NULL if the
+           parameter with name was not in security string.
+
+****************************************************************************************************
+*/
 os_char *iocom_get_security_param(
     os_char *name,
     os_char **dst,
