@@ -1,0 +1,27 @@
+Logic for sending memory block info messages
+
+*** new connection:
+- If new connection is pointing "upward", add all memory blocks to connection's global transfer list.
+
+*** new memory block by app function call (not trough new received memory block info):
+- Add memory block to global transfer list of all connections pointing upwards.
+
+*** memory block info received from connection pointing downwards.
+- Create memory block if we do not have one. Resize if needed.
+- Set up transfer buffer (for send or receive) if we do not have one.
+- Add memory block to global transfer list of all connections pointing upwards.
+- Add memory block to connection's downwards transfer list.
+
+*** memory block info received from connection pointing updards.
+- Memory block should exist. If not ignore the info message.
+- Store id?
+
+*** Maintaining transfer list:
+- global list for sending memory block info upwards: a connection has current memory block
+  pointer (con->sinfo.current_mblk), chain of all memory blocks (mblk->link.next) is used
+  to move to next item in list.
+
+- connections downwnwards transfer list is kept trough transfer buffers, so two heads (separate ones 
+  for source and target buffers). Heads are con->info_down_head_s con->info_down_head_t.
+  links are sbuf->info_down_next and tbuf->info_down_next.
+
