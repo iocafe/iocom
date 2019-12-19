@@ -159,7 +159,7 @@ osalStatus ioc_connection_send(
     /* Find out source buffer which has modified data.
      */
     sbuf = start_sbuf;
-    while (!sbuf->syncbuf.used)
+    while (!sbuf->syncbuf.used || !sbuf->remote_mblk_id)
     {
         sbuf = sbuf->clink.next;
         if (sbuf == OS_NULL) sbuf = con->sbuf.first;
