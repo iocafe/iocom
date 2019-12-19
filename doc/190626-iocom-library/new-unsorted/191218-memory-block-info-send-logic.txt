@@ -9,12 +9,14 @@ Logic for sending memory block info messages
 *** memory block info received from connection pointing downwards.
 - Create memory block if we do not have one. Resize if needed.
 - Set up transfer buffer (for send or receive) if we do not have one.
+- Store memory block id into transfer buffer
 - Add memory block to global transfer list of all connections pointing upwards.
 - Add memory block to connection's downwards transfer list.
 
-*** memory block info received from connection pointing updards.
+*** memory block info received from connection pointing upwards.
 - Memory block should exist. If not ignore the info message.
-- Store id?
+- Set up transfer buffer (for send or receive) if we do not have one.
+- Store memory block id into transfer buffer
 
 *** Maintaining transfer list:
 - global list for sending memory block info upwards: a connection has current memory block
@@ -22,6 +24,10 @@ Logic for sending memory block info messages
   to move to next item in list.
 
 - connections downwnwards transfer list is kept trough transfer buffers, so two heads (separate ones 
-  for source and target buffers). Heads are con->info_down_head_s con->info_down_head_t.
-  links are sbuf->info_down_next and tbuf->info_down_next.
+  for source and target buffers). Heads are con->sbuf.mbinfo_down and con->tbuf.mbinfo_down .
+  links are sbuf->clink.next and tbuf->clink.next.
+
+*** Clarifications
+- "connection points upwards" flag IOC_CONNECT_UPWARDS means that node behind the connection is higher in IO network hierarchy than this one.
+- "memory block flag IOC_MBLK_UP means that data in this memory block flows upward in IO network hierarchy.
 

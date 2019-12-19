@@ -26,12 +26,12 @@
 ****************************************************************************************************
 
   @brief Make sure that information about new memory block gets sent
-  @anchor ioc_add_mblk_to_mbinfo
+  @anchor ioc_add_mblk_to_global_mbinfo
 
-  The ioc_add_mblk_to_mbinfo() function sets the new memory block as current memory block whose
-  info to send, to all connections. If connection is sending other memory block information,
-  nothing is done since new memory block is added as last memory block and thus it's info will
-  get sent.
+  The ioc_add_mblk_to_global_mbinfo() function sets the new memory block as current memory block
+   whose info to send, to all upwards connections. If connection is sending other memory block
+  information, nothing is done since new memory block is added as last memory block and thus it's
+  info will get sent.
 
   ioc_lock() must be on when this function is called.
 
@@ -40,7 +40,7 @@
 
 ****************************************************************************************************
 */
-void ioc_add_mblk_to_mbinfo(
+void ioc_add_mblk_to_global_mbinfo(
     struct iocMemoryBlock *mblk)
 {
     iocRoot *root;
@@ -51,9 +51,12 @@ void ioc_add_mblk_to_mbinfo(
 
     for (con = root->con.first; con; con = con->link.next)
     {
-        if (con->sinfo.current_mblk == OS_NULL)
+        if (con->flags & IOC_CONNECT_UPWARDS)
         {
-            con->sinfo.current_mblk = mblk;
+            if (con->sinfo.current_mblk == OS_NULL)
+            {
+                con->sinfo.current_mblk = mblk;
+            }
         }
     }    
 }
@@ -63,11 +66,11 @@ void ioc_add_mblk_to_mbinfo(
 ****************************************************************************************************
 
   @brief Make sure that information about all memory blocks is sent trough a specific connection.
-  @anchor ioc_add_con_to_mbinfo
+  @anchor ioc_add_con_to_global_mbinfo
 
-  The ioc_add_con_to_mbinfo() function is called when a connection to another device is
-  established. It sets that information about all memory blocks needs to be sent through the
-  new connection.
+  The ioc_add_con_to_global_mbinfo() function is called when a connection to another device is
+  established. If connection is upwaeds, it sets that information about all memory blocks needs
+  to be sent through the new connection.
 
   ioc_lock() must be on when this function is called.
 
@@ -76,15 +79,18 @@ void ioc_add_mblk_to_mbinfo(
 
 ****************************************************************************************************
 */
-void ioc_add_con_to_mbinfo(
+void ioc_add_con_to_global_mbinfo(
     struct iocConnection *con)
 {
     iocRoot *root;
 
-    /* Be sure to ignore precious value of current_mblk.
+    /* Be sure to ignore previous value of current_mblk.
      */
-    root = con->link.root;
-    con->sinfo.current_mblk = root->mblk.first;
+    if (con->flags & IOC_CONNECT_UPWARDS)
+    {
+        root = con->link.root;
+        con->sinfo.current_mblk = root->mblk.first;
+    }
 }
 
 
@@ -92,7 +98,7 @@ void ioc_add_con_to_mbinfo(
 ****************************************************************************************************
 
   @brief Mark that memory block information is not needed for now.
-  @anchor ioc_add_con_to_mbinfo
+  @anchor ioc_add_con_to_global_mbinfo
 
   The ioc_mbinfo_con_is_closed() function is called when connection is dropped. It marks that
   memory block information for the connection is not needed for now.
@@ -121,14 +127,29 @@ void ioc_mbinfo_con_is_closed(
   ioc_lock() must be on when this function is called.
 
   @param   con Pointer to the connection object.
-  @return  None.
+  @return  Pointer to memory block whose info to send to this connection, or OS NULL if nont.
 
 ****************************************************************************************************
 */
 struct iocMemoryBlock *ioc_get_mbinfo_to_send(
     struct iocConnection *con)
 {
-    return con->sinfo.current_mblk;
+    if (con->flags & IOC_CONNECT_UPWARDS)
+    {
+        return con->sinfo.current_mblk;
+    }
+    else
+    {
+        if (con->sbuf.mbinfo_down)
+        {
+            return con->sbuf.mbinfo_down->mlink.mblk;
+        }
+        if (con->tbuf.mbinfo_down)
+        {
+            return con->tbuf.mbinfo_down->mlink.mblk;
+        }
+    }
+    return OS_NULL;
 }
 
 
@@ -154,10 +175,36 @@ void ioc_mbinfo_sent(
     struct iocConnection *con,
     struct iocMemoryBlock *mblk)
 {
-    con->sinfo.current_mblk = OS_NULL;
-    if (mblk == OS_NULL) return;
+    iocSourceBuffer *sbuf;
+    iocTargetBuffer *tbuf;
 
-    con->sinfo.current_mblk = mblk->link.next;
+    if (con->flags & IOC_CONNECT_UPWARDS)
+    {
+        con->sinfo.current_mblk = OS_NULL;
+        if (mblk == OS_NULL) return;
+
+        con->sinfo.current_mblk = mblk->link.next;
+    }
+    else
+    {
+        tbuf = con->tbuf.mbinfo_down;
+        if (tbuf)
+        {
+            if (mblk == tbuf->mlink.mblk)
+            {
+                con->tbuf.mbinfo_down = tbuf->clink.next;
+            }
+        }
+
+        sbuf = con->sbuf.mbinfo_down;
+        if (sbuf)
+        {
+            if (mblk == sbuf->mlink.mblk)
+            {
+                con->sbuf.mbinfo_down = sbuf->clink.next;
+            }
+        }
+    }
 }
 
 
@@ -311,7 +358,9 @@ void ioc_mbinfo_received(
         if (os_strcmp(info->device_name, mblk->device_name)) goto goon;
         if (os_strcmp(info->network_name, mblk->network_name)) goto goon;
 
-        osal_trace3("Memory block matched");
+        osal_trace_str("~MBinfo matched, dev name=", info->device_name);
+        osal_trace_int("~, dev nr=", info->device_nr);
+        osal_trace_str(", mblk name=", info->mblk_name);
         break;
 goon:
         mblk = mblk->link.next;
@@ -388,6 +437,15 @@ goon:
          */
         ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_SOURCE, OS_NULL, mblk,
             root->callback_context);
+
+        /* Mark that we need to send memory block info back. If pointer is
+           set, do nothing because the source buffer was added to last in list.
+         */
+        if ((con->flags & IOC_CONNECT_UPWARDS) == 0 &&
+            con->sbuf.mbinfo_down == OS_NULL && sbuf)
+        {
+            con->sbuf.mbinfo_down = sbuf;
+        }
     }
 skip1:
 
@@ -428,14 +486,21 @@ skip1:
 
         /* Create source buffer to link the connection and memory block together.
          */
-        ioc_initialize_target_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
+        tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
 
         /* Application may want to know that the memory block has been connected.
          */
         ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_TARGET, OS_NULL, mblk,
             root->callback_context);
 
-        return;
+        /* Mark that we need to send memory block info back. If pointer is
+           set, do nothing because the source buffer was added to last in list.
+         */
+        if ((con->flags & IOC_CONNECT_UPWARDS) == 0 &&
+            con->tbuf.mbinfo_down == OS_NULL)
+        {
+            con->tbuf.mbinfo_down = tbuf;
+        }
     }
 skip2:;
 

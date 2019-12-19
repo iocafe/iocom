@@ -182,10 +182,21 @@ void ioc_release_source_buffer(
     root = sbuf->clink.con->link.root;
     ioc_lock(root);
 
-    /* If any connection has this souce buffer as current,
-       set current to NULL.
+    /* If the connection has this souce buffer as current buffer for
+       sending data, set current to NULL. If this is in turn for mbinfo
+       reply, move mbinfo reply to next one.
      */
-    for (con = root->con.first;
+    con = sbuf->clink.con;
+    if (con->sbuf.current == sbuf)
+    {
+        con->sbuf.current = OS_NULL;
+    }
+    if (con->sbuf.mbinfo_down == sbuf)
+    {
+        con->sbuf.mbinfo_down = sbuf->clink.next;
+    }
+
+    /* for (con = root->con.first;
          con;
          con = con->link.next)
     {
@@ -193,7 +204,13 @@ void ioc_release_source_buffer(
         {
             con->sbuf.current = OS_NULL;
         }
+
+        if (con->sbuf.mbinfo_down == sbuf)
+        {
+            con->sbuf.mbinfo_down = sbuf->clink.next;
+        }
     }
+    */
 
     /* Remove source buffer from linked lists.
      */

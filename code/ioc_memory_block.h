@@ -38,8 +38,8 @@
     to it is deleted.
  */
 /*@{*/
-#define IOC_MBLK_DOWN 1 // IOC_TARGET
-#define IOC_MBLK_UP 2 // IOC_SOURCE 2
+#define IOC_MBLK_DOWN 1
+#define IOC_MBLK_UP 2
 #define IOC_AUTO_SYNC 4
 #define IOC_ALLOW_RESIZE 16
 #define IOC_STATIC 32

@@ -162,6 +162,9 @@ void ioc_release_target_buffer(
     iocRoot
         *root;
 
+    iocConnection
+        *con;
+
     /* Check that tbuf is valid pointer.
      */
     osal_debug_assert(tbuf->debug_id == 'T');
@@ -170,6 +173,15 @@ void ioc_release_target_buffer(
      */
     root = tbuf->clink.con->link.root;
     ioc_lock(root);
+
+    /* If this source buffer is in turn for mbinfo
+       reply, move mbinfo reply to next one.
+     */
+    con = tbuf->clink.con;
+    if (con->tbuf.mbinfo_down == tbuf)
+    {
+        con->tbuf.mbinfo_down = tbuf->clink.next;
+    }
 
     /* Remove target buffer from linked lists.
      */

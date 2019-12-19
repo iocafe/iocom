@@ -285,6 +285,10 @@ typedef struct
     /** Connection buffer from which last send was done.
      */
     struct iocSourceBuffer *current;
+
+    /** Connection buffer from which to send mbinfo reply.
+     */
+    struct iocSourceBuffer *mbinfo_down;
 }
 iocConnectionsSourceBufferList;
 
@@ -303,6 +307,10 @@ typedef struct
     /** Pointer to connection's last target buffer in linked list.
      */
     struct iocTargetBuffer *last;
+
+    /** Connection buffer from which to send mbinfo reply.
+     */
+    struct iocTargetBuffer *mbinfo_down;
 }
 iocConnectionsTargetBufferList;
 
@@ -382,7 +390,8 @@ typedef struct iocConnection
      */
     IOC_DEBUG_ID
 
-    /** Flags as given to ioc_listen()
+    /** Flags as given to ioc_connect(): define IOC_SOCKE, IOC_CLOSE_CONNECTION_ON_ERROR
+        IOC_CONNECT_UPWARDS...
      */
     os_short flags;
 

@@ -62,8 +62,12 @@ iocMemoryBlockInfo;
     Send info structure within a connection.
 ****************************************************************************************************
 */
+
 typedef struct
 {
+    /** Global upwards info transfer list. Pointer to the first memory block for
+        which info needs to be sent upwards trough this connection.
+     */
     struct iocMemoryBlock *current_mblk;
 }
 iocSendInfoInCon;
@@ -78,12 +82,12 @@ iocSendInfoInCon;
 
 /* Make sure that information about new memory block gets sent.
  */
-void ioc_add_mblk_to_mbinfo(
+void ioc_add_mblk_to_global_mbinfo(
     struct iocMemoryBlock *mblk);
 
 /* Make sure that information about all memory blocks is sent trough a specific connection.
  */
-void ioc_add_con_to_mbinfo(
+void ioc_add_con_to_global_mbinfo(
     struct iocConnection *con);
 
 /* Memory block information for connection is not needed for now.

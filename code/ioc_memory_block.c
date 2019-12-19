@@ -150,7 +150,7 @@ osalStatus ioc_initialize_memory_block(
     /* If this memory block is created after connections are established,
        mark to transfer it's info.
      */
-    ioc_add_mblk_to_mbinfo(mblk);
+    ioc_add_mblk_to_global_mbinfo(mblk);
 
     /* End synchronization.
      */
