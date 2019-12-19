@@ -552,9 +552,6 @@ static void ioc_endpoint_thread(
     void *prm,
     osalEvent done)
 {
-//    iocRoot
-//        *root;
-
     iocEndPoint
         *epoint;
 
@@ -616,12 +613,9 @@ static void ioc_endpoint_thread(
     }
 #endif
 
-    /* Delete the event and that this thread is no longer running.
+    /* This thread is no longer running.
      */
-//    root = epoint->link.root;
-//    ioc_lock(root);
     epoint->worker_thread_running = OS_FALSE;
-//    ioc_unlock(root);
 
     osal_trace("end point: worker thread exited");
 }

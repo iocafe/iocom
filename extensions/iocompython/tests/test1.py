@@ -40,7 +40,7 @@ signal_conf = ('{'
 
 
 def main():
-    root = Root('mydevice', device_nr=10000, network_name='iocafenet')
+    root = Root('mydevice', device_nr=10000, network_name='iocafenet', security='certchainfile=bob-bundle.crt')
     root.queue_events()
     ioterminal.start(root)
     myinputs = MemoryBlock(root, 'upward,auto', 'exp', nbytes=256)
@@ -49,7 +49,7 @@ def main():
     info = MemoryBlock(root, 'upward,auto', 'info', nbytes=len(data))
     info.publish(data)
     
-    connection = Connection(root, "127.0.0.1", "socket,upward")
+    connection = Connection(root, "127.0.0.1", "tls,upward")
 
     hor = Signal(root, "hor")
 

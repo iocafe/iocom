@@ -8,7 +8,7 @@ def main():
     device_nr = 3
     full_device_name = device_name + str(device_nr)
 
-    root = Root(device_name, device_nr=device_nr, network_name='iocafenet')
+    root = Root(device_name, device_nr=device_nr, network_name='iocafenet', security='certchainfile=bob-bundle.crt')
     root.queue_events()
     ioterminal.start(root)
     exp = MemoryBlock(root, 'upward', 'exp')
@@ -23,7 +23,7 @@ def main():
     info = MemoryBlock(root, 'upward,auto', 'info', nbytes=len(data))
     info.publish(data)
     
-    connection = Connection(root, "127.0.0.1", "socket,upward")
+    connection = Connection(root, "127.0.0.1", "tls,upward")
 
     frd_cmd = Signal(root, "frd_cmd")
     tod_cmd = Signal(root, "tod_cmd")

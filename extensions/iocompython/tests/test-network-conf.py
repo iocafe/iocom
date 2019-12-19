@@ -56,10 +56,10 @@ def set_network_conf(device_name, network_name):
 def main():
     global root, callback_queue
 
-    root = Root('netconftest')
+    root = Root('netconftest', security='certfile=bob.crt,keyfile=bob.key')
     root.queue_events()
     ioterminal.start(root)
-    epoint = EndPoint(root, flags='socket,dynamic')
+    epoint = EndPoint(root, flags='tls,dynamic')
 
     while (ioterminal.run(root)):
         e = root.wait_com_event(1000)
