@@ -424,7 +424,7 @@ static osalStatus ioc_process_received_data_frame(
   @brief Process complete system frame received from socket or serial port.
   @anchor ioc_process_received_system_frame
 
-  The ioc_process_received_system_frame() function is called once a complete systen frame is 
+  The ioc_process_received_system_frame() function is called once a complete system frame is
   received. This function processes system frames like memory block information and device
   authentication data frames.
 
@@ -505,7 +505,8 @@ static osalStatus ioc_process_received_system_frame(
         /* Device authentication information received.
          */
         case IOC_AUTHENTICATION_DATA:
-            con->authentication_received = OS_TRUE;
+            return ioc_process_received_authentication_frame(con, mblk_id, data);
+            /* con->authentication_received = OS_TRUE; */
             break;
 
         default:

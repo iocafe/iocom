@@ -27,6 +27,10 @@
 */
 typedef struct iocSecureDevice
 {
+    /** Allow connection from higer level of IO hierarchy or connection is from upwards.
+     */
+    os_boolean from_upwards;
+
     /** Device name, max 15 characters.
      */
     os_char device_name[IOC_NAME_SZ];
@@ -94,6 +98,13 @@ iocAuthenticatedDevices;
  */
 void ioc_make_authentication_frame(
     iocConnection *con);
+
+/* Process received athentication data frame.
+ */
+osalStatus ioc_process_received_authentication_frame(
+    struct iocConnection *con,
+    os_uint mblk_id,
+    os_char *data);
 
 /*@}*/
 

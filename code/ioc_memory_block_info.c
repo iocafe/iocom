@@ -250,7 +250,7 @@ void ioc_mbinfo_mblk_is_deleted(
   @brief Process complete memory block information frame received from socket or serial port.
   @anchor ioc_process_received_system_frame
 
-  The ioc_process_received_mbinfo_frame() function is called once a complete systen frame
+  The ioc_process_received_mbinfo_frame() function is called once a complete system frame
   containing memory block information is received.
 
   ioc_lock() must be on before calling this function.

@@ -162,4 +162,93 @@ void ioc_make_authentication_frame(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Process complete athentication data frame received from socket or serial port.
+  @anchor ioc_process_received_system_frame
+
+  The ioc_process_received_authentication_frame() function is called once a complete system frame
+  containing authentication data for a device has been received. The authentication data
+  identifies the device (device name, number and network name), optionally identifies the user
+  with user name and can have password for the connection.
+  The secondary task of authentication frame is to inform server side of the accepted connection
+  is upwards or downwards in IO device hierarchy.
+
+  @param   con Pointer to the connection object.
+  @param   mblk_id Memory block identifier in this end.
+  @param   data Received data, can be compressed and delta encoded, check flags.
+
+  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
+
+****************************************************************************************************
+*/
+osalStatus ioc_process_received_authentication_frame(
+    struct iocConnection *con,
+    os_uint mblk_id,
+    os_char *data)
+{
+    iocSecureDevice secdev;
+    os_uchar auth_flags, *p;
+    osalStatus s;
+
+    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
+    auth_flags = (os_uchar)*(p++);
+
+    os_memclear(&secdev, sizeof(secdev));
+
+    if (auth_flags & IOC_AUTH_CONNECT_UPWARDS)
+    {
+        con->flags &= ~IOC_CONNECT_UPWARDS;
+        secdev.from_upwards = OS_FALSE;
+    }
+    else
+    {
+        if ((con->flags & IOC_CONNECT_UPWARDS) == 0)
+        {
+            con->flags |= IOC_CONNECT_UPWARDS;
+            ioc_add_con_to_global_mbinfo(con);
+        }
+        secdev.from_upwards = OS_TRUE;
+    }
+
+    if (auth_flags & IOC_AUTH_DEVICE)
+    {
+        s = ioc_msg_getstr(secdev.device_name, IOC_NAME_SZ, &p);
+        if (s) return s;
+
+        secdev.device_nr = ioc_msg_get_uint(&p,
+            auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
+            auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
+    }
+
+    if (auth_flags & IOC_AUTH_NETWORK_NAME)
+    {
+        s = ioc_msg_getstr(secdev.network_name, IOC_NETWORK_NAME_SZ, &p);
+        if (s) return s;
+    }
+
+    if (auth_flags & IOC_AUTH_USER_NAME)
+    {
+        s = ioc_msg_getstr(secdev.user_name, IOC_NAME_SZ, &p);
+        if (s) return s;
+    }
+
+    if (auth_flags & IOC_AUTH_PASSWORD)
+    {
+        if (con->iface == OSAL_TLS_IFACE)
+        {
+            s = ioc_msg_getstr(secdev.password_tls, IOC_NAME_SZ, &p);
+        }
+        else {
+            s = ioc_msg_getstr(secdev.password_clear, IOC_NAME_SZ, &p);
+        }
+        if (s) return s;
+    }
+
+    con->authentication_received = OS_TRUE;
+    return OSAL_SUCCESS;
+}
+
+
 #endif
