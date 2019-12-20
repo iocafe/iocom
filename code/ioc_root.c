@@ -191,21 +191,27 @@ void ioc_release_root(
 ****************************************************************************************************
 
   @brief Set network name for the IOCOM root.
-  @anchor ioc_set_network_name
+  @anchor ioc_set_iodevice_id
 
-  The ioc_set_network_name() is called for an IO board, etc, to set up network name for all
-  communication.
+  The ioc_set_iodevice_id() is called for an IO board, etc, to store up IO device identification
+  for all communication. The information is stored within the root object.
 
   @param   root Pointer to root structure.
+  @param   device_name Device name to set. OS_NULL to clear network name.
+  @param   device_nr Device number to set. Zero to clear.
   @param   network_name Network name to set. OS_NULL to clear network name.
   @return  None.
 
 ****************************************************************************************************
 */
-void ioc_set_network_name(
+void ioc_set_iodevice_id(
     iocRoot *root,
+    const os_char *device_name,
+    os_int device_nr,
     const os_char *network_name)
 {
+    os_strncpy(root->device_name, device_name, IOC_NAME_SZ);
+    root->device_nr = device_nr;
     os_strncpy(root->network_name, network_name, IOC_NETWORK_NAME_SZ);
 }
 

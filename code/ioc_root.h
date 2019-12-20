@@ -168,6 +168,14 @@ typedef struct iocRoot
     iocRootsEndPointList epoint;
 #endif
 
+    /** Device name, if this is single IO device. Empty if not.
+     */
+    os_char device_name[IOC_NAME_SZ];
+
+    /** Device number, if this is single IO device. Zero if not.
+     */
+    os_int device_nr;
+
     /** Network name.
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
@@ -251,8 +259,10 @@ void ioc_release_root(
 
 /* Set network name for the IOCOM root.
  */
-void ioc_set_network_name(
+void ioc_set_iodevice_id(
     iocRoot *root,
+    const os_char *device_name,
+    os_int device_nr,
     const os_char *network_name);
 
 /* Run the communication.

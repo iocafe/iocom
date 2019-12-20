@@ -49,6 +49,22 @@ OSAL_C_HEADER_BEGINS
 #define IOC_RESIZE_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
 #endif
 
+/* Authentication support level defines.
+ */
+#define IOC_NO_AUTHENTICATION 0
+#define IOC_DEVICE_AUTHENTICATION 1
+#define IOC_FULL_AUTHENTICATION 2
+
+/* Default authentication support for the platform.
+ */
+#ifndef IOC_AUTHENTICATION
+  #if OSAL_MICROCONTROLLER
+    #define IOC_AUTHENTICATION IOC_DEVICE_AUTHENTICATION
+  #else
+    #define IOC_AUTHENTICATION IOC_FULL_AUTHENTICATION
+  #endif
+#endif
+
 /* Include all base iocom headers.
  */
 #include "code/ioc_timing.h"
@@ -64,6 +80,7 @@ OSAL_C_HEADER_BEGINS
 #endif
 #include "code/ioc_source_buffer.h"
 #include "code/ioc_target_buffer.h"
+#include "code/ioc_authentication.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
 #include "code/ioc_streamer.h"

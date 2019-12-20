@@ -130,13 +130,44 @@
  */
 typedef enum
 {
-    IOC_SYSRAME_MBLK_INFO = 1
+    IOC_SYSRAME_MBLK_INFO = 1,
+    IOC_AUTHENTICATION_DATA = 2
 }
 iocSystemFrameType;
 
 /* Maximum parameter string length for end point.
  */
 #define IOC_CONNECTION_PRMSTR_SZ 48
+
+/* Frame count runs normally from 1 to IOC_MAX_FRAME_NR. Exception is when the connection
+   is established, the first frame count 0 zero, which never repeats. The IOC_MAX_FRAME_NR
+   must be less than any control character used.
+ */
+#define IOC_MAX_FRAME_NR 200
+
+/* Pointers to modify generated header afterwards.
+ */
+typedef struct
+{
+    /** Pointer to check sum in header
+     */
+    os_uchar *checksum_low;
+    os_uchar *checksum_high;
+
+    /** Pointer to flags
+     */
+    os_uchar *flags;
+
+    /** Pointers to data size in bytes
+     */
+    os_uchar *data_sz_low;
+    os_uchar *data_sz_high;
+
+    /* Header size in bytes.
+     */
+    os_int header_sz;
+}
+iocSendHeaderPtrs;
 
 
 /**
@@ -367,11 +398,6 @@ typedef enum
 }
 iocSerialCtrlChar;
 
-/* Frame count runs normally from 1 to IOC_MAX_FRAME_NR. Exception is when the connection
-   is established, the first frame count 0 zero, which never repeats. The IOC_MAX_FRAME_NR
-   must be less than any control character used.
- */
-#define IOC_MAX_FRAME_NR 200
 
 
 /**
@@ -506,6 +532,15 @@ typedef struct iocConnection
      */
     os_int auto_device_nr;
 
+    /** Authentication data sent to connection flag. We must send and receive authentication
+        data before sending anything else.
+     */
+    os_boolean authentication_sent;
+
+    /** Authentication data received from connection flag.
+     */
+    os_boolean authentication_received;
+
     /** Flag indicating that stream is connected. Connected
         means that one message has been successfully received.
      */
@@ -585,6 +620,36 @@ osalStatus ioc_send_acknowledge(
 osalStatus ioc_send_timed_keepalive(
     iocConnection *con,
     os_timer *tnow);
+
+/* Generate frame header.
+ */
+void ioc_generate_header(
+    iocConnection *con,
+    os_char *hdr,
+    iocSendHeaderPtrs *ptrs,
+    os_int remote_mblk_id,
+    os_int addr);
+
+/* Store string into message beging generated.
+ */
+void ioc_msg_setstr(
+    os_char *str,
+    os_uchar **p);
+
+/* Store 16 bit integer into message beging generated.
+ */
+os_boolean ioc_msg_set_ushort(
+    os_ushort i,
+    os_uchar **p);
+
+/* Store 32 bit integer into message beging generated.
+ */
+void ioc_msg_set_uint(
+    os_uint i,
+    os_uchar **p,
+    os_uchar *flags,
+    os_uchar two_bytes_flag,
+    os_uchar four_bytes_flag);
 
 /* Acknowledge if we have reached the limit of unacknowledged bytes.
  */

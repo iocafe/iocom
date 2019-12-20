@@ -16,29 +16,6 @@
 #include "iocom.h"
 
 
-/* Pointers to modify generated header afterwards.
- */
-typedef struct
-{
-    /** Pointer to check sum in header
-     */
-    os_uchar *checksum_low;
-    os_uchar *checksum_high;
-
-    /** Pointer to flags
-     */
-    os_uchar *flags;
-
-    /** Pointers to data size in bytes
-     */
-    os_uchar *data_sz_low;
-    os_uchar *data_sz_high;
-
-    /* Header size in bytes.
-     */
-    os_int header_sz;
-}
-iocSendHeaderPtrs;
 
 
 /* Forward referred static functions.
@@ -53,28 +30,6 @@ static osalStatus ioc_write_to_stream(
 static void ioc_make_mblk_info_frame(
     iocConnection *con,
     iocMemoryBlock *mblk);
-
-static void ioc_generate_header(
-    iocConnection *con,
-    os_char *hdr,
-    iocSendHeaderPtrs *ptrs,
-    os_int remote_mblk_id,
-    os_int addr);
-
-static void ioc_msg_setstr(
-    os_char *str,
-    os_uchar **p);
-
-static os_boolean ioc_msg_set_ushort(
-    os_ushort i,
-    os_uchar **p);
-
-static void ioc_msg_set_uint(
-    os_uint i,
-    os_uchar **p,
-    os_uchar *flags,
-    os_uchar two_bytes_flag,
-    os_uchar four_bytes_flag);
 
 
 /**
@@ -142,6 +97,18 @@ osalStatus ioc_connection_send(
     {
         ioc_unlock(root);
         return OSAL_STATUS_PENDING;
+    }
+
+    /* We must send and receive authentication before sending anything else.
+     */
+    if (!con->authentication_sent)
+    {
+        ioc_make_authentication_frame(con);
+        goto just_move_data;
+    }
+    if (!con->authentication_received)
+    {
+        goto just_move_data;
     }
 
     /* Do we have memory block information to send?
@@ -756,7 +723,7 @@ static osalStatus ioc_write_to_stream(
 
 ****************************************************************************************************
 */
-static void ioc_generate_header(
+void ioc_generate_header(
     iocConnection *con,
     os_char *hdr,
     iocSendHeaderPtrs *ptrs,
@@ -833,7 +800,7 @@ static void ioc_generate_header(
 
 ****************************************************************************************************
 */
-static void ioc_msg_setstr(
+void ioc_msg_setstr(
     os_char *str,
     os_uchar **p)
 {
@@ -864,7 +831,7 @@ static void ioc_msg_setstr(
 
 ****************************************************************************************************
 */
-static os_boolean ioc_msg_set_ushort(
+os_boolean ioc_msg_set_ushort(
     os_ushort i,
     os_uchar **p)
 {
@@ -893,7 +860,7 @@ static os_boolean ioc_msg_set_ushort(
 
 ****************************************************************************************************
 */
-static void ioc_msg_set_uint(
+void ioc_msg_set_uint(
     os_uint i,
     os_uchar **p,
     os_uchar *flags,

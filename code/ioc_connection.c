@@ -764,6 +764,11 @@ void ioc_reset_connection_state(
     con->frame_out.pos = 0;
     con->frame_out.used = OS_FALSE;
 
+    /* We have not authenticated other end yet
+     */
+    con->authentication_sent = OS_FALSE;
+    con->authentication_received = OS_FALSE;
+
     /* Clear flow control variables.
      */
     con->bytes_received = 0;
