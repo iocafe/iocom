@@ -119,12 +119,12 @@
 /** "1/2 byte" and "has string" flags for packing memory block info.
     low bits reserved for version.
  */
-#define IOC_INFO_D_2BYTES 4
+/* #define IOC_INFO_D_2BYTES 4
 #define IOC_INFO_D_4BYTES 8
 #define IOC_INFO_N_2BYTES 16
 #define IOC_INFO_F_2BYTES 32
 #define IOC_INFO_HAS_DEVICE_NAME 64
-#define IOC_INFO_HAS_MBLK_NAME 128
+#define IOC_INFO_HAS_MBLK_NAME 128 */
 
 /** System frame types.
  */
@@ -660,6 +660,26 @@ osalStatus ioc_acknowledge_as_needed(
  */
 osalStatus ioc_connection_receive(
     iocConnection *con);
+
+/* Get string from received message.
+ */
+osalStatus ioc_msg_getstr(
+    os_char *str,
+    os_memsz str_sz,
+    os_uchar **p);
+
+/* Get 16 bit integer from received message.
+ */
+os_ushort ioc_msg_get_ushort(
+    os_uchar **p,
+    os_uchar two_bytes);
+
+/* Get 32 bit integer from received message.
+ */
+os_uint ioc_msg_get_uint(
+    os_uchar **p,
+    os_uchar two_bytes,
+    os_uchar four_bytes);
 
 /* Negotiate beginning of a serial connection.
  */

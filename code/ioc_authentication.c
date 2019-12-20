@@ -23,15 +23,14 @@
 /**
 ****************************************************************************************************
 
-  @brief Make frame containing memory block information.
-  @anchor ioc_make_mblk_info_frame
+  @brief Make authentication data frame.
+  @anchor ioc_make_authentication_frame
 
-  The ioc_make_mblk_info_frame() function...
+  The ioc_make_authentication_frame() generates ourgoind data frame which contains information
+  to authenticate this IO device, etc.
 
   @param   con Pointer to the connection object.
-  @param   mblk Pointer to memory block whose information to send.
-  @return  OSAL_SUCCESS if data was sent. OSAL_STATUS_PENDING if nothing was sent, but all is fine.
-           Other values indicate broken connection error.
+  @return  None.
 
 ****************************************************************************************************
 */
@@ -46,8 +45,12 @@ void ioc_make_authentication_frame(
 
     os_uchar
         *p,
-        *start,
-        *version_and_flags;
+        *auth_flags_ptr,
+        flags,
+        *start;
+
+    os_char
+        *password;
 
     os_int
         content_bytes,
@@ -58,9 +61,6 @@ void ioc_make_authentication_frame(
 
     os_int
         bytes;
-
-    os_char
-        buf[3*IOC_NAME_SZ + IOC_NETWORK_NAME_SZ];
 
     os_ushort
         crc,
@@ -77,32 +77,37 @@ void ioc_make_authentication_frame(
      */
     p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
     *(p++) = IOC_AUTHENTICATION_DATA;
-    version_and_flags = p; /* version, for future additions + flags */
+    flags = 0;
+    auth_flags_ptr = p;
     *(p++) = 0;
 
+    if (root->device_name[0] != 0)
+    {
+        ioc_msg_setstr(root->device_name, &p);
+        flags |= IOC_AUTH_DEVICE;
 
+        ioc_msg_set_uint(root->device_nr < IOC_AUTO_DEVICE_NR ? root->device_nr : 0,
+            &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, IOC_AUTH_DEVICE_NR_4_BYTES);
+    }
+
+    if (root->network_name[0] != 0)
+    {
+        ioc_msg_setstr(root->network_name, &p);
+        flags |= IOC_AUTH_NETWORK_NAME;
+    }
+
+    password = (con->iface == OSAL_TLS_IFACE)
+        ? root->password_tls : root->password_clear;
+    if (password[0] != 0)
+    {
+        ioc_msg_setstr(password, &p);
+        flags |= IOC_AUTH_PASSWORD;
+    }
 
     /* Set device number. If we are sending to device with automatically number, set zero.
      */
     device_nr = root->device_nr;
     if (device_nr > IOC_AUTO_DEVICE_NR) device_nr = 0;
-
-    ioc_msg_set_uint(device_nr, &p, version_and_flags, IOC_INFO_D_2BYTES, IOC_INFO_D_4BYTES);
-
-#if 0
-    if (ioc_msg_set_ushort(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
-    if (ioc_msg_set_ushort(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
-    if (mblk->device_name[0])
-    {
-        ioc_msg_setstr(mblk->device_name, &p);
-        ioc_msg_setstr(mblk->network_name, &p);
-        *version_and_flags |= IOC_INFO_HAS_DEVICE_NAME;
-    }
-    if (mblk->mblk_name[0] || mblk->network_name[0])
-    {
-        ioc_msg_setstr(mblk->mblk_name, &p);
-        *version_and_flags |= IOC_INFO_HAS_MBLK_NAME;
-    }
 
     /* If other end has not acknowledged enough data to send the
        frame, cancel the send.
@@ -113,11 +118,18 @@ void ioc_make_authentication_frame(
     bytes = con->max_in_air - (os_int)u;
     if (used_bytes > bytes)
     {
-        osal_trace2_int("MBLK info canceled by flow control, free space on air=", bytes);
+        osal_trace2_int("Authentication canceled by flow control, free space on air=", bytes);
         return;
     }
 
-    /* Fill in data size and flag as system frame.
+    /* Set connect upward flag.
+     */
+    if (con->flags & IOC_CONNECT_UPWARDS)
+    {
+        flags |= IOC_AUTH_CONNECT_UPWARDS;
+    }
+
+    /* Fill in data size, flag as system frame, and flags for authentication data.
      */
     *ptrs.data_sz_low = (os_uchar)content_bytes;
     if (ptrs.data_sz_high)
@@ -127,8 +139,7 @@ void ioc_make_authentication_frame(
     }
     con->frame_out.used = used_bytes;
     *ptrs.flags |= IOC_SYSTEM_FRAME;
-
-#endif
+    *auth_flags_ptr = flags;
 
     /* Frame not rejected by flow control, increment frame number.
      */

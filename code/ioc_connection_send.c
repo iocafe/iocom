@@ -293,8 +293,7 @@ static void ioc_make_data_frame(
 
   @param   con Pointer to the connection object.
   @param   mblk Pointer to memory block whose information to send.
-  @return  OSAL_SUCCESS if data was sent. OSAL_STATUS_PENDING if nothing was sent, but all is fine.
-           Other values indicate broken connection error.
+  @return  None.
 
 ****************************************************************************************************
 */

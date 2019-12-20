@@ -243,6 +243,88 @@ void ioc_mbinfo_mblk_is_deleted(
 }
 
 
+
+/**
+****************************************************************************************************
+
+  @brief Process complete memory block information frame received from socket or serial port.
+  @anchor ioc_process_received_system_frame
+
+  The ioc_process_received_mbinfo_frame() function is called once a complete systen frame
+  containing memory block information is received.
+
+  ioc_lock() must be on before calling this function.
+
+  @param   con Pointer to the connection object.
+  @param   mblk_id Memory block identifier in this end.
+  @param   data Received data, can be compressed and delta encoded, check flags.
+
+  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
+
+****************************************************************************************************
+*/
+osalStatus ioc_process_received_mbinfo_frame(
+    struct iocConnection *con,
+    os_uint mblk_id,
+    os_char *data)
+{
+    iocMemoryBlockInfo
+        mbinfo;
+
+    os_uchar
+        version_and_flags,
+        *p; /* keep as unsigned */
+
+    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
+    version_and_flags = (os_uchar)*(p++);
+    os_memclear(&mbinfo, sizeof(mbinfo));
+    mbinfo.device_nr = ioc_msg_get_uint(&p,
+        version_and_flags & IOC_INFO_D_2BYTES,
+        version_and_flags & IOC_INFO_D_4BYTES);
+
+    /* If we received message from device which requires automatically given
+       device number in conrtoller end, give the number now.
+     */
+    if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR)
+    {
+        /* If we do not have automatic device number, reserve one now
+         */
+        if (!con->auto_device_nr)
+        {
+            con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
+        }
+        mbinfo.device_nr = con->auto_device_nr;
+    }
+
+    /* If this is device using automatic device number, converto IOC_TO_AUTO_DEVICE_NR
+       to IOC_AUTO_DEVICE_NR (used within the device).
+     */
+    else if (mbinfo.device_nr == IOC_TO_AUTO_DEVICE_NR)
+    {
+        mbinfo.device_nr = IOC_AUTO_DEVICE_NR;
+    }
+
+    mbinfo.mblk_id = mblk_id;
+    mbinfo.nbytes = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_N_2BYTES);
+    mbinfo.flags = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_F_2BYTES);
+    if (version_and_flags & IOC_INFO_HAS_DEVICE_NAME)
+    {
+        if (ioc_msg_getstr(mbinfo.device_name, IOC_NAME_SZ, &p))
+            return OSAL_STATUS_FAILED;
+        if (ioc_msg_getstr(mbinfo.network_name, IOC_NETWORK_NAME_SZ, &p))
+            return OSAL_STATUS_FAILED;
+    }
+    if (version_and_flags & IOC_INFO_HAS_MBLK_NAME)
+    {
+        if (ioc_msg_getstr(mbinfo.mblk_name, IOC_NAME_SZ, &p))
+            return OSAL_STATUS_FAILED;
+    }
+
+    ioc_mbinfo_received(con, &mbinfo);
+    return OSAL_SUCCESS;
+}
+
+
 /**
 ****************************************************************************************************
 

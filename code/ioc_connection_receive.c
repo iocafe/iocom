@@ -37,21 +37,6 @@ static osalStatus ioc_store_data_frame(
     os_int data_sz,
     os_uchar flags);
 
-static osalStatus ioc_msg_getstr(
-    os_char *str,
-    os_memsz str_sz,
-    os_uchar **p);
-
-static os_ushort ioc_msg_get_ushort(
-    os_uchar **p,
-    os_uchar two_bytes);
-
-static os_uint ioc_msg_get_uint(
-    os_uchar **p,
-    os_uchar two_bytes,
-    os_uchar four_bytes);
-
-
 
 /**
 ****************************************************************************************************
@@ -374,7 +359,7 @@ alldone:
 /**
 ****************************************************************************************************
 
-  @brief Process a one complete frame received from socket or serial port.
+  @brief Process complete frame received from socket or serial port.
   @anchor ioc_process_received_data_frame
 
   The ioc_process_received_data_frame() function is called once a complete data frame 
@@ -436,25 +421,23 @@ static osalStatus ioc_process_received_data_frame(
 /**
 ****************************************************************************************************
 
-  @brief Process a one complete system frame received from socket or serial port.
+  @brief Process complete system frame received from socket or serial port.
   @anchor ioc_process_received_system_frame
 
   The ioc_process_received_system_frame() function is called once a complete systen frame is 
-  received. This function processes system frames like memory block information and subscribe 
-  requests.
+  received. This function processes system frames like memory block information and device
+  authentication data frames.
 
   ioc_lock() must be on before calling this function.
 
   Note: data_sz, addr, and flags are not needed for system frame. At least addr could be
   used to pass some other information in future.
 
-
   @param   con Pointer to the connection object.
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-
-  @return  OSAL_SUCCESS if succesfull. Other values indicate corrupted frame.
+  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
 
 ****************************************************************************************************
 */
@@ -463,18 +446,13 @@ static osalStatus ioc_process_received_system_frame(
     os_uint mblk_id,
     os_char *data)
 {
-    iocMemoryBlockInfo
-        mbinfo;
-
-    os_uchar 
-        version_and_flags,
-        *p; /* keep as unsigned */
-
     switch (data[0])
     {
         /* Memory block information received. 
          */
         case IOC_SYSRAME_MBLK_INFO:
+            return ioc_process_received_mbinfo_frame(con, mblk_id, data);
+#if 0
             p = (os_uchar*)data + 1; /* Skip system frame type. */
             version_and_flags = (os_uchar)*(p++);
             os_memclear(&mbinfo, sizeof(mbinfo));
@@ -519,7 +497,15 @@ static osalStatus ioc_process_received_system_frame(
                 if (ioc_msg_getstr(mbinfo.mblk_name, IOC_NAME_SZ, &p))
                     return OSAL_STATUS_FAILED;
             }
+
             ioc_mbinfo_received(con, &mbinfo);
+            break;
+#endif
+
+        /* Device authentication information received.
+         */
+        case IOC_AUTHENTICATION_DATA:
+            con->authentication_received = OS_TRUE;
             break;
 
         default:
@@ -529,6 +515,7 @@ static osalStatus ioc_process_received_system_frame(
 
     return OSAL_SUCCESS;
 }
+
 
 /**
 ****************************************************************************************************
@@ -619,7 +606,7 @@ static osalStatus ioc_store_data_frame(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_msg_getstr(
+osalStatus ioc_msg_getstr(
     os_char *str,
     os_memsz str_sz,
     os_uchar **p)
@@ -645,7 +632,7 @@ static osalStatus ioc_msg_getstr(
 /**
 ****************************************************************************************************
 
-  @brief Get integer from received message.
+  @brief Get 16 bit integer from received message.
   @anchor ioc_msg_get_ushort
 
   The ioc_msg_get_ushort() function gets 16 bit integer from message position p and advances
@@ -656,7 +643,7 @@ static osalStatus ioc_msg_getstr(
 
 ****************************************************************************************************
 */
-static os_ushort ioc_msg_get_ushort(
+os_ushort ioc_msg_get_ushort(
     os_uchar **p,
     os_uchar two_bytes)
 {
@@ -670,7 +657,7 @@ static os_ushort ioc_msg_get_ushort(
 /**
 ****************************************************************************************************
 
-  @brief Get integer from received message.
+  @brief Get 32 bit integer from received message.
   @anchor ioc_msg_get_uint
 
   The ioc_msg_get_uint() function gets 32 bit integer from message position p and advances
@@ -681,7 +668,7 @@ static os_ushort ioc_msg_get_ushort(
 
 ****************************************************************************************************
 */
-static os_uint ioc_msg_get_uint(
+os_uint ioc_msg_get_uint(
     os_uchar **p,
     os_uchar two_bytes,
     os_uchar four_bytes)

@@ -48,13 +48,13 @@ typedef struct iocSecureDevice
 
     /** Password for secure connections.
      */
-    os_char password[IOC_NAME_SZ];
+    os_char password_tls[IOC_NAME_SZ];
 
     /** Password for clear text authentication, to be passed trough socket, serial port
         or blue tooth. This is separate from passwork_tls so that the secure password
         is only passed trough encrypted connection.
      */
-    // os_char password_clear[IOC_NAME_SZ];
+    os_char password_clear[IOC_NAME_SZ];
 
 }
 iocSecureDevice;
@@ -71,19 +71,16 @@ iocAuthenticatedDevices;
 
 /**
 ****************************************************************************************************
-  Enumeration of fields in authentication frame.
+  Flags in authentication frame.
 ****************************************************************************************************
 */
-typedef enum iocAuthenticationItem
-{
-    IOC_AUTH_DEVICE_NAME,
-    IOC_AUTH_DEVICE_NR,
-    IOC_AUTH_NETWORK_NAME,
-    IOC_AUTH_USER_NAME,
-    IOC_AUTH_PASSWORD
-}
-iocAuthenticationItem;
-
+#define IOC_AUTH_CONNECT_UPWARDS 1
+#define IOC_AUTH_DEVICE 2
+#define IOC_AUTH_DEVICE_NR_2_BYTES 4
+#define IOC_AUTH_DEVICE_NR_4_BYTES 8
+#define IOC_AUTH_NETWORK_NAME 16
+#define IOC_AUTH_USER_NAME 32
+#define IOC_AUTH_PASSWORD 64
 
 
 /**
@@ -93,6 +90,8 @@ iocAuthenticationItem;
  */
 /*@{*/
 
+/* Make authentication data frame.
+ */
 void ioc_make_authentication_frame(
     iocConnection *con);
 

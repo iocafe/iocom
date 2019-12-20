@@ -168,17 +168,30 @@ typedef struct iocRoot
     iocRootsEndPointList epoint;
 #endif
 
-    /** Device name, if this is single IO device. Empty if not.
+    /** IO device only: Device name, if this is single IO device. Empty if not set.
      */
     os_char device_name[IOC_NAME_SZ];
 
-    /** Device number, if this is single IO device. Zero if not.
+    /** IO device only: Device number, if this is single IO device. Zero if not set.
      */
     os_int device_nr;
 
-    /** Network name.
+    /** IO device only: Network name. Empty if not set.
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
+
+    /** IO device only: User name. This can be used to authenticate user, if device number
+        is set automatically (IOC_AUTO_DEVICE_NR).
+     */
+    os_char user_name[IOC_NAME_SZ];
+
+    /** IO device only: Password for encrypted communication.
+     */
+    os_char password_tls[IOC_NAME_SZ];
+
+    /** IO device only: Password for clear text communication.
+     */
+    os_char password_clear[IOC_NAME_SZ];
 
     /** Pointer to static memory pool, OS_NULL is not used.
         Pool size is in bytes.

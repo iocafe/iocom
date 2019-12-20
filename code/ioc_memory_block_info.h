@@ -34,6 +34,18 @@
  */
 #define IOC_NETWORK_NAME_SZ 24
 
+
+/** "1/2 byte" and "has string" flags for packing memory block info.
+    low bits reserved for version.
+ */
+#define IOC_INFO_D_2BYTES 4
+#define IOC_INFO_D_4BYTES 8
+#define IOC_INFO_N_2BYTES 16
+#define IOC_INFO_F_2BYTES 32
+#define IOC_INFO_HAS_DEVICE_NAME 64
+#define IOC_INFO_HAS_MBLK_NAME 128
+
+
 struct iocMemoryBlock;
 struct iocConnection;
 
@@ -110,6 +122,11 @@ void ioc_mbinfo_sent(
  */
 void ioc_mbinfo_mblk_is_deleted(
     struct iocMemoryBlock *mblk);
+
+osalStatus ioc_process_received_mbinfo_frame(
+    struct iocConnection *con,
+    os_uint mblk_id,
+    os_char *data);
 
 /* Create source and target buffers according to received memory block information.
  */
