@@ -60,8 +60,6 @@ osalStatus osal_main(
     osalSecurityConfig security_prm;
 
     os_memclear(&security_prm, sizeof(security_prm));
-    /* security_prm.server_cert_file = "bob.crt";
-    security_prm.server_key_file = "bob.key"; */
     security_prm.server_cert_file = "alice.crt";
     security_prm.server_key_file = "alice.key";
 
@@ -248,7 +246,7 @@ static void root_callback(
             else
             {
                 ioc_memory_block_set_int_param(&handle,
-                    IOC_MBLK_AUTO_SYNC_FLAG, OS_FALSE);
+                    IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
             }
             ioc_release_handle(&handle);
             break;

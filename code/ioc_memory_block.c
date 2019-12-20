@@ -780,8 +780,6 @@ void ioc_receive(
      */
     tbuf = mblk->tbuf.first;
 
-    /* To receive delta encoding. MOVE TO IOC_RECEIVE
-     */
     if (tbuf && tbuf->syncbuf.buf_used)
     {
         start_addr = tbuf->syncbuf.buf_start_addr;
@@ -800,6 +798,13 @@ void ioc_receive(
                 mblk->func[i](&mblk->handle, start_addr, end_addr,
                     IOC_MBLK_CALLBACK_RECEIVE, mblk->context[i]);
             }
+        }
+
+        /* If the memory block is also data source, move received data there too
+         */
+        if (mblk->sbuf.first)
+        {
+            ioc_mblk_invalidate(mblk, start_addr, end_addr);
         }
     }
 

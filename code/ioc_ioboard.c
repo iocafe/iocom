@@ -149,7 +149,7 @@ void ioboard_start_communication(
 
         case IOBOARD_CTRL_LISTEN_SERIAL:
             conprm.parameters = prm->serial_con_str;
-            conprm.flags = IOC_SERIAL_LISTENER | IOC_SERIAL
+            conprm.flags = IOC_LISTENER | IOC_SERIAL
                 | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS;
             break;
 	}

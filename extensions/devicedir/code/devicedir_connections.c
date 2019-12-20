@@ -92,7 +92,7 @@ void devicedir_connections(
         isfirst = OS_TRUE;
         devicedir_append_flag(list, (cflags & IOC_CONNECT_UPWARDS) ? "upward" : "downward", &isfirst);
         if (cflags & IOC_DYNAMIC_MBLKS) devicedir_append_flag(list, "dynamic", &isfirst);
-        if (cflags & IOC_SERIAL_LISTENER) devicedir_append_flag(list, "serial-listener", &isfirst);
+        if (cflags & IOC_LISTENER) devicedir_append_flag(list, "listener", &isfirst);
         if (cflags & IOC_CREATE_THREAD) devicedir_append_flag(list, "thread", &isfirst);
         if (cflags & IOC_CLOSE_CONNECTION_ON_ERROR) devicedir_append_flag(list, "closeonerr", &isfirst);
         osal_stream_print_str(list, "\"", 0);

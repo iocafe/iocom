@@ -67,7 +67,7 @@ osalStatus ioc_establish_serial_connection(
 
     /* Client end of the serial connection.
      */
-    if ((con->flags & IOC_SERIAL_LISTENER) == 0)
+    if ((con->flags & IOC_LISTENER) == 0)
     {
         switch (con->sercon_state)
         {

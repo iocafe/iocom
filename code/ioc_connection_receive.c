@@ -452,61 +452,11 @@ static osalStatus ioc_process_received_system_frame(
          */
         case IOC_SYSRAME_MBLK_INFO:
             return ioc_process_received_mbinfo_frame(con, mblk_id, data);
-#if 0
-            p = (os_uchar*)data + 1; /* Skip system frame type. */
-            version_and_flags = (os_uchar)*(p++);
-            os_memclear(&mbinfo, sizeof(mbinfo));
-            mbinfo.device_nr = ioc_msg_get_uint(&p,
-                version_and_flags & IOC_INFO_D_2BYTES,
-                version_and_flags & IOC_INFO_D_4BYTES);
 
-            /* If we received message from device which requires automatically given
-               device number in conrtoller end, give the number now.
-             */
-            if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR)
-            {
-                /* If we do not have automatic device number, reserve one now
-                 */
-                if (!con->auto_device_nr)
-                {
-                    con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
-                }
-                mbinfo.device_nr = con->auto_device_nr;
-            }
-
-            /* If this is device using automatic device number, converto IOC_TO_AUTO_DEVICE_NR
-               to IOC_AUTO_DEVICE_NR (used within the device).
-             */
-            else if (mbinfo.device_nr == IOC_TO_AUTO_DEVICE_NR)
-            {
-                mbinfo.device_nr = IOC_AUTO_DEVICE_NR;
-            }
-
-            mbinfo.mblk_id = mblk_id;
-            mbinfo.nbytes = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_N_2BYTES);
-            mbinfo.flags = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_F_2BYTES);
-            if (version_and_flags & IOC_INFO_HAS_DEVICE_NAME)
-            {
-                if (ioc_msg_getstr(mbinfo.device_name, IOC_NAME_SZ, &p))
-                    return OSAL_STATUS_FAILED;
-                if (ioc_msg_getstr(mbinfo.network_name, IOC_NETWORK_NAME_SZ, &p))
-                    return OSAL_STATUS_FAILED;
-            }
-            if (version_and_flags & IOC_INFO_HAS_MBLK_NAME)
-            {
-                if (ioc_msg_getstr(mbinfo.mblk_name, IOC_NAME_SZ, &p))
-                    return OSAL_STATUS_FAILED;
-            }
-
-            ioc_mbinfo_received(con, &mbinfo);
-            break;
-#endif
-
-        /* Device authentication information received.
+        /* Device authentication data received.
          */
         case IOC_AUTHENTICATION_DATA:
             return ioc_process_received_authentication_frame(con, mblk_id, data);
-            /* con->authentication_received = OS_TRUE; */
             break;
 
         default:

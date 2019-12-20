@@ -172,6 +172,7 @@ void ioc_make_authentication_frame(
   containing authentication data for a device has been received. The authentication data
   identifies the device (device name, number and network name), optionally identifies the user
   with user name and can have password for the connection.
+
   The secondary task of authentication frame is to inform server side of the accepted connection
   is upwards or downwards in IO device hierarchy.
 
@@ -197,19 +198,31 @@ osalStatus ioc_process_received_authentication_frame(
 
     os_memclear(&secdev, sizeof(secdev));
 
-    if (auth_flags & IOC_AUTH_CONNECT_UPWARDS)
+    /* If listening end of connection (server).
+     */
+    if (con->flags & IOC_LISTENER)
     {
-        con->flags &= ~IOC_CONNECT_UPWARDS;
-        secdev.from_upwards = OS_FALSE;
+        if (auth_flags & IOC_AUTH_CONNECT_UPWARDS)
+        {
+            con->flags &= ~IOC_CONNECT_UPWARDS;
+            secdev.from_upwards = OS_FALSE;
+        }
+        else
+        {
+            if ((con->flags & IOC_CONNECT_UPWARDS) == 0)
+            {
+                con->flags |= IOC_CONNECT_UPWARDS;
+                ioc_add_con_to_global_mbinfo(con);
+            }
+            secdev.from_upwards = OS_TRUE;
+        }
     }
+
+    /* If activelu connecting end (client).
+     */
     else
     {
-        if ((con->flags & IOC_CONNECT_UPWARDS) == 0)
-        {
-            con->flags |= IOC_CONNECT_UPWARDS;
-            ioc_add_con_to_global_mbinfo(con);
-        }
-        secdev.from_upwards = OS_TRUE;
+        secdev.from_upwards = (con->flags & IOC_CONNECT_UPWARDS) ? OS_TRUE : OS_FALSE;
     }
 
     if (auth_flags & IOC_AUTH_DEVICE)

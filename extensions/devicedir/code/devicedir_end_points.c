@@ -78,7 +78,6 @@ void devicedir_end_points(
         isfirst = OS_TRUE;
         if (eflags & IOC_CONNECT_UPWARDS) devicedir_append_flag(list, "upwards", &isfirst);
         if (eflags & IOC_DYNAMIC_MBLKS) devicedir_append_flag(list, "dynamic", &isfirst);
-        /* if (eflags & IOC_SERIAL_LISTENER) devicedir_append_flag(list, "serial-listener", &isfirst); */
         if (eflags & IOC_CREATE_THREAD) devicedir_append_flag(list, "thread", &isfirst);
         if (eflags & IOC_CLOSE_CONNECTION_ON_ERROR) devicedir_append_flag(list, "closeonerr", &isfirst);
         osal_stream_print_str(list, "\"", 0);
