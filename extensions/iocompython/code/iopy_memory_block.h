@@ -21,6 +21,11 @@ typedef struct
 
   iocHandle mblk_handle;
 
+  /* Flag indicating that IOCOM new memory block was created when the python
+     memory block was set up.
+   */
+  os_boolean mblk_created;
+
   int number;
 }
 MemoryBlock;

@@ -1,4 +1,5 @@
 from kivy.config import ConfigParser
+from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin, bin2json
 
 
 # This JSON defines entries we want to appear in our App configuration screen
@@ -75,17 +76,23 @@ json2 = '''
 
 
 
-class MblkSpy(ConfigParser):
+class DeviceSpy(ConfigParser):
     #def __init__(self, *args, **kwargs):
     #    self.image_nr = -1
 
-    def setup_my_panel(self, settings):
+    def setup_my_panel(self, app, settings, dev_path):
+        self.app = app
+        info = MemoryBlock(app.ioc_root, mblk_name='info.' + dev_path)
+        data = info.read()
+        json = bin2json(data)
+        print (json)
+        
         # config = ConfigParser()
         self.setdefaults('My Label', {'conf_role': 'CLIENT', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1', 'conf_authentication': 'CLIENT'})
         self.setdefaults('client', {'conf_user': 'administrator', 'conf_cert_chain': 'bob-bundle.crt'})
         self.setdefaults('server', {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'})
         # config.adddefaultsection('client')
         # config.setdefaults('client', {'conf_cert_chain': 'bob-bundle.crt'})
-        settings.add_json_panel('Ukemi doo', self, data=json2)
+        settings.add_json_panel(dev_path, self, data=json2)
 
 

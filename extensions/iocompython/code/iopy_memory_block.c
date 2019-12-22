@@ -36,6 +36,7 @@ static PyObject *MemoryBlock_new(
     PyObject *pyroot = NULL;
     Root *root;
     iocRoot *iocroot;
+    iocIdentifiers identifiers;
 
     const char
         *mblk_name = NULL,
@@ -63,6 +64,7 @@ static PyObject *MemoryBlock_new(
     {
         return PyErr_NoMemory();
     }
+    self->mblk_created = OS_FALSE;
 
     os_memclear(&prm, sizeof(prm));
 
@@ -101,11 +103,6 @@ static PyObject *MemoryBlock_new(
     {
         prm.flags |= IOC_MBLK_UP;
     }
-    if (prm.flags == 0)
-    {
-        PyErr_SetString(iocomError, "Memory block must have either downward or upward flag");
-        goto failed;
-    }
     if (os_strstr(flags, "auto", OSAL_STRING_SEARCH_ITEM_NAME))
     {
         prm.flags |= IOC_AUTO_SYNC;
@@ -119,11 +116,11 @@ static PyObject *MemoryBlock_new(
         prm.flags |= IOC_STATIC;
     }
 
-    prm.mblk_name = mblk_name;
-
-    prm.device_name = root->device_name;
-    prm.device_nr = root->device_nr;
-    prm.network_name = root->network_name;
+    ioc_iopath_to_identifiers(iocroot, &identifiers, mblk_name, IOC_EXPECT_MEMORY_BLOCK);
+    prm.mblk_name = identifiers.mblk_name;
+    prm.device_name = identifiers.device_name[0] ? identifiers.device_name : root->device_name;
+    prm.device_nr = identifiers.device_nr ? identifiers.device_nr : root->device_nr;
+    prm.network_name = identifiers.network_name[0] ? identifiers.network_name : root->network_name;
 
     if (device_name)
     {
@@ -141,8 +138,30 @@ static PyObject *MemoryBlock_new(
     if (nbytes < IOC_MIN_MBLK_SZ) nbytes = IOC_MIN_MBLK_SZ;
     prm.nbytes = nbytes;
 
-    ioc_initialize_memory_block(&self->mblk_handle, OS_NULL, iocroot, &prm);
-    self->number = 1;
+    /* Try to find memory block.
+     */
+    if (ioc_find_mblk(iocroot, &self->mblk_handle, prm.mblk_name,
+        prm.device_name, prm.device_nr, prm.network_name) != OSAL_SUCCESS)
+    {
+        /* If we have no upward nor downward flag, we searched for memory block which was
+           not found.
+         */
+        if ((prm.flags & (IOC_MBLK_UP|IOC_MBLK_DOWN)) == 0)
+        {
+            ioc_setup_handle(&self->mblk_handle, iocroot, OS_NULL);
+            self->number = OSAL_STATUS_FAILED;
+            return (PyObject *)self;
+        }
+
+        /* Not found, create new one.
+         */
+        ioc_initialize_memory_block(&self->mblk_handle, OS_NULL, iocroot, &prm);
+        self->mblk_created = OS_TRUE;
+
+osal_debug_error("HERE NO_MEMORY_BLOCK");
+    }
+
+    self->number = OSAL_SUCCESS;
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.new(%s.%s%d.%s)\n",
@@ -224,7 +243,14 @@ static int MemoryBlock_init(
 static PyObject *MemoryBlock_delete(
     MemoryBlock *self)
 {
-    ioc_release_memory_block(&self->mblk_handle);
+    if (self->mblk_created)
+    {
+        ioc_release_memory_block(&self->mblk_handle);
+    }
+    else
+    {
+        ioc_release_handle(&self->mblk_handle);
+    }
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.delete()\n");
@@ -375,7 +401,7 @@ static PyObject *MemoryBlock_read(
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i",
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ii",
          kwlist, &pyaddr, &pynbytes))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");

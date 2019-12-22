@@ -172,6 +172,58 @@ iocHandle *ioc_find_mblk_shortcut(
 /**
 ****************************************************************************************************
 
+  @brief Find memory block using shortcut list, start from IOCOM root.
+  @anchor ioc_find_mblk
+
+  The ioc_find_mblk() function seaches for matching memory block using shortcut list.
+  The memory block name, device name and device number must match exactly. This function
+  is multithread safe.
+
+  @param   root IOCOM root object.
+  @param   handle Pointer to handle structure to set up.
+  @param   mblk_name Memory block name to search for.
+  @param   device_name IO device name to search for.
+  @param   device_nr IO device number to seach for.
+  @param   network_name Network name.
+  @return  OSAL_SUCCESS if succes, other values indicate an error.
+
+****************************************************************************************************
+*/
+osalStatus ioc_find_mblk(
+    iocRoot *root,
+    iocHandle *handle,
+    const os_char *mblk_name,
+    const os_char *device_name,
+    os_uint device_nr,
+    const os_char *network_name)
+{
+    iocDynamicRoot *droot;
+    iocDynamicNetwork *dnetwork;
+    iocHandle *dhandle;
+
+    /* If we have memory block
+     */
+    ioc_lock(root);
+    droot = root->droot;
+    if (droot == OS_NULL) goto failed;
+    dnetwork = ioc_find_dynamic_network(droot, network_name);
+    if (dnetwork == OS_NULL) goto failed;
+    dhandle = ioc_find_mblk_shortcut(dnetwork, mblk_name, device_name, device_nr);
+    if (dnetwork == OS_NULL) goto failed;
+    ioc_setup_handle(handle, root, dhandle->mblk);
+    ioc_unlock(root);
+    return OSAL_SUCCESS;
+
+failed:
+    ioc_setup_handle(handle, root, OS_NULL);
+    ioc_unlock(root);
+    return OSAL_STATUS_FAILED;
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Clean NULL shortcut items.
   @anchor ioc_find_mblk_shortcut
 

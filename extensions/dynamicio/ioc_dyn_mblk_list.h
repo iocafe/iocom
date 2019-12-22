@@ -62,6 +62,16 @@ iocHandle *ioc_find_mblk_shortcut(
     const os_char *device_name,
     os_uint device_nr);
 
+/* Find memory block using shortcut list, start from IOCOM root.
+ */
+osalStatus ioc_find_mblk(
+    iocRoot *root,
+    iocHandle *handle,
+    const os_char *mblk_name,
+    const os_char *device_name,
+    os_uint device_nr,
+    const os_char *network_name);
+
 /* Remove memory block short cuts which are no longer needed.
  */
 void ioc_clean_mblk_shortcuts(

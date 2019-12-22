@@ -14,9 +14,14 @@
 ****************************************************************************************************
 */
 
-/* Convert JSON text to packed binary JSON file.
+/* Convert JSON text to packed binary JSON.
  */
 PyObject *iocom_python_json2bin(
     PyObject *self,
     PyObject *args);
 
+/* Convert packed binary JSON to text.
+ */
+PyObject *iocom_python_bin2json(
+    PyObject *self,
+    PyObject *args);

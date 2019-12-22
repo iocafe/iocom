@@ -18,7 +18,7 @@
 
 /**
 ****************************************************************************************************
-  Convert JSON text to packed binary JSON file.
+  Convert JSON text to packed binary JSON.
 ****************************************************************************************************
 */
 PyObject *iocom_python_json2bin(
@@ -42,5 +42,51 @@ PyObject *iocom_python_json2bin(
     data = osal_stream_buffer_content(compressed, &data_sz);
     rval = PyBytes_FromStringAndSize(data, data_sz);
     osal_stream_close(compressed, OSAL_STREAM_DEFAULT);
+    return rval;
+}
+
+
+/**
+****************************************************************************************************
+  Convert packed binary JSON to text.
+****************************************************************************************************
+*/
+PyObject *iocom_python_bin2json(
+    PyObject *self,
+    PyObject *args)
+{
+    osalStream uncompressed;
+    PyObject *rval, *pydata = NULL;
+    os_char *data = OS_NULL;
+    os_memsz data_sz;
+    osalStatus s;
+    char *buffer;
+    Py_ssize_t length;
+
+    if (!PyArg_ParseTuple(args, "O", &pydata))
+    {
+        PyErr_SetString(iocomError, "Binary JSON object expected as argument");
+        return NULL;
+    }
+
+    PyBytes_AsStringAndSize(pydata, &buffer, &length);
+    uncompressed = osal_stream_buffer_open(OS_NULL, OS_NULL, OS_NULL, OSAL_STREAM_DEFAULT);
+    s = osal_uncompress_json(uncompressed, buffer, length, 0);
+    if (s == OSAL_SUCCESS)
+    {
+        data = osal_stream_buffer_content(uncompressed, &data_sz);
+    }
+
+    if (data)
+    {
+        rval = Py_BuildValue("s#", (char *)data, (int)data_sz);
+    }
+    else
+    {
+        Py_INCREF(Py_None);
+        rval = Py_None;
+    }
+
+    osal_stream_close(uncompressed, OSAL_STREAM_DEFAULT);
     return rval;
 }

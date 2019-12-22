@@ -9,6 +9,8 @@ and stores these changes.
 When the user next runs the programs, their changes are restored.
 
 """
+from kivy.config import Config
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 
 from kivy.app import App
 from kivy.uix.settings import SettingsWithSidebar
@@ -28,9 +30,12 @@ from kivy.metrics import dp
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget            
 
+from functools import partial
+from kivy.clock import Clock 
+
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
 
-from mblks import MblkSpy
+from devicespy import DeviceSpy
 
 # We first define our GUI
 kv = '''
@@ -143,6 +148,7 @@ class SettingButtons(SettingItem):
 class MyApp(App):
     def build(self):
         self.ioc_root = None
+        self.ioc_devices = {}
         self.title = 'i-spy'
         self.mysettings = MySettingsWithSidebar()
         self.mysettings.register_type('buttons', SettingButtons)
@@ -158,13 +164,7 @@ class MyApp(App):
         # config.setdefaults('client', {'conf_cert_chain': 'bob-bundle.crt'})
         self.mysettings.add_json_panel('IO device connect', config, data=json)
 
-        mblks = MblkSpy()
-        mblks.setup_my_panel(self.mysettings)
-        
         return self.mysettings
-
-    def run(self):
-        App.run(self)
 
     def get_settings(self):
         self.ioc_role = self.myconfig.get('My Label', 'conf_role')
@@ -181,23 +181,88 @@ class MyApp(App):
             self.disconnect()
 
         self.get_settings()
+        transport_flag = self.ioc_transport.lower();
 
         if self.ioc_role == "CLIENT":
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_cert_chain)
             self.ioc_root.queue_events()
+            self.ioc_connection = Connection(self.ioc_root, self.ioc_ip, transport_flag + ',downward,dynamic')
 
         else:
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_server_cert + ',keyfile=' + self.ioc_server_key)
             self.ioc_root.queue_events()
-            self.ioc_epoint = EndPoint(self.ioc_root, flags='tls,dynamic')
+            self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
 
-
+        self.start_mytimer() 
 
     def disconnect(self):
         if self.ioc_root != None:
+            self.stop_mytimer() 
             self.ioc_root.delete()
             self.ioc_root = None
-         
+
+    def check_iocom_events(self):
+        e = self.ioc_root.wait_com_event(0)
+        if e != None:
+            print(e)
+
+            event = e[0]
+            # mblk_name = e[3]
+            device_name = e[2]
+            network_name = e[1]
+            dev_path = device_name + '.' + network_name;
+
+            '''
+            # New network, means a new game board
+            if event == 'new_network':
+                ioc_devices[network_name] = asteroidapp.start(root, network_name)
+
+            # Close the game board
+            if event == 'network_disconnected':
+                a = ioc_devices.get(network_name, None)
+                if a != None:
+                    a[1].put('exit ' + network_name)
+                    del ioc_devices[network_name]
+
+            # Switch 'imp' and 'exp' memory blocks to manual synchronization
+            if event == 'new_mblk':
+                mblk_path = mblk_name + '.' + device_name + '.' + network_name
+                if mblk_name == 'imp' or mblk_name == 'exp':
+                    root.set_mblk_param(mblk_path, "auto", 0)
+            '''
+
+            # Device connected
+            if event == 'new_device':
+                a = self.ioc_devices.get(dev_path, None)
+                if a == None:
+                    d = DeviceSpy()
+                    self.ioc_devices[dev_path] = d
+                    d.setup_my_panel(self, self.mysettings, dev_path)
+            
+            # Device disconnected
+            if event == 'device_disconnected':
+                a = self.ioc_devices.get(dev_path, None)
+                if a != None:
+                    del self.ioc_devices[dev_path]
+            
+
+    # To increase the time / count 
+    def increment_mytimer(self, interval): 
+        self.timer_ms  += .1
+        self.check_iocom_events()
+  
+    # To start the count 
+    def start_mytimer(self): 
+        self.timer_ms = 0;
+        Clock.schedule_interval(self.increment_mytimer, .1) 
+  
+    # To stop the count / time 
+    def stop_mytimer(self): 
+        Clock.unschedule(self.increment_mytimer) 
+
+    def run(self):
+        App.run(self)
+
 class MySettingsWithSidebar(SettingsWithSidebar):
     def __init__(self, **kwargs):
         super(MySettingsWithSidebar, self).__init__(**kwargs)
@@ -259,6 +324,11 @@ class MySettingsWithSidebar(SettingsWithSidebar):
                 if value == 'button_connect':
                     print("BUTTON PRESSED")
                     self.create_popup()
+
+    def on_pause(self, config, section, key, value):
+        Logger.info(
+            "main.py: MySettingsWithSidebar.on_config_change: "
+            "{0}, {1}, {2}, {3}".format(config, section, key, value))
 
 app = MyApp()
 app.run()
