@@ -3,6 +3,28 @@ from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bi
 import json
 
 
+# Size excludes signal state byte. 
+osal_typeinfo = {
+    "undef" : 0,
+    "boolean" : 1,
+    "char" : 1,
+    "uchar" : 1,
+    "short" : 2,
+    "ushort" : 2,
+    "int" : 4, 
+    "uint" : 4,
+    "int64" : 8,
+    "long" : 8,
+    "float" : 4,
+    "double" : 8,
+    "dec01" : 2,
+    "dec001" : 2,
+    "str" : 1, 
+    "object" : 0,
+    "pointer" : 0}
+
+
+
 # This JSON defines entries we want to appear in our App configuration screen
 json2 = '''
 [
@@ -94,6 +116,7 @@ class DeviceSpy(ConfigParser):
 
         json_str = json.dumps(self.sign_display)
         settings.add_json_panel(dev_path, self, data=json_str)
+        info.delete()
 
     def process_json(self, json_text):
         self.sign_display = []
@@ -111,32 +134,65 @@ class DeviceSpy(ConfigParser):
 
 
     def process_mblk(self, data):
-        name = data.get("name", "no_name")
+        mblk_name = data.get("name", "no_name")
+        section_name = mblk_name.replace("_", "-")
         title = data.get("title", "no_title")
+        self.signal_addr = 0
         groups = data.get("groups", None)
         if groups == None:
             return;
 
         for group in groups:
-            self.process_group(group)
+            self.process_group(group, mblk_name, section_name)
         
-    def process_group(self, data):
+    def process_group(self, data, mblk_name, section_name):
         group_name = data.get("name", "no_name")
+        if group_name == 'inputs' or group_name == 'outputs':
+            self.signal_type = 'boolean'
+        else:
+            self.signal_type = 'ushort'
+
         title = data.get("title", "no_title")
         signals = data.get("signals", None)
         if signals == None:
             return;
 
         for signal in signals:
-            self.process_signal(signal, group_name)
+            self.process_signal(signal, group_name, mblk_name, section_name)
 
-    def process_signal(self, data, group_name):
-        name = data.get("name", "no_name")
-        item = {"type": "string", "title": "server key", "desc": "Server's private key (seacret)", "section": "inputs", "key": "conf_serv_key"}
+    def process_signal(self, data, group_name, mblk_name, section_name):
+        signal_name = data.get("name", "no_name")
+        signal_type = data.get("type", None)
+        if signal_type != None:
+            self.signal_type = signal_type
+        signal_addr = data.get("addr", None)
+        if signal_addr != None:
+            self.signal_addr = signal_addr
+        n = data.get("array", 1)
 
-        if len(self.sign_display) == 0:
-            self.sign_display.append(item);
+        description = self.signal_type 
+        if n > 1:
+            description += "[" + str(n) + "]"
+        
+        description += " at '" + mblk_name + "' address " + str(self.signal_addr) 
 
-        if len(self.sign_values) == 0:
-            self.sign_values[group_name] = {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'}
+        item = {"type": "string", "title": signal_name, "desc": description, "section": section_name, "key": signal_name}
 
+        self.sign_display.append(item);
+
+        g = self.sign_values.get(section_name, None)
+        if g == None:
+            self.sign_values[section_name] = {}
+
+        self.sign_values[section_name][signal_name] = 'alice.crt'
+        
+        if self.signal_type == "boolean":
+            if n <= 1:
+                self.signal_addr += 1
+
+            else:
+                self.signal_addr += 1 + (n + 7) // 8
+
+        else:
+            type_sz = osal_typeinfo[self.signal_type]
+            self.signal_addr += 1 + type_sz * n
