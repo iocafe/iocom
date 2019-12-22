@@ -28,6 +28,8 @@ from kivy.metrics import dp
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget            
 
+from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
+
 from mblks import MblkSpy
 
 # We first define our GUI
@@ -119,7 +121,6 @@ class SettingButtons(SettingItem):
     def __init__(self, **kwargs):
         self.register_event_type('on_release')
 
-        # For Python3 compatibility we need to drop the buttons keyword when calling super.
         kw = kwargs.copy()
         kw.pop('buttons', None)
         super(SettingItem, self).__init__(**kw)
@@ -141,6 +142,7 @@ class SettingButtons(SettingItem):
 
 class MyApp(App):
     def build(self):
+        self.ioc_root = None
         self.title = 'i-spy'
         self.mysettings = MySettingsWithSidebar()
         self.mysettings.register_type('buttons', SettingButtons)
@@ -148,9 +150,10 @@ class MyApp(App):
 #        self.config.setdefaults('My Label', {'text': 'Hello', 'font_size': 20, 'optxt': 'A'})
 #        self.mysettings.add_json_panel('My Label', self.config, data=json)
         config = ConfigParser()
-        config.setdefaults('My Label', {'conf_role': 'CLIENT', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1', 'conf_authentication': 'CLIENT'})
+        config.setdefaults('My Label', {'conf_role': 'CLIENT', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1'})
         config.setdefaults('client', {'conf_user': 'administrator', 'conf_cert_chain': 'bob-bundle.crt'})
         config.setdefaults('server', {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'})
+        self.myconfig = config;
         # config.adddefaultsection('client')
         # config.setdefaults('client', {'conf_cert_chain': 'bob-bundle.crt'})
         self.mysettings.add_json_panel('IO device connect', config, data=json)
@@ -159,83 +162,56 @@ class MyApp(App):
         mblks.setup_my_panel(self.mysettings)
         
         return self.mysettings
-        """
-        Build and return the root widget.
-        """
-        '''
-        # The line below is optional. You could leave it out or use one of the
-        # standard options, such as SettingsWithSidebar, SettingsWithSpinner
-        # etc.
-        self.settings_cls = MySettingsWithSidebar
-
-        # We apply the saved configuration settings or the defaults
-        root = Builder.load_string(kv)
-        label = root.ids.label
-        label.text = self.config.get('My Label', 'text')
-        label.font_size = float(self.config.get('My Label', 'font_size'))
-        return root
-        '''
-
-    '''
-    def build_config(self, config):
-        """
-        Set the default values for the configs sections.
-        """
-        config.setdefaults('My Label', {'text': 'Hello', 'font_size': 20})
-    
-
-    def build_settings(self, settings):
-        """
-        Add our custom section to the default configuration object.
-        """
-        # We use the string defined above for our JSON, but it could also be
-        # loaded from a file as follows:
-        #     settings.add_json_panel('My Label', self.config, 'settings.json')
-        settings.add_json_panel('My Label', self.config, data=json)
-
-    
-    def on_config_change(self, config, section, key, value):
-        """
-        Respond to changes in the configuration.
-        """
-        Logger.info("main.py: App.on_config_change: {0}, {1}, {2}, {3}".format(
-            config, section, key, value))
-
-        if section == "My Label":
-            if key == "text":
-                self.root.ids.label.text = value
-            elif key == 'font_size':
-                self.root.ids.label.font_size = float(value)
-
-    def close_settings(self, settings=None):
-        """
-        The settings panel has been closed.
-        """
-        Logger.info("main.py: App.close_settings: {0}".format(settings))
-    '''
 
     def run(self):
         App.run(self)
 
-class MySettingsWithSidebar(SettingsWithSidebar):
-    """
-    It is not usually necessary to create subclass of a settings panel. There
-    are many built-in types that you can use out of the box
-    (SettingsWithSidebar, SettingsWithSpinner etc.).
+    def get_settings(self):
+        self.ioc_role = self.myconfig.get('My Label', 'conf_role')
+        self.ioc_transport = self.myconfig.get('My Label', 'conf_transport')
+        self.ioc_ip = self.myconfig.get('My Label', 'conf_ip')
+        self.ioc_serialport = self.myconfig.get('My Label', 'conf_serport')
+        self.ioc_user = self.myconfig.get('client', 'conf_user')
+        self.ioc_cert_chain = self.myconfig.get('client', 'conf_cert_chain')
+        self.ioc_server_cert = self.myconfig.get('server', 'conf_serv_cert')
+        self.ioc_server_key = self.myconfig.get('server', 'conf_serv_key')
 
-    You would only want to create a Settings subclass like this if you want to
-    change the behavior or appearance of an existing Settings class.
-   """
+    def connect(self):
+        if self.ioc_root != None:
+            self.disconnect()
+
+        self.get_settings()
+
+        if self.ioc_role == "CLIENT":
+            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_cert_chain)
+            self.ioc_root.queue_events()
+
+        else:
+            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_server_cert + ',keyfile=' + self.ioc_server_key)
+            self.ioc_root.queue_events()
+            self.ioc_epoint = EndPoint(self.ioc_root, flags='tls,dynamic')
+
+
+
+    def disconnect(self):
+        if self.ioc_root != None:
+            self.ioc_root.delete()
+            self.ioc_root = None
+         
+class MySettingsWithSidebar(SettingsWithSidebar):
     def __init__(self, **kwargs):
         super(MySettingsWithSidebar, self).__init__(**kwargs)
-        # self.children +=Label(text='User Name')
-        # add_widget(Label(text='User Name'))
     
     def on_close(self):
         Logger.info("main.py: MySettingsWithSidebar.on_close")
         self.app.stop()
 
     def create_popup(self):
+        app.get_settings()
+        if app.ioc_role == "SERVER":
+            self.app.connect()
+            return
+
         # create popup layout
         content = BoxLayout(orientation='vertical', spacing='5dp')
         popup_width = min(0.95 * Window.width, dp(500))
@@ -247,21 +223,19 @@ class MySettingsWithSidebar(SettingsWithSidebar):
         self.textinput = textinput = TextInput(
             text="", font_size='24sp', multiline=False,
             size_hint_y=None, height='42sp')
-        # textinput.bind(on_text_validate=self._validate)
         self.textinput = textinput
 
         # construct the content, widget are used as a spacer
         content.add_widget(Widget())
         content.add_widget(textinput)
         content.add_widget(Widget())
-        # content.add_widget(SettingSpacer())
 
         # 2 buttons are created for accept or cancel the current value
         btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
-        btn = Button(text='Ok')
-        btn.bind(on_release=self.on_my_popup_close)
+        btn = Button(text='connect')
+        btn.bind(on_release=self.on_poup_connect_button)
         btnlayout.add_widget(btn)
-        btn = Button(text='Cancel')
+        btn = Button(text='cancel')
         btn.bind(on_release=popup.dismiss)
         btnlayout.add_widget(btn)
         content.add_widget(btnlayout)
@@ -269,11 +243,11 @@ class MySettingsWithSidebar(SettingsWithSidebar):
         # all done, open the popup !
         popup.open()
 
-    def on_my_popup_close(self,instance):
+    def on_poup_connect_button(self,instance):
         password = self.textinput.text
         print (password)
+        self.app.connect()
         self.popup.dismiss()
-
 
     def on_config_change(self, config, section, key, value):
         Logger.info(
@@ -285,8 +259,6 @@ class MySettingsWithSidebar(SettingsWithSidebar):
                 if value == 'button_connect':
                     print("BUTTON PRESSED")
                     self.create_popup()
-
-
 
 app = MyApp()
 app.run()
