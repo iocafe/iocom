@@ -1,5 +1,6 @@
 from kivy.config import ConfigParser
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin, bin2json
+import json
 
 
 # This JSON defines entries we want to appear in our App configuration screen
@@ -75,6 +76,7 @@ json2 = '''
 '''
 
 
+    
 
 class DeviceSpy(ConfigParser):
     #def __init__(self, *args, **kwargs):
@@ -83,16 +85,58 @@ class DeviceSpy(ConfigParser):
     def setup_my_panel(self, app, settings, dev_path):
         self.app = app
         info = MemoryBlock(app.ioc_root, mblk_name='info.' + dev_path)
-        data = info.read()
-        json = bin2json(data)
-        print (json)
-        
-        # config = ConfigParser()
-        self.setdefaults('My Label', {'conf_role': 'CLIENT', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1', 'conf_authentication': 'CLIENT'})
-        self.setdefaults('client', {'conf_user': 'administrator', 'conf_cert_chain': 'bob-bundle.crt'})
-        self.setdefaults('server', {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'})
-        # config.adddefaultsection('client')
-        # config.setdefaults('client', {'conf_cert_chain': 'bob-bundle.crt'})
-        settings.add_json_panel(dev_path, self, data=json2)
+        json_bin = info.read();        
+        json_text = bin2json(json_bin)
+        self.process_json(json_text)
 
+        for group_name in self.sign_values:
+            self.setdefaults(group_name, self.sign_values[group_name])
+
+        json_str = json.dumps(self.sign_display)
+        settings.add_json_panel(dev_path, self, data=json_str)
+
+    def process_json(self, json_text):
+        self.sign_display = []
+        self.sign_values = {}
+
+        data = json.loads(json_text)
+
+        mblks = data.get("mblk", None)
+        if mblks == None:
+            print("'mblk' not found")
+            return
+            
+        for mblk in mblks:
+            self.process_mblk(mblk)
+
+
+    def process_mblk(self, data):
+        name = data.get("name", "no_name")
+        title = data.get("title", "no_title")
+        groups = data.get("groups", None)
+        if groups == None:
+            return;
+
+        for group in groups:
+            self.process_group(group)
+        
+    def process_group(self, data):
+        group_name = data.get("name", "no_name")
+        title = data.get("title", "no_title")
+        signals = data.get("signals", None)
+        if signals == None:
+            return;
+
+        for signal in signals:
+            self.process_signal(signal, group_name)
+
+    def process_signal(self, data, group_name):
+        name = data.get("name", "no_name")
+        item = {"type": "string", "title": "server key", "desc": "Server's private key (seacret)", "section": "inputs", "key": "conf_serv_key"}
+
+        if len(self.sign_display) == 0:
+            self.sign_display.append(item);
+
+        if len(self.sign_values) == 0:
+            self.sign_values[group_name] = {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'}
 

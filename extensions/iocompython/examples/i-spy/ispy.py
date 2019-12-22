@@ -156,7 +156,7 @@ class MyApp(App):
 #        self.config.setdefaults('My Label', {'text': 'Hello', 'font_size': 20, 'optxt': 'A'})
 #        self.mysettings.add_json_panel('My Label', self.config, data=json)
         config = ConfigParser()
-        config.setdefaults('My Label', {'conf_role': 'CLIENT', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1'})
+        config.setdefaults('My Label', {'conf_role': 'SERVER', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1'})
         config.setdefaults('client', {'conf_user': 'administrator', 'conf_cert_chain': 'bob-bundle.crt'})
         config.setdefaults('server', {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'})
         self.myconfig = config;
