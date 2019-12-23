@@ -30,6 +30,7 @@ class DeviceSpy(ConfigParser):
     def setup_my_panel(self, app, settings, dev_path):
         self.app = app
         self.dev_path = dev_path
+        self.my_panel = None
         info = MemoryBlock(app.ioc_root, mblk_name='info.' + dev_path)
         json_bin = info.read();        
         json_text = bin2json(json_bin)
@@ -41,7 +42,14 @@ class DeviceSpy(ConfigParser):
             self.setdefaults(group_name, self.sign_values[group_name])
 
         json_str = json.dumps(self.sign_display)
-        settings.add_json_panel(dev_path, self, data=json_str)
+        # settings.add_json_panel(dev_path, self, data=json_str)
+
+        panel = settings.create_json_panel(dev_path, self, data=json_str)
+        self.my_panel = panel
+        uid = panel.uid
+        if settings.interface is not None:
+            settings.interface.add_panel(panel, dev_path + " X", uid)
+
         info.delete()
 
     def process_json(self, json_text):
@@ -134,11 +142,14 @@ class DeviceSpy(ConfigParser):
             mblk_signals = self.signals[mblk_name]
             for signal_name in mblk_signals:
                 signal = mblk_signals[signal_name]
-                mblk_values = self.sign_values[section_name]
-                mblk_values[signal_name] = str(signal.get())
+                self.sign_values[section_name][signal_name] = str(signal.get())
+                #if signal_name == "testfloat" and self.my_panel != None:
+                #    print(signal.get())
+                #    self.my_panel.set_value(section_name, signal_name, "Naboo")
 
     def run(self):
-        self.read_signal()
+        i = 1
+        #self.read_signal()
 
-        for group_name in self.sign_values:
-            self.setall(group_name, self.sign_values[group_name])
+        #for group_name in self.sign_values:
+        #    self.setall(group_name, self.sign_values[group_name])

@@ -407,7 +407,8 @@ static osalStatus ioc_new_signal_by_info(
         signal_type_id = state->current_type_id;
     }
 
-    if (state->signal_addr > 0)
+    /* We must accept address 0 as valid setting mark unspecified address with -1 */
+    if (state->signal_addr >= 0)
     {
         state->current_addr = state->signal_addr;
     }
