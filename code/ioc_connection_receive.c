@@ -457,7 +457,6 @@ static osalStatus ioc_process_received_system_frame(
          */
         case IOC_AUTHENTICATION_DATA:
             return ioc_process_received_authentication_frame(con, mblk_id, data);
-            break;
 
         default:
             osal_debug_error("Unknown system frame received");

@@ -458,7 +458,7 @@ osalStatus ioc_connect(
 
         os_memclear(&opt, sizeof(opt));
         opt.thread_name = "connection";
-        opt.stack_size = 4000;
+        opt.stack_size = 16000;
         opt.pin_to_core = OS_TRUE;
         opt.pin_to_core_nr = 0;
 

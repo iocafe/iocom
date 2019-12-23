@@ -189,6 +189,7 @@ osalStatus ioc_process_received_authentication_frame(
     os_uint mblk_id,
     os_char *data)
 {
+#if IOC_AUTHENTICATION == IOC_FULL_AUTHENTICATION
     iocSecureDevice secdev;
     os_uchar auth_flags, *p;
     osalStatus s;
@@ -258,7 +259,7 @@ osalStatus ioc_process_received_authentication_frame(
         }
         if (s) return s;
     }
-
+#endif
     con->authentication_received = OS_TRUE;
     return OSAL_SUCCESS;
 }

@@ -119,6 +119,12 @@ void ioboard_start_communication(
         ioc_initialize_memory_block(&ioboard_dinfo, OS_NULL, &ioboard_communication, &blockprm);
     }
 
+#if OSAL_MULTITHREAD_SUPPORT
+  #define IOC_CT_FLAG IOC_CREATE_THREAD
+#else
+  #define IOC_CT_FLAG 0
+#endif
+
 	/* Control computer connection type: IOBOARD_CTRL_LISTEN_SOCKET,
        IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_SERIAL,
        IOBOARD_CTRL_LISTEN_SERIAL.
@@ -133,24 +139,24 @@ void ioboard_start_communication(
 
             os_memclear(&epprm, sizeof(epprm));
             epprm.iface = prm->iface;
-            epprm.flags = IOC_SOCKET | IOC_CONNECT_UPWARDS;
+            epprm.flags = IOC_SOCKET | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
 			ioc_listen(ioboard_epoint, &epprm);
 			return;
 
 		case IOBOARD_CTRL_CONNECT_SOCKET:
             conprm.parameters = prm->socket_con_str;
-            conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS;
+            conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
 			break;
 
         case IOBOARD_CTRL_CONNECT_SERIAL:
             conprm.parameters = prm->serial_con_str;
-            conprm.flags = IOC_SERIAL | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS;
+            conprm.flags = IOC_SERIAL | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
             break;
 
         case IOBOARD_CTRL_LISTEN_SERIAL:
             conprm.parameters = prm->serial_con_str;
             conprm.flags = IOC_LISTENER | IOC_SERIAL
-                | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS;
+                | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
             break;
 	}
 
