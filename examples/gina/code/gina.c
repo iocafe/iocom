@@ -90,9 +90,9 @@ osalStatus osal_main(
      */
     pins_setup(&pins_hdr, 0);
 
-    disableCore0WDT();
+    /* disableCore0WDT();
     disableCore1WDT();
-    disableLoopWDT();
+    disableLoopWDT(); */
 
     /* Load device configuration from peristant storage, or if not available use
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
@@ -188,9 +188,9 @@ osalStatus osal_loop(
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
      */
-#if OSAL_MULTITHREAD_SUPPORT == 0
+// #if OSAL_MULTITHREAD_SUPPORT == 0
     ioc_run(&ioboard_communication);
-#endif
+// #endif
     ioc_receive(&ioboard_imp);
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);

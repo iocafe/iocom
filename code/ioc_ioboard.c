@@ -120,7 +120,8 @@ void ioboard_start_communication(
     }
 
 #if OSAL_MULTITHREAD_SUPPORT
-  #define IOC_CT_FLAG IOC_CREATE_THREAD
+  // #define IOC_CT_FLAG IOC_CREATE_THREAD
+  #define IOC_CT_FLAG 0
 #else
   #define IOC_CT_FLAG 0
 #endif
