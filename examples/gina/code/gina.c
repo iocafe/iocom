@@ -120,7 +120,6 @@ osalStatus osal_main(
     prm.iface = iface;
     prm.device_name = IOBOARD_DEVICE_NAME; /* or device_id->device name to allow change */
     prm.device_nr = device_id->device_nr;
-prm.device_nr = 2;
     prm.network_name = device_id->network_name;
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = connconf->connection[0].parameters;

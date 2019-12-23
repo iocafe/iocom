@@ -23,93 +23,19 @@ osal_typeinfo = {
     "object" : 0,
     "pointer" : 0}
 
-
-
-# This JSON defines entries we want to appear in our App configuration screen
-json2 = '''
-[
-    {
-        "type": "options",
-        "title": "role",
-        "desc": "Listen for incoming connections or connect actively?",
-        "section": "My Label",
-        "key": "conf_role",
-        "options": ["SERVER", "CLIENT"]
-    },
-    {
-        "type": "options",
-        "title": "transport",
-        "desc": "What kind of data transport: Secure TLS, plain socket or serial communication?",
-        "section": "My Label",
-        "key": "conf_transport",
-        "options": ["TLS", "SOCKET", "SERIAL"]
-    },
-    {
-        "type": "string",
-        "title": "IP address",
-        "desc": "IP address of the IO device to connect to.",
-        "section": "My Label",
-        "key": "conf_ip"
-    },
-    {
-        "type": "string",
-        "title": "serial port",
-        "desc": "Serial port used to connect to the IO device.",
-        "section": "My Label",
-        "key": "conf_serport"
-    },
-    {
-        "type": "string",
-        "title": "user name",
-        "desc": "Authenticate to the device as (vieview is client)",
-        "section": "client",
-        "key": "conf_user"
-    },
-    {
-        "type": "string",
-        "title": "certificate chain",
-        "desc": "Chain of trust, PEM certificate bundle file (client)",
-        "section": "client",
-        "key": "conf_cert_chain"
-    },
-    {
-        "type": "string",
-        "title": "server certificate",
-        "desc": "Certificate to present to clients (public)",
-        "section": "server",
-        "key": "conf_serv_cert"
-    },
-    {
-        "type": "string",
-        "title": "server key",
-        "desc": "Server's private key (seacret)",
-        "section": "server",
-        "key": "conf_serv_key"
-    },
-    {
-        "type": "buttons",
-        "title": "",
-        "desc": "",
-        "section": "My Label",
-        "key": "conf_button",
-        "buttons": [{"title":"connect","id":"button_connect"}]
-    }
-]
-'''
-
-
-    
-
 class DeviceSpy(ConfigParser):
     #def __init__(self, *args, **kwargs):
     #    self.image_nr = -1
 
     def setup_my_panel(self, app, settings, dev_path):
         self.app = app
+        self.dev_path = dev_path
         info = MemoryBlock(app.ioc_root, mblk_name='info.' + dev_path)
         json_bin = info.read();        
         json_text = bin2json(json_bin)
         self.process_json(json_text)
+
+        self.read_signal()
 
         for group_name in self.sign_values:
             self.setdefaults(group_name, self.sign_values[group_name])
@@ -121,6 +47,7 @@ class DeviceSpy(ConfigParser):
     def process_json(self, json_text):
         self.sign_display = []
         self.sign_values = {}
+        self.signals = {}
 
         data = json.loads(json_text)
 
@@ -183,8 +110,12 @@ class DeviceSpy(ConfigParser):
         g = self.sign_values.get(section_name, None)
         if g == None:
             self.sign_values[section_name] = {}
-
         self.sign_values[section_name][signal_name] = 'alice.crt'
+
+        g = self.signals.get(mblk_name, None)
+        if g == None:
+            self.signals[mblk_name] = {}
+        self.signals[mblk_name][signal_name] = Signal(self.app.ioc_root, signal_name + "." + mblk_name + "." + self.dev_path)
         
         if self.signal_type == "boolean":
             if n <= 1:
@@ -196,3 +127,18 @@ class DeviceSpy(ConfigParser):
         else:
             type_sz = osal_typeinfo[self.signal_type]
             self.signal_addr += 1 + type_sz * n
+
+    def read_signal(self):
+        for mblk_name in self.signals:
+            section_name = mblk_name.replace("_", "-")
+            mblk_signals = self.signals[mblk_name]
+            for signal_name in mblk_signals:
+                signal = mblk_signals[signal_name]
+                mblk_values = self.sign_values[section_name]
+                mblk_values[signal_name] = str(signal.get())
+
+    def run(self):
+        self.read_signal()
+
+        for group_name in self.sign_values:
+            self.setall(group_name, self.sign_values[group_name])

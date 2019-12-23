@@ -250,6 +250,9 @@ class MyApp(App):
     def increment_mytimer(self, interval): 
         self.timer_ms  += .1
         self.check_iocom_events()
+
+        for dev_path in self.ioc_devices:
+            self.ioc_devices[dev_path].run()
   
     # To start the count 
     def start_mytimer(self): 

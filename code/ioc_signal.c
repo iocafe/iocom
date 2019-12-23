@@ -881,7 +881,7 @@ os_char ioc_moves_array(
     if (addr < 0 || addr + (offset + nn) * type_sz >= mblk->nbytes)
     {
         state_bits = 0;
-        osal_debug_error("Write out of memory block's' address space");
+        osal_debug_error("Data move outside memory block's' address space");
         goto goon;
     }
     if (signal->n < n + offset) n = signal->n - offset;
