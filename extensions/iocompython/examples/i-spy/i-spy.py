@@ -12,11 +12,14 @@ class MainApp(App):
         super(MainApp, self).__init__(**kwargs)
         self.ioc_root = None
         self.connect_dlg = None
+        self.ioc_devices = {}
 
     def build(self):
         self.title = 'i-spy'
         self.root = BoxLayout(orientation='vertical')
+
         action_bar = MyActionBar()
+        action_bar.bind (on_button_press=self.button_press)
         self.root.add_widget(action_bar)
 
         connect_dlg = MyConnectDialog()
@@ -93,17 +96,17 @@ class MainApp(App):
                 if a == None:
                     print("new device " + dev_path)
                     # d = DeviceSpy()
-                    # self.ioc_devices[dev_path] = d
+                    self.ioc_devices[dev_path] = 1
                     # d.setup_my_panel(self, self.mysettings, dev_path)
             
             # Device disconnected
             if event == 'device_disconnected':
                 a = self.ioc_devices.get(dev_path, None)
-                if a != None:
-                    del self.ioc_devices[dev_path]
+                # if a != None:
+                #    del self.ioc_devices[dev_path]
             
 
-    def increment_mytimer(self, interval): 
+    def mytimer_tick(self, interval): 
         self.timer_ms  += .1
         self.check_iocom_events()
         # for dev_path in self.ioc_devices:
@@ -111,11 +114,16 @@ class MainApp(App):
   
     def start_mytimer(self): 
         self.timer_ms = 0;
-        Clock.schedule_interval(self.increment_mytimer, .1) 
+        Clock.schedule_interval(self.mytimer_tick, .1) 
   
     def stop_mytimer(self): 
-        Clock.unschedule(self.increment_mytimer) 
+        Clock.unschedule(self.mytimer_tick) 
 
+    def button_press(self, source_object, *args):
+        button = args[0]
+        if button=='close':
+            self.disconnect()
+            self.stop()        
 
 if __name__ == '__main__':
     MainApp().run()

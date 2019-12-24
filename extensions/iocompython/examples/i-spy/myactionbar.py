@@ -7,6 +7,7 @@ class MyActionBar(ActionBar):
     def __init__(self, **kwargs):
         super(MyActionBar, self).__init__(**kwargs)
 
+        self.register_event_type('on_button_press')
         # self.actionbar = ActionBar(pos_hint={'top': 1})
 
         av = ActionView()
@@ -26,7 +27,9 @@ class MyActionBar(ActionBar):
         av.add_widget(b)
         b = ActionButton(text='program')
         av.add_widget(b)
+
         b = ActionButton(text='close')
+        b.bind (on_release=self.my_close_pressed)
         av.add_widget(b)
 
         ''' 
@@ -43,6 +46,12 @@ class MyActionBar(ActionBar):
 
         self.add_widget(av)
         av.use_separator = True
+
+    def on_button_press(self, *args):
+        print("button press dispatched")
+
+    def my_close_pressed(self, instance):
+        self.dispatch('on_button_press', 'close')
 
 class MainApp(App):
     def build(self):
