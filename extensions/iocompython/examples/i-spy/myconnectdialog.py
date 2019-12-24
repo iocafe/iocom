@@ -123,6 +123,10 @@ class MyConnectDialog(SettingsWithNoMenu):
         config.setdefaults('client', {'conf_user': 'administrator', 'conf_cert_chain': 'bob-bundle.crt'})
         config.setdefaults('server', {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'})
         self.myconfig = config;
+        try:
+            config.read("i-spy.ini");
+        except:
+            print("No i-spy.ini")        
         self.add_json_panel('IO device connect', config, data=json)
 
 
@@ -180,6 +184,7 @@ class MyConnectDialog(SettingsWithNoMenu):
         self.dispatch('on_connect', password, self.get_settings())
 
     def on_connect(self, *args):
+        self.myconfig.write();
         print("on connect dispatched")
         pass
 
@@ -193,6 +198,7 @@ class MyConnectDialog(SettingsWithNoMenu):
                 if value == 'button_connect':
                     print("BUTTON PRESSED")
                     self.password_popup()
+
 
 class MainApp(App):
     def build(self):

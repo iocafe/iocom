@@ -11,6 +11,7 @@ class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
         self.ioc_root = None
+        self.connect_dlg = None
 
     def build(self):
         self.title = 'i-spy'
@@ -21,6 +22,7 @@ class MainApp(App):
         connect_dlg = MyConnectDialog()
         connect_dlg.bind(on_connect=self.connect)
         self.root.add_widget(connect_dlg)
+        self.connect_dlg = connect_dlg
 
         # self.root.remove_widget(connect_dlg)
         return self.root
@@ -42,6 +44,10 @@ class MainApp(App):
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
             self.ioc_root.queue_events()
             self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
+
+        if self.connect_dlg != None:
+            self.root.remove_widget(self.connect_dlg)
+            self.connect_dlg = None
 
         self.start_mytimer() 
 
