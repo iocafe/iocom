@@ -124,9 +124,9 @@ class MyConnectDialog(SettingsWithNoMenu):
         config.setdefaults('server', {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'})
         self.myconfig = config;
         try:
-            config.read("i-spy.ini");
+            config.read("i-spy.myconfig");
         except:
-            print("No i-spy.ini")        
+            print("No i-spy.myconfig")        
         self.add_json_panel('IO device connect', config, data=json)
 
 
