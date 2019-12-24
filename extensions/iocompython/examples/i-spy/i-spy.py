@@ -8,41 +8,38 @@ from myconnectdialog import MyConnectDialog
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
 
 class MainApp(App):
+    def __init__(self, **kwargs):
+        super(MainApp, self).__init__(**kwargs)
+        self.ioc_root = None
+
     def build(self):
         self.title = 'i-spy'
         self.root = BoxLayout(orientation='vertical')
         action_bar = MyActionBar()
         self.root.add_widget(action_bar)
+
         connect_dlg = MyConnectDialog()
+        connect_dlg.bind(on_connect=self.connect)
         self.root.add_widget(connect_dlg)
 
         # self.root.remove_widget(connect_dlg)
         return self.root
 
-    def get_settings(self):
-        self.ioc_role = self.myconfig.get('My Label', 'conf_role')
-        self.ioc_transport = self.myconfig.get('My Label', 'conf_transport')
-        self.ioc_ip = self.myconfig.get('My Label', 'conf_ip')
-        self.ioc_serialport = self.myconfig.get('My Label', 'conf_serport')
-        self.ioc_user = self.myconfig.get('client', 'conf_user')
-        self.ioc_cert_chain = self.myconfig.get('client', 'conf_cert_chain')
-        self.ioc_server_cert = self.myconfig.get('server', 'conf_serv_cert')
-        self.ioc_server_key = self.myconfig.get('server', 'conf_serv_key')
-
-    def connect(self):
+    def connect(self, source_object, *args):
         if self.ioc_root != None:
             self.disconnect()
 
-        self.get_settings()
-        transport_flag = self.ioc_transport.lower();
+        self.ioc_password = args[0]
+        self.ioc_params = args[1]
+        transport_flag = self.ioc_params['transport'].lower();
 
-        if self.ioc_role == "CLIENT":
-            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_cert_chain)
+        if self.ioc_params['role'] == "CLIENT":
+            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
             self.ioc_root.queue_events()
-            self.ioc_connection = Connection(self.ioc_root, self.ioc_ip, transport_flag + ',downward,dynamic')
+            self.ioc_connection = Connection(self.ioc_root, self.ioc_params['ip'], transport_flag + ',downward,dynamic')
 
         else:
-            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_server_cert + ',keyfile=' + self.ioc_server_key)
+            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
             self.ioc_root.queue_events()
             self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
 
