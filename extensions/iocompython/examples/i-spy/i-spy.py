@@ -102,7 +102,7 @@ class MainApp(App):
                     print("new device " + dev_path)
                     d = MyDevice()
                     self.ioc_devices[dev_path] = d
-                    d.setup_device(self, self.ioc_params, dev_path)
+                    d.setup_device(self.ioc_root, self.ioc_params, dev_path)
                     w = d.create_signal_display()
                     self.set_displayed_page(w)
             
@@ -116,9 +116,11 @@ class MainApp(App):
     def mytimer_tick(self, interval): 
         self.timer_ms  += .1
         self.check_iocom_events()
-        # for dev_path in self.ioc_devices:
-        #    self.ioc_devices[dev_path].run()
-  
+        for d in self.ioc_devices:
+            self.ioc_devices[d].run()
+        if self.my_window:
+            self.my_window.run()            
+ 
     def start_mytimer(self): 
         self.timer_ms = 0;
         Clock.schedule_interval(self.mytimer_tick, .1) 

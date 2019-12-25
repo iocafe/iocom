@@ -132,6 +132,9 @@ class MyConnectDialog(SettingsWithNoMenu):
     def delete(self):
         pass
 
+    def run(self):
+        pass
+
     def get_settings(self):
         rval = {}
         rval['role'] = self.myconfig.get('common', 'conf_role')

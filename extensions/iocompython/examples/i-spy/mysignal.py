@@ -1,13 +1,11 @@
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-# from kivy.uix.button import Button
 from kivy.uix.checkbox import CheckBox
-
 from kivy.graphics import Color, Rectangle
 
-# from kivy.uix.actionbar import ActionBar, ActionView, ActionPrevious, ActionOverflow, ActionGroup, ActionButton
-# , ActionSeparator, ActionCheck, ActionItem, ActionLabel
+from iocompython import Signal
+
 
 class MySignal(GridLayout):
     def __init__(self, **kwargs):
@@ -19,19 +17,17 @@ class MySignal(GridLayout):
         self.size_hint_y = None
         self.height = 60 
 
-        l = Label(text = '[b][size=16]Hello[color=3333ff]World[/color][/size][/b]', markup = True, halign="left")
+        l = Label(text = '[b][size=16]test[color=3333ff]label[/color][/size][/b]', markup = True, halign="left")
         l.bind(size=l.setter('text_size')) 
         self.my_label = l
 
-        d = Label(text = '[size=14][color=909090]Kuvaus ja paljon asjksjaks asj asjkasjkas kas asjk[/color][/size]', markup = True, halign="left")
+        d = Label(text = '[size=14][color=909090]test descriotion[/color][/size]', markup = True, halign="left")
         d.bind(size=d.setter('text_size')) 
         self.my_description = d
 
         lb = GridLayout()
         lb.cols = 1
         lb.size_hint = (0.65, 1)
-        # lb.size_hint = (0.65, None)
-        # lb.height = 50
 
         self.my_label_box = lb
         lb.add_widget(l)
@@ -40,15 +36,23 @@ class MySignal(GridLayout):
         b = CheckBox(pos_hint={'right': 1})
         self.my_button = b
         b.size_hint = (0.35, 1)
-        # b.size_hint = (0.35, None)
-        # b.height = 50
 
         self.add_widget(lb)
         self.add_widget(b)
 
-    def set_signal_name(self, signal_name, description):
+    def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path):
+        description = signal_type 
+        if n > 1:
+            description += "[" + str(n) + "]"
+        description += " at '" + mblk_name + "' address " + str(signal_addr) 
+
         self.my_label.text = '[size=16][b]' + signal_name + '[/b][/size]'
         self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
+
+        self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + dev_path)
+
+    def update_signal(self):
+        self.my_description.text = '[size=14][color=2020FF]' + str(self.signal.get()) + '[/color][/size]'
 
     def on_size(self, *args):
         self.canvas.before.clear()
@@ -63,14 +67,22 @@ class MySignalDisplay(GridLayout):
     def __init__(self, **kwargs):
         super(MySignalDisplay, self).__init__(**kwargs)
         self.cols = 2
+        self.signals = []
 
     def delete(self):
-        pass
+        for s in self.signals:
+            s.delete()
+        self.signals = []
 
-    def new_signal(self, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path, description):
+    def run(self):
+        for s in self.signals:
+            s.update_signal()
+
+    def new_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path):
         s = MySignal() 
-        s.set_signal_name(signal_name, description)
+        s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path)
         self.add_widget(s)
+        self.signals.append(s)
 
 
 class MainApp(App):
