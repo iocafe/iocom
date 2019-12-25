@@ -2,6 +2,9 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock 
 
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
+
 from myactionbar import MyActionBar 
 from myconnectdialog import MyConnectDialog
 from mydevice import MyDevice
@@ -12,32 +15,40 @@ class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
         self.ioc_root = None
-        self.my_window = None
+        self.my_view = None
         self.ioc_devices = {}
 
     def build(self):
         self.title = 'i-spy'
         self.root = BoxLayout(orientation='vertical')
-
+        self.my_widget_home = self.root
+        
         action_bar = MyActionBar()
         action_bar.bind (on_button_press=self.button_press)
-        self.root.add_widget(action_bar)
+        self.my_widget_home.add_widget(action_bar)
 
         connect_dlg = MyConnectDialog()
         connect_dlg.bind(on_connect=self.connect)
-        self.set_displayed_page(connect_dlg)
+        self.set_displayed_page(connect_dlg, False)
 
-        # self.root.remove_widget(connect_dlg)
         return self.root
 
-    def set_displayed_page(self, w):
-        if self.my_window != None:
-            self.root.remove_widget(self.my_window)
-            self.my_window.delete()
-            self.my_window = None
+    def set_displayed_page(self, w, make_scroll_view):
+        if self.my_view != None:
+            self.my_widget_home.remove_widget(self.my_view)
+            self.my_view.delete()
+            self.my_view = None
     
-        self.my_window = w;           
-        self.root.add_widget(self.my_window)
+        if make_scroll_view:
+            scroll_view = ScrollView()
+            self.my_widget_home = scroll_view
+            self.root.add_widget(scroll_view)
+
+        else:
+            self.my_widget_home = self.root
+
+        self.my_view = w;           
+        self.my_widget_home.add_widget(w)
 
     def connect(self, source_object, *args):
         if self.ioc_root != None:
@@ -104,7 +115,7 @@ class MainApp(App):
                     self.ioc_devices[dev_path] = d
                     d.setup_device(self.ioc_root, self.ioc_params, dev_path)
                     w = d.create_signal_display()
-                    self.set_displayed_page(w)
+                    self.set_displayed_page(w, True)
             
             # Device disconnected
             if event == 'device_disconnected':
@@ -118,8 +129,8 @@ class MainApp(App):
         self.check_iocom_events()
         for d in self.ioc_devices:
             self.ioc_devices[d].run()
-        if self.my_window:
-            self.my_window.run()            
+        if self.my_view:
+            self.my_view.run()            
  
     def start_mytimer(self): 
         self.timer_ms = 0;

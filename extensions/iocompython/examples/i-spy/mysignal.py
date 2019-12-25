@@ -68,6 +68,9 @@ class MySignalDisplay(GridLayout):
         super(MySignalDisplay, self).__init__(**kwargs)
         self.cols = 2
         self.signals = []
+        self.height = self.minimum_height = 400
+        self.size_hint_y = None
+        self.bind(minimum_height=self.setter('height'))
 
     def delete(self):
         for s in self.signals:
@@ -83,7 +86,6 @@ class MySignalDisplay(GridLayout):
         s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path)
         self.add_widget(s)
         self.signals.append(s)
-
 
 class MainApp(App):
     def build(self):
