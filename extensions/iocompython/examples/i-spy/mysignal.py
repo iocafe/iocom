@@ -25,7 +25,7 @@ class MySignal(GridLayout):
 
         d = Label(text = '[size=14][color=909090]Kuvaus ja paljon asjksjaks asj asjkasjkas kas asjk[/color][/size]', markup = True, halign="left")
         d.bind(size=d.setter('text_size')) 
-        self.my_desctiprion = d
+        self.my_description = d
 
         lb = GridLayout()
         lb.cols = 1
@@ -46,6 +46,10 @@ class MySignal(GridLayout):
         self.add_widget(lb)
         self.add_widget(b)
 
+    def set_signal_name(self, signal_name, description):
+        self.my_label.text = '[size=16][b]' + signal_name + '[/b][/size]'
+        self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
+
     def on_size(self, *args):
         self.canvas.before.clear()
         with self.canvas.before:
@@ -58,20 +62,28 @@ class MySignal(GridLayout):
 class MySignalDisplay(GridLayout):
     def __init__(self, **kwargs):
         super(MySignalDisplay, self).__init__(**kwargs)
-        self.cols = 1
-
-        sig1 = MySignal() # pos_hint={'top': 1})
-        self.add_widget(sig1)
-
-        sig2 = MySignal() # pos_hint={'bottom': 1})
-        self.add_widget(sig2)
+        self.cols = 2
 
     def delete(self):
         pass
 
+    def new_signal(self, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path, description):
+        s = MySignal() 
+        s.set_signal_name(signal_name, description)
+        self.add_widget(s)
+
+
 class MainApp(App):
     def build(self):
-        self.root = MySignalDisplay()
+        self.root = GridLayout()
+        self.root.cols = 1
+        
+        sig1 = MySignal() # pos_hint={'top': 1})
+        self.root.add_widget(sig1)
+
+        sig2 = MySignal()
+        self.root.add_widget(sig2)
+
         return self.root
 
 if __name__ == '__main__':

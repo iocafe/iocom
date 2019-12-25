@@ -32,17 +32,22 @@ class MyDevice(ConfigParser):
     def setup_device(self, app, settings, dev_path):
         self.app = app
         self.dev_path = dev_path
-        self.my_panel = None
-        info = MemoryBlock(app.ioc_root, mblk_name='info.' + dev_path)
+        self.ioc_settings = settings;
+        self.my_signal_panel = None
+
+        return
+
+    def create_signal_display(self):
+        p = MySignalDisplay()
+        self.my_signal_panel = p;
+
+        info = MemoryBlock(self.app.ioc_root, mblk_name='info.' + self.dev_path)
         json_bin = info.read();        
         json_text = bin2json(json_bin)
         self.process_json(json_text)
 
         info.delete()
-        return
-
-    def create_signal_display(self):
-        return MySignalDisplay()
+        return p;
 
     def delete(self):
         pass
@@ -65,7 +70,7 @@ class MyDevice(ConfigParser):
 
     def process_json(self, json_text):
         self.sign_display = []
-        self.sign_values = {}
+#        self.sign_values = {}
         self.signals = {}
 
         data = json.loads(json_text)
@@ -122,20 +127,25 @@ class MyDevice(ConfigParser):
         
         description += " at '" + mblk_name + "' address " + str(self.signal_addr) 
 
-        item = {"type": "string", "title": signal_name, "desc": description, "section": section_name, "key": signal_name}
+        # item = {"type": "string", "title": signal_name, "desc": description, "section": section_name, "key": signal_name}
 
-        self.sign_display.append(item);
+        # self.sign_display.append(item);
 
-        g = self.sign_values.get(section_name, None)
-        if g == None:
-            self.sign_values[section_name] = {}
-        self.sign_values[section_name][signal_name] = 'alice.crt'
+        # g = self.sign_values.get(section_name, None)
+        #if g == None:
+        #    self.sign_values[section_name] = {}
+        #self.sign_values[section_name][signal_name] = 'alice.crt'
 
-        g = self.signals.get(mblk_name, None)
-        if g == None:
-            self.signals[mblk_name] = {}
-        self.signals[mblk_name][signal_name] = Signal(self.app.ioc_root, signal_name + "." + mblk_name + "." + self.dev_path)
-        
+        # signal_id = mblk_name + '-' + signal_name
+
+        # g = self.signals.get(mblk_name, None)
+        #if g == None:
+        #    self.signals[mblk_name] = {}
+        #self.signals[mblk_name][signal_name] = Signal(self.app.ioc_root, signal_name + "." + mblk_name + "." + self.dev_path)
+
+        self.my_signal_panel.new_signal(signal_name, signal_addr, signal_type, n, 
+            mblk_name, self.dev_path, description);
+                
         if self.signal_type == "boolean":
             if n <= 1:
                 self.signal_addr += 1
@@ -153,7 +163,7 @@ class MyDevice(ConfigParser):
             mblk_signals = self.signals[mblk_name]
             for signal_name in mblk_signals:
                 signal = mblk_signals[signal_name]
-                self.sign_values[section_name][signal_name] = str(signal.get())
+                # self.sign_values[section_name][signal_name] = str(signal.get())
                 #if signal_name == "testfloat" and self.my_panel != None:
                 #    print(signal.get())
                 #    self.my_panel.set_value(section_name, signal_name, "Naboo")
