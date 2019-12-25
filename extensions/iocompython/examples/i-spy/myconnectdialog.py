@@ -129,6 +129,8 @@ class MyConnectDialog(SettingsWithNoMenu):
             print("No i-spy.myconfig")        
         self.add_json_panel('IO device connect', config, data=json)
 
+    def delete(self):
+        pass
 
     def get_settings(self):
         rval = {}

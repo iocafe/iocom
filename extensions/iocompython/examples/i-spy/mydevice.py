@@ -2,6 +2,8 @@ from kivy.config import ConfigParser
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin, bin2json
 import json
 
+from mysignal import MySignalDisplay 
+
 
 # Size excludes signal state byte. 
 osal_typeinfo = {
@@ -23,11 +25,11 @@ osal_typeinfo = {
     "object" : 0,
     "pointer" : 0}
 
-class DeviceSpy(ConfigParser):
+class MyDevice(ConfigParser):
     #def __init__(self, *args, **kwargs):
     #    self.image_nr = -1
 
-    def setup_my_panel(self, app, settings, dev_path):
+    def setup_device(self, app, settings, dev_path):
         self.app = app
         self.dev_path = dev_path
         self.my_panel = None
@@ -36,21 +38,30 @@ class DeviceSpy(ConfigParser):
         json_text = bin2json(json_bin)
         self.process_json(json_text)
 
-        self.read_signal()
+        info.delete()
+        return
 
-        for group_name in self.sign_values:
-            self.setdefaults(group_name, self.sign_values[group_name])
+    def create_signal_display(self):
+        return MySignalDisplay()
 
-        json_str = json.dumps(self.sign_display)
+    def delete(self):
+        pass
+
+#        self.read_signal()
+
+#       for group_name in self.sign_values:
+#            self.setdefaults(group_name, self.sign_values[group_name])
+
+#        json_str = json.dumps(self.sign_display)
         # settings.add_json_panel(dev_path, self, data=json_str)
 
-        panel = settings.create_json_panel(dev_path, self, data=json_str)
-        self.my_panel = panel
-        uid = panel.uid
-        if settings.interface is not None:
-            settings.interface.add_panel(panel, dev_path + " X", uid)
+#        panel = settings.create_json_panel(dev_path, self, data=json_str)
+#        self.my_panel = panel
+#        uid = panel.uid
+#        if settings.interface is not None:
+#            settings.interface.add_panel(panel, dev_path + " X", uid)
 
-        info.delete()
+#        info.delete()
 
     def process_json(self, json_text):
         self.sign_display = []
@@ -147,8 +158,8 @@ class DeviceSpy(ConfigParser):
                 #    print(signal.get())
                 #    self.my_panel.set_value(section_name, signal_name, "Naboo")
 
-    def run(self):
-        i = 1
+    #def run(self):
+    #    i = 1
         #self.read_signal()
 
         #for group_name in self.sign_values:

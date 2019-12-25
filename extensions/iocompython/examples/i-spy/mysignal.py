@@ -29,8 +29,9 @@ class MySignal(GridLayout):
 
         lb = GridLayout()
         lb.cols = 1
-        lb.size_hint = (0.65, None)
-        lb.height = 50
+        lb.size_hint = (0.65, 1)
+        # lb.size_hint = (0.65, None)
+        # lb.height = 50
 
         self.my_label_box = lb
         lb.add_widget(l)
@@ -38,8 +39,9 @@ class MySignal(GridLayout):
 
         b = CheckBox(pos_hint={'right': 1})
         self.my_button = b
-        b.size_hint = (0.35, None)
-        b.height = 50
+        b.size_hint = (0.35, 1)
+        # b.size_hint = (0.35, None)
+        # b.height = 50
 
         self.add_widget(lb)
         self.add_widget(b)
@@ -48,55 +50,28 @@ class MySignal(GridLayout):
         self.canvas.before.clear()
         with self.canvas.before:
             Color(0.8, 0.8, 0.8, 0.25)
-            mypos = self.pos.copy()
             mysz = self.size.copy()
-            myline_w = 1
-            #mypos[1] = mypos[1] + mysz[1] - myline_w
-            #mysz[1] = myline_w
-            # mypos[1] = mypos[1] + mysz[1] - myline_w
-            mysz[1] = myline_w
-            Rectangle(pos=mypos, size=mysz)            
-
-    # def on_button_press(self, *args):
-    #    print("button press dispatched")
-
-    # def my_close_pressed(self, instance):
-    #    self.dispatch('on_button_press', 'close')
+            mysz[1] = 1
+            Rectangle(pos=self.pos, size=mysz)            
 
 
-class MySignalSeparator(Label):
+class MySignalDisplay(GridLayout):
     def __init__(self, **kwargs):
-        super(MySignalSeparator, self).__init__(**kwargs)
+        super(MySignalDisplay, self).__init__(**kwargs)
+        self.cols = 1
 
-        # self.register_event_type('on_button_press')
+        sig1 = MySignal() # pos_hint={'top': 1})
+        self.add_widget(sig1)
 
-        # l = Label(text = 'XXX, markup = True, halign="left")
-        # l.halign = 'left'
-        self.text = "Ukekek"
-        self.size_hint_y = None
-        self.size_hint_x = None
-        self.height = 5
-        self.width  = 500
-        self.color =[1, 0, 0, 1]
-        self.background_color =[1, 0, 0, 1]
-        # l.bind(size=l.setter('text_size')) 
+        sig2 = MySignal() # pos_hint={'bottom': 1})
+        self.add_widget(sig2)
+
+    def delete(self):
+        pass
 
 class MainApp(App):
     def build(self):
-        self.root = GridLayout()
-        self.root.cols = 1
-
-        sig1 = MySignal() # pos_hint={'top': 1})
-        self.root.add_widget(sig1)
-
-        # sep = MySignalSeparator()
-        # self.root.add_widget(sep)
-
-
-        sig2 = MySignal() # pos_hint={'bottom': 1})
-        self.root.add_widget(sig2)
-
-
+        self.root = MySignalDisplay()
         return self.root
 
 if __name__ == '__main__':

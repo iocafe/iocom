@@ -4,6 +4,7 @@ from kivy.clock import Clock
 
 from myactionbar import MyActionBar 
 from myconnectdialog import MyConnectDialog
+from mydevice import MyDevice
 
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
 
@@ -11,7 +12,7 @@ class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
         self.ioc_root = None
-        self.connect_dlg = None
+        self.my_window = None
         self.ioc_devices = {}
 
     def build(self):
@@ -24,11 +25,19 @@ class MainApp(App):
 
         connect_dlg = MyConnectDialog()
         connect_dlg.bind(on_connect=self.connect)
-        self.root.add_widget(connect_dlg)
-        self.connect_dlg = connect_dlg
+        self.set_displayed_page(connect_dlg)
 
         # self.root.remove_widget(connect_dlg)
         return self.root
+
+    def set_displayed_page(self, w):
+        if self.my_window != None:
+            self.root.remove_widget(self.my_window)
+            self.my_window.delete()
+            self.my_window = None
+    
+        self.my_window = w;           
+        self.root.add_widget(self.my_window)
 
     def connect(self, source_object, *args):
         if self.ioc_root != None:
@@ -47,10 +56,6 @@ class MainApp(App):
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
             self.ioc_root.queue_events()
             self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
-
-        if self.connect_dlg != None:
-            self.root.remove_widget(self.connect_dlg)
-            self.connect_dlg = None
 
         self.start_mytimer() 
 
@@ -95,15 +100,17 @@ class MainApp(App):
                 a = self.ioc_devices.get(dev_path, None)
                 if a == None:
                     print("new device " + dev_path)
-                    # d = DeviceSpy()
-                    self.ioc_devices[dev_path] = 1
-                    # d.setup_my_panel(self, self.mysettings, dev_path)
+                    d = MyDevice()
+                    self.ioc_devices[dev_path] = d
+                    d.setup_device(self, self.ioc_params, dev_path)
+                    w = d.create_signal_display()
+                    self.set_displayed_page(w)
             
             # Device disconnected
             if event == 'device_disconnected':
                 a = self.ioc_devices.get(dev_path, None)
-                # if a != None:
-                #    del self.ioc_devices[dev_path]
+                if a != None:
+                    del self.ioc_devices[dev_path]
             
 
     def mytimer_tick(self, interval): 
