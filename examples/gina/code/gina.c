@@ -202,11 +202,16 @@ osalStatus osal_loop(
 
     /* Run the IO device functionality.
      */
-
     static os_float f[5] = {1, 2, 3, 4, 5};
-static int i;
-f[2] = i++;
-    ioc_sets_array(&gina.exp.testfloat, f, 5);
+    static os_timer ti;
+    static int i;
+
+    if (os_elapsed(&ti, 50))
+    {
+        os_get_timer(&ti);
+        f[2] = i++;
+        ioc_sets_array(&gina.exp.testfloat, f, 5);
+    }
 
     /* The devicedir call is here for testing only, take away.
      */

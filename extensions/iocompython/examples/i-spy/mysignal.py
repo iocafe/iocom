@@ -4,6 +4,9 @@ from kivy.uix.label import Label
 from kivy.uix.checkbox import CheckBox
 from kivy.graphics import Color, Rectangle
 
+from kivy.uix.widget import Widget
+# from kivy.uix.stacklayout import StackLayout
+
 from iocompython import Signal
 
 
@@ -40,6 +43,10 @@ class MySignal(GridLayout):
         self.add_widget(lb)
         self.add_widget(b)
 
+    def delete(self):
+        self.signal.delete()
+        self.signal = None
+
     def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path):
         description = signal_type 
         if n > 1:
@@ -52,7 +59,7 @@ class MySignal(GridLayout):
         self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + dev_path)
 
     def update_signal(self):
-        self.my_description.text = '[size=14][color=2020FF]' + str(self.signal.get()) + '[/color][/size]'
+        self.my_description.text = '[size=14][color=909090]' + str(self.signal.get()) + '[/color][/size]'
 
     def on_size(self, *args):
         self.canvas.before.clear()
@@ -63,6 +70,31 @@ class MySignal(GridLayout):
             Rectangle(pos=self.pos, size=mysz)            
 
 
+class MySignalGroup(GridLayout):
+    def __init__(self, **kwargs):
+        super(MySignalGroup, self).__init__(**kwargs)
+        self.cols = 2
+        self.padding = [8, 6]
+        self.orientation='horizontal'
+        self.size_hint_y = None
+        self.height = 50 
+
+    def set_group_label(self, group_label, mblk_name):
+        my_text = '[b][size=20]' + group_label + ' [color=3333ff]' + mblk_name + '[/color][/size][/b]'
+
+        l = Label(text = my_text, markup = True, halign="left")
+        self.my_label = l
+        l.bind(size=l.setter('text_size')) 
+        self.add_widget(l)
+
+    def on_size(self, *args):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            Color(0.8, 0.8, 0.8, 0.40)
+            mysz = self.size.copy()
+            mysz[1] = 1
+            Rectangle(pos=self.pos, size=mysz)            
+
 class MySignalDisplay(GridLayout):
     def __init__(self, **kwargs):
         super(MySignalDisplay, self).__init__(**kwargs)
@@ -71,6 +103,7 @@ class MySignalDisplay(GridLayout):
         self.height = self.minimum_height = 400
         self.size_hint_y = None
         self.bind(minimum_height=self.setter('height'))
+        self.my_nro_widgets = 0
 
     def delete(self):
         for s in self.signals:
@@ -85,14 +118,32 @@ class MySignalDisplay(GridLayout):
         s = MySignal() 
         s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path)
         self.add_widget(s)
+        self.my_nro_widgets += 1
         self.signals.append(s)
+
+    def new_signal_group(self, group_label, mblk_name):
+        widgets_on_row = self.my_nro_widgets % self.cols
+        if widgets_on_row > 0:
+            for i in range(widgets_on_row, self.cols):
+                self.add_widget(Widget())
+                self.my_nro_widgets += 1
+
+        g = MySignalGroup()
+        g.set_group_label(group_label, mblk_name)
+        self.add_widget(g)
+        self.my_nro_widgets += 1
+
+        for i in range(1, self.cols):
+            self.add_widget(MySignalGroup())
+            self.my_nro_widgets += 1
+
 
 class MainApp(App):
     def build(self):
         self.root = GridLayout()
         self.root.cols = 1
         
-        sig1 = MySignal() # pos_hint={'top': 1})
+        sig1 = MySignal() 
         self.root.add_widget(sig1)
 
         sig2 = MySignal()

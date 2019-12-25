@@ -51,7 +51,6 @@ class MyDevice(ConfigParser):
         pass
 
     def process_json(self, json_text):
-        self.sign_display = []
         self.signals = {}
 
         data = json.loads(json_text)
@@ -63,7 +62,6 @@ class MyDevice(ConfigParser):
             
         for mblk in mblks:
             self.process_mblk(mblk)
-
 
     def process_mblk(self, data):
         mblk_name = data.get("name", "no_name")
@@ -88,6 +86,8 @@ class MyDevice(ConfigParser):
         signals = data.get("signals", None)
         if signals == None:
             return;
+
+        self.my_signal_panel.new_signal_group(group_name, mblk_name)
 
         for signal in signals:
             self.process_signal(signal, group_name, mblk_name, section_name)
