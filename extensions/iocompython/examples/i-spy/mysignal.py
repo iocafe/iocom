@@ -3,8 +3,13 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.checkbox import CheckBox
 from kivy.graphics import Color, Rectangle, Line
-
 from kivy.uix.widget import Widget
+
+from kivy.uix.boxlayout import BoxLayout
+from kivy.core.window import Window
+from kivy.uix.popup import Popup
+from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
 
 from iocompython import Signal
 
@@ -49,7 +54,8 @@ class MySignal(GridLayout):
         if signal_type == "boolean" and n <= 1:
             b = CheckBox()
             b.size_hint = (0.35, 1)
-            b.bind(on_press = self.on_checkbox_modified)
+            if self.my_down:
+                b.bind(on_release = self.on_checkbox_modified)
             self.add_widget(b)
             self.my_checkbox = b
             self.my_text = None
@@ -58,6 +64,7 @@ class MySignal(GridLayout):
             t = Label(text = '[b][size=16]test[color=3333ff]value[/color][/size][/b]', markup = True, halign="center", valign="center")
             t.size_hint = (0.35, 1)
             t.bind(size=t.setter('text_size')) 
+            t.bind(on_ref_press  = self.my_create_popup)
             self.add_widget(t)
             self.my_text = t
             self.my_checkbox = None
@@ -89,8 +96,7 @@ class MySignal(GridLayout):
         if self.my_checkbox != None:
             checked = False
             try:
-                if int(v[1]) != 0:
-                    checked = True
+                checked = int(v[1]) != 0
             except:
                 print("mysignal.py: Unable to get check box state")        
 
@@ -124,6 +130,39 @@ class MySignal(GridLayout):
                     Color(0, 1, 0, 1)
                 Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
 
+
+    def my_create_popup(self, instance):
+        # create popup layout
+        content = BoxLayout(orientation='vertical', spacing='5dp')
+        popup_width = min(0.95 * Window.width, dp(500))
+        self.popup = popup = Popup(
+            title=self.title, content=content, size_hint=(None, None),
+            size=(popup_width, '250dp'))
+
+        # create the textinput used for numeric input
+        self.textinput = textinput = TextInput(
+            text=self.value, font_size='24sp', multiline=False,
+            size_hint_y=None, height='42sp')
+        textinput.bind(on_text_validate=self._validate)
+        self.textinput = textinput
+
+        # construct the content, widget are used as a spacer
+        content.add_widget(Widget())
+        content.add_widget(textinput)
+        content.add_widget(Widget())
+
+        # 2 buttons are created for accept or cancel the current value
+        btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
+        btn = Button(text='Ok')
+        btn.bind(on_release=self._validate)
+        btnlayout.add_widget(btn)
+        btn = Button(text='Cancel')
+        btn.bind(on_release=self._dismiss)
+        btnlayout.add_widget(btn)
+        content.add_widget(btnlayout)
+
+        # all done, open the popup !
+        popup.open()
 
 class MySignalGroup(GridLayout):
     def __init__(self, **kwargs):
