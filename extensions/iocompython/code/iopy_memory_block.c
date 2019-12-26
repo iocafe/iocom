@@ -95,11 +95,11 @@ static PyObject *MemoryBlock_new(
         goto failed;
     }
 
-    if (os_strstr(flags, "downward", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "down", OSAL_STRING_SEARCH_ITEM_NAME))
     {
         prm.flags |= IOC_MBLK_DOWN;
     }
-    if (os_strstr(flags, "upward", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "up", OSAL_STRING_SEARCH_ITEM_NAME))
     {
         prm.flags |= IOC_MBLK_UP;
     }
@@ -143,7 +143,7 @@ static PyObject *MemoryBlock_new(
     if (ioc_find_mblk(iocroot, &self->mblk_handle, prm.mblk_name,
         prm.device_name, prm.device_nr, prm.network_name) != OSAL_SUCCESS)
     {
-        /* If we have no upward nor downward flag, we searched for memory block which was
+        /* If we have no up nor down flag, we searched for memory block which was
            not found.
          */
         if ((prm.flags & (IOC_MBLK_UP|IOC_MBLK_DOWN)) == 0)

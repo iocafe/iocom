@@ -188,7 +188,7 @@ class MyConnectDialog(SettingsWithSidebar):
         if self.ioc_role == "CLIENT":
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_cert_chain)
             self.ioc_root.queue_events()
-            self.ioc_connection = Connection(self.ioc_root, self.ioc_ip, transport_flag + ',downward,dynamic')
+            self.ioc_connection = Connection(self.ioc_root, self.ioc_ip, transport_flag + ',down,dynamic')
 
         else:
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_server_cert + ',keyfile=' + self.ioc_server_key)

@@ -122,11 +122,11 @@ void ioc_make_authentication_frame(
         return;
     }
 
-    /* Set connect upward flag.
+    /* Set connect up flag.
      */
-    if (con->flags & IOC_CONNECT_UPWARDS)
+    if (con->flags & IOC_CONNECT_UP)
     {
-        flags |= IOC_AUTH_CONNECT_UPWARDS;
+        flags |= IOC_AUTH_CONNECT_UP;
     }
 
     /* Fill in data size, flag as system frame, and flags for authentication data.
@@ -203,19 +203,19 @@ osalStatus ioc_process_received_authentication_frame(
      */
     if (con->flags & IOC_LISTENER)
     {
-        if (auth_flags & IOC_AUTH_CONNECT_UPWARDS)
+        if (auth_flags & IOC_AUTH_CONNECT_UP)
         {
-            con->flags &= ~IOC_CONNECT_UPWARDS;
-            secdev.from_upwards = OS_FALSE;
+            con->flags &= ~IOC_CONNECT_UP;
+            secdev.from_up = OS_FALSE;
         }
         else
         {
-            if ((con->flags & IOC_CONNECT_UPWARDS) == 0)
+            if ((con->flags & IOC_CONNECT_UP) == 0)
             {
-                con->flags |= IOC_CONNECT_UPWARDS;
+                con->flags |= IOC_CONNECT_UP;
                 ioc_add_con_to_global_mbinfo(con);
             }
-            secdev.from_upwards = OS_TRUE;
+            secdev.from_up = OS_TRUE;
         }
     }
 
@@ -223,7 +223,7 @@ osalStatus ioc_process_received_authentication_frame(
      */
     else
     {
-        secdev.from_upwards = (con->flags & IOC_CONNECT_UPWARDS) ? OS_TRUE : OS_FALSE;
+        secdev.from_up = (con->flags & IOC_CONNECT_UP) ? OS_TRUE : OS_FALSE;
     }
 
     if (auth_flags & IOC_AUTH_DEVICE)

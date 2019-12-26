@@ -489,9 +489,9 @@ static osalStatus ioc_nconf_process_block(
                 if (is_connect_block && state->connection_ix <= IOC_MAX_NCONF_CONNECTIONS)
                 {
                     conn = node->connection + state->connection_ix - 1;
-                    if (!os_strcmp(state->tag, "downward"))
+                    if (!os_strcmp(state->tag, "down"))
                     {
-                        conn->downward = (os_boolean)item.value.l;
+                        conn->down = (os_boolean)item.value.l;
                     }
                     else if (!os_strcmp(state->tag, "listen"))
                     {

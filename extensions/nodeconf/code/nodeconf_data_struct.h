@@ -73,7 +73,7 @@ typedef struct iocOneConnectionConf
 
     /** This is connection downwards in network hierarchy
      */
-    os_boolean downward;
+    os_boolean down;
 
     /** This connection point listens for incoming connections and
         doesn't actively connect.

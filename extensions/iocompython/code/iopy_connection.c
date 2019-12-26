@@ -156,13 +156,13 @@ static PyObject *Connection_new(
         goto failed;
     }
 
-    if (os_strstr(flags, "upward", OSAL_STRING_SEARCH_ITEM_NAME))
+    if (os_strstr(flags, "up", OSAL_STRING_SEARCH_ITEM_NAME))
     {
-        prm.flags |= IOC_CONNECT_UPWARDS;
+        prm.flags |= IOC_CONNECT_UP;
     }
-    else if (os_strstr(flags, "downward", OSAL_STRING_SEARCH_ITEM_NAME) == OS_NULL)
+    else if (os_strstr(flags, "down", OSAL_STRING_SEARCH_ITEM_NAME) == OS_NULL)
     {
-        PyErr_SetString(iocomError, "Either downward or upward flag must be given");
+        PyErr_SetString(iocomError, "Either down or up flag must be given");
         goto failed;
     }
 

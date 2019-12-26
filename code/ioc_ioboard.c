@@ -140,24 +140,24 @@ void ioboard_start_communication(
 
             os_memclear(&epprm, sizeof(epprm));
             epprm.iface = prm->iface;
-            epprm.flags = IOC_SOCKET | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
+            epprm.flags = IOC_SOCKET | IOC_CONNECT_UP | IOC_CT_FLAG;
 			ioc_listen(ioboard_epoint, &epprm);
 			return;
 
 		case IOBOARD_CTRL_CONNECT_SOCKET:
             conprm.parameters = prm->socket_con_str;
-            conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
+            conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
 			break;
 
         case IOBOARD_CTRL_CONNECT_SERIAL:
             conprm.parameters = prm->serial_con_str;
-            conprm.flags = IOC_SERIAL | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
+            conprm.flags = IOC_SERIAL | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
             break;
 
         case IOBOARD_CTRL_LISTEN_SERIAL:
             conprm.parameters = prm->serial_con_str;
             conprm.flags = IOC_LISTENER | IOC_SERIAL
-                | IOC_DISABLE_SELECT | IOC_CONNECT_UPWARDS | IOC_CT_FLAG;
+                | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
             break;
 	}
 

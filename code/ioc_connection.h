@@ -88,7 +88,7 @@
 
 /** Flags for ioc_connect() and ioc_listen() functions. Bit fields.
  - IOC_LISTENER Listening end of serial communication. Effects to line negotiation
- - IOC_CONNECT_UPWARDS Connect upward to upper level of IO device hierarchy.
+ - IOC_CONNECT_UP Connect up to upper level of IO device hierarchy.
  - IOC_DYNAMIC_MBLKS Dynamically create dynamic memory blocks as needed.
  */
 /*@{*/
@@ -99,7 +99,7 @@
 #define IOC_DYNAMIC_MBLKS 8
 #define IOC_LISTENER 16
 #define IOC_DISABLE_SELECT 32
-#define IOC_CONNECT_UPWARDS 64
+#define IOC_CONNECT_UP 64
 /*@}*/
 
 
@@ -417,7 +417,7 @@ typedef struct iocConnection
     IOC_DEBUG_ID
 
     /** Flags as given to ioc_connect(): define IOC_SOCKE, IOC_CLOSE_CONNECTION_ON_ERROR
-        IOC_CONNECT_UPWARDS...
+        IOC_CONNECT_UP...
      */
     os_short flags;
 

@@ -90,7 +90,7 @@ void devicedir_connections(
 
         osal_stream_print_str(list, ", \"flags\":\"", 0);
         isfirst = OS_TRUE;
-        devicedir_append_flag(list, (cflags & IOC_CONNECT_UPWARDS) ? "upward" : "downward", &isfirst);
+        devicedir_append_flag(list, (cflags & IOC_CONNECT_UP) ? "up" : "down", &isfirst);
         if (cflags & IOC_DYNAMIC_MBLKS) devicedir_append_flag(list, "dynamic", &isfirst);
         if (cflags & IOC_LISTENER) devicedir_append_flag(list, "listener", &isfirst);
         if (cflags & IOC_CREATE_THREAD) devicedir_append_flag(list, "thread", &isfirst);

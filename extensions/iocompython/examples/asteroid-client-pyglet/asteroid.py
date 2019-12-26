@@ -11,14 +11,14 @@ with open('resources/asteroid-signals.json', 'r') as file:
     signal_conf = file.read()
 
 root = Root('spacepilot', device_nr=my_player_nr, network_name='iocafenet', security='certchainfile=bob-bundle.crt')
-exp = MemoryBlock(root, 'upward', 'exp')
-imp = MemoryBlock(root, 'downward', 'imp')
+exp = MemoryBlock(root, 'up', 'exp')
+imp = MemoryBlock(root, 'down', 'imp')
 data = json2bin(signal_conf)
-info = MemoryBlock(root, 'upward', 'info', nbytes=len(data))
+info = MemoryBlock(root, 'up', 'info', nbytes=len(data))
 info.publish(data)
-# connection = Connection(root, "192.168.1.220", "tls,upward")
-connection = Connection(root, "127.0.0.1", "tls,upward")
-# connection = Connection(root, "3.135.236.95", "tls,upward")
+# connection = Connection(root, "192.168.1.220", "tls,up")
+connection = Connection(root, "127.0.0.1", "tls,up")
+# connection = Connection(root, "3.135.236.95", "tls,up")
 
 # Setup Python access to exported IO signals. These pass user keyboard control to the asteroid service.
 exp_force_x = Signal(root, "force_x")

@@ -11,19 +11,19 @@ def main():
     root = Root(device_name, device_nr=device_nr, network_name='iocafenet', security='certchainfile=bob-bundle.crt')
     root.queue_events()
     ioterminal.start(root)
-    exp = MemoryBlock(root, 'upward', 'exp')
-    imp = MemoryBlock(root, 'downward', 'imp')
-    conf_exp = MemoryBlock(root, 'upward', 'conf_exp')
-    conf_imp = MemoryBlock(root, 'downward', 'conf_imp')
+    exp = MemoryBlock(root, 'up', 'exp')
+    imp = MemoryBlock(root, 'down', 'imp')
+    conf_exp = MemoryBlock(root, 'up', 'conf_exp')
+    conf_imp = MemoryBlock(root, 'down', 'conf_imp')
 
     with open('test-device.json', 'r') as file:
         signal_conf = file.read()
     data = json2bin(signal_conf)
 
-    info = MemoryBlock(root, 'upward,auto', 'info', nbytes=len(data))
+    info = MemoryBlock(root, 'up,auto', 'info', nbytes=len(data))
     info.publish(data)
     
-    connection = Connection(root, "127.0.0.1", "tls,upward")
+    connection = Connection(root, "127.0.0.1", "tls,up")
 
     frd_cmd = Signal(root, "frd_cmd")
     tod_cmd = Signal(root, "tod_cmd")

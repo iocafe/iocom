@@ -1,7 +1,7 @@
 Logic for sending memory block info messages
 
 *** new connection:
-- If new connection is pointing "upward", add all memory blocks to connection's global transfer list.
+- If new connection is pointing "up", add all memory blocks to connection's global transfer list.
 
 *** new memory block by app function call (not trough new received memory block info):
 - Add memory block to global transfer list of all connections pointing upwards.
@@ -28,6 +28,6 @@ Logic for sending memory block info messages
   links are sbuf->clink.next and tbuf->clink.next.
 
 *** Clarifications
-- "connection points upwards" flag IOC_CONNECT_UPWARDS means that node behind the connection is higher in IO network hierarchy than this one.
-- "memory block flag IOC_MBLK_UP means that data in this memory block flows upward in IO network hierarchy.
+- "connection points upwards flag IOC_CONNECT_UP means that node behind the connection is higher in IO network hierarchy than this one.
+- "memory block flag IOC_MBLK_UP means that data in this memory block flows up in IO network hierarchy.
 

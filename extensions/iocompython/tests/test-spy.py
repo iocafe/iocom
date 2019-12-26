@@ -8,7 +8,7 @@ def main():
     root.queue_events()
     ioterminal.start(root)
     
-    connection = Connection(root, "127.0.0.1", "tls,downward,dynamic")
+    connection = Connection(root, "127.0.0.1", "tls,down,dynamic")
 
     while (ioterminal.run(root)):
         e = root.wait_com_event(1000)

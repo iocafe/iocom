@@ -51,7 +51,7 @@ void ioc_add_mblk_to_global_mbinfo(
 
     for (con = root->con.first; con; con = con->link.next)
     {
-        if (con->flags & IOC_CONNECT_UPWARDS)
+        if (con->flags & IOC_CONNECT_UP)
         {
             if (con->sinfo.current_mblk == OS_NULL)
             {
@@ -86,7 +86,7 @@ void ioc_add_con_to_global_mbinfo(
 
     /* Be sure to ignore previous value of current_mblk.
      */
-    if (con->flags & IOC_CONNECT_UPWARDS)
+    if (con->flags & IOC_CONNECT_UP)
     {
         root = con->link.root;
         con->sinfo.current_mblk = root->mblk.first;
@@ -134,7 +134,7 @@ void ioc_mbinfo_con_is_closed(
 struct iocMemoryBlock *ioc_get_mbinfo_to_send(
     struct iocConnection *con)
 {
-    if (con->flags & IOC_CONNECT_UPWARDS)
+    if (con->flags & IOC_CONNECT_UP)
     {
         return con->sinfo.current_mblk;
     }
@@ -178,7 +178,7 @@ void ioc_mbinfo_sent(
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf;
 
-    if (con->flags & IOC_CONNECT_UPWARDS)
+    if (con->flags & IOC_CONNECT_UP)
     {
         con->sinfo.current_mblk = OS_NULL;
         if (mblk == OS_NULL) return;
@@ -471,7 +471,7 @@ goon:
     }
 #endif
 
-    if (con->flags & IOC_CONNECT_UPWARDS)
+    if (con->flags & IOC_CONNECT_UP)
     {
         source_flag = IOC_MBLK_UP;
         target_flag = IOC_MBLK_DOWN;
@@ -523,7 +523,7 @@ goon:
         /* Mark that we need to send memory block info back. If pointer is
            set, do nothing because the source buffer was added to last in list.
          */
-        if ((con->flags & IOC_CONNECT_UPWARDS) == 0 &&
+        if ((con->flags & IOC_CONNECT_UP) == 0 &&
             con->sbuf.mbinfo_down == OS_NULL && sbuf)
         {
             con->sbuf.mbinfo_down = sbuf;
@@ -578,7 +578,7 @@ skip1:
         /* Mark that we need to send memory block info back. If pointer is
            set, do nothing because the source buffer was added to last in list.
          */
-        if ((con->flags & IOC_CONNECT_UPWARDS) == 0 &&
+        if ((con->flags & IOC_CONNECT_UP) == 0 &&
             con->tbuf.mbinfo_down == OS_NULL)
         {
             con->tbuf.mbinfo_down = tbuf;

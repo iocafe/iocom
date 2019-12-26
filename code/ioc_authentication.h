@@ -29,7 +29,7 @@ typedef struct iocSecureDevice
 {
     /** Allow connection from higer level of IO hierarchy or connection is from upwards.
      */
-    os_boolean from_upwards;
+    os_boolean from_up;
 
     /** Device name, max 15 characters.
      */
@@ -78,7 +78,7 @@ iocAuthenticatedDevices;
   Flags in authentication frame.
 ****************************************************************************************************
 */
-#define IOC_AUTH_CONNECT_UPWARDS 1
+#define IOC_AUTH_CONNECT_UP 1
 #define IOC_AUTH_DEVICE 2
 #define IOC_AUTH_DEVICE_NR_2_BYTES 4
 #define IOC_AUTH_DEVICE_NR_4_BYTES 8
