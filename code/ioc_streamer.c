@@ -448,7 +448,7 @@ static osalStatus ioc_streamer_device_write(
 
     nbytes = 0;
 
-    cmd = (iocStreamerState)ioc_gets_int(signals->cmd, &cmd_state_bits);
+    cmd = (iocStreamerState)ioc_gets_int(signals->cmd, &cmd_state_bits, IOC_SIGNAL_DEFAULT);
     if ((cmd_state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         if (streamer->step != IOC_SSTEP_FAILED_AND_IDLE_SET)
@@ -489,7 +489,7 @@ static osalStatus ioc_streamer_device_write(
             if (n > 0)
             {
                 buf_sz = signals->buf->n;
-                tail = (os_int)ioc_gets_int(signals->tail, &state_bits);
+                tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
                 if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
                 {
                     osal_trace3("IOC_SSTEP_FAILED, no tail");
@@ -625,7 +625,7 @@ static osalStatus ioc_streamer_device_read(
 
     nbytes = 0;
 
-    cmd = (iocStreamerState)ioc_gets_int(signals->cmd, &cmd_state_bits);
+    cmd = (iocStreamerState)ioc_gets_int(signals->cmd, &cmd_state_bits, IOC_SIGNAL_DEFAULT);
     if ((cmd_state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         if (streamer->step != IOC_SSTEP_FAILED_AND_IDLE_SET)
@@ -639,7 +639,7 @@ static osalStatus ioc_streamer_device_read(
     {
         case IOC_SSTEP_INITIALIZED:
             osal_trace3("IOC_SSTEP_INITIALIZED");
-            streamer->select = (os_int)ioc_gets_int(signals->select, &state_bits);
+            streamer->select = (os_int)ioc_gets_int(signals->select, &state_bits, IOC_SIGNAL_DEFAULT);
             if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED) ||
                 (state_bits & OSAL_STATE_CONNECTED) == 0)
             {
@@ -666,7 +666,7 @@ static osalStatus ioc_streamer_device_read(
             }
 
             buf_sz = signals->buf->n;
-            head = (os_int)ioc_gets_int(signals->head, &state_bits);
+            head = (os_int)ioc_gets_int(signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
             if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
             {
                 osal_trace3("IOC_SSTEP_FAILED, no head");
@@ -794,7 +794,7 @@ static osalStatus ioc_streamer_controller_write(
 
     nbytes = 0;
 
-    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
+    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits, IOC_SIGNAL_DEFAULT);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         if (streamer->step != IOC_SSTEP_FAILED_AND_IDLE_SET)
@@ -849,7 +849,7 @@ static osalStatus ioc_streamer_controller_write(
             if (n > 0)
             {
                 buf_sz = signals->buf->n;
-                tail = (os_int)ioc_gets_int(signals->tail, &state_bits);
+                tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
                 if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
                 {
                     osal_trace3("IOC_SSTEP_FAILED, no tail");
@@ -979,7 +979,7 @@ static osalStatus ioc_streamer_controller_read(
 
     nbytes = 0;
 
-    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits);
+    state = (iocStreamerState)ioc_gets_int(signals->state, &state_bits, IOC_SIGNAL_DEFAULT);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         if (streamer->step != IOC_SSTEP_FAILED_AND_IDLE_SET)
@@ -1027,7 +1027,7 @@ static osalStatus ioc_streamer_controller_read(
             }
 
             buf_sz = signals->buf->n;
-            head = (os_int)ioc_gets_int(signals->head, &state_bits);
+            head = (os_int)ioc_gets_int(signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
             if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
             {
                 osal_trace3("IOC_SSTEP_FAILED, no head");
@@ -1279,7 +1279,7 @@ os_long ioc_streamer_get_parameter(
         signals = is_device ? &streamer->prm->frd : &streamer->prm->tod;
 
         buf_sz = signals->buf->n;
-        tail = (os_int)ioc_gets_int(signals->tail, &state_bits);
+        tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
 
         if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
         {
@@ -1398,7 +1398,7 @@ void ioc_run_control_stream(
 
     if (ctrl->frd == OS_NULL)
     {
-        cmd = (iocStreamerState)ioc_gets_int(params->frd.cmd, &state_bits);
+        cmd = (iocStreamerState)ioc_gets_int(params->frd.cmd, &state_bits, IOC_SIGNAL_DEFAULT);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
             osal_trace3("IOC_STREAM_RUNNING command");
@@ -1426,7 +1426,7 @@ void ioc_run_control_stream(
 
     if (ctrl->tod  == OS_NULL)
     {
-        cmd = (iocStreamerState)ioc_gets_int(params->tod.cmd, &state_bits);
+        cmd = (iocStreamerState)ioc_gets_int(params->tod.cmd, &state_bits, IOC_SIGNAL_DEFAULT);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
             ctrl->tod = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_READ);

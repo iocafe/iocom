@@ -185,7 +185,10 @@ void ioc_movex_signals(
                do not modify memory block (we are receiving).
              */
             sb = *(p++);
-            if (mblk->tbuf.first == OS_NULL) sb &= ~OSAL_STATE_CONNECTED;
+            if (mblk->tbuf.first == OS_NULL)
+            {
+                if ((flags & IOC_SIGNAL_NO_TBUF_CHECK) == 0) sb &= ~OSAL_STATE_CONNECTED;
+            }
 
             vv[i].state_bits = sb;
 
@@ -437,6 +440,9 @@ os_char ioc_setx_double(
            type for the signal.
   @oaram   state_bits Pointer to integer where to store state bits. OSAL_STATE_CONNECTED bit
            indicates that we have the signal value. HW errors are indicated.
+  @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_THREAD_SYNC disables
+           thread synchronization (already done) and IOC_SIGNAL_NO_TBUF_CHECK disables
+           checking if target buffer is connected to this memory block.
 
   @return  Signal value as integer.
 
@@ -444,13 +450,14 @@ os_char ioc_setx_double(
 */
 os_long ioc_gets_int(
     const iocSignal *signal,
-    os_char *state_bits)
+    os_char *state_bits,
+    os_short flags)
 {
     iocValue vv;
 
     if (signal == OS_NULL) return 0;
 
-    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_DEFAULT);
+    ioc_movex_signals(signal, &vv, 1, flags);
     if (state_bits) *state_bits = vv.state_bits;
 
     switch (signal->flags & OSAL_TYPEID_MASK)
@@ -465,13 +472,35 @@ os_long ioc_gets_int(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Get signal as double precision floating point value.
+  @anchor ioc_gets_int
+
+  The ioc_gets_double() function reads one signal value from memory block. This is used for basic
+  types like integers and floats and cannot be used for strings or arrays.
+
+  @param   signal Pointer to signal structure. This holds memory address,  state bits and data
+           type for the signal.
+  @oaram   state_bits Pointer to integer where to store state bits. OSAL_STATE_CONNECTED bit
+           indicates that we have the signal value. HW errors are indicated.
+  @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_THREAD_SYNC disables
+           thread synchronization (already done) and IOC_SIGNAL_NO_TBUF_CHECK disables
+           checking if target buffer is connected to this memory block.
+
+  @return  Signal value as double.
+
+****************************************************************************************************
+*/
 os_double ioc_gets_double(
     const iocSignal *signal,
-    os_char *state_bits)
+    os_char *state_bits,
+    os_short flags)
 {
     iocValue vv;
 
-    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_DEFAULT);
+    ioc_movex_signals(signal, &vv, 1, flags);
     if (state_bits) *state_bits = vv.state_bits;
 
     switch (signal->flags & OSAL_TYPEID_MASK)
@@ -657,7 +686,7 @@ os_char ioc_moves_str(
             }
             else
             {
-                dvalue = ioc_gets_double(signal, &state_bits);
+                dvalue = ioc_gets_double(signal, &state_bits, flags);
                 osal_double_to_str(str, str_sz, dvalue, 4, OSAL_FLOAT_DEFAULT);
                 return state_bits;
             }
@@ -669,7 +698,7 @@ os_char ioc_moves_str(
             }
             else
             {
-                value = ioc_gets_int(signal, &state_bits);
+                value = ioc_gets_int(signal, &state_bits, flags);
                 osal_int_to_str(str, str_sz, value);
                 return state_bits;
             }
@@ -728,7 +757,7 @@ os_char ioc_moves_str(
         state_bits = *(p++);
         if (mblk->tbuf.first == OS_NULL)
         {
-            state_bits &= ~OSAL_STATE_CONNECTED;
+            if ((flags & IOC_SIGNAL_NO_TBUF_CHECK) == 0) state_bits &= ~OSAL_STATE_CONNECTED;
         }
         len = str_sz;
         if (signal->n < len) len = signal->n;
@@ -943,7 +972,7 @@ os_char ioc_moves_array(
         state_bits = *(p++);
         if (mblk->tbuf.first == OS_NULL)
         {
-            state_bits &= ~OSAL_STATE_CONNECTED;
+            if ((flags & IOC_SIGNAL_NO_TBUF_CHECK) == 0) state_bits &= ~OSAL_STATE_CONNECTED;
         }
 
         /* Unpack os_boolean array from bits.

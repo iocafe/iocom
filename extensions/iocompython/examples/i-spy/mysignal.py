@@ -92,7 +92,7 @@ class MySignal(GridLayout):
             self.signal.set(self.my_checkbox.active)
 
     def update_signal(self):
-        v = self.signal.get()
+        v = self.signal.get(check_tbuf=self.my_up)
         new_state_bits = int(v[0]);
         if new_state_bits != self.my_state_bits:
             self.my_state_bits = new_state_bits
@@ -122,18 +122,17 @@ class MySignal(GridLayout):
             mysz[1] = 1
             Rectangle(pos=self.pos, size=mysz)            
 
-            if self.my_up and not self.my_down:
-                if self.my_state_bits & 2 == 0: # 2
-                    Color(0.5, 0.5, 0.5, 1)
-                elif self.my_state_bits & 12 == 12:
-                    Color(1.0, 0, 0, 1)
-                elif self.my_state_bits & 8 == 8:
-                    Color(1.0, 1.0, 0, 1)
-                elif self.my_state_bits & 4 == 4:
-                    Color(1.0, 0.65, 0, 1)
-                else:
-                    Color(0, 1, 0, 1)
-                Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
+            if self.my_state_bits & 2 == 0: 
+                Color(0.5, 0.5, 0.5, 1)
+            elif self.my_state_bits & 12 == 12:
+                Color(1.0, 0, 0, 1)
+            elif self.my_state_bits & 8 == 8:
+                Color(1.0, 1.0, 0, 1)
+            elif self.my_state_bits & 4 == 4:
+                Color(1.0, 0.65, 0, 1)
+            else:
+                Color(0, 1, 0, 1)
+            Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
 
 
     def my_create_popup(self, instance):

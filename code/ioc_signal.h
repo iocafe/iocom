@@ -110,12 +110,14 @@ iocValue;
 ****************************************************************************************************
  */
 /* flags for memory block functions contain type, like OS_BOOLEAN, OS_USHORT, OS_FLOAT, etc,
-   and may contain these additional flags.
+   and may contain these additional flags. Flags >= 0x80 are used only as function arguments
+   for options for the ioc_moves*, etc, functions, and not stored within iocSignal structure.
  */
 #define IOC_SIGNAL_DEFAULT 0
 #define IOC_SIGNAL_WRITE 0x20
 #define IOC_SIGNAL_NO_THREAD_SYNC 0x80
-#define IOC_SIGNAL_FLAGS_MASK 0xE0
+#define IOC_SIGNAL_NO_TBUF_CHECK 0x100
+#define IOC_SIGNAL_FLAGS_MASK 0xF80
 
 /* Macros for signal value and state bits within iocValue structure
  */
@@ -194,8 +196,8 @@ iocValue;
  */
 #define ioc_sets0_int(s, v) ioc_sets_int((s), (v), OSAL_STATE_CONNECTED);
 #define ioc_sets0_double(s, v) ioc_sets_double((s), (v), OSAL_STATE_CONNECTED);
-#define ioc_gets0_int(s) ioc_gets_int((s), OS_NULL);
-#define ioc_gets0_double(s) ioc_gets_double((s), OS_NULL);
+#define ioc_gets0_int(s) ioc_gets_int((s), OS_NULL, IOC_SIGNAL_NO_TBUF_CHECK);
+#define ioc_gets0_double(s) ioc_gets_double((s), OS_NULL, IOC_SIGNAL_NO_TBUF_CHECK);
 
 
 /** 
@@ -249,13 +251,15 @@ os_char ioc_setx_double(
  */
 os_long ioc_gets_int(
     const iocSignal *signal,
-    os_char *state_bits);
+    os_char *state_bits,
+    os_short flags);
 
 /* Get floating point signal value.
  */
 os_double ioc_gets_double(
     const iocSignal *signal,
-    os_char *state_bits);
+    os_char *state_bits,
+    os_short flags);
 
 /* Get integer signal value.
  */

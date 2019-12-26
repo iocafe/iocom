@@ -652,17 +652,20 @@ static osalStatus Signal_try_setup(
   @brief Get simple signal value.
   @anchor Signal_get_one_value
 
+  @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
+           checking if target buffer is connected to this memory block.
   @return  None.
 
 ****************************************************************************************************
 */
 static PyObject *Signal_get_one_value(
-    SignalGetState *state)
+    SignalGetState *state,
+    os_short flags)
 {
     iocValue vv;
     PyObject *rval, *value;
 
-    ioc_movex_signals(state->signal, &vv, 1, IOC_SIGNAL_NO_THREAD_SYNC);
+    ioc_movex_signals(state->signal, &vv, 1, IOC_SIGNAL_NO_THREAD_SYNC|flags);
 
     if ((vv.state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
     {
@@ -715,12 +718,15 @@ static PyObject *Signal_get_one_value(
   @brief Get signal containing array of values.
   @anchor Signal_get_array
 
+  @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
+           checking if target buffer is connected to this memory block.
   @return  None.
 
 ****************************************************************************************************
 */
 static PyObject *Signal_get_array(
-    SignalGetState *state)
+    SignalGetState *state,
+    os_short flags)
 {
     os_memsz buf_sz, type_sz;
     PyObject *rval, *list, *value;
@@ -743,7 +749,7 @@ static PyObject *Signal_get_array(
     /* Read values.
      */
     state_bits = ioc_moves_array(state->signal, offset, buf, state->max_values,
-        OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC);
+        OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC|flags);
 
     if (!state->nro_values)
         state->nro_values = state->max_values;
@@ -843,11 +849,15 @@ static PyObject *Signal_get_array(
   to the information reads signal value: string, array or one numerical value from the memory
   block and returns it.
 
+  @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
+           checking if target buffer is connected to this memory block.
+
 ****************************************************************************************************
 */
 static PyObject *Signal_get_internal(
     Signal *self,
-    SignalGetState *state)
+    SignalGetState *state,
+    os_short flags)
 {
     iocRoot *iocroot;
     PyObject *rval = OS_NULL;
@@ -883,14 +893,14 @@ static PyObject *Signal_get_internal(
      */
     if (state->signal->n > 1)
     {
-        rval = Signal_get_array(state);
+        rval = Signal_get_array(state, flags);
     }
 
     /* Otherwise this is single value signal.
      */
     else
     {
-        rval = Signal_get_one_value(state);
+        rval = Signal_get_one_value(state, flags);
     }
 
     ioc_unlock(iocroot);
@@ -922,16 +932,17 @@ static PyObject *Signal_get(
     PyObject *kwds)
 {
     SignalGetState state;
-    int nro_values = 0, max_values = 0;
+    int nro_values = 0, max_values = 0, check_tbuf = 1;
 
     static char *kwlist[] = {
         "nro_values",
         "max_values",
+        "check_tbuf",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ii",
-         kwlist, &nro_values, &max_values))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iii",
+         kwlist, &nro_values, &max_values, &check_tbuf))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         return NULL;
@@ -941,7 +952,8 @@ static PyObject *Signal_get(
     state.max_values = max_values;
     state.nro_values = nro_values;
 
-    return Signal_get_internal(self, &state);
+    return Signal_get_internal(self, &state,
+        check_tbuf ? IOC_SIGNAL_DEFAULT : IOC_SIGNAL_NO_TBUF_CHECK);
 }
 
 
@@ -978,7 +990,7 @@ static PyObject *Signal_get0(
     state.nro_values = nro_values;
     state.no_state_bits = OS_TRUE;
 
-    return Signal_get_internal(self, &state);
+    return Signal_get_internal(self, &state, IOC_SIGNAL_NO_TBUF_CHECK);
 }
 
 
