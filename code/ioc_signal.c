@@ -640,6 +640,7 @@ os_double ioc_getx_double(
            state bits and data type.
   @param   str Pointer to string buffer
   @param   str_sz String buffer size in bytes (including terminating NULL character).
+           Ignored when writing to memory block, set -1.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
            operator: IOC_SIGNAL_WRITE, IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
@@ -745,7 +746,7 @@ os_char ioc_moves_str(
         *(p++) = state_bits;
         len = os_strlen(str);
         if (signal->n < len) len = signal->n;
-        ioc_byte_ordered_copy(p, str, len, 1);
+        os_memcpy(p, str, len);
         ioc_mblk_invalidate(mblk, addr, (os_int)(addr + len) /* no -1, we need also state byte */);
     }
     else
@@ -761,7 +762,7 @@ os_char ioc_moves_str(
         }
         len = str_sz;
         if (signal->n < len) len = signal->n;
-        ioc_byte_ordered_copy(str, p, len, 1);
+        os_memcpy(str, p, len);
     }
 
 goon:

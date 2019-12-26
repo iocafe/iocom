@@ -2,28 +2,29 @@
 const struct gina_t gina = 
 {
   {
-    {"exp", &ioboard_exp, 13, GINA_EXP_MBLK_SZ, (iocSignal*)&gina.exp.dip_switch_3},
+    {"exp", &ioboard_exp, 14, GINA_EXP_MBLK_SZ, (iocSignal*)&gina.exp.dip_switch_3},
     {30, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_3}, /* dip_switch_3 */
     {31, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_4}, /* dip_switch_4 */
     {32, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.touch_sensor}, /* touch_sensor */
     {33, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
     {0, 5, OS_FLOAT, &ioboard_exp, OS_NULL}, /* testfloat */
-    {21, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.A}, /* A */
-    {22, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.B}, /* B */
-    {23, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.C}, /* C */
-    {24, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.D}, /* D */
-    {25, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.E}, /* E */
-    {26, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.F}, /* F */
-    {27, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.G}, /* G */
-    {28, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.H} /* H */
+    {21, 10, OS_STR, &ioboard_exp, OS_NULL}, /* teststr */
+    {32, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.A}, /* A */
+    {33, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.B}, /* B */
+    {34, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.C}, /* C */
+    {35, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.D}, /* D */
+    {36, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.E}, /* E */
+    {37, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.F}, /* F */
+    {38, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.G}, /* G */
+    {39, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.H} /* H */
   },
 
   {
     {"imp", &ioboard_imp, 4, GINA_IMP_MBLK_SZ, (iocSignal*)&gina.imp.seven_segment},
     {0, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
     {2, 1, OS_SHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.servo}, /* servo */
-    {5, 1, OS_SHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
-    {8, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_imp, &pins.outputs.led_builtin} /* led_builtin */
+    {5, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
+    {10, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_imp, &pins.outputs.led_builtin} /* led_builtin */
   },
 
   {

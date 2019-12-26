@@ -4,6 +4,7 @@
   {
     "name": "exp",
     "title": "Exported by 'gina' IO device",
+    "flags": "up",
     "groups": [
       {
         "name": "inputs",
@@ -39,6 +40,7 @@
   {
     "name": "imp",
     "title": "Imported by 'gina' IO device",
+    "flags": "down",
     "groups": [
       {
         "name": "controls",
@@ -65,6 +67,7 @@
   {
     "name": "conf_exp",
     "title": "Exported configuration signals by 'gina' IO device",
+    "flags": "up",
     "groups": [
       {
         "name": "transfer to device",
@@ -87,6 +90,7 @@
   {
     "name": "conf_imp",
     "title": "Imported configuration signals by 'gina' IO device",
+    "flags": "down",
     "groups": [
       {
         "name": "transfer to device",

@@ -24,6 +24,7 @@
         "name": "device state",
         "signals": [
           {"name": "testfloat", "addr": 0, "type": "float", "array": 5},
+          {"name": "teststr", "type": "str", "array": 10},
           {"name": "A", "type": "boolean"},
           {"name": "B"},
           {"name": "C"},
@@ -52,7 +53,7 @@
         "name": "pwm",
         "signals": [
           {"name": "servo", "type": "short"},
-          {"name": "dimmer_led"}
+          {"name": "dimmer_led", "type": "float", "max": 100}
         ]
       },
       {

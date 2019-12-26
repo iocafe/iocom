@@ -39,6 +39,11 @@
 						"array": 5
 					},
 					{
+						"name": "teststr",
+						"type": "str",
+						"array": 10
+					},
+					{
 						"name": "A",
 						"type": "boolean"
 					},
@@ -89,7 +94,9 @@
 						"type": "short"
 					},
 					{
-						"name": "dimmer_led"
+						"name": "dimmer_led",
+						"type": "float",
+						"max": 100
 					}
 				]
 			},

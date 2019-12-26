@@ -211,6 +211,8 @@ osalStatus osal_loop(
         os_get_timer(&ti);
         f[2] = i++;
         ioc_sets_array(&gina.exp.testfloat, f, 5);
+
+        ioc_sets_str(&gina.exp.teststr, "pekka");
     }
 
     /* The devicedir call is here for testing only, take away.
@@ -282,8 +284,6 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
-    // os_char sb;
-
 #undef PINS_SEGMENT7_GROUP
 
     /* '#ifdef' is used to compile code in only if 7-segment display is configured

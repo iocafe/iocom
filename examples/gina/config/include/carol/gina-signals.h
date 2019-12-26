@@ -11,6 +11,7 @@ typedef struct gina_t
     iocSignal touch_sensor;
     iocSignal potentiometer;
     iocSignal testfloat;
+    iocSignal teststr;
     iocSignal A;
     iocSignal B;
     iocSignal C;
@@ -58,7 +59,7 @@ typedef struct gina_t
 }
 gina_t;
 
-#define GINA_EXP_MBLK_SZ 36
+#define GINA_EXP_MBLK_SZ 40
 #define GINA_IMP_MBLK_SZ 32
 #define GINA_CONF_EXP_MBLK_SZ 272
 #define GINA_CONF_IMP_MBLK_SZ 276
@@ -67,6 +68,7 @@ extern const gina_t gina;
 extern const iocDeviceHdr gina_hdr;
 
 #define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
+#define GINA_EXP_TESTSTR_ARRAY_SZ 10
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 #define GINA_CONF_EXP_FRD_BUF_ARRAY_SZ 257
 #define GINA_CONF_IMP_TOD_BUF_ARRAY_SZ 257

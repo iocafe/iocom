@@ -4,6 +4,7 @@
   {
     "name": "exp",
     "title": "Exported by 'asteroid' client",
+    "flags": "up",
     "groups": [
        {
          "name": "user controls",
@@ -20,6 +21,7 @@
   {
     "name": "imp",
     "title": "Imported by 'asteroid' client",
+    "flags": "down",
     "groups": [
       {
         "name": "display objects",

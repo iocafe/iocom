@@ -715,6 +715,60 @@ static PyObject *Signal_get_one_value(
 /**
 ****************************************************************************************************
 
+  @brief Get string signal value.
+  @anchor Signal_get_str_value
+
+  @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
+           checking if target buffer is connected to this memory block.
+  @return  None.
+
+****************************************************************************************************
+*/
+static PyObject *Signal_get_str_value(
+    SignalGetState *state,
+    os_short flags)
+{
+    PyObject *rval, *value;
+    os_int n;
+
+    os_char fixed_buf[64], *p, state_bits;
+
+    n = state->signal->n;
+    p = fixed_buf;
+    if (n > sizeof(fixed_buf))
+    {
+        p = os_malloc(n, OS_NULL);
+    }
+
+    state_bits = ioc_moves_str(state->signal, p, n,
+        OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC|flags);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
+    {
+        return Py_BuildValue("s", (char *)"");
+    }
+
+    value = Py_BuildValue("s", p);
+    if (state->no_state_bits)
+    {
+        return value;
+    }
+
+    rval = PyList_New(2);
+    PyList_SetItem(rval, 0, Py_BuildValue("i", (int)state_bits));
+    PyList_SetItem(rval, 1, value);
+
+    if (n > sizeof(fixed_buf))
+    {
+        os_free(p, n);
+    }
+
+    return rval;
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Get signal containing array of values.
   @anchor Signal_get_array
 
@@ -878,20 +932,22 @@ static PyObject *Signal_get_internal(
         goto getout;
     }
 
-    /* If the signal is string.
-     */
     state->type_id = (state->signal->flags & OSAL_TYPEID_MASK);
     if (!state->max_values || state->signal->n < state->max_values)
     {
         state->max_values = state->signal->n;
     }
+
+    /* If the signal is string.
+     */
     if (state->type_id == OS_STR)
     {
+        rval = Signal_get_str_value(state, flags);
     }
 
     /* If this signal is an array
      */
-    if (state->signal->n > 1)
+    else if (state->signal->n > 1)
     {
         rval = Signal_get_array(state, flags);
     }

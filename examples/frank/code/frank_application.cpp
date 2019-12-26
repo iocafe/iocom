@@ -77,10 +77,11 @@ void FrankApplication::stop()
 void FrankApplication::run()
 {
     os_uint i = 0;
-    os_char segments[8];
+    os_char segments[8], buf[32];
     os_float floats[5];
     iocSignal *seven_segment = OS_NULL;
-    iocSignal *float_test  = OS_NULL;
+    iocSignal *float_test = OS_NULL;
+    iocSignal *str_test = OS_NULL;
 
     os_memclear(segments, sizeof(segments));
 
@@ -93,11 +94,17 @@ void FrankApplication::run()
         // ioc_maintain_signal(&frank_root, "seven_segment", m_network_name, &seven_segment);
         // ioc_sets_array(seven_segment, segments, sizeof(segments));
 
+        ioc_maintain_signal(&frank_root, "teststr", m_network_name, &str_test);
+        ioc_gets_str(str_test, buf, sizeof(buf));
+
+
         ioc_maintain_signal(&frank_root, "testfloat", m_network_name, &float_test);
         ioc_gets_array(float_test, floats, sizeof(floats)/sizeof(os_float));
     }
 
     ioc_delete_signal(seven_segment);
+    ioc_delete_signal(float_test);
+    ioc_delete_signal(str_test);
 }
 
 static void frank_application_thread_func(void *prm, osalEvent done)
