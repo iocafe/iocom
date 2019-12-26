@@ -3,6 +3,7 @@
 "mblk": [
 	{
 		"name": "exp",
+		"flags": "up",
 		"groups": [
 			{
 				"name": "inputs",
@@ -68,6 +69,7 @@
 	},
 	{
 		"name": "imp",
+		"flags": "down",
 		"groups": [
 			{
 				"name": "controls",
@@ -104,6 +106,7 @@
 	},
 	{
 		"name": "conf_exp",
+		"flags": "up,conf",
 		"groups": [
 			{
 				"name": "transfer to device",
@@ -140,6 +143,7 @@
 	},
 	{
 		"name": "conf_imp",
+		"flags": "down,conf",
 		"groups": [
 			{
 				"name": "transfer to device",

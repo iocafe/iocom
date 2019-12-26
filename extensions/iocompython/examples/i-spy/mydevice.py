@@ -66,23 +66,24 @@ class MyDevice(ConfigParser):
     def process_mblk(self, data):
         mblk_name = data.get("name", "no_name")
         section_name = mblk_name.replace("_", "-")
-        title = data.get("title", "no_title")
+        # title = data.get("title", "no_title")
+        mblk_flags = data.get("flags", "no_title")
         self.signal_addr = 0
         groups = data.get("groups", None)
         if groups == None:
             return;
 
         for group in groups:
-            self.process_group(group, mblk_name, section_name)
+            self.process_group(group, mblk_name, mblk_flags, section_name)
         
-    def process_group(self, data, mblk_name, section_name):
+    def process_group(self, data, mblk_name, mblk_flags, section_name):
         group_name = data.get("name", "no_name")
         if group_name == 'inputs' or group_name == 'outputs':
             self.signal_type = 'boolean'
         else:
             self.signal_type = 'ushort'
 
-        title = data.get("title", "no_title")
+        # title = data.get("title", "no_title")
         signals = data.get("signals", None)
         if signals == None:
             return;
@@ -90,9 +91,9 @@ class MyDevice(ConfigParser):
         self.my_signal_panel.new_signal_group(group_name, mblk_name)
 
         for signal in signals:
-            self.process_signal(signal, group_name, mblk_name, section_name)
+            self.process_signal(signal, group_name, mblk_name, mblk_flags)
 
-    def process_signal(self, data, group_name, mblk_name, section_name):
+    def process_signal(self, data, group_name, mblk_name, mblk_flags):
         signal_name = data.get("name", "no_name")
         signal_type = data.get("type", None)
         if signal_type != None:
@@ -103,7 +104,7 @@ class MyDevice(ConfigParser):
         n = data.get("array", 1)
 
         self.my_signal_panel.new_signal(self.ioc_root, signal_name, self.signal_addr, 
-            self.signal_type, n, mblk_name, self.dev_path);
+            self.signal_type, n, mblk_name, mblk_flags, self.dev_path);
                 
         if self.signal_type == "boolean":
             if n <= 1:

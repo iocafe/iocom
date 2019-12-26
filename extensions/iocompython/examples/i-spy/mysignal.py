@@ -12,6 +12,7 @@ from iocompython import Signal
 class MySignal(GridLayout):
     def __init__(self, **kwargs):
         self.my_state_bits = 0
+        self.my_up = self.my_down = False
         super(MySignal, self).__init__(**kwargs)
         self.cols = 2
         self.padding = [8, 6]
@@ -20,11 +21,11 @@ class MySignal(GridLayout):
         self.size_hint_y = None
         self.height = 60 
 
-        l = Label(text = '[b][size=16]test[color=3333ff]label[/color][/size][/b]', markup = True, halign="left")
+        l = Label(text = '', markup = True, halign="left")
         l.bind(size=l.setter('text_size')) 
         self.my_label = l
 
-        d = Label(text = '[size=14][color=909090]test descriotion[/color][/size]', markup = True, halign="left")
+        d = Label(text = '', markup = True, halign="left")
         d.bind(size=d.setter('text_size')) 
         self.my_description = d
 
@@ -40,7 +41,11 @@ class MySignal(GridLayout):
         self.signal.delete()
         self.signal = None
 
-    def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path):
+    def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, dev_path):
+        flaglist = mblk_flags.split(',')
+        self.my_up = "up" in flaglist
+        self.my_down = "down" in flaglist
+
         if signal_type == "boolean" and n <= 1:
             b = CheckBox()
             b.size_hint = (0.35, 1)
@@ -68,12 +73,14 @@ class MySignal(GridLayout):
         self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + dev_path)
 
     def on_checkbox_modified(self, i):
-        self.signal.set(self.my_checkbox.active)
+        if self.my_up and not self.my_down:
+            self.update_signal()
+
+        else:            
+            self.signal.set(self.my_checkbox.active)
 
     def update_signal(self):
         v = self.signal.get()
-        self.my_description.text = '[size=14][color=909090]' + str(v) + '[/color][/size]'
-
         new_state_bits = int(v[0]);
         if new_state_bits != self.my_state_bits:
             self.my_state_bits = new_state_bits
@@ -104,18 +111,18 @@ class MySignal(GridLayout):
             mysz[1] = 1
             Rectangle(pos=self.pos, size=mysz)            
 
-            if self.my_state_bits & 2 == 0: # 2
-                Color(0.5, 0.5, 0.5, 1)
-            elif self.my_state_bits & 12 == 12:
-                Color(1.0, 0, 0, 1)
-            elif self.my_state_bits & 8 == 8:
-                Color(1.0, 1.0, 0, 1)
-            elif self.my_state_bits & 4 == 4:
-                Color(1.0, 0.65, 0, 1)
-            else:
-                Color(0, 1, 0, 1)
-            
-            Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
+            if self.my_up and not self.my_down:
+                if self.my_state_bits & 2 == 0: # 2
+                    Color(0.5, 0.5, 0.5, 1)
+                elif self.my_state_bits & 12 == 12:
+                    Color(1.0, 0, 0, 1)
+                elif self.my_state_bits & 8 == 8:
+                    Color(1.0, 1.0, 0, 1)
+                elif self.my_state_bits & 4 == 4:
+                    Color(1.0, 0.65, 0, 1)
+                else:
+                    Color(0, 1, 0, 1)
+                Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
 
 
 class MySignalGroup(GridLayout):
@@ -162,9 +169,9 @@ class MySignalDisplay(GridLayout):
         for s in self.signals:
             s.update_signal()
 
-    def new_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path):
+    def new_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, dev_path):
         s = MySignal() 
-        s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path)
+        s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, dev_path)
         self.add_widget(s)
         self.my_nro_widgets += 1
         self.signals.append(s)
@@ -185,19 +192,3 @@ class MySignalDisplay(GridLayout):
             self.add_widget(MySignalGroup())
             self.my_nro_widgets += 1
 
-
-class MainApp(App):
-    def build(self):
-        self.root = GridLayout()
-        self.root.cols = 1
-        
-        sig1 = MySignal() 
-        self.root.add_widget(sig1)
-
-        sig2 = MySignal()
-        self.root.add_widget(sig2)
-
-        return self.root
-
-if __name__ == '__main__':
-    MainApp().run()
