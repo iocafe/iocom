@@ -2,16 +2,16 @@ from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.checkbox import CheckBox
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, Line
 
 from kivy.uix.widget import Widget
-# from kivy.uix.stacklayout import StackLayout
 
 from iocompython import Signal
 
 
 class MySignal(GridLayout):
     def __init__(self, **kwargs):
+        self.my_state_bits = 0
         super(MySignal, self).__init__(**kwargs)
         self.cols = 2
         self.padding = [8, 6]
@@ -32,10 +32,8 @@ class MySignal(GridLayout):
         lb.cols = 1
         lb.size_hint = (0.65, 1)
 
-        # self.my_label_box = lb
         lb.add_widget(l)
         lb.add_widget(d)
-
         self.add_widget(lb)
 
     def delete(self):
@@ -43,7 +41,6 @@ class MySignal(GridLayout):
         self.signal = None
 
     def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path):
-        # b = CheckBox(pos_hint={'right': 1})
         if signal_type == "boolean" and n <= 1:
             b = CheckBox()
             b.size_hint = (0.35, 1)
@@ -53,7 +50,7 @@ class MySignal(GridLayout):
             self.my_text = None
 
         else:
-            t = Label(text = '[b][size=16]test[color=3333ff]value[/color][/size][/b]', markup = True, halign="center")
+            t = Label(text = '[b][size=16]test[color=3333ff]value[/color][/size][/b]', markup = True, halign="center", valign="center")
             t.size_hint = (0.35, 1)
             t.bind(size=t.setter('text_size')) 
             self.add_widget(t)
@@ -65,7 +62,7 @@ class MySignal(GridLayout):
             description += "[" + str(n) + "]"
         description += " at '" + mblk_name + "' address " + str(signal_addr) 
 
-        self.my_label.text = '[size=16][b]' + signal_name + '[/b][/size]'
+        self.my_label.text = '[size=16]' + signal_name + '[/size]'
         self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 
         self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + dev_path)
@@ -77,6 +74,11 @@ class MySignal(GridLayout):
         v = self.signal.get()
         self.my_description.text = '[size=14][color=909090]' + str(v) + '[/color][/size]'
 
+        new_state_bits = int(v[0]);
+        if new_state_bits != self.my_state_bits:
+            self.my_state_bits = new_state_bits
+            self.my_redraw_status_bits(None)
+
         if self.my_checkbox != None:
             checked = False
             try:
@@ -85,15 +87,35 @@ class MySignal(GridLayout):
             except:
                 print("mysignal.py: Unable to get check box state")        
 
-            self.my_checkbox.active = checked
+            if self.my_checkbox.active != checked:
+                self.my_checkbox.active = checked
+
+        if self.my_text != None:
+            self.my_text.text = str(v[1])
 
     def on_size(self, *args):
+        self.my_redraw_status_bits(args)
+
+    def my_redraw_status_bits(self, *args):
         self.canvas.before.clear()
         with self.canvas.before:
             Color(0.8, 0.8, 0.8, 0.25)
             mysz = self.size.copy()
             mysz[1] = 1
             Rectangle(pos=self.pos, size=mysz)            
+
+            if self.my_state_bits & 2 == 0: # 2
+                Color(0.5, 0.5, 0.5, 1)
+            elif self.my_state_bits & 12 == 12:
+                Color(1.0, 0, 0, 1)
+            elif self.my_state_bits & 8 == 8:
+                Color(1.0, 1.0, 0, 1)
+            elif self.my_state_bits & 4 == 4:
+                Color(1.0, 0.65, 0, 1)
+            else:
+                Color(0, 1, 0, 1)
+            
+            Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
 
 
 class MySignalGroup(GridLayout):
