@@ -32,22 +32,34 @@ class MySignal(GridLayout):
         lb.cols = 1
         lb.size_hint = (0.65, 1)
 
-        self.my_label_box = lb
+        # self.my_label_box = lb
         lb.add_widget(l)
         lb.add_widget(d)
 
-        b = CheckBox(pos_hint={'right': 1})
-        self.my_button = b
-        b.size_hint = (0.35, 1)
-
         self.add_widget(lb)
-        self.add_widget(b)
 
     def delete(self):
         self.signal.delete()
         self.signal = None
 
     def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, dev_path):
+        # b = CheckBox(pos_hint={'right': 1})
+        if signal_type == "boolean" and n <= 1:
+            b = CheckBox()
+            b.size_hint = (0.35, 1)
+            b.bind(on_press = self.on_checkbox_modified)
+            self.add_widget(b)
+            self.my_checkbox = b
+            self.my_text = None
+
+        else:
+            t = Label(text = '[b][size=16]test[color=3333ff]value[/color][/size][/b]', markup = True, halign="center")
+            t.size_hint = (0.35, 1)
+            t.bind(size=t.setter('text_size')) 
+            self.add_widget(t)
+            self.my_text = t
+            self.my_checkbox = None
+
         description = signal_type 
         if n > 1:
             description += "[" + str(n) + "]"
@@ -58,8 +70,22 @@ class MySignal(GridLayout):
 
         self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + dev_path)
 
+    def on_checkbox_modified(self, i):
+        self.signal.set(self.my_checkbox.active)
+
     def update_signal(self):
-        self.my_description.text = '[size=14][color=909090]' + str(self.signal.get()) + '[/color][/size]'
+        v = self.signal.get()
+        self.my_description.text = '[size=14][color=909090]' + str(v) + '[/color][/size]'
+
+        if self.my_checkbox != None:
+            checked = False
+            try:
+                if int(v[1]) != 0:
+                    checked = True
+            except:
+                print("mysignal.py: Unable to get check box state")        
+
+            self.my_checkbox.active = checked
 
     def on_size(self, *args):
         self.canvas.before.clear()
