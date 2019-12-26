@@ -10,6 +10,7 @@ from kivy.core.window import Window
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.metrics import dp
 
 from iocompython import Signal
 
@@ -50,6 +51,7 @@ class MySignal(GridLayout):
         flaglist = mblk_flags.split(',')
         self.my_up = "up" in flaglist
         self.my_down = "down" in flaglist
+        self.my_signal_name = signal_name
 
         if signal_type == "boolean" and n <= 1:
             b = CheckBox()
@@ -61,10 +63,13 @@ class MySignal(GridLayout):
             self.my_text = None
 
         else:
-            t = Label(text = '[b][size=16]test[color=3333ff]value[/color][/size][/b]', markup = True, halign="center", valign="center")
+            t = Button(text = '', markup = True, halign="center", valign="center")
             t.size_hint = (0.35, 1)
             t.bind(size=t.setter('text_size')) 
-            t.bind(on_ref_press  = self.my_create_popup)
+            t.background_color = [0 , 0, 0, 0]
+            t.background_normal =''
+            if self.my_down:
+                t.bind(on_release = self.my_create_popup)
             self.add_widget(t)
             self.my_text = t
             self.my_checkbox = None
@@ -136,15 +141,16 @@ class MySignal(GridLayout):
         content = BoxLayout(orientation='vertical', spacing='5dp')
         popup_width = min(0.95 * Window.width, dp(500))
         self.popup = popup = Popup(
-            title=self.title, content=content, size_hint=(None, None),
+            title=self.my_signal_name, content=content, size_hint=(None, None),
             size=(popup_width, '250dp'))
 
         # create the textinput used for numeric input
-        self.textinput = textinput = TextInput(
-            text=self.value, font_size='24sp', multiline=False,
+        textinput = TextInput(
+            text=self.my_text.text, font_size='24sp', multiline=False,
             size_hint_y=None, height='42sp')
-        textinput.bind(on_text_validate=self._validate)
+        # textinput.bind(on_text_validate=self._validate)
         self.textinput = textinput
+        # self.popup.bind(on_open=self.my_open_callback)
 
         # construct the content, widget are used as a spacer
         content.add_widget(Widget())
@@ -153,16 +159,27 @@ class MySignal(GridLayout):
 
         # 2 buttons are created for accept or cancel the current value
         btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
-        btn = Button(text='Ok')
-        btn.bind(on_release=self._validate)
+        btn = Button(text='ok')
+        btn.bind(on_release=self.my_user_input)
         btnlayout.add_widget(btn)
-        btn = Button(text='Cancel')
-        btn.bind(on_release=self._dismiss)
+        btn = Button(text='cancel')
+        btn.bind(on_release=popup.dismiss)
         btnlayout.add_widget(btn)
         content.add_widget(btnlayout)
 
         # all done, open the popup !
         popup.open()
+        textinput.focus = True
+
+    def my_user_input(self, instance):
+        try:
+            v = self.textinput.text
+            self.popup.dismiss()
+            self.signal.set(int(v))
+        except:
+            print("Conversion failed")
+
+        # self.dispatch('on_connect', password, self.get_settings())
 
 class MySignalGroup(GridLayout):
     def __init__(self, **kwargs):

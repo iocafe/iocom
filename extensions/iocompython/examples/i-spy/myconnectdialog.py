@@ -160,7 +160,7 @@ class MyConnectDialog(SettingsWithNoMenu):
             size=(popup_width, '250dp'))
 
         # create the textinput used for numeric input
-        self.textinput = textinput = TextInput(
+        textinput = TextInput(
             text="", font_size='24sp', multiline=False,
             size_hint_y=None, height='42sp')
         self.textinput = textinput
@@ -180,8 +180,9 @@ class MyConnectDialog(SettingsWithNoMenu):
         btnlayout.add_widget(btn)
         content.add_widget(btnlayout)
 
-        # all done, open the popup !
+        # all done, open the popup and set input focus !
         popup.open()
+        textinput.focus = True
 
     def on_password(self, instance):
         password = self.textinput.text

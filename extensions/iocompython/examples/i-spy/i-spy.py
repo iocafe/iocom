@@ -122,7 +122,6 @@ class MainApp(App):
                 a = self.ioc_devices.get(dev_path, None)
                 if a != None:
                     del self.ioc_devices[dev_path]
-            
 
     def mytimer_tick(self, interval): 
         self.timer_ms  += .1
