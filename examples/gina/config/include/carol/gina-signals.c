@@ -20,11 +20,12 @@ const struct gina_t gina =
   },
 
   {
-    {"imp", &ioboard_imp, 4, GINA_IMP_MBLK_SZ, (iocSignal*)&gina.imp.seven_segment},
-    {0, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
-    {2, 1, OS_SHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.servo}, /* servo */
-    {5, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
-    {10, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_imp, &pins.outputs.led_builtin} /* led_builtin */
+    {"imp", &ioboard_imp, 5, GINA_IMP_MBLK_SZ, (iocSignal*)&gina.imp.strtodevice},
+    {0, 16, OS_STR, &ioboard_imp, OS_NULL}, /* strtodevice */
+    {17, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
+    {19, 1, OS_SHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.servo}, /* servo */
+    {22, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
+    {27, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_imp, &pins.outputs.led_builtin} /* led_builtin */
   },
 
   {

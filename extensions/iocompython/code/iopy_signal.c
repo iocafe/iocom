@@ -431,9 +431,9 @@ static void Signal_set_sequence(
     SignalSetParseState *state)
 {
     PyObject *a, *py_repr, *py_str;
-    os_char value_str[128];
 
     long i, length, l;
+    double d;
     const os_char *str;
 
     length = PySequence_Length(args);
@@ -448,8 +448,11 @@ static void Signal_set_sequence(
             py_repr = PyObject_Repr(a);
             py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
             str = PyBytes_AS_STRING(py_str);
+            if (str == NULL) str = "";
+            if (*str == '\'') str++;
+            d = osal_str_to_double(str, OS_NULL);
+            Signal_store_double(d, state);
 
-            os_strncpy(value_str, str, sizeof(value_str));
             Py_XDECREF(py_repr);
             Py_XDECREF(py_str);
         }
@@ -460,7 +463,7 @@ static void Signal_set_sequence(
         }
 
         else if (PyFloat_Check(a)) {
-            double d = PyFloat_AsDouble(a);
+            d = PyFloat_AsDouble(a);
             Signal_store_double(d, state);
         }
 
@@ -503,6 +506,30 @@ static void Signal_set_one_value(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Set string signal.
+  @anchor Signal_set_string_value
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void Signal_set_string_value(
+    PyObject *args,
+    SignalSetParseState *state)
+{
+    os_char *str_value = NULL;
+
+    if (!PyArg_ParseTuple(args, "s", &str_value))
+    {
+        PyErr_SetString(iocomError, "String argument expected");
+        return;
+    }
+
+    ioc_sets_str(state->signal, str_value);
+}
 
 /**
 ****************************************************************************************************
@@ -593,11 +620,12 @@ static PyObject *Signal_set(
     if (state.type_id == OS_STR)
     {
         state.is_string = OS_TRUE;
+        Signal_set_string_value(args, &state);
     }
 
     /* If this signal is an array
      */
-    if (state.max_values > 1)
+    else if (state.max_values > 1)
     {
         state.is_array = OS_TRUE;
         Signal_set_array(args, &state);

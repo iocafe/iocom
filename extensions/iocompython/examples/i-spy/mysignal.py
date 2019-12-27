@@ -174,7 +174,7 @@ class MySignal(GridLayout):
         try:
             v = self.textinput.text
             self.popup.dismiss()
-            self.signal.set(int(v))
+            self.signal.set(v)
         except:
             print("Conversion failed")
 

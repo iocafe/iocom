@@ -205,14 +205,16 @@ osalStatus osal_loop(
     static os_float f[5] = {1, 2, 3, 4, 5};
     static os_timer ti;
     static int i;
+    char buf[32];
 
-    if (os_elapsed(&ti, 50))
+    if (os_elapsed(&ti, 100))
     {
         os_get_timer(&ti);
         f[2] = i++;
         ioc_sets_array(&gina.exp.testfloat, f, 5);
 
         ioc_sets_str(&gina.exp.teststr, "pekka");
+        ioc_gets_str(&gina.imp.strtodevice, buf, sizeof(buf));
     }
 
     /* The devicedir call is here for testing only, take away.

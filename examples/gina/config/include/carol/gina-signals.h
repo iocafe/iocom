@@ -26,6 +26,7 @@ typedef struct gina_t
   struct 
   {
     iocMblkSignalHdr hdr;
+    iocSignal strtodevice;
     iocSignal seven_segment;
     iocSignal servo;
     iocSignal dimmer_led;
@@ -69,6 +70,7 @@ extern const iocDeviceHdr gina_hdr;
 
 #define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
 #define GINA_EXP_TESTSTR_ARRAY_SZ 10
+#define GINA_IMP_STRTODEVICE_ARRAY_SZ 16
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 #define GINA_CONF_EXP_FRD_BUF_ARRAY_SZ 257
 #define GINA_CONF_IMP_TOD_BUF_ARRAY_SZ 257

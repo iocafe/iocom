@@ -80,6 +80,11 @@
 				"name": "controls",
 				"signals": [
 					{
+						"name": "strtodevice",
+						"type": "str",
+						"array": 16
+					},
+					{
 						"name": "seven_segment",
 						"type": "boolean",
 						"array": 8

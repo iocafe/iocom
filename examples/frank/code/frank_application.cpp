@@ -84,7 +84,7 @@ void FrankApplication::run()
     iocSignal *float_test = OS_NULL;
     iocSignal *str_test = OS_NULL;
     iocSignal *c_test = OS_NULL;
-
+    iocSignal *strtodevice = OS_NULL;
 
     os_memclear(segments, sizeof(segments));
 
@@ -100,19 +100,23 @@ void FrankApplication::run()
         ioc_maintain_signal(&frank_root, "teststr", m_network_name, &str_test);
         ioc_gets_str(str_test, buf, sizeof(buf));
 
+        os_strncat(buf, " Mighty", sizeof(buf));
+        ioc_maintain_signal(&frank_root, "strtodevice", m_network_name, &strtodevice);
+        ioc_sets_str(strtodevice, buf);
+
 
         ioc_maintain_signal(&frank_root, "testfloat", m_network_name, &float_test);
         ioc_gets_array(float_test, floats, sizeof(floats)/sizeof(os_float));
 
         ioc_maintain_signal(&frank_root, "C", m_network_name, &c_test);
-        v = ioc_gets_int(c_test, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
-
+        v = ioc_gets_int(c_test, &state_bits, IOC_SIGNAL_DEFAULT);
     }
 
     ioc_delete_signal(seven_segment);
     ioc_delete_signal(float_test);
     ioc_delete_signal(str_test);
     ioc_delete_signal(c_test);
+    ioc_delete_signal(strtodevice);
 }
 
 static void frank_application_thread_func(void *prm, osalEvent done)
