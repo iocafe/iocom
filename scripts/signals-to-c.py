@@ -73,7 +73,7 @@ def calc_signal_memory_sz(type, array_n):
     return array_n * type_sz + 1
 
 def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
-    global cfile, hfile, array_list
+    global cfile, hfile, array_list, reserved_addrs
     global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
@@ -92,7 +92,10 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
         arr_name = device_name + '_' + block_name + '_' + signal_name + '_ARRAY_SZ'
         array_list.append('#define ' + arr_name.upper() + ' ' + str(array_n))
 
-    current_addr += calc_signal_memory_sz(type, array_n)
+    mem_sz_bytes = calc_signal_memory_sz(type, array_n);
+    reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
+
+    current_addr += mem_sz_bytes
     if current_addr > max_addr:
         max_addr = current_addr
 
@@ -128,7 +131,7 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
     cfile.write(' /* ' + signal_name + ' */\n')
 
 def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
-    global cfile, hfile, array_list
+    global cfile, hfile, array_list, reserved_addrs
     global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
@@ -143,11 +146,14 @@ def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
     if array_n < 1:
         array_n = 1
 
+    mem_sz_bytes = calc_signal_memory_sz(type, array_n);
+    reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
+
     if array_n > 1  and not is_dynamic:
         arr_name = device_name + '_' + block_name + '_' + signal_name + '_ARRAY_SZ'
         array_list.append('#define ' + arr_name.upper() + ' ' + str(array_n))
 
-    current_addr += calc_signal_memory_sz(type, array_n)
+    current_addr += mem_sz_bytes
     if current_addr > max_addr:
         max_addr = current_addr
 
@@ -206,8 +212,16 @@ def process_group_block(group):
     for signal in signals:
         process_signal(group_name, signal)
 
+def check_if_duplicates(mylist):
+    return len(mylist) != len(set(mylist))
+
+def write_my_error(msg):
+    global cfile
+    print(msg)
+    cfile.write('\n\n***************************************\n' + msg + '\n***************************************\n\n')
+
 def process_mblk(mblk):
-    global cfile, hfile
+    global cfile, hfile, reserved_addrs
     global block_name, handle, define_list, mblk_nr, nro_mblks, mblk_list
     global current_addr, max_addr, signal_nr, nro_signals, is_controller
 
@@ -225,6 +239,7 @@ def process_mblk(mblk):
     mblk_list.append(device_name + '.' + block_name)
 
     current_addr = 0
+    reserved_addrs = []
     max_addr = 32
     signal_nr = 1
 
@@ -258,6 +273,9 @@ def process_mblk(mblk):
         cfile.write('  s->mblk_list[' + str(mblk_nr - 1) + '] = &s->' + block_name + '.hdr;\n')
 
     cfile.write('\n')
+
+    if check_if_duplicates(reserved_addrs):
+        write_my_error('ERROR: Duplicated signal addressess found in JSON!')
 
     mblk_nr = mblk_nr + 1
 

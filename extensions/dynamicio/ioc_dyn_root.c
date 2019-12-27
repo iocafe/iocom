@@ -426,22 +426,28 @@ static osalStatus ioc_new_signal_by_info(
         state->ncolumns,
         signal_type_id);
 
-    if (signal_type_id == OS_BOOLEAN)
+    switch(signal_type_id)
     {
-        if (n == 1)
-        {
-            state->current_addr++;
-        }
-        else
-        {
-            sz = (n + 7)/8 + 1;
-            state->current_addr += sz;
-        }
-    }
-    else
-    {
-        sz = (os_int)osal_typeid_size(signal_type_id);
-        state->current_addr += n * sz + 1;
+        case OS_BOOLEAN:
+            if (n == 1)
+            {
+                state->current_addr++;
+            }
+            else
+            {
+                sz = (n + 7)/8 + 1;
+                state->current_addr += sz;
+            }
+            break;
+
+        case OS_STR:
+            state->current_addr += n + 1;
+            break;
+
+        default:
+            sz = (os_int)osal_typeid_size(signal_type_id);
+            state->current_addr += n * sz + 1;
+            break;
     }
 
     /* Record first unused address to allow automatic resizing

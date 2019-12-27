@@ -59,7 +59,7 @@ typedef struct gina_t
 }
 gina_t;
 
-#define GINA_EXP_MBLK_SZ 40
+#define GINA_EXP_MBLK_SZ 46
 #define GINA_IMP_MBLK_SZ 32
 #define GINA_CONF_EXP_MBLK_SZ 272
 #define GINA_CONF_IMP_MBLK_SZ 276

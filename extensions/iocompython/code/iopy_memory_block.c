@@ -157,8 +157,6 @@ static PyObject *MemoryBlock_new(
          */
         ioc_initialize_memory_block(&self->mblk_handle, OS_NULL, iocroot, &prm);
         self->mblk_created = OS_TRUE;
-
-osal_debug_error("HERE NO_MEMORY_BLOCK");
     }
 
     self->number = OSAL_SUCCESS;

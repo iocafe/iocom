@@ -1106,6 +1106,10 @@ os_boolean ioc_is_my_address(
             break;
 
         case OS_BOOLEAN:
+            if (n > 1)
+            {
+                n = (n + 7) / 8 + 1;
+            }
             break;
 
         default:

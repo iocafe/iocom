@@ -9,7 +9,7 @@
       {
         "name": "inputs",
         "signals": [
-          {"name": "dip_switch_3", "addr": 30, "type": "boolean"},
+          {"name": "dip_switch_3", "addr": 40, "type": "boolean"},
           {"name": "dip_switch_4"},
           {"name": "touch_sensor"}
         ]

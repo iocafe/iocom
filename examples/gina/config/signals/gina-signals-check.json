@@ -10,7 +10,7 @@
 				"signals": [
 					{
 						"name": "dip_switch_3",
-						"addr": 30,
+						"addr": 40,
 						"type": "boolean"
 					},
 					{

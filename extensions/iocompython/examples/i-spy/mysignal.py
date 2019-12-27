@@ -96,7 +96,7 @@ class MySignal(GridLayout):
         new_state_bits = int(v[0]);
         if new_state_bits != self.my_state_bits:
             self.my_state_bits = new_state_bits
-            self.my_redraw_status_bits(None)
+            self.my_redraw_state_bits(None)
 
         if self.my_checkbox != None:
             checked = False
@@ -112,9 +112,9 @@ class MySignal(GridLayout):
             self.my_text.text = str(v[1])
 
     def on_size(self, *args):
-        self.my_redraw_status_bits(args)
+        self.my_redraw_state_bits(args)
 
-    def my_redraw_status_bits(self, *args):
+    def my_redraw_state_bits(self, *args):
         self.canvas.before.clear()
         with self.canvas.before:
             Color(0.8, 0.8, 0.8, 0.25)
