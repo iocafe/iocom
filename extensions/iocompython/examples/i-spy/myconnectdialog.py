@@ -170,7 +170,7 @@ class MyConnectDialog(SettingsWithNoMenu):
         content.add_widget(textinput)
         content.add_widget(Widget())
 
-        # 2 buttons are created for accept or cancel the current value
+        # 2 buttons are created for connect or cancel
         btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
         btn = Button(text='connect')
         btn.bind(on_release=self.on_password)

@@ -7,6 +7,7 @@ from kivy.core.window import Window
 
 from myactionbar import MyActionBar 
 from myconnectdialog import MyConnectDialog
+from mywaitdialog import MyWaitDialog
 from mydevice import MyDevice
 
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
@@ -19,6 +20,8 @@ class MainApp(App):
         self.my_scroll_panel = None
         self.my_view = None
         self.ioc_devices = {}
+        self.ioc_selected_device = None
+        self.ioc_selected_page = 'signals'
 
     def build(self):
         self.title = 'i-spy'
@@ -30,13 +33,27 @@ class MainApp(App):
         self.my_action_bar = action_bar
         self.my_widget_home.add_widget(action_bar)
 
-        connect_dlg = MyConnectDialog()
-        connect_dlg.bind(on_connect=self.connect)
-        self.set_displayed_page(connect_dlg, False)
-
+        self.set_displayed_page(None, 'connect')
         return self.root
 
-    def set_displayed_page(self, w, make_scroll_view):
+    def set_displayed_page(self, device_name, page_name):
+        if len(self.ioc_devices) == 0:
+            if self.ioc_root == None:
+                page_name = 'connect'
+            else:
+                page_name = 'wait'
+            self.ioc_selected_device = None
+
+        if page_name == None:
+            page_name = self.ioc_selected_page
+
+        if self.ioc_selected_device != None:
+            if self.ioc_selected_device not in self.ioc_devices:
+                self.ioc_selected_device = None
+
+        if self.ioc_selected_device == device_name and device_name != None and self.ioc_selected_page == page_name:
+            return;
+
         if self.my_scroll_panel != None:
             self.my_widget_home.remove_widget(self.my_scroll_panel)
             self.my_scroll_panel = None
@@ -47,17 +64,44 @@ class MainApp(App):
             self.my_widget_home.remove_widget(self.my_view)
             self.my_view.delete()
             self.my_view = None
-    
-        if make_scroll_view:
-            my_parent = ScrollView()
-            self.my_widget_home.add_widget(my_parent)
-            self.my_scroll_panel = my_parent
+
+        if page_name == 'connect':
+            connect_dlg = MyConnectDialog()
+            connect_dlg.bind(on_connect=self.connect)
+            self.my_view = connect_dlg;           
+            self.root.add_widget(connect_dlg)
+            return
+
+        my_scroll_view = ScrollView()
+        self.my_widget_home.add_widget(my_scroll_view)
+        self.my_scroll_panel = my_scroll_view
+
+        if page_name == 'wait':
+            dlg = MyWaitDialog()
+            self.my_view = dlg;           
+            my_scroll_view.add_widget(dlg)
+            return
+
+        if device_name != None:
+            if device_name not in self.ioc_devices:
+                device_name = None
+
+        if device_name == None:
+            device_name = next(iter(self.ioc_devices))
+
+        if page_name == 'signals' or page_name == None:
+            page_name = 'signals'
+            d = self.ioc_devices[device_name]
+            dlg = d.create_signal_display()
 
         else:
-            my_parent = self.my_widget_home
+            print("Unknown page name")
+            return             
 
-        self.my_view = w;           
-        my_parent.add_widget(w)
+        self.ioc_selected_device = device_name
+        self.ioc_selected_page = page_name
+        self.my_view = dlg
+        my_scroll_view.add_widget(dlg)
 
     def connect(self, source_object, *args):
         if self.ioc_root != None:
@@ -76,6 +120,8 @@ class MainApp(App):
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
             self.ioc_root.queue_events()
             self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
+
+        self.set_displayed_page(None, 'wait')
 
         self.start_mytimer() 
 
@@ -123,8 +169,8 @@ class MainApp(App):
                     d = MyDevice()
                     self.ioc_devices[dev_path] = d
                     d.setup_device(self.ioc_root, self.ioc_params, dev_path)
-                    w = d.create_signal_display()
-                    self.set_displayed_page(w, True)
+
+                    self.set_displayed_page(self.ioc_selected_device, None)
                     self.my_action_bar.add_my_device(dev_path)
             
             # Device disconnected
@@ -133,6 +179,7 @@ class MainApp(App):
                 if a != None:
                     del self.ioc_devices[dev_path]
                     self.my_action_bar.remove_my_device(dev_path)
+                    self.set_displayed_page(None, None)
 
     def mytimer_tick(self, interval): 
         self.timer_ms  += .1

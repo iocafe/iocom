@@ -24,46 +24,38 @@ class MyActionBar(ActionBar):
 
         ap.title = "nuudeli"
 
-        ag = ActionGroup(text='devices')
-        for d in self.devices:
-            b = ActionButton(text=d)
-            ag.add_widget(b)
+        n_devices = len(self.devices);
+        if n_devices > 0:
+            ag = ActionGroup(text='window')
+            self.add_my_button('signals', ag)
+            self.add_my_button('memory', ag)
+            self.add_my_button('configure', ag)
+            self.add_my_button('program', ag)
+            av.add_widget(ag)
 
+            ag = ActionGroup(text='devices')
+            for d in self.devices:
+                self.add_my_button(d, ag)
+            av.add_widget(ag)
+
+        ag = ActionGroup(text='i-spy')
+        self.add_my_button('disconnect', ag)
+        self.add_my_button('close', ag)
         av.add_widget(ag)
-
-        b = ActionButton(text='signals')
-        av.add_widget(b)
-        b = ActionButton(text='memory')
-        av.add_widget(b)
-        b = ActionButton(text='configure')
-        av.add_widget(b)
-        b = ActionButton(text='program')
-        av.add_widget(b)
-
-        b = ActionButton(text='close')
-        b.bind (on_release=self.my_close_pressed)
-        av.add_widget(b)
-
-        ''' 
-        for i in range(1, 5):
-            b = ActionButton(text='btn{}'.format(i))
-            av.add_widget(b)
-
-        ag = ActionGroup(text='group')
-        for i in range(5, 8):
-            ag.add_widget(ActionButton(text='Btn{}'.format(i)))
-        av.add_widget(ag)
-        av.remove_widget(b)            
-        '''
 
         self.add_widget(av)
         av.use_separator = True
 
+    def add_my_button(self, text, ag):
+        b = ActionButton(text=text)
+        b.bind (on_release=self.my_button_pressed)
+        ag.add_widget(b)
+
     def on_button_press(self, *args):
         print("button press dispatched")
 
-    def my_close_pressed(self, instance):
-        self.dispatch('on_button_press', 'close')
+    def my_button_pressed(self, instance):
+        self.dispatch('on_button_press', instance.text)
 
     def add_my_device(self, dev_path):
         # self.clear_widgets()
