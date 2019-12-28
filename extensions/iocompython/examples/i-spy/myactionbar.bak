@@ -8,11 +8,8 @@ class MyActionBar(ActionBar):
         super(MyActionBar, self).__init__(**kwargs)
 
         self.register_event_type('on_button_press')
-        self.devices = {}
-        self.create_my_action_bar()
+        # self.actionbar = ActionBar(pos_hint={'top': 1})
 
-    def create_my_action_bar(self):
-        self.clear_widgets()
         av = ActionView()
         self.my_action_view = av
         ap = ActionPrevious(title='my action bar', with_previous=False)
@@ -24,12 +21,18 @@ class MyActionBar(ActionBar):
 
         ap.title = "nuudeli"
 
-        ag = ActionGroup(text='devices')
-        for d in self.devices:
-            b = ActionButton(text=d)
-            ag.add_widget(b)
+        self.devices = {}
+        self.my_devices_group = ActionGroup(text='devices')
 
-        av.add_widget(ag)
+        self.ulle =  action_button = ActionButton(text='nakku')
+        action_button.inside_group = True
+        self.my_devices_group.add_widget(action_button)
+
+        action_button = ActionButton(text='kuppu')
+        action_button.inside_group = True
+        self.my_devices_group.add_widget(action_button)
+
+        av.add_widget(self.my_devices_group)
 
         b = ActionButton(text='signals')
         av.add_widget(b)
@@ -66,14 +69,23 @@ class MyActionBar(ActionBar):
         self.dispatch('on_button_press', 'close')
 
     def add_my_device(self, dev_path):
-        # self.clear_widgets()
-        self.devices[dev_path] = True;
-        self.create_my_action_bar()
+        self.clear_widgets()
+        action_button = ActionButton(text='Make')
+        self.my_devices_group.add_widget(action_button)
+        self.devices[dev_path] = action_button;
+        # self._trigger_layout()
+        action_button.inside_group = True
+        self.ulle.text = 'kaniini'
+        self.my_devices_group.text = 'masiina'
+        action_button.text = dev_path
+        self.my_devices_group.clear_widgets()
+        self.clear_widgets()
 
     def remove_my_device(self, dev_path):
-        if dev_path in self.devices:
-            del self.devices[dev_path]
-        self.create_my_action_bar()
+        action_button = self.devices.get(dev_path, None)
+        if action_button != None:
+            self.my_devices_group.remove_widget(action_button)
+            self.devices[dev_path] = None;
 
 class MainApp(App):
     def build(self):

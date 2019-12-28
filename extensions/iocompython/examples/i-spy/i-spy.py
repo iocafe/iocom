@@ -15,6 +15,8 @@ class MainApp(App):
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
         self.ioc_root = None
+        self.my_action_bar = None
+        self.my_scroll_panel = None
         self.my_view = None
         self.ioc_devices = {}
 
@@ -25,6 +27,7 @@ class MainApp(App):
         
         action_bar = MyActionBar()
         action_bar.bind (on_button_press=self.button_press)
+        self.my_action_bar = action_bar
         self.my_widget_home.add_widget(action_bar)
 
         connect_dlg = MyConnectDialog()
@@ -34,21 +37,27 @@ class MainApp(App):
         return self.root
 
     def set_displayed_page(self, w, make_scroll_view):
+        if self.my_scroll_panel != None:
+            self.my_widget_home.remove_widget(self.my_scroll_panel)
+            self.my_scroll_panel = None
+            self.my_view.delete()
+            self.my_view = None
+
         if self.my_view != None:
             self.my_widget_home.remove_widget(self.my_view)
             self.my_view.delete()
             self.my_view = None
     
         if make_scroll_view:
-            scroll_view = ScrollView()
-            self.my_widget_home = scroll_view
-            self.root.add_widget(scroll_view)
+            my_parent = ScrollView()
+            self.my_widget_home.add_widget(my_parent)
+            self.my_scroll_panel = my_parent
 
         else:
-            self.my_widget_home = self.root
+            my_parent = self.my_widget_home
 
         self.my_view = w;           
-        self.my_widget_home.add_widget(w)
+        my_parent.add_widget(w)
 
     def connect(self, source_object, *args):
         if self.ioc_root != None:
@@ -116,12 +125,14 @@ class MainApp(App):
                     d.setup_device(self.ioc_root, self.ioc_params, dev_path)
                     w = d.create_signal_display()
                     self.set_displayed_page(w, True)
+                    self.my_action_bar.add_my_device(dev_path)
             
             # Device disconnected
             if event == 'device_disconnected':
                 a = self.ioc_devices.get(dev_path, None)
                 if a != None:
                     del self.ioc_devices[dev_path]
+                    self.my_action_bar.remove_my_device(dev_path)
 
     def mytimer_tick(self, interval): 
         self.timer_ms  += .1
