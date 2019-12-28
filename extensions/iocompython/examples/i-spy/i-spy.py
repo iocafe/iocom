@@ -93,15 +93,15 @@ class MainApp(App):
 
         d = self.ioc_devices[device_name]
         if page_name == 'signals' or page_name == None:
-            dlg = None
             page_name = 'signals'
             dlg = d.create_signal_display()
 
         elif page_name == 'memory':
             dlg = MyMemoryBlockDialog()
-            dlg.add_mblk_to_page(self.ioc_root, 'exp.' + self.ioc_selected_device);
+            dlg.add_mblk_to_page(self.ioc_root, '*.' + device_name);
 
         else:
+            dlg = None
             print("Unknown page name " + page_name)
 
         self.ioc_selected_device = device_name

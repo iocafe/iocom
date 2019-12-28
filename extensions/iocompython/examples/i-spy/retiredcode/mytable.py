@@ -44,10 +44,13 @@ class MyTitle(GridLayout):
         super(MyTitle, self).__init__(**kwargs)
         self.cols = 2
         self.size_hint_y = None
-        self.height = 50 
+        self.height = 60 
         self.padding = [8, 6]
 
+        # my_label = Label(markup = True, halign="left", font_name="RobotoMono-Regular.ttf")
         my_label = Label(markup = True, halign="left")
+        
+
         self.my_label = my_label
         my_label.bind(size=my_label.setter('text_size')) 
         self.add_widget(my_label)

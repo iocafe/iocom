@@ -1,26 +1,38 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from mytabledata import MyTableData
-from mytable import MyTable
+# from mytabledata import MyTableData
+# from mytable import MyTable
 import json
+from time import time
 
 class MyMemoryBlockDialog(GridLayout):
     def __init__(self, **kwargs):
         super(MyMemoryBlockDialog, self).__init__(**kwargs)
         self.cols = 1
-        self.height = self.minimum_height = 400
+        self.padding = [8, 6]
         self.size_hint_y = None
         self.bind(minimum_height=self.setter('height'))
-
-        w = Label(text = 'memory block...')
-        w.size_hint_y = None
-        w.height = 60 
-        self.add_widget(w)
+        self.bind(height=self.setter('height'))
 
     def add_mblk_to_page(self, ioc_root, mblk_path):
+        self.clear_widgets()
         json_text = ioc_root.print('memory_blocks', mblk_path, 'data')
-        print(json_text)
         self.process_json(json_text)
+        self.ioc_root = ioc_root;
+        self.mblk_path = mblk_path;
+        self.my_update_time = time()
+
+    def append_text_line(self, text, header_line=False):
+        if header_line:
+            font_size = 20
+            my_label = Label(text = '[b]' + text + '[/b]', markup = True, halign="left", font_size=font_size)
+        else:            
+            font_size = 15
+            my_label = Label(text = text, markup = True, halign="left", font_name="RobotoMono-Regular.ttf", font_size=font_size)
+        my_label.bind(size=my_label.setter('text_size')) 
+        self.add_widget(my_label)
+        my_label.size_hint_y = None
+        my_label.height = 1.5 * my_label.font_size 
 
     def process_json(self, json_text):
         data = json.loads(json_text)
@@ -42,28 +54,32 @@ class MyMemoryBlockDialog(GridLayout):
         sz = data.get("size", 0)
         flags = data.get("flags", "none")
 
-        title = []
-        title.append(mblk_name + '.' + dev_name + str(dev_nr) + '.' + net_name) 
-        title.append('id=' + str(mblk_id) + ', size=' + str(sz) + ", flags=" + flags)
-
-        table = MyTable()
-        self.add_widget(table)
-
-        table_data = MyTableData()
-        table_data.set_title(title)
-        table.set_table_data(table_data)
+        self.append_text_line(mblk_name + '.' + dev_name + str(dev_nr) + '.' + net_name, True)
+        self.append_text_line('id=' + str(mblk_id) + ', size=' + str(sz) + ", flags=" + flags)
 
         data = data.get("data", None)
         if data == None:
             return
 
-        # for d in data:
+        n = len(data)
+        n_cols = 16
+        n_rows = (n + n_cols - 1) // n_cols
+
+        for y in range(n_rows):
+            my_text = str(y * n_cols).zfill(6) + ': '
+            nn = n - y * n_cols
+            if nn > n_cols:
+                nn = n_cols
+            for x in range(nn):
+                my_text += str(data[y * n_cols + x]).zfill(3) + ' '
+            self.append_text_line(my_text)
 
     def delete(self):
         pass
 
     def run(self):
-        pass
+        if time() > self.my_update_time + 2:
+            self.add_mblk_to_page(self.ioc_root, self.mblk_path)
 
 
 
