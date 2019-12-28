@@ -67,7 +67,7 @@ class MyDevice(ConfigParser):
         mblk_name = data.get("name", "no_name")
         section_name = mblk_name.replace("_", "-")
         # title = data.get("title", "no_title")
-        mblk_flags = data.get("flags", "no_title")
+        mblk_flags = data.get("flags", "none")
         self.signal_addr = 0
         groups = data.get("groups", None)
         if groups == None:

@@ -8,6 +8,7 @@ from kivy.core.window import Window
 from myactionbar import MyActionBar 
 from myconnectdialog import MyConnectDialog
 from mywaitdialog import MyWaitDialog
+from mymblkdialog import MyMemoryBlockDialog
 from mydevice import MyDevice
 
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
@@ -90,11 +91,15 @@ class MainApp(App):
         if device_name == None:
             device_name = next(iter(self.ioc_devices))
 
-        dlg = None
+        d = self.ioc_devices[device_name]
         if page_name == 'signals' or page_name == None:
+            dlg = None
             page_name = 'signals'
-            d = self.ioc_devices[device_name]
             dlg = d.create_signal_display()
+
+        elif page_name == 'memory':
+            dlg = MyMemoryBlockDialog()
+            dlg.add_mblk_to_page(self.ioc_root, 'exp.' + self.ioc_selected_device);
 
         else:
             print("Unknown page name " + page_name)

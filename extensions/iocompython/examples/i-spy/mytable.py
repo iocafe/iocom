@@ -6,6 +6,8 @@ from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle
 from random import random
 
+from mytabledata import MyTableData
+
 
 class MyTable(GridLayout):
     def __init__(self, **kwargs):
@@ -27,6 +29,10 @@ class MyTable(GridLayout):
         self.content = MyContent()
         self.add_widget(self.content)
 
+    def set_table_data(self, table_data):
+        self.table_data = table_data
+        self.title.set_my_title(table_data.title)
+
     def delete(self):
         pass
 
@@ -36,8 +42,27 @@ class MyTable(GridLayout):
 class MyTitle(GridLayout):
     def __init__(self, **kwargs):
         super(MyTitle, self).__init__(**kwargs)
+        self.cols = 2
         self.size_hint_y = None
-        self.height = 60 
+        self.height = 50 
+        self.padding = [8, 6]
+
+        my_label = Label(markup = True, halign="left")
+        self.my_label = my_label
+        my_label.bind(size=my_label.setter('text_size')) 
+        self.add_widget(my_label)
+        # self.bind(height=my_label.setter('height'))
+
+    def set_my_title(self, title):
+        n = len(title)
+        my_text = ""
+        for i in range(n):
+            if i == 0:
+                my_text = '[b][size=16]' + title[i] + '[/b][/size]'
+            else:
+                my_text += '\n[size=12]' + title[i] + '[/size]'
+
+        self.my_label.text = my_text
 
 class MyContent(GridLayout):
     def __init__(self, **kwargs):
@@ -182,6 +207,15 @@ class MainApp(App):
     def build(self):
         self.title = 'test'
         self.root = MyTable()
+
+        table_data = MyTableData()
+        title = []
+        title.append("Kissa ja kaakeli")
+        title.append("on jo poydalla")
+        table_data.set_title(title)
+            
+        self.root.set_table_data(table_data)
+
         return self.root
 
 
