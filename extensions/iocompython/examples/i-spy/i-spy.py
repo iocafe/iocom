@@ -57,8 +57,9 @@ class MainApp(App):
         if self.my_scroll_panel != None:
             self.my_widget_home.remove_widget(self.my_scroll_panel)
             self.my_scroll_panel = None
-            self.my_view.delete()
-            self.my_view = None
+            if self.my_view != None:
+                self.my_view.delete()
+                self.my_view = None
 
         if self.my_view != None:
             self.my_widget_home.remove_widget(self.my_view)
@@ -89,19 +90,20 @@ class MainApp(App):
         if device_name == None:
             device_name = next(iter(self.ioc_devices))
 
+        dlg = None
         if page_name == 'signals' or page_name == None:
             page_name = 'signals'
             d = self.ioc_devices[device_name]
             dlg = d.create_signal_display()
 
         else:
-            print("Unknown page name")
-            return             
+            print("Unknown page name " + page_name)
 
         self.ioc_selected_device = device_name
         self.ioc_selected_page = page_name
-        self.my_view = dlg
-        my_scroll_view.add_widget(dlg)
+        if dlg != None:
+            self.my_view = dlg
+            my_scroll_view.add_widget(dlg)
 
     def connect(self, source_object, *args):
         if self.ioc_root != None:
@@ -197,10 +199,20 @@ class MainApp(App):
         Clock.unschedule(self.mytimer_tick) 
 
     def button_press(self, source_object, *args):
-        button = args[0]
-        if button=='close':
+        button_text = args[0]
+        if button_text == 'close':
             self.disconnect()
             self.stop()        
+
+        if button_text == 'disconnect':
+            self.disconnect()
+            self.set_displayed_page(None, 'connect')
+
+        elif button_text == 'signals' or button_text == 'memory' or button_text == 'configure' or button_text == 'program':
+            self.set_displayed_page(self.ioc_selected_device, button_text)
+
+        elif button_text in self.ioc_devices:
+            self.set_displayed_page(button_text, None)
 
 if __name__ == '__main__':
     MainApp().run()
