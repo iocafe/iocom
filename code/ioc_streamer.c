@@ -1538,10 +1538,7 @@ void ioc_ctrl_stream_from_device(
             bytes -= n_read;
         }
 
-        if (!ctrl->transferring_default_config)
-        {
-            os_persistent_close(ctrl->fdr_persistent, 0);
-        }
+        os_persistent_close(ctrl->fdr_persistent, 0);
         ctrl->fdr_persistent = OS_NULL;
     }
 

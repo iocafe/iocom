@@ -41,11 +41,12 @@ class MyConfig(MySignalDisplay):
         if self.my_default_config == None:
             print("Loading default network configuration from " + device_path + " failed")
             return;
-        self.my_config = ioc_root.getconf(device_path, 2)
-
-        if self.my_config == None:
-            print("Loading network configuration from " + device_path + " failed")
-            self.my_config = self.my_default_config
+        
+        #self.my_config = ioc_root.getconf(device_path, 2)
+        #if self.my_config == None:
+        #    print("Loading network configuration from " + device_path + " failed")
+        #    self.my_config = self.my_default_config
+        self.my_config = self.my_default_config
 
         json_text = bin2json(self.my_config)
         if json_text == None:
@@ -88,31 +89,28 @@ class MyConfig(MySignalDisplay):
         pass
 
     def process_json(self, json_text):
-        self.signals = {}
+        # self.signals = {}
 
         data = json.loads(json_text)
 
-        mblks = data.get("mblk", None)
-        if mblks == None:
-            print("'mblk' not found")
+        net = data.get("network", None)
+        if net == None:
+            print("'nets' not found")
             return
             
-        for mblk in mblks:
-            self.process_mblk(mblk)
+        self.process_network(net)
 
-    def process_mblk(self, data):
-        mblk_name = data.get("name", "no_name")
-        section_name = mblk_name.replace("_", "-")
-        # title = data.get("title", "no_title")
-        mblk_flags = data.get("flags", "none")
-        self.signal_addr = 0
-        groups = data.get("groups", None)
-        if groups == None:
-            return;
+    def process_network(self, data):
+        connect = data.get("connect", None)
+        nic = data.get("nic", None)
+        security = data.get("security", None)
 
-        for group in groups:
-            self.process_group(group, mblk_name, mblk_flags, section_name)
+        for item in data:
+            if item != connect and item != nic and item != security:
+                self.new_signal(self.ioc_root, "signal_name", 0, 
+                    "ushort", 1, "mblk_name", "lippu:", "self.device_path");
         
+    '''        
     def process_group(self, data, mblk_name, mblk_flags, section_name):
         group_name = data.get("name", "no_name")
         if group_name == 'inputs' or group_name == 'outputs':
@@ -121,7 +119,6 @@ class MyConfig(MySignalDisplay):
             self.signal_type = 'ushort'
 
         # title = data.get("title", "no_title")
-        signals = data.get("signals", None)
         if signals == None:
             return;
 
@@ -151,3 +148,4 @@ class MyConfig(MySignalDisplay):
         else:
             type_sz = osal_typeinfo[self.signal_type]
             self.signal_addr += 1 + type_sz * n
+    '''

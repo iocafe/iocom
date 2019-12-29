@@ -398,8 +398,6 @@ void ioc_sbuf_synchronize(
         }
         if (end_addr < start_addr) return;
 
-        n = end_addr - start_addr + 1;
-
         /* Do delta encoding.
          */
         for (i = start_addr; i <= end_addr; i++)
@@ -416,6 +414,7 @@ void ioc_sbuf_synchronize(
 
     if (syncbuf)
     {
+        n = end_addr - start_addr + 1;
         os_memcpy(syncbuf + start_addr, buf + start_addr, n);
     }
 

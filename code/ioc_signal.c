@@ -958,10 +958,15 @@ os_char ioc_moves_array(
 
         else
         {
+            if (*p != state_bits)
+            {
+                ioc_mblk_invalidate(mblk, addr, addr);
+            }
             *(p++) = state_bits;
             p += offset * type_sz;
             ioc_byte_ordered_copy(p, array, n * type_sz, type_sz);
-            ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n * type_sz) /* no -1, we need also state byte */);
+            addr += offset * type_sz + 1;
+            ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n * type_sz - 1));
         }
     }
     else
@@ -1004,7 +1009,7 @@ os_char ioc_moves_array(
         }
         else
         {
-            p += offset;
+            p += offset * type_sz;
             ioc_byte_ordered_copy(array, p, n * type_sz, type_sz);
         }
     }
