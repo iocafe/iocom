@@ -1,7 +1,5 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-# from mytabledata import MyTableData
-# from mytable import MyTable
 import json
 from time import time
 

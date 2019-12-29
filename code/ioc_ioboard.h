@@ -102,10 +102,10 @@ extern iocHandle
 
 /* Define for default control stream, to avoid typing it for every IO board.
  */
-#define IOBOARD_DEFAULT_CTRL_STREAM {OS_TRUE, \
-    {&gina.conf_imp.frd_cmd, &gina.conf_imp.frd_select, &gina.conf_exp.frd_buf, &gina.conf_exp.frd_head, &gina.conf_imp.frd_tail, &gina.conf_exp.frd_state, OS_FALSE}, \
-    {&gina.conf_imp.tod_cmd, &gina.conf_imp.tod_select, &gina.conf_imp.tod_buf, &gina.conf_imp.tod_head, &gina.conf_exp.tod_tail, &gina.conf_exp.tod_state, OS_TRUE}}
-
+#define IOBOARD_DEFAULT_CTRL_STREAM(dn,dconfig,dconfig_sz) {OS_TRUE, \
+    {&(dn).conf_imp.frd_cmd, &(dn).conf_imp.frd_select, &(dn).conf_exp.frd_buf, &(dn).conf_exp.frd_head, &(dn).conf_imp.frd_tail, &(dn).conf_exp.frd_state, OS_FALSE}, \
+    {&(dn).conf_imp.tod_cmd, &(dn).conf_imp.tod_select, &(dn).conf_imp.tod_buf, &(dn).conf_imp.tod_head, &(dn).conf_exp.tod_tail, &(dn).conf_exp.tod_state, OS_TRUE}, \
+    dconfig, dconfig_sz}
 
 struct iocDeviceHdr;
 

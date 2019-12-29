@@ -99,6 +99,11 @@ typedef struct iocStreamerParams
 
     iocStreamerSignals frd;
     iocStreamerSignals tod;
+
+    /* Default network config, OS_NULL if none.
+     */
+    const os_char *default_config;
+    os_memsz default_config_sz;
 }
 iocStreamerParams;
 
@@ -170,6 +175,11 @@ typedef struct
     osalStream frd;
     osPersistentHandle *fdr_persistent;
     os_boolean fdr_persistent_ok;
+
+    /* Transfer of default network configuration from device to controller.
+     */
+    os_boolean transferring_default_config;
+    os_short default_config_pos;
 
     /* To device from controller.
      */

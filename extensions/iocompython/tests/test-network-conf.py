@@ -3,7 +3,7 @@ import ioterminal
 import time
 
 def get_network_conf(device_name, network_name):
-    global root, callback_queue
+    global root
 
     exp_mblk_path = 'conf_exp.' + device_name + '.' + network_name
     imp_mblk_path = 'conf_imp.' + device_name + '.' + network_name
@@ -28,7 +28,7 @@ def get_network_conf(device_name, network_name):
 
 
 def set_network_conf(device_name, network_name):
-    global root, callback_queue
+    global root
 
     exp_mblk_path = 'conf_exp.' + device_name + '.' + network_name
     imp_mblk_path = 'conf_imp.' + device_name + '.' + network_name
@@ -54,7 +54,7 @@ def set_network_conf(device_name, network_name):
 
 
 def main():
-    global root, callback_queue
+    global root
 
     root = Root('netconftest', security='certfile=bob.crt,keyfile=bob.key')
     root.queue_events()
@@ -76,7 +76,8 @@ def main():
                 #set_network_conf(device_name, network_name)
 #                get_network_conf(device_name, network_name)
 #                print(root.setconf(device_name + "." + network_name, str.encode("Dummy config data")))
-                print(root.getconf(device_name + "." + network_name))
+#                print(root.getconf(device_name + "." + network_name))
+                print(root.getconf(device_name + "." + network_name, 3)) # default network configuration
 
     root.delete()
 

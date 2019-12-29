@@ -47,7 +47,7 @@ class MySignal(GridLayout):
         self.signal.delete()
         self.signal = None
 
-    def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, dev_path):
+    def setup_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, device_path):
         flaglist = mblk_flags.split(',')
         self.my_up = "up" in flaglist
         self.my_down = "down" in flaglist
@@ -82,7 +82,7 @@ class MySignal(GridLayout):
         self.my_label.text = '[size=16]' + signal_name + '[/size]'
         self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 
-        self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + dev_path)
+        self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + device_path)
 
     def on_checkbox_modified(self, i):
         if self.my_up and not self.my_down:
@@ -224,9 +224,9 @@ class MySignalDisplay(GridLayout):
         for s in self.signals:
             s.update_signal()
 
-    def new_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, dev_path):
+    def new_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, device_path):
         s = MySignal() 
-        s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, dev_path)
+        s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, device_path)
         self.add_widget(s)
         self.my_nro_widgets += 1
         self.signals.append(s)

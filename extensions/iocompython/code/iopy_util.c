@@ -69,7 +69,11 @@ PyObject *iocom_python_bin2json(
         return NULL;
     }
 
-    PyBytes_AsStringAndSize(pydata, &buffer, &length);
+    if (PyBytes_AsStringAndSize(pydata, &buffer, &length) == -1)
+    {
+        PyErr_SetString(iocomError, "Argument is not valud Bytes object");
+        return NULL;
+    }
     uncompressed = osal_stream_buffer_open(OS_NULL, OS_NULL, OS_NULL, OSAL_STREAM_DEFAULT);
     s = osal_uncompress_json(uncompressed, buffer, length, 0);
     if (s == OSAL_SUCCESS)

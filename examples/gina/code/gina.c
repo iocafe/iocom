@@ -53,8 +53,11 @@ static os_char
    to transfer a stream using buffer within memory block. This static structure selects which
    signals are used for straming data between the controller and IO device.
  */
-static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM;
+static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM(gina,
+    gina_network_defaults, sizeof(gina_network_defaults));
+
 static iocControlStreamState ioc_ctrl_state;
+
 
 /**
 ****************************************************************************************************

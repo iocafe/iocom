@@ -57,14 +57,14 @@ class MyActionBar(ActionBar):
     def my_button_pressed(self, instance):
         self.dispatch('on_button_press', instance.text)
 
-    def add_my_device(self, dev_path):
+    def add_my_device(self, device_path):
         # self.clear_widgets()
-        self.devices[dev_path] = True;
+        self.devices[device_path] = True;
         self.create_my_action_bar()
 
-    def remove_my_device(self, dev_path):
-        if dev_path in self.devices:
-            del self.devices[dev_path]
+    def remove_my_device(self, device_path):
+        if device_path in self.devices:
+            del self.devices[device_path]
         self.create_my_action_bar()
 
 class MainApp(App):

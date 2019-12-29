@@ -9,6 +9,9 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
+            "env": {
+                "PYTHONPATH": "/coderoot/bin/linux"
+            },            
             "console": "integratedTerminal"
         }
     ]

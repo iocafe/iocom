@@ -1406,13 +1406,25 @@ void ioc_run_control_stream(
 
             if (ctrl->frd)
             {
+                ctrl->transferring_default_config = OS_FALSE;
                 select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
-                ctrl->fdr_persistent = os_persistent_open(select, OS_NULL, OSAL_STREAM_READ);
-                ctrl->fdr_persistent_ok = (ctrl->fdr_persistent != OS_NULL);
-#if OSAL_DEBUG
-                if (ctrl->fdr_persistent == OS_NULL)
+
+                /* If reading */
+                if (select == OS_PBNR_IO_DEVICE_CONFIG_DEFAULTS)
                 {
-                    osal_debug_error_int("Reading persistent block failed", select);
+                    ctrl->transferring_default_config = OS_TRUE;
+                    ctrl->default_config_pos = 0;
+                    ctrl->fdr_persistent_ok = OS_TRUE;
+                }
+                else
+                {
+                    ctrl->fdr_persistent = os_persistent_open(select, OS_NULL, OSAL_STREAM_READ);
+                    ctrl->fdr_persistent_ok = (ctrl->fdr_persistent != OS_NULL);
+#if OSAL_DEBUG
+                    if (ctrl->fdr_persistent == OS_NULL)
+                    {
+                        osal_debug_error_int("Reading persistent block failed", select);
+                    }
                 }
 #endif
             }
@@ -1477,7 +1489,7 @@ void ioc_ctrl_stream_from_device(
     os_memsz rdnow, n_written, n_read, bytes;
     osalStatus s;
 
-    if (ctrl->fdr_persistent)
+    if (ctrl->fdr_persistent || ctrl->transferring_default_config)
     {
         bytes = ioc_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
         while (OS_TRUE)
@@ -1486,7 +1498,29 @@ void ioc_ctrl_stream_from_device(
 
             rdnow = bytes;
             if (rdnow > sizeof(buf)) rdnow = sizeof(buf);
-            n_read = os_persistent_read(ctrl->fdr_persistent, buf, rdnow);
+
+            /* Get static default network congiguration.
+             */
+            if (ctrl->transferring_default_config)
+            {
+                if (params->default_config == OS_NULL)
+                {
+                    ctrl->fdr_persistent_ok = OS_FALSE;
+                    break;
+                }
+                n_read = params->default_config_sz - ctrl->default_config_pos;
+                if (rdnow < n_read) n_read = rdnow;
+                os_memcpy(buf, params->default_config + ctrl->default_config_pos, n_read);
+                ctrl->default_config_pos += n_read;
+            }
+
+            /* Get actual persistent data.
+             */
+            else
+            {
+                n_read = os_persistent_read(ctrl->fdr_persistent, buf, rdnow);
+            }
+
             if (n_read > 0)
             {
                 s = ioc_streamer_write(ctrl->frd, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
@@ -1494,7 +1528,7 @@ void ioc_ctrl_stream_from_device(
                 osal_debug_assert(n_written == n_read);
             }
 
-            /* If everythin has been read.
+            /* If all has been read?
              */
             if (n_read < rdnow)
             {
@@ -1504,7 +1538,10 @@ void ioc_ctrl_stream_from_device(
             bytes -= n_read;
         }
 
-        os_persistent_close(ctrl->fdr_persistent, 0);
+        if (!ctrl->transferring_default_config)
+        {
+            os_persistent_close(ctrl->fdr_persistent, 0);
+        }
         ctrl->fdr_persistent = OS_NULL;
     }
 

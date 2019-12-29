@@ -27,11 +27,11 @@ class DeviceSpy(ConfigParser):
     #def __init__(self, *args, **kwargs):
     #    self.image_nr = -1
 
-    def setup_my_panel(self, app, settings, dev_path):
+    def setup_my_panel(self, app, settings, device_path):
         self.app = app
-        self.dev_path = dev_path
+        self.device_path = device_path
         self.my_panel = None
-        info = MemoryBlock(app.ioc_root, mblk_name='info.' + dev_path)
+        info = MemoryBlock(app.ioc_root, mblk_name='info.' + device_path)
         json_bin = info.read();        
         json_text = bin2json(json_bin)
         self.process_json(json_text)
@@ -42,13 +42,13 @@ class DeviceSpy(ConfigParser):
             self.setdefaults(group_name, self.sign_values[group_name])
 
         json_str = json.dumps(self.sign_display)
-        # settings.add_json_panel(dev_path, self, data=json_str)
+        # settings.add_json_panel(device_path, self, data=json_str)
 
-        panel = settings.create_json_panel(dev_path, self, data=json_str)
+        panel = settings.create_json_panel(device_path, self, data=json_str)
         self.my_panel = panel
         uid = panel.uid
         if settings.interface is not None:
-            settings.interface.add_panel(panel, dev_path + " X", uid)
+            settings.interface.add_panel(panel, device_path + " X", uid)
 
         info.delete()
 
@@ -123,7 +123,7 @@ class DeviceSpy(ConfigParser):
         g = self.signals.get(mblk_name, None)
         if g == None:
             self.signals[mblk_name] = {}
-        self.signals[mblk_name][signal_name] = Signal(self.app.ioc_root, signal_name + "." + mblk_name + "." + self.dev_path)
+        self.signals[mblk_name][signal_name] = Signal(self.app.ioc_root, signal_name + "." + mblk_name + "." + self.device_path)
         
         if self.signal_type == "boolean":
             if n <= 1:

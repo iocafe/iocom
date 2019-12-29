@@ -210,7 +210,7 @@ class MyApp(App):
             # mblk_name = e[3]
             device_name = e[2]
             network_name = e[1]
-            dev_path = device_name + '.' + network_name;
+            device_path = device_name + '.' + network_name;
 
             '''
             # New network, means a new game board
@@ -233,17 +233,17 @@ class MyApp(App):
 
             # Device connected
             if event == 'new_device':
-                a = self.ioc_devices.get(dev_path, None)
+                a = self.ioc_devices.get(device_path, None)
                 if a == None:
                     d = DeviceSpy()
-                    self.ioc_devices[dev_path] = d
-                    d.setup_my_panel(self, self.mysettings, dev_path)
+                    self.ioc_devices[device_path] = d
+                    d.setup_my_panel(self, self.mysettings, device_path)
             
             # Device disconnected
             if event == 'device_disconnected':
-                a = self.ioc_devices.get(dev_path, None)
+                a = self.ioc_devices.get(device_path, None)
                 if a != None:
-                    del self.ioc_devices[dev_path]
+                    del self.ioc_devices[device_path]
             
 
     # To increase the time / count 
@@ -251,8 +251,8 @@ class MyApp(App):
         self.timer_ms  += .1
         self.check_iocom_events()
 
-        for dev_path in self.ioc_devices:
-            self.ioc_devices[dev_path].run()
+        for device_path in self.ioc_devices:
+            self.ioc_devices[device_path].run()
   
     # To start the count 
     def start_mytimer(self): 

@@ -10,6 +10,7 @@ from myconnectdialog import MyConnectDialog
 from mywaitdialog import MyWaitDialog
 from mymblkdialog import MyMemoryBlockDialog
 from mydevice import MyDevice
+from myconfig import MyConfig
 
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
 
@@ -37,7 +38,7 @@ class MainApp(App):
         self.set_displayed_page(None, 'connect')
         return self.root
 
-    def set_displayed_page(self, device_name, page_name):
+    def set_displayed_page(self, device_path, page_name):
         if len(self.ioc_devices) == 0:
             if self.ioc_root == None:
                 page_name = 'connect'
@@ -52,7 +53,7 @@ class MainApp(App):
             if self.ioc_selected_device not in self.ioc_devices:
                 self.ioc_selected_device = None
 
-        if self.ioc_selected_device == device_name and device_name != None and self.ioc_selected_page == page_name:
+        if self.ioc_selected_device == device_path and device_path != None and self.ioc_selected_page == page_name:
             return;
 
         if self.my_scroll_panel != None:
@@ -84,27 +85,31 @@ class MainApp(App):
             my_scroll_view.add_widget(dlg)
             return
 
-        if device_name != None:
-            if device_name not in self.ioc_devices:
-                device_name = None
+        if device_path != None:
+            if device_path not in self.ioc_devices:
+                device_path = None
 
-        if device_name == None:
-            device_name = next(iter(self.ioc_devices))
+        if device_path == None:
+            device_path = next(iter(self.ioc_devices))
 
-        d = self.ioc_devices[device_name]
+        d = self.ioc_devices[device_path]
         if page_name == 'signals' or page_name == None:
             page_name = 'signals'
             dlg = d.create_signal_display()
 
+        elif page_name == 'configure':
+            dlg = MyConfig()
+            dlg.set_device(self.ioc_root, device_path)
+
         elif page_name == 'memory':
             dlg = MyMemoryBlockDialog()
-            dlg.add_mblk_to_page(self.ioc_root, '*.' + device_name);
+            dlg.add_mblk_to_page(self.ioc_root, '*.' + device_path);
 
         else:
             dlg = None
             print("Unknown page name " + page_name)
 
-        self.ioc_selected_device = device_name
+        self.ioc_selected_device = device_path
         self.ioc_selected_page = page_name
         if dlg != None:
             self.my_view = dlg
@@ -147,7 +152,7 @@ class MainApp(App):
             # mblk_name = e[3]
             device_name = e[2]
             network_name = e[1]
-            dev_path = device_name + '.' + network_name;
+            device_path = device_name + '.' + network_name;
 
             '''
             # New network, means a new game board
@@ -170,22 +175,22 @@ class MainApp(App):
 
             # Device connected
             if event == 'new_device':
-                a = self.ioc_devices.get(dev_path, None)
+                a = self.ioc_devices.get(device_path, None)
                 if a == None:
-                    print("new device " + dev_path)
+                    print("new device " + device_path)
                     d = MyDevice()
-                    self.ioc_devices[dev_path] = d
-                    d.setup_device(self.ioc_root, self.ioc_params, dev_path)
+                    self.ioc_devices[device_path] = d
+                    d.set_device(self.ioc_root, self.ioc_params, device_path)
 
                     self.set_displayed_page(self.ioc_selected_device, None)
-                    self.my_action_bar.add_my_device(dev_path)
+                    self.my_action_bar.add_my_device(device_path)
             
             # Device disconnected
             if event == 'device_disconnected':
-                a = self.ioc_devices.get(dev_path, None)
+                a = self.ioc_devices.get(device_path, None)
                 if a != None:
-                    del self.ioc_devices[dev_path]
-                    self.my_action_bar.remove_my_device(dev_path)
+                    del self.ioc_devices[device_path]
+                    self.my_action_bar.remove_my_device(device_path)
                     self.set_displayed_page(None, None)
 
     def mytimer_tick(self, interval): 
