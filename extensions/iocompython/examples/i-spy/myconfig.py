@@ -34,7 +34,9 @@ class MyConfig(MySignalDisplay):
         self.device_path = device_path
         self.my_signal_panel = None
 
-        # Load static default network conguration and user network conguration.
+        # Load static default network conguration and user network conguration. 
+        # Persitent block number 2 is network configuration and block number 3
+        # is static default network configuration.
         self.my_default_config = ioc_root.getconf(device_path, 3)
         if self.my_default_config == None:
             print("Loading default network configuration from " + device_path + " failed")
