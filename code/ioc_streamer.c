@@ -1067,12 +1067,30 @@ static osalStatus ioc_streamer_controller_read(
 
         case IOC_SSTEP_TRANSFER_DONE:
             ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
+            streamer->step = IOC_SSTEP_TRANSFER_DONE2;
+            osal_trace3("IOC_SSTEP_TRANSFER_DONE");
+            break;
+
+        case IOC_SSTEP_TRANSFER_DONE2:
+            if (state == IOC_STREAM_RUNNING || state == IOC_STREAM_COMPLETED)
+            {
+                if (!os_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT)) break;
+            }
             streamer->step = IOC_SSTEP_ALL_COMPLETED;
             osal_trace3("IOC_SSTEP_ALL_COMPLETED");
             break;
 
         case IOC_SSTEP_FAILED:
             ioc_sets0_int(signals->cmd, IOC_STREAM_IDLE);
+            streamer->step = IOC_SSTEP_FAILED2;
+            os_get_timer(&streamer->mytimer);
+            break;
+
+        case IOC_SSTEP_FAILED2:
+            if (state == IOC_STREAM_RUNNING)
+            {
+                if (!os_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT)) break;
+            }
             streamer->step = IOC_SSTEP_FAILED_AND_IDLE_SET;
             osal_trace3("IOC_SSTEP_FAILED_AND_IDLE_SET");
             break;
@@ -1086,8 +1104,10 @@ getout:
     {
         case IOC_SSTEP_INITIALIZED2:
         case IOC_SSTEP_TRANSFER_DATA:
+        case IOC_SSTEP_TRANSFER_DONE2:
         case IOC_SSTEP_TRANSFER_DONE:
         case IOC_SSTEP_FAILED:
+        case IOC_SSTEP_FAILED2:
             s = OSAL_SUCCESS;
             break;
 

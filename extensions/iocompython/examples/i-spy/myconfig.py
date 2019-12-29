@@ -42,11 +42,11 @@ class MyConfig(MySignalDisplay):
             print("Loading default network configuration from " + device_path + " failed")
             return;
         
-        #self.my_config = ioc_root.getconf(device_path, 2)
-        #if self.my_config == None:
-        #    print("Loading network configuration from " + device_path + " failed")
-        #    self.my_config = self.my_default_config
-        self.my_config = self.my_default_config
+        self.my_config = ioc_root.getconf(device_path, 2)
+        if self.my_config == None:
+            print("Loading network configuration from " + device_path + " failed")
+            self.my_config = self.my_default_config
+        # self.my_config = self.my_default_config
 
         json_text = bin2json(self.my_config)
         if json_text == None:
