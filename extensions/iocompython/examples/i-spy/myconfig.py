@@ -1,7 +1,7 @@
 from kivy.config import ConfigParser
 import json
 
-from iocompython import Root,bin2json
+from iocompython import Root,bin2json, json2bin
 # from iocompython import Root, EndPoint, Signal, Stream, json2bin
 
 
@@ -37,7 +37,7 @@ class MyConfig(MySettingsDisplay):
         # Load static default network conguration and user network conguration. 
         # Persitent block number 2 is network configuration and block number 3
         # is static default network configuration.
-        my_default_data = ioc_root.getconf(device_path, 3)
+        my_default_data = ioc_root.getconf(device_path, select=3)
         if my_default_data == None:
             print("Loading default network configuration from " + device_path + " failed")
             return;
@@ -57,7 +57,7 @@ class MyConfig(MySettingsDisplay):
         del json_default_text
 
         my_config = None
-        my_data = ioc_root.getconf(device_path, 2)
+        my_data = ioc_root.getconf(device_path, select=2)
         if my_data == None:
             print("Loading network configuration from " + device_path + " failed")
 
@@ -75,7 +75,7 @@ class MyConfig(MySettingsDisplay):
                 del json_text
 
         self.process_json(my_default_config, my_config)
-
+        self.my_merged_config = my_default_config
 
     def delete(self):
         pass
@@ -94,25 +94,86 @@ class MyConfig(MySettingsDisplay):
             net = my_config.get("network", None)
             if net == None:
                 print("'network' not found in configuration")
-            
+
+        self.new_settings_group("configure", self.device_path, 1)
+        self.new_settings_group("general", None, 2)
         self.process_network(net_d, net)
 
-    def process_network(self, net_d, net):
-        # connect = data.get("connect", None)
-        # nic = data.get("nic", None)
-        # security = data.get("security", None)
+        self.new_button("save", self)
 
-        self.new_settings_group(self.device_path, "general")
-
-        for item_d in net_d:
-            if item_d != 'connect' and item_d != 'nic' and item_d != 'security':
-                value_d = net_d[item_d]
+    def process_network(self, data_d, data):
+        for item_d in data_d:
+            if item_d != 'connect' and item_d != 'nic' and item_d != 'security' and item_d != 'wifi':
+                value_d = data_d[item_d]
                 value = None
-                if net != None:
-                    value = net.get(item_d, None)
+                if data != None:
+                    value = data.get(item_d, None)
 
                 description = ''
-                description += "default: " + value_d
+                description += "default: " + str(value_d)
 
-                self.new_setting(self.ioc_root, item_d, net_d, value_d, value, description)
-        
+                self.new_setting(self.ioc_root, item_d, data_d, value_d, value, description)
+
+        g_d = data_d.get("connect", None)
+        if g_d != None:
+            g = None
+            if data != None:
+                g = data.get("connect", None)
+            self.process_network_array("connect", g_d, g)
+
+        g_d = data_d.get("nic", None)
+        if g_d != None:
+            g = None
+            if data != None:
+                g = data.get("nic", None)
+            self.process_network_array("nic", g_d, g)
+
+        g_d = data_d.get("wifi", None)
+        if g_d != None:
+            g = None
+            if data != None:
+                g = data.get("wifi", None)
+            self.process_network_array("wifi", g_d, g)
+
+        g_d = data_d.get("security", None)
+        if g_d != None:
+            g = None
+            if data != None:
+                g = data.get("security", None)
+            self.process_network_array("security", g_d, g)
+
+    def process_network_array(self, label, data_d, data):
+        n = len(data_d)
+        for i in range(n):
+            a_d = data_d[i];
+            a = None
+            if data != None:
+                if i < len(data):
+                    a = data[i]
+
+            mylabel = label
+            if n > 1:
+                mylabel += " " + str(i+1)                    
+
+            self.new_settings_group(mylabel, None, 2)
+            self.process_network(a_d, a)
+
+    # Save configuration to device  
+    def my_settings_button_pressed(self, i):
+        json_text = json.dumps(self.my_merged_config)
+        if json_text == None:
+            print("Unable to generate json")
+            return
+
+        print(json_text)
+
+        my_data = json2bin(json_text)
+        if my_data == None:
+            print("Compressing json failed")
+            return;
+
+        print(my_data)
+
+        rval = self.ioc_root.setconf(self.device_path, my_data, select=2)
+        print(rval)
+

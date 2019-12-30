@@ -147,6 +147,20 @@ class MyVariable(GridLayout):
         popup.open()
         textinput.focus = True
 
+
+class MyButton(MyVariable):
+    def __init__(self, **kwargs):
+        super(MyButton, self).__init__(**kwargs)
+        b = Button()
+        # b.size_hint = (0.35, 1)
+        self.add_widget(b)
+        self.my_button = b
+
+    def setup_button(self, text, signal_me):
+        self.my_button.text = text
+        if signal_me != None:
+            self.my_button.bind(on_release = signal_me.my_settings_button_pressed)
+
 class MySignal(MyVariable):
     def __init__(self, **kwargs):
         super(MySignal, self).__init__(**kwargs)
@@ -267,6 +281,7 @@ class MySetting(MyVariable):
 
 class MySettingsGroup(GridLayout):
     def __init__(self, **kwargs):
+        self.my_level = 0
         super(MySettingsGroup, self).__init__(**kwargs)
         self.cols = 2
         self.padding = [8, 6]
@@ -274,8 +289,18 @@ class MySettingsGroup(GridLayout):
         self.size_hint_y = None
         self.height = 50 
 
-    def set_group_label(self, group_label, mblk_name):
-        my_text = '[b][size=20]' + group_label + ' [color=3333ff]' + mblk_name + '[/color][/size][/b]'
+    def set_group_label(self, label1, label2, level):
+        self.my_level = level
+        if level == 1:
+            my_text = '[b][size=20][color=ffffff]' + label1
+            if label2 != None:
+                my_text += ' ' + label2
+        else:
+            my_text = '[b][size=18][color=77AAff]' + label1 + '[/color]'
+            if label2 != None:
+                my_text += ' [color=3333ff]' + label2 + '[/color]'
+
+        my_text += '[/color][/size][/b]'
 
         l = Label(text = my_text, markup = True, halign="left")
         self.my_label = l
@@ -284,11 +309,12 @@ class MySettingsGroup(GridLayout):
 
     def on_size(self, *args):
         self.canvas.before.clear()
-        with self.canvas.before:
-            Color(0.8, 0.8, 0.8, 0.40)
-            mysz = self.size.copy()
-            mysz[1] = 1
-            Rectangle(pos=self.pos, size=mysz)            
+        if self.my_level == 2:
+            with self.canvas.before:
+                Color(0.8, 0.8, 0.8, 0.40)
+                mysz = self.size.copy()
+                mysz[1] = 1
+                Rectangle(pos=self.pos, size=mysz)            
 
 class MySettingsDisplay(GridLayout):
     def __init__(self, **kwargs):
@@ -323,7 +349,12 @@ class MySettingsDisplay(GridLayout):
         self.my_nro_widgets += 1
         self.my_variables.append(s)
 
-    def new_settings_group(self, group_label, mblk_name):
+    def new_button(self, text, signal_me):
+        b = MyButton()
+        b.setup_button(text, signal_me)
+        self.add_widget(b)
+
+    def new_settings_group(self, label1, label2, level):
         widgets_on_row = self.my_nro_widgets % self.cols
         if widgets_on_row > 0:
             for i in range(widgets_on_row, self.cols):
@@ -331,11 +362,13 @@ class MySettingsDisplay(GridLayout):
                 self.my_nro_widgets += 1
 
         g = MySettingsGroup()
-        g.set_group_label(group_label, mblk_name)
+        g.set_group_label(label1, label2, level)
         self.add_widget(g)
         self.my_nro_widgets += 1
 
         for i in range(1, self.cols):
-            self.add_widget(MySettingsGroup())
+            g = MySettingsGroup()
+            g.my_level = level;
+            self.add_widget(g)
             self.my_nro_widgets += 1
 

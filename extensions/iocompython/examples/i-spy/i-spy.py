@@ -25,96 +25,6 @@ class MainApp(App):
         self.ioc_selected_device = None
         self.ioc_selected_page = 'signals'
 
-    def build(self):
-        self.title = 'i-spy'
-        self.root = BoxLayout(orientation='vertical')
-        self.my_widget_home = self.root
-        
-        action_bar = MyActionBar()
-        action_bar.bind (on_button_press=self.button_press)
-        self.my_action_bar = action_bar
-        self.my_widget_home.add_widget(action_bar)
-
-        self.set_displayed_page(None, 'connect')
-        return self.root
-
-    def set_displayed_page(self, device_path, page_name):
-        if len(self.ioc_devices) == 0:
-            if self.ioc_root == None:
-                page_name = 'connect'
-            else:
-                page_name = 'wait'
-            self.ioc_selected_device = None
-
-        if page_name == None:
-            page_name = self.ioc_selected_page
-
-        if self.ioc_selected_device != None:
-            if self.ioc_selected_device not in self.ioc_devices:
-                self.ioc_selected_device = None
-
-        if self.ioc_selected_device == device_path and device_path != None and self.ioc_selected_page == page_name:
-            return;
-
-        if self.my_scroll_panel != None:
-            self.my_widget_home.remove_widget(self.my_scroll_panel)
-            self.my_scroll_panel = None
-            if self.my_view != None:
-                self.my_view.delete()
-                self.my_view = None
-
-        if self.my_view != None:
-            self.my_widget_home.remove_widget(self.my_view)
-            self.my_view.delete()
-            self.my_view = None
-
-        if page_name == 'connect':
-            connect_dlg = MyConnectDialog()
-            connect_dlg.bind(on_connect=self.connect)
-            self.my_view = connect_dlg;           
-            self.root.add_widget(connect_dlg)
-            return
-
-        my_scroll_view = ScrollView()
-        self.my_widget_home.add_widget(my_scroll_view)
-        self.my_scroll_panel = my_scroll_view
-
-        if page_name == 'wait':
-            dlg = MyWaitDialog()
-            self.my_view = dlg;           
-            my_scroll_view.add_widget(dlg)
-            return
-
-        if device_path != None:
-            if device_path not in self.ioc_devices:
-                device_path = None
-
-        if device_path == None:
-            device_path = next(iter(self.ioc_devices))
-
-        d = self.ioc_devices[device_path]
-        if page_name == 'signals' or page_name == None:
-            page_name = 'signals'
-            dlg = d.create_signal_display()
-
-        elif page_name == 'configure':
-            dlg = MyConfig()
-            dlg.set_device(self.ioc_root, device_path)
-
-        elif page_name == 'memory':
-            dlg = MyMemoryBlockDialog()
-            dlg.add_mblk_to_page(self.ioc_root, '*.' + device_path);
-
-        else:
-            dlg = None
-            print("Unknown page name " + page_name)
-
-        self.ioc_selected_device = device_path
-        self.ioc_selected_page = page_name
-        if dlg != None:
-            self.my_view = dlg
-            my_scroll_view.add_widget(dlg)
-
     def connect(self, source_object, *args):
         if self.ioc_root != None:
             self.disconnect()
@@ -209,6 +119,99 @@ class MainApp(App):
     def stop_mytimer(self): 
         Clock.unschedule(self.mytimer_tick) 
 
+    # kivy gui build
+    def build(self):
+        self.title = 'i-spy'
+        self.root = BoxLayout(orientation='vertical')
+        self.my_widget_home = self.root
+        
+        action_bar = MyActionBar()
+        action_bar.bind (on_button_press=self.button_press)
+        self.my_action_bar = action_bar
+        self.my_widget_home.add_widget(action_bar)
+
+        self.set_displayed_page(None, 'connect')
+        return self.root
+
+    # display page in kivy gui
+    def set_displayed_page(self, device_path, page_name):
+        if len(self.ioc_devices) == 0:
+            if self.ioc_root == None:
+                page_name = 'connect'
+            else:
+                page_name = 'wait'
+            self.ioc_selected_device = None
+
+        if page_name == None:
+            page_name = self.ioc_selected_page
+
+        if self.ioc_selected_device != None:
+            if self.ioc_selected_device not in self.ioc_devices:
+                self.ioc_selected_device = None
+
+        if self.ioc_selected_device == device_path and device_path != None and self.ioc_selected_page == page_name:
+            return;
+
+        if self.my_scroll_panel != None:
+            self.my_widget_home.remove_widget(self.my_scroll_panel)
+            self.my_scroll_panel = None
+            if self.my_view != None:
+                self.my_view.delete()
+                self.my_view = None
+
+        if self.my_view != None:
+            self.my_widget_home.remove_widget(self.my_view)
+            self.my_view.delete()
+            self.my_view = None
+
+        if page_name == 'connect':
+            connect_dlg = MyConnectDialog()
+            connect_dlg.bind(on_connect=self.connect)
+            self.my_view = connect_dlg;           
+            self.root.add_widget(connect_dlg)
+            return
+
+        my_scroll_view = ScrollView()
+        self.my_widget_home.add_widget(my_scroll_view)
+        self.my_scroll_panel = my_scroll_view
+
+        if page_name == 'wait':
+            dlg = MyWaitDialog()
+            self.my_view = dlg;           
+            my_scroll_view.add_widget(dlg)
+            return
+
+        if device_path != None:
+            if device_path not in self.ioc_devices:
+                device_path = None
+
+        if device_path == None:
+            device_path = next(iter(self.ioc_devices))
+
+        d = self.ioc_devices[device_path]
+        if page_name == 'signals' or page_name == None:
+            page_name = 'signals'
+            dlg = d.create_signal_display()
+
+        elif page_name == 'configure':
+            dlg = MyConfig()
+            dlg.set_device(self.ioc_root, device_path)
+
+        elif page_name == 'memory':
+            dlg = MyMemoryBlockDialog()
+            dlg.add_mblk_to_page(self.ioc_root, '*.' + device_path);
+
+        else:
+            dlg = None
+            print("Unknown page name " + page_name)
+
+        self.ioc_selected_device = device_path
+        self.ioc_selected_page = page_name
+        if dlg != None:
+            self.my_view = dlg
+            my_scroll_view.add_widget(dlg)
+
+    # kivy gui action bar button handling
     def button_press(self, source_object, *args):
         button_text = args[0]
         if button_text == 'close':

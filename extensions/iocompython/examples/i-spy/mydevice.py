@@ -59,6 +59,8 @@ class MyDevice(ConfigParser):
         if mblks == None:
             print("'mblk' not found")
             return
+
+        self.my_signal_panel.new_settings_group("signals", self.device_path, 1)
             
         for mblk in mblks:
             self.process_mblk(mblk)
@@ -86,7 +88,7 @@ class MyDevice(ConfigParser):
         if signals == None:
             return;
 
-        self.my_signal_panel.new_settings_group(group_name, mblk_name)
+        self.my_signal_panel.new_settings_group(group_name, mblk_name, 2)
 
         for signal in signals:
             self.process_signal(signal, group_name, mblk_name, mblk_flags)

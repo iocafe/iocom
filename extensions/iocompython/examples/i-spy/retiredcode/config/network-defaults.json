@@ -1,8 +1,10 @@
 {
   "network": {
     "title": "Network configuration defaults for IO device 'gina'",
+    "device_name": "gina",
     "device_nr": "auto",
     "network_name": "iocafenet",
+    "user_name": "pekka",
     "password": "auto",
 
     "connect": [
@@ -14,6 +16,7 @@
 
     "nic": [
       {
+        "name": "default_nic",
         "wifi": [
           {
             "network": "julian",
