@@ -5,7 +5,7 @@ from iocompython import Root,bin2json
 # from iocompython import Root, EndPoint, Signal, Stream, json2bin
 
 
-from mysignal import MySignalDisplay 
+from mysettings import MySettingsDisplay 
 
 
 # Size excludes signal state byte. 
@@ -28,7 +28,7 @@ osal_typeinfo = {
     "object" : 0,
     "pointer" : 0}
 
-class MyConfig(MySignalDisplay):
+class MyConfig(MySettingsDisplay):
     def set_device(self, ioc_root, device_path):
         self.ioc_root = ioc_root
         self.device_path = device_path
@@ -102,6 +102,8 @@ class MyConfig(MySignalDisplay):
         # nic = data.get("nic", None)
         # security = data.get("security", None)
 
+        self.new_settings_group(self.device_path, "general")
+
         for item_d in net_d:
             if item_d != 'connect' and item_d != 'nic' and item_d != 'security':
                 value_d = net_d[item_d]
@@ -112,44 +114,5 @@ class MyConfig(MySignalDisplay):
                 description = ''
                 description += "default: " + value_d
 
-                self.new_setting(self.ioc_root, item_d, value_d, value, description)
+                self.new_setting(self.ioc_root, item_d, net_d, value_d, value, description)
         
-    '''        
-    def process_group(self, data, mblk_name, mblk_flags, section_name):
-        group_name = data.get("name", "no_name")
-        if group_name == 'inputs' or group_name == 'outputs':
-            self.signal_type = 'boolean'
-        else:
-            self.signal_type = 'ushort'
-
-        # title = data.get("title", "no_title")
-        if signals == None:
-            return;
-
-        self.my_signal_panel.new_signal_group(group_name, mblk_name)
-
-        for signal in signals:
-            self.process_signal(signal, group_name, mblk_name, mblk_flags)
-
-    def process_signal(self, data, group_name, mblk_name, mblk_flags):
-        signal_name = data.get("name", "no_name")
-        signal_type = data.get("type", None)
-        if signal_type != None:
-            self.signal_type = signal_type
-        signal_addr = data.get("addr", None)
-        if signal_addr != None:
-            self.signal_addr = signal_addr
-        n = data.get("array", 1)
-
-        self.my_signal_panel.new_signal(self.ioc_root, signal_name, self.signal_addr, 
-            self.signal_type, n, mblk_name, mblk_flags, self.device_path);
-                
-        if self.signal_type == "boolean":
-            if n <= 1:
-                self.signal_addr += 1
-            else:
-                self.signal_addr += 1 + (n + 7) // 8
-        else:
-            type_sz = osal_typeinfo[self.signal_type]
-            self.signal_addr += 1 + type_sz * n
-    '''

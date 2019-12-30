@@ -613,6 +613,9 @@ static void ioc_endpoint_thread(
     }
 #endif
 
+    osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
+    epoint->socket = OS_NULL;
+
     /* This thread is no longer running.
      */
     epoint->worker_thread_running = OS_FALSE;

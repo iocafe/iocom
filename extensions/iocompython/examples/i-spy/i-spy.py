@@ -139,9 +139,10 @@ class MainApp(App):
 
     def disconnect(self):
         if self.ioc_root != None:
-            self.stop_mytimer() 
+            self.stop_mytimer()
             self.ioc_root.delete()
             self.ioc_root = None
+            self.ioc_devices = {}
 
     def check_iocom_events(self):
         e = self.ioc_root.wait_com_event(0)

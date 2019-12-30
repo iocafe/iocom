@@ -2,7 +2,7 @@ from kivy.config import ConfigParser
 from iocompython import Root, MemoryBlock, bin2json
 import json
 
-from mysignal import MySignalDisplay 
+from mysettings import MySettingsDisplay 
 
 
 # Size excludes signal state byte. 
@@ -33,7 +33,7 @@ class MyDevice(ConfigParser):
         self.my_signal_panel = None
 
     def create_signal_display(self):
-        p = MySignalDisplay()
+        p = MySettingsDisplay()
         self.my_signal_panel = p;
 
         info = MemoryBlock(self.ioc_root, mblk_name='info.' + self.device_path)
@@ -86,7 +86,7 @@ class MyDevice(ConfigParser):
         if signals == None:
             return;
 
-        self.my_signal_panel.new_signal_group(group_name, mblk_name)
+        self.my_signal_panel.new_settings_group(group_name, mblk_name)
 
         for signal in signals:
             self.process_signal(signal, group_name, mblk_name, mblk_flags)

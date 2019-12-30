@@ -210,18 +210,20 @@ class MySetting(MyVariable):
     def delete(self):
         pass
 
-    def setup_setting(self, ioc_root, setting_name, value_d, value, description):
+    def setup_setting(self, ioc_root, setting_name, dict, value_d, value, description):
         # flaglist = mblk_flags.split(',')
         # self.my_up = "up" in flaglist
         # self.my_down = "down" in flaglist
 
         self.setup_variable(ioc_root, setting_name, description, False)
+        self.my_dict = dict
 
         if value == None:
             self.set_value(value_d, 0)
 
         else:            
             self.set_value(value, 2) # 2 = state bit "connected" 
+
 
     def set_value(self, value, state_bits):
         if state_bits != self.my_state_bits:
@@ -241,12 +243,15 @@ class MySetting(MyVariable):
         if self.my_text != None:
             self.my_text.text = str(value)
 
+        self.my_dict[self.my_label_text] = value
+
     def on_checkbox_modified(self, i):
         # if self.my_up and not self.my_down:
         #     self.update_signal()
         # else:            
         #     self.signal.set(self.my_checkbox.active)
-        pass
+
+        self.my_dict[self.my_label_text] = self.my_checkbox.active
 
     def update_signal(self):
         pass
@@ -255,13 +260,14 @@ class MySetting(MyVariable):
         try:
             v = self.textinput.text
             self.popup.dismiss()
-            # self.signal.set(v)
+            self.my_text.text = v
+            self.my_dict[self.my_label_text] = v
         except:
             print("Conversion failed")
 
-class MySignalGroup(GridLayout):
+class MySettingsGroup(GridLayout):
     def __init__(self, **kwargs):
-        super(MySignalGroup, self).__init__(**kwargs)
+        super(MySettingsGroup, self).__init__(**kwargs)
         self.cols = 2
         self.padding = [8, 6]
         self.orientation='horizontal'
@@ -284,9 +290,9 @@ class MySignalGroup(GridLayout):
             mysz[1] = 1
             Rectangle(pos=self.pos, size=mysz)            
 
-class MySignalDisplay(GridLayout):
+class MySettingsDisplay(GridLayout):
     def __init__(self, **kwargs):
-        super(MySignalDisplay, self).__init__(**kwargs)
+        super(MySettingsDisplay, self).__init__(**kwargs)
         self.cols = 2
         self.my_variables = []
         self.height = self.minimum_height = 400
@@ -310,26 +316,26 @@ class MySignalDisplay(GridLayout):
         self.my_nro_widgets += 1
         self.my_variables.append(s)
 
-    def new_setting(self, ioc_root, setting_name, value_d, value, description):
+    def new_setting(self, ioc_root, setting_name, dict, value_d, value, description):
         s = MySetting() 
-        s.setup_setting(ioc_root, setting_name, value_d, value, description)
+        s.setup_setting(ioc_root, setting_name, dict, value_d, value, description)
         self.add_widget(s)
         self.my_nro_widgets += 1
         self.my_variables.append(s)
 
-    def new_signal_group(self, group_label, mblk_name):
+    def new_settings_group(self, group_label, mblk_name):
         widgets_on_row = self.my_nro_widgets % self.cols
         if widgets_on_row > 0:
             for i in range(widgets_on_row, self.cols):
                 self.add_widget(Widget())
                 self.my_nro_widgets += 1
 
-        g = MySignalGroup()
+        g = MySettingsGroup()
         g.set_group_label(group_label, mblk_name)
         self.add_widget(g)
         self.my_nro_widgets += 1
 
         for i in range(1, self.cols):
-            self.add_widget(MySignalGroup())
+            self.add_widget(MySettingsGroup())
             self.my_nro_widgets += 1
 
