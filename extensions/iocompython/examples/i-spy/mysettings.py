@@ -296,9 +296,9 @@ class MySettingsGroup(GridLayout):
             if label2 != None:
                 my_text += ' ' + label2
         else:
-            my_text = '[b][size=18][color=77AAff]' + label1 + '[/color]'
+            my_text = '[b][size=18][color=77AAff]' + label1  
             if label2 != None:
-                my_text += ' [color=3333ff]' + label2 + '[/color]'
+                my_text += '[/color] [color=3333ff]' + label2
 
         my_text += '[/color][/size][/b]'
 

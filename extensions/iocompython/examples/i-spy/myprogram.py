@@ -1,59 +1,35 @@
 from kivy.config import ConfigParser
 import json
 from iocompython import Root,bin2json, json2bin
-
-
 from mysettings import MySettingsDisplay 
 
 
-class MyConfig(MySettingsDisplay):
+class MyProgram(MySettingsDisplay):
     def set_device(self, ioc_root, device_path):
         self.ioc_root = ioc_root
         self.device_path = device_path
         self.my_signal_panel = None
 
         # Load static default network conguration and user network conguration. 
-        # Persitent block number 2 is network configuration and block number 3
-        # is static default network configuration.
-        my_default_data = ioc_root.getconf(device_path, select=3)
-        if my_default_data == None:
-            print("Loading default network configuration from " + device_path + " failed")
-            return;
-
-        json_default_text = bin2json(my_default_data)
-        if json_default_text == None:
-            print("Unable to parse binary default network configuration json from " + device_path)
-            return;
-
-        del my_default_data
-
-        my_default_config = json.loads(json_default_text)
-        if my_default_config == None:
-            print("Unable to parse default network configuration text json from " + device_path)
-            return;
-
-        del json_default_text
-
+        # Persitent block number 4 is user account configuration
         my_config = None
-        my_data = ioc_root.getconf(device_path, select=2)
+        my_data = ioc_root.getconf(device_path, select=4)
         if my_data == None:
-            print("Loading network configuration from " + device_path + " failed")
+            print("Loading user account configuration from " + device_path + " failed")
 
         else:
             json_text = bin2json(my_data)
             if json_text == None:
-                print("Unable to parse binary network configuration json from " + device_path)
+                print("Unable to parse binary user account json from " + device_path)
 
             else:
                 del my_data
                 my_config = json.loads(json_text)
                 if my_config == None:
-                    print("Unable to parse network configuration text json from " + device_path)
-
+                    print("Unable to parse user account  text json from " + device_path)
                 del json_text
 
-        self.process_json(my_default_config, my_config)
-        self.my_merged_config = my_default_config
+        self.process_json(my_config)
 
     def delete(self):
         pass
@@ -61,7 +37,10 @@ class MyConfig(MySettingsDisplay):
     def run(self):
         pass
 
-    def process_json(self, my_default_config, my_config):
+    def process_json(self, my_config):
+        pass
+        
+        '''
         net_d = my_default_config.get("network", None)
         if net_d == None:
             print("'network' not found in default configuration")
@@ -72,8 +51,9 @@ class MyConfig(MySettingsDisplay):
             net = my_config.get("network", None)
             if net == None:
                 print("'network' not found in configuration")
-
-        self.new_settings_group("configure", self.device_path, 1)
+        '''
+        self.new_settings_group("program", self.device_path, 1)
+    '''        
         self.new_settings_group("general", None, 2)
         self.process_network(net_d, net)
 
@@ -154,4 +134,4 @@ class MyConfig(MySettingsDisplay):
 
         rval = self.ioc_root.setconf(self.device_path, my_data, select=2)
         print(rval)
-
+    '''
