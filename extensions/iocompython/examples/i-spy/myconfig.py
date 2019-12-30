@@ -37,49 +37,44 @@ class MyConfig(MySignalDisplay):
         # Load static default network conguration and user network conguration. 
         # Persitent block number 2 is network configuration and block number 3
         # is static default network configuration.
-        self.my_default_config = ioc_root.getconf(device_path, 3)
-        if self.my_default_config == None:
+        my_default_data = ioc_root.getconf(device_path, 3)
+        if my_default_data == None:
             print("Loading default network configuration from " + device_path + " failed")
             return;
-        
-        self.my_config = ioc_root.getconf(device_path, 2)
-        if self.my_config == None:
-            print("Loading network configuration from " + device_path + " failed")
-            self.my_config = self.my_default_config
-        # self.my_config = self.my_default_config
 
-        json_text = bin2json(self.my_config)
-        if json_text == None:
-            print("Unable to parse received binary json from " + device_path)
+        json_default_text = bin2json(my_default_data)
+        if json_default_text == None:
+            print("Unable to parse binary default network configuration json from " + device_path)
             return;
 
-        print(json_text)
-        self.process_json(json_text)
+        del my_default_data
 
+        my_default_config = json.loads(json_default_text)
+        if my_default_config == None:
+            print("Unable to parse default network configuration text json from " + device_path)
+            return;
 
-    ''' def get_network_conf(self, device_path):
+        del json_default_text
 
-        exp_mblk_path = 'conf_exp.' + device_path
-        imp_mblk_path = 'conf_imp.' + device_path
-
-        stream = Stream(root, frd = "frd_buf", tod = "tod_buf", exp = exp_mblk_path, imp = imp_mblk_path, select = 2)
-        stream.start_read()
-
-        while True:
-            s = stream.run()
-            if s != None:
-                break
-            time.sleep(0.01) 
-
-        if s == 'completed':
-            data = stream.get_data();
-            print(data)
+        my_config = None
+        my_data = ioc_root.getconf(device_path, 2)
+        if my_data == None:
+            print("Loading network configuration from " + device_path + " failed")
 
         else:
-            print(s)
+            json_text = bin2json(my_data)
+            if json_text == None:
+                print("Unable to parse binary network configuration json from " + device_path)
 
-        stream.delete() 
-    '''
+            else:
+                del my_data
+                my_config = json.loads(json_text)
+                if my_config == None:
+                    print("Unable to parse network configuration text json from " + device_path)
+
+                del json_text
+
+        self.process_json(my_default_config, my_config)
 
 
     def delete(self):
@@ -88,27 +83,36 @@ class MyConfig(MySignalDisplay):
     def run(self):
         pass
 
-    def process_json(self, json_text):
-        # self.signals = {}
-
-        data = json.loads(json_text)
-
-        net = data.get("network", None)
-        if net == None:
-            print("'nets' not found")
+    def process_json(self, my_default_config, my_config):
+        net_d = my_default_config.get("network", None)
+        if net_d == None:
+            print("'network' not found in default configuration")
             return
+
+        net = None
+        if my_config != None:
+            net = my_config.get("network", None)
+            if net == None:
+                print("'network' not found in configuration")
             
-        self.process_network(net)
+        self.process_network(net_d, net)
 
-    def process_network(self, data):
-        connect = data.get("connect", None)
-        nic = data.get("nic", None)
-        security = data.get("security", None)
+    def process_network(self, net_d, net):
+        # connect = data.get("connect", None)
+        # nic = data.get("nic", None)
+        # security = data.get("security", None)
 
-        for item in data:
-            if item != connect and item != nic and item != security:
-                self.new_signal(self.ioc_root, "signal_name", 0, 
-                    "ushort", 1, "mblk_name", "lippu:", "self.device_path");
+        for item_d in net_d:
+            if item_d != 'connect' and item_d != 'nic' and item_d != 'security':
+                value_d = net_d[item_d]
+                value = None
+                if net != None:
+                    value = net.get(item_d, None)
+
+                description = ''
+                description += "default: " + value_d
+
+                self.new_setting(self.ioc_root, item_d, value_d, value, description)
         
     '''        
     def process_group(self, data, mblk_name, mblk_flags, section_name):
