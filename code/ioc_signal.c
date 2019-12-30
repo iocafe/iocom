@@ -871,6 +871,7 @@ os_char ioc_moves_array(
     os_memsz type_sz;
     osalTypeId type_id;
     iocHandle *handle;
+    os_boolean invalidate_state_bits;
 
     if (signal == OS_NULL) return 0;
     handle = signal->handle;
@@ -958,15 +959,21 @@ os_char ioc_moves_array(
 
         else
         {
-            if (*p != state_bits)
-            {
-                ioc_mblk_invalidate(mblk, addr, addr);
-            }
+            invalidate_state_bits = (os_boolean)(*p != state_bits);
             *(p++) = state_bits;
             p += offset * type_sz;
-            ioc_byte_ordered_copy(p, array, n * type_sz, type_sz);
-            addr += offset * type_sz + 1;
-            ioc_mblk_invalidate(mblk, addr, (os_int)(addr + n * type_sz - 1));
+            nn = (os_int)(n * type_sz);
+            ioc_byte_ordered_copy(p, array, nn, type_sz);
+
+            if (invalidate_state_bits)
+            {
+                ioc_mblk_invalidate(mblk, addr, addr + nn + offset * type_sz);
+            }
+            else if (nn)
+            {
+                addr += offset * type_sz + 1;
+                ioc_mblk_invalidate(mblk, addr, addr + nn - 1);
+            }
         }
     }
     else
