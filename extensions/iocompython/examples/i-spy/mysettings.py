@@ -15,22 +15,6 @@ from kivy.metrics import dp
 from iocompython import Signal
 
 
-# from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
-from kivy.uix.checkbox import CheckBox
-from kivy.graphics import Color, Rectangle, Line
-from kivy.uix.widget import Widget
-
-from kivy.uix.boxlayout import BoxLayout
-from kivy.core.window import Window
-from kivy.uix.popup import Popup
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
-from kivy.metrics import dp
-
-from iocompython import Signal
-
 
 class MyVariable(GridLayout):
     def __init__(self, **kwargs):
@@ -40,7 +24,6 @@ class MyVariable(GridLayout):
         super(MyVariable, self).__init__(**kwargs)
         self.cols = 2
         self.padding = [8, 6]
-        self.orientation='horizontal'
 
         self.size_hint_y = None
         self.height = 60 
@@ -55,7 +38,7 @@ class MyVariable(GridLayout):
 
         lb = GridLayout()
         lb.cols = 1
-        lb.size_hint = (0.65, 1)
+        lb.size_hint = (0.65, 1) 
 
         lb.add_widget(l)
         lb.add_widget(d)
@@ -64,7 +47,6 @@ class MyVariable(GridLayout):
     def setup_variable(self, ioc_root, label_text, description, use_checkbox):
         self.my_label_text = label_text
 
-        # if data_type == "boolean" and n <= 1:
         if use_checkbox:
             b = CheckBox()
             b.size_hint = (0.35, 1)
@@ -159,7 +141,7 @@ class MyButton(MyVariable):
     def setup_button(self, text, signal_me):
         self.my_button.text = text
         if signal_me != None:
-            self.my_button.bind(on_release = signal_me.my_settings_button_pressed)
+            self.my_button.bind(on_release = signal_me.my_button_pressed)
 
 class MySignal(MyVariable):
     def __init__(self, **kwargs):

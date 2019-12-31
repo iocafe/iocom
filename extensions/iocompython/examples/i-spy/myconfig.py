@@ -1,9 +1,10 @@
-from kivy.config import ConfigParser
 import json
+from kivy.config import ConfigParser
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.button import Button
+
 from iocompython import Root,bin2json, json2bin
-
-
-from mysettings import MySettingsDisplay 
+from mysettings import MySettingsDisplay, MySettingsGroup, MyButton
 
 
 class MyConfig(MySettingsDisplay):
@@ -73,11 +74,18 @@ class MyConfig(MySettingsDisplay):
             if net == None:
                 print("'network' not found in configuration")
 
-        self.new_settings_group("configure", self.device_path, 1)
+        title = MySettingsGroup()
+        title.set_group_label("configure", self.device_path, 1)
+        self.add_widget(title)
+        b = MyButton()
+        b.setup_button("save to device", self)
+        self.add_widget(b)
+
+        # self.new_settings_group("configure", self.device_path, 1)
         self.new_settings_group("general", None, 2)
         self.process_network(net_d, net)
 
-        self.new_button("save", self)
+        # self.new_button("save", self)
 
     def process_network(self, data_d, data):
         for item_d in data_d:
@@ -137,7 +145,7 @@ class MyConfig(MySettingsDisplay):
             self.process_network(a_d, a)
 
     # Save configuration to device  
-    def my_settings_button_pressed(self, i):
+    def my_button_pressed(self, i):
         json_text = json.dumps(self.my_merged_config)
         if json_text == None:
             print("Unable to generate json")

@@ -119,7 +119,7 @@ class MyAccounts(MySettingsDisplay):
             self.process_network(a_d, a)
 
     # Save configuration to device  
-    def my_settings_button_pressed(self, i):
+    def my_button_pressed(self, i):
         json_text = json.dumps(self.my_merged_config)
         if json_text == None:
             print("Unable to generate json")
