@@ -45,7 +45,6 @@ struct iocEventQueue;
 
 /* Start automatically given device numbers from here.
  */
-// #define IOC_TO_AUTO_DEVICE_NR 9999
 #define IOC_AUTO_DEVICE_NR 10000
 
 /**

@@ -342,10 +342,6 @@ static void ioc_make_mblk_info_frame(
     device_nr = mblk->device_nr;
     if (device_nr > IOC_AUTO_DEVICE_NR)
     {
-        /* if (!con->auto_device_nr)
-        {
-            con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
-        } */
         if (device_nr == con->auto_device_nr) device_nr = IOC_AUTO_DEVICE_NR;
     }
 

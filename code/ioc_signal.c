@@ -106,7 +106,6 @@ void ioc_movex_signals(
                 return;
             }
 
-            handle_tried = OS_TRUE;
             if (flags & IOC_SIGNAL_NO_THREAD_SYNC)
             {
                 mblk = handle->mblk;
@@ -114,15 +113,14 @@ void ioc_movex_signals(
             else
             {
                 mblk = ioc_handle_lock_to_mblk(handle, &root);
-                osal_debug_assert(root);
             }
+            handle_tried = OS_TRUE;
         }
 
         /* If memory block is not found, we do not know signal value.
          */
         if (mblk == OS_NULL)
         {
-            vv[i].state_bits &= ~OSAL_STATE_CONNECTED;
             goto nextone;
         }
 
@@ -288,6 +286,23 @@ os_char ioc_sets_int(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Set double value as a signal.
+  @anchor ioc_sets_double
+
+  The ioc_sets_doubleint() function writes one signal value to memory block. This is used for basic
+  types like integers and floats and cannot be used for strings or arrays.
+
+  @param   signal Pointer to signal structure. This holds memory address,  state bits and data
+           type for the signal.
+  @param   value Double value to write.
+
+  @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
+
+****************************************************************************************************
+*/
 os_char ioc_sets_double(
     const iocSignal *signal,
     os_double value,

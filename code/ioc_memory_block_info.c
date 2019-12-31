@@ -300,14 +300,6 @@ osalStatus ioc_process_received_mbinfo_frame(
         }
     }
 
-    /* If this is device using automatic device number, converto IOC_TO_AUTO_DEVICE_NR
-       to IOC_AUTO_DEVICE_NR (used within the device).
-     */
-    /* else if (mbinfo.device_nr == IOC_TO_AUTO_DEVICE_NR)
-    {
-        mbinfo.device_nr = IOC_AUTO_DEVICE_NR;
-    } */
-
     mbinfo.mblk_id = mblk_id;
     mbinfo.nbytes = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_N_2BYTES);
     mbinfo.flags = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_F_2BYTES);

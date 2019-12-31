@@ -30,7 +30,7 @@
     The IOC_ALLOW_RESIZE flag allows resizing memory block to match memory block
     information received from the other end (IO device, etc).
     The IOC_STATIC tells that memory block contains static data and doesn't need
-    to be synchronized. If IOC_STATIC flag is given, also IOC_SOURCE flag must
+    to be synchronized. If IOC_STATIC flag is given, also IOC_MBLK_UP flag must
     be set and application allocated static buffer (and may be constant) must be
     given.
     Flag IOC_DYNAMIC_MBLK indicates that the memory block was dynamically
