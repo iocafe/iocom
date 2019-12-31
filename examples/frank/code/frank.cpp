@@ -257,7 +257,7 @@ static void root_callback(
             break;
 
         case IOC_NEW_DEVICE:
-            osal_trace2_str("IOC_NEW_DEVICE ", arg);
+            osal_trace2_str("IOC_NEW_DEVICE ", mblk->device_name);
             break;
 
         case IOC_NETWORK_DISCONNECTED:

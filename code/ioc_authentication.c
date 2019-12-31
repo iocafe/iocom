@@ -56,8 +56,8 @@ void ioc_make_authentication_frame(
         content_bytes,
         used_bytes;
 
-    os_uint
-        device_nr;
+    /* os_uint
+        device_nr; */
 
     os_int
         bytes;
@@ -105,9 +105,8 @@ void ioc_make_authentication_frame(
     }
 
     /* Set device number. If we are sending down to automatically numbered device, set zero.
-     */
     device_nr = root->device_nr;
-    if (device_nr > IOC_AUTO_DEVICE_NR) device_nr = 0;
+    if (device_nr > IOC_AUTO_DEVICE_NR) device_nr = 0; */
 
     /* If other end has not acknowledged enough data to send the
        frame, cancel the send.

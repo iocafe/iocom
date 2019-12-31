@@ -283,26 +283,30 @@ osalStatus ioc_process_received_mbinfo_frame(
         version_and_flags & IOC_INFO_D_4BYTES);
 
     /* If we received message from device which requires automatically given
-       device number in conrtoller end, give the number now.
+       device number in controller end (not auto eumerated device) device,
+       give the number now.
      */
     if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR)
     {
-        /* If we do not have automatic device number, reserve one now
-         */
-        if (!con->auto_device_nr)
+        if (con->link.root->device_nr != IOC_AUTO_DEVICE_NR)
         {
-            con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
+            /* If we do not have automatic device number, reserve one now
+             */
+            if (!con->auto_device_nr)
+            {
+                con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
+            }
+            mbinfo.device_nr = con->auto_device_nr;
         }
-        mbinfo.device_nr = con->auto_device_nr;
     }
 
     /* If this is device using automatic device number, converto IOC_TO_AUTO_DEVICE_NR
        to IOC_AUTO_DEVICE_NR (used within the device).
      */
-    else if (mbinfo.device_nr == IOC_TO_AUTO_DEVICE_NR)
+    /* else if (mbinfo.device_nr == IOC_TO_AUTO_DEVICE_NR)
     {
         mbinfo.device_nr = IOC_AUTO_DEVICE_NR;
-    }
+    } */
 
     mbinfo.mblk_id = mblk_id;
     mbinfo.nbytes = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_N_2BYTES);
