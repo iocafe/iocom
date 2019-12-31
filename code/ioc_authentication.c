@@ -104,7 +104,7 @@ void ioc_make_authentication_frame(
         flags |= IOC_AUTH_PASSWORD;
     }
 
-    /* Set device number. If we are sending to device with automatically number, set zero.
+    /* Set device number. If we are sending down to automatically numbered device, set zero.
      */
     device_nr = root->device_nr;
     if (device_nr > IOC_AUTO_DEVICE_NR) device_nr = 0;

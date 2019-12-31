@@ -340,7 +340,7 @@ static void ioc_make_mblk_info_frame(
      * number, mark device number with IOC_TO_AUTO_DEVICE_NR.
      */
     device_nr = mblk->device_nr;
-    if (device_nr > IOC_AUTO_DEVICE_NR)
+    if (device_nr > IOC_AUTO_DEVICE_NR  && (con->flags & IOC_CONNECT_UP)==0 /* topi */)
     {
         if (!con->auto_device_nr)
         {

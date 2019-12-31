@@ -273,8 +273,8 @@ void ioc_release_memory_block(
   @anchor ioc_release_dynamic_mblk_if_not_connected
 
   The ioc_release_dynamic_mblk_if_not_attached() function releases dynamically created memory
-  block if it is no longer attached to source or target buffers. This function is called
-  when connection cleans up resources.
+  block, if it is no longer attached downwards (checked trough source and target buffers)
+  This function is called when connection cleans up resources.
 
   @param   handle Memory block handle.
   @return  None.
@@ -286,9 +286,11 @@ void ioc_release_dynamic_mblk_if_not_attached(
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
+    iocSourceBuffer *sbuf;
+    iocTargetBuffer *tbuf;
+    iocConnection *con;
 
     /* Get memory block pointer and start synchronization.
-     */
     mblk = ioc_handle_lock_to_mblk(handle, &root);
     if (mblk == OS_NULL) return;
     if ((mblk->flags & IOC_DYNAMIC_MBLK) &&
@@ -297,6 +299,29 @@ void ioc_release_dynamic_mblk_if_not_attached(
     {
         ioc_release_memory_block(handle);
     }
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
+    if ((mblk->flags & IOC_DYNAMIC_MBLK) == 0) goto getout;
+
+    for (sbuf = mblk->sbuf.first;
+         sbuf;
+         sbuf = sbuf->mlink.next)
+    {
+        con = sbuf->clink.con;
+        if (con) if ((con->flags & IOC_CONNECT_UP) == 0) goto getout;
+    }
+
+    for (tbuf = mblk->tbuf.first;
+         tbuf;
+         tbuf = tbuf->mlink.next)
+    {
+        con = tbuf->clink.con;
+        if (con) if ((con->flags & IOC_CONNECT_UP) == 0) goto getout;
+    }
+
+    ioc_release_memory_block(handle);
+getout:
     ioc_unlock(root);
 }
 #endif
