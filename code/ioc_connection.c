@@ -768,6 +768,8 @@ void ioc_reset_connection_state(
      */
     con->authentication_sent = OS_FALSE;
     con->authentication_received = OS_FALSE;
+osal_debug_error("HERE AUTH CLEARED");
+
 
     /* Clear flow control variables.
      */

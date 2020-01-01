@@ -153,6 +153,11 @@ typedef struct iocSourceBuffer
      */
     os_short remote_mblk_id;
 
+    /** Immediate synchronization needed. We were not able to synchronize on write in AUTO
+     *  mode, sync buffer was used.
+     */
+    os_boolean immediate_sync_needed;
+
     /** Invalidated (changed) range.
      */
     iocInvalidatedRange changed;
@@ -210,7 +215,7 @@ void ioc_sbuf_invalidate(
 
 /* Synchronize data for sending.
  */
-void ioc_sbuf_synchronize(
+osalStatus ioc_sbuf_synchronize(
     iocSourceBuffer *sbuf);
 
 /*@}*/

@@ -326,11 +326,12 @@ void ioc_sbuf_invalidate(
   ioc_lock() must be on before calling this function.
 
   @param   sbuf Pointer to the source buffer object.
-  @return  None.
+  @return  OSA_STATUS_PENDING if we could not synchronize and synchronization as soon as possible
+           is needed.
 
 ****************************************************************************************************
 */
-void ioc_sbuf_synchronize(
+osalStatus ioc_sbuf_synchronize(
     iocSourceBuffer *sbuf)
 {
     os_char
@@ -347,7 +348,7 @@ void ioc_sbuf_synchronize(
     if ((!sbuf->changed.range_set && !sbuf->syncbuf.make_keyframe) ||
         sbuf->syncbuf.used)
     {
-        return;
+        return sbuf->changed.range_set ? OSAL_STATUS_PENDING : OSAL_SUCCESS;
     }
 
     buf = sbuf->mlink.mblk->buf;
@@ -396,7 +397,7 @@ void ioc_sbuf_synchronize(
         {
             if (syncbuf[end_addr] != buf[end_addr]) break;
         }
-        if (end_addr < start_addr) return;
+        if (end_addr < start_addr) return OSAL_SUCCESS;
 
         /* Do delta encoding.
          */
@@ -426,4 +427,5 @@ void ioc_sbuf_synchronize(
         osal_event_set(sbuf->clink.con->worker.trig);
     }
 #endif
+    return OSAL_SUCCESS;
 }

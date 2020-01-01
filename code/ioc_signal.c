@@ -679,9 +679,9 @@ os_char ioc_moves_str(
     os_long value;
     os_memsz len;
     iocHandle *handle;
-    handle = signal->handle;
 
     if (signal == OS_NULL) return 0;
+    handle = signal->handle;
 
     /* Check function arguments.
      */

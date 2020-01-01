@@ -151,6 +151,7 @@ void ioc_make_authentication_frame(
     }
 
     con->authentication_sent = OS_TRUE;
+osal_debug_error("HERE AUTH SENT");
 }
 
 
@@ -252,6 +253,7 @@ osalStatus ioc_process_received_authentication_frame(
         if (s) return s;
     }
 #endif
+osal_debug_error("HERE AUTH RECEIVED");
     con->authentication_received = OS_TRUE;
     return OSAL_SUCCESS;
 }

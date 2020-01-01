@@ -931,7 +931,19 @@ void ioc_mblk_invalidate(
         ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
         if (mblk->flags & IOC_AUTO_SYNC)
         {
-            ioc_sbuf_synchronize(sbuf);
+            if (ioc_sbuf_synchronize(sbuf))
+            {
+                sbuf->immediate_sync_needed = OS_TRUE;
+
+#if OSAL_MULTITHREAD_SUPPORT
+                /* Trigger communication that synchronization buffer would get processed.
+                 */
+                if (sbuf->clink.con->worker.trig)
+                {
+                    osal_event_set(sbuf->clink.con->worker.trig);
+                }
+#endif
+            }
         }
     }
 }

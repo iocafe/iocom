@@ -123,11 +123,28 @@ osalStatus ioc_connection_send(
     start_sbuf = con->sbuf.current ? con->sbuf.current : con->sbuf.first;
     if (start_sbuf == OS_NULL) goto just_move_data;
 
-    /* Find out source buffer which has modified data.
+    /* Find out source buffer which has modified data. If some source buffer
+     * is due to immediate sync in auto mode, do it.
      */
     sbuf = start_sbuf;
     while (!sbuf->syncbuf.used || !sbuf->remote_mblk_id)
     {
+        if (sbuf->remote_mblk_id && sbuf->immediate_sync_needed)
+        {
+            if (ioc_sbuf_synchronize(sbuf))
+            {
+                sbuf->immediate_sync_needed = OS_FALSE;
+                break;
+            }
+
+#if OSAL_MULTITHREAD_SUPPORT
+            if (con->worker.trig)
+            {
+                osal_event_set(con->worker.trig);
+            }
+#endif
+        }
+
         sbuf = sbuf->clink.next;
         if (sbuf == OS_NULL) sbuf = con->sbuf.first;
         if (sbuf == start_sbuf) goto just_move_data;

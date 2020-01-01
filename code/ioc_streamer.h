@@ -36,6 +36,10 @@ extern const osalStreamInterface ioc_streamer_iface;
  */
 #define IOC_STREAMER_IFACE &ioc_streamer_iface
 
+/* Stream timeout 5 seconds.
+ */
+#define IOC_STREAMER_TIMEOUT 5000
+
 /* Maximum number of streamers when using static memory allocation.
  */
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION == 0
@@ -186,6 +190,10 @@ typedef struct
      */
     osalStream tod;
     osPersistentHandle *tod_persistent;
+
+    /* Timer to interrupt wait for space in memory block.
+     */
+    os_timer timer_ms;
 }
 iocControlStreamState;
 

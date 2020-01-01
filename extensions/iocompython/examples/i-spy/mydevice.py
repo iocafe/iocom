@@ -37,8 +37,16 @@ class MyDevice(ConfigParser):
         self.my_signal_panel = p;
 
         info = MemoryBlock(self.ioc_root, mblk_name='info.' + self.device_path)
-        json_bin = info.read();        
+        json_bin = info.read();
+        if json_bin == None:
+            print ("Uanbel to get info block")
+            return
+
         json_text = bin2json(json_bin)
+        if json_text == None:
+            print ("Uanbel to parse info block")
+            return
+
         self.process_json(json_text)
 
         info.delete()

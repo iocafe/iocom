@@ -38,6 +38,7 @@ osalStatus osal_main(
     os_char *argv[])
 {
     osalSecurityConfig security_prm;
+    os_int64 t;
 
     os_memclear(&security_prm, sizeof(security_prm));
     security_prm.server_cert_file = "alice.crt";
@@ -51,6 +52,8 @@ osalStatus osal_main(
     /* Initialize communication root object.
      */
     ioc_initialize_root(&tito_root);
+    os_time(&t);
+    ioc_set_iodevice_id(&frank_root, "tito", 1 + t%1000, "iocafenet");
 
     /* Create tito main object and start listening for clients.
      */

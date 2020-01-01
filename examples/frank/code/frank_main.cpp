@@ -74,6 +74,32 @@ osalStatus FrankMain::listen_for_clients()
 
 /**
 ****************************************************************************************************
+  Or start thread which connects to client.
+****************************************************************************************************
+*/
+osalStatus FrankMain::connect_to_device()
+{
+    iocConnection *con = OS_NULL;
+    iocConnectionParams conprm;
+
+    // const osalStreamInterface *iface = OSAL_SOCKET_IFACE;
+    const osalStreamInterface *iface = OSAL_TLS_IFACE;
+
+    con = ioc_initialize_connection(OS_NULL, &frank_root);
+    os_memclear(&conprm, sizeof(conprm));
+
+    conprm.iface = iface;
+    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS; /* Notice IOC_DYNAMIC_MBLKS */
+    conprm.parameters = "127.0.0.1";
+    ioc_connect(con, &conprm);
+
+    os_sleep(100);
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
   Launc a client application.
 ****************************************************************************************************
 */

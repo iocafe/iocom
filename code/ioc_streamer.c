@@ -30,10 +30,6 @@ static iocStreamer ioc_streamer[IOC_MAX_STREAMERS];
 #endif
 
 
-/* Stream timeout 5 seconds.
- */
-#define IOC_STREAMER_TIMEOUT 5000
-
 static osalStatus ioc_streamer_device_write(
     iocStreamer *streamer,
     iocStreamerSignals *signals,
@@ -486,45 +482,40 @@ static osalStatus ioc_streamer_device_write(
                 goto getout;
             }
 
+            buf_sz = signals->buf->n;
+            tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+            {
+                osal_trace3("IOC_SSTEP_FAILED, no tail");
+                streamer->step = IOC_SSTEP_FAILED;
+                goto getout;
+            }
+
             if (n > 0)
             {
-                buf_sz = signals->buf->n;
-                tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
-                if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
-                {
-                    osal_trace3("IOC_SSTEP_FAILED, no tail");
-                    streamer->step = IOC_SSTEP_FAILED;
-                    goto getout;
-                }
-
                 nbytes = ioc_streamer_write_internal(signals, buf, buf_sz,
                     (os_int)n, &streamer->head, tail);
-                if (nbytes < 0)
-                {
-                    osal_trace3("IOC_SSTEP_FAILED, buffer write failed");
-                    streamer->step = IOC_SSTEP_FAILED;
-                    goto getout;
-                }
-
-                /* More data to come, break.
-                 */
-                os_get_timer(&streamer->mytimer);
-                break;
             }
-            if (n == 0)
+
+            if (nbytes)
             {
-                if (os_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT))
+                os_get_timer(&streamer->mytimer);
+            }
+            else
+            {
+                if (n == -1)
+                {
+                    ioc_sets0_int(signals->state, IOC_STREAM_COMPLETED);
+                    streamer->step = IOC_SSTEP_TRANSFER_DONE;
+                    osal_trace3("IOC_SSTEP_TRANSFER_DONE");
+                }
+                else if (os_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT))
                 {
                     osal_trace3("Streamer timeout");
                     streamer->step = IOC_SSTEP_FAILED;
                     goto getout;
                 }
-                break;
             }
-
-            ioc_sets0_int(signals->state, IOC_STREAM_COMPLETED);
-            streamer->step = IOC_SSTEP_TRANSFER_DONE;
-            osal_trace3("IOC_SSTEP_TRANSFER_DONE");
             break;
 
         case IOC_SSTEP_TRANSFER_DONE:
@@ -859,12 +850,6 @@ static osalStatus ioc_streamer_controller_write(
 
                 nbytes = ioc_streamer_write_internal(signals, buf, buf_sz,
                     (os_int)n, &streamer->head, tail);
-                if (nbytes < 0)
-                {
-                    osal_trace3("IOC_SSTEP_FAILED, buffer write failed");
-                    streamer->step = IOC_SSTEP_FAILED;
-                    goto getout;
-                }
 
                 /* More data to come, break.
                  */
@@ -1447,6 +1432,7 @@ void ioc_run_control_stream(
                     }
                 }
 #endif
+                os_get_timer(&ctrl->timer_ms);
             }
         }
     }
@@ -1514,7 +1500,12 @@ void ioc_ctrl_stream_from_device(
         bytes = ioc_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
         while (OS_TRUE)
         {
-            if (bytes <= 0) return;
+            if (bytes <= 0)
+            {
+                if (!os_elapsed(&ctrl->timer_ms, IOC_STREAMER_TIMEOUT)) return;
+                break;
+            }
+            os_get_timer(&ctrl->timer_ms);
 
             rdnow = bytes;
             if (rdnow > sizeof(buf)) rdnow = sizeof(buf);

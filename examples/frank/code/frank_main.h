@@ -37,5 +37,6 @@ public:
     class FrankApplication *m_app[MAX_APPS];
 
     osalStatus listen_for_clients();
+    osalStatus connect_to_device();
     void launch_app(os_char *network_name);
 };
