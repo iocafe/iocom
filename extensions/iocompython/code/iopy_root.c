@@ -62,7 +62,7 @@ static PyObject *Root_new(
         *security = NULL;
 
     int
-        device_nr = 0;
+        device_nr = IOC_AUTO_DEVICE_NR;
 
     static char *kwlist[] = {
         "device_name",

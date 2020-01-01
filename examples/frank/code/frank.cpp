@@ -58,7 +58,6 @@ osalStatus osal_main(
     os_char *argv[])
 {
     osalSecurityConfig security_prm;
-    os_int64 t;
 
     os_memclear(&security_prm, sizeof(security_prm));
     security_prm.server_cert_file = "alice.crt";
@@ -73,8 +72,7 @@ osalStatus osal_main(
      * This demo uses dynamic signal configuration.
      */
     ioc_initialize_root(&frank_root);
-    os_time(&t);
-    ioc_set_iodevice_id(&frank_root, "frank", 1 + t%1000, "iocafenet");
+    ioc_set_iodevice_id(&frank_root, "frank", IOC_AUTO_DEVICE_NR, "iocafenet");
     ioc_initialize_dynamic_root(&frank_root);
 
     /* Create frank main object
