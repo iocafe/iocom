@@ -32,9 +32,9 @@
  */
 #include "devicedir.h"
 
-/* Gina IO board configuration.
+/* IO device configuration.
  */
-iocNodeConf gina_device_conf;
+iocNodeConf ioapp_device_conf;
 
 /* Maximum number of sockets, etc.
  */
@@ -54,7 +54,7 @@ static os_char
    signals are used for straming data between the controller and IO device.
  */
 static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM(gina,
-    gina_network_defaults, sizeof(gina_network_defaults));
+    ioapp_network_defaults, sizeof(ioapp_network_defaults));
 
 static iocControlStreamState ioc_ctrl_state;
 
@@ -100,17 +100,17 @@ osalStatus osal_main(
     /* Load device configuration from peristant storage, or if not available use
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
-    ioc_load_node_config(&gina_device_conf, gina_network_defaults, sizeof(gina_network_defaults));
-    device_id = ioc_get_device_id(&gina_device_conf);
-    connconf = ioc_get_connection_conf(&gina_device_conf);
+    ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
+    device_id = ioc_get_device_id(&ioapp_device_conf);
+    connconf = ioc_get_connection_conf(&ioapp_device_conf);
 
     /* Setup network interface configuration for micro-controller environment and initialize
        transport library. This is partyly ignored if network interfaces are managed by operating
        system (Linux/Windows,etc),
      */
-    nics = ioc_get_nics(&gina_device_conf);
+    nics = ioc_get_nics(&ioapp_device_conf);
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-    security = ioc_get_security_conf(&gina_device_conf);
+    security = ioc_get_security_conf(&ioapp_device_conf);
     osal_tls_initialize(nics->nic, nics->n_nics, security);
 #else
     osal_socket_initialize(nics->nic, nics->n_nics);
@@ -140,8 +140,8 @@ osalStatus osal_main(
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_signal_hdr = &gina_hdr;
 
-    prm.device_info = gina_config;
-    prm.device_info_sz = sizeof(gina_config);
+    prm.device_info = ioapp_signal_config;
+    prm.device_info_sz = sizeof(ioapp_signal_config);
 
     prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
     prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
@@ -260,7 +260,7 @@ void osal_main_cleanup(
 #endif
     osal_serial_shutdown();
 
-    ioc_release_node_config(&gina_device_conf);
+    ioc_release_node_config(&ioapp_device_conf);
 }
 
 

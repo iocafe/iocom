@@ -19,8 +19,12 @@
  */
 #include "devicedir.h"
 
-iocRoot frank_root;
+iocRoot ioapp_root;
 static FrankMain *frank_main;
+
+/* IO device configuration.
+ */
+iocNodeConf ioapp_device_conf;
 
 /* Remove this, for testing only
  */
@@ -57,40 +61,49 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    osalSecurityConfig security_prm;
-    const os_char *device_name;
-    os_int device_nr;
-    const os_char *network_name;
-
-    os_memclear(&security_prm, sizeof(security_prm));
-    security_prm.server_cert_file = "alice.crt";
-    security_prm.server_key_file = "alice.key";
+    osPersistentParams persistentprm;
+    iocDeviceId *device_id;
+    iocConnectionConfig *connconf;
+    osalSecurityConfig *security;
+    iocNetworkInterfaces *nics;
+    const os_char *device_name = "frank";
 
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
      */
-    ioc_initialize_root(&frank_root);
-    device_name = "frank";
-    device_nr = IOC_AUTO_DEVICE_NR;
-    network_name = "iocafenet";
+    ioc_initialize_root(&ioapp_root);
 
-    ioc_set_iodevice_id(&frank_root, device_name, device_nr, network_name);
-    ioc_initialize_dynamic_root(&frank_root);
+    /* Initialize persistent storage and load device configuration (persistent storage is
+       typically either file system or micro-controller's flash). Defaults are set in
+       network-defaults.json.
+     */
+    os_memclear(&persistentprm, sizeof(persistentprm));
+    persistentprm.device_name = device_name;
+    os_persistent_initialze(&persistentprm);
+    ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
+    device_id = ioc_get_device_id(&ioapp_device_conf);
+    connconf = ioc_get_connection_conf(&ioapp_device_conf);
+
+    ioc_set_iodevice_id(&ioapp_root, device_name, device_id->device_nr, device_id->network_name);
+    ioc_initialize_dynamic_root(&ioapp_root);
 
     /* Create frank main object
      */
-    frank_main = new FrankMain;
+    frank_main = new FrankMain(device_name, device_id->device_nr, device_id->network_name);
+    // frank_main->inititalize_accounts(device_id->network_name);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
-    ioc_set_root_callback(&frank_root, root_callback, OS_NULL);
+    ioc_set_root_callback(&ioapp_root, root_callback, OS_NULL);
 
-    /* Initialize the transport, socket, TLS, serial, etc..
+    /* Setup network interface configuration and initialize transport library. This is
+       partyly ignored if network interfaces are managed by operating system
+       (Linux/Windows,etc),
      */
-    osal_tls_initialize(OS_NULL, 0, &security_prm);
+    nics = ioc_get_nics(&ioapp_device_conf);
+    security = ioc_get_security_conf(&ioapp_device_conf);
+    osal_tls_initialize(nics->nic, nics->n_nics, security);
     osal_serial_initialize();
-
-    frank_main->inititalize_accounts(network_name);
 
     /* Ready to go, start listening for clients.
      */
@@ -124,8 +137,10 @@ osalStatus osal_loop(
 {
     osalStatus s;
 
-    os_sleep(100);
-    s = io_device_console(&frank_root);
+    frank_main->run();
+
+    os_sleep(50);
+    s = io_device_console(&ioapp_root);
 
     /* testing, remove this =====>
      */
@@ -145,6 +160,8 @@ osalStatus osal_loop(
         return OSAL_SUCCESS;
     }
     /* <==== */
+
+
 
 
     return s;
@@ -170,11 +187,11 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    ioc_set_root_callback(&frank_root, OS_NULL, OS_NULL);
+    ioc_set_root_callback(&ioapp_root, OS_NULL, OS_NULL);
     frank_main->release_accounts();
     delete frank_main;
 
-    ioc_release_root(&frank_root);
+    ioc_release_root(&ioapp_root);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }

@@ -2,14 +2,10 @@
 "accounts" : {
 	"requests": [
 		{
-			"user_name": "iocafe",
-			"password": "iocafe",
-			"privileges": "root",
-			"time_stamp": 921978891276
-		},
-		{
-			"user_name": "iocafe",
-			"password": "iocafe",
+			"user_name": "gina7",
+			"password": "mypass",
+			"networks": "iocafenet",
+			"privileges": "device",
 			"time_stamp": 921978891276
 		}
 	],
@@ -17,11 +13,13 @@
 		{
 			"user_name": "iocafe",
 			"password": "iocafe",
+			"networks": "iocafenet,asteroidnet",
 			"privileges": "root"
 		},
 		{
 			"device_name": "gina2",
-			"password": "iocafe",
+			"password": "mypass",
+			"networks": "iocafenet",
 			"privileges": "device"
 		}
 	],
@@ -34,7 +32,8 @@
 			"device_name": "my-white-listed"
 		},
 		{
-			"ip": "192.168.1.2-192.168.1.253"
+			"ip": "192.168.1.2-192.168.1.253",
+			"networks": "asteroidnet"
 		}
 	],
 	"blacklist": [

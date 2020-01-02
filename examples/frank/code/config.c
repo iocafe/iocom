@@ -15,6 +15,13 @@
 
 ****************************************************************************************************
 */
-#include "frank.h"
+#include "iocom.h"
+#include "network-defaults.h"
+#include "signals.h"
+#include "accounts.h"
+#include "info-mblk.h"
 
+#include "network-defaults.c"
+#include "signals.c"
 #include "accounts.c"
+#include "info-mblk.c"

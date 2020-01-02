@@ -12,7 +12,8 @@ include(../../../eosal/build/cmakedefs/eosal-defs.txt)
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
 add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
-add_subdirectory($ENV{E_ROOT}/pins "${CMAKE_CURRENT_BINARY_DIR}/pins")
+# add_subdirectory($ENV{E_ROOT}/pins "${CMAKE_CURRENT_BINARY_DIR}/pins")
+add_subdirectory($ENV{E_ROOT}/iocom/extensions/nodeconf "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/nodeconf")
 
 # The devicedir library is here for testing only, take away.
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/devicedir "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/devicedir")
@@ -29,6 +30,7 @@ include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E
 
 # Add iocom and pins to include path.
 include_directories("$ENV{E_ROOT}/iocom")
+include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
 include_directories("$ENV{E_ROOT}/pins")
 
 # The devicedir library is here for testing only, take away.
@@ -43,4 +45,5 @@ file(GLOB_RECURSE SOURCES "${E_SOURCE_PATH}/*.c" "${E_SOURCE_PATH}/*.cpp")
 # Build executable. Set library folder and libraries to link with.
 link_directories($ENV{E_LIB})
 add_executable(${E_PROJECT}${E_POSTFIX} ${HEADERS} ${SOURCES})
-target_link_libraries(${E_PROJECT}${E_POSTFIX} devicedir${E_POSTFIX};pins${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})
+#target_link_libraries(${E_PROJECT}${E_POSTFIX} devicedir${E_POSTFIX};nodeconf${E_POSTFIX};pins${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})
+target_link_libraries(${E_PROJECT}${E_POSTFIX} devicedir${E_POSTFIX};nodeconf${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})

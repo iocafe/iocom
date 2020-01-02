@@ -94,21 +94,21 @@ void FrankApplication::run()
         segments[i] = !segments[i];
         if (++i >= sizeof(segments)) i = 0;
 
-        // ioc_maintain_signal(&frank_root, "seven_segment", m_network_name, &seven_segment);
+        // ioc_maintain_signal(&ioapp_root, "seven_segment", m_network_name, &seven_segment);
         // ioc_sets_array(seven_segment, segments, sizeof(segments));
 
-        ioc_maintain_signal(&frank_root, "teststr", m_network_name, &str_test);
+        ioc_maintain_signal(&ioapp_root, "teststr", m_network_name, &str_test);
         ioc_gets_str(str_test, buf, sizeof(buf));
 
         os_strncat(buf, " Migssssssshty", sizeof(buf));
         buf[3] = i;
-        // ioc_maintain_signal(&frank_root, "strtodevice", m_network_name, &strtodevice);
+        // ioc_maintain_signal(&ioapp_root, "strtodevice", m_network_name, &strtodevice);
         ioc_sets_str(strtodevice, buf);
 
-        ioc_maintain_signal(&frank_root, "testfloat", m_network_name, &float_test);
+        ioc_maintain_signal(&ioapp_root, "testfloat", m_network_name, &float_test);
         ioc_gets_array(float_test, floats, sizeof(floats)/sizeof(os_float));
 
-        ioc_maintain_signal(&frank_root, "C", m_network_name, &c_test);
+        ioc_maintain_signal(&ioapp_root, "C", m_network_name, &c_test);
         v = ioc_gets_int(c_test, &state_bits, IOC_SIGNAL_DEFAULT);
     }
 

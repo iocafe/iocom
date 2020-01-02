@@ -14,10 +14,17 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#include "nodeconf.h"
 
+OSAL_C_HEADER_BEGINS
+#include "network-defaults.h"
+#include "signals.h"
 #include "accounts.h"
+#include "info-mblk.h"
+OSAL_C_HEADER_ENDS
+
 #include "frank_main.h"
 #include "frank_application.h"
 #include "frank_get_netconf.h"
 
-extern iocRoot frank_root;
+extern iocRoot ioapp_root;
