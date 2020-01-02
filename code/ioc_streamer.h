@@ -184,7 +184,7 @@ typedef struct
     /* Transfer of default network configuration from device to controller.
      */
     os_boolean transferring_default_config;
-    os_short default_config_pos;
+    os_int default_config_pos;
 
     /* To device from controller.
      */

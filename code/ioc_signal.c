@@ -924,7 +924,7 @@ os_char ioc_moves_array(
     nn = n;
     if (type_id == OS_BOOLEAN) nn = (nn == 1 ? 0 : (nn + 7) >> 3);
 
-    if (addr < 0 || addr + (offset + nn) * type_sz >= mblk->nbytes)
+    if (addr < 0 || addr + (offset + nn) * (os_int)type_sz >= mblk->nbytes)
     {
         state_bits = 0;
         osal_debug_error("Data move outside memory block's' address space");
@@ -982,11 +982,11 @@ os_char ioc_moves_array(
 
             if (invalidate_state_bits)
             {
-                ioc_mblk_invalidate(mblk, addr, addr + nn + offset * type_sz);
+                ioc_mblk_invalidate(mblk, addr, addr + nn + offset * (os_int)type_sz);
             }
             else if (nn)
             {
-                addr += offset * type_sz + 1;
+                addr += offset * (os_int)type_sz + 1;
                 ioc_mblk_invalidate(mblk, addr, addr + nn - 1);
             }
         }

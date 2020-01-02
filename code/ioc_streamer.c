@@ -1522,7 +1522,7 @@ void ioc_ctrl_stream_from_device(
                 n_read = params->default_config_sz - ctrl->default_config_pos;
                 if (rdnow < n_read) n_read = rdnow;
                 os_memcpy(buf, params->default_config + ctrl->default_config_pos, n_read);
-                ctrl->default_config_pos += n_read;
+                ctrl->default_config_pos += (os_int)n_read;
             }
 
             /* Get actual persistent data.

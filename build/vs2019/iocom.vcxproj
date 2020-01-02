@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\ioc_authentication.h" />
     <ClInclude Include="..\..\code\ioc_compress.h" />
     <ClInclude Include="..\..\code\ioc_connection.h" />
     <ClInclude Include="..\..\code\ioc_debug.h" />
@@ -46,6 +47,7 @@
     <ClInclude Include="..\..\iocomx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\ioc_authentication.c" />
     <ClCompile Include="..\..\code\ioc_compress.c" />
     <ClCompile Include="..\..\code\ioc_connection.c" />
     <ClCompile Include="..\..\code\ioc_connection_receive.c" />
