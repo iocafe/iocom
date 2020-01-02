@@ -1,0 +1,121 @@
+{
+"name": "accounts",
+"mblk": [
+	{
+		"name": "exp",
+		"flags": "up",
+		"groups": [
+			{
+				"name": "state",
+				"signals": [
+					{
+						"name": "nro_devices",
+						"type": "int"
+					},
+					{
+						"name": "test",
+						"type": "boolean"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "imp",
+		"flags": "down",
+		"groups": [
+			{
+				"name": "control",
+				"signals": [
+					{
+						"name": "restart",
+						"type": "boolean"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "conf_exp",
+		"flags": "up,conf",
+		"groups": [
+			{
+				"name": "transfer to the IO node",
+				"signals": [
+					{
+						"name": "tod_state",
+						"type": "char"
+					},
+					{
+						"name": "tod_tail",
+						"type": "int"
+					}
+				]
+			},
+			{
+				"name": "transfer from IO node",
+				"signals": [
+					{
+						"name": "frd_state",
+						"type": "char"
+					},
+					{
+						"name": "frd_buf",
+						"type": "uchar",
+						"array": 257
+					},
+					{
+						"name": "frd_head",
+						"type": "int"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "conf_imp",
+		"flags": "down,conf",
+		"groups": [
+			{
+				"name": "transfer to IO node",
+				"signals": [
+					{
+						"name": "tod_cmd",
+						"type": "char"
+					},
+					{
+						"name": "tod_select",
+						"type": "char"
+					},
+					{
+						"name": "tod_buf",
+						"type": "uchar",
+						"array": 257
+					},
+					{
+						"name": "tod_head",
+						"type": "int"
+					}
+				]
+			},
+			{
+				"name": "transfer from IO node",
+				"signals": [
+					{
+						"name": "frd_cmd",
+						"type": "char"
+					},
+					{
+						"name": "frd_select",
+						"type": "uchar"
+					},
+					{
+						"name": "frd_tail",
+						"type": "int"
+					}
+				]
+			}
+		]
+	}
+]
+}

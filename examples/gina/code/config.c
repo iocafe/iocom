@@ -17,8 +17,8 @@
 */
 #include "gina.h"
 
-#include "gina-io.c"
-#include "gina-signals.c"
-#include "gina-info-mblk.c"
-#include "gina-network-defaults.c"
+#include "pins-io.c"
+#include "signals.c"
+#include "info-mblk.c"
+#include "network-defaults.c"
 

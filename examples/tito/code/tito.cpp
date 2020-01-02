@@ -43,15 +43,15 @@ osalStatus osal_main(
     security_prm.server_cert_file = "alice.crt";
     security_prm.server_key_file = "alice.key";
 
-    /* Initialize the transport, socket, TLS, serial, etc..
-     */
-    osal_tls_initialize(OS_NULL, 0, &security_prm);
-    osal_serial_initialize();
-
     /* Initialize communication root object.
      */
     ioc_initialize_root(&tito_root);
     ioc_set_iodevice_id(&frank_root, "tito", IOC_AUTO_DEVICE_NR, "iocafenet");
+
+    /* Initialize the transport, socket, TLS, serial, etc..
+     */
+    osal_tls_initialize(OS_NULL, 0, &security_prm);
+    osal_serial_initialize();
 
     /* Create tito main object and start listening for clients.
      */

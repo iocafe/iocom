@@ -18,10 +18,10 @@
 #include "pinsx.h"
 #include "nodeconf.h"
 
-#include "gina-io.h"
-#include "gina-signals.h"
-#include "gina-info-mblk.h"
-#include "gina-network-defaults.h"
+#include "pins-io.h"
+#include "signals.h"
+#include "info-mblk.h"
+#include "network-defaults.h"
 
 
 void ioboard_communication_callback(

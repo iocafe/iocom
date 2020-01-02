@@ -14,6 +14,8 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+
+#include "accounts.h"
 #include "frank_main.h"
 #include "frank_application.h"
 #include "frank_get_netconf.h"

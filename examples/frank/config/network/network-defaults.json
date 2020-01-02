@@ -1,0 +1,25 @@
+{
+  "network": {
+    "title": "Network configuration defaults for top level controller 'frank'",
+    "device_name": "frank",
+    "device_nr": "auto",
+    "network_name": "iocafenet",
+    "publish": "iocafenet,asteroidnet",
+    "password": "auto",
+
+    "connect": [
+      {
+        "transport": "socket",
+        "ip": "192.168.1.220"
+      }
+    ],
+
+    "security": [
+      {
+        "certchainfile": "bob-bundle.crt",
+        "certfile": "alice.crt",
+        "keyfile": "alice.key"
+      }
+    ]
+  }
+}

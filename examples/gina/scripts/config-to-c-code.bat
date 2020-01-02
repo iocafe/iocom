@@ -1,20 +1,27 @@
 set MYAPP=gina
 set MYCODEROOT=c:/coderoot
-set MYBIN=%MYCODEROOT%/bin/linux
-set MYSCRIPTS=%MYCODEROOT%/iocom/scripts
+set JSONTOOL=%MYCODEROOT%/win32/linux/json
+set PINSTOC="python %MYCODEROOT%/pins/scripts/pins-to-c.py"
+set BINTOC="python %MYCODEROOT%/eosal/scripts/bin-to-c.py"
+set SIGNALSTOC="python %MYCODEROOT%/iocom/scripts/signals-to-c.py"
 set MYCONFIG=%MYCODEROOT%/iocom/examples/%MYAPP%/config
-
-set MYDEVOS=win32
 set MYHW=carol
+set MYINCLUDE=%MYCONFIG%/include/%MYHW%
+set MYSIGNALS=%MYCONFIG%/signals/signals
+set MYPINS=%MYCONFIG%/pins/%MYHW%/pins-io
+set MYNETDEFAULTS=%MYCONFIG%/network/network-defaults
 
-python %MYCODEROOT%/pins/scripts/pins-to-c.py %MYCONFIG%/pins/%MYHW%/%MYAPP%-io.json -o %MYCONFIG%/include/%MYHW%/%MYAPP%-io.c -s %MYCONFIG%/signals/%MYAPP%-signals.json
+%PINSTOC% %MYPINS%.json -o %MYINCLUDE%/pins-io.c -s %MYSIGNALS%.json
 
-%MYCODEROOT%/bin/%MYDEVOS%/json --t2b -title %MYCONFIG%/signals/%MYAPP%-signals.json %MYCONFIG%/signals/%MYAPP%-signals.binjson
-%MYCODEROOT%/bin/%MYDEVOS%/json --b2t  %MYCONFIG%/signals/%MYAPP%-signals.binjson %MYCONFIG%/signals/%MYAPP%-signals-check.json
+%JSONTOOL% --t2b -title %MYSIGNALS%.json %MYSIGNALS%.binjson
+%JSONTOOL% --b2t %MYSIGNALS%.binjson %MYSIGNALS%-check.json
+%BINTOC% -v %MYAPP%_config %MYSIGNALS%.binjson -o %MYINCLUDE%/info-mblk.c
 
-python %MYCODEROOT%/eosal/scripts/bin-to-c.py -v %MYAPP%_config %MYCONFIG%/signals/%MYAPP%-signals.binjson -o %MYCONFIG%/include/%MYHW%/%MYAPP%-info-mblk.c
-python %MYSCRIPTS%/signals-to-c.py %MYCONFIG%/signals/%MYAPP%-signals.json -p %MYCONFIG%/pins/%MYHW%/%MYAPP%-io.json -o %MYCONFIG%/include/%MYHW%/%MYAPP%-signals.c
+%SIGNALSTOC% %MYSIGNALS%.json -p %MYPINS%.json -o %MYINCLUDE%/signals.c
 
-%MYCODEROOT%/bin/%MYDEVOS%/json --t2b -title %MYCONFIG%/network/%MYAPP%-network-defaults.json %MYCONFIG%/network/%MYAPP%-network-defaults.binjson
-%MYCODEROOT%/bin/%MYDEVOS%/json --b2t  %MYCONFIG%/network/%MYAPP%-network-defaults.binjson %MYCONFIG%/network/%MYAPP%-network-defaults-check.json
-python %MYCODEROOT%/eosal/scripts/bin-to-c.py -v %MYAPP%_network_defaults %MYCONFIG%/network/%MYAPP%-network-defaults.binjson -o %MYCONFIG%/include/%MYHW%/%MYAPP%-network-defaults.c
+%JSONTOOL% --t2b -title %MYNETDEFAULTS%.json %MYNETDEFAULTS%.binjson
+%JSONTOOL% --b2t  %MYNETDEFAULTS%.binjson %MYNETDEFAULTS%-check.json
+%BINTOC% -v %MYAPP%_network_defaults %MYNETDEFAULTS%.binjson -o %MYINCLUDE%/network-defaults.c
+
+echo "*** Check that the output files have been generated (error checks are still missing)."
+echo "*** You may need to recompile all C code since generated files in config/include/<hw> folder are not in compiler dependencies."

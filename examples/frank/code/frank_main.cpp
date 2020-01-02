@@ -132,3 +132,64 @@ void FrankMain::launch_app(
 
     osal_debug_error("Too many IO networks");
 }
+
+static void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
+{
+    iocSignal *sig;
+    os_int count;
+
+    mblk_hdr->handle = handle;
+
+    count = mblk_hdr->n_signals;
+    sig = mblk_hdr->first_signal;
+
+    while (count--)
+    {
+        sig->handle = handle;
+        sig++;
+    }
+}
+
+
+void FrankMain::inititalize_accounts(const os_char *network_name)
+{
+    iocMemoryBlockParams blockprm;
+    const os_char *accounts_device_name = "accounts";
+    os_int accounts_device_nr = 1;
+
+    /* Setup initial Gina IO board definition structure.
+     */
+    // gina_init_signal_struct(&m_gina_def);
+
+
+    /* Generate memory blocks.
+     */
+    os_memclear(&blockprm, sizeof(blockprm));
+    blockprm.device_name = accounts_device_name;
+    blockprm.device_nr = accounts_device_nr;
+    blockprm.network_name = network_name;
+
+    blockprm.mblk_name = m_accounts_def.exp.hdr.mblk_name;
+    blockprm.nbytes = m_accounts_def.exp.hdr.mblk_sz;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
+    ioc_initialize_memory_block(&m_accounts_export, OS_NULL, &frank_root, &blockprm);
+
+    blockprm.mblk_name = m_accounts_def.imp.hdr.mblk_name;
+    blockprm.nbytes = m_accounts_def.imp.hdr.mblk_sz;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
+    ioc_initialize_memory_block(&m_accounts_import, OS_NULL, &frank_root, &blockprm);
+
+    doit(&m_accounts_def.imp.hdr, &m_accounts_import);
+    doit(&m_accounts_def.exp.hdr, &m_accounts_export);
+
+    /* Set callback to detect received data and connection status changes.
+     */
+    // ioc_add_callback(&ctx.inputs, iocontroller_callback, &ctx);
+}
+
+
+void FrankMain::release_accounts()
+{
+    ioc_release_memory_block(&m_accounts_export);
+    ioc_release_memory_block(&m_accounts_import);
+}

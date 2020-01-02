@@ -1,7 +1,33 @@
 export MYAPP=frank
 export MYCODEROOT=/coderoot
-export MYBIN=${MYCODEROOT}/bin/linux
-export MYSCRIPTS=${MYCODEROOT}/iocom/scripts
-export MYCONFIG=${MYCODEROOT}/iocom/examples/${MYAPP}/config
+export JSONTOOL=${MYCODEROOT}/bin/linux/json
+export BINTOC="python3 ${MYCODEROOT}/eosal/scripts/bin-to-c.py"
+export SIGNALSTOC="python3 ${MYCODEROOT}/iocom/scripts/signals-to-c.py"
 
-python3 ${MYSCRIPTS}/signals-to-c.py -a controller-static ${MYCODEROOT}/iocom/examples/gina/config/signals/gina-signals.json -o ${MYCONFIG}/include/gina-for-${MYAPP}.c
+export MYCONFIG=${MYCODEROOT}/iocom/examples/${MYAPP}/config
+export MYINCLUDE=${MYCONFIG}/include
+export MYSIGNALS=${MYCONFIG}/signals/signals
+export MYNETDEFAULTS=${MYCONFIG}/network/network-defaults
+export MYACCOUNTS=${MYCONFIG}/signals/accounts
+export MYACCOUNTSDEFAULTS=${MYCONFIG}/network/default-accounts
+
+${JSONTOOL} --t2b -title ${MYSIGNALS}.json ${MYSIGNALS}.binjson
+${JSONTOOL} --b2t  ${MYSIGNALS}.binjson ${MYSIGNALS}-check.json
+${SIGNALSTOC} -a controller-static ${MYSIGNALS}.json -o ${MYCONFIG}/include/signals.c
+${BINTOC} -v ${MYAPP}_config ${MYSIGNALS}.binjson -o ${MYINCLUDE}/info-mblk.c
+
+${JSONTOOL} --t2b -title ${MYACCOUNTS}.json ${MYACCOUNTS}.binjson
+${JSONTOOL} --b2t  ${MYACCOUNTS}.binjson ${MYACCOUNTS}-check.json
+${SIGNALSTOC} -a controller-static ${MYACCOUNTS}.json -o ${MYCONFIG}/include/accounts.c
+${BINTOC} -v ${MYAPP}_config ${MYACCOUNTS}.binjson -o ${MYINCLUDE}/accounts-mblk.c
+
+${JSONTOOL} --t2b -title ${MYNETDEFAULTS}.json ${MYNETDEFAULTS}.binjson
+${JSONTOOL} --b2t  ${MYNETDEFAULTS}.binjson ${MYNETDEFAULTS}-check.json
+${BINTOC} -v ${MYAPP}_network_defaults ${MYNETDEFAULTS}.binjson -o ${MYINCLUDE}/network-defaults.c
+
+${JSONTOOL} --t2b -title ${MYACCOUNTSDEFAULTS}.json ${MYACCOUNTSDEFAULTS}.binjson
+${JSONTOOL} --b2t  ${MYACCOUNTSDEFAULTS}.binjson ${MYACCOUNTSDEFAULTS}-check.json
+${BINTOC} -v ${MYAPP}_account_defaults ${MYACCOUNTSDEFAULTS}.binjson -o ${MYINCLUDE}/account-defaults.c
+
+echo "*** Check that the output files have been generated (error checks are still missing)."
+echo "*** You may need to recompile all C code since generated files in config/include folder are not in compiler dependencies."

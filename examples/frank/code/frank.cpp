@@ -58,21 +58,23 @@ osalStatus osal_main(
     os_char *argv[])
 {
     osalSecurityConfig security_prm;
+    const os_char *device_name;
+    os_int device_nr;
+    const os_char *network_name;
 
     os_memclear(&security_prm, sizeof(security_prm));
     security_prm.server_cert_file = "alice.crt";
     security_prm.server_key_file = "alice.key";
 
-    /* Initialize the transport, socket, TLS, serial, etc..
-     */
-    osal_tls_initialize(OS_NULL, 0, &security_prm);
-    osal_serial_initialize();
-
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
      */
     ioc_initialize_root(&frank_root);
-    ioc_set_iodevice_id(&frank_root, "frank", IOC_AUTO_DEVICE_NR, "iocafenet");
+    device_name = "frank";
+    device_nr = IOC_AUTO_DEVICE_NR;
+    network_name = "iocafenet";
+
+    ioc_set_iodevice_id(&frank_root, device_name, device_nr, network_name);
     ioc_initialize_dynamic_root(&frank_root);
 
     /* Create frank main object
@@ -82,6 +84,13 @@ osalStatus osal_main(
     /* Set callback function to receive information about new dynamic memory blocks.
      */
     ioc_set_root_callback(&frank_root, root_callback, OS_NULL);
+
+    /* Initialize the transport, socket, TLS, serial, etc..
+     */
+    osal_tls_initialize(OS_NULL, 0, &security_prm);
+    osal_serial_initialize();
+
+    frank_main->inititalize_accounts(network_name);
 
     /* Ready to go, start listening for clients.
      */
@@ -162,6 +171,7 @@ void osal_main_cleanup(
     void *app_context)
 {
     ioc_set_root_callback(&frank_root, OS_NULL, OS_NULL);
+    frank_main->release_accounts();
     delete frank_main;
 
     ioc_release_root(&frank_root);
