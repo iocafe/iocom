@@ -505,7 +505,7 @@ goon:
 
         /* Create source buffer to link the connection and memory block together.
          */
-        sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
+        sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, IOC_BIDIRECTIONAL);
 
         /* Do initial synchronization for all memory blocks.
          */

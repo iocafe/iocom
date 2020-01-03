@@ -1,0 +1,15 @@
+two dictional memory blocks
+2.1.2020
+
+- no low level IO device support
+- requires dynamic memory allocation
+- use only for testers, configuration tools, etc. Do not use for normal IO communication, reliable recovery from exception situations gets compilcated. Stick with one directional memory blocks, and you will be happier. 
+
+Both source and target buffers exist memory block in higher and in lower level.
+
+Source buffer tracks invalidated addressess at byte precision. This is done 
+Only invalidated data is transferred, again at byte precision.
+
+Received changes coming from lower hierarchy level are not eached back down to same memory block. 
+
+

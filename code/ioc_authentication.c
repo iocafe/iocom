@@ -14,7 +14,7 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
-#if IOC_AUTHENTICATION
+#if IOC_AUTHENTICATION_CODE
 
 /* Forward referred static functions.
  */
@@ -182,7 +182,7 @@ osalStatus ioc_process_received_authentication_frame(
     os_uint mblk_id,
     os_char *data)
 {
-#if IOC_AUTHENTICATION == IOC_FULL_AUTHENTICATION
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     iocSecureDevice secdev;
     os_uchar auth_flags, *p;
     osalStatus s;

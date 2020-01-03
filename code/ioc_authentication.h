@@ -13,12 +13,12 @@
 
 ****************************************************************************************************
 */
-#if IOC_AUTHENTICATION
+#if IOC_AUTHENTICATION_CODE
 
 
 
 
-#if IOC_AUTHENTICATION == IOC_FULL_AUTHENTICATION
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
 
 /**
 ****************************************************************************************************

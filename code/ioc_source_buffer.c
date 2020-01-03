@@ -40,10 +40,9 @@
   @param   remote_mblk_id Memory block identifier on remote end of connection.
            Am IO board has typically multiple memory blocks and this identifies the memory block
            within device (or more specifically under root object). 
-  @param   itembuf Pointer to array of ioc_tbuf_item elements. If dynamic memory allocation
-           is supported, this can be OS_NULL and the needed buffer is allocated. If given
-           this array must have at least as many elements as memory block has bytes.
-  @param   nitems Number of elements in itembuf array. Ignored if itembuf is OS_NULL.
+  @param   flags Shares flag bits with memory blocks. Set IOC_DEFAULT (0) for default operation,
+           set IOC_BIDIRECTIONAL to create source buffer with byte based invalidation (change
+           marking) for two directional support. Requires IOC_BIDIRECTIONAL_MBLK_CODE define.
   @return  Pointer to initialized source buffer object. OS_NULL if memory allocation failed.
 
 ****************************************************************************************************
@@ -52,8 +51,7 @@ iocSourceBuffer *ioc_initialize_source_buffer(
     iocConnection *con,
     iocMemoryBlock *mblk,
     os_short remote_mblk_id,
-    ioc_sbuf_item *itembuf,
-    os_int nitems)
+    os_short flags)
 {
     iocRoot *root;
     iocSourceBuffer *sbuf;
@@ -82,25 +80,24 @@ iocSourceBuffer *ioc_initialize_source_buffer(
     sbuf->syncbuf.nbytes = mblk->nbytes;
     if ((mblk->flags & IOC_STATIC) == 0)
     {
-        if (itembuf)
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        sbuf->syncbuf.ndata = sbuf->syncbuf.nbytes;
+        sbuf->syncbuf.flags = flags;
+        if (flags & IOC_BIDIRECTIONAL)
         {
-            osal_debug_assert(nitems == sbuf->syncbuf.nbytes);
-            sbuf->syncbuf.buf = (os_char*)itembuf;
-            sbuf->syncbuf.delta = sbuf->syncbuf.buf + nitems;
+            sbuf->syncbuf.nbytes += (sbuf->syncbuf.nbytes + 7) / 8;
         }
-        else
+#endif
+
+        sbuf->syncbuf.buf = ioc_malloc(root, 2 * (os_memsz)sbuf->syncbuf.nbytes, OS_NULL);
+        if (sbuf->syncbuf.buf == OS_NULL)
         {
-            sbuf->syncbuf.buf = ioc_malloc(root, 2 * (os_memsz)sbuf->syncbuf.nbytes, OS_NULL);
-            if (sbuf->syncbuf.buf == OS_NULL)
-            {
-                ioc_free(root, sbuf, sizeof(iocSourceBuffer));
-                ioc_unlock(root);
-                return OS_NULL;
-            }
-            os_memclear(sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes);
-            sbuf->syncbuf.delta = sbuf->syncbuf.buf + sbuf->syncbuf.nbytes;
-            sbuf->syncbuf.allocated = OS_TRUE;
+            ioc_free(root, sbuf, sizeof(iocSourceBuffer));
+            ioc_unlock(root);
+            return OS_NULL;
         }
+        os_memclear(sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes);
+        sbuf->syncbuf.delta = sbuf->syncbuf.buf + sbuf->syncbuf.nbytes;
     }
 
     /* Save remote memory block identifier, always start with key frame.
@@ -196,22 +193,6 @@ void ioc_release_source_buffer(
         con->sbuf.mbinfo_down = sbuf->clink.next;
     }
 
-    /* for (con = root->con.first;
-         con;
-         con = con->link.next)
-    {
-        if (con->sbuf.current == sbuf)
-        {
-            con->sbuf.current = OS_NULL;
-        }
-
-        if (con->sbuf.mbinfo_down == sbuf)
-        {
-            con->sbuf.mbinfo_down = sbuf->clink.next;
-        }
-    }
-    */
-
     /* Remove source buffer from linked lists.
      */
     if (sbuf->clink.prev)
@@ -255,10 +236,7 @@ void ioc_release_source_buffer(
         sbuf->clink.con->sbuf.current = OS_NULL;
     }
 
-    if (sbuf->syncbuf.allocated)
-    {
-        ioc_free(root, sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes);
-    }
+    ioc_free(root, sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes);
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging).
      */
@@ -271,10 +249,64 @@ void ioc_release_source_buffer(
 }
 
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
 /**
 ****************************************************************************************************
 
-  @brief Mark address range of changed values (internal).
+  @brief Mark address range to be transferred (internal, bidirectional memory blocks).
+  @anchor ioc_sbuf_invalidate_bytes
+
+  The ioc_sbuf_invalidate_bytes() function marks address range as values to be transferred at
+  byte precision. Weather the values is actually cahnged will be ignored later. This is used
+  to implement bidirectional data memory block data transfer.
+
+  ioc_lock() must be on before calling this function.
+
+  @param   sbuf Pointer to the source buffer object.
+  @param   start_addr Beginning address of changes.
+  @param   end_addr End address of changed.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_sbuf_invalidate_bytes(
+    iocSourceBuffer *sbuf,
+    os_int start_addr,
+    os_int end_addr)
+{
+    os_int count;
+    os_uchar *p, start_mask, end_mask;
+
+    if (end_addr < start_addr || sbuf->syncbuf.buf == OS_NULL) return;
+
+    start_mask = ~(0xFF << (start_addr & 7));
+    end_mask = (0xFF >> (7 - (end_addr & 7)));
+
+    start_addr >>= 3;
+    end_addr >>= 3;
+    p = (os_uchar*)(sbuf->syncbuf.buf + sbuf->syncbuf.ndata + start_addr);
+
+    if (start_addr == end_addr)
+    {
+        *p |= (start_mask & end_mask);
+        return;
+    }
+
+    *(p++) |= start_mask;
+    count = end_addr - start_addr - 1;
+    while (count--)
+    {
+        *(p++) |= 0xFF;
+    }
+    *(p++) |= end_mask;
+}
+#endif
+
+
+/**
+****************************************************************************************************
+
+  @brief Mark address range of changed values
   @anchor ioc_sbuf_invalidate
 
   The ioc_sbuf_invalidate() function marks address range as possibly changed values. This is not
@@ -306,6 +338,13 @@ void ioc_sbuf_invalidate(
         if (start_addr < sbuf->changed.start_addr) sbuf->changed.start_addr = start_addr;
         if (end_addr > sbuf->changed.end_addr) sbuf->changed.end_addr = end_addr;
     }
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+    {
+        ioc_sbuf_invalidate_bytes(sbuf, start_addr, end_addr);
+    }
+#endif
 }
 
 
@@ -345,6 +384,12 @@ osalStatus ioc_sbuf_synchronize(
         n,
         i;
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    os_int
+        pos,
+        count;
+#endif
+
     if ((!sbuf->changed.range_set && !sbuf->syncbuf.make_keyframe) ||
         sbuf->syncbuf.used)
     {
@@ -382,21 +427,28 @@ osalStatus ioc_sbuf_synchronize(
      */
     else
     {
-        /* Shrink invalidated range if data has not actually changed.
-         */
-        for (start_addr = sbuf->changed.start_addr;
-             start_addr <= sbuf->changed.end_addr;
-             start_addr++)
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if ((sbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
         {
-            if (syncbuf[start_addr] != buf[start_addr]) break;
-        }
+#endif
+          /* Shrink invalidated range if data has not actually changed.
+           */
+          for (start_addr = sbuf->changed.start_addr;
+               start_addr <= sbuf->changed.end_addr;
+               start_addr++)
+          {
+              if (syncbuf[start_addr] != buf[start_addr]) break;
+          }
 
-        for (end_addr = sbuf->changed.end_addr;
-             end_addr >= start_addr;
-             end_addr--)
-        {
+          for (end_addr = sbuf->changed.end_addr;
+               end_addr >= start_addr;
+               end_addr--)
+          {
             if (syncbuf[end_addr] != buf[end_addr]) break;
+          }
+#if IOC_BIDIRECTIONAL_MBLK_CODE
         }
+#endif
         if (end_addr < start_addr) return OSAL_SUCCESS;
 
         /* Do delta encoding.
@@ -417,6 +469,17 @@ osalStatus ioc_sbuf_synchronize(
     {
         n = end_addr - start_addr + 1;
         os_memcpy(syncbuf + start_addr, buf + start_addr, n);
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+        {
+            start_addr >>= 3;
+            end_addr >>= 3;
+            pos = sbuf->syncbuf.ndata + start_addr;
+            count = end_addr - start_addr + 1;
+            os_memcpy(sbuf->syncbuf.delta + pos, sbuf->syncbuf.buf + pos, count);
+        }
+#endif
     }
 
 #if OSAL_MULTITHREAD_SUPPORT
