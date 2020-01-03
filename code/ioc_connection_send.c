@@ -294,7 +294,7 @@ static void ioc_make_data_frame(
             sbuf->syncbuf.start_addr = sbuf->syncbuf.bidir_start_addr;
             sbuf->syncbuf.end_addr = sbuf->syncbuf.bidir_end_addr;
             sbuf->syncbuf.bidir_end_addr = -1;
-            *ptrs.extra_flags |= IOC_BIDIR_DATA_FOLLOWS;
+            // *ptrs.extra_flags |= IOC_BIDIR_DATA_FOLLOWS;
         }
         else
         {

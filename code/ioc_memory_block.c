@@ -795,6 +795,10 @@ void ioc_receive(
     iocMemoryBlock *mblk;
     iocTargetBuffer *tbuf;
     os_int start_addr, end_addr, i;
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    os_char *spos, *dpos;
+    os_uchar *bits;
+#endif
 
     /* Get memory block pointer and start synchronization.
      */
@@ -810,9 +814,31 @@ void ioc_receive(
         start_addr = tbuf->syncbuf.buf_start_addr;
         end_addr = tbuf->syncbuf.buf_end_addr;
 
-        os_memcpy(mblk->buf + start_addr,
-            tbuf->syncbuf.buf + start_addr,
-            (os_memsz)end_addr - start_addr + 1);
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+        {
+            bits = tbuf->syncbuf.buf + tbuf->syncbuf.ndata + (start_addr >> 3);
+            count = end_addr - start_addr + 1;
+            dpos = mblk->buf + start_addr;
+            spos = tbuf->syncbuf.buf + start_addr;
+            for (i = 0; i < count; ++i)
+            {
+                if ((bits[i] >> ((start_addr + i) & 3)) & 1)
+                {
+                    dbuf[i] = spos[i];
+                }
+            }
+        }
+        else
+        {
+#endif
+            os_memcpy(mblk->buf + start_addr,
+                tbuf->syncbuf.buf + start_addr,
+                (os_memsz)end_addr - start_addr + 1);
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        }
+#endif
 
         tbuf->syncbuf.buf_used = OS_FALSE;
 

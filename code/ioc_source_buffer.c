@@ -40,9 +40,10 @@
   @param   remote_mblk_id Memory block identifier on remote end of connection.
            Am IO board has typically multiple memory blocks and this identifies the memory block
            within device (or more specifically under root object). 
-  @param   flags Shares flag bits with memory blocks. Set IOC_DEFAULT (0) for default operation,
-           set IOC_BIDIRECTIONAL to create source buffer with byte based invalidation (change
-           marking) for two directional support. Requires IOC_BIDIRECTIONAL_MBLK_CODE define.
+  @param   flags Set IOC_DEFAULT (0) for default operation, or set IOC_BIDIRECTIONAL bit to create
+           source buffer with byte based invalidation (change marking). The bidirectional mode is
+           used two directional memory block data transfers. Requires IOC_BIDIRECTIONAL_MBLK_CODE
+           define.
   @return  Pointer to initialized source buffer object. OS_NULL if memory allocation failed.
 
 ****************************************************************************************************
@@ -240,7 +241,9 @@ void ioc_release_source_buffer(
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging).
      */
+#if OSAL_DEBUG
     os_memclear(sbuf, sizeof(iocSourceBuffer));
+#endif
     ioc_free(root, sbuf, sizeof(iocSourceBuffer));
 
     /* End syncronization.

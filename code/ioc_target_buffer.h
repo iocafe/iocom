@@ -63,9 +63,24 @@ typedef struct
      */
     os_int newdata_end_addr;
 
-    /** Flag indicating that the synchronized buffer structure was allocated.
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+
+    /** Bidirectional address range to be transferred.
+     *  if not set, bidir_end_addr = -1.
      */
-    os_boolean allocated;
+    // os_int bidir_start_addr;
+    // os_int bidir_end_addr;
+
+    /** IOC_BIDIRECTIONAL bit indicates bidirectional transfer.
+     */
+    os_short flags;
+
+    /** Number of data bytes. If this is not bidirectional transfer, ndata equals nbytes.
+        Otherwise nbytes = ndata + (ndata + 7)/8 (one "ivalidate" bit for each bit daya byte)
+     */
+    os_int ndata;
+
+#endif
 }
 iocSynchronizedTargetBuffer;
 
@@ -171,8 +186,7 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     iocConnection *con,
     iocMemoryBlock *mblk,
     os_short remote_mblk_id,
-    ioc_tbuf_item *itembuf,
-    os_int nitems);
+    os_short flags);
 
 /* Release target buffer object.
  */

@@ -33,10 +33,10 @@
   @param   remote_mblk_id Memory block identifier on remote end of connection.
            Am IO board has typically multiple memory blocks and this identifies the memory block
            within device (or more specifically under root object). 
-  @param   itembuf Pointer to array of ioc_tbuf_item elements. If dynamic memory allocation
-           is supported, this can be OS_NULL and the needed buffer is allocated. If given
-           this array must have at least as many elements as memory block has bytes.
-  @param   nitems Number of elements in itembuf array. Ignored if itembuf is OS_NULL.
+  @param   flags Set IOC_DEFAULT (0) for default operation, or set IOC_BIDIRECTIONAL bit to create
+           source buffer with byte based invalidation (change marking). The bidirectional mode is
+           used two directional memory block data transfers. Requires IOC_BIDIRECTIONAL_MBLK_CODE
+           define.
   @return  Pointer to initialized target buffer object. OS_NULL if memory allocation failed.
 
 ****************************************************************************************************
@@ -45,8 +45,7 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     iocConnection *con,
     iocMemoryBlock *mblk,
     os_short remote_mblk_id,
-    ioc_tbuf_item *itembuf,
-    os_int nitems)
+    os_short flags)
 {
     iocRoot *root;
     iocTargetBuffer *tbuf;
@@ -76,24 +75,23 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     /* Set up synchronized buffer.
      */
     tbuf->syncbuf.nbytes = mblk->nbytes;
-    if (itembuf)
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    tbuf->syncbuf.ndata = tbuf->syncbuf.nbytes;
+    tbuf->syncbuf.flags = flags;
+    if (flags & IOC_BIDIRECTIONAL)
     {
-        osal_debug_assert(nitems == tbuf->syncbuf.nbytes);
-        tbuf->syncbuf.buf = (os_char*)itembuf;
-        tbuf->syncbuf.newdata = tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
+        tbuf->syncbuf.nbytes += (tbuf->syncbuf.nbytes + 7) / 8;
     }
-    else
+#endif
+
+    tbuf->syncbuf.buf = ioc_malloc(root, 2 * tbuf->syncbuf.nbytes, OS_NULL);
+    if (tbuf->syncbuf.buf == OS_NULL)
     {
-        tbuf->syncbuf.buf = ioc_malloc(root, 2 * tbuf->syncbuf.nbytes, OS_NULL);
-        if (tbuf->syncbuf.buf == OS_NULL)
-        {
-            ioc_free(root, tbuf, sizeof(iocSourceBuffer));
-            ioc_unlock(root);
-            return OS_NULL;
-        }
-        tbuf->syncbuf.newdata = tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
-        tbuf->syncbuf.allocated = OS_TRUE;
+        ioc_free(root, tbuf, sizeof(iocSourceBuffer));
+        ioc_unlock(root);
+        return OS_NULL;
     }
+    tbuf->syncbuf.newdata = tbuf->syncbuf.buf + tbuf->syncbuf.nbytes;
 
     /* Copy data backwars to get the initial situation
      */
@@ -219,14 +217,13 @@ void ioc_release_target_buffer(
         tbuf->mlink.mblk->tbuf.last = tbuf->mlink.prev;
     }
 
-    if (tbuf->syncbuf.allocated)
-    {
-        ioc_free(root, tbuf->syncbuf.buf, 2 * tbuf->syncbuf.nbytes);
-    }
+    ioc_free(root, tbuf->syncbuf.buf, 2 * tbuf->syncbuf.nbytes);
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging).
      */
+#if OSAL_DEBUG
     os_memclear(tbuf, sizeof(iocTargetBuffer));
+#endif
     ioc_free(root, tbuf, sizeof(iocTargetBuffer));
 
     /* End syncronization.
@@ -259,6 +256,12 @@ void ioc_tbuf_invalidate(
     os_int start_addr,
     os_int end_addr)
 {
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    /* Ignore transfers of changed bits.
+     */
+     if (start_addr >= tbuf->syncbuf.ndata) return;
+#endif
+
     if (!tbuf->syncbuf.has_new_data)
     {
         tbuf->syncbuf.newdata_start_addr = start_addr;
@@ -308,6 +311,13 @@ void ioc_tbuf_synchronize(
         end_addr,
         n;
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    os_int
+        bs,
+        be,
+        pos;
+#endif
+
     if ((!tbuf->syncbuf.has_new_data) ||
         tbuf->syncbuf.buf == OS_NULL)
     {
@@ -317,26 +327,45 @@ void ioc_tbuf_synchronize(
     syncbuf = tbuf->syncbuf.buf;
     newdata = tbuf->syncbuf.newdata;
 
-    /* Shrink invalidated range if data has not actually changed.
-     */
-    for (start_addr = tbuf->syncbuf.newdata_start_addr;
-         start_addr <= tbuf->syncbuf.newdata_end_addr;
-         start_addr++)
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if ((sbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
     {
-        if (syncbuf[start_addr] != newdata[start_addr]) break;
-    }
+#endif
+      /* Shrink invalidated range if data has not actually changed.
+       */
+      for (start_addr = tbuf->syncbuf.newdata_start_addr;
+           start_addr <= tbuf->syncbuf.newdata_end_addr;
+           start_addr++)
+      {
+          if (syncbuf[start_addr] != newdata[start_addr]) break;
+      }
 
-    for (end_addr = tbuf->syncbuf.newdata_end_addr;
-         end_addr >= start_addr;
-         end_addr--)
-    {
-        if (syncbuf[end_addr] != newdata[end_addr]) break;
+      for (end_addr = tbuf->syncbuf.newdata_end_addr;
+           end_addr >= start_addr;
+           end_addr--)
+      {
+          if (syncbuf[end_addr] != newdata[end_addr]) break;
+      }
+#if IOC_BIDIRECTIONAL_MBLK_CODE
     }
+#endif
+
     tbuf->syncbuf.has_new_data = OS_FALSE;
     if (end_addr < start_addr) return;
     n = end_addr - start_addr + 1;
 
     os_memcpy(syncbuf + start_addr, newdata + start_addr, n);
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+    {
+        bs = start_addr >> 3;
+        be = end_addr >> 3;
+        pos = tbuf->syncbuf.ndata + bs;
+
+        os_memcpy(syncbuf + pos, newdata + pos, be - bs + 1);
+    }
+#endif
 
     if (tbuf->syncbuf.buf_used)
     {

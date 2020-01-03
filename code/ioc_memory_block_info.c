@@ -564,7 +564,7 @@ skip1:
 
         /* Create source buffer to link the connection and memory block together.
          */
-        tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, OS_NULL, 0);
+        tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, IOC_BIDIRECTIONAL);
 
         /* Application may want to know that the memory block has been connected.
          */
