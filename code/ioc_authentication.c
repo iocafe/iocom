@@ -84,7 +84,7 @@ void ioc_make_authentication_frame(
         flags |= IOC_AUTH_DEVICE;
 
         ioc_msg_set_uint(root->device_nr < IOC_AUTO_DEVICE_NR ? root->device_nr : 0,
-            &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, IOC_AUTH_DEVICE_NR_4_BYTES);
+            &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
     }
 
     if (root->network_name[0] != 0)

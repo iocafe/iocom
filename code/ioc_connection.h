@@ -109,22 +109,21 @@
 #define IOC_DELTA_ENCODED 1
 #define IOC_COMPRESESSED 2
 #define IOC_ADDR_HAS_TWO_BYTES 4
-#define IOC_ADDR_HAS_FOUR_BYTES 8
-#define IOC_MBLK_HAS_TWO_BYTES 16
-#define IOC_MBLK_HAS_FOUR_BYTES 32
-#define IOC_SYNC_COMPLETE 64
-#define IOC_SYSTEM_FRAME 128
+#define IOC_MBLK_HAS_TWO_BYTES 8
+#define IOC_SYNC_COMPLETE 16
+#define IOC_SYSTEM_FRAME 32
+#define IOC_BIDIR_DATA_FOLLOWS 64
+#define IOC_EXTRA_FLAGS 128
 /*@}*/
 
-/** "1/2 byte" and "has string" flags for packing memory block info.
-    low bits reserved for version.
+/** Extra flags for message frame. Bit fields.
  */
-/* #define IOC_INFO_D_2BYTES 4
-#define IOC_INFO_D_4BYTES 8
-#define IOC_INFO_N_2BYTES 16
-#define IOC_INFO_F_2BYTES 32
-#define IOC_INFO_HAS_DEVICE_NAME 64
-#define IOC_INFO_HAS_MBLK_NAME 128 */
+/*@{*/
+#define IOC_EXTRA_ADDR_HAS_FOUR_BYTES 1
+#define IOC_EXTRA_MBLK_HAS_FOUR_BYTES 2
+#define IOC_EXTRA_NO_ZERO 128
+/*@}*/
+
 
 /** System frame types.
  */
@@ -157,6 +156,10 @@ typedef struct
     /** Pointer to flags
      */
     os_uchar *flags;
+
+    /** Pointer to extra flag bits, OS_NULL if not needed.
+     */
+    os_uchar *extra_flags;
 
     /** Pointers to data size in bytes
      */
@@ -649,6 +652,7 @@ void ioc_msg_set_uint(
     os_uchar **p,
     os_uchar *flags,
     os_uchar two_bytes_flag,
+    os_uchar *flags4,
     os_uchar four_bytes_flag);
 
 /* Acknowledge if we have reached the limit of unacknowledged bytes.

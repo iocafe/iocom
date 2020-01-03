@@ -465,6 +465,10 @@ osalStatus ioc_sbuf_synchronize(
     sbuf->syncbuf.end_addr = end_addr;
     sbuf->syncbuf.used = OS_TRUE;
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    sbuf->syncbuf.bidir_end_addr = -1;
+#endif
+
     if (syncbuf)
     {
         n = end_addr - start_addr + 1;
@@ -478,6 +482,10 @@ osalStatus ioc_sbuf_synchronize(
             pos = sbuf->syncbuf.ndata + start_addr;
             count = end_addr - start_addr + 1;
             os_memcpy(sbuf->syncbuf.delta + pos, sbuf->syncbuf.buf + pos, count);
+
+            sbuf->syncbuf.bidir_start_addr = pos;
+            sbuf->syncbuf.bidir_end_addr = pos + count - 1;
+            sbuf->syncbuf.used = OS_TRUE;
         }
 #endif
     }

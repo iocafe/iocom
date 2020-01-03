@@ -60,6 +60,7 @@ osalStatus ioc_connection_receive(
 
     os_uchar
         flags = 0,
+        extra_flags = 0,
         *buf, /* keep unsigned */
         *p; /* keep unsigned */
 
@@ -116,14 +117,19 @@ osalStatus ioc_connection_receive(
                 needed = 3;
                 flags = 0;
             }
-            else if (n >= 5)
+            else if (n >= 6)
             {
                 data_sz = buf[4];
                 needed = data_sz + 7;
                 flags = buf[3];
-                if (flags & IOC_MBLK_HAS_FOUR_BYTES) needed  += 3;
+                if (flags & IOC_EXTRA_FLAGS)
+                {
+                    extra_flags = buf[5];
+                    needed++;
+                }
+                if (extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES) needed += 3;
                 else if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
-                if (flags & IOC_ADDR_HAS_FOUR_BYTES) needed += 3;
+                if (extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES) needed += 3;
                 else if (flags & IOC_ADDR_HAS_TWO_BYTES) needed++;
 
                 if (needed > IOC_SERIAL_FRAME_SZ)
@@ -157,14 +163,19 @@ osalStatus ioc_connection_receive(
                 needed = 3;
                 flags = 0;
             }
-            else if (n >= 4)
+            else if (n >= 5)
             {
                 data_sz = buf[2] | (((os_ushort)buf[3]) << 8);
                 needed = data_sz + 6;
                 flags = buf[1];
-                if (flags & IOC_MBLK_HAS_FOUR_BYTES) needed  += 3;
+                if (flags & IOC_EXTRA_FLAGS)
+                {
+                    extra_flags = buf[4];
+                    needed++;
+                }
+                if (extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES) needed  += 3;
                 else if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
-                if (flags & IOC_ADDR_HAS_FOUR_BYTES) needed += 3;
+                if (extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES) needed += 3;
                 else if (flags & IOC_ADDR_HAS_TWO_BYTES) needed++;
 
                 if (needed > IOC_SOCKET_FRAME_SZ)
@@ -313,8 +324,9 @@ osalStatus ioc_connection_receive(
     /* MBLK: Memory block identifier, ADDR: Address within memory block.
      */
     p = buf + (is_serial ? 5 : 4);
-    mblk_id = ioc_msg_get_uint(&p, flags & IOC_MBLK_HAS_TWO_BYTES, flags & IOC_MBLK_HAS_FOUR_BYTES);
-    addr = ioc_msg_get_uint(&p, flags & IOC_ADDR_HAS_TWO_BYTES, flags & IOC_ADDR_HAS_FOUR_BYTES);
+    if (extra_flags) p++;
+    mblk_id = ioc_msg_get_uint(&p, flags & IOC_MBLK_HAS_TWO_BYTES, extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES);
+    addr = ioc_msg_get_uint(&p, flags & IOC_ADDR_HAS_TWO_BYTES, extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES);
 
     /* Save frame number to expect next. Notice that the frame count can
         be zero only for the very first frame. never be zero again.

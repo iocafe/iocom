@@ -12,4 +12,4 @@ Only invalidated data is transferred, again at byte precision.
 
 Received changes coming from lower hierarchy level are not eached back down to same memory block. 
 
-
+NAGLES ALGORITHM MUST BE ENABLED WITH BIDIRECTIONAL TRANSFERS, otherwise TCP packet fragmentation may occur.

@@ -207,6 +207,9 @@ static void ioc_make_data_frame(
         crc,
         u;
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+#endif
+
     /* Set frame header
      */
     ioc_generate_header(con, con->frame_out.buf, &ptrs,
@@ -284,8 +287,24 @@ static void ioc_make_data_frame(
      */
     if (sbuf->syncbuf.start_addr > sbuf->syncbuf.end_addr)
     {
+        // xxxxxxxxxxxxxxxx MAY SWITCH TO TRANSFER INVALIDATED MARKER BITS
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (sbuf->syncbuf.bidir_end_addr >= 0)
+        {
+            sbuf->syncbuf.start_addr = sbuf->syncbuf.bidir_start_addr;
+            sbuf->syncbuf.end_addr = sbuf->syncbuf.bidir_end_addr;
+            sbuf->syncbuf.bidir_end_addr = -1;
+            *ptrs.extra_flags |= IOC_BIDIR_DATA_FOLLOWS;
+        }
+        else
+        {
+            sbuf->syncbuf.used = OS_FALSE;
+            *ptrs.flags |= IOC_SYNC_COMPLETE;
+        }
+#else
         sbuf->syncbuf.used = OS_FALSE;
         *ptrs.flags |= IOC_SYNC_COMPLETE;
+#endif
     }
 
     /* Calculate check sum out of whole used frame buffer. Notice that check sum
@@ -362,7 +381,7 @@ static void ioc_make_mblk_info_frame(
         if (device_nr == con->auto_device_nr) device_nr = IOC_AUTO_DEVICE_NR;
     }
 
-    ioc_msg_set_uint(device_nr, &p, version_and_flags, IOC_INFO_D_2BYTES, IOC_INFO_D_4BYTES);
+    ioc_msg_set_uint(device_nr, &p, version_and_flags, IOC_INFO_D_2BYTES, version_and_flags, IOC_INFO_D_4BYTES);
     if (ioc_msg_set_ushort(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
     if (ioc_msg_set_ushort(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
     if (mblk->device_name[0])
@@ -785,10 +804,21 @@ void ioc_generate_header(
         *(p++) = 0;
     }
 
+    /* If we need extra flags.
+     */
+    if ((remote_mblk_id >> 16) || (addr >> 16))
+    {
+        flags |= IOC_EXTRA_FLAGS;
+        ptrs->extra_flags = p;
+        *(p++) = IOC_EXTRA_NO_ZERO;
+    }
+
     /* MBLK: Memory block idenfier, ADDR: Start memory address.
      */
-    ioc_msg_set_uint(remote_mblk_id, &p, &flags, IOC_MBLK_HAS_TWO_BYTES, IOC_MBLK_HAS_FOUR_BYTES);
-    ioc_msg_set_uint(addr, &p, &flags, IOC_ADDR_HAS_TWO_BYTES, IOC_ADDR_HAS_FOUR_BYTES);
+    ioc_msg_set_uint(remote_mblk_id, &p, &flags, IOC_MBLK_HAS_TWO_BYTES,
+        ptrs->extra_flags, IOC_EXTRA_MBLK_HAS_FOUR_BYTES);
+    ioc_msg_set_uint(addr, &p, &flags, IOC_ADDR_HAS_TWO_BYTES,
+        ptrs->extra_flags, IOC_EXTRA_ADDR_HAS_FOUR_BYTES);
 
     /* Set flags and store header size.
      */
@@ -865,8 +895,9 @@ os_boolean ioc_msg_set_ushort(
 
   @param   i Integer value to store, 0 .. 65535.
   @param   p Pointer to message position pointer.
-  @param   flags Pointer to message flags to be modified to indicate how many bytes were stored.
+  @param   flags Pointer to message flags to be modified to indicate if two bytes.
   @param   two_bytes_flag Bit in flags which indicates that two bytes were stored.
+  @param   flags4 Pointer to message flags to be modified to indicate if four bytes were stored.
   @param   four_bytes_flag Bit in flags which indicates that four bytes were stored.
   @return  OS_TRUE if resulting number has 2 bytes, OS_FALSE if 1.
 
@@ -877,6 +908,7 @@ void ioc_msg_set_uint(
     os_uchar **p,
     os_uchar *flags,
     os_uchar two_bytes_flag,
+    os_uchar *flags4,
     os_uchar four_bytes_flag)
 {
     os_uchar *q;
@@ -892,7 +924,7 @@ void ioc_msg_set_uint(
            *(q++) = (os_uchar)i;
             i >>= 8;
            *(q++) = (os_uchar)i;
-           *flags |= four_bytes_flag;
+           *flags4 |= four_bytes_flag;
         }
         else
         {

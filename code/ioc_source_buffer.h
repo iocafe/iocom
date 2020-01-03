@@ -81,10 +81,19 @@ typedef struct
     os_int end_addr;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
+
+    /** Bidirectional address range to be transferred.
+     *  if not set, bidir_end_addr = -1.
+     */
+    os_int bidir_start_addr;
+    os_int bidir_end_addr;
+
+    /** IOC_BIDIRECTIONAL bit indicates bidirectional transfer.
+     */
     os_short flags;
 
-    /* Number of data bytes. If this is not bidirectional transfer, ndata equals nbytes.
-       Otherwise nbytes = ndata + (ndata + 7)/8 (one "ivalidate" bit for each bit daya byte)
+    /** Number of data bytes. If this is not bidirectional transfer, ndata equals nbytes.
+        Otherwise nbytes = ndata + (ndata + 7)/8 (one "ivalidate" bit for each bit daya byte)
      */
     os_int ndata;
 
