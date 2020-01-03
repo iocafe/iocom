@@ -328,7 +328,7 @@ void ioc_tbuf_synchronize(
     newdata = tbuf->syncbuf.newdata;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-    if ((sbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
+    if ((tbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
     {
 #endif
       /* Shrink invalidated range if data has not actually changed.
@@ -357,7 +357,7 @@ void ioc_tbuf_synchronize(
     os_memcpy(syncbuf + start_addr, newdata + start_addr, n);
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-    if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+    if (tbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
     {
         bs = start_addr >> 3;
         be = end_addr >> 3;

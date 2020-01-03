@@ -798,6 +798,7 @@ void ioc_receive(
 #if IOC_BIDIRECTIONAL_MBLK_CODE
     os_char *spos, *dpos;
     os_uchar *bits;
+    os_int count;
 #endif
 
     /* Get memory block pointer and start synchronization.
@@ -815,9 +816,9 @@ void ioc_receive(
         end_addr = tbuf->syncbuf.buf_end_addr;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+        if (tbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
         {
-            bits = tbuf->syncbuf.buf + tbuf->syncbuf.ndata + (start_addr >> 3);
+            bits = (os_uchar*)tbuf->syncbuf.buf + tbuf->syncbuf.ndata + (start_addr >> 3);
             count = end_addr - start_addr + 1;
             dpos = mblk->buf + start_addr;
             spos = tbuf->syncbuf.buf + start_addr;
@@ -825,7 +826,7 @@ void ioc_receive(
             {
                 if ((bits[i] >> ((start_addr + i) & 3)) & 1)
                 {
-                    dbuf[i] = spos[i];
+                    dpos[i] = spos[i];
                 }
             }
         }
