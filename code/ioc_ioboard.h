@@ -57,7 +57,8 @@ extern iocHandle
 /* When we are compiling with code for bidirectional support, we add memory needed for
    byte based "invalidate" tracking for send and receive buffer size.
    To support bidirectional connections we also need an extra souce buffer to
-   match every target buffer (IOC_EXTRA_SBUFS defined as 1)
+   match every target buffer (IOC_EXTRA_SBUFS defined as 1). The extra source buffer
+   must have same size as the target buffer.
  */
 #if IOC_BIDIRECTIONAL_MBLK_CODE
     #define IOC_BIDSZ(n) ((n) + ((n) + 7)/8)
@@ -86,8 +87,9 @@ extern iocHandle
 #define IOBOARD_POOL_SIZE(CTRL_TYPE, MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
     MAX_CONNECTIONS * sizeof(iocConnection) \
   + MAX_CONNECTIONS * 2 * ((CTRL_TYPE & IOBOARD_CTRL_IS_SOCKET) ? IOC_SOCKET_FRAME_SZ : IOC_SERIAL_FRAME_SZ) \
-  + (MAX_CONNECTIONS + IOC_EXTRA_SBUFS) * IOC_SBUF_SZ(SEND_BLOCK_SZ) \
+  + MAX_CONNECTIONS * IOC_SBUF_SZ(SEND_BLOCK_SZ) \
   + MAX_CONNECTIONS * IOC_TBUF_SZ(RECEIVE_BLOCK_SZ) \
+  + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
   + (((CTRL_TYPE & IOBOARD_CTRL_BASIC_MASK) == IOBOARD_CTRL_LISTEN_SOCKET) ? sizeof(iocEndPoint) : 0) \
   + IOC_BIDSZ(SEND_BLOCK_SZ) \
   + IOC_BIDSZ(RECEIVE_BLOCK_SZ)
@@ -101,8 +103,9 @@ extern iocHandle
  */
 #define IOBOARD_POOL_IMP_EXP_CONF(MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
     2 * sizeof(iocMemoryBlock) \
-    + (MAX_CONNECTIONS + IOC_EXTRA_SBUFS) * IOC_SBUF_SZ(SEND_BLOCK_SZ) \
+    + MAX_CONNECTIONS * IOC_SBUF_SZ(SEND_BLOCK_SZ) \
     + MAX_CONNECTIONS * IOC_TBUF_SZ(RECEIVE_BLOCK_SZ) \
+    + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
     + IOC_BIDSZ(SEND_BLOCK_SZ) \
     + IOC_BIDSZ(RECEIVE_BLOCK_SZ)
 
