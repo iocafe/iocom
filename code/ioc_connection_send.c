@@ -287,17 +287,21 @@ static void ioc_make_data_frame(
      */
     if (sbuf->syncbuf.start_addr > sbuf->syncbuf.end_addr)
     {
-        // xxxxxxxxxxxxxxxx MAY SWITCH TO TRANSFER INVALIDATED MARKER BITS
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (sbuf->syncbuf.bidir_end_addr >= 0)
+        if (sbuf->syncbuf.bidir_range_set)
         {
             sbuf->syncbuf.start_addr = sbuf->syncbuf.bidir_start_addr;
             sbuf->syncbuf.end_addr = sbuf->syncbuf.bidir_end_addr;
-            sbuf->syncbuf.bidir_end_addr = -1;
-            // *ptrs.extra_flags |= IOC_BIDIR_DATA_FOLLOWS;
+            sbuf->syncbuf.bidir_range_set = OS_FALSE;
         }
         else
         {
+            if (sbuf->syncbuf.bidir_start_addr > 0) /* cannot be 0, there is data */
+            {
+                os_memclear(sbuf->syncbuf.buf + sbuf->syncbuf.bidir_start_addr,
+                    sbuf->syncbuf.bidir_end_addr - sbuf->syncbuf.start_addr + 1);
+            }
+
             sbuf->syncbuf.used = OS_FALSE;
             *ptrs.flags |= IOC_SYNC_COMPLETE;
         }

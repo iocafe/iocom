@@ -471,7 +471,8 @@ osalStatus ioc_sbuf_synchronize(
     sbuf->syncbuf.used = OS_TRUE;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-    sbuf->syncbuf.bidir_end_addr = -1;
+    sbuf->syncbuf.bidir_range_set = OS_FALSE;
+    sbuf->syncbuf.bidir_start_addr = 0;
 #endif
 
     if (syncbuf)
@@ -491,6 +492,7 @@ osalStatus ioc_sbuf_synchronize(
 
             sbuf->syncbuf.bidir_start_addr = pos;
             sbuf->syncbuf.bidir_end_addr = pos + count - 1;
+            sbuf->syncbuf.bidir_range_set = OS_TRUE;
         }
 #endif
     }

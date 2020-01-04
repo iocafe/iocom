@@ -83,10 +83,11 @@ typedef struct
 #if IOC_BIDIRECTIONAL_MBLK_CODE
 
     /** Bidirectional address range to be transferred.
-     *  if not set, bidir_end_addr = -1.
+     *  if not set, bidir_range_set is OS_FALSE (0).
      */
     os_int bidir_start_addr;
     os_int bidir_end_addr;
+    os_boolean bidir_range_set;
 
     /** IOC_BIDIRECTIONAL bit indicates bidirectional transfer.
      */

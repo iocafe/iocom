@@ -1,8 +1,7 @@
 two dictional memory blocks
 2.1.2020
 
-- no low level IO device support
-- requires dynamic memory allocation
+- supporting bidirectional transfers on low level IO devices takes considerable amount of resources and may often be unnecessary
 - use only for testers, configuration tools, etc. Do not use for normal IO communication, reliable recovery from exception situations gets compilcated. Stick with one directional memory blocks, and you will be happier. 
 
 Both source and target buffers exist memory block in higher and in lower level.
