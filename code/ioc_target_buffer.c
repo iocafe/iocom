@@ -326,6 +326,8 @@ void ioc_tbuf_synchronize(
 
     syncbuf = tbuf->syncbuf.buf;
     newdata = tbuf->syncbuf.newdata;
+    start_addr = tbuf->syncbuf.newdata_start_addr;
+    end_addr = tbuf->syncbuf.newdata_end_addr;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
     if ((tbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
@@ -333,18 +335,16 @@ void ioc_tbuf_synchronize(
 #endif
       /* Shrink invalidated range if data has not actually changed.
        */
-      for (start_addr = tbuf->syncbuf.newdata_start_addr;
-           start_addr <= tbuf->syncbuf.newdata_end_addr;
-           start_addr++)
+      while (start_addr <= tbuf->syncbuf.newdata_end_addr)
       {
           if (syncbuf[start_addr] != newdata[start_addr]) break;
+          start_addr++;
       }
 
-      for (end_addr = tbuf->syncbuf.newdata_end_addr;
-           end_addr >= start_addr;
-           end_addr--)
+      while (end_addr >= start_addr)
       {
           if (syncbuf[end_addr] != newdata[end_addr]) break;
+          end_addr--;
       }
 #if IOC_BIDIRECTIONAL_MBLK_CODE
     }

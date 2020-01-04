@@ -392,6 +392,7 @@ osalStatus ioc_sbuf_synchronize(
         pos,
         count;
 #endif
+    if (sbuf == OS_NULL) return OSAL_STATUS_FAILED;
 
     if ((!sbuf->changed.range_set && !sbuf->syncbuf.make_keyframe) ||
         sbuf->syncbuf.used)
@@ -400,7 +401,6 @@ osalStatus ioc_sbuf_synchronize(
     }
 
     buf = sbuf->mlink.mblk->buf;
-    n = sbuf->mlink.mblk->nbytes;
     syncbuf = sbuf->syncbuf.buf;
     delta = sbuf->syncbuf.delta;
     sbuf->changed.range_set = OS_FALSE;
@@ -409,6 +409,7 @@ osalStatus ioc_sbuf_synchronize(
      */
     if (sbuf->syncbuf.make_keyframe)
     {
+        n = sbuf->mlink.mblk->nbytes;
         start_addr = 0;
         end_addr = n - 1;
         if (delta) os_memcpy(delta, buf, n);
@@ -430,24 +431,25 @@ osalStatus ioc_sbuf_synchronize(
      */
     else
     {
+        start_addr = sbuf->changed.start_addr;
+        end_addr = sbuf->changed.end_addr;
+
 #if IOC_BIDIRECTIONAL_MBLK_CODE
         if ((sbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
         {
 #endif
           /* Shrink invalidated range if data has not actually changed.
            */
-          for (start_addr = sbuf->changed.start_addr;
-               start_addr <= sbuf->changed.end_addr;
-               start_addr++)
+          while (start_addr <= sbuf->changed.end_addr)
           {
               if (syncbuf[start_addr] != buf[start_addr]) break;
+              start_addr++;
           }
 
-          for (end_addr = sbuf->changed.end_addr;
-               end_addr >= start_addr;
-               end_addr--)
+          while (end_addr >= start_addr)
           {
-            if (syncbuf[end_addr] != buf[end_addr]) break;
+              if (syncbuf[end_addr] != buf[end_addr]) break;
+              end_addr--;
           }
 #if IOC_BIDIRECTIONAL_MBLK_CODE
         }
@@ -484,11 +486,11 @@ osalStatus ioc_sbuf_synchronize(
             end_addr >>= 3;
             pos = sbuf->syncbuf.ndata + start_addr;
             count = end_addr - start_addr + 1;
-            os_memcpy(sbuf->syncbuf.delta + pos, sbuf->syncbuf.buf + pos, count);
+            os_memcpy(delta + pos, syncbuf + pos, count);
+            os_memclear(syncbuf + pos, count);
 
             sbuf->syncbuf.bidir_start_addr = pos;
             sbuf->syncbuf.bidir_end_addr = pos + count - 1;
-            sbuf->syncbuf.used = OS_TRUE;
         }
 #endif
     }

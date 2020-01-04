@@ -166,6 +166,10 @@ void ioc_free(
 {
     iocFreeBlk *b, *r;
 
+    /* If NULL memory block, do nothing.
+     */
+    if (memory_block == OS_NULL) return;
+
     /* If no static pool, use default memory allocation.
      */
     if (root->pool == OS_NULL) 

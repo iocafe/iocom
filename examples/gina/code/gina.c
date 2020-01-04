@@ -47,7 +47,7 @@ static os_char
         GINA_EXP_MBLK_SZ, GINA_IMP_MBLK_SZ)
         + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)
         + IOBOARD_POOL_IMP_EXP_CONF(IOBOARD_MAX_CONNECTIONS,
-            GINA_CONF_EXP_MBLK_SZ, GINA_CONF_IMP_MBLK_SZ)];
+            GINA_CONF_EXP_MBLK_SZ, GINA_CONF_IMP_MBLK_SZ) + 1000 /* TEST, REMOVE 1000 */];
 
 /* Streamer for transferring IO device configuration and flash program. The streamer is used
    to transfer a stream using buffer within memory block. This static structure selects which
@@ -197,7 +197,7 @@ osalStatus osal_loop(
     ioc_receive(&ioboard_imp);
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
-#if 0
+#if 1
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */

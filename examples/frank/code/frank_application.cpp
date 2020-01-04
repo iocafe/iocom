@@ -102,7 +102,7 @@ void FrankApplication::run()
 
         os_strncat(buf, " Migssssssshty", sizeof(buf));
         buf[3] = i;
-        // ioc_maintain_signal(&ioapp_root, "strtodevice", m_network_name, &strtodevice);
+        ioc_maintain_signal(&ioapp_root, "strtodevice", m_network_name, &strtodevice);
         ioc_sets_str(strtodevice, buf);
 
         ioc_maintain_signal(&ioapp_root, "testfloat", m_network_name, &float_test);
