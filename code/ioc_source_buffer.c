@@ -282,7 +282,7 @@ static void ioc_sbuf_invalidate_bytes(
 
     if (end_addr < start_addr || sbuf->syncbuf.buf == OS_NULL) return;
 
-    start_mask = ~(0xFF << (start_addr & 7));
+    start_mask = (0xFF << (start_addr & 7));
     end_mask = (0xFF >> (7 - (end_addr & 7)));
 
     start_addr >>= 3;
