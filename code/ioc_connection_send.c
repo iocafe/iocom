@@ -343,7 +343,7 @@ static void ioc_make_mblk_info_frame(
     os_uchar
         *p,
         *start,
-        *version_and_flags;
+        *iflags;
 
     os_int
         content_bytes,
@@ -369,7 +369,7 @@ static void ioc_make_mblk_info_frame(
      */
     p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
     *(p++) = IOC_SYSRAME_MBLK_INFO;
-    version_and_flags = p; /* version, for future additions + flags */
+    iflags = p; /* version, for future additions + flags */
     *(p++) = 0;
 
     /* Set device number. If we are sending to device with automatically
@@ -381,19 +381,19 @@ static void ioc_make_mblk_info_frame(
         if (device_nr == con->auto_device_nr) device_nr = IOC_AUTO_DEVICE_NR;
     }
 
-    ioc_msg_set_uint(device_nr, &p, version_and_flags, IOC_INFO_D_2BYTES, version_and_flags, IOC_INFO_D_4BYTES);
-    if (ioc_msg_set_ushort(mblk->nbytes, &p)) *version_and_flags |= IOC_INFO_N_2BYTES;
-    if (ioc_msg_set_ushort(mblk->flags, &p)) *version_and_flags |= IOC_INFO_F_2BYTES;
+    ioc_msg_set_uint(device_nr, &p, iflags, IOC_INFO_D_2BYTES, iflags, IOC_INFO_D_4BYTES);
+    if (ioc_msg_set_ushort(mblk->nbytes, &p)) *iflags |= IOC_INFO_N_2BYTES;
+    if (ioc_msg_set_ushort(mblk->flags, &p)) *iflags |= IOC_INFO_F_2BYTES;
     if (mblk->device_name[0])
     {
         ioc_msg_setstr(mblk->device_name, &p);
         ioc_msg_setstr(mblk->network_name, &p);
-        *version_and_flags |= IOC_INFO_HAS_DEVICE_NAME;
+        *iflags |= IOC_INFO_HAS_DEVICE_NAME;
     }
     if (mblk->mblk_name[0] || mblk->network_name[0])
     {
         ioc_msg_setstr(mblk->mblk_name, &p);
-        *version_and_flags |= IOC_INFO_HAS_MBLK_NAME;
+        *iflags |= IOC_INFO_HAS_MBLK_NAME;
     }
 
     /* If other end has not acknowledged enough data to send the

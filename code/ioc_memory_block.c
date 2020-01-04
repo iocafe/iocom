@@ -110,15 +110,21 @@ osalStatus ioc_initialize_memory_block(
      */
     mblk->buf = buf;
     mblk->nbytes = nbytes;
+    mblk->flags = prm->flags;
     if ((prm->flags & IOC_STATIC) == 0)
     {
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        mblk->flags |= IOC_BIDIRECTIONAL;
+#endif
         os_memclear(buf, nbytes);
     }
-    mblk->flags = prm->flags;
+
     os_strncpy(mblk->device_name, prm->device_name, IOC_NAME_SZ);
     mblk->device_nr = prm->device_nr;
     os_strncpy(mblk->mblk_name, prm->mblk_name, IOC_NAME_SZ);
     os_strncpy(mblk->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
+
+
 
     /* Setup handle within memory block structure and one given as argument.
      */

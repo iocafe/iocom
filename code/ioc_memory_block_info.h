@@ -35,9 +35,9 @@
 #define IOC_NETWORK_NAME_SZ 24
 
 
-/** "1/2 byte" and "has string" flags for packing memory block info.
-    low bits reserved for version.
+/** "1/2 byte" and "has string", etc flags for packing memory block info.
  */
+// #define IOC_INFO_MBLK_SUPPORTS_BIDIR 2
 #define IOC_INFO_D_2BYTES 4
 #define IOC_INFO_D_4BYTES 8
 #define IOC_INFO_N_2BYTES 16

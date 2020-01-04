@@ -36,6 +36,9 @@
     Flag IOC_DYNAMIC_MBLK indicates that the memory block was dynamically
     allocated, and needs to be deleted when last source or target buffer attached
     to it is deleted.
+    As memory block flag, IOC_BIDIRECTIONAL means that memory block can support
+    bidirectional transfers, not that it is used. As source/target buffer
+    initialization flag this means actual use.
  */
 /*@{*/
 #define IOC_DEFAULT 0

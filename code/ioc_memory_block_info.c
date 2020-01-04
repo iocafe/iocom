@@ -272,15 +272,15 @@ osalStatus ioc_process_received_mbinfo_frame(
         mbinfo;
 
     os_uchar
-        version_and_flags,
+        iflags,
         *p; /* keep as unsigned */
 
     p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
-    version_and_flags = (os_uchar)*(p++);
+    iflags = (os_uchar)*(p++);
     os_memclear(&mbinfo, sizeof(mbinfo));
     mbinfo.device_nr = ioc_msg_get_uint(&p,
-        version_and_flags & IOC_INFO_D_2BYTES,
-        version_and_flags & IOC_INFO_D_4BYTES);
+        iflags & IOC_INFO_D_2BYTES,
+        iflags & IOC_INFO_D_4BYTES);
 
     /* If we received message from device which requires automatically given
        device number in controller end (not auto eumerated device) device,
@@ -301,16 +301,16 @@ osalStatus ioc_process_received_mbinfo_frame(
     }
 
     mbinfo.mblk_id = mblk_id;
-    mbinfo.nbytes = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_N_2BYTES);
-    mbinfo.flags = ioc_msg_get_ushort(&p, version_and_flags & IOC_INFO_F_2BYTES);
-    if (version_and_flags & IOC_INFO_HAS_DEVICE_NAME)
+    mbinfo.nbytes = ioc_msg_get_ushort(&p, iflags & IOC_INFO_N_2BYTES);
+    mbinfo.flags = ioc_msg_get_ushort(&p, iflags & IOC_INFO_F_2BYTES);
+    if (iflags & IOC_INFO_HAS_DEVICE_NAME)
     {
         if (ioc_msg_getstr(mbinfo.device_name, IOC_NAME_SZ, &p))
             return OSAL_STATUS_FAILED;
         if (ioc_msg_getstr(mbinfo.network_name, IOC_NETWORK_NAME_SZ, &p))
             return OSAL_STATUS_FAILED;
     }
-    if (version_and_flags & IOC_INFO_HAS_MBLK_NAME)
+    if (iflags & IOC_INFO_HAS_MBLK_NAME)
     {
         if (ioc_msg_getstr(mbinfo.mblk_name, IOC_NAME_SZ, &p))
             return OSAL_STATUS_FAILED;
@@ -505,7 +505,7 @@ goon:
 
         /* Create source buffer to link the connection and memory block together.
          */
-        sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, IOC_BIDIRECTIONAL);
+        sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
 
         /* Do initial synchronization for all memory blocks.
          */
@@ -564,7 +564,7 @@ skip1:
 
         /* Create source buffer to link the connection and memory block together.
          */
-        tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, IOC_BIDIRECTIONAL);
+        tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
 
         /* Application may want to know that the memory block has been connected.
          */
