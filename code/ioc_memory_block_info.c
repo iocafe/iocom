@@ -382,6 +382,10 @@ void ioc_mbinfo_received(
     os_char *newbuf;
 #endif
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    os_short bdflag;
+#endif
+
     /* Find if we have memory block with device name, number and memory block 
        number. If not, do nothing.
      */
@@ -490,6 +494,10 @@ goon:
         source_flag = IOC_MBLK_DOWN;
     }
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    bdflag = (mblk->flags & info->flags & IOC_BIDIRECTIONAL);
+#endif
+
     /* If we have a memory block which can be a source?
      */
     if (mblk->flags & source_flag)
@@ -544,7 +552,30 @@ skip1:
             }
         }
 
-        /* If we have target buffer for other connection, delete it. ????????????????????????????????????
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (bdflag == 0)
+        {
+            /* We are setting up one directional data transfer. If there is
+               already one directional data transfer, delete it.
+             */
+            for (tbuf = mblk->tbuf.first;
+                 tbuf;
+                 tbuf = next_tbuf)
+            {
+                next_tbuf = tbuf->mlink.next;
+                if ((tbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
+                {
+                    ioc_release_target_buffer(tbuf);
+                }
+            }
+        }
+
+        else
+        {
+            ioc_mbinfo_new_sbuf(con, mblk, info);
+        }
+#else
+        /* If we have target buffer for the connection, delete it.
          */
         for (tbuf = mblk->tbuf.first;
              tbuf;
@@ -553,13 +584,8 @@ skip1:
             next_tbuf = tbuf->mlink.next;
             ioc_release_target_buffer(tbuf);
         }
-
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (mblk->flags & info->flags & IOC_BIDIRECTIONAL)
-        {
-            ioc_mbinfo_new_sbuf(con, mblk, info);
-        }
 #endif
+
         ioc_mbinfo_new_tbuf(con, mblk, info);
     }
 skip2:;

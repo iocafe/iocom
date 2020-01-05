@@ -780,9 +780,9 @@ void ioc_receive(
     iocRoot *root;
     iocMemoryBlock *mblk;
     iocTargetBuffer *tbuf;
-    iocSourceBuffer *sbuf;
     os_int start_addr, end_addr, i;
 #if IOC_BIDIRECTIONAL_MBLK_CODE
+    iocSourceBuffer *sbuf;
     os_char *spos, *dpos;
     os_uchar *bits;
     os_int bitsi;
