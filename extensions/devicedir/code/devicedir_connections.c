@@ -95,6 +95,10 @@ void devicedir_connections(
         if (cflags & IOC_LISTENER) devicedir_append_flag(list, "listener", &isfirst);
         if (cflags & IOC_CREATE_THREAD) devicedir_append_flag(list, "thread", &isfirst);
         if (cflags & IOC_CLOSE_CONNECTION_ON_ERROR) devicedir_append_flag(list, "closeonerr", &isfirst);
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (cflags & IOC_BIDIRECTIONAL_MBLKS) devicedir_append_flag(list, "bidirectional", &isfirst);
+#endif
+
         osal_stream_print_str(list, "\"", 0);
 
         osal_stream_print_str(list, "}", 0);

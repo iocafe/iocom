@@ -33,7 +33,7 @@
     to be synchronized. If IOC_STATIC flag is given, also IOC_MBLK_UP flag must
     be set and application allocated static buffer (and may be constant) must be
     given.
-    Flag IOC_DYNAMIC_MBLK indicates that the memory block was dynamically
+    Flag IOC_DYNAMIC indicates that the memory block was dynamically
     allocated, and needs to be deleted when last source or target buffer attached
     to it is deleted.
     As memory block flag, IOC_BIDIRECTIONAL means that memory block can support
@@ -45,10 +45,14 @@
 #define IOC_MBLK_DOWN 1
 #define IOC_MBLK_UP 2
 #define IOC_AUTO_SYNC 4
-#define IOC_BIDIRECTIONAL 8
-#define IOC_ALLOW_RESIZE 16
-#define IOC_STATIC 32
-#define IOC_DYNAMIC_MBLK 512
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+  #define IOC_BIDIRECTIONAL 8
+#else
+  #define IOC_BIDIRECTIONAL 8
+#endif
+#define IOC_DYNAMIC 16
+#define IOC_ALLOW_RESIZE 32
+#define IOC_STATIC 64
 /*@}*/
 
 

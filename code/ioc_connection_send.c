@@ -212,12 +212,12 @@ static void ioc_make_data_frame(
 
     /* Set frame header
      */
+    saved_start_addr = sbuf->syncbuf.start_addr;
     ioc_generate_header(con, con->frame_out.buf, &ptrs,
         sbuf->remote_mblk_id,
-        (os_uint)sbuf->syncbuf.start_addr);
+        (os_uint)saved_start_addr);
 
     delta = sbuf->syncbuf.delta;
-    saved_start_addr = sbuf->syncbuf.start_addr;
     max_dst_bytes = con->frame_sz - ptrs.header_sz;
     dst = con->frame_out.buf + ptrs.header_sz;
 
@@ -225,14 +225,21 @@ static void ioc_make_data_frame(
        we need to cancel send because of flow control.
      */
     con->frame_out.pos = 0;
-    start_addr = sbuf->syncbuf.start_addr;
+    start_addr = saved_start_addr;
     if (delta == OS_NULL) /* IOC_STATIC -> delta=0 */
     {
         delta = sbuf->mlink.mblk->buf;
     }
     else if (!sbuf->syncbuf.is_keyframe)
     {
-        *ptrs.flags |= IOC_DELTA_ENCODED;
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (saved_start_addr <  sbuf->syncbuf.ndata)
+        {
+            *ptrs.flags |= IOC_DELTA_ENCODED;
+        }
+#else
+       *ptrs.flags |= IOC_DELTA_ENCODED;
+#endif
     }
     compressed_bytes = ioc_compress(delta,
         &start_addr,

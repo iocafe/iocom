@@ -25,6 +25,9 @@
 static os_uint ioc_get_unique_mblk_id(
     iocRoot *root);
 
+static void ioc_mblk_auto_sync(
+    iocSourceBuffer *sbuf);
+
 
 /**
 ****************************************************************************************************
@@ -296,19 +299,9 @@ void ioc_release_dynamic_mblk_if_not_attached(
     iocTargetBuffer *tbuf;
     iocConnection *con;
 
-    /* Get memory block pointer and start synchronization.
     mblk = ioc_handle_lock_to_mblk(handle, &root);
     if (mblk == OS_NULL) return;
-    if ((mblk->flags & IOC_DYNAMIC_MBLK) &&
-        mblk->sbuf.first == OS_NULL &&
-        mblk->tbuf.first == OS_NULL)
-    {
-        ioc_release_memory_block(handle);
-    }
-     */
-    mblk = ioc_handle_lock_to_mblk(handle, &root);
-    if (mblk == OS_NULL) return;
-    if ((mblk->flags & IOC_DYNAMIC_MBLK) == 0) goto getout;
+    if ((mblk->flags & IOC_DYNAMIC) == 0) goto getout;
 
     for (sbuf = mblk->sbuf.first;
          sbuf;
@@ -660,19 +653,6 @@ void ioc_read(
      */
     osal_debug_assert(buf != OS_NULL);
     osal_debug_assert(n > 0);
-
-    /* Handle status data reads.
-     */
-    /* if (addr < 0)
-    {
-        nstat = (n > -addr) ? -addr : n;
-        ioc_status_read(mblk, addr, buf, nstat);
-        if (nstat == n) goto getout;
-        addr = 0;
-        buf += nstat;
-        n -= nstat;
-    } */
-
     osal_debug_assert(addr >= 0);
 
     /* Clip address and nuber of bytes to write within internal buffer.
@@ -800,6 +780,7 @@ void ioc_receive(
     iocRoot *root;
     iocMemoryBlock *mblk;
     iocTargetBuffer *tbuf;
+    iocSourceBuffer *sbuf;
     os_int start_addr, end_addr, i;
 #if IOC_BIDIRECTIONAL_MBLK_CODE
     os_char *spos, *dpos;
@@ -812,57 +793,88 @@ void ioc_receive(
     mblk = ioc_handle_lock_to_mblk(handle, &root);
     if (mblk == OS_NULL) return;
 
-    /* We should have only one target buffer.
+    /* We usually have only one target buffer. Multiple target buffers relate to special
+     * options like bidirectional transfers and perhaps redundancy in future.
      */
-    tbuf = mblk->tbuf.first;
-
-    if (tbuf && tbuf->syncbuf.buf_used)
+    for (tbuf = mblk->tbuf.first;
+         tbuf;
+         tbuf = tbuf->mlink.next)
     {
-        start_addr = tbuf->syncbuf.buf_start_addr;
-        end_addr = tbuf->syncbuf.buf_end_addr;
+        if (tbuf && tbuf->syncbuf.buf_used)
+        {
+            start_addr = tbuf->syncbuf.buf_start_addr;
+            end_addr = tbuf->syncbuf.buf_end_addr;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (tbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
-        {
-            bits = (os_uchar*)tbuf->syncbuf.buf + tbuf->syncbuf.ndata;
-            dpos = mblk->buf;
-            spos = tbuf->syncbuf.buf;
-            for (i = start_addr; i <= end_addr; ++i)
+            if (tbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
             {
-                bitsi = i >> 3;
-                if ((bits[bitsi] >> (i & 3)) & 1)
+                bits = (os_uchar*)tbuf->syncbuf.buf + tbuf->syncbuf.ndata;
+                dpos = mblk->buf;
+                spos = tbuf->syncbuf.buf;
+                for (i = start_addr; i <= end_addr; ++i)
                 {
-                    dpos[i] = spos[i];
+                    bitsi = i >> 3;
+                    if ((bits[bitsi] >> (i & 3)) & 1)
+                    {
+                        dpos[i] = spos[i];
+                    }
                 }
             }
-        }
-        else
-        {
+            else
+            {
 #endif
-            os_memcpy(mblk->buf + start_addr,
-                tbuf->syncbuf.buf + start_addr,
-                (os_memsz)end_addr - start_addr + 1);
+                os_memcpy(mblk->buf + start_addr,
+                    tbuf->syncbuf.buf + start_addr,
+                    (os_memsz)end_addr - start_addr + 1);
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        }
+            }
 #endif
 
-        tbuf->syncbuf.buf_used = OS_FALSE;
+            tbuf->syncbuf.buf_used = OS_FALSE;
 
-        for (i = 0; i < IOC_MBLK_MAX_CALLBACK_FUNCS; i++)
-        {
-            if (mblk->func[i])
+            for (i = 0; i < IOC_MBLK_MAX_CALLBACK_FUNCS; i++)
             {
-                mblk->func[i](&mblk->handle, start_addr, end_addr,
-                    IOC_MBLK_CALLBACK_RECEIVE, mblk->context[i]);
+                if (mblk->func[i])
+                {
+                    mblk->func[i](&mblk->handle, start_addr, end_addr,
+                        IOC_MBLK_CALLBACK_RECEIVE, mblk->context[i]);
+                }
             }
-        }
 
-        /* If the memory block is also data source, move received data there too
-         */
-        if (mblk->sbuf.first)
-        {
-            ioc_mblk_invalidate(mblk, start_addr, end_addr);
+            /* If the memory block is also data source, echo received data there.
+             * Except if we are connected downwards to same memory block from
+             * which we initially received the data.
+             */
+            if (mblk->sbuf.first)
+            {
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+                for (sbuf = mblk->sbuf.first;
+                     sbuf;
+                     sbuf = sbuf->mlink.next)
+                {
+                    if (sbuf->clink.con == tbuf->clink.con)
+                    {
+                        if ((sbuf->clink.con->flags & IOC_CONNECT_UP) == 0)
+                        {
+                            if (sbuf->remote_mblk_id == tbuf->remote_mblk_id)
+                            {
+                                continue;
+                            }
+                        }
+                    }
+
+                    ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
+                    if (mblk->flags & IOC_AUTO_SYNC)
+                    {
+                        ioc_mblk_auto_sync(sbuf);
+                    }
+                }
+#else
+                ioc_mblk_invalidate(mblk, start_addr, end_addr);
+#endif
+
+            }
         }
     }
 
@@ -964,20 +976,42 @@ void ioc_mblk_invalidate(
         ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
         if (mblk->flags & IOC_AUTO_SYNC)
         {
-            if (ioc_sbuf_synchronize(sbuf))
-            {
-                sbuf->immediate_sync_needed = OS_TRUE;
+            ioc_mblk_auto_sync(sbuf);
+        }
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Trigger sending changes immediately.
+  @anchor ioc_mblk_auto_sync
+
+  Activate sending invalidated changes immediately in "auto sync" mode.
+
+  ioc_lock() must be on before calling this function.
+
+  @param   sbuf Pointer to the source buffer.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_mblk_auto_sync(
+    iocSourceBuffer *sbuf)
+{
+    if (ioc_sbuf_synchronize(sbuf))
+    {
+        sbuf->immediate_sync_needed = OS_TRUE;
 
 #if OSAL_MULTITHREAD_SUPPORT
-                /* Trigger communication that synchronization buffer would get processed.
-                 */
-                if (sbuf->clink.con->worker.trig)
-                {
-                    osal_event_set(sbuf->clink.con->worker.trig);
-                }
-#endif
-            }
+        /* Trigger communication that synchronization buffer would get processed.
+         */
+        if (sbuf->clink.con->worker.trig)
+        {
+            osal_event_set(sbuf->clink.con->worker.trig);
         }
+#endif
     }
 }
 

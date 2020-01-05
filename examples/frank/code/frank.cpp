@@ -63,7 +63,7 @@ osalStatus osal_main(
 {
     osPersistentParams persistentprm;
     iocDeviceId *device_id;
-    iocConnectionConfig *connconf;
+    // iocConnectionConfig *connconf;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
     const os_char *device_name = "frank";
@@ -82,7 +82,7 @@ osalStatus osal_main(
     os_persistent_initialze(&persistentprm);
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
     device_id = ioc_get_device_id(&ioapp_device_conf);
-    connconf = ioc_get_connection_conf(&ioapp_device_conf);
+    // connconf = ioc_get_connection_conf(&ioapp_device_conf);
 
     ioc_set_iodevice_id(&ioapp_root, device_name, device_id->device_nr, device_id->network_name);
     ioc_initialize_dynamic_root(&ioapp_root);

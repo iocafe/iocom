@@ -21,6 +21,18 @@
 */
 #include "iocom.h"
 
+/* Forward referred static functions.
+ */
+static void ioc_mbinfo_new_sbuf(
+    iocConnection *con,
+    iocMemoryBlock *mblk,
+    iocMemoryBlockInfo *info);
+
+static void ioc_mbinfo_new_tbuf(
+    iocConnection *con,
+    iocMemoryBlock *mblk,
+    iocMemoryBlockInfo *info);
+
 
 /**
 ****************************************************************************************************
@@ -394,7 +406,7 @@ void ioc_mbinfo_received(
                 mbprm.device_name = info->device_name;
                 mbprm.device_nr = info->device_nr;
                 mbprm.flags = (info->flags & (IOC_MBLK_DOWN|IOC_MBLK_UP))
-                    | (IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC_MBLK);
+                    | (IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC);
                 mbprm.mblk_name = info->mblk_name;
                 mbprm.nbytes = info->nbytes;
 
@@ -503,27 +515,7 @@ goon:
             }
         }
 
-        /* Create source buffer to link the connection and memory block together.
-         */
-        sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
-
-        /* Do initial synchronization for all memory blocks.
-         */
-        ioc_sbuf_synchronize(sbuf);
-
-        /* Application may want to know that the memory block has been connected.
-         */
-        ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_SOURCE, OS_NULL, mblk,
-            root->callback_context);
-
-        /* Mark that we need to send memory block info back. If pointer is
-           set, do nothing because the source buffer was added to last in list.
-         */
-        if ((con->flags & IOC_CONNECT_UP) == 0 &&
-            con->sbuf.mbinfo_down == OS_NULL && sbuf)
-        {
-            con->sbuf.mbinfo_down = sbuf;
-        }
+        ioc_mbinfo_new_sbuf(con, mblk, info);
     }
 skip1:
 
@@ -552,7 +544,7 @@ skip1:
             }
         }
 
-        /* If we have target buffer for other connection, delete it.
+        /* If we have target buffer for other connection, delete it. ????????????????????????????????????
          */
         for (tbuf = mblk->tbuf.first;
              tbuf;
@@ -562,25 +554,78 @@ skip1:
             ioc_release_target_buffer(tbuf);
         }
 
-        /* Create source buffer to link the connection and memory block together.
-         */
-        tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
-
-        /* Application may want to know that the memory block has been connected.
-         */
-        ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_TARGET, OS_NULL, mblk,
-            root->callback_context);
-
-        /* Mark that we need to send memory block info back. If pointer is
-           set, do nothing because the source buffer was added to last in list.
-         */
-        if ((con->flags & IOC_CONNECT_UP) == 0 &&
-            con->tbuf.mbinfo_down == OS_NULL)
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (mblk->flags & info->flags & IOC_BIDIRECTIONAL)
         {
-            con->tbuf.mbinfo_down = tbuf;
+            ioc_mbinfo_new_sbuf(con, mblk, info);
         }
+#endif
+        ioc_mbinfo_new_tbuf(con, mblk, info);
     }
 skip2:;
 
 }
 
+
+static void ioc_mbinfo_new_sbuf(
+    iocConnection *con,
+    iocMemoryBlock *mblk,
+    iocMemoryBlockInfo *info)
+{
+    iocRoot *root;
+    iocSourceBuffer *sbuf;
+
+    root = con->link.root;
+
+    /* Create source buffer to link the connection and memory block together.
+     */
+    sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
+
+    /* Do initial synchronization for all memory blocks.
+     */
+    ioc_sbuf_synchronize(sbuf);
+
+    /* Application may want to know that the memory block has been connected.
+     */
+    ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_SOURCE, OS_NULL, mblk,
+        root->callback_context);
+
+    /* Mark that we need to send memory block info back. If pointer is
+       set, do nothing because the source buffer was added to last in list.
+     */
+    if ((con->flags & IOC_CONNECT_UP) == 0 &&
+        con->sbuf.mbinfo_down == OS_NULL && sbuf)
+    {
+        con->sbuf.mbinfo_down = sbuf;
+    }
+}
+
+
+static void ioc_mbinfo_new_tbuf(
+    iocConnection *con,
+    iocMemoryBlock *mblk,
+    iocMemoryBlockInfo *info)
+{
+    iocRoot *root;
+    iocTargetBuffer *tbuf;
+
+    root = con->link.root;
+
+    /* Create source buffer to link the connection and memory block together.
+     */
+    tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
+
+    /* Application may want to know that the memory block has been connected.
+     */
+    ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_TARGET, OS_NULL, mblk,
+        root->callback_context);
+
+    /* Mark that we need to send memory block info back. If pointer is
+       set, do nothing because the source buffer was added to last in list.
+     */
+    if ((con->flags & IOC_CONNECT_UP) == 0 &&
+        con->tbuf.mbinfo_down == OS_NULL)
+    {
+        con->tbuf.mbinfo_down = tbuf;
+    }
+}

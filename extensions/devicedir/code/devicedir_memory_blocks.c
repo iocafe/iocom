@@ -102,7 +102,13 @@ void devicedir_memory_blocks(
         if (mflags & IOC_AUTO_SYNC) devicedir_append_flag(list, "auto", &isfirst);
         if (mflags & IOC_ALLOW_RESIZE) devicedir_append_flag(list, "resize", &isfirst);
         if (mflags & IOC_STATIC) devicedir_append_flag(list, "static", &isfirst);
-        if (mflags & IOC_DYNAMIC_MBLK) devicedir_append_flag(list, "dynamic", &isfirst);
+#if IOC_DYNAMIC_MBLK_CODE
+        if (mflags & IOC_DYNAMIC) devicedir_append_flag(list, "dynamic", &isfirst);
+#endif
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (mflags & IOC_BIDIRECTIONAL) devicedir_append_flag(list, "bidirectional", &isfirst);
+#endif
+
         osal_stream_print_str(list, "\"", 0);
 
         if (flags & IOC_DEVDIR_BUFFERS)

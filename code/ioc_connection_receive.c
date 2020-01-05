@@ -256,7 +256,7 @@ osalStatus ioc_connection_receive(
              */
             os_get_timer(&con->last_receive);
 
-            if (/* is_serial && */ n > 0)
+            if (n > 0)
             {
                 /* If we have received nonzero frame count from serial
                    communication , make sure that it is correct already here
@@ -325,8 +325,10 @@ osalStatus ioc_connection_receive(
      */
     p = buf + (is_serial ? 5 : 4);
     if (extra_flags) p++;
-    mblk_id = ioc_msg_get_uint(&p, flags & IOC_MBLK_HAS_TWO_BYTES, extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES);
-    addr = ioc_msg_get_uint(&p, flags & IOC_ADDR_HAS_TWO_BYTES, extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES);
+    mblk_id = ioc_msg_get_uint(&p, flags & IOC_MBLK_HAS_TWO_BYTES,
+        extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES);
+    addr = ioc_msg_get_uint(&p, flags & IOC_ADDR_HAS_TWO_BYTES,
+        extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES);
 
     /* Save frame number to expect next. Notice that the frame count can
         be zero only for the very first frame. never be zero again.

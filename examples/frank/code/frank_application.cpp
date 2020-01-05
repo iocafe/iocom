@@ -79,7 +79,7 @@ void FrankApplication::run()
     os_uint i = 0;
     os_char segments[8], buf[32], state_bits;
     os_float floats[5];
-    os_long v;
+    // os_long v;
     iocSignal *seven_segment = OS_NULL;
     iocSignal *float_test = OS_NULL;
     iocSignal *str_test = OS_NULL;
@@ -109,7 +109,7 @@ void FrankApplication::run()
         ioc_gets_array(float_test, floats, sizeof(floats)/sizeof(os_float));
 
         ioc_maintain_signal(&ioapp_root, "C", m_network_name, &c_test);
-        v = ioc_gets_int(c_test, &state_bits, IOC_SIGNAL_DEFAULT);
+        /* v = */ ioc_gets_int(c_test, &state_bits, IOC_SIGNAL_DEFAULT);
     }
 
     ioc_delete_signal(seven_segment);
