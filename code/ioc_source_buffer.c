@@ -280,7 +280,16 @@ static void ioc_sbuf_invalidate_bytes(
     os_int count;
     os_uchar *p, start_mask, end_mask;
 
+    /* Check for illegal arguments.
+     */
     if (end_addr < start_addr || sbuf->syncbuf.buf == OS_NULL) return;
+
+    /* If this is key frame and we are transferring data downwards, do not invalide bytes
+     */
+    if (sbuf->syncbuf.is_keyframe) if ((sbuf->clink.con->flags & IOC_CONNECT_UP) == 0)
+    {
+        return;
+    }
 
     start_mask = (0xFF << (start_addr & 7));
     end_mask = (0xFF >> (7 - (end_addr & 7)));
