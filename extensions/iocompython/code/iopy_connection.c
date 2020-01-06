@@ -166,6 +166,11 @@ static PyObject *Connection_new(
         goto failed;
     }
 
+    if (os_strstr(flags, "bidirectional", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        prm.flags |= IOC_BIDIRECTIONAL_MBLKS;
+    }
+
     self->con = ioc_initialize_connection(OS_NULL, iocroot);
     self->status = (int)ioc_connect(self->con, &prm);
 

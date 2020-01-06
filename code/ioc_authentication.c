@@ -114,12 +114,18 @@ void ioc_make_authentication_frame(
         return;
     }
 
-    /* Set connect up flag.
+    /* Set connect up and bidirectional flags.
      */
     if (con->flags & IOC_CONNECT_UP)
     {
         flags |= IOC_AUTH_CONNECT_UP;
     }
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if (con->flags & IOC_BIDIRECTIONAL_MBLKS)
+    {
+        flags |= IOC_AUTH_BIDIRECTIONAL_COM;
+    }
+#endif
 
     /* Fill in data size, flag as system frame, and flags for authentication data.
      */
@@ -210,6 +216,17 @@ osalStatus ioc_process_received_authentication_frame(
             }
             secdev.from_up = OS_TRUE;
         }
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (auth_flags & IOC_AUTH_BIDIRECTIONAL_COM)
+        {
+            con->flags |= IOC_BIDIRECTIONAL_MBLKS;
+        }
+        else
+        {
+            con->flags &= ~IOC_BIDIRECTIONAL_MBLKS;
+        }
+#endif
     }
 
     /* If activelu connecting end (client).

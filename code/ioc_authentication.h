@@ -85,6 +85,7 @@ iocAuthenticatedDevices;
 #define IOC_AUTH_NETWORK_NAME 16
 #define IOC_AUTH_USER_NAME 32
 #define IOC_AUTH_PASSWORD 64
+#define IOC_AUTH_BIDIRECTIONAL_COM 128
 
 
 /**
