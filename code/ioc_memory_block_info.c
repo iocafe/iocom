@@ -31,7 +31,8 @@ static void ioc_mbinfo_new_sbuf(
 static void ioc_mbinfo_new_tbuf(
     iocConnection *con,
     iocMemoryBlock *mblk,
-    iocMemoryBlockInfo *info);
+    iocMemoryBlockInfo *info,
+    os_short bdflags);
 
 
 /**
@@ -280,9 +281,8 @@ osalStatus ioc_process_received_mbinfo_frame(
     os_uint mblk_id,
     os_char *data)
 {
-    iocMemoryBlockInfo
-        mbinfo;
-
+    iocRoot *root;
+    iocMemoryBlockInfo mbinfo;
     os_uchar
         iflags,
         *p; /* keep as unsigned */
@@ -293,24 +293,6 @@ osalStatus ioc_process_received_mbinfo_frame(
     mbinfo.device_nr = ioc_msg_get_uint(&p,
         iflags & IOC_INFO_D_2BYTES,
         iflags & IOC_INFO_D_4BYTES);
-
-    /* If we received message from device which requires automatically given
-       device number in controller end (not auto eumerated device) device,
-       give the number now.
-     */
-    if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR)
-    {
-        if (con->link.root->device_nr != IOC_AUTO_DEVICE_NR)
-        {
-            /* If we do not have automatic device number, reserve one now
-             */
-            if (!con->auto_device_nr)
-            {
-                con->auto_device_nr = ioc_get_unique_device_id(con->link.root);
-            }
-            mbinfo.device_nr = con->auto_device_nr;
-        }
-    }
 
     mbinfo.mblk_id = mblk_id;
     mbinfo.nbytes = ioc_msg_get_ushort(&p, iflags & IOC_INFO_N_2BYTES);
@@ -326,6 +308,37 @@ osalStatus ioc_process_received_mbinfo_frame(
     {
         if (ioc_msg_getstr(mbinfo.mblk_name, IOC_NAME_SZ, &p))
             return OSAL_STATUS_FAILED;
+    }
+
+    /* If we received message from device which requires automatically given
+       device number in controller end (not auto eumerated device) device,
+       give the number now.
+     */
+    root = con->link.root;
+    if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR)
+    {
+        /*if (root->device_nr != IOC_AUTO_DEVICE_NR  ||
+            os_strcmp(mbinfo.device_name, root->device_name) ||
+            os_strcmp(mbinfo.network_name, root->network_name) )
+        { */
+            /* If we do not have automatic device number, reserve one now
+             */
+            if (!con->auto_device_nr)
+            {
+                con->auto_device_nr = ioc_get_unique_device_id(root);
+            }
+            mbinfo.device_nr = con->auto_device_nr;
+            mbinfo.local_auto_id = OS_TRUE;
+         /* } */
+    }
+
+    /* If this is message to device with automatic device number and this device has
+       automatic device number
+     */
+    else if (mbinfo.device_nr == IOC_TO_AUTO_DEVICE_NR &&
+        root->device_nr == IOC_AUTO_DEVICE_NR)
+    {
+        mbinfo.device_nr = IOC_AUTO_DEVICE_NR;
     }
 
     ioc_mbinfo_received(con, &mbinfo);
@@ -368,8 +381,6 @@ void ioc_mbinfo_received(
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
-    iocSourceBuffer *sbuf;
-    iocTargetBuffer *tbuf, *next_tbuf;
     os_short source_flag, target_flag;
 
 #if IOC_DYNAMIC_MBLK_CODE
@@ -382,9 +393,7 @@ void ioc_mbinfo_received(
     os_char *newbuf;
 #endif
 
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-    os_short bdflag;
-#endif
+    os_short bdflag = 0;
 
     /* Find if we have memory block with device name, number and memory block 
        number. If not, do nothing.
@@ -411,6 +420,7 @@ void ioc_mbinfo_received(
                 mbprm.device_nr = info->device_nr;
                 mbprm.flags = (info->flags & (IOC_MBLK_DOWN|IOC_MBLK_UP))
                     | (IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC);
+                if (info->local_auto_id) mbprm.flags |= IOC_MBLK_LOCAL_AUTO_ID;
                 mbprm.mblk_name = info->mblk_name;
                 mbprm.nbytes = info->nbytes;
 
@@ -498,98 +508,33 @@ goon:
     bdflag = (mblk->flags & info->flags & IOC_BIDIRECTIONAL);
 #endif
 
-    /* If we have a memory block which can be a source?
+    /* If we have a memory block which can be a source and the other end matches?
      */
-    if (mblk->flags & source_flag)
+    if ((mblk->flags & source_flag) && (info->flags & source_flag))
     {
-        /* If the other memory block cannot be a target, do nothing more
-         */
-        if ((info->flags & source_flag) == 0)
-        {
-            osal_trace3("source - source skipped");
-            goto skip1;
-        }
-
-        /* Check if we already have subscription for this connection.
-         */
-        for (sbuf = con->sbuf.first;
-             sbuf;
-             sbuf = sbuf->clink.next)
-        {
-            if (mblk == sbuf->mlink.mblk)
-            {
-                osal_trace2("Memory block already subscribed for the connection");
-                goto skip1;
-            }
-        }
-
         ioc_mbinfo_new_sbuf(con, mblk, info);
-    }
-skip1:
-
-    /* If we have memory block which can be a target
-     */
-    if (mblk->flags & target_flag)
-    {
-        /* If the other memory block cannot be a source
-         */
-        if ((info->flags & target_flag) == 0)
-        {
-            osal_trace3("target - target skippes");
-            goto skip2;
-        }
-
-        /* Check if we already have target buffer for this connection.
-         */
-        for (tbuf = con->tbuf.first;
-             tbuf;
-             tbuf = tbuf->clink.next)
-        {
-            if (mblk == tbuf->mlink.mblk)
-            {
-                osal_trace2("Memory block already targeted for the connection");
-                goto skip2;
-            }
-        }
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (bdflag == 0)
+        if (bdflag)
         {
-            /* We are setting up one directional data transfer. If there is
-               already one directional data transfer, delete it.
-             */
-            for (tbuf = mblk->tbuf.first;
-                 tbuf;
-                 tbuf = next_tbuf)
-            {
-                next_tbuf = tbuf->mlink.next;
-                if ((tbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
-                {
-                    ioc_release_target_buffer(tbuf);
-                }
-            }
+            ioc_mbinfo_new_tbuf(con, mblk, info, bdflag);
         }
+#endif
+    }
 
-        else
+    /* If we have memory block which can be a target  and the other end matches?
+     */
+    if ((mblk->flags & target_flag) && (info->flags & target_flag))
+    {
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+        if (bdflag)
         {
             ioc_mbinfo_new_sbuf(con, mblk, info);
         }
-#else
-        /* If we have target buffer for the connection, delete it.
-         */
-        for (tbuf = mblk->tbuf.first;
-             tbuf;
-             tbuf = next_tbuf)
-        {
-            next_tbuf = tbuf->mlink.next;
-            ioc_release_target_buffer(tbuf);
-        }
 #endif
 
-        ioc_mbinfo_new_tbuf(con, mblk, info);
+        ioc_mbinfo_new_tbuf(con, mblk, info, bdflag);
     }
-skip2:;
-
 }
 
 
@@ -602,6 +547,19 @@ static void ioc_mbinfo_new_sbuf(
     iocSourceBuffer *sbuf;
 
     root = con->link.root;
+
+    /* Check if we already have subscription for this connection.
+     */
+    for (sbuf = con->sbuf.first;
+         sbuf;
+         sbuf = sbuf->clink.next)
+    {
+        if (mblk == sbuf->mlink.mblk)
+        {
+            osal_trace2("Memory block already has source buffer for the connection");
+            return;
+        }
+    }
 
     /* Create source buffer to link the connection and memory block together.
      */
@@ -630,12 +588,48 @@ static void ioc_mbinfo_new_sbuf(
 static void ioc_mbinfo_new_tbuf(
     iocConnection *con,
     iocMemoryBlock *mblk,
-    iocMemoryBlockInfo *info)
+    iocMemoryBlockInfo *info,
+    os_short bdflags)
 {
     iocRoot *root;
-    iocTargetBuffer *tbuf;
+    iocTargetBuffer *tbuf, *next_tbuf;
 
     root = con->link.root;
+
+    /* Check if we already have target buffer for this connection.
+     */
+    for (tbuf = con->tbuf.first;
+         tbuf;
+         tbuf = tbuf->clink.next)
+    {
+        if (mblk == tbuf->mlink.mblk)
+        {
+            osal_trace2("Memory block already target buffer for this connection");
+            return;
+        }
+    }
+
+    /* If there is memory block is already one directional data transfer, delete it.
+     */
+    if (bdflags == 0)
+    {
+        for (tbuf = mblk->tbuf.first;
+             tbuf;
+             tbuf = next_tbuf)
+        {
+            next_tbuf = tbuf->mlink.next;
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+            if ((tbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
+            {
+                osal_trace("Existing target buffer for memory block dropped");
+                ioc_release_target_buffer(tbuf);
+            }
+#else
+            osal_trace("Existing target buffer for memory block dropped");
+            ioc_release_target_buffer(tbuf);
+#endif
+        }
+    }
 
     /* Create source buffer to link the connection and memory block together.
      */

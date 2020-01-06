@@ -53,6 +53,7 @@
 #define IOC_DYNAMIC 16
 #define IOC_ALLOW_RESIZE 32
 #define IOC_STATIC 64
+#define IOC_MBLK_LOCAL_AUTO_ID 512
 /*@}*/
 
 

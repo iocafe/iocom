@@ -127,8 +127,6 @@ osalStatus ioc_initialize_memory_block(
     os_strncpy(mblk->mblk_name, prm->mblk_name, IOC_NAME_SZ);
     os_strncpy(mblk->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
 
-
-
     /* Setup handle within memory block structure and one given as argument.
      */
     ioc_setup_handle(&mblk->handle, root, mblk);

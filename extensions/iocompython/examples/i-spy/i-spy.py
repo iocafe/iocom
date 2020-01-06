@@ -36,8 +36,8 @@ class MainApp(App):
         transport_flag = self.ioc_params['transport'].lower();
 
         if self.ioc_params['role'] == "CLIENT":
-            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
-            # self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
+            # self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
+            self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
             self.ioc_root.queue_events()
             self.ioc_connection = Connection(self.ioc_root, self.ioc_params['ip'], transport_flag + ',down,dynamic')
 

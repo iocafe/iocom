@@ -392,7 +392,10 @@ static void ioc_make_mblk_info_frame(
     device_nr = mblk->device_nr;
     if (device_nr > IOC_AUTO_DEVICE_NR)
     {
-        if (device_nr == con->auto_device_nr) device_nr = IOC_AUTO_DEVICE_NR;
+        if (device_nr == con->auto_device_nr && mblk->flags & IOC_MBLK_LOCAL_AUTO_ID)
+        {
+            device_nr = IOC_TO_AUTO_DEVICE_NR;
+        }
     }
 
     ioc_msg_set_uint(device_nr, &p, iflags, IOC_INFO_D_2BYTES, iflags, IOC_INFO_D_4BYTES);
