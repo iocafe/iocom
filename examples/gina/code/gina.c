@@ -197,7 +197,7 @@ osalStatus osal_loop(
     ioc_receive(&ioboard_imp);
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
-#if 0
+#if 1
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */

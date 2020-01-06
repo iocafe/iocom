@@ -515,7 +515,7 @@ goon:
         ioc_mbinfo_new_sbuf(con, mblk, info);
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (bdflag)
+        if (bdflag && (con->flags & IOC_CONNECT_UP) == 0)
         {
             ioc_mbinfo_new_tbuf(con, mblk, info, bdflag);
         }
@@ -527,7 +527,7 @@ goon:
     if ((mblk->flags & target_flag) && (info->flags & target_flag))
     {
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (bdflag)
+        if (bdflag && (con->flags & IOC_CONNECT_UP))
         {
             ioc_mbinfo_new_sbuf(con, mblk, info);
         }
