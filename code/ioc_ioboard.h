@@ -78,6 +78,11 @@ extern iocHandle
 #define IOC_SBUF_SZ(SEND_BLOCK_SZ) \
     (sizeof(iocSourceBuffer) + IOC_BIDSZ(SEND_BLOCK_SZ) * sizeof(ioc_sbuf_item))
 
+/* For each source buffer we need x bytes:
+ */
+#define IOC_SBUF_SZ_NOBID(SEND_BLOCK_SZ) \
+    (sizeof(iocSourceBuffer) + SEND_BLOCK_SZ * sizeof(ioc_sbuf_item))
+
 /* If using static pool, the pool size must be calculated.If too small, program will not work.
    If too big, memory is wasted.The IOC_POOL_SIZE_LSOCK macro calculates pool size from number
    of connectionsand size of memory blocks for sendingand receiving data for an IO board listening
@@ -87,7 +92,7 @@ extern iocHandle
 #define IOBOARD_POOL_SIZE(CTRL_TYPE, MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
     MAX_CONNECTIONS * sizeof(iocConnection) \
   + MAX_CONNECTIONS * 2 * ((CTRL_TYPE & IOBOARD_CTRL_IS_SOCKET) ? IOC_SOCKET_FRAME_SZ : IOC_SERIAL_FRAME_SZ) \
-  + MAX_CONNECTIONS * IOC_SBUF_SZ(SEND_BLOCK_SZ) \
+  + MAX_CONNECTIONS * IOC_SBUF_SZ_NOBID(SEND_BLOCK_SZ) \
   + MAX_CONNECTIONS * IOC_TBUF_SZ(RECEIVE_BLOCK_SZ) \
   + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
   + (((CTRL_TYPE & IOBOARD_CTRL_BASIC_MASK) == IOBOARD_CTRL_LISTEN_SOCKET) ? sizeof(iocEndPoint) : 0) \
@@ -103,7 +108,7 @@ extern iocHandle
  */
 #define IOBOARD_POOL_IMP_EXP_CONF(MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
     2 * sizeof(iocMemoryBlock) \
-    + MAX_CONNECTIONS * IOC_SBUF_SZ(SEND_BLOCK_SZ) \
+    + MAX_CONNECTIONS * IOC_SBUF_SZ_NOBID(SEND_BLOCK_SZ) \
     + MAX_CONNECTIONS * IOC_TBUF_SZ(RECEIVE_BLOCK_SZ) \
     + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
     + IOC_BIDSZ(SEND_BLOCK_SZ) \

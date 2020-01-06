@@ -4,7 +4,7 @@
   @brief   Memory block information.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    24.6.2019
+  @date    6.1.2020
 
   Functionality related to memory block information. Memory block information is sent trough
   connections to inform connected devices what data they can access, connect to, etc.

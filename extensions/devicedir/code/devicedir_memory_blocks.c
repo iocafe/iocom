@@ -86,11 +86,11 @@ void devicedir_memory_blocks(
         }
 #endif
         osal_stream_print_str(list, sep, 0);
-        devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_TRUE);
+        devicedir_append_str_param(list, "mblk_name", mblk->mblk_name, OS_TRUE);
+        devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_FALSE);
         devicedir_append_int_param(list, "dev_nr", mblk->device_nr, OS_FALSE);
         devicedir_append_str_param(list, "net_name", mblk->network_name, OS_FALSE);
 
-        devicedir_append_str_param(list, "mblk_name", mblk->mblk_name, OS_FALSE);
         devicedir_append_int_param(list, "mblk_id", mblk->mblk_id, OS_FALSE);
         devicedir_append_int_param(list, "size", mblk->nbytes, OS_FALSE);
 
@@ -106,7 +106,7 @@ void devicedir_memory_blocks(
         if (mflags & IOC_DYNAMIC) devicedir_append_flag(list, "dynamic", &isfirst);
 #endif
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (mflags & IOC_BIDIRECTIONAL) devicedir_append_flag(list, "bidirectional", &isfirst);
+        if (mflags & IOC_BIDIRECTIONAL) devicedir_append_flag(list, "bdsupport", &isfirst);
 #endif
 
         osal_stream_print_str(list, "\"", 0);
@@ -172,6 +172,13 @@ void devicedir_append_target_buffer(
     devicedir_append_int_param(list, "has_new_data", tbuf->syncbuf.has_new_data, OS_FALSE);
     devicedir_append_int_param(list, "newdata_start_addr", tbuf->syncbuf.newdata_start_addr, OS_FALSE);
     devicedir_append_int_param(list, "newdata_end_addr", tbuf->syncbuf.newdata_end_addr, OS_FALSE);
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if (tbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+    {
+        osal_stream_print_str(list, ", \"flags\":\"bidirectional\"", 0);
+    }
+#endif
 
     osal_stream_print_str(list, "}", 0);
 }
@@ -262,6 +269,13 @@ void devicedir_append_source_buffer(
     devicedir_append_int_param(list, "is_keyframe", sbuf->syncbuf.is_keyframe, OS_FALSE);
     devicedir_append_int_param(list, "start_addr", sbuf->syncbuf.start_addr, OS_FALSE);
     devicedir_append_int_param(list, "end_addr", sbuf->syncbuf.end_addr, OS_FALSE);
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+    {
+        osal_stream_print_str(list, ", \"flags\":\"bidirectional\"", 0);
+    }
+#endif
 
     osal_stream_print_str(list, "}", 0);
 }

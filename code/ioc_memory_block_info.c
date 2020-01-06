@@ -4,7 +4,7 @@
   @brief   Memory block information.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    24.6.2019
+  @date    6.1.2020
 
   Functionality related to memory block information. Memory block information is sent trough
   connections to inform connected devices what data they can access, connect to, etc.
@@ -26,7 +26,8 @@
 static void ioc_mbinfo_new_sbuf(
     iocConnection *con,
     iocMemoryBlock *mblk,
-    iocMemoryBlockInfo *info);
+    iocMemoryBlockInfo *info,
+    os_short bdflags);
 
 static void ioc_mbinfo_new_tbuf(
     iocConnection *con,
@@ -493,6 +494,13 @@ goon:
     }
 #endif
 
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if (con->flags & IOC_BIDIRECTIONAL_MBLKS)
+    {
+        bdflag = (mblk->flags & info->flags & IOC_BIDIRECTIONAL);
+    }
+#endif
+
     if (con->flags & IOC_CONNECT_UP)
     {
         source_flag = IOC_MBLK_UP;
@@ -504,21 +512,19 @@ goon:
         source_flag = IOC_MBLK_DOWN;
     }
 
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-    bdflag = (mblk->flags & info->flags & IOC_BIDIRECTIONAL);
-#endif
-
     /* If we have a memory block which can be a source and the other end matches?
      */
     if ((mblk->flags & source_flag) && (info->flags & source_flag))
     {
-        ioc_mbinfo_new_sbuf(con, mblk, info);
-
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (bdflag && (con->flags & IOC_CONNECT_UP) == 0)
+        if (con->flags & IOC_CONNECT_UP) bdflag = 0;
+        ioc_mbinfo_new_sbuf(con, mblk, info, bdflag);
+        if (bdflag)
         {
             ioc_mbinfo_new_tbuf(con, mblk, info, bdflag);
         }
+#else
+        ioc_mbinfo_new_sbuf(con, mblk, info, 0);
 #endif
     }
 
@@ -527,9 +533,10 @@ goon:
     if ((mblk->flags & target_flag) && (info->flags & target_flag))
     {
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (bdflag && (con->flags & IOC_CONNECT_UP))
+        if ((con->flags & IOC_CONNECT_UP) == 0) bdflag = 0;
+        if (bdflag)
         {
-            ioc_mbinfo_new_sbuf(con, mblk, info);
+            ioc_mbinfo_new_sbuf(con, mblk, info, bdflag);
         }
 #endif
 
@@ -538,10 +545,29 @@ goon:
 }
 
 
-static void ioc_mbinfo_new_sbuf(
+/**
+****************************************************************************************************
+
+  @brief Setup new source buffer for the memory block.
+  @anchor ioc_mbinfo_new_sbuf
+
+  The ioc_mbinfo_new_sbuf() function adds new source buffer according to received memory block
+  information.
+
+  ioc_lock() must be on when this function is called.
+
+  @param   con Connection from which memory block info was received.
+  @param   mblk Pointer to the memory block object.
+  @param   info Memory block information.
+  @param   bdflags Nonzero (IOC_BIDIRECTIONAL) to set up for bidirectional transfer.
+  @return  None.
+
+****************************************************************************************************
+*/static void ioc_mbinfo_new_sbuf(
     iocConnection *con,
     iocMemoryBlock *mblk,
-    iocMemoryBlockInfo *info)
+    iocMemoryBlockInfo *info,
+    os_short bdflags)
 {
     iocRoot *root;
     iocSourceBuffer *sbuf;
@@ -563,7 +589,7 @@ static void ioc_mbinfo_new_sbuf(
 
     /* Create source buffer to link the connection and memory block together.
      */
-    sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
+    sbuf = ioc_initialize_source_buffer(con, mblk, info->mblk_id, bdflags & IOC_BIDIRECTIONAL);
 
     /* Do initial synchronization for all memory blocks.
      */
@@ -585,6 +611,25 @@ static void ioc_mbinfo_new_sbuf(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Setup new target buffer for the memory block.
+  @anchor ioc_mbinfo_new_tbuf
+
+  The ioc_mbinfo_new_tbuf() function adds new target buffer according to received block
+  information.
+
+  ioc_lock() must be on when this function is called.
+
+  @param   con Connection from which memory block info was received.
+  @param   mblk Pointer to the memory block object.
+  @param   info Memory block information.
+  @param   bdflags Nonzero (IOC_BIDIRECTIONAL) to set up for bidirectional transfer.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_mbinfo_new_tbuf(
     iocConnection *con,
     iocMemoryBlock *mblk,
@@ -633,7 +678,8 @@ static void ioc_mbinfo_new_tbuf(
 
     /* Create source buffer to link the connection and memory block together.
      */
-    tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id, info->flags & IOC_BIDIRECTIONAL);
+    tbuf = ioc_initialize_target_buffer(con, mblk, info->mblk_id,
+        bdflags & IOC_BIDIRECTIONAL);
 
     /* Application may want to know that the memory block has been connected.
      */

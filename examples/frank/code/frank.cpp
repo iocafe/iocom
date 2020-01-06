@@ -107,8 +107,8 @@ osalStatus osal_main(
 
     /* Ready to go, start listening for clients.
      */
-    frank_main->listen_for_clients();
-    // frank_main->connect_to_device();
+    // frank_main->listen_for_clients();
+    frank_main->connect_to_device();
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
