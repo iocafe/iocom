@@ -121,6 +121,7 @@ osalStatus ioc_initialize_memory_block(
 #endif
         os_memclear(buf, nbytes);
     }
+    mblk->local_flags = prm->local_flags;
 
     os_strncpy(mblk->device_name, prm->device_name, IOC_NAME_SZ);
     mblk->device_nr = prm->device_nr;

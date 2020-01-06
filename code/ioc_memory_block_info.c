@@ -14,7 +14,7 @@
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -71,7 +71,7 @@ void ioc_add_mblk_to_global_mbinfo(
                 con->sinfo.current_mblk = mblk;
             }
         }
-    }    
+    }
 }
 
 
@@ -328,7 +328,7 @@ osalStatus ioc_process_received_mbinfo_frame(
                 con->auto_device_nr = ioc_get_unique_device_id(root);
             }
             mbinfo.device_nr = con->auto_device_nr;
-            mbinfo.local_auto_id = OS_TRUE;
+            mbinfo.local_flags = IOC_MBLK_LOCAL_AUTO_ID;
          /* } */
     }
 
@@ -395,7 +395,7 @@ void ioc_mbinfo_received(
 
     os_short bdflag = 0;
 
-    /* Find if we have memory block with device name, number and memory block 
+    /* Find if we have memory block with device name, number and memory block
        number. If not, do nothing.
      */
     root = con->link.root;
@@ -420,7 +420,7 @@ void ioc_mbinfo_received(
                 mbprm.device_nr = info->device_nr;
                 mbprm.flags = (info->flags & (IOC_MBLK_DOWN|IOC_MBLK_UP))
                     | (IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_DYNAMIC);
-                if (info->local_auto_id) mbprm.flags |= IOC_MBLK_LOCAL_AUTO_ID;
+                mbprm.local_flags = info->local_flags;
                 mbprm.mblk_name = info->mblk_name;
                 mbprm.nbytes = info->nbytes;
 
