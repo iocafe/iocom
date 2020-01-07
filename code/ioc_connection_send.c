@@ -241,10 +241,15 @@ static void ioc_make_data_frame(
        *ptrs.flags |= IOC_DELTA_ENCODED;
 #endif
     }
+if (start_addr == 309)
+{
+    osal_debug_error("Here");
+}
     compressed_bytes = ioc_compress(delta,
         &start_addr,
         sbuf->syncbuf.end_addr,
         dst, max_dst_bytes);
+
 
     src_bytes = sbuf->syncbuf.end_addr - saved_start_addr + 1;
     if (src_bytes > max_dst_bytes) src_bytes = max_dst_bytes;

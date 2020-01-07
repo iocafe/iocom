@@ -160,6 +160,7 @@ osalStatus FrankMain::listen_for_clients()
     os_memclear(&epprm, sizeof(epprm));
     epprm.iface = iface;
     epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS; /* Notice IOC_DYNAMIC_MBLKS */
+//    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
     ioc_listen(ep, &epprm);
 
     os_sleep(100);
@@ -184,7 +185,8 @@ osalStatus FrankMain::connect_to_device()
     os_memclear(&conprm, sizeof(conprm));
 
     conprm.iface = iface;
-    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
+    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+    // conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
     conprm.parameters = "127.0.0.1";
     ioc_connect(con, &conprm);
 

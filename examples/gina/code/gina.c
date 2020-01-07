@@ -127,7 +127,6 @@ osalStatus osal_main(
     prm.iface = iface;
     prm.device_name = IOBOARD_DEVICE_NAME; /* or device_id->device name to allow change */
     prm.device_nr = device_id->device_nr;
-// prm.device_nr = 2;
     prm.network_name = device_id->network_name;
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = connconf->connection[0].parameters;
@@ -139,10 +138,8 @@ osalStatus osal_main(
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_signal_hdr = &gina_hdr;
-
     prm.device_info = ioapp_signal_config;
     prm.device_info_sz = sizeof(ioapp_signal_config);
-
     prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
     prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
 
@@ -201,23 +198,39 @@ osalStatus osal_loop(
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
-    pins_read_all(&pins_hdr, PINS_DEFAULT);
+//     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
     /* Run the IO device functionality.
      */
     static os_float f[5] = {1, 2, 3, 4, 5};
     static os_timer ti;
-    static int i;
-    char buf[32];
+    static os_int i = 0;
+    os_char buf[32], state_bits;
+    os_long l, prev_l;
 
-    if (os_elapsed(&ti, 100))
+    if (i++ == 0) os_get_timer(&ti);
+
+
+    if (os_elapsed(&ti, 200))
     {
         os_get_timer(&ti);
-        f[2] = i++;
+
+        l = ioc_gets_int(&gina.conf_imp.frd_select, &state_bits, IOC_SIGNAL_DEFAULT);
+        if (l != prev_l)
+        {
+            osal_debug_error_int("~HERE CHANGE", l);
+            osal_debug_error_int(" state ", state_bits);
+            prev_l = l;
+        }
+
+        // ioc_sets_str(&gina.exp.teststr, "pekka");
+
+        /* f[2] = i++;
         ioc_sets_array(&gina.exp.testfloat, f, 5);
 
         ioc_sets_str(&gina.exp.teststr, "pekka");
         ioc_gets_str(&gina.imp.strtodevice, buf, sizeof(buf));
+        */
     }
 #endif
     /* The devicedir call is here for testing only, take away.

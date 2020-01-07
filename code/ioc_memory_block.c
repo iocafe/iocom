@@ -813,11 +813,14 @@ void ioc_receive(
                 for (i = start_addr; i <= end_addr; ++i)
                 {
                     bitsi = i >> 3;
-                    if ((bits[bitsi] >> (i & 3)) & 1)
+                    if ((bits[bitsi] >> (i & 7)) & 1)
                     {
                         dpos[i] = spos[i];
                     }
                 }
+                bitsi = start_addr >> 3;
+                i = (end_addr >> 3) - bitsi + 1;
+                os_memclear(bits + bitsi, i);
             }
             else
             {

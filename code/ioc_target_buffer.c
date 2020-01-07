@@ -315,7 +315,12 @@ void ioc_tbuf_synchronize(
     os_int
         bs,
         be,
-        pos;
+        pos,
+        count;
+
+    os_char
+        *src,
+        *dst;
 #endif
 
     if ((!tbuf->syncbuf.has_new_data) ||
@@ -362,8 +367,14 @@ void ioc_tbuf_synchronize(
         bs = start_addr >> 3;
         be = end_addr >> 3;
         pos = tbuf->syncbuf.ndata + bs;
-
-        os_memcpy(syncbuf + pos, newdata + pos, be - bs + 1);
+        count = be - bs + 1;
+        src = newdata + pos;
+        dst = syncbuf + pos;
+        while (count--)
+        {
+            *(dst++) |= *(src++);
+        }
+        /* os_memcpy(syncbuf + pos, newdata + pos, be - bs + 1); */
     }
 #endif
 

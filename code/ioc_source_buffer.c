@@ -310,7 +310,7 @@ static void ioc_sbuf_invalidate_bytes(
     {
         *(p++) |= 0xFF;
     }
-    *(p++) |= end_mask;
+    *p |= end_mask;
 }
 #endif
 
@@ -444,6 +444,7 @@ osalStatus ioc_sbuf_synchronize(
         end_addr = sbuf->changed.end_addr;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
+        osal_debug_assert(end_addr < sbuf->syncbuf.ndata);
         if ((sbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
         {
 #endif
