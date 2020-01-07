@@ -49,6 +49,8 @@ iocTargetBuffer *ioc_initialize_target_buffer(
 {
     iocRoot *root;
     iocTargetBuffer *tbuf;
+    os_char *p;
+    os_int count;
 
     /* Check that connection and memory block are valid pointers.
      */
@@ -97,6 +99,30 @@ iocTargetBuffer *ioc_initialize_target_buffer(
      */
     os_memcpy(tbuf->syncbuf.buf, mblk->buf, mblk->nbytes);
     os_memcpy(tbuf->syncbuf.newdata, mblk->buf, mblk->nbytes);
+
+    /* If this target buffer is for data received from device down for two
+       directional communication, mark whole memory block to be updated.
+       We will expect key frame first. Clear mark buffers anyhow.
+     */
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if (flags & IOC_BIDIRECTIONAL)
+    {
+        count = tbuf->syncbuf.nbytes - mblk->nbytes;
+
+        os_memclear(tbuf->syncbuf.buf + mblk->nbytes, count);
+        p = tbuf->syncbuf.newdata + mblk->nbytes;
+
+        if ((mblk->flags & IOC_MBLK_DOWN) &&
+            (con->flags & IOC_CONNECT_UP) == 0)
+        {
+            while (count--) *(p++) = 0xFF;
+        }
+        else
+        {
+            os_memclear(p, count);
+        }
+    }
+#endif
 
     /* Save pointer to connection and memory block objects and join to linked list
        of target buffers for both connection and memory block.

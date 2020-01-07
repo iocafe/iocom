@@ -161,7 +161,7 @@ void ioboard_start_communication(
             break;
 	}
 
-conprm.flags |= IOC_BIDIRECTIONAL_MBLKS	; // kjaslkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
+// TEST conprm.flags |= IOC_BIDIRECTIONAL_MBLKS	; // kjaslkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
 
     ioboard_connection = ioc_initialize_connection(OS_NULL, &ioboard_communication);
     ioc_connect(ioboard_connection, &conprm);
