@@ -22,9 +22,13 @@
 iocRoot ioapp_root;
 static FrankMain *frank_main;
 
-/* IO device configuration.
+/* IO device/network configuration.
  */
 iocNodeConf ioapp_device_conf;
+
+/* Device/user account configuration.
+ */
+iocAccountConf ioapp_account_conf;
 
 /* Remove this, for testing only
  */
@@ -73,9 +77,10 @@ osalStatus osal_main(
      */
     ioc_initialize_root(&ioapp_root);
 
-    /* Initialize persistent storage and load device configuration (persistent storage is
-       typically either file system or micro-controller's flash). Defaults are set in
-       network-defaults.json.
+    /* Initialize persistent storage and load device/network configuration and device/user
+       account congiguration (persistent storage is typically either file system or
+       micro-controller's flash). Defaults are set in network-defaults.json and
+       in account-defaults.json.
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.device_name = device_name;
@@ -83,6 +88,7 @@ osalStatus osal_main(
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
     device_id = ioc_get_device_id(&ioapp_device_conf);
     // connconf = ioc_get_connection_conf(&ioapp_device_conf);
+    ioc_load_account_config(&ioapp_account_conf, ioapp_account_defaults, sizeof(ioapp_account_defaults));
 
     ioc_set_iodevice_id(&ioapp_root, device_name, device_id->device_nr, device_id->network_name);
     ioc_initialize_dynamic_root(&ioapp_root);
