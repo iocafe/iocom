@@ -38,6 +38,7 @@ FrankMain::FrankMain(
 
     setup_mblks();
     setup_ctrl_stream();
+    inititalize_accounts();
 }
 
 
@@ -57,6 +58,7 @@ FrankMain::~FrankMain()
         delete m_app[i];
     }
 
+    release_accounts();
     release_mblks();
 }
 
@@ -276,9 +278,7 @@ void FrankMain::launch_app(
 }
 
 
-
-
-void FrankMain::inititalize_accounts(const os_char *network_name)
+void FrankMain::inititalize_accounts()
 {
     iocMemoryBlockParams blockprm;
     const os_char *accounts_device_name = "accounts";
@@ -288,13 +288,12 @@ void FrankMain::inititalize_accounts(const os_char *network_name)
      */
     // gina_init_signal_struct(&m_gina_def);
 
-
     /* Generate memory blocks.
      */
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.device_name = accounts_device_name;
     blockprm.device_nr = accounts_device_nr;
-    blockprm.network_name = network_name;
+    blockprm.network_name = m_network_name;
 
     blockprm.mblk_name = m_accounts.exp.hdr.mblk_name;
     blockprm.nbytes = m_accounts.exp.hdr.mblk_sz;
@@ -308,6 +307,12 @@ void FrankMain::inititalize_accounts(const os_char *network_name)
 
     doit(&m_accounts.imp.hdr, &m_accounts_import);
     doit(&m_accounts.exp.hdr, &m_accounts_export);
+
+    /* Load user account configuration from persistent storage or
+       use static defaults.
+     */
+    ioc_load_account_config(&m_account_conf, ioapp_account_defaults,
+        sizeof(ioapp_account_defaults));
 
     /* Set callback to detect received data and connection status changes.
      */

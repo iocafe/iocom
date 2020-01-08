@@ -1,4 +1,4 @@
-# iocom/CmakeLists.txt - Cmake build for iocom library.
+# iocom/CmakeLists.txt - Cmake build for iocom library, 8.1.2020/pekka.
 cmake_minimum_required(VERSION 2.8.11)
 
 # Set project name (= project root folder name).
@@ -23,10 +23,12 @@ include_directories("$ENV{E_ROOT}/iocom")
 set(MAIN_HEADERS "$ENV{E_ROOT}/${E_PROJECT}/${E_PROJECT}.h" "$ENV{E_ROOT}/${E_PROJECT}/${E_PROJECT}x.h")
 
 # Add source files common to all operating systems.
-file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
-file(GLOB BB_CM_HEADERS "${BACKBONE}/*.h")
-file(GLOB EX_CM_SOURCES "${EXTENSIONS}/dynamicio/*.c")
-file(GLOB EX_CM_HEADERS "${EXTENSIONS}/dynamicio/*.h")
+file(GLOB BB_SOURCES "${BACKBONE}/*.c")
+file(GLOB BB_HEADERS "${BACKBONE}/*.h")
+file(GLOB EX_SOURCES "${EXTENSIONS}/dynamicio/*.c")
+file(GLOB EX_HEADERS "${EXTENSIONS}/dynamicio/*.h")
+file(GLOB SE_SOURCES "${EXTENSIONS}/ioserver/*.c")
+file(GLOB SE_HEADERS "${EXTENSIONS}/ioserver/*.h")
 
 # Generate the static library.
-add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_CM_HEADERS} ${EX_CM_HEADERS} ${BB_CM_SOURCES} ${EX_CM_SOURCES})
+add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_HEADERS} ${EX_HEADERS} ${SE_HEADERS} ${BB_SOURCES} ${EX_SOURCES} ${SE_SOURCES})

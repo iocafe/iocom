@@ -42,6 +42,16 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+/* Enable/disable server extensions in iocom library.
+ */
+#ifndef IOC_SERVER_EXTENSIONS
+  #if OSAL_MICROCONTROLLER
+    #define IOC_SERVER_EXTENSIONS 0
+  #else
+    #define IOC_SERVER_EXTENSIONS 1
+  #endif
+#endif
+
 /* If we are using dynamic memory allocation, include code to
  * resize memory blocks.
  */
@@ -71,8 +81,7 @@ OSAL_C_HEADER_BEGINS
   #if OSAL_MICROCONTROLLER
     #define IOC_BIDIRECTIONAL_MBLK_CODE 0
   #else
-//    #define IOC_BIDIRECTIONAL_MBLK_CODE 0
-    #define IOC_BIDIRECTIONAL_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
+    #define IOC_BIDIRECTIONAL_MBLK_CODE IOC_SERVER_EXTENSIONS
   #endif
 #endif
 
@@ -92,7 +101,6 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_source_buffer.h"
 #include "code/ioc_target_buffer.h"
 #include "code/ioc_authentication.h"
-#include "code/ioc_accounts.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
 #include "code/ioc_streamer.h"

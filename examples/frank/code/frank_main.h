@@ -36,15 +36,26 @@ public:
  	 */
     ~FrankMain();
 
+    osalStatus listen_for_clients();
+    osalStatus connect_to_device();
+
+    /* The run is repeatedly to keep control stream alive.
+     */
+    void run();
+
+    void launch_app(os_char *network_name);
+
+
+private:
     /* Setup the memory blocks for the IO node.
      */
     void setup_mblks();
     void release_mblks();
-
-    /* The run is repeatedly to keep control stream alive.
-     */
     void setup_ctrl_stream();
-    void run();
+
+    void inititalize_accounts();
+    void release_accounts();
+
 
     /* Identification of this IO network node.
      */
@@ -82,14 +93,13 @@ public:
     accounts_t
         m_accounts;
 
+    /* Current device/user account configuration.
+     */
+    iocAccountConf m_account_conf;
+
     static const os_int MAX_APPS = 20;
     class FrankApplication *m_app[MAX_APPS];
 
-    osalStatus listen_for_clients();
-    osalStatus connect_to_device();
-    void launch_app(os_char *network_name);
 
-    void inititalize_accounts(const os_char *network_name);
-    void release_accounts();
 
 };

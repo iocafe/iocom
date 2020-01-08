@@ -1,3 +1,3 @@
 20.10.2019 / pekka
-nodeconf library provides data structure for storing IO network node configuration, and functions for accessing, modifying and saving/loading it.
+nodeconf library provides data structures related to IO network node configuration, and functions to access the configuration.
 

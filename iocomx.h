@@ -39,6 +39,10 @@ OSAL_C_HEADER_BEGINS
 #include "extensions/dynamicio/ioc_dyn_stream.h"
 #endif
 
+#if IOC_SERVER_EXTENSIONS
+#include "extensions/ioserver/ioc_accounts.h"
+#endif
+
 /* If C++ compilation, end the undecorated code.
  */
 OSAL_C_HEADER_ENDS

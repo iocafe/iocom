@@ -26,9 +26,6 @@ static FrankMain *frank_main;
  */
 iocNodeConf ioapp_device_conf;
 
-/* Device/user account configuration.
- */
-iocAccountConf ioapp_account_conf;
 
 /* Remove this, for testing only
  */
@@ -88,7 +85,6 @@ osalStatus osal_main(
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
     device_id = ioc_get_device_id(&ioapp_device_conf);
     // connconf = ioc_get_connection_conf(&ioapp_device_conf);
-    ioc_load_account_config(&ioapp_account_conf, ioapp_account_defaults, sizeof(ioapp_account_defaults));
 
     ioc_set_iodevice_id(&ioapp_root, device_name, device_id->device_nr, device_id->network_name);
     ioc_initialize_dynamic_root(&ioapp_root);
@@ -96,7 +92,6 @@ osalStatus osal_main(
     /* Create frank main object
      */
     frank_main = new FrankMain(device_name, device_id->device_nr, device_id->network_name);
-    // frank_main->inititalize_accounts(device_id->network_name);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
@@ -194,7 +189,6 @@ void osal_main_cleanup(
     void *app_context)
 {
     ioc_set_root_callback(&ioapp_root, OS_NULL, OS_NULL);
-    frank_main->release_accounts();
     delete frank_main;
 
     ioc_release_root(&ioapp_root);
