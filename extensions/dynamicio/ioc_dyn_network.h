@@ -16,8 +16,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_DYN_NETWORK_INCLUDED
-#define IOC_DYN_NETWORK_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
 struct iocMblkShortcut;
@@ -93,5 +91,4 @@ void ioc_network_mblk_is_deleted(
     iocDynamicNetwork *dnetwork,
     iocMemoryBlock *mblk);
 
-#endif
 #endif

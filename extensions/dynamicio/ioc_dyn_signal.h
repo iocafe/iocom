@@ -16,8 +16,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_DYN_SIGNAL_INCLUDED
-#define IOC_DYN_SIGNAL_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
 
@@ -115,5 +113,4 @@ iocDynamicSignal *ioc_setup_signal_by_identifiers(
 void ioc_delete_signal(
     iocSignal *signal);
 
-#endif
 #endif

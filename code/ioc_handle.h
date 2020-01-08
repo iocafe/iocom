@@ -16,9 +16,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_HANDLE_INCLUDED
-#define IOC_HANDLE_INCLUDED
-
 struct iocRoot;
 struct iocMemoryBlock;
 
@@ -87,4 +84,3 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
 // void ioc_validate_handle(
 //    iocHandle *handle);
 
-#endif

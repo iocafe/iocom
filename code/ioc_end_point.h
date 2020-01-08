@@ -16,8 +16,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_END_POINT_INCLUDED
-#define IOC_END_POINT_INCLUDED
 
 /* Maximum parameter string length for end point.
  */
@@ -183,5 +181,3 @@ osalStatus ioc_terminate_end_point_thread(
 #endif
 
 /*@}*/
-
-#endif

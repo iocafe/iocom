@@ -19,8 +19,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_ROOT_INCLUDED
-#define IOC_ROOT_INCLUDED
 
 /* Structures defined later in headers.
  */
@@ -343,8 +341,5 @@ void ioc_unlock(
   #define IOC_MT_ROOT_PTR
   #define ioc_set_mt_root(r,p)
 /*@}*/
-
-#endif
-
 
 #endif

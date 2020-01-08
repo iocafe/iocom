@@ -18,8 +18,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_TIMING_INCLUDED
-#define IOC_TIMING_INCLUDED
 
 /* Long timeouts for tracing test. We cannot run in normal speed and print messages.
  */
@@ -70,6 +68,4 @@
  */
 #ifndef IOC_SERIAL_SILENCE_MS
 #define IOC_SERIAL_SILENCE_MS 250
-#endif
-
 #endif

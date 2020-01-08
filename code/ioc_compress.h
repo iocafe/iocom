@@ -13,11 +13,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_COMPRESS_INCLUDED
-#define IOC_COMPRESS_INCLUDED
-
-
-
 
 /** 
 ****************************************************************************************************
@@ -30,7 +25,6 @@
  */
 /*@{*/
 
-
 /* Compress data.
  */
 os_int ioc_compress(
@@ -39,7 +33,6 @@ os_int ioc_compress(
     os_int end_addr,
     os_char *dst,
     os_memsz dst_sz);
-
 
 /* Uncompress data.
  */
@@ -52,4 +45,3 @@ os_int ioc_uncompress(
 
 /*@}*/
 
-#endif

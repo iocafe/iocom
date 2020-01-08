@@ -21,8 +21,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_DYN_QUEUE_INCLUDED
-#define IOC_DYN_QUEUE_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
 /**
@@ -145,5 +143,4 @@ iocQueuedEvent *ioc_get_event(
 os_boolean ioc_pop_event(
     iocRoot *root);
 
-#endif
 #endif

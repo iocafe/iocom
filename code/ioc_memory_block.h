@@ -18,9 +18,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_MEMORY_BLOCK_INCLUDED
-#define IOC_MEMORY_BLOCK_INCLUDED
-
 
 /** Flags for ioc_initialize_memory_block() function. Bit fields.
     Note about IOC_AUTO_SYNC mode: If this flag is given to source memory buffer,
@@ -438,5 +435,3 @@ void ioc_byte_ordered_copy(
     os_memsz type_sz);
 
 /*@}*/
-
-#endif

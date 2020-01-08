@@ -13,9 +13,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_STREAMER_INCLUDED
-#define IOC_STREAMER_INCLUDED
-
 
 #ifndef IOC_DEVICE_STREAMER
 #define IOC_DEVICE_STREAMER 1
@@ -280,5 +277,4 @@ void ioc_run_control_stream(
 
 /*@}*/
 
-#endif
 #endif

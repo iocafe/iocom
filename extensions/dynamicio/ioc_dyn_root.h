@@ -21,8 +21,6 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_DYN_ROOT_INCLUDED
-#define IOC_DYN_ROOT_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
 
 struct iocDynamicRoot;
@@ -103,5 +101,4 @@ void ioc_droot_mblk_is_deleted(
 os_uint ioc_hash(
     const os_char *key_str);
 
-#endif
 #endif

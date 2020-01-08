@@ -32,10 +32,7 @@
 
 ****************************************************************************************************
 */
-#ifndef IOC_DYN_STREAM_INCLUDED
-#define IOC_DYN_STREAM_INCLUDED
 #if IOC_DYNAMIC_MBLK_CODE
-
 
 /* Structure to allocate memory for signals.
  */
@@ -182,5 +179,4 @@ osalStatus ioc_stream_initconf(
     iocStream *stream,
     os_int flags);
 
-#endif
 #endif
