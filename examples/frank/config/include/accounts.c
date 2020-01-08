@@ -2,33 +2,6 @@
 void accounts_init_signal_struct(accounts_t *s)
 {
   os_memclear(s, sizeof(accounts_t));
-  s->exp.hdr.mblk_name = "exp";
-  s->exp.hdr.n_signals = 2;
-  s->exp.hdr.mblk_sz = ACCOUNTS_EXP_MBLK_SZ;
-  s->exp.hdr.first_signal = &s->exp.nro_devices;
-
- /* nro_devices */
-  s->exp.nro_devices.addr = 0;
-  s->exp.nro_devices.n = 1;
-  s->exp.nro_devices.flags = OS_INT;
-
- /* test */
-  s->exp.test.addr = 5;
-  s->exp.test.n = 1;
-  s->exp.test.flags = OS_BOOLEAN;
-  s->mblk_list[0] = &s->exp.hdr;
-
-  s->imp.hdr.mblk_name = "imp";
-  s->imp.hdr.n_signals = 1;
-  s->imp.hdr.mblk_sz = ACCOUNTS_IMP_MBLK_SZ;
-  s->imp.hdr.first_signal = &s->imp.restart;
-
- /* restart */
-  s->imp.restart.addr = 0;
-  s->imp.restart.n = 1;
-  s->imp.restart.flags = OS_BOOLEAN;
-  s->mblk_list[1] = &s->imp.hdr;
-
   s->conf_exp.hdr.mblk_name = "conf_exp";
   s->conf_exp.hdr.n_signals = 5;
   s->conf_exp.hdr.mblk_sz = ACCOUNTS_CONF_EXP_MBLK_SZ;
@@ -58,7 +31,7 @@ void accounts_init_signal_struct(accounts_t *s)
   s->conf_exp.frd_head.addr = 267;
   s->conf_exp.frd_head.n = 1;
   s->conf_exp.frd_head.flags = OS_INT;
-  s->mblk_list[2] = &s->conf_exp.hdr;
+  s->mblk_list[0] = &s->conf_exp.hdr;
 
   s->conf_imp.hdr.mblk_name = "conf_imp";
   s->conf_imp.hdr.n_signals = 7;
@@ -99,8 +72,8 @@ void accounts_init_signal_struct(accounts_t *s)
   s->conf_imp.frd_tail.addr = 271;
   s->conf_imp.frd_tail.n = 1;
   s->conf_imp.frd_tail.flags = OS_INT;
-  s->mblk_list[3] = &s->conf_imp.hdr;
+  s->mblk_list[1] = &s->conf_imp.hdr;
 
-  s->hdr.n_mblk_hdrs = 4;
+  s->hdr.n_mblk_hdrs = 2;
   s->hdr.mblk_hdr = s->mblk_list;
 }

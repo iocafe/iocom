@@ -51,24 +51,6 @@ TitoGinaIoDevice::~TitoGinaIoDevice()
 }
 
 
-void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
-{
-    iocSignal *sig;
-    os_int count;
-
-    mblk_hdr->handle = handle;
-
-    count = mblk_hdr->n_signals;
-    sig = mblk_hdr->first_signal;
-
-    while (count--)
-    {
-        sig->handle = handle;
-        sig++;
-    }
-}
-
-
 gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr)
 {
     iocMemoryBlockParams blockprm;
@@ -102,9 +84,8 @@ gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_uint devic
     blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
     ioc_initialize_memory_block(&m_gina_import, OS_NULL, &tito_root, &blockprm);
 
-
-doit(&m_gina_def.imp.hdr, &m_gina_import);
-doit(&m_gina_def.exp.hdr, &m_gina_export);
+    ioc_set_handle_to_signals(&m_gina_def.imp.hdr, &m_gina_import);
+    ioc_set_handle_to_signals(&m_gina_def.exp.hdr, &m_gina_export);
 
     /* Set callback to detect received data and connection status changes.
      */

@@ -2,40 +2,6 @@
 "name": "accounts",
 "mblk": [
 	{
-		"name": "exp",
-		"flags": "up",
-		"groups": [
-			{
-				"name": "state",
-				"signals": [
-					{
-						"name": "nro_devices",
-						"type": "int"
-					},
-					{
-						"name": "test",
-						"type": "boolean"
-					}
-				]
-			}
-		]
-	},
-	{
-		"name": "imp",
-		"flags": "down",
-		"groups": [
-			{
-				"name": "control",
-				"signals": [
-					{
-						"name": "restart",
-						"type": "boolean"
-					}
-				]
-			}
-		]
-	},
-	{
 		"name": "conf_exp",
 		"flags": "up,conf",
 		"groups": [

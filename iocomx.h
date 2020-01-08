@@ -41,6 +41,8 @@ OSAL_C_HEADER_BEGINS
 
 #if IOC_SERVER_EXTENSIONS
 #include "extensions/ioserver/ioc_accounts.h"
+#include "extensions/ioserver/ioc_server_util.h"
+#include "extensions/ioserver/ioc_basic_server.h"
 #endif
 
 /* If C++ compilation, end the undecorated code.

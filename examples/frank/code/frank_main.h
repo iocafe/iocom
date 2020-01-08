@@ -45,61 +45,28 @@ public:
 
     void launch_app(os_char *network_name);
 
-
 private:
     /* Setup the memory blocks for the IO node.
      */
     void setup_mblks();
-    void release_mblks();
     void setup_ctrl_stream();
-
     void inititalize_accounts();
-    void release_accounts();
+    void setup_accounts_ctrl_stream();
 
-
-    /* Identification of this IO network node.
+    /* Basic server main structure.
      */
-    os_char m_device_name[IOC_NAME_SZ];
-    os_int m_device_nr;
-    os_char m_network_name[IOC_NETWORK_NAME_SZ];
-
-    /* Memory block handles.
-     */
-    iocHandle
-        m_exp,
-        m_imp,
-        m_conf_exp,
-        m_conf_imp,
-        m_info;
+    iocBServerMain m_bmain;
 
     /* Structure holding signals for the IO node.
      */
     frank_t
         m_signals;
 
-    /* Control stream to configure the IO node.
-     */
-    iocStreamerParams m_ctrl_stream_params;
-    iocControlStreamState m_ctrl_state;
-
-    /* Memory block handles.
-     */
-    iocHandle
-        m_accounts_export,
-        m_accounts_import;
-
     /* IO device/user account IO definition structure.
      */
     accounts_t
         m_accounts;
 
-    /* Current device/user account configuration.
-     */
-    iocAccountConf m_account_conf;
-
     static const os_int MAX_APPS = 20;
     class FrankApplication *m_app[MAX_APPS];
-
-
-
 };

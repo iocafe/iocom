@@ -4,22 +4,7 @@ OSAL_C_HEADER_BEGINS
 typedef struct accounts_t
 {
   iocDeviceHdr hdr;
-  iocMblkSignalHdr *mblk_list[4];
-
-  struct 
-  {
-    iocMblkSignalHdr hdr;
-    iocSignal nro_devices;
-    iocSignal test;
-  }
-  exp;
-
-  struct 
-  {
-    iocMblkSignalHdr hdr;
-    iocSignal restart;
-  }
-  imp;
+  iocMblkSignalHdr *mblk_list[2];
 
   struct 
   {
@@ -47,8 +32,6 @@ typedef struct accounts_t
 }
 accounts_t;
 
-#define ACCOUNTS_EXP_MBLK_SZ 32
-#define ACCOUNTS_IMP_MBLK_SZ 32
 #define ACCOUNTS_CONF_EXP_MBLK_SZ 272
 #define ACCOUNTS_CONF_IMP_MBLK_SZ 276
 

@@ -1,10 +1,10 @@
 /**
 
-  @file    frank.h
-  @brief   Frank controller using static IO device configuration.
+  @file    ioc_server_util.h
+  @brief   Server side helper functions.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    6.11.2019
+  @date    8.1.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,20 +13,12 @@
 
 ****************************************************************************************************
 */
-#include "iocom.h"
-#include "nodeconf.h"
+#if IOC_SERVER_EXTENSIONS
 
-OSAL_C_HEADER_BEGINS
-#include "network-defaults.h"
-#include "signals.h"
-#include "accounts.h"
-#include "accounts-mblk.h"
-#include "account-defaults.h"
-#include "info-mblk.h"
-OSAL_C_HEADER_ENDS
+/* Store memory block handle pointer within all signals in signal structure.
+ */
+void ioc_set_handle_to_signals(
+    iocMblkSignalHdr *mblk_hdr,
+    iocHandle *handle);
 
-#include "frank_main.h"
-#include "frank_application.h"
-#include "frank_get_netconf.h"
-
-extern iocRoot ioapp_root;
+#endif

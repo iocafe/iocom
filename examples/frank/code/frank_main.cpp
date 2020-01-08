@@ -16,7 +16,6 @@
 #include "frank.h"
 
 
-
 /**
 ****************************************************************************************************
   Construct application.
@@ -27,18 +26,17 @@ FrankMain::FrankMain(
     os_int device_nr,
     const os_char *network_name)
 {
-    os_int i;
+    ioc_initialize_bserver_main(&m_bmain, &ioapp_root, device_name, device_nr, network_name);
 
-    os_strncpy(m_device_name, device_name, IOC_NAME_SZ);
-    m_device_nr = device_nr;
-    os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
+    os_int i;
 
     for (i = 0; i < MAX_APPS; i++)
         m_app[i] = OS_NULL;
 
     setup_mblks();
-    setup_ctrl_stream();
     inititalize_accounts();
+    setup_ctrl_stream();
+    setup_accounts_ctrl_stream();
 }
 
 
@@ -58,28 +56,7 @@ FrankMain::~FrankMain()
         delete m_app[i];
     }
 
-    release_accounts();
-    release_mblks();
-}
-
-
-/* This needs to move to library
- */
-static void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
-{
-    iocSignal *sig;
-    os_int count;
-
-    mblk_hdr->handle = handle;
-
-    count = mblk_hdr->n_signals;
-    sig = mblk_hdr->first_signal;
-
-    while (count--)
-    {
-        sig->handle = handle;
-        sig++;
-    }
+    ioc_release_bserver_main(&m_bmain);
 }
 
 
@@ -87,62 +64,40 @@ static void doit(iocMblkSignalHdr *mblk_hdr, iocHandle *handle)
  */
 void FrankMain::setup_mblks()
 {
-    iocMemoryBlockParams blockprm;
-
     /* Initialize signal structure for this device.
      */
     frank_init_signal_struct(&m_signals);
 
-    /* Generate memory blocks.
+    /* Call basic server implementation to do the rest of memory
+       block signal setup.
      */
-    os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.device_name = m_device_name;
-    blockprm.device_nr = m_device_nr;
-    blockprm.network_name = m_network_name;
-
-    blockprm.mblk_name = m_signals.exp.hdr.mblk_name;
-    blockprm.nbytes = m_signals.exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC;
-    ioc_initialize_memory_block(&m_exp, OS_NULL, &ioapp_root, &blockprm);
-
-    blockprm.mblk_name = m_signals.imp.hdr.mblk_name;
-    blockprm.nbytes = m_signals.imp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
-    ioc_initialize_memory_block(&m_imp, OS_NULL, &ioapp_root, &blockprm);
-
-    blockprm.mblk_name = m_signals.conf_exp.hdr.mblk_name;
-    blockprm.nbytes = m_signals.conf_exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC;
-    ioc_initialize_memory_block(&m_conf_exp, OS_NULL, &ioapp_root, &blockprm);
-
-    blockprm.mblk_name = m_signals.conf_imp.hdr.mblk_name;
-    blockprm.nbytes = m_signals.conf_imp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
-    ioc_initialize_memory_block(&m_conf_imp, OS_NULL, &ioapp_root, &blockprm);
-
-    blockprm.mblk_name = "info";
-    blockprm.buf = (char*)ioapp_signal_config;
-    blockprm.nbytes = sizeof(ioapp_signal_config);
-    blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
-    ioc_initialize_memory_block(&m_info, OS_NULL, &ioapp_root, &blockprm);
-
-    /* Store memory block handle pointer for signals within the "signals" structure.
-     */
-    doit(&m_signals.exp.hdr, &m_exp);
-    doit(&m_signals.imp.hdr, &m_imp);
-    doit(&m_signals.conf_exp.hdr, &m_conf_exp);
-    doit(&m_signals.conf_imp.hdr, &m_conf_imp);
+    ioc_setup_bserver_mblks(&m_bmain,
+        &m_signals.exp.hdr,
+        &m_signals.imp.hdr,
+        &m_signals.conf_exp.hdr,
+        &m_signals.conf_imp.hdr,
+        ioapp_signal_config,
+        sizeof(ioapp_signal_config));
 }
 
 
-void FrankMain::release_mblks()
+void FrankMain::inititalize_accounts()
 {
-    ioc_release_memory_block(&m_exp);
-    ioc_release_memory_block(&m_imp);
-    ioc_release_memory_block(&m_conf_exp);
-    ioc_release_memory_block(&m_conf_imp);
-    ioc_release_memory_block(&m_info);
+    /* Setup signal structure structure for accounts.
+     */
+    accounts_init_signal_struct(&m_accounts);
+
+    /* Call basic server implementation to do the rest of accounts setup.
+     */
+    ioc_setup_bserver_accounts(&m_bmain,
+        &m_accounts.conf_exp.hdr,
+        &m_accounts.conf_imp.hdr,
+        ioapp_account_config,
+        sizeof(ioapp_account_config),
+        ioapp_account_defaults,
+        sizeof(ioapp_account_defaults));
 }
+
 
 
 /**
@@ -155,7 +110,6 @@ osalStatus FrankMain::listen_for_clients()
     iocEndPoint *ep = OS_NULL;
     iocEndPointParams epprm;
 
-    // const osalStreamInterface *iface = OSAL_SOCKET_IFACE;
     const osalStreamInterface *iface = OSAL_TLS_IFACE;
 
     ep = ioc_initialize_end_point(OS_NULL, &ioapp_root);
@@ -180,7 +134,6 @@ osalStatus FrankMain::connect_to_device()
     iocConnection *con = OS_NULL;
     iocConnectionParams conprm;
 
-    // const osalStreamInterface *iface = OSAL_SOCKET_IFACE;
     const osalStreamInterface *iface = OSAL_TLS_IFACE;
 
     con = ioc_initialize_connection(OS_NULL, &ioapp_root);
@@ -204,30 +157,21 @@ osalStatus FrankMain::connect_to_device()
 */
 void FrankMain::setup_ctrl_stream()
 {
-    os_memclear(&m_ctrl_stream_params, sizeof(iocStreamerParams));
+    /* Call basic server implementation macro to set up control stream.
+     */
+    IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
+}
 
-    m_ctrl_stream_params.is_device = OS_TRUE;
-
-    m_ctrl_stream_params.frd.cmd = &m_signals.conf_imp.frd_cmd;
-    m_ctrl_stream_params.frd.select = &m_signals.conf_imp.frd_select;
-    m_ctrl_stream_params.frd.buf = &m_signals.conf_exp.frd_buf;
-    m_ctrl_stream_params.frd.head = &m_signals.conf_exp.frd_head;
-    m_ctrl_stream_params.frd.tail = &m_signals.conf_imp.frd_tail;
-    m_ctrl_stream_params.frd.state = &m_signals.conf_exp.frd_state;
-    m_ctrl_stream_params.frd.to_device = OS_FALSE;
-
-    m_ctrl_stream_params.tod.cmd = &m_signals.conf_imp.tod_cmd;
-    m_ctrl_stream_params.tod.select = &m_signals.conf_imp.tod_select;
-    m_ctrl_stream_params.tod.buf = &m_signals.conf_imp.tod_buf;
-    m_ctrl_stream_params.tod.head = &m_signals.conf_imp.tod_head;
-    m_ctrl_stream_params.tod.tail = &m_signals.conf_exp.tod_tail;
-    m_ctrl_stream_params.tod.state = &m_signals.conf_exp.tod_state;
-    m_ctrl_stream_params.tod.to_device = OS_TRUE;
-
-    m_ctrl_stream_params.default_config = ioapp_network_defaults;
-    m_ctrl_stream_params.default_config_sz = sizeof(ioapp_network_defaults);
-
-    ioc_init_control_stream(&m_ctrl_state, &m_ctrl_stream_params);
+/**
+****************************************************************************************************
+  X
+****************************************************************************************************
+*/
+void FrankMain::setup_accounts_ctrl_stream()
+{
+    /* Call basic server implementation macro to set up control stream.
+     */
+    IOC_SETUP_BSERVER_ACCOUNTS_STREAM_MACRO(m_bmain, m_accounts)
 }
 
 
@@ -238,7 +182,9 @@ void FrankMain::setup_ctrl_stream()
 */
 void FrankMain::run()
 {
-    ioc_run_control_stream(&m_ctrl_state, &m_ctrl_stream_params);
+    /* Call basic server implementation to maintain control streams.
+     */
+    ioc_run_bserver_main(&m_bmain);
 }
 
 
@@ -278,50 +224,3 @@ void FrankMain::launch_app(
 }
 
 
-void FrankMain::inititalize_accounts()
-{
-    iocMemoryBlockParams blockprm;
-    const os_char *accounts_device_name = "accounts";
-    os_int accounts_device_nr = 1;
-
-    /* Setup initial Gina IO board definition structure.
-     */
-    // gina_init_signal_struct(&m_gina_def);
-
-    /* Generate memory blocks.
-     */
-    os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.device_name = accounts_device_name;
-    blockprm.device_nr = accounts_device_nr;
-    blockprm.network_name = m_network_name;
-
-    blockprm.mblk_name = m_accounts.exp.hdr.mblk_name;
-    blockprm.nbytes = m_accounts.exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_accounts_export, OS_NULL, &ioapp_root, &blockprm);
-
-    blockprm.mblk_name = m_accounts.imp.hdr.mblk_name;
-    blockprm.nbytes = m_accounts.imp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_accounts_import, OS_NULL, &ioapp_root, &blockprm);
-
-    doit(&m_accounts.imp.hdr, &m_accounts_import);
-    doit(&m_accounts.exp.hdr, &m_accounts_export);
-
-    /* Load user account configuration from persistent storage or
-       use static defaults.
-     */
-    ioc_load_account_config(&m_account_conf, ioapp_account_defaults,
-        sizeof(ioapp_account_defaults));
-
-    /* Set callback to detect received data and connection status changes.
-     */
-    // ioc_add_callback(&ctx.inputs, iocontroller_callback, &ctx);
-}
-
-
-void FrankMain::release_accounts()
-{
-    ioc_release_memory_block(&m_accounts_export);
-    ioc_release_memory_block(&m_accounts_import);
-}
