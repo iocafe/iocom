@@ -76,7 +76,9 @@ void ioc_setup_bserver_mblks(
     iocMblkSignalHdr *signals_conf_exp_hdr,
     iocMblkSignalHdr *signals_conf_imp_hdr,
     const os_char *signal_config,
-    os_memsz signal_config_sz);
+    os_memsz signal_config_sz,
+    const os_char *network_defaults,
+    os_memsz network_defaults_sz);
 
 void ioc_setup_bserver_accounts(
     iocBServerMain *m,
@@ -91,7 +93,6 @@ void ioc_run_bserver_main(
     iocBServerMain *m);
 
 #define IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(bmain, sig) \
-    os_memclear(&bmain.ctrl_stream_params, sizeof(iocStreamerParams)); \
     bmain.ctrl_stream_params.is_device = OS_TRUE; \
     bmain.ctrl_stream_params.frd.cmd = &sig.conf_imp.frd_cmd; \
     bmain.ctrl_stream_params.frd.select = &sig.conf_imp.frd_select; \
@@ -107,12 +108,9 @@ void ioc_run_bserver_main(
     bmain.ctrl_stream_params.tod.tail = &sig.conf_exp.tod_tail; \
     bmain.ctrl_stream_params.tod.state = &sig.conf_exp.tod_state; \
     bmain.ctrl_stream_params.tod.to_device = OS_TRUE; \
-    bmain.ctrl_stream_params.default_config = ioapp_network_defaults; \
-    bmain.ctrl_stream_params.default_config_sz = sizeof(ioapp_network_defaults); \
     ioc_init_control_stream(&bmain.ctrl_stream, &bmain.ctrl_stream_params); \
 
 #define IOC_SETUP_BSERVER_ACCOUNTS_STREAM_MACRO(bmain, accts) \
-    os_memclear(&bmain.accounts_stream_params, sizeof(iocStreamerParams)); \
     bmain.accounts_stream_params.is_device = OS_TRUE; \
     bmain.accounts_stream_params.frd.cmd = &accts.conf_imp.frd_cmd; \
     bmain.accounts_stream_params.frd.select = &accts.conf_imp.frd_select; \
@@ -128,9 +126,7 @@ void ioc_run_bserver_main(
     bmain.accounts_stream_params.tod.tail = &accts.conf_exp.tod_tail; \
     bmain.accounts_stream_params.tod.state = &accts.conf_exp.tod_state; \
     bmain.accounts_stream_params.tod.to_device = OS_TRUE; \
-    bmain.accounts_stream_params.default_config = ioapp_network_defaults; \
-    bmain.accounts_stream_params.default_config_sz = sizeof(ioapp_network_defaults); \
-    ioc_init_control_stream(&bmain.ctrl_stream, &bmain.accounts_stream_params); \
+    ioc_init_control_stream(&bmain.accounts_stream, &bmain.accounts_stream_params); \
 
 
 #endif

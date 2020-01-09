@@ -418,7 +418,7 @@ PyObject *iocom_stream_getconf(
         *flags = "";
 
     int
-        select = OS_PBNR_IO_DEVICE_CONFIG;
+        select = OS_PBNR_CONFIG;
 
     os_char
         exp_mblk_path[64],
@@ -508,7 +508,7 @@ PyObject *iocom_stream_setconf(
         *flags = "";
 
     int
-        select = OS_PBNR_IO_DEVICE_CONFIG;
+        select = OS_PBNR_CONFIG;
 
     os_char
         exp_mblk_path[64],

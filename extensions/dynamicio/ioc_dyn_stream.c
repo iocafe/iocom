@@ -76,7 +76,7 @@ static osalStatus ioc_stream_setup_one(
 
   @param   root IOCOM root object.
   @param   select Select what to transfer, typically persistant parameter block number like
-           OS_PBNR_FLASH_PROGRAM (1) for microcontroller flash program, OS_PBNR_IO_DEVICE_CONFIG (2)
+           OS_PBNR_FLASH_PROGRAM (1) for microcontroller flash program, OS_PBNR_CONFIG (2)
            for network configuration, like device identification, network addresses, security
            certificates, etc.
   @param   frd_buf_name Name of signal (char array) used as ring buffer for transfers from

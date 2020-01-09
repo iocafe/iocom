@@ -77,7 +77,9 @@ void FrankMain::setup_mblks()
         &m_signals.conf_exp.hdr,
         &m_signals.conf_imp.hdr,
         ioapp_signal_config,
-        sizeof(ioapp_signal_config));
+        sizeof(ioapp_signal_config),
+        ioapp_network_defaults,
+        sizeof(ioapp_network_defaults));
 }
 
 

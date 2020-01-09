@@ -5,7 +5,7 @@ from kivy.uix.button import Button
 
 from iocompython import Root,bin2json, json2bin
 from mysettings import MySettingsDisplay, MySettingsGroup, MyButton
-
+from time import sleep
 
 class MyConfig(MySettingsDisplay):
     def set_device(self, ioc_root, device_path):
@@ -35,6 +35,8 @@ class MyConfig(MySettingsDisplay):
 
         del json_default_text
 
+        sleep(0.1)
+
         my_config = None
         my_data = ioc_root.getconf(device_path, select=2)
         if my_data == None:
@@ -53,7 +55,11 @@ class MyConfig(MySettingsDisplay):
 
                 del json_text
 
-        self.process_json(my_default_config, my_config)
+        if my_default_config.get("accounts", None) == None:
+            self.process_json(my_default_config, my_config)
+        else:            
+            self.process_accounts_json(my_default_config, my_config)
+
         self.my_merged_config = my_default_config
 
     def delete(self):
@@ -81,11 +87,8 @@ class MyConfig(MySettingsDisplay):
         b.setup_button("save to device", self)
         self.add_widget(b)
 
-        # self.new_settings_group("configure", self.device_path, 1)
         self.new_settings_group("general", None, 2)
         self.process_network(net_d, net)
-
-        # self.new_button("save", self)
 
     def process_network(self, data_d, data):
         for item_d in data_d:
@@ -162,4 +165,45 @@ class MyConfig(MySettingsDisplay):
 
         rval = self.ioc_root.setconf(self.device_path, my_data, select=2)
         print(rval)
+
+    def process_accounts_json(self, my_default_config, my_config):
+        accounts_d = my_default_config.get("accounts", None)
+        if accounts_d == None:
+            print("'accounts' not found in default configuration")
+            return
+
+        accounts = None
+        if my_config != None:
+            accounts = my_config.get("accounts", None)
+            if accounts == None:
+                print("'accounts' not found in configuration")
+
+        title = MySettingsGroup()
+        title.set_group_label("device/user", self.device_path, 1)
+        self.add_widget(title)
+        b = MyButton()
+        b.setup_button("save to device", self)
+        self.add_widget(b)
+
+        grouplist = {"valid": "valid accounts", "requests":"new device requests", "whitelist":"white list", "blacklist":"black list"}
+        for g in grouplist:
+            group_d = accounts_d.get(g, None)
+            group = None
+            if accounts != None:
+                group = accounts.get(g, None)
+            self.process_accounts_group(grouplist[g], group_d, group)
+        
+    def process_accounts_group(self, label, group_d, group):
+        if group_d == None:
+            return
+            
+        self.new_settings_group(label, None, 2)
+
+        dict = {}
+
+        for item_d in group_d:
+            user_name = item_d.get("user_name", None)
+            password = item_d.get("password", None)
+            networks = item_d.get("networks", None)
+            # self.new_setting(self.ioc_root, user_name, dict, networks, "naksu", "uke")
 

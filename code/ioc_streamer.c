@@ -1347,9 +1347,7 @@ void ioc_init_control_stream(
     os_memclear(ctrl, sizeof(iocControlStreamState));
 
     ioc_sets0_int(params->frd.state, 0);
-    // ioc_sets0_int(params->frd.head, 0);
     ioc_sets0_int(params->tod.state, 0);
-    // ioc_sets0_int(params->tod.tail, 0);
 
 #if OSAL_DEBUG
     ctrl->initialized = 'I';
@@ -1414,8 +1412,7 @@ void ioc_run_control_stream(
                 ctrl->transferring_default_config = OS_FALSE;
                 select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
 
-                /* If reading */
-                if (select == OS_PBNR_IO_DEVICE_CONFIG_DEFAULTS)
+                if (select == OS_PBNR_CONFIG_DEFAULTS)
                 {
                     ctrl->transferring_default_config = OS_TRUE;
                     ctrl->default_config_pos = 0;

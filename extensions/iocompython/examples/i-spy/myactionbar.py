@@ -30,7 +30,6 @@ class MyActionBar(ActionBar):
             self.add_my_button('signals', ag)
             self.add_my_button('memory', ag)
             self.add_my_button('configure', ag)
-            self.add_my_button('accounts', ag)
             self.add_my_button('program', ag)
             av.add_widget(ag)
 

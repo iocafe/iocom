@@ -11,7 +11,6 @@ from mywaitdialog import MyWaitDialog
 from mymblkdialog import MyMemoryBlockDialog
 from mydevice import MyDevice
 from myconfig import MyConfig
-from myaccounts import MyAccounts
 from myprogram import MyProgram
 
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
@@ -54,9 +53,15 @@ class MainApp(App):
     def disconnect(self):
         if self.ioc_root != None:
             self.stop_mytimer()
+
+            for device_path in self.ioc_devices:
+                self.my_action_bar.remove_my_device(device_path)
+            self.ioc_devices = {}
+            self.set_displayed_page(None, None)
+
             self.ioc_root.delete()
             self.ioc_root = None
-            self.ioc_devices = {}
+
 
     def check_iocom_events(self):
         e = self.ioc_root.wait_com_event(0)
@@ -201,10 +206,6 @@ class MainApp(App):
             dlg = MyConfig()
             dlg.set_device(self.ioc_root, device_path)
 
-        elif page_name == 'accounts':
-            dlg = MyAccounts()
-            dlg.set_device(self.ioc_root, device_path)
-
         elif page_name == 'program':
             dlg = MyProgram()
             dlg.set_device(self.ioc_root, device_path)
@@ -234,7 +235,7 @@ class MainApp(App):
             self.disconnect()
             self.set_displayed_page(None, 'connect')
 
-        elif button_text == 'signals' or button_text == 'memory' or button_text == 'configure' or button_text == 'accounts' or button_text == 'program':
+        elif button_text == 'signals' or button_text == 'memory' or button_text == 'configure' or button_text == 'program':
             self.set_displayed_page(self.ioc_selected_device, button_text)
 
         elif button_text in self.ioc_devices:

@@ -20,7 +20,6 @@
 #include "iocom.h"
 #if IOC_SERVER_EXTENSIONS
 
-
 void ioc_initialize_bserver_main(
     iocBServerMain *m,
     iocRoot *root,
@@ -60,7 +59,9 @@ void ioc_setup_bserver_mblks(
     iocMblkSignalHdr *signals_conf_exp_hdr,
     iocMblkSignalHdr *signals_conf_imp_hdr,
     const os_char *signal_config,
-    os_memsz signal_config_sz)
+    os_memsz signal_config_sz,
+    const os_char *network_defaults,
+    os_memsz network_defaults_sz)
 {
     iocMemoryBlockParams blockprm;
 
@@ -103,6 +104,9 @@ void ioc_setup_bserver_mblks(
     ioc_set_handle_to_signals(signals_imp_hdr, &m->imp);
     ioc_set_handle_to_signals(signals_conf_exp_hdr, &m->conf_exp);
     ioc_set_handle_to_signals(signals_conf_imp_hdr, &m->conf_imp);
+
+    m->ctrl_stream_params.default_config = network_defaults;
+    m->ctrl_stream_params.default_config_sz = network_defaults_sz;
 }
 
 
@@ -150,6 +154,9 @@ void ioc_setup_bserver_accounts(
      */
     ioc_load_account_config(&m->account_conf, account_defaults,
         account_defaults_sz);
+
+    m->accounts_stream_params.default_config = account_defaults;
+    m->accounts_stream_params.default_config_sz = account_defaults_sz;
 }
 
 
