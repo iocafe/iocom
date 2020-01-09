@@ -1,10 +1,8 @@
-# from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.checkbox import CheckBox
 from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.widget import Widget
-
 from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
@@ -13,8 +11,6 @@ from kivy.uix.button import Button
 from kivy.metrics import dp
 
 from iocompython import Signal
-
-
 
 class MyVariable(GridLayout):
     def __init__(self, **kwargs):
@@ -129,7 +125,6 @@ class MyVariable(GridLayout):
         popup.open()
         textinput.focus = True
 
-
 class MyButton(MyVariable):
     def __init__(self, **kwargs):
         super(MyButton, self).__init__(**kwargs)
@@ -207,10 +202,6 @@ class MySetting(MyVariable):
         pass
 
     def setup_setting(self, ioc_root, setting_name, dict, value_d, value, description):
-        # flaglist = mblk_flags.split(',')
-        # self.my_up = "up" in flaglist
-        # self.my_down = "down" in flaglist
-
         self.setup_variable(ioc_root, setting_name, description, False)
         self.my_dict = dict
 
@@ -219,7 +210,6 @@ class MySetting(MyVariable):
 
         else:            
             self.set_value(value, 2) # 2 = state bit "connected" 
-
 
     def set_value(self, value, state_bits):
         if state_bits != self.my_state_bits:
@@ -242,11 +232,6 @@ class MySetting(MyVariable):
         self.my_dict[self.my_label_text] = value
 
     def on_checkbox_modified(self, i):
-        # if self.my_up and not self.my_down:
-        #     self.update_signal()
-        # else:            
-        #     self.signal.set(self.my_checkbox.active)
-
         self.my_dict[self.my_label_text] = self.my_checkbox.active
 
     def update_signal(self):
@@ -260,6 +245,69 @@ class MySetting(MyVariable):
             self.my_dict[self.my_label_text] = v
         except:
             print("Conversion failed")
+
+class MyUser(MyVariable):
+    def __init__(self, **kwargs):
+        super(MyUser, self).__init__(**kwargs)
+
+    def delete(self):
+        pass
+
+    def setup_user(self, ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags):
+        # self.setup_variable(ioc_root, user_name, user_name, False)
+        text = ""
+        if user_name != None:
+            text += user_name
+
+        if password != None:
+            text += " (" + password + ')'
+
+        if text == "" and networks != None:
+            text += networks
+            networks = None
+
+        if text == "" and ip != None:
+            text += ip
+            ip = None
+
+        self.my_label.text = '[size=16]' + text + '[/size]'
+
+        description = ""
+        if networks != None:
+            description += networks
+        if ip != None:
+            if description != "":
+                description += " "
+            description += ip
+        if priviliges != None:
+            if description != "":
+                description += " "
+            description += '[color=9090FF]' + priviliges + '[/color]'
+
+        self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
+
+        lb = GridLayout()
+        lb.size_hint = (0.65, 1) 
+
+        ncols = 0
+        flaglist = flags.split(',')
+        for button_name in flaglist:
+            b = Button(text=button_name)
+            # b.size_hint = (0.35, 1)
+            lb.add_widget(b)
+            ncols += 1
+
+        lb.cols = ncols
+        self.add_widget(lb)
+
+        # self.my_dict = dict
+
+        #if value == None:
+        #    self.set_value(value_d, 0)
+
+        #else:            
+        #    self.set_value(value, 2) # 2 = state bit "connected" 
+
 
 class MySettingsGroup(GridLayout):
     def __init__(self, **kwargs):
@@ -330,6 +378,13 @@ class MySettingsDisplay(GridLayout):
         self.add_widget(s)
         self.my_nro_widgets += 1
         self.my_variables.append(s)
+
+    def new_user(self, ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags):
+        u = MyUser() 
+        u.setup_user(ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags)
+        self.add_widget(u)
+        self.my_nro_widgets += 1
+        self.my_variables.append(u)
 
     def new_button(self, text, signal_me):
         b = MyButton()

@@ -1412,7 +1412,7 @@ void ioc_run_control_stream(
                 ctrl->transferring_default_config = OS_FALSE;
                 select = (osPersistentBlockNr)ioc_gets0_int(params->frd.select);
 
-                if (select == OS_PBNR_CONFIG_DEFAULTS)
+                if (select == OS_PBNR_DEFAULTS)
                 {
                     ctrl->transferring_default_config = OS_TRUE;
                     ctrl->default_config_pos = 0;

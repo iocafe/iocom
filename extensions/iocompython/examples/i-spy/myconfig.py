@@ -167,6 +167,7 @@ class MyConfig(MySettingsDisplay):
         print(rval)
 
     def process_accounts_json(self, my_default_config, my_config):
+        self.cols = 1
         accounts_d = my_default_config.get("accounts", None)
         if accounts_d == None:
             print("'accounts' not found in default configuration")
@@ -175,35 +176,41 @@ class MyConfig(MySettingsDisplay):
         accounts = None
         if my_config != None:
             accounts = my_config.get("accounts", None)
-            if accounts == None:
-                print("'accounts' not found in configuration")
 
         title = MySettingsGroup()
         title.set_group_label("device/user", self.device_path, 1)
-        self.add_widget(title)
+        g = GridLayout()
+        g.cols = 2
+        g.size_hint_y = None
+        g.height = 60 
+        g.add_widget(title)
         b = MyButton()
         b.setup_button("save to device", self)
-        self.add_widget(b)
+        g.add_widget(b)
+        self.add_widget(g)
 
-        grouplist = {"valid": "valid accounts", "requests":"new device requests", "whitelist":"white list", "blacklist":"black list"}
+        grouplist = {"valid": ["valid accounts", "edit,delete,blacklist"], "requests":["new device requests", "accept,dismiss,blacklist"], "whitelist":["white list", "edit,delete,blacklist"], "blacklist":["black list","edit,delete"]}
         for g in grouplist:
             group_d = accounts_d.get(g, None)
             group = None
             if accounts != None:
                 group = accounts.get(g, None)
-            self.process_accounts_group(grouplist[g], group_d, group)
+            k = grouplist[g]
+            self.process_accounts_group(k[0], group_d, group, k[1])
         
-    def process_accounts_group(self, label, group_d, group):
+    def process_accounts_group(self, label, group_d, group, flags):
         if group_d == None:
             return
             
         self.new_settings_group(label, None, 2)
 
-        dict = {}
-
         for item_d in group_d:
             user_name = item_d.get("user_name", None)
             password = item_d.get("password", None)
             networks = item_d.get("networks", None)
+            ip = item_d.get("ip", None)
+            priviliges = item_d.get("priviliges", None)
+            timestamp = item_d.get("priviliges", None)
             # self.new_setting(self.ioc_root, user_name, dict, networks, "naksu", "uke")
+            self.new_user(self.ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags)
 
