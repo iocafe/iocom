@@ -4,7 +4,7 @@
   @brief   Exyemded iocom header file.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    5.12.2019
+  @date    8.1.2020
 
   Extended iocom library main header file. This file includes both iocom base headers and
   extension headers related to dynamic IO configuration, used by generic server side apps

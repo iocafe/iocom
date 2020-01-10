@@ -1,5 +1,5 @@
 Streaming data,
-sketching notes 6.12.2019/pekka
+sketching notes 8.1.2020/pekka
 
 
 ** Signals for camera stream transfer from IO device (<- IO device)

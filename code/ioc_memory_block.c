@@ -4,7 +4,7 @@
   @brief   Memory block object.
   @author  Pekka Lehtikoski
   @version 1.1
-  @date    23.6.2019
+  @date    8.1.2020
 
   Memory block class implementation. The communication is based on memory blocks. A memory block
   is a byte array which is copied from a device to another. A memory block provides one directional

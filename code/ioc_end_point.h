@@ -4,7 +4,7 @@
   @brief   End point object.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    5.8.2018
+  @date    8.1.2020
 
   An end_point listens TCP socket for incoming connections and accepts these. Once a socket
   connection is received, a iocConnection object is created for it to transfer the data.

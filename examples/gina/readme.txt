@@ -1,4 +1,4 @@
-notes 30.10.2019/pekka
+notes 8.1.2020/pekka
 Gina - full featured IO board. 
 
 build_opt.h - Extra defines for Arduino IDE. Needed to set serial port Rx and Tx buffer sizes to 256.

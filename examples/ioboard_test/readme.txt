@@ -1,4 +1,4 @@
-notes 14.9.2019/pekka
+notes 8.1.2020/pekka
 4_ioboard_test example demonstrates IO board, connected trough TCP socket. This example assumes one memory block 
 for inputs and other for the outputs. Implementation doesn't need dynamic memory allocation or multithreading, 
 thus it should run on any platform including microcontrollers.

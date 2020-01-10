@@ -4,7 +4,7 @@
   @brief   Basic static network IO.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    12.8.2018
+  @date    8.1.2020
 
   The ioboard_start_communication() should be called at entry to IO board's program and
   if clean up is needed ioboard_end_communication() at exit.

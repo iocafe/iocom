@@ -1,4 +1,4 @@
-# copy-iocom-and-extras-for-platformio.py 14.12.2019/pekka
+# copy-iocom-and-extras-for-platformio.py 8.1.2020/pekka
 # Copies iocom and other libraries files needed for PlatformIO Arduino builds
 # into /coderoot/lib/arduino-platformio/* directories. 
 

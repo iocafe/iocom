@@ -4,7 +4,7 @@
   @brief   Dynamically maintain IO network objects.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    20.11.2019
+  @date    8.1.2020
 
   The dynamic root holds data structure to manage information about IO networks and signals.
   It is used to convert io path (signal name, memory block name, device name and number, network

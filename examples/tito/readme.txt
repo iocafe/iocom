@@ -1,4 +1,4 @@
-notes 6.11.2019/pekka
+notes 8.1.2020/pekka
 Tito - IO controller using static IO board configuration. 
 
 Tito is controller which runs multiple device IO networks, for example "iocafenet" for Pekka's devices and and "markkunet" for Markku.

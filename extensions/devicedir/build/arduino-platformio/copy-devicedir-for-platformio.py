@@ -1,4 +1,4 @@
-# copy-devicedir-for-platformio.py 9.11.2019/pekka
+# copy-devicedir-for-platformio.py 8.1.2020/pekka
 # Copies devicedir library files needed for PlatformIO Arduino build
 # into /coderoot/lib/arduino-platformio/devicedir directory. 
 # To make this look like Arduino library all .c and .cpp

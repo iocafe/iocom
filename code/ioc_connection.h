@@ -4,7 +4,7 @@
   @brief   Connection object.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    5.8.2018
+  @date    8.1.2020
 
   A connection object represents logical connection between two devices. Both ends of
   communication have a connection object dedicated for that link, serialized data is

@@ -4,7 +4,7 @@
   @brief   Frank controller using static IO device configuration.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    6.11.2019
+  @date    8.1.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -29,7 +29,7 @@ iocNodeConf ioapp_device_conf;
 
 /* Remove this, for testing only
  */
-static FrankGetNetConf *netconf;
+// statFrankAccountsonf *netconf;
 
 /* Forward referred static functions.
  */
@@ -144,12 +144,11 @@ osalStatus osal_loop(
     s = io_device_console(&ioapp_root);
 
     /* testing, remove this =====>
-     */
     if (s == OSAL_STATUS_COMPLETED)
     {
         if (netconf == OS_NULL)
         {
-            netconf = new FrankGetNetConf();
+            netconf = new FrankAccounts();
             netconf->start("gina", 1, "iocafenet");
         }
         else
@@ -160,6 +159,7 @@ osalStatus osal_loop(
 
         return OSAL_SUCCESS;
     }
+     */
     /* <==== */
 
 

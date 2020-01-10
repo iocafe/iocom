@@ -4,7 +4,7 @@
   @brief   Debugging macros.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.7.2018
+  @date    8.1.2020
 
   Macros for making debug code more readable. If OSAL_DEBUG define is zero, empty macros will 
   be defined and do not generate any code.

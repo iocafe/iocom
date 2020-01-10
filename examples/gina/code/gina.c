@@ -4,7 +4,7 @@
   @brief   Gina IO board example featuring  IoT device.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    1.11.2019
+  @date    8.1.2020
 
   IOBOARD_CTRL_CON define selects how this IO device connects to control computer. One of
   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.

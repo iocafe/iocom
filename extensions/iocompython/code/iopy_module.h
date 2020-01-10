@@ -4,7 +4,7 @@
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    22.10.2019
+  @date    8.1.2020
 
   Explose Python module interface.
 

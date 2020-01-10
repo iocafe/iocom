@@ -4,7 +4,7 @@
   @brief   List IO networks, devices, memory blocks and IO signals.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    5.11.2019
+  @date    8.1.2020
 
   The devicedir library provides data structure for storing IO network node configuration, and functions
   for accessing, modifying and saving/loading it.

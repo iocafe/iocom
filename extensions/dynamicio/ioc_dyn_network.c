@@ -4,7 +4,7 @@
   @brief   Dynamically maintain IO network objects.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    20.11.2019
+  @date    8.1.2020
 
   The dynamic network structure organizes signals of one network. The dynamic configuration is
   used by server when IO devices are not known and must be accessed as plug and play.

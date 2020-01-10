@@ -4,7 +4,7 @@
   @brief   IO controller example 4_iocontroller_test.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    7.8.2018
+  @date    8.1.2020
 
   The 4_iocontroller_test example controls 7 segment LED display. It connects to the IO board
   through TCP socket or serial port.

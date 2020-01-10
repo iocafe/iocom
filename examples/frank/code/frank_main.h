@@ -4,9 +4,9 @@
   @brief   Controller example with static IO defice configuration.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    6.12.2011
+  @date    8.1.2020
 
-  Copyright 2012 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used, 
+  Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept 
   it fully.
@@ -46,27 +46,20 @@ public:
     void launch_app(os_char *network_name);
 
 private:
-    /* Setup the memory blocks for the IO node.
+    /* Frank hosts account information for these two networks.
      */
-    void setup_mblks();
-    void setup_ctrl_stream();
-    void inititalize_accounts();
-    void setup_accounts_ctrl_stream();
+    FrankAccounts
+        *m_iocafenet_accounts,
+        *m_asteroidnet_accounts;
 
-    /* Basic server main structure.
+    /* Basic server  (from ioserver extensions) main structure.
      */
     iocBServerMain m_bmain;
-    iocBServerAccounts m_baccts;
 
     /* Structure holding signals for the IO node.
      */
     frank_t
         m_signals;
-
-    /* IO device/user account IO definition structure.
-     */
-    accounts_t
-        m_accounts;
 
     static const os_int MAX_APPS = 20;
     class FrankApplication *m_app[MAX_APPS];

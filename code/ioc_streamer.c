@@ -4,7 +4,7 @@
   @brief   Data stream trough memory block API.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    6.12.2019
+  @date    8.1.2020
 
   Ther end of the stream routed trough memory block is flagged as controller and the other as
   device. Controller is the "boss" who starts the transfers. Transfer ends either when the

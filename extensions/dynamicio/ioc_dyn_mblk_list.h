@@ -4,7 +4,7 @@
   @brief   Dynamically maintain IO network objects.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    3.12.2019
+  @date    8.1.2020
 
   Dynamic list of memory block handles belonging to an IO device network. This list is used
   to seach for memory blocks without going trough all memory blocks belonging to the root.

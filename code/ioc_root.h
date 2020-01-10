@@ -4,7 +4,7 @@
   @brief   Communication root object.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.7.2018
+  @date    8.1.2020
 
   Root object acts as the root of communication object hierarchy. It holds first and last
   object pointers for memory block list and for connection list.

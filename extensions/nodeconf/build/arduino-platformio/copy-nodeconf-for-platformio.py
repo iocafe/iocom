@@ -1,4 +1,4 @@
-# copy-nodeconf-for-platformio.py 14.12.2019/pekka
+# copy-nodeconf-for-platformio.py 8.1.2020/pekka
 # Copies nodeconf library files needed for PlatformIO Arduino build
 # into /coderoot/lib/arduino-platformio/nodeconf directory. 
 # To make this look like Arduino library all .c and .cpp
