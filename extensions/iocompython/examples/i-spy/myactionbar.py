@@ -58,7 +58,6 @@ class MyActionBar(ActionBar):
         self.dispatch('on_button_press', instance.text)
 
     def add_my_device(self, device_path):
-        # self.clear_widgets()
         self.devices[device_path] = True;
         self.create_my_action_bar()
 

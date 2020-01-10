@@ -1,9 +1,8 @@
 {
   "network": {
-    "title": "Network configuration defaults for top level controller 'frank'",
-    "device_name": "frank",
+    "title": "Network configuration defaults",
     "device_nr": "auto",
-    "network_name": "iocafenet",
+    "network_name": "cloudnet",
     "publish": "iocafenet,asteroidnet",
     "password": "auto",
 

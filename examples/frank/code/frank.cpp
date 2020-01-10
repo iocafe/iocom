@@ -26,11 +26,6 @@ static FrankMain *frank_main;
  */
 iocNodeConf ioapp_device_conf;
 
-
-/* Remove this, for testing only
- */
-// statFrankAccountsonf *netconf;
-
 /* Forward referred static functions.
  */
 static void info_callback(
@@ -91,7 +86,8 @@ osalStatus osal_main(
 
     /* Create frank main object
      */
-    frank_main = new FrankMain(device_name, device_id->device_nr, device_id->network_name);
+    frank_main = new FrankMain(device_name, device_id->device_nr, device_id->network_name,
+        device_id->publish);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
@@ -142,28 +138,6 @@ osalStatus osal_loop(
 
     os_sleep(50);
     s = io_device_console(&ioapp_root);
-
-    /* testing, remove this =====>
-    if (s == OSAL_STATUS_COMPLETED)
-    {
-        if (netconf == OS_NULL)
-        {
-            netconf = new FrankAccounts();
-            netconf->start("gina", 1, "iocafenet");
-        }
-        else
-        {
-            netconf->stop();
-            netconf = OS_NULL;
-        }
-
-        return OSAL_SUCCESS;
-    }
-     */
-    /* <==== */
-
-
-
 
     return s;
 }

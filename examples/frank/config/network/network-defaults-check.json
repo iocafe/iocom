@@ -1,8 +1,7 @@
 {
 "network" : {
-	"device_name": "frank",
 	"device_nr": "auto",
-	"network_name": "iocafenet",
+	"network_name": "cloudnet",
 	"publish": "iocafenet,asteroidnet",
 	"password": "auto",
 	"connect": [

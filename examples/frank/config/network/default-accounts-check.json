@@ -2,39 +2,40 @@
 "accounts" : {
 	"requests": [
 		{
-			"user_name": "gina7",
+			"user": "gina1.iocafenet",
 			"password": "mypass",
-			"networks": "iocafenet",
-			"privileges": "device",
-			"time_stamp": 921978891276
+			"time": 182918271
+		}
+	],
+	"alarms": [
+		{
+			"user": "evil1.doomnet",
+			"password": "mypass",
+			"time": 182918271
 		}
 	],
 	"valid": [
 		{
-			"user_name": "iocafe",
-			"password": "iocafe",
-			"networks": "iocafenet,asteroidnet",
-			"privileges": "root"
+			"user": "ispy.iocafenet",
+			"password": "mypass",
+			"privileges": "admin"
 		},
 		{
-			"user_name": "gina2",
-			"password": "mypass",
-			"networks": "iocafenet",
-			"privileges": "device"
+			"user": "gina2.iocafenet",
+			"password": "mypass"
 		}
 	],
 	"whitelist": [
 		{
-			"user_name": "my-white-listed"
+			"user": "*.iocafenet"
 		},
 		{
-			"ip": "192.168.1.2-192.168.1.253",
-			"networks": "asteroidnet"
+			"ip": "192.168.1.2,192.168.1.253"
 		}
 	],
 	"blacklist": [
 		{
-			"user_name": "my-black-listed"
+			"user": "evil1.doomnet"
 		},
 		{
 			"ip": "139.74.17.0,139.74.18.255"

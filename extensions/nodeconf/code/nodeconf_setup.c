@@ -358,6 +358,10 @@ static osalStatus ioc_nconf_process_block(
                     {
                         node->device_id.password = item.value.s;
                     }
+                    else if (!os_strcmp(state->tag, "publish"))
+                    {
+                        node->device_id.publish = item.value.s;
+                    }
                     else if (!os_strcmp(state->tag, "cust1"))
                     {
                         node->device_id.cust1 = item.value.s;

@@ -178,7 +178,7 @@ class MyConfig(MySettingsDisplay):
             accounts = my_config.get("accounts", None)
 
         title = MySettingsGroup()
-        title.set_group_label("device/user", self.device_path, 1)
+        title.set_group_label("user", self.device_path, 1)
         g = GridLayout()
         g.cols = 2
         g.size_hint_y = None
@@ -189,7 +189,7 @@ class MyConfig(MySettingsDisplay):
         g.add_widget(b)
         self.add_widget(g)
 
-        grouplist = {"valid": ["valid accounts", "edit,delete,blacklist"], "requests":["new device requests", "accept,dismiss,blacklist"], "whitelist":["white list", "edit,delete,blacklist"], "blacklist":["black list","edit,delete"]}
+        grouplist = {"valid": ["valid accounts", "edit,delete,blacklist"], "requests":["new device requests", "accept,dismiss,blacklist"], "alarms":["alarms", "dismiss"], "whitelist":["white list", "edit,delete,blacklist"], "blacklist":["black list","edit,delete"]}
         for g in grouplist:
             group_d = accounts_d.get(g, None)
             group = None
@@ -205,12 +205,10 @@ class MyConfig(MySettingsDisplay):
         self.new_settings_group(label, None, 2)
 
         for item_d in group_d:
-            user_name = item_d.get("user_name", None)
+            user_name = item_d.get("user", None)
             password = item_d.get("password", None)
-            networks = item_d.get("networks", None)
             ip = item_d.get("ip", None)
             priviliges = item_d.get("priviliges", None)
-            timestamp = item_d.get("priviliges", None)
-            # self.new_setting(self.ioc_root, user_name, dict, networks, "naksu", "uke")
-            self.new_user(self.ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags)
+            timestamp = item_d.get("time", None)
+            self.new_user(self.ioc_root, user_name, password, ip, priviliges, timestamp, flags)
 

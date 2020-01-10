@@ -14,6 +14,10 @@
 ****************************************************************************************************
 */
 
+/* Maximum number of IO networks to publish by this application.
+ */
+#define IOAPP_MAX_PUBLISHED_NETWORKS 100
+
 
 /**
 ****************************************************************************************************
@@ -30,7 +34,8 @@ public:
     FrankMain(
         const os_char *device_name,
         os_int device_nr,
-        const os_char *network_name);
+        const os_char *network_name,
+        const os_char *publish);
 
 	/* Virtual destructor.
  	 */
@@ -46,11 +51,13 @@ public:
     void launch_app(os_char *network_name);
 
 private:
-    /* Frank hosts account information for these two networks.
+    /* The IO application hosts account information for these IO networks.
      */
-    FrankAccounts
-        *m_iocafenet_accounts,
-        *m_asteroidnet_accounts;
+    FrankAccounts *m_published[IOAPP_MAX_PUBLISHED_NETWORKS];
+
+    /* Number of published IO networks.
+     */
+    os_int m_nro_published;
 
     /* Basic server  (from ioserver extensions) main structure.
      */

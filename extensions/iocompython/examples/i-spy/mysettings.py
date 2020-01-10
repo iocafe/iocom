@@ -253,18 +253,10 @@ class MyUser(MyVariable):
     def delete(self):
         pass
 
-    def setup_user(self, ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags):
-        # self.setup_variable(ioc_root, user_name, user_name, False)
+    def setup_user(self, ioc_root, user_name, password, ip, priviliges, timestamp, flags):
         text = ""
         if user_name != None:
             text += user_name
-
-        if password != None:
-            text += " (" + password + ')'
-
-        if text == "" and networks != None:
-            text += networks
-            networks = None
 
         if text == "" and ip != None:
             text += ip
@@ -273,8 +265,6 @@ class MyUser(MyVariable):
         self.my_label.text = '[size=16]' + text + '[/size]'
 
         description = ""
-        if networks != None:
-            description += networks
         if ip != None:
             if description != "":
                 description += " "
@@ -283,6 +273,8 @@ class MyUser(MyVariable):
             if description != "":
                 description += " "
             description += '[color=9090FF]' + priviliges + '[/color]'
+        if password != None:
+            text += '" ([color=FF9090]' + password + '[/color])'
 
         self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 
@@ -379,9 +371,9 @@ class MySettingsDisplay(GridLayout):
         self.my_nro_widgets += 1
         self.my_variables.append(s)
 
-    def new_user(self, ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags):
+    def new_user(self, ioc_root, user_name, password, ip, priviliges, timestamp, flags):
         u = MyUser() 
-        u.setup_user(ioc_root, user_name, password, networks, ip, priviliges, timestamp, flags)
+        u.setup_user(ioc_root, user_name, password, ip, priviliges, timestamp, flags)
         self.add_widget(u)
         self.my_nro_widgets += 1
         self.my_variables.append(u)

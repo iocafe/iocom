@@ -19,14 +19,20 @@
 /**
 ****************************************************************************************************
   Construct application.
+
+  @param  publish List of IO device networks (user accounts) to be published.
+
 ****************************************************************************************************
 */
 FrankMain::FrankMain(
     const os_char *device_name,
     os_int device_nr,
-    const os_char *network_name)
+    const os_char *network_name,
+    const os_char *publish)
 {
     os_int i;
+    os_char nn_buf[IOC_NETWORK_NAME_SZ];
+    const os_char *p;
 
     /* Clear member variables.
      */
@@ -57,8 +63,16 @@ FrankMain::FrankMain(
 
     /* Host user accounts for "iocafenet" and "asteroidnet"
      */
-    m_iocafenet_accounts = new FrankAccounts(network_name);
-    m_asteroidnet_accounts = new FrankAccounts("asteroidnet");
+    p = publish;
+    m_nro_published = 0;
+    if (p)
+    {
+        while (!osal_str_list_iter(nn_buf, sizeof(nn_buf), &p, OSAL_STR_NEXT_ITEM) &&
+            m_nro_published < IOAPP_MAX_PUBLISHED_NETWORKS)
+        {
+            m_published[m_nro_published++] = new FrankAccounts(nn_buf);
+        }
+    }
 }
 
 
@@ -71,11 +85,19 @@ FrankMain::~FrankMain()
 {
     os_int i;
 
+
     /* Finish with 'frank' applications.
      */
     for (i = 0; i < MAX_APPS; i++)
     {
         delete m_app[i];
+    }
+
+    /* Delete publiched IO network structures.
+     */
+    for (i = 0; i < m_nro_published; i++)
+    {
+        delete m_published[i];
     }
 
     ioc_release_bserver_main(&m_bmain);
@@ -140,12 +162,18 @@ osalStatus FrankMain::connect_to_device()
 */
 void FrankMain::run()
 {
+    os_int i;
+
     /* Call basic server implementation to maintain control streams.
      */
     ioc_run_bserver_main(&m_bmain);
 
-    m_iocafenet_accounts->run();
-    m_asteroidnet_accounts->run();
+    /* Run published IO network structures.
+     */
+    for (i = 0; i < m_nro_published; i++)
+    {
+        m_published[i]->run();
+    }
 }
 
 

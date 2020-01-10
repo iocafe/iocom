@@ -31,6 +31,11 @@ typedef struct iocDeviceId
     const os_char *user_name;
     const os_char *password;
 
+    /* List of IO networks (user accounts) published by this device.
+       Comma is used as separator.
+     */
+    const os_char *publish;
+
     /* Custom parmeters.
      */
     const os_char *cust1;

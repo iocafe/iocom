@@ -1,49 +1,44 @@
 {
-  "accounts": {
-    "title": "Default user/device accounts to connect to an IO device network",
+	"accounts": {
+		"title": "User account defaults",
 
-    "requests": [
-      {
-        "user_name": "gina7",
-        "password": "mypass",
-        "networks": "iocafenet",
-        "privileges": "device",
-        "time_stamp": "921978891276"
-      }
-    ],
+		"requests": [{
+			"user": "gina1.iocafenet",
+			"password": "mypass",
+			"time": 182918271
+		}],
 
-    "valid": [
-      {
-        "user_name": "iocafe",
-        "password": "iocafe",
-        "networks": "iocafenet,asteroidnet",
-        "privileges": "root"
-      },
-      {
-        "user_name": "gina2",
-        "password": "mypass",
-        "networks": "iocafenet",
-        "privileges": "device"
-      }
-    ],
+		"alarms": [{
+			"user": "evil1.doomnet",
+			"password": "mypass",
+			"time": 182918271
+		}],
 
-    "whitelist": [
-      {
-        "user_name": "my-white-listed"
-      },
-      {
-        "ip": "192.168.1.2-192.168.1.253",
-        "networks": "asteroidnet"
-      }
-    ],
+		"valid": [{
+				"user": "ispy.iocafenet",
+				"password": "mypass",
+				"privileges": "admin"
+			},
+			{
+				"user": "gina2.iocafenet",
+				"password": "mypass"
+			}
+		],
 
-    "blacklist": [
-      {
-        "user_name": "my-black-listed"
-      },
-      {
-        "ip": "139.74.17.0,139.74.18.255"
-      }
-    ]
-  }
+		"whitelist": [{
+				"user": "*.iocafenet"
+			},
+			{
+				"ip": "192.168.1.2,192.168.1.253"
+			}
+		],
+
+		"blacklist": [{
+				"user": "evil1.doomnet"
+			},
+			{
+				"ip": "139.74.17.0,139.74.18.255"
+			}
+		]
+	}
 }
