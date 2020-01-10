@@ -43,10 +43,6 @@ void ioc_release_bserver_main(
     ioc_release_memory_block(&m->conf_exp);
     ioc_release_memory_block(&m->conf_imp);
     ioc_release_memory_block(&m->info);
-
-    ioc_release_memory_block(&m->accounts_exp);
-    ioc_release_memory_block(&m->accounts_imp);
-    ioc_release_memory_block(&m->accounts_info);
 }
 
 
@@ -109,9 +105,27 @@ void ioc_setup_bserver_mblks(
     m->ctrl_stream_params.default_config_sz = network_defaults_sz;
 }
 
+void ioc_initialize_bserver_accounts(
+    iocBServerAccounts *a,
+    iocRoot *root,
+    const os_char *network_name)
+{
+    os_memclear(a, sizeof(iocBServerAccounts));
+    a->root = root;
+    os_strncpy(a->network_name, network_name, IOC_NETWORK_NAME_SZ);
+}
+
+void ioc_release_bserver_accounts(
+    iocBServerAccounts *a)
+{
+    ioc_release_memory_block(&a->accounts_exp);
+    ioc_release_memory_block(&a->accounts_imp);
+    ioc_release_memory_block(&a->accounts_info);
+}
+
 
 void ioc_setup_bserver_accounts(
-    iocBServerMain *m,
+    iocBServerAccounts *a,
     iocMblkSignalHdr *accounts_conf_exp_hdr,
     iocMblkSignalHdr *accounts_conf_imp_hdr,
     const os_char *account_config,
@@ -128,35 +142,35 @@ void ioc_setup_bserver_accounts(
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.device_name = accounts_device_name;
     blockprm.device_nr = accounts_device_nr;
-    blockprm.network_name = m->network_name;
+    blockprm.network_name = a->network_name;
 
     blockprm.mblk_name = accounts_conf_exp_hdr->mblk_name;
     blockprm.nbytes = accounts_conf_exp_hdr->mblk_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC;
-    ioc_initialize_memory_block(&m->accounts_exp, OS_NULL, m->root, &blockprm);
+    ioc_initialize_memory_block(&a->accounts_exp, OS_NULL, a->root, &blockprm);
 
     blockprm.mblk_name = accounts_conf_imp_hdr->mblk_name;
     blockprm.nbytes = accounts_conf_imp_hdr->mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
-    ioc_initialize_memory_block(&m->accounts_imp, OS_NULL, m->root, &blockprm);
+    ioc_initialize_memory_block(&a->accounts_imp, OS_NULL, a->root, &blockprm);
 
     blockprm.mblk_name = "info";
     blockprm.buf = (os_char*)account_config;
     blockprm.nbytes = account_config_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
-    ioc_initialize_memory_block(&m->accounts_info, OS_NULL, m->root, &blockprm);
+    ioc_initialize_memory_block(&a->accounts_info, OS_NULL, a->root, &blockprm);
 
-    ioc_set_handle_to_signals(accounts_conf_imp_hdr, &m->accounts_imp);
-    ioc_set_handle_to_signals(accounts_conf_exp_hdr, &m->accounts_exp);
+    ioc_set_handle_to_signals(accounts_conf_imp_hdr, &a->accounts_imp);
+    ioc_set_handle_to_signals(accounts_conf_exp_hdr, &a->accounts_exp);
 
     /* Load user account configuration from persistent storage or
        use static defaults.
      */
-    ioc_load_account_config(&m->account_conf, account_defaults,
+    ioc_load_account_config(&a->account_conf, account_defaults,
         account_defaults_sz);
 
-    m->accounts_stream_params.default_config = account_defaults;
-    m->accounts_stream_params.default_config_sz = account_defaults_sz;
+    a->accounts_stream_params.default_config = account_defaults;
+    a->accounts_stream_params.default_config_sz = account_defaults_sz;
 }
 
 
@@ -164,7 +178,12 @@ void ioc_run_bserver_main(
     iocBServerMain *m)
 {
     ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
-    ioc_run_control_stream(&m->accounts_stream, &m->accounts_stream_params);
+}
+
+void ioc_run_bserver_accounts(
+    iocBServerAccounts *a)
+{
+    ioc_run_control_stream(&a->accounts_stream, &a->accounts_stream_params);
 }
 
 

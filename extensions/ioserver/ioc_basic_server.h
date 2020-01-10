@@ -40,6 +40,19 @@ typedef struct iocBServerMain
      */
     iocStreamerParams ctrl_stream_params;
     iocControlStreamState ctrl_stream;
+}
+iocBServerMain;
+
+
+typedef struct iocBServerAccounts
+{
+    /* Pointer to IOCOM root structure.
+     */
+    iocRoot *root;
+
+    /* Network name, accounts are for this IO network.
+     */
+    os_char network_name[IOC_NETWORK_NAME_SZ];
 
     /* Memory block handles for accounts.
      */
@@ -54,7 +67,7 @@ typedef struct iocBServerMain
      */
     iocAccountConf account_conf;
 }
-iocBServerMain;
+iocBServerAccounts;
 
 
 void ioc_initialize_bserver_main(
@@ -80,8 +93,19 @@ void ioc_setup_bserver_mblks(
     const os_char *network_defaults,
     os_memsz network_defaults_sz);
 
+void ioc_run_bserver_main(
+    iocBServerMain *m);
+
+void ioc_initialize_bserver_accounts(
+    iocBServerAccounts *a,
+    iocRoot *root,
+    const os_char *network_name);
+
+void ioc_release_bserver_accounts(
+    iocBServerAccounts *a);
+
 void ioc_setup_bserver_accounts(
-    iocBServerMain *m,
+    iocBServerAccounts *a,
     iocMblkSignalHdr *accounts_conf_exp_hdr,
     iocMblkSignalHdr *accounts_conf_imp_hdr,
     const os_char *account_config,
@@ -89,8 +113,8 @@ void ioc_setup_bserver_accounts(
     const os_char *account_defaults,
     os_memsz account_defaults_sz);
 
-void ioc_run_bserver_main(
-    iocBServerMain *m);
+void ioc_run_bserver_accounts(
+    iocBServerAccounts *a);
 
 #define IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(bmain, sig) \
     bmain.ctrl_stream_params.is_device = OS_TRUE; \
@@ -110,23 +134,23 @@ void ioc_run_bserver_main(
     bmain.ctrl_stream_params.tod.to_device = OS_TRUE; \
     ioc_init_control_stream(&bmain.ctrl_stream, &bmain.ctrl_stream_params); \
 
-#define IOC_SETUP_BSERVER_ACCOUNTS_STREAM_MACRO(bmain, accts) \
-    bmain.accounts_stream_params.is_device = OS_TRUE; \
-    bmain.accounts_stream_params.frd.cmd = &accts.conf_imp.frd_cmd; \
-    bmain.accounts_stream_params.frd.select = &accts.conf_imp.frd_select; \
-    bmain.accounts_stream_params.frd.buf = &accts.conf_exp.frd_buf; \
-    bmain.accounts_stream_params.frd.head = &accts.conf_exp.frd_head; \
-    bmain.accounts_stream_params.frd.tail = &accts.conf_imp.frd_tail; \
-    bmain.accounts_stream_params.frd.state = &accts.conf_exp.frd_state; \
-    bmain.accounts_stream_params.frd.to_device = OS_FALSE; \
-    bmain.accounts_stream_params.tod.cmd = &accts.conf_imp.tod_cmd; \
-    bmain.accounts_stream_params.tod.select = &accts.conf_imp.tod_select; \
-    bmain.accounts_stream_params.tod.buf = &accts.conf_imp.tod_buf; \
-    bmain.accounts_stream_params.tod.head = &accts.conf_imp.tod_head; \
-    bmain.accounts_stream_params.tod.tail = &accts.conf_exp.tod_tail; \
-    bmain.accounts_stream_params.tod.state = &accts.conf_exp.tod_state; \
-    bmain.accounts_stream_params.tod.to_device = OS_TRUE; \
-    ioc_init_control_stream(&bmain.accounts_stream, &bmain.accounts_stream_params); \
+#define IOC_SETUP_BSERVER_ACCOUNTS_STREAM_MACRO(baccts, accts) \
+    baccts.accounts_stream_params.is_device = OS_TRUE; \
+    baccts.accounts_stream_params.frd.cmd = &accts.conf_imp.frd_cmd; \
+    baccts.accounts_stream_params.frd.select = &accts.conf_imp.frd_select; \
+    baccts.accounts_stream_params.frd.buf = &accts.conf_exp.frd_buf; \
+    baccts.accounts_stream_params.frd.head = &accts.conf_exp.frd_head; \
+    baccts.accounts_stream_params.frd.tail = &accts.conf_imp.frd_tail; \
+    baccts.accounts_stream_params.frd.state = &accts.conf_exp.frd_state; \
+    baccts.accounts_stream_params.frd.to_device = OS_FALSE; \
+    baccts.accounts_stream_params.tod.cmd = &accts.conf_imp.tod_cmd; \
+    baccts.accounts_stream_params.tod.select = &accts.conf_imp.tod_select; \
+    baccts.accounts_stream_params.tod.buf = &accts.conf_imp.tod_buf; \
+    baccts.accounts_stream_params.tod.head = &accts.conf_imp.tod_head; \
+    baccts.accounts_stream_params.tod.tail = &accts.conf_exp.tod_tail; \
+    baccts.accounts_stream_params.tod.state = &accts.conf_exp.tod_state; \
+    baccts.accounts_stream_params.tod.to_device = OS_TRUE; \
+    ioc_init_control_stream(&baccts.accounts_stream, &baccts.accounts_stream_params); \
 
 
 #endif

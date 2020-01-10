@@ -28,6 +28,8 @@ FrankMain::FrankMain(
 {
     ioc_initialize_bserver_main(&m_bmain, &ioapp_root, device_name, device_nr, network_name);
 
+    ioc_initialize_bserver_accounts(&m_baccts, &ioapp_root, network_name);
+
     os_int i;
 
     for (i = 0; i < MAX_APPS; i++)
@@ -57,6 +59,7 @@ FrankMain::~FrankMain()
     }
 
     ioc_release_bserver_main(&m_bmain);
+    ioc_release_bserver_accounts(&m_baccts);
 }
 
 
@@ -91,7 +94,7 @@ void FrankMain::inititalize_accounts()
 
     /* Call basic server implementation to do the rest of accounts setup.
      */
-    ioc_setup_bserver_accounts(&m_bmain,
+    ioc_setup_bserver_accounts(&m_baccts,
         &m_accounts.conf_exp.hdr,
         &m_accounts.conf_imp.hdr,
         ioapp_account_config,
@@ -173,7 +176,7 @@ void FrankMain::setup_accounts_ctrl_stream()
 {
     /* Call basic server implementation macro to set up control stream.
      */
-    IOC_SETUP_BSERVER_ACCOUNTS_STREAM_MACRO(m_bmain, m_accounts)
+    IOC_SETUP_BSERVER_ACCOUNTS_STREAM_MACRO(m_baccts, m_accounts)
 }
 
 
@@ -187,6 +190,8 @@ void FrankMain::run()
     /* Call basic server implementation to maintain control streams.
      */
     ioc_run_bserver_main(&m_bmain);
+
+    ioc_run_bserver_accounts(&m_baccts);
 }
 
 

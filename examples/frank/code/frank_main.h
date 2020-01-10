@@ -56,6 +56,7 @@ private:
     /* Basic server main structure.
      */
     iocBServerMain m_bmain;
+    iocBServerAccounts m_baccts;
 
     /* Structure holding signals for the IO node.
      */
