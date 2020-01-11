@@ -27,35 +27,41 @@ class MyActionBar(ActionBar):
         n_devices = len(self.devices);
         if n_devices > 0:
             ag = ActionGroup(text='window')
-            self.add_my_button('signals', ag)
-            self.add_my_button('memory', ag)
-            self.add_my_button('configure', ag)
-            self.add_my_button('program', ag)
+            self.add_my_button('signals', None, ag)
+            self.add_my_button('memory', None, ag)
+            self.add_my_button('configure', None, ag)
+            self.add_my_button('program', None, ag)
             av.add_widget(ag)
 
             ag = ActionGroup(text='devices')
             for d in self.devices:
-                self.add_my_button(d, ag)
+                s = d.split('.', 1)
+                txt = s[0] + '[size=14]\n[color=9090FF]' + s[1] + '[/color][/size]'
+                self.add_my_button(txt, d, ag)
             av.add_widget(ag)
 
         ag = ActionGroup(text='i-spy')
-        self.add_my_button('disconnect', ag)
-        self.add_my_button('close', ag)
+        self.add_my_button('disconnect', None, ag)
+        self.add_my_button('close', None, ag)
         av.add_widget(ag)
 
         self.add_widget(av)
         av.use_separator = True
 
-    def add_my_button(self, text, ag):
-        b = ActionButton(text=text)
+    def add_my_button(self, text, myaction, ag):
+        b = ActionButton(text=text, markup = True, halign="center")
         b.bind (on_release=self.my_button_pressed)
+        if myaction != None:
+            b.myaction = myaction
+        else:
+            b.myaction = text            
         ag.add_widget(b)
 
     def on_button_press(self, *args):
         print("button press dispatched")
 
     def my_button_pressed(self, instance):
-        self.dispatch('on_button_press', instance.text)
+        self.dispatch('on_button_press', instance.myaction)
 
     def add_my_device(self, device_path):
         self.devices[device_path] = True;
