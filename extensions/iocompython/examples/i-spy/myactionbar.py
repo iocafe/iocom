@@ -58,7 +58,8 @@ class MyActionBar(ActionBar):
         ag.add_widget(b)
 
     def on_button_press(self, *args):
-        print("button press dispatched")
+        pass
+        # print("button press dispatched")
 
     def my_button_pressed(self, instance):
         self.dispatch('on_button_press', instance.myaction)

@@ -12,6 +12,15 @@ from kivy.metrics import dp
 
 from iocompython import Signal
 
+def none_to_empty_str(x):
+    if x == None:
+        return ""
+    return x;                    
+
+def make_my_text_input(text):
+    return TextInput(text=text, font_size='24sp', multiline=False,
+        size_hint_y=None, height='42sp')
+
 class MyVariable(GridLayout):
     def __init__(self, **kwargs):
         self.my_state_bits = 0
@@ -254,37 +263,41 @@ class MyUser(MyVariable):
         pass
 
     def setup_user(self, ioc_root, user_name, password, ip, priviliges, timestamp, flags):
-        text = ""
-        if user_name != None:
-            text += user_name
+        self.my_user_name = none_to_empty_str(user_name)
+        self.my_password = none_to_empty_str(password)
+        self.my_ip = none_to_empty_str(ip)
+        self.my_priviliges = none_to_empty_str(priviliges)
+
+        text = none_to_empty_str(user_name)
 
         if text == "" and ip != None:
-            text += ip
+            text = ip
             ip = None
 
         self.my_label.text = '[size=16]' + text + '[/size]'
 
-        description = ""
-        if ip != None:
-            if description != "":
-                description += " "
-            description += ip
+        description = none_to_empty_str(ip)
         if priviliges != None:
             if description != "":
                 description += " "
             description += '[color=9090FF]' + priviliges + '[/color]'
         if password != None:
-            text += '" ([color=FF9090]' + password + '[/color])'
+            if description != "":
+                description += " "
+            description += '([color=FF9090]' + password + '[/color])'
 
         self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 
         lb = GridLayout()
         lb.size_hint = (0.65, 1) 
 
+        # Make buttons
+        # self.register_event_type('on_user_button_press')
         ncols = 0
         flaglist = flags.split(',')
         for button_name in flaglist:
             b = Button(text=button_name)
+            b.bind(on_release = self.my_user_button_pressed)
             # b.size_hint = (0.35, 1)
             lb.add_widget(b)
             ncols += 1
@@ -300,6 +313,59 @@ class MyUser(MyVariable):
         #else:            
         #    self.set_value(value, 2) # 2 = state bit "connected" 
 
+    # def on_user_button_press(self, *args):
+    #    pass
+    #    print("user button press dispatched")
+
+    def my_user_button_pressed(self, instance):
+        if instance.text == 'edit':
+            self.my_edit_user_popup()
+        # self.dispatch('on_user_button_press', instance.text)
+
+    def my_edit_user_popup(self):
+        # create popup layout
+        text = none_to_empty_str(self.my_user_name)
+        if text == "":
+            none_to_empty_str(self.my_ip)
+
+        content = BoxLayout(orientation='vertical', spacing='5dp')
+        popup_width = min(0.95 * Window.width, dp(600))
+        self.popup = popup = Popup(
+            title=text, content=content, size_hint=(None, None),
+            size=(popup_width, '250dp'))
+
+        # create the text inputs
+        user_name_input = make_my_text_input(text)
+        # textinput.bind(on_text_validate=self._validate)
+        self.user_name_input = user_name_input
+        password_input = make_my_text_input(self.my_password)
+        self.password_input = password_input
+        priviliges_input = make_my_text_input(self.my_priviliges)
+        self.priviliges_input = priviliges_input
+        ip_input = make_my_text_input(self.my_ip)
+        self.ip_input = ip_input
+
+        # construct the content, empty widget are used as a spacer
+        content.add_widget(Widget())
+        content.add_widget(user_name_input)
+        content.add_widget(password_input)
+        content.add_widget(priviliges_input)
+        content.add_widget(ip_input)
+        content.add_widget(Widget())
+
+        # 2 buttons are created for accept or cancel the current value
+        btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
+        btn = Button(text='ok')
+        # btn.bind(on_release=self.my_user_input)
+        btnlayout.add_widget(btn)
+        btn = Button(text='cancel')
+        btn.bind(on_release=popup.dismiss)
+        btnlayout.add_widget(btn)
+        content.add_widget(btnlayout)
+
+        # all done, open the popup !
+        popup.open()
+        user_name_input.focus = True
 
 class MySettingsGroup(GridLayout):
     def __init__(self, **kwargs):
@@ -377,6 +443,7 @@ class MySettingsDisplay(GridLayout):
         self.add_widget(u)
         self.my_nro_widgets += 1
         self.my_variables.append(u)
+        # u.bind(on_user_button_press = signal_me.my_user_button_pressed)
 
     def new_button(self, text, signal_me):
         b = MyButton()
