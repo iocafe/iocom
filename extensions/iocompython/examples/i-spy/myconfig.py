@@ -196,7 +196,7 @@ class MyConfig(MySettingsDisplay):
         g.add_widget(b)
         self.my_add_widget(g)
 
-        grouplist = {"valid": ["valid accounts", "edit,delete,blacklist"], "requests":["new device requests", "accept,dismiss,blacklist"], "alarms":["alarms", "dismiss"], "whitelist":["white list", "edit,delete,blacklist"], "blacklist":["black list","edit,delete"]}
+        grouplist = {"valid": ["valid accounts", "edit,delete,blacklist"], "requests":["new device requests", "accept,delete,blacklist"], "alarms":["alarms", "delete"], "whitelist":["white list", "edit,delete,blacklist"], "blacklist":["black list","edit,delete"]}
         for g in grouplist:
             group_d = accounts_d.get(g, None)
             group = None

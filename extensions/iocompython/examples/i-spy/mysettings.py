@@ -10,6 +10,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.metrics import dp
 
+from myiconbutton import MyIconButton
 from iocompython import Signal
 
 def none_to_empty_str(x):
@@ -89,6 +90,9 @@ class MyVariable(GridLayout):
             mysz = self.size.copy()
             mysz[1] = 1
             Rectangle(pos=self.pos, size=mysz)            
+
+            if self.my_state_bits == -1: 
+                return;
 
             if self.my_state_bits & 2 == 0: 
                 Color(0.5, 0.5, 0.5, 1)
@@ -261,6 +265,7 @@ class MySetting(MyVariable):
 class MyUser(MyVariable):
     def __init__(self, **kwargs):
         super(MyUser, self).__init__(**kwargs)
+        self.my_state_bits = -1
 
     def delete(self):
         pass
@@ -276,12 +281,16 @@ class MyUser(MyVariable):
 
         # Make buttons
         self.register_event_type('on_remake_page')
-        ncols = 0
+        lb.add_widget(Widget())
+
+        ncols = 1
         flaglist = flags.split(',')
         for button_name in flaglist:
-            b = Button(text=button_name)
+            b = MyIconButton()
+            b.set_image(button_name)
+            b.my_button_action = button_name
+            
             b.bind(on_release = self.my_user_button_pressed)
-            # b.size_hint = (0.35, 1)
             lb.add_widget(b)
             ncols += 1
 
@@ -318,22 +327,23 @@ class MyUser(MyVariable):
         print("user button press dispatched")
 
     def my_user_button_pressed(self, instance):
-        if instance.text == 'edit':
+        action = instance.my_button_action
+        if action == 'edit':
             self.my_edit_user_popup()
             return
 
         p = self.parent
-        if instance.text == 'delete' or instance.text == 'dismiss' or instance.text == 'blacklist' or instance.text == 'accept':
+        if action == 'delete' or action == 'dismiss' or action == 'blacklist' or action == 'accept':
             self.my_group.remove(self.my_item)
             p.remove_widget(self)
 
-        if instance.text == 'blacklist':
+        if action == 'blacklist':
             self.my_groupdict['blacklist'].append(self.my_item);
-            self.dispatch('on_remake_page', instance.text)
+            self.dispatch('on_remake_page', action)
 
-        if instance.text == 'accept':
+        if action == 'accept':
             self.my_groupdict['valid'].append(self.my_item);
-            self.dispatch('on_remake_page', instance.text)
+            self.dispatch('on_remake_page', action)
 
             # p.add_widget(self)
 

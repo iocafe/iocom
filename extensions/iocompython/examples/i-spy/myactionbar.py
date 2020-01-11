@@ -22,7 +22,7 @@ class MyActionBar(ActionBar):
         # av.add_widget(ActionButton(text='btn0', 
         #       icon='atlas://data/images/defaulttheme/audio-volume-high'))
 
-        ap.title = "nuudeli"
+        ap.title = "i-spy"
 
         n_devices = len(self.devices);
         if n_devices > 0:
