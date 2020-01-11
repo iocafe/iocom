@@ -5,6 +5,7 @@ from kivy.uix.button import Button
 
 from iocompython import Root,bin2json, json2bin
 from mysettings import MySettingsDisplay, MySettingsGroup, MyButton
+from myiconbutton import MyIconButton
 from time import sleep
 
 class MyConfig(MySettingsDisplay):
@@ -196,7 +197,7 @@ class MyConfig(MySettingsDisplay):
         g.add_widget(b)
         self.my_add_widget(g)
 
-        grouplist = {"valid": ["valid accounts", "edit,delete,blacklist"], "requests":["new device requests", "accept,delete,blacklist"], "alarms":["alarms", "delete"], "whitelist":["white list", "edit,delete,blacklist"], "blacklist":["black list","edit,delete"]}
+        grouplist = {"valid": ["user accounts", "edit,delete,blacklist"], "requests":["new devices", "accept,delete,blacklist"], "alarms":["alarms", "delete"], "whitelist":["whitelist", "edit,delete,blacklist"], "blacklist":["blacklist","edit,delete"]}
         for g in grouplist:
             group_d = accounts_d.get(g, None)
             group = None
@@ -209,7 +210,11 @@ class MyConfig(MySettingsDisplay):
         if group_d == None:
             return
             
-        self.new_settings_group(label, None, 2)
+        title = self.new_settings_group(label, None, 2)
+        if label != 'new devices' and label != 'alarms':
+            b = MyIconButton()
+            b.set_image("new")
+            title.add_widget(b)
 
         # Merge loaded data into default configuration
         if group != None:

@@ -497,16 +497,14 @@ class MySettingsDisplay(GridLayout):
         if widgets_on_row > 0:
             for i in range(widgets_on_row, self.cols):
                 self.my_add_widget(Widget())
-
         g = MySettingsGroup()
-
         g.set_group_label(label1, label2, level)
         self.my_add_widget(g)
-
         for i in range(1, self.cols):
-            g = MySettingsGroup()
-            g.my_level = level;
-            self.my_add_widget(g)
+            spacer = MySettingsGroup()
+            spacer.my_level = level;
+            self.my_add_widget(spacer)
+        return g
 
     def my_add_widget(self, w):
         self.add_widget(w)
