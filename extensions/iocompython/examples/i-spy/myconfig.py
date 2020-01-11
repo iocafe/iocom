@@ -37,8 +37,14 @@ class MyConfig(MySettingsDisplay):
 
         sleep(0.1)
 
+        if my_default_config.get("accounts", None) != None:
+            self.my_select = 4
+
+        else:            
+            self.my_select = 2
+
         my_config = None
-        my_data = ioc_root.getconf(device_path, select=2)
+        my_data = ioc_root.getconf(device_path, select=self.my_select)
         if my_data == None:
             print("Loading network configuration from " + device_path + " failed")
 
@@ -55,9 +61,9 @@ class MyConfig(MySettingsDisplay):
 
                 del json_text
 
-        if my_default_config.get("accounts", None) == None:
+        if self.my_select == 2:
             self.process_json(my_default_config, my_config)
-        else:            
+        else:
             self.process_accounts_json(my_default_config, my_config)
 
         self.my_merged_config = my_default_config
@@ -163,7 +169,7 @@ class MyConfig(MySettingsDisplay):
 
         print(my_data)
 
-        rval = self.ioc_root.setconf(self.device_path, my_data, select=2)
+        rval = self.ioc_root.setconf(self.device_path, my_data, select=self.my_select)
         print(rval)
 
     def process_accounts_json(self, my_default_config, my_config):
@@ -204,12 +210,12 @@ class MyConfig(MySettingsDisplay):
             
         self.new_settings_group(label, None, 2)
 
-        for item_d in group_d:
-            user_name = item_d.get("user", None)
-            password = item_d.get("password", None)
-            ip = item_d.get("ip", None)
-            priviliges = item_d.get("priviliges", None)
-            timestamp = item_d.get("time", None)
-            self.new_user(self.ioc_root, user_name, password, ip, priviliges, timestamp, flags)
+        # Merge loaded data into default configuration
+        if group != None:
+            for item in group:
+                group_d.append(item)
 
-            
+        for item_d in group_d:
+            self.new_user(self.ioc_root, group_d, item_d, flags)
+
+

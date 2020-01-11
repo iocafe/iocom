@@ -4,14 +4,12 @@
 
 		"requests": [{
 			"user": "gina1.iocafenet",
-			"password": "mypass",
-			"time": 182918271
+			"password": "mypass"
 		}],
 
 		"alarms": [{
 			"user": "evil1.doomnet",
-			"password": "mypass",
-			"time": 182918271
+			"password": "mypass"
 		}],
 
 		"valid": [{

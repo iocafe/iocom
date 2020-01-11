@@ -79,6 +79,9 @@ class MyVariable(GridLayout):
     def on_size(self, *args):
         self.my_redraw_state_bits(args)
 
+    def on_pos(self, *args):
+        self.my_redraw_state_bits(args)
+
     def my_redraw_state_bits(self, *args):
         self.canvas.before.clear()
         with self.canvas.before:
@@ -262,31 +265,10 @@ class MyUser(MyVariable):
     def delete(self):
         pass
 
-    def setup_user(self, ioc_root, user_name, password, ip, priviliges, timestamp, flags):
-        self.my_user_name = none_to_empty_str(user_name)
-        self.my_password = none_to_empty_str(password)
-        self.my_ip = none_to_empty_str(ip)
-        self.my_priviliges = none_to_empty_str(priviliges)
-
-        text = none_to_empty_str(user_name)
-
-        if text == "" and ip != None:
-            text = ip
-            ip = None
-
-        self.my_label.text = '[size=16]' + text + '[/size]'
-
-        description = none_to_empty_str(ip)
-        if priviliges != None:
-            if description != "":
-                description += " "
-            description += '[color=9090FF]' + priviliges + '[/color]'
-        if password != None:
-            if description != "":
-                description += " "
-            description += '([color=FF9090]' + password + '[/color])'
-
-        self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
+    def setup_user(self, ioc_root, group, item, flags):
+        self.my_group = group
+        self.my_item = item
+        self.set_value()
 
         lb = GridLayout()
         lb.size_hint = (0.65, 1) 
@@ -305,13 +287,30 @@ class MyUser(MyVariable):
         lb.cols = ncols
         self.add_widget(lb)
 
-        # self.my_dict = dict
+    def set_value(self):
+        item = self.my_item
 
-        #if value == None:
-        #    self.set_value(value_d, 0)
+        ip = item.get("ip", "")
+        text = item.get("user", "")
+        if text == "":
+            text = ip
+            ip = ""
 
-        #else:            
-        #    self.set_value(value, 2) # 2 = state bit "connected" 
+        self.my_label.text = '[size=16]' + text + '[/size]'
+
+        description = ip
+        priviliges = item.get("priviliges", None)
+        if priviliges != None:
+            if description != "":
+                description += " "
+            description += '[color=9090FF]' + priviliges + '[/color]'
+        password = item.get("password", None)            
+        if password != None:
+            if description != "":
+                description += " "
+            description += '([color=FF9090]' + password + '[/color])'
+
+        self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 
     # def on_user_button_press(self, *args):
     #    pass
@@ -320,29 +319,48 @@ class MyUser(MyVariable):
     def my_user_button_pressed(self, instance):
         if instance.text == 'edit':
             self.my_edit_user_popup()
+
+        if instance.text == 'delete' or instance.text == 'dismiss':
+            p = self.parent
+            self.my_group.remove(self.my_item)
+            self.parent.remove_widget(self)
         # self.dispatch('on_user_button_press', instance.text)
 
+    def my_user_edit_ok_button_pressed(self, instance):
+        self.my_set_account_attr("user", self.user_name_input.text)
+        self.my_set_account_attr("password", self.password_input.text)
+        self.my_set_account_attr("priviliges", self.priviliges_input.text)
+        self.my_set_account_attr("ip", self.ip_input.text)
+        self.set_value()
+        self.popup.dismiss()
+
+    def my_set_account_attr(self, attr, value):
+        if value == "":
+            if self.my_item.get(attr, None) != None:
+                del self.my_item[attr]
+        else:
+            self.my_item[attr] = value
+
     def my_edit_user_popup(self):
-        # create popup layout
-        text = none_to_empty_str(self.my_user_name)
+        item = self.my_item
+        text = item.get("user", "")
         if text == "":
-            none_to_empty_str(self.my_ip)
+            text = item.get("ip", "")
 
         content = BoxLayout(orientation='vertical', spacing='5dp')
-        popup_width = min(0.95 * Window.width, dp(600))
+        popup_width = min(0.95 * Window.width, dp(500))
         self.popup = popup = Popup(
             title=text, content=content, size_hint=(None, None),
             size=(popup_width, '250dp'))
 
         # create the text inputs
         user_name_input = make_my_text_input(text)
-        # textinput.bind(on_text_validate=self._validate)
         self.user_name_input = user_name_input
-        password_input = make_my_text_input(self.my_password)
+        password_input = make_my_text_input(item.get("password", ""))
         self.password_input = password_input
-        priviliges_input = make_my_text_input(self.my_priviliges)
+        priviliges_input = make_my_text_input(item.get("priviliges", ""))
         self.priviliges_input = priviliges_input
-        ip_input = make_my_text_input(self.my_ip)
+        ip_input = make_my_text_input(item.get("ip", ""))
         self.ip_input = ip_input
 
         # construct the content, empty widget are used as a spacer
@@ -356,7 +374,7 @@ class MyUser(MyVariable):
         # 2 buttons are created for accept or cancel the current value
         btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
         btn = Button(text='ok')
-        # btn.bind(on_release=self.my_user_input)
+        btn.bind(on_release=self.my_user_edit_ok_button_pressed)
         btnlayout.add_widget(btn)
         btn = Button(text='cancel')
         btn.bind(on_release=popup.dismiss)
@@ -396,6 +414,12 @@ class MySettingsGroup(GridLayout):
         self.add_widget(l)
 
     def on_size(self, *args):
+        self.my_draw_background(args)
+
+    def on_pos(self, *args):
+        self.my_draw_background(args)
+
+    def my_draw_background(self, *args):
         self.canvas.before.clear()
         if self.my_level == 2:
             with self.canvas.before:
@@ -437,9 +461,9 @@ class MySettingsDisplay(GridLayout):
         self.my_nro_widgets += 1
         self.my_variables.append(s)
 
-    def new_user(self, ioc_root, user_name, password, ip, priviliges, timestamp, flags):
+    def new_user(self, ioc_root, group, item, flags):
         u = MyUser() 
-        u.setup_user(ioc_root, user_name, password, ip, priviliges, timestamp, flags)
+        u.setup_user(ioc_root, group, item, flags)
         self.add_widget(u)
         self.my_nro_widgets += 1
         self.my_variables.append(u)
