@@ -265,8 +265,9 @@ class MyUser(MyVariable):
     def delete(self):
         pass
 
-    def setup_user(self, ioc_root, group, item, flags):
+    def setup_user(self, ioc_root, groupdict, group, item, flags):
         self.my_group = group
+        self.my_groupdict = groupdict
         self.my_item = item
         self.set_value()
 
@@ -274,7 +275,7 @@ class MyUser(MyVariable):
         lb.size_hint = (0.65, 1) 
 
         # Make buttons
-        # self.register_event_type('on_user_button_press')
+        self.register_event_type('on_remake_page')
         ncols = 0
         flaglist = flags.split(',')
         for button_name in flaglist:
@@ -312,19 +313,29 @@ class MyUser(MyVariable):
 
         self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 
-    # def on_user_button_press(self, *args):
-    #    pass
-    #    print("user button press dispatched")
+    def on_remake_page(self, *args):
+        pass
+        print("user button press dispatched")
 
     def my_user_button_pressed(self, instance):
         if instance.text == 'edit':
             self.my_edit_user_popup()
+            return
 
-        if instance.text == 'delete' or instance.text == 'dismiss':
-            p = self.parent
+        p = self.parent
+        if instance.text == 'delete' or instance.text == 'dismiss' or instance.text == 'blacklist' or instance.text == 'accept':
             self.my_group.remove(self.my_item)
-            self.parent.remove_widget(self)
-        # self.dispatch('on_user_button_press', instance.text)
+            p.remove_widget(self)
+
+        if instance.text == 'blacklist':
+            self.my_groupdict['blacklist'].append(self.my_item);
+            self.dispatch('on_remake_page', instance.text)
+
+        if instance.text == 'accept':
+            self.my_groupdict['valid'].append(self.my_item);
+            self.dispatch('on_remake_page', instance.text)
+
+            # p.add_widget(self)
 
     def my_user_edit_ok_button_pressed(self, instance):
         self.my_set_account_attr("user", self.user_name_input.text)
@@ -447,48 +458,47 @@ class MySettingsDisplay(GridLayout):
         for s in self.my_variables:
             s.update_signal()
 
-    def new_signal(self, ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, device_path):
+    def new_signal(self, ioc_root, signal_name, signal_addr, signal_type, n, mblk_name, mblk_flags, device_path):
         s = MySignal() 
-        s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n,  mblk_name, mblk_flags, device_path)
-        self.add_widget(s)
-        self.my_nro_widgets += 1
+        s.setup_signal(ioc_root, signal_name, signal_addr, signal_type, n, mblk_name, mblk_flags, device_path)
+        self.my_add_widget(s)
         self.my_variables.append(s)
 
     def new_setting(self, ioc_root, setting_name, dict, value_d, value, description):
         s = MySetting() 
         s.setup_setting(ioc_root, setting_name, dict, value_d, value, description)
-        self.add_widget(s)
-        self.my_nro_widgets += 1
+        self.my_add_widget(s)
         self.my_variables.append(s)
 
-    def new_user(self, ioc_root, group, item, flags):
+    def new_user(self, ioc_root, groupdict, group, item, flags):
         u = MyUser() 
-        u.setup_user(ioc_root, group, item, flags)
-        self.add_widget(u)
-        self.my_nro_widgets += 1
+        u.setup_user(ioc_root, groupdict, group, item, flags)
+        self.my_add_widget(u)
         self.my_variables.append(u)
-        # u.bind(on_user_button_press = signal_me.my_user_button_pressed)
+        return u
 
     def new_button(self, text, signal_me):
         b = MyButton()
         b.setup_button(text, signal_me)
-        self.add_widget(b)
+        self.my_add_widget(b)
 
     def new_settings_group(self, label1, label2, level):
         widgets_on_row = self.my_nro_widgets % self.cols
         if widgets_on_row > 0:
             for i in range(widgets_on_row, self.cols):
-                self.add_widget(Widget())
-                self.my_nro_widgets += 1
+                self.my_add_widget(Widget())
 
         g = MySettingsGroup()
+
         g.set_group_label(label1, label2, level)
-        self.add_widget(g)
-        self.my_nro_widgets += 1
+        self.my_add_widget(g)
 
         for i in range(1, self.cols):
             g = MySettingsGroup()
             g.my_level = level;
-            self.add_widget(g)
-            self.my_nro_widgets += 1
+            self.my_add_widget(g)
 
+    def my_add_widget(self, w):
+        self.add_widget(w)
+        self.my_nro_widgets += 1
+        

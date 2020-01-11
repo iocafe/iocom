@@ -64,6 +64,7 @@ class MyConfig(MySettingsDisplay):
         if self.my_select == 2:
             self.process_json(my_default_config, my_config)
         else:
+            self.my_default_config = my_default_config
             self.process_accounts_json(my_default_config, my_config)
 
         self.my_merged_config = my_default_config
@@ -88,10 +89,10 @@ class MyConfig(MySettingsDisplay):
 
         title = MySettingsGroup()
         title.set_group_label("configure", self.device_path, 1)
-        self.add_widget(title)
+        self.my_add_widget(title)
         b = MyButton()
         b.setup_button("save to device", self)
-        self.add_widget(b)
+        self.my_add_widget(b)
 
         self.new_settings_group("general", None, 2)
         self.process_network(net_d, net)
@@ -193,7 +194,7 @@ class MyConfig(MySettingsDisplay):
         b = MyButton()
         b.setup_button("save to device", self)
         g.add_widget(b)
-        self.add_widget(g)
+        self.my_add_widget(g)
 
         grouplist = {"valid": ["valid accounts", "edit,delete,blacklist"], "requests":["new device requests", "accept,dismiss,blacklist"], "alarms":["alarms", "dismiss"], "whitelist":["white list", "edit,delete,blacklist"], "blacklist":["black list","edit,delete"]}
         for g in grouplist:
@@ -202,9 +203,9 @@ class MyConfig(MySettingsDisplay):
             if accounts != None:
                 group = accounts.get(g, None)
             k = grouplist[g]
-            self.process_accounts_group(k[0], group_d, group, k[1])
+            self.process_accounts_group(accounts_d, k[0], group_d, group, k[1])
         
-    def process_accounts_group(self, label, group_d, group, flags):
+    def process_accounts_group(self, groupdict, label, group_d, group, flags):
         if group_d == None:
             return
             
@@ -216,6 +217,9 @@ class MyConfig(MySettingsDisplay):
                 group_d.append(item)
 
         for item_d in group_d:
-            self.new_user(self.ioc_root, group_d, item_d, flags)
+            u = self.new_user(self.ioc_root, groupdict, group_d, item_d, flags)
+            u.bind(on_remake_page = self.remake_accounts_page)
 
-
+    def remake_accounts_page(self, source_object, *args):
+        self.clear_widgets()
+        self.process_accounts_json(self.my_default_config, None)
