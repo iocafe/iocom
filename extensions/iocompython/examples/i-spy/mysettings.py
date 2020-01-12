@@ -67,7 +67,7 @@ class MyVariable(GridLayout):
             t.size_hint = (0.35, 1)
             t.bind(size=t.setter('text_size')) 
             t.background_color = [0 , 0, 0, 0]
-            t.background_normal =''
+            # t.background_normal =''
             if self.my_down:
                 t.bind(on_release = self.my_create_popup)
             self.add_widget(t)
@@ -273,6 +273,7 @@ class MyUser(MyVariable):
     def setup_user(self, ioc_root, groupdict, groupname, group, item, flags):
         self.my_group = group
         self.my_groupdict = groupdict
+        self.my_groupname = groupname
         self.my_item = item
         self.set_value()
 
@@ -332,7 +333,7 @@ class MyUser(MyVariable):
             return
 
         p = self.parent
-        if action == 'delete' or action == 'dismiss' or action == 'blacklist' or action == 'accept':
+        if action == 'delete' or action == 'blacklist' or action == 'accept':
             self.my_group.remove(self.my_item)
             p.remove_widget(self)
 
@@ -341,18 +342,8 @@ class MyUser(MyVariable):
             self.dispatch('on_remake_page', action)
 
         if action == 'accept':
-            self.my_groupdict['valid'].append(self.my_item);
+            self.my_groupdict['accounts'].append(self.my_item);
             self.dispatch('on_remake_page', action)
-
-            # p.add_widget(self)
-
-    def my_user_edit_ok_button_pressed(self, instance):
-        self.my_set_account_attr("user", self.user_name_input.text)
-        self.my_set_account_attr("password", self.password_input.text)
-        self.my_set_account_attr("priviliges", self.priviliges_input.text)
-        self.my_set_account_attr("ip", self.ip_input.text)
-        self.set_value()
-        self.popup.dismiss()
 
     def my_set_account_attr(self, attr, value):
         if value == "":
@@ -362,33 +353,46 @@ class MyUser(MyVariable):
             self.my_item[attr] = value
 
     def my_edit_user_popup(self):
+        titlelist = {"accounts": "edit user account", "whitelist":"edit whitelisted item", "blacklist":"edit blacklisted item"}
         item = self.my_item
-        text = item.get("user", "")
-        if text == "":
-            text = item.get("ip", "")
+        groupname = self.my_groupname
 
-        content = BoxLayout(orientation='vertical', spacing='5dp')
+        # create grid of text inputs
+        grid = GridLayout()
+        grid.cols = 2;
+        grid.spacing = [6, 6]
+        nrows = 1
+        self.user_name_input = make_my_text_input(item.get('user', ''))
+        grid.add_widget(Label(text='user name'));
+        grid.add_widget(self.user_name_input)
+        if groupname == "accounts":
+            self.password_input = make_my_text_input(item.get('password', ''))
+            grid.add_widget(Label(text='password'));
+            grid.add_widget(self.password_input)
+
+            self.priviliges_input = make_my_text_input(item.get('priviliges', ''))
+            grid.add_widget(Label(text='priviliges'));
+            grid.add_widget(self.priviliges_input)
+            nrows += 2
+
+        if groupname == "blacklist" or groupname == "whitelist":
+            self.ip_input = make_my_text_input(item.get('ip', ''))
+            grid.add_widget(Label(text='ip'));
+            grid.add_widget(self.ip_input)
+            nrows += 1
+
+        content = GridLayout()
+        content.padding = [6, 6]
+        content.cols = 1
         popup_width = min(0.95 * Window.width, dp(500))
         self.popup = popup = Popup(
-            title=text, content=content, size_hint=(None, None),
-            size=(popup_width, '250dp'))
+            title=titlelist[groupname], content=content, size_hint=(None, None),
+            size=(popup_width, str(160 + nrows * 70) + 'dp'))
 
-        # create the text inputs
-        user_name_input = make_my_text_input(text)
-        self.user_name_input = user_name_input
-        password_input = make_my_text_input(item.get("password", ""))
-        self.password_input = password_input
-        priviliges_input = make_my_text_input(item.get("priviliges", ""))
-        self.priviliges_input = priviliges_input
-        ip_input = make_my_text_input(item.get("ip", ""))
-        self.ip_input = ip_input
-
-        # construct the content, empty widget are used as a spacer
+        # construct the content, empty widgets are used as a spacers
         content.add_widget(Widget())
-        content.add_widget(user_name_input)
-        content.add_widget(password_input)
-        content.add_widget(priviliges_input)
-        content.add_widget(ip_input)
+        content.add_widget(grid)
+        content.add_widget(Widget())
         content.add_widget(Widget())
 
         # 2 buttons are created for accept or cancel the current value
@@ -403,7 +407,27 @@ class MyUser(MyVariable):
 
         # all done, open the popup !
         popup.open()
-        user_name_input.focus = True
+        self.user_name_input.focus = True
+
+    def my_user_edit_ok_button_pressed(self, instance):
+        groupname = self.my_groupname
+        self.my_set_account_attr("user", self.user_name_input.text)
+
+        if groupname == "accounts":
+            self.my_set_account_attr("password", self.password_input.text)
+            self.my_set_account_attr("priviliges", self.priviliges_input.text)
+
+        else:
+            self.my_set_account_attr("password", "")
+            self.my_set_account_attr("priviliges", "")
+
+        if groupname == "blacklist" or groupname == "whitelist":
+            self.my_set_account_attr("ip", self.ip_input.text)
+        else:
+            self.my_set_account_attr("ip", "")
+
+        self.set_value()
+        self.popup.dismiss()
 
 class MySettingsGroup(GridLayout):
     def __init__(self, **kwargs):

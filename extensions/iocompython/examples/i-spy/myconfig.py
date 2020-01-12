@@ -6,6 +6,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 from kivy.metrics import dp
 
 from iocompython import Root,bin2json, json2bin
@@ -202,7 +203,7 @@ class MyConfig(MySettingsDisplay):
         g.add_widget(b)
         self.my_add_widget(g)
 
-        grouplist = {"valid": ["user accounts", "edit,delete,blacklist"], "requests":["new devices", "accept,delete,blacklist"], "alarms":["alarms", "delete"], "whitelist":["whitelist", "edit,delete,blacklist"], "blacklist":["blacklist","edit,delete"]}
+        grouplist = {"accounts": ["user accounts", "edit,delete,blacklist"], "requests":["new devices", "accept,delete,blacklist"], "alarms":["alarms", "delete"], "whitelist":["whitelist", "edit,delete,blacklist"], "blacklist":["blacklist","edit,delete"]}
         for g in grouplist:
             group_d = accounts_d.get(g, None)
             group = None
@@ -224,6 +225,8 @@ class MyConfig(MySettingsDisplay):
 
         # Merge loaded data into default configuration
         if group != None:
+            groupdict[groupname] = []
+            group_d = groupdict[groupname]
             for item in group:
                 group_d.append(item)
 
@@ -232,47 +235,81 @@ class MyConfig(MySettingsDisplay):
             u.bind(on_remake_page = self.remake_accounts_page)
 
     def new_account_item(self, source_object):
-        groupdict = source_object.my_groupdict
+        titlelist = {"accounts": "new user account", "whitelist":"whitelist user or IP addresses", "blacklist":"blacklist user or IP addresses"}
+        self.my_groupdict = source_object.my_groupdict
         groupname = source_object.my_groupname
+        self.my_groupname = groupname
+
+        # create grid of text inputs
+        grid = GridLayout()
+        grid.cols = 2;
+        grid.spacing = [6, 6]
+        nrows = 1
+        self.user_name_input = make_my_text_input("")
+        grid.add_widget(Label(text='user name'));
+        grid.add_widget(self.user_name_input)
+        if groupname == "accounts":
+            self.password_input = make_my_text_input("")
+            grid.add_widget(Label(text='password'));
+            grid.add_widget(self.password_input)
+
+            self.priviliges_input = make_my_text_input("")
+            grid.add_widget(Label(text='priviliges'));
+            grid.add_widget(self.priviliges_input)
+            nrows += 2
+
+        if groupname == "blacklist" or groupname == "whitelist":
+            self.ip_input = make_my_text_input("")
+            grid.add_widget(Label(text='ip'));
+            grid.add_widget(self.ip_input)
+            nrows += 1
         
-        content = BoxLayout(orientation='vertical', spacing='5dp')
+        content = GridLayout()
+        content.padding = [6, 6]
+        content.cols = 1
         popup_width = min(0.95 * Window.width, dp(500))
         self.popup = popup = Popup(
-            title=groupname, content=content, size_hint=(None, None),
-            size=(popup_width, '250dp'))
+            title=titlelist[groupname], content=content, size_hint=(None, None),
+            size=(popup_width, str(160 + nrows * 70) + 'dp'))
 
-        # create the text inputs
-        user_name_input = make_my_text_input("")
-        self.user_name_input = user_name_input
-        password_input = make_my_text_input("")
-        self.password_input = password_input
-        priviliges_input = make_my_text_input("")
-        self.priviliges_input = priviliges_input
-        ip_input = make_my_text_input("")
-        self.ip_input = ip_input
-
-        # construct the content, empty widget are used as a spacer
+        # construct the content, empty widgets are used as a spacers
         content.add_widget(Widget())
-        content.add_widget(user_name_input)
-        content.add_widget(password_input)
-        content.add_widget(priviliges_input)
-        content.add_widget(ip_input)
+        content.add_widget(grid)
+        content.add_widget(Widget())
         content.add_widget(Widget())
 
         # 2 buttons are created for accept or cancel the current value
         btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
         btn = Button(text='ok')
-        # btn.bind(on_release=self.my_user_edit_ok_button_pressed)
+        btn.bind(on_release=self.my_new_account_ok_button_pressed)
         btnlayout.add_widget(btn)
         btn = Button(text='cancel')
         btn.bind(on_release=popup.dismiss)
         btnlayout.add_widget(btn)
         content.add_widget(btnlayout)
 
-        # all done, open the popup !
+        # all done, open the popup
         popup.open()
-        user_name_input.focus = True
+        self.user_name_input.focus = True
 
+    def my_new_account_ok_button_pressed(self, instance):
+        groupname = self.my_groupname
+        groupdict = self.my_groupdict
+        item = {}
+        item['user'] = self.user_name_input.text;
+
+        if groupname == "accounts":
+            item['password'] = self.password_input.text;
+            if self.priviliges_input.text != "":
+                item['priviliges'] = self.priviliges_input.text;
+
+        if groupname == "blacklist" or groupname == "whitelist":
+            item['ip'] = self.ip_input.text;
+
+        groupdict[groupname].append(item)
+        self.popup.dismiss()
+        self.clear_widgets()
+        self.process_accounts_json(self.my_default_config, None)
 
     def remake_accounts_page(self, source_object, *args):
         self.clear_widgets()

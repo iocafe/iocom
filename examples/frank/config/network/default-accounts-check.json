@@ -1,20 +1,6 @@
 {
 "accounts" : {
-	"requests": [
-		{
-			"user": "gina1.iocafenet",
-			"password": "mypass",
-			"time": 182918271
-		}
-	],
-	"alarms": [
-		{
-			"user": "evil1.doomnet",
-			"password": "mypass",
-			"time": 182918271
-		}
-	],
-	"valid": [
+	"accounts": [
 		{
 			"user": "ispy.iocafenet",
 			"password": "mypass",
@@ -22,6 +8,18 @@
 		},
 		{
 			"user": "gina2.iocafenet",
+			"password": "mypass"
+		}
+	],
+	"requests": [
+		{
+			"user": "gina1.iocafenet",
+			"password": "mypass"
+		}
+	],
+	"alarms": [
+		{
+			"user": "evil1.doomnet",
 			"password": "mypass"
 		}
 	],

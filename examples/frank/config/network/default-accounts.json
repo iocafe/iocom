@@ -2,17 +2,7 @@
 	"accounts": {
 		"title": "User account defaults",
 
-		"requests": [{
-			"user": "gina1.iocafenet",
-			"password": "mypass"
-		}],
-
-		"alarms": [{
-			"user": "evil1.doomnet",
-			"password": "mypass"
-		}],
-
-		"valid": [{
+		"accounts": [{
 				"user": "ispy.iocafenet",
 				"password": "mypass",
 				"privileges": "admin"
@@ -22,6 +12,16 @@
 				"password": "mypass"
 			}
 		],
+
+		"requests": [{
+			"user": "gina1.iocafenet",
+			"password": "mypass"
+		}],
+
+		"alarms": [{
+			"user": "evil1.doomnet",
+			"password": "mypass"
+		}],
 
 		"whitelist": [{
 				"user": "*.iocafenet"
