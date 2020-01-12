@@ -15,6 +15,7 @@
 */
 #include "iocom.h"
 #include "nodeconf.h"
+#include "ioserver.h"
 
 OSAL_C_HEADER_BEGINS
 #include "network-defaults.h"

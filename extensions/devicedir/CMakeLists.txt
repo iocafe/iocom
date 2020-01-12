@@ -17,7 +17,7 @@ set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 
 # Add include paths.
 include_directories("$ENV{E_ROOT}/iocom")
-include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
+include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 
 # Add main headers.
 set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")

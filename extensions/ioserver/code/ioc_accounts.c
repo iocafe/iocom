@@ -1,6 +1,6 @@
 /**
 
-  @file    ioc_accounts.h
+  @file    ioc_accounts.c
   @brief   User/device accounts.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,22 +13,9 @@
 
 ****************************************************************************************************
 */
+#include "ioserver.h"
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
 
-
-typedef struct iocAccountConf
-{
-
-    iocUserAccount account[1];
-}
-iocAccountConf;
-
-
-/**
-****************************************************************************************************
-  Device/user account functions
-****************************************************************************************************
- */
 
 /* Load user account configuration from persistent storage.
  */
@@ -36,25 +23,23 @@ void ioc_load_account_config(
     iocAccountConf *accounts,
     iocRoot *root,
     const os_char *default_config,
-    os_memsz default_config_sz);
+    os_memsz default_config_sz)
+{
 
-#if 0
-/* Add block of user account data. Remember lock. Must not change when locked, call unlink */
-void ioc_link_account_conf_struct(
-    iocAllowedNetworkConf *allowed_networks);
+}
 
-/* Add block of user account data */
-void ioc_unlink_account_conf(
-    iocAllowedNetworkConf *?);
-#endif
+void ioc_release_account_config(
+    iocAccountConf *accounts);
 
-
-/* Default authentication and authorization function.
- */
 osalStatus ioc_authenticate(
     struct iocRoot *root,
     iocAllowedNetworkConf *allowed_networks,
     iocUserAccount *user_account,
-    void *context);
+    void *context)
+{
+    return OSAL_SUCCESS;
+    // return OSAL_STATUS_FAILED;
+}
+
 
 #endif

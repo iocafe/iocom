@@ -17,7 +17,7 @@
 
 ****************************************************************************************************
 */
-#include "iocom.h"
+#include "ioserver.h"
 #if IOC_SERVER_EXTENSIONS
 
 void ioc_initialize_bserver_main(

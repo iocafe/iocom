@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "extensions/nodeconf/nodeconf.h"
+#include "nodeconf.h"
 
 
 /** Working state structure while parsing node configuration.

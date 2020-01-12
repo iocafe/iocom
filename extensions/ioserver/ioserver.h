@@ -1,14 +1,14 @@
 /**
 
-  @file    iocomx.h
-  @brief   Exyemded iocom header file.
+  @file    ioserver.h
+  @brief   Extension library for implementing server with authentication and authorization.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
 
-  Extended iocom library main header file. This file includes both iocom base headers and
-  extension headers related to dynamic IO configuration, used by generic server side apps
-  and Python API.
+  The ioserver is optional extension library for implementing server. This should be sufficient
+  for simple secure servers as is, or as starting point for implementing your own authentication
+  and authorization.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -17,10 +17,10 @@
 
 ****************************************************************************************************
 */
-#ifndef IOCOMX_INCLUDED
-#define IOCOMX_INCLUDED
+#ifndef IOSERVER_INCLUDED
+#define IOSERVER_INCLUDED
 
-/* Include base iocom headers.
+/* Include iocom and operating system abstraction layer.
  */
 #include "iocom.h"
 
@@ -29,15 +29,9 @@
  */
 OSAL_C_HEADER_BEGINS
 
-#if IOC_DYNAMIC_MBLK_CODE
-#include "extensions/dynamicio/ioc_identifiers.h"
-#include "extensions/dynamicio/ioc_dyn_signal.h"
-#include "extensions/dynamicio/ioc_dyn_network.h"
-#include "extensions/dynamicio/ioc_dyn_root.h"
-#include "extensions/dynamicio/ioc_dyn_mblk_list.h"
-#include "extensions/dynamicio/ioc_dyn_queue.h"
-#include "extensions/dynamicio/ioc_dyn_stream.h"
-#endif
+#include "code/ioc_accounts.h"
+#include "code/ioc_server_util.h"
+#include "code/ioc_basic_server.h"
 
 /* If C++ compilation, end the undecorated code.
  */

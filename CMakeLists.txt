@@ -27,8 +27,6 @@ file(GLOB BB_SOURCES "${BACKBONE}/*.c")
 file(GLOB BB_HEADERS "${BACKBONE}/*.h")
 file(GLOB EX_SOURCES "${EXTENSIONS}/dynamicio/*.c")
 file(GLOB EX_HEADERS "${EXTENSIONS}/dynamicio/*.h")
-file(GLOB SE_SOURCES "${EXTENSIONS}/ioserver/*.c")
-file(GLOB SE_HEADERS "${EXTENSIONS}/ioserver/*.h")
 
 # Generate the static library.
-add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_HEADERS} ${EX_HEADERS} ${SE_HEADERS} ${BB_SOURCES} ${EX_SOURCES} ${SE_SOURCES})
+add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_HEADERS} ${EX_HEADERS} ${BB_SOURCES} ${EX_SOURCES})
