@@ -6,6 +6,11 @@
   @version 1.0
   @date    8.1.2020
 
+  Low level of user authentication and authorization. Handles serialization of authentication
+  frames over connection and on server (IOC_FULL_AUTHENTICATION) works as interface between
+  iocom and authentication code. Notice that ioserver extension library contains default
+  server authentication which should be sufficient for simpler applications.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -15,9 +20,6 @@
 */
 #include "iocom.h"
 #if IOC_AUTHENTICATION_CODE
-
-/* Forward referred static functions.
- */
 
 
 /**
@@ -258,8 +260,51 @@ osal_debug_error("HERE AUTH RECEIVED");
 
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-/* Release allowed networks structure set up by ioc_authenticate_user_func()
- */
+/**
+****************************************************************************************************
+
+  @brief Enable user authentication (set authentication callback function).
+  @anchor ioc_enable_user_authentication
+
+  The ioc_enable_user_authentication() function stores authentication function pointer for
+  iocom library to use. This enables user/device authentication and authorization for
+  the iocom.
+
+  @param   root Pointer to iocom root object.
+  @param   func Pointer to authentication function. Authentication function needs to check
+           if user/device can connect and which IO networks it can access. Set ioc_authenticate
+           here to use default ioserver extension library authentication.
+  @param   contect Pointer to pass to authentication callback. Can be used to pass any
+           application data to the callback. Set OS_NULL if not needed.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_enable_user_authentication(
+    struct iocRoot *root,
+    ioc_authenticate_user_func *func,
+    void *context)
+{
+    root->authentication_func = func;
+    root->authentication_context = context;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Release allowed networks structure set up by ioc_authenticate_user_func()
+  @anchor ioc_release_allowed_networks
+
+  The ioc_release_allowed_networks() function frees memory reserved for allowed network
+  array, allocated by the authentication function. Notice that authentication
+
+  @param   allowed_networks Allowed networks structure containing pointer to allocated data,
+           after this call the structure is clear enough for reuse.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_release_allowed_networks(
     iocAllowedNetworkConf *allowed_networks)
 {
@@ -272,6 +317,5 @@ void ioc_release_allowed_networks(
     }
 }
 #endif
-
 
 #endif

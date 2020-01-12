@@ -24,13 +24,11 @@ typedef struct iocAccountConf
 iocAccountConf;
 
 
-
 /**
 ****************************************************************************************************
   Device/user account functions
 ****************************************************************************************************
  */
-
 
 /* Load user account configuration from persistent storage.
  */
@@ -40,5 +38,23 @@ void ioc_load_account_config(
     const os_char *default_config,
     os_memsz default_config_sz);
 
+#if 0
+/* Add block of user account data. Remember lock. Must not change when locked, call unlink */
+void ioc_link_account_conf_struct(
+    iocAllowedNetworkConf *allowed_networks);
+
+/* Add block of user account data */
+void ioc_unlink_account_conf(
+    iocAllowedNetworkConf *?);
+#endif
+
+
+/* Default authentication and authorization function.
+ */
+osalStatus ioc_authenticate(
+    struct iocRoot *root,
+    iocAllowedNetworkConf *allowed_networks,
+    iocUserAccount *user_account,
+    void *context);
 
 #endif

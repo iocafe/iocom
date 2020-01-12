@@ -6,6 +6,11 @@
   @version 1.0
   @date    8.1.2020
 
+  Low level of user authentication and authorization. Handles serialization of authentication
+  frames over connection and on server (IOC_FULL_AUTHENTICATION) works as interface between
+  iocom and authentication code. Notice that ioserver extension library contains default
+  server authentication which should be sufficient for simpler applications.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -20,13 +25,13 @@ struct iocConnection;
 
 /**
 ****************************************************************************************************
-  Flags in authentication frame.
+  Flags in authentication frame and in iocAllowedNetwork structure.
 ****************************************************************************************************
 */
 #define IOC_AUTH_ADMINISTRATOR 1
-#define IOC_AUTH_CONNECT_UP 4
-#define IOC_AUTH_DEVICE_NR_2_BYTES 8
-#define IOC_AUTH_DEVICE_NR_4_BYTES 16
+#define IOC_AUTH_CONNECT_UP 16
+#define IOC_AUTH_DEVICE_NR_2_BYTES 32
+#define IOC_AUTH_DEVICE_NR_4_BYTES 64
 #define IOC_AUTH_BIDIRECTIONAL_COM 128
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
@@ -60,6 +65,13 @@ iocUserAccount;
 /**
 ****************************************************************************************************
   Networks allowed tough a specific connection.
+  When a device connects to server it identifies itself as "gina3.iocafenet", etc. This
+  identification is matched to user accounts in server, resulting accepted or terminated
+  connection and set of IO networks which can be accessed tough this connection.
+  This list is stored in iocConnection structure as iocAllowedNetworkConf.
+  The iocAllowedNetwork names one allowed network, like "iocafenet". Allowed priviliges
+  are stored in flags. IOC_AUTH_ADMINISTRATOR bit indicates that administrative
+  (configuration and software update) priviliges.
 ****************************************************************************************************
 */
 typedef struct iocAllowedNetwork
@@ -118,17 +130,17 @@ typedef osalStatus ioc_authenticate_user_func(
     iocUserAccount *user_account,
     void *context);
 
+/* Enable user authentication (set authentication callback function).
+ */
+void ioc_enable_user_authentication(
+    struct iocRoot *root,
+    ioc_authenticate_user_func *func,
+    void *context);
+
 /* Release allowed networks structure set up by ioc_authenticate_user_func()
  */
 void ioc_release_allowed_networks(
     iocAllowedNetworkConf *allowed_networks);
-
-/* Enable user authentication.
- */
-typedef osalStatus ioc_enable_user_authentication(
-    struct iocRoot *root,
-    ioc_authenticate_user_func *func,
-    void *context);
 
 /*@}*/
 

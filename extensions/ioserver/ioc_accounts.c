@@ -31,4 +31,15 @@ void ioc_load_account_config(
 void ioc_release_account_config(
     iocAccountConf *accounts);
 
+osalStatus ioc_authenticate(
+    struct iocRoot *root,
+    iocAllowedNetworkConf *allowed_networks,
+    iocUserAccount *user_account,
+    void *context)
+{
+    return OSAL_SUCCESS;
+    // return OSAL_STATUS_FAILED;
+}
+
+
 #endif
