@@ -231,7 +231,7 @@ class MyConfig(MySettingsDisplay):
                 group_d.append(item)
 
         for item_d in group_d:
-            u = self.new_user(self.ioc_root, groupdict, groupname, group_d, item_d, flags)
+            u = self.add_user_management_item(self.ioc_root, groupdict, groupname, group_d, item_d, flags)
             u.bind(on_remake_page = self.remake_accounts_page)
 
     def new_account_item(self, source_object):

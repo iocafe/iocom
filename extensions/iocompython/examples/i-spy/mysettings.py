@@ -262,15 +262,15 @@ class MySetting(MyVariable):
         except:
             print("Conversion failed")
 
-class MyUser(MyVariable):
+class MyUserManagementItem(MyVariable):
     def __init__(self, **kwargs):
-        super(MyUser, self).__init__(**kwargs)
+        super(MyUserManagementItem, self).__init__(**kwargs)
         self.my_state_bits = -1
 
     def delete(self):
         pass
 
-    def setup_user(self, ioc_root, groupdict, groupname, group, item, flags):
+    def setup(self, ioc_root, groupdict, groupname, group, item, flags):
         self.my_group = group
         self.my_groupdict = groupdict
         self.my_groupname = groupname
@@ -503,9 +503,9 @@ class MySettingsDisplay(GridLayout):
         self.my_add_widget(s)
         self.my_variables.append(s)
 
-    def new_user(self, ioc_root, groupdict, groupname, group, item, flags):
-        u = MyUser() 
-        u.setup_user(ioc_root, groupdict, groupname, group, item, flags)
+    def add_user_management_item(self, ioc_root, groupdict, groupname, group, item, flags):
+        u = MyUserManagementItem() 
+        u.setup(ioc_root, groupdict, groupname, group, item, flags)
         self.my_add_widget(u)
         self.my_variables.append(u)
         return u
