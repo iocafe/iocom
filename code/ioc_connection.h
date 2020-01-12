@@ -554,6 +554,14 @@ typedef struct iocConnection
     /** Flag indicating that the connection structure was dynamically allocated.
      */
     os_boolean allocated;
+
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    /** The allowed_networks is structure set up by user authentication to hold list of networks
+        which can be accessed trough the connection and priviliges for each network. Must be released
+        by ioc_release_allowed_networks().
+     */
+    iocAllowedNetworkConf allowed_networks;
+#endif
 }
 iocConnection;
 

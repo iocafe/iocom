@@ -28,6 +28,16 @@
  */
 #define IOC_NAME_SZ 16
 
+/** Maximum device identification string length (device name and number together).
+    Theoretical maximum device number is 2^32, which is 10 characters, with name totals
+    26 characters. Rounded up to four byte boundary, thus 28.
+ */
+#define IOC_DEVICE_ID_SZ 28
+
+/** Maximum passwordk name string length.
+ */
+#define IOC_PASSWORD_SZ 16
+
 /** Maximum network name string length.
  */
 #define IOC_NETWORK_NAME_SZ 24
@@ -35,7 +45,6 @@
 
 /** "1/2 byte" and "has string", etc flags for packing memory block info.
  */
-// #define IOC_INFO_MBLK_SUPPORTS_BIDIR 2
 #define IOC_INFO_D_2BYTES 4
 #define IOC_INFO_D_4BYTES 8
 #define IOC_INFO_N_2BYTES 16

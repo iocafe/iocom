@@ -16,7 +16,7 @@
 
 /* Maximum number of IO networks to publish by this application.
  */
-#define IOAPP_MAX_PUBLISHED_NETWORKS 100
+#define IOAPP_MAX_PUBLISHED_NETWORKS 20
 
 
 /**

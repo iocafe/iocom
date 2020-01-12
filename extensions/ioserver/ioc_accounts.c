@@ -21,11 +21,14 @@
  */
 void ioc_load_account_config(
     iocAccountConf *accounts,
+    iocRoot *root,
     const os_char *default_config,
     os_memsz default_config_sz)
 {
 
 }
 
+void ioc_release_account_config(
+    iocAccountConf *accounts);
 
 #endif

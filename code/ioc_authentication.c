@@ -78,28 +78,15 @@ void ioc_make_authentication_frame(
     auth_flags_ptr = p;
     *(p++) = 0;
 
-    if (root->device_name[0] != 0)
-    {
-        ioc_msg_setstr(root->device_name, &p);
-        flags |= IOC_AUTH_DEVICE;
+    ioc_msg_setstr(root->device_name, &p);
+    ioc_msg_set_uint(root->device_nr < IOC_AUTO_DEVICE_NR ? root->device_nr : 0,
+        &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
 
-        ioc_msg_set_uint(root->device_nr < IOC_AUTO_DEVICE_NR ? root->device_nr : 0,
-            &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
-    }
-
-    if (root->network_name[0] != 0)
-    {
-        ioc_msg_setstr(root->network_name, &p);
-        flags |= IOC_AUTH_NETWORK_NAME;
-    }
+    ioc_msg_setstr(root->network_name, &p);
 
     password = (con->iface == OSAL_TLS_IFACE)
         ? root->password_tls : root->password_clear;
-    if (password[0] != 0)
-    {
-        ioc_msg_setstr(password, &p);
-        flags |= IOC_AUTH_PASSWORD;
-    }
+    ioc_msg_setstr(password, &p);
 
     /* If other end has not acknowledged enough data to send the
        frame, cancel the send.
@@ -165,12 +152,14 @@ osal_debug_error("HERE AUTH SENT");
 ****************************************************************************************************
 
   @brief Process complete athentication data frame received from socket or serial port.
-  @anchor ioc_process_received_system_frame
+  @anchor ioc_process_received_authentication_frame
 
   The ioc_process_received_authentication_frame() function is called once a complete system frame
   containing authentication data for a device has been received. The authentication data
   identifies the device (device name, number and network name), optionally identifies the user
   with user name and can have password for the connection.
+  If user authentication is enabled (by ioc_enable_user_authentication() function), the
+  user is authenticated.
 
   The secondary task of authentication frame is to inform server side of the accepted connection
   is upwards or downwards in IO device hierarchy.
@@ -179,7 +168,8 @@ osal_debug_error("HERE AUTH SENT");
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
+  @return  OSAL_SUCCESS if succesfull. Other values indicate unauthenticated device or user,
+           or a corrupted frame.
 
 ****************************************************************************************************
 */
@@ -189,14 +179,18 @@ osalStatus ioc_process_received_authentication_frame(
     os_char *data)
 {
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    iocSecureDevice secdev;
+    iocUserAccount user_account;
+    iocRoot *root;
+    os_uint device_nr;
     os_uchar auth_flags, *p;
+    os_char nbuf[OSAL_NBUF_SZ];
     osalStatus s;
 
     p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
 
-    os_memclear(&secdev, sizeof(secdev));
+    os_memclear(&user_account, sizeof(user_account));
+    user_account.flags = auth_flags;
 
     /* If listening end of connection (server).
      */
@@ -205,7 +199,6 @@ osalStatus ioc_process_received_authentication_frame(
         if (auth_flags & IOC_AUTH_CONNECT_UP)
         {
             con->flags &= ~IOC_CONNECT_UP;
-            secdev.from_up = OS_FALSE;
         }
         else
         {
@@ -214,7 +207,6 @@ osalStatus ioc_process_received_authentication_frame(
                 con->flags |= IOC_CONNECT_UP;
                 ioc_add_con_to_global_mbinfo(con);
             }
-            secdev.from_up = OS_TRUE;
         }
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
@@ -229,51 +221,57 @@ osalStatus ioc_process_received_authentication_frame(
 #endif
     }
 
-    /* If activelu connecting end (client).
+    s = ioc_msg_getstr(user_account.user_name, IOC_DEVICE_ID_SZ, &p);
+    if (s) return s;
+
+    device_nr = ioc_msg_get_uint(&p,
+        auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
+        auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
+    if (device_nr)
+    {
+        osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
+        os_strncat(user_account.user_name, nbuf, IOC_DEVICE_ID_SZ);
+    }
+
+    s = ioc_msg_getstr(user_account.network_name, IOC_NETWORK_NAME_SZ, &p);
+    if (s) return s;
+
+    s = ioc_msg_getstr(user_account.password, IOC_PASSWORD_SZ, &p);
+    if (s) return s;
+
+    /* Authenticate user
      */
-    else
+    root = con->link.root;
+    if (root->authentication_func)
     {
-        secdev.from_up = (con->flags & IOC_CONNECT_UP) ? OS_TRUE : OS_FALSE;
-    }
-
-    if (auth_flags & IOC_AUTH_DEVICE)
-    {
-        s = ioc_msg_getstr(secdev.device_name, IOC_NAME_SZ, &p);
-        if (s) return s;
-
-        secdev.device_nr = ioc_msg_get_uint(&p,
-            auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
-            auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
-    }
-
-    if (auth_flags & IOC_AUTH_NETWORK_NAME)
-    {
-        s = ioc_msg_getstr(secdev.network_name, IOC_NETWORK_NAME_SZ, &p);
+        ioc_release_allowed_networks(&con->allowed_networks);
+        s = root->authentication_func(root, &con->allowed_networks,
+            &user_account, &root->authentication_context);
         if (s) return s;
     }
 
-    if (auth_flags & IOC_AUTH_USER_NAME)
-    {
-        s = ioc_msg_getstr(secdev.user_name, IOC_NAME_SZ, &p);
-        if (s) return s;
-    }
-
-    if (auth_flags & IOC_AUTH_PASSWORD)
-    {
-        if (con->iface == OSAL_TLS_IFACE)
-        {
-            s = ioc_msg_getstr(secdev.password_tls, IOC_NAME_SZ, &p);
-        }
-        else {
-            s = ioc_msg_getstr(secdev.password_clear, IOC_NAME_SZ, &p);
-        }
-        if (s) return s;
-    }
 #endif
 osal_debug_error("HERE AUTH RECEIVED");
     con->authentication_received = OS_TRUE;
     return OSAL_SUCCESS;
 }
+
+
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+/* Release allowed networks structure set up by ioc_authenticate_user_func()
+ */
+void ioc_release_allowed_networks(
+    iocAllowedNetworkConf *allowed_networks)
+{
+    os_memsz bytes;
+    if (allowed_networks->network)
+    {
+        bytes = allowed_networks->n_networs * sizeof(iocAllowedNetwork);
+        os_free(allowed_networks->network, bytes);
+        os_memclear(allowed_networks, sizeof(iocAllowedNetworkConf));
+    }
+}
+#endif
 
 
 #endif

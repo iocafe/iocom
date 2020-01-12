@@ -166,7 +166,7 @@ void ioc_setup_bserver_accounts(
     /* Load user account configuration from persistent storage or
        use static defaults.
      */
-    ioc_load_account_config(&a->account_conf, account_defaults,
+    ioc_load_account_config(&a->account_conf, a->root, account_defaults,
         account_defaults_sz);
 
     a->accounts_stream_params.default_config = account_defaults;

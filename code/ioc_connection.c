@@ -184,6 +184,12 @@ void ioc_release_connection(
      */
     ioc_free_connection_bufs(con);
 
+    /* Release memory allocated for allowed_networks.
+     */
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    ioc_release_allowed_networks(&con->allowed_networks);
+#endif
+
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
        for primitive static allocation schema). Save allocated flag before memclear.
      */

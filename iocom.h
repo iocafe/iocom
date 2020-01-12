@@ -91,6 +91,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_debug.h"
 #include "code/ioc_handle.h"
 #include "code/ioc_memory_block_info.h"
+#include "code/ioc_authentication.h"
 #include "code/ioc_root.h"
 #include "code/ioc_memory_block.h"
 #include "code/ioc_signal.h"
@@ -100,7 +101,6 @@ OSAL_C_HEADER_BEGINS
 #endif
 #include "code/ioc_source_buffer.h"
 #include "code/ioc_target_buffer.h"
-#include "code/ioc_authentication.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
 #include "code/ioc_streamer.h"

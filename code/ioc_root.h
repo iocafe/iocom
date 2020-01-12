@@ -185,11 +185,11 @@ typedef struct iocRoot
 
     /** IO device only: Password for encrypted communication.
      */
-    os_char password_tls[IOC_NAME_SZ];
+    os_char password_tls[IOC_PASSWORD_SZ];
 
     /** IO device only: Password for clear text communication.
      */
-    os_char password_clear[IOC_NAME_SZ];
+    os_char password_clear[IOC_PASSWORD_SZ];
 
     /** Pointer to static memory pool, OS_NULL is not used.
         Pool size is in bytes.
@@ -240,6 +240,11 @@ typedef struct iocRoot
         networks, devices, etc.
      */
     struct iocEventQueue *event_queue;
+#endif
+
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    ioc_authenticate_user_func *authentication_func;
+    void *authentication_context;
 #endif
 }
 iocRoot;
