@@ -2,9 +2,14 @@ import json
 from kivy.config import ConfigParser
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.core.window import Window
+from kivy.uix.widget import Widget
+from kivy.uix.popup import Popup
+from kivy.metrics import dp
 
 from iocompython import Root,bin2json, json2bin
-from mysettings import MySettingsDisplay, MySettingsGroup, MyButton
+from mysettings import MySettingsDisplay, MySettingsGroup, MyButton, make_my_text_input
 from myiconbutton import MyIconButton
 from time import sleep
 
@@ -204,16 +209,17 @@ class MyConfig(MySettingsDisplay):
             if accounts != None:
                 group = accounts.get(g, None)
             k = grouplist[g]
-            self.process_accounts_group(accounts_d, k[0], group_d, group, k[1])
+            self.process_accounts_group(accounts_d, g, k[0], group_d, group, k[1])
         
-    def process_accounts_group(self, groupdict, label, group_d, group, flags):
+    def process_accounts_group(self, groupdict, groupname, label, group_d, group, flags):
         if group_d == None:
             return
             
         title = self.new_settings_group(label, None, 2)
         if label != 'new devices' and label != 'alarms':
             b = MyIconButton()
-            b.set_image("new")
+            b.set_image("new", groupdict, groupname)
+            b.bind(on_release = self.new_account_item)
             title.add_widget(b)
 
         # Merge loaded data into default configuration
@@ -222,8 +228,51 @@ class MyConfig(MySettingsDisplay):
                 group_d.append(item)
 
         for item_d in group_d:
-            u = self.new_user(self.ioc_root, groupdict, group_d, item_d, flags)
+            u = self.new_user(self.ioc_root, groupdict, groupname, group_d, item_d, flags)
             u.bind(on_remake_page = self.remake_accounts_page)
+
+    def new_account_item(self, source_object):
+        groupdict = source_object.my_groupdict
+        groupname = source_object.my_groupname
+        
+        content = BoxLayout(orientation='vertical', spacing='5dp')
+        popup_width = min(0.95 * Window.width, dp(500))
+        self.popup = popup = Popup(
+            title=groupname, content=content, size_hint=(None, None),
+            size=(popup_width, '250dp'))
+
+        # create the text inputs
+        user_name_input = make_my_text_input("")
+        self.user_name_input = user_name_input
+        password_input = make_my_text_input("")
+        self.password_input = password_input
+        priviliges_input = make_my_text_input("")
+        self.priviliges_input = priviliges_input
+        ip_input = make_my_text_input("")
+        self.ip_input = ip_input
+
+        # construct the content, empty widget are used as a spacer
+        content.add_widget(Widget())
+        content.add_widget(user_name_input)
+        content.add_widget(password_input)
+        content.add_widget(priviliges_input)
+        content.add_widget(ip_input)
+        content.add_widget(Widget())
+
+        # 2 buttons are created for accept or cancel the current value
+        btnlayout = BoxLayout(size_hint_y=None, height='50dp', spacing='5dp')
+        btn = Button(text='ok')
+        # btn.bind(on_release=self.my_user_edit_ok_button_pressed)
+        btnlayout.add_widget(btn)
+        btn = Button(text='cancel')
+        btn.bind(on_release=popup.dismiss)
+        btnlayout.add_widget(btn)
+        content.add_widget(btnlayout)
+
+        # all done, open the popup !
+        popup.open()
+        user_name_input.focus = True
+
 
     def remake_accounts_page(self, source_object, *args):
         self.clear_widgets()

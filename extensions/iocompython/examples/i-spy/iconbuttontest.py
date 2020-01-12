@@ -16,7 +16,6 @@ class MyIconButton(Button):
         self.icon.size_hint_x = None
         self.icon.size_hint_y = None
         self.add_widget(self.icon)
-        
         self.bind(size=self.reposition_image, pos=self.reposition_image)
 
     def reposition_image(self, root, *args):

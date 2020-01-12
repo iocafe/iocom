@@ -8,11 +8,13 @@ class MyIconButton(Button):
         self.size_hint_x = None
         self.width = 60
 
-    def set_image(self, name):
+    def set_image(self, name, groupdict, groupname):
         self.icon = Image(source ='resources/' + name + '.png')
         self.icon.size_hint_x = None
         self.icon.size_hint_y = None
         self.add_widget(self.icon)
+        self.my_groupdict = groupdict
+        self.my_groupname = groupname
         self.bind(size=self.reposition_image, pos=self.reposition_image)
 
     def reposition_image(self, root, *args):

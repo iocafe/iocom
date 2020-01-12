@@ -270,7 +270,7 @@ class MyUser(MyVariable):
     def delete(self):
         pass
 
-    def setup_user(self, ioc_root, groupdict, group, item, flags):
+    def setup_user(self, ioc_root, groupdict, groupname, group, item, flags):
         self.my_group = group
         self.my_groupdict = groupdict
         self.my_item = item
@@ -287,9 +287,8 @@ class MyUser(MyVariable):
         flaglist = flags.split(',')
         for button_name in flaglist:
             b = MyIconButton()
-            b.set_image(button_name)
+            b.set_image(button_name, groupdict, groupname)
             b.my_button_action = button_name
-            
             b.bind(on_release = self.my_user_button_pressed)
             lb.add_widget(b)
             ncols += 1
@@ -480,9 +479,9 @@ class MySettingsDisplay(GridLayout):
         self.my_add_widget(s)
         self.my_variables.append(s)
 
-    def new_user(self, ioc_root, groupdict, group, item, flags):
+    def new_user(self, ioc_root, groupdict, groupname, group, item, flags):
         u = MyUser() 
-        u.setup_user(ioc_root, groupdict, group, item, flags)
+        u.setup_user(ioc_root, groupdict, groupname, group, item, flags)
         self.my_add_widget(u)
         self.my_variables.append(u)
         return u
