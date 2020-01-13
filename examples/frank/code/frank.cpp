@@ -86,7 +86,6 @@ osalStatus osal_main(
 
     ioc_enable_user_authentication(&ioapp_root, ioc_authenticate, OS_NULL);
 
-
     /* Create frank main object
      */
     frank_main = new FrankMain(device_name, device_id->device_nr, device_id->network_name,

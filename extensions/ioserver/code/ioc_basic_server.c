@@ -18,7 +18,6 @@
 ****************************************************************************************************
 */
 #include "ioserver.h"
-#if IOC_SERVER_EXTENSIONS
 
 void ioc_initialize_bserver_main(
     iocBServerMain *m,
@@ -120,7 +119,9 @@ void ioc_release_bserver_accounts(
 {
     ioc_release_memory_block(&a->accounts_exp);
     ioc_release_memory_block(&a->accounts_imp);
+    ioc_release_memory_block(&a->accounts_data);
     ioc_release_memory_block(&a->accounts_info);
+
 }
 
 
@@ -154,6 +155,15 @@ void ioc_setup_bserver_accounts(
     blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
     ioc_initialize_memory_block(&a->accounts_imp, OS_NULL, a->root, &blockprm);
 
+    /* Load user account configuration from persistent storage and publish it
+     * as data memory block.
+     */
+    blockprm.mblk_name = "data";
+    blockprm.flags = IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC;
+    ioc_initialize_memory_block(&a->accounts_data, OS_NULL, a->root, &blockprm);
+    ioc_load_persistent_into_mblk(&a->accounts_data, 4, account_defaults,
+        account_defaults_sz);
+
     blockprm.mblk_name = "info";
     blockprm.buf = (os_char*)account_config;
     blockprm.nbytes = (os_int)account_config_sz;
@@ -162,12 +172,6 @@ void ioc_setup_bserver_accounts(
 
     ioc_set_handle_to_signals(accounts_conf_imp_hdr, &a->accounts_imp);
     ioc_set_handle_to_signals(accounts_conf_exp_hdr, &a->accounts_exp);
-
-    /* Load user account configuration from persistent storage or
-       use static defaults.
-     */
-    ioc_load_account_config(&a->account_conf, a->root, account_defaults,
-        account_defaults_sz);
 
     a->accounts_stream_params.default_config = account_defaults;
     a->accounts_stream_params.default_config_sz = account_defaults_sz;
@@ -186,5 +190,3 @@ void ioc_run_bserver_accounts(
     ioc_run_control_stream(&a->accounts_stream, &a->accounts_stream_params);
 }
 
-
-#endif

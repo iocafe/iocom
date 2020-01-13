@@ -32,6 +32,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_accounts.h"
 #include "code/ioc_server_util.h"
 #include "code/ioc_basic_server.h"
+#include "code/ioc_load_persistent_into_mblk.h"
 
 /* If C++ compilation, end the undecorated code.
  */

@@ -957,7 +957,7 @@ void ioc_add_callback(
 
   ioc_lock() must be on before calling this function.
 
-  @param   handle Memory block handle.
+  @param   mblk Pointer to memory block structure.
   @param   start_addr Beginning address of changes.
   @param   end_addr End address of changed.
   @return  None.
@@ -982,6 +982,90 @@ void ioc_mblk_invalidate(
         }
     }
 }
+
+
+#if IOC_RESIZE_MBLK_CODE
+/**
+****************************************************************************************************
+
+  @brief Make sure that memory block can hold N bytes.
+  @anchor ioc_resize_mblk
+
+  The ioc_resize_mblk() function checks makes sure that memory block is at least N bytes long,
+  and reallocates the buffer if necessary. Existing data is preserved and new allocation, if
+  any, is filled with zeros.
+
+  - Memory block to be resized must have IOC_ALLOW_RESIZE flag.
+  - ioc_lock() must be on before calling this function.
+  - This function can be used only if dynamic memory allocation is used or static pool is large
+    enough to contain the reallocation.
+
+  @param   mblk Pointer to memory block structure.
+  @param   nbytes Minimim size needed.
+  @param   flags IOC_RESIZE_PRECISE IOC_to allocate precisely up to nbytes. Otherwise
+           memory block size will be rounded up to memory allocation block.
+           Flag DISCONNECT_MBLK_ON_RESIZE disconnects memory block if it is resized.
+  @return  If memory block change was changed, the function returns OSAL_STATUS_COMPLETED.
+           If memory block was already big enough, the function returns OSAL_SUCCESS.
+           Return value OSAL_STATUS_NOT_SUPPORTED indicates that memory block doesn't have
+           IOC_ALLOW_RESIZE flag set.
+           Other return values indicate an error.
+
+****************************************************************************************************
+*/
+osalStatus ioc_resize_mblk(
+    iocMemoryBlock *mblk,
+    os_int nbytes,
+    os_short flags)
+{
+    iocRoot *root;
+    os_char *newbuf;
+
+    if (nbytes <= mblk->nbytes)
+    {
+        return OSAL_SUCCESS;
+    }
+
+    if ((mblk->flags & IOC_ALLOW_RESIZE) == 0)
+    {
+        return OSAL_STATUS_NOT_SUPPORTED;
+    }
+
+    if (!mblk->buf_allocated)
+    {
+        osal_debug_error("Attempt to resize memory block with static buffer");
+        return OSAL_STATUS_FAILED;
+    }
+
+    if (flags & IOC_DISCONNECT_MBLK_ON_RESIZE)
+    {
+        /* Release all source buffers.
+         */
+        while (mblk->sbuf.first)
+        {
+            ioc_release_source_buffer(mblk->sbuf.first);
+        }
+
+        /* Release all terget buffers.
+         */
+        while (mblk->tbuf.first)
+        {
+            ioc_release_target_buffer(mblk->tbuf.first);
+        }
+    }
+
+    root = mblk->link.root;
+    newbuf = ioc_malloc(root, nbytes, OS_NULL);
+    if (newbuf == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    os_memcpy(newbuf, mblk->buf, mblk->nbytes);
+    os_memclear(newbuf + mblk->nbytes, nbytes - mblk->nbytes);
+    ioc_free(root, mblk->buf, mblk->nbytes);
+    mblk->buf = newbuf;
+    mblk->nbytes = nbytes;
+
+    return OSAL_STATUS_COMPLETED;
+}
+#endif
 
 
 /**

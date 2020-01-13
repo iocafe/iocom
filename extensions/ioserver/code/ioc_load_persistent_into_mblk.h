@@ -1,10 +1,10 @@
 /**
 
-  @file    ioc_server_util.h
-  @brief   Server side helper functions.
+  @file    ioc_load_persistent_into_mblk.h
+  @brief   Load persistent data block as memory block content.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    12.1.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -14,9 +14,8 @@
 ****************************************************************************************************
 */
 
-/* Store memory block handle pointer within all signals in signal structure.
- */
-void ioc_set_handle_to_signals(
-    iocMblkSignalHdr *mblk_hdr,
-    iocHandle *handle);
-
+osalStatus ioc_load_persistent_into_mblk(
+    iocHandle *handle,
+    os_int select,
+    const os_char *default_data,
+    os_memsz default_data_sz);

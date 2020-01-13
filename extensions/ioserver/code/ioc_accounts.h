@@ -15,10 +15,16 @@
 */
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
 
+typedef struct iocAccountConfMblk
+{
+    iocHandle *handle;
+    struct iocAccountConfMblk *next;
+}
+iocAccountConfMblk;
+
 typedef struct iocAccountConf
 {
-
-    iocUserAccount account[1];
+    iocAccountConfMblk *mblk_list;
 }
 iocAccountConf;
 
@@ -28,11 +34,12 @@ iocAccountConf;
 ****************************************************************************************************
  */
 
-/* Load user account configuration from persistent storage.
+/* Load user account configuration, generate memory blocks. REMEMBER LOCK
  */
-void ioc_load_account_config(
-    iocAccountConf *accounts,
+void ioc_publish_io_networks(
+    iocAccountConf *accountconf,
     iocRoot *root,
+    const os_char *publish_list,
     const os_char *default_config,
     os_memsz default_config_sz);
 

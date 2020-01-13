@@ -17,7 +17,6 @@
 
 ****************************************************************************************************
 */
-#if IOC_SERVER_EXTENSIONS
 
 
 typedef struct iocBServerMain
@@ -56,7 +55,7 @@ typedef struct iocBServerAccounts
 
     /* Memory block handles for accounts.
      */
-    iocHandle accounts_exp, accounts_imp, accounts_info;
+    iocHandle accounts_exp, accounts_imp, accounts_data, accounts_info;
 
     /* Control stream to configure the device/user accounts.
      */
@@ -152,5 +151,3 @@ void ioc_run_bserver_accounts(
     baccts.accounts_stream_params.tod.to_device = OS_TRUE; \
     ioc_init_control_stream(&baccts.accounts_stream, &baccts.accounts_stream_params); \
 
-
-#endif

@@ -16,9 +16,53 @@
 #include "ioserver.h"
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
 
+#if 0
 
 /* Load user account configuration from persistent storage.
  */
+void ioc_publish_io_networks(
+    iocAccountConf *accountconf,
+    iocRoot *root,
+    const os_char *publish_list,
+    const os_char *default_config,
+    os_memsz default_config_sz)
+{
+
+
+}
+
+void xxxxxxxxxxxxxxxxxxioc_setup_xbserver_accounts(
+    iocBServerAccounts *a,
+    iocMblkSignalHdr *accounts_conf_exp_hdr,
+    iocMblkSignalHdr *accounts_conf_imp_hdr,
+    const os_char *account_config,
+    os_memsz account_config_sz,
+    const os_char *account_defaults,
+    os_memsz account_defaults_sz)
+{
+    iocMemoryBlockParams blockprm;
+    const os_char *accounts_device_name = "accounts";
+    const os_int accounts_device_nr = 1;
+
+    /* Generate memory blocks.
+     */
+    os_memclear(&blockprm, sizeof(blockprm));
+    blockprm.device_name = accounts_device_name;
+    blockprm.device_nr = accounts_device_nr;
+    blockprm.network_name = a->network_name;
+
+    blockprm.mblk_name = accounts_conf_exp_hdr->mblk_name;
+    blockprm.nbytes = accounts_conf_exp_hdr->mblk_sz;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC;
+    ioc_initialize_memory_block(&a->accounts_exp, OS_NULL, a->root, &blockprm);
+
+    blockprm.mblk_name = accounts_conf_imp_hdr->mblk_name;
+    blockprm.nbytes = accounts_conf_imp_hdr->mblk_sz;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
+    ioc_initialize_memory_block(&a->accounts_imp, OS_NULL, a->root, &blockprm);
+}
+
+
 void ioc_load_account_config(
     iocAccountConf *accounts,
     iocRoot *root,
@@ -29,7 +73,12 @@ void ioc_load_account_config(
 }
 
 void ioc_release_account_config(
-    iocAccountConf *accounts);
+    iocAccountConf *accounts)
+{
+
+}
+#endif
+
 
 osalStatus ioc_authenticate(
     struct iocRoot *root,

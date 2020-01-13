@@ -226,6 +226,10 @@ typedef void ioc_callback(
 #define IOC_MBLK_MAX_CALLBACK_FUNCS 2
 #endif
 
+/* Flag for ioc_resize_mblk() function.
+ */
+#define IOC_DISCONNECT_MBLK_ON_RESIZE 1
+
 
 /**
 ****************************************************************************************************
@@ -425,6 +429,13 @@ void ioc_mblk_invalidate(
     iocMemoryBlock *mblk,
     os_int start_addr,
     os_int end_addr);
+
+/* Make sure that memory block can hold N bytes.
+ */
+osalStatus ioc_resize_mblk(
+    iocMemoryBlock *mblk,
+    os_int nbytes,
+    os_short flags);
 
 /* Copy data and swap byte order on big endian processors.
  */

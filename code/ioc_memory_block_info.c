@@ -383,18 +383,13 @@ void ioc_mbinfo_received(
     iocRoot *root;
     iocMemoryBlock *mblk;
     os_short source_flag, target_flag;
+    os_short bdflag = 0;
 
 #if IOC_DYNAMIC_MBLK_CODE
     iocHandle handle;
     iocMemoryBlockParams mbprm;
     iocDynamicNetwork *dnetwork;
 #endif
-
-#if IOC_RESIZE_MBLK_CODE
-    os_char *newbuf;
-#endif
-
-    os_short bdflag = 0;
 
     /* Find if we have memory block with device name, number and memory block
        number. If not, do nothing.
@@ -474,24 +469,7 @@ goon:
 #if IOC_RESIZE_MBLK_CODE
     /* If block in other end is larger and we can resize the block at this end?
      */
-    if (info->nbytes > mblk->nbytes &&
-        mblk->flags & IOC_ALLOW_RESIZE)
-    {
-        if (mblk->buf_allocated)
-        {
-            newbuf = ioc_malloc(root, info->nbytes, OS_NULL);
-            os_memcpy(newbuf, mblk->buf, mblk->nbytes);
-            ioc_free(root, mblk->buf, mblk->nbytes);
-            mblk->buf = newbuf;
-            mblk->nbytes = info->nbytes;
-        }
-#if OSAL_DEBUG
-        else
-        {
-            osal_debug_error("Attempt to resize static memory block");
-        }
-#endif
-    }
+    ioc_resize_mblk(mblk, info->nbytes, 0);
 #endif
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
