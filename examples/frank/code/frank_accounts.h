@@ -20,6 +20,7 @@
   Class to get network configuration in separate thread.
 ****************************************************************************************************
 */
+#if 0
 class FrankAccounts
 {
 public:
@@ -38,3 +39,4 @@ private:
      */
     iocBServerAccounts m_baccts;
 };
+#endif

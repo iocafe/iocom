@@ -15,6 +15,7 @@
 */
 #include "frank.h"
 
+#if 0
 
 /**
 ****************************************************************************************************
@@ -69,3 +70,5 @@ void FrankAccounts::run()
     ioc_run_bserver_accounts(&m_baccts);
 }
 
+
+#endif

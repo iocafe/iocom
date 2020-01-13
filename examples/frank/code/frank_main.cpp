@@ -62,7 +62,6 @@ FrankMain::FrankMain(
     IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
 
     /* Host user accounts for "iocafenet" and "asteroidnet"
-     */
     p = publish;
     m_nro_published = 0;
     if (p)
@@ -73,6 +72,7 @@ FrankMain::FrankMain(
             m_published[m_nro_published++] = new FrankAccounts(nn_buf);
         }
     }
+     */
 }
 
 
@@ -95,10 +95,10 @@ FrankMain::~FrankMain()
 
     /* Delete publiched IO network structures.
      */
-    for (i = 0; i < m_nro_published; i++)
+    /* for (i = 0; i < m_nro_published; i++)
     {
         delete m_published[i];
-    }
+    } */
 
     ioc_release_bserver_main(&m_bmain);
 }
@@ -169,11 +169,11 @@ void FrankMain::run()
     ioc_run_bserver_main(&m_bmain);
 
     /* Run published IO network structures.
-     */
     for (i = 0; i < m_nro_published; i++)
     {
         m_published[i]->run();
     }
+     */
 }
 
 

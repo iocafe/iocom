@@ -64,7 +64,9 @@ typedef struct iocBServerAccounts
 
     /* Current device/user account configuration.
      */
-    iocAccountConf account_conf;
+    // iocAccountConf account_conf;
+
+
 }
 iocBServerAccounts;
 

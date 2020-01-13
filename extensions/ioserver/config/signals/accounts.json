@@ -1,9 +1,9 @@
 {
-  "name": "accounts",
+  "name": "account_signals",
   "mblk": [
   {
     "name": "conf_exp",
-    "title": "Configuration signals exported by the IO node",
+    "title": "User account configuration signals exported by the IO node",
     "flags": "up,conf",
     "groups": [
       {
@@ -26,7 +26,7 @@
 
   {
     "name": "conf_imp",
-    "title": "Configuration signals imported by the IO node",
+    "title": "User account configuration signals imported by the IO node",
     "flags": "down,conf",
     "groups": [
       {

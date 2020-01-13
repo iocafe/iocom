@@ -104,6 +104,30 @@ void ioc_setup_bserver_mblks(
     m->ctrl_stream_params.default_config_sz = network_defaults_sz;
 }
 
+#if 0
+void ioc_publish_bserver_accounts(
+    iocBServerMain *m,
+    const os_char *publish)
+{
+    p = publish;
+    m_nro_published = 0;
+    if (p)
+    {
+        while (!osal_str_list_iter(nn_buf, sizeof(nn_buf), &p, OSAL_STR_NEXT_ITEM) &&
+            m_nro_published < IOAPP_MAX_PUBLISHED_NETWORKS)
+        {
+            m_published[m_nro_published++] = new FrankAccounts(nn_buf);
+        }
+    }
+#endif
+
+
+void ioc_run_bserver_main(
+    iocBServerMain *m)
+{
+    ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
+}
+
 void ioc_initialize_bserver_accounts(
     iocBServerAccounts *a,
     iocRoot *root,
@@ -121,7 +145,6 @@ void ioc_release_bserver_accounts(
     ioc_release_memory_block(&a->accounts_imp);
     ioc_release_memory_block(&a->accounts_data);
     ioc_release_memory_block(&a->accounts_info);
-
 }
 
 
@@ -177,12 +200,6 @@ void ioc_setup_bserver_accounts(
     a->accounts_stream_params.default_config_sz = account_defaults_sz;
 }
 
-
-void ioc_run_bserver_main(
-    iocBServerMain *m)
-{
-    ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
-}
 
 void ioc_run_bserver_accounts(
     iocBServerAccounts *a)

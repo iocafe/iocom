@@ -1,10 +1,10 @@
 /* This file is gerated by signals-to-c.py script, do not modify. */
-void accounts_init_signal_struct(accounts_t *s)
+void account_signals_init_signal_struct(account_signals_t *s)
 {
-  os_memclear(s, sizeof(accounts_t));
+  os_memclear(s, sizeof(account_signals_t));
   s->conf_exp.hdr.mblk_name = "conf_exp";
   s->conf_exp.hdr.n_signals = 5;
-  s->conf_exp.hdr.mblk_sz = ACCOUNTS_CONF_EXP_MBLK_SZ;
+  s->conf_exp.hdr.mblk_sz = ACCOUNT_SIGNALS_CONF_EXP_MBLK_SZ;
   s->conf_exp.hdr.first_signal = &s->conf_exp.tod_state;
 
  /* tod_state */
@@ -35,7 +35,7 @@ void accounts_init_signal_struct(accounts_t *s)
 
   s->conf_imp.hdr.mblk_name = "conf_imp";
   s->conf_imp.hdr.n_signals = 7;
-  s->conf_imp.hdr.mblk_sz = ACCOUNTS_CONF_IMP_MBLK_SZ;
+  s->conf_imp.hdr.mblk_sz = ACCOUNT_SIGNALS_CONF_IMP_MBLK_SZ;
   s->conf_imp.hdr.first_signal = &s->conf_imp.tod_cmd;
 
  /* tod_cmd */

@@ -20,10 +20,7 @@
 OSAL_C_HEADER_BEGINS
 #include "network-defaults.h"
 #include "signals.h"
-#include "accounts.h"
-#include "accounts-mblk.h"
-#include "account-defaults.h"
-#include "info-mblk.h"
+#include "info-mblk-binary.h"
 OSAL_C_HEADER_ENDS
 
 #include "frank_accounts.h"

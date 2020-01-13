@@ -1,7 +1,7 @@
 /**
 
   @file    config.c
-  @brief   Frank IO board example featuring  IoT device.
+  @brief   Gina IO board example featuring  IoT device.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
@@ -15,11 +15,13 @@
 
 ****************************************************************************************************
 */
-#include "iocom.h"
-#include "signals.h"
-#include "info-mblk-binary.h"
-#include "network-defaults.h"
+#include "ioserver.h"
 
-#include "signals.c"
-#include "info-mblk-binary.c"
-#include "network-defaults.c"
+#include "account-signals.h"
+#include "account-defaults.h"
+#include "accounts-mblk-binary.h"
+
+#include "account-signals.c"
+#include "account-defaults.c"
+#include "accounts-mblk-binary.c"
+

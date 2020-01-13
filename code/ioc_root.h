@@ -41,10 +41,14 @@ struct iocDynamicRoot;
 struct iocDynamicNetwork;
 struct iocEventQueue;
 
-/* Start automatically given device numbers from here.
+/** Start automatically given device numbers from IOC_AUTO_DEVICE_NR + 1. This can be changed by
+    compiler define, but communicating devices using automatic device numbers
+    must use the same define.
  */
-#define IOC_TO_AUTO_DEVICE_NR 9999
-#define IOC_AUTO_DEVICE_NR 10000
+#ifndef IOC_AUTO_DEVICE_NR
+#define IOC_AUTO_DEVICE_NR 9000
+#endif
+#define IOC_TO_AUTO_DEVICE_NR (IOC_AUTO_DEVICE_NR-1)
 
 /**
 ****************************************************************************************************

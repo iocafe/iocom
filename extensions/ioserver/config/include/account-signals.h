@@ -1,7 +1,7 @@
 /* This file is gerated by signals-to-c.py script, do not modify. */
 OSAL_C_HEADER_BEGINS
 
-typedef struct accounts_t
+typedef struct account_signals_t
 {
   iocDeviceHdr hdr;
   iocMblkSignalHdr *mblk_list[2];
@@ -30,13 +30,13 @@ typedef struct accounts_t
   }
   conf_imp;
 }
-accounts_t;
+account_signals_t;
 
-#define ACCOUNTS_CONF_EXP_MBLK_SZ 272
-#define ACCOUNTS_CONF_IMP_MBLK_SZ 276
+#define ACCOUNT_SIGNALS_CONF_EXP_MBLK_SZ 272
+#define ACCOUNT_SIGNALS_CONF_IMP_MBLK_SZ 276
 
-void accounts_init_signal_struct(accounts_t *s);
-#define ACCOUNTS_CONF_EXP_FRD_BUF_ARRAY_SZ 257
-#define ACCOUNTS_CONF_IMP_TOD_BUF_ARRAY_SZ 257
+void account_signals_init_signal_struct(account_signals_t *s);
+#define ACCOUNT_SIGNALS_CONF_EXP_FRD_BUF_ARRAY_SZ 257
+#define ACCOUNT_SIGNALS_CONF_IMP_TOD_BUF_ARRAY_SZ 257
 
 OSAL_C_HEADER_ENDS

@@ -53,7 +53,7 @@ public:
 private:
     /* The IO application hosts account information for these IO networks.
      */
-    FrankAccounts *m_published[IOAPP_MAX_PUBLISHED_NETWORKS];
+    // FrankAccounts *m_published[IOAPP_MAX_PUBLISHED_NETWORKS];
 
     /* Number of published IO networks.
      */
