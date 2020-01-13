@@ -30,9 +30,8 @@ FrankMain::FrankMain(
     const os_char *network_name,
     const os_char *publish)
 {
+    iocBServerParams prm;
     os_int i;
-    os_char nn_buf[IOC_NETWORK_NAME_SZ];
-    const os_char *p;
 
     /* Clear member variables.
      */
@@ -43,36 +42,27 @@ FrankMain::FrankMain(
      */
     frank_init_signal_struct(&m_signals);
 
-    /* Call basic server implementation to do the rest of memory
-       block signal setup.
-     */
-    ioc_initialize_bserver_main(&m_bmain, &ioapp_root, device_name, device_nr, network_name);
-    ioc_setup_bserver_mblks(&m_bmain,
-        &m_signals.exp.hdr,
-        &m_signals.imp.hdr,
-        &m_signals.conf_exp.hdr,
-        &m_signals.conf_imp.hdr,
-        ioapp_signal_config,
-        sizeof(ioapp_signal_config),
-        ioapp_network_defaults,
-        sizeof(ioapp_network_defaults));
+    os_memclear(&prm, sizeof(prm));
+    prm.device_name = device_name;
+    prm.device_nr = device_nr;
+    prm.network_name = network_name;
+    prm.signals_exp_hdr = &m_signals.exp.hdr;
+    prm.signals_imp_hdr = &m_signals.imp.hdr;
+    prm.signals_conf_exp_hdr = &m_signals.conf_exp.hdr;
+    prm.signals_conf_imp_hdr = &m_signals.conf_imp.hdr;
+    prm.signal_config = ioapp_signal_config;
+    prm.signal_config_sz = sizeof(ioapp_signal_config);
+    prm.network_defaults = ioapp_network_defaults;
+    prm.network_defaults_sz = sizeof(ioapp_network_defaults);
+    ioc_initialize_bserver(&m_bmain, &ioapp_root, &prm);
 
     /* Call basic server implementation macro to set up control stream.
      */
     IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
 
-    /* Host user accounts for "iocafenet" and "asteroidnet"
-    p = publish;
-    m_nro_published = 0;
-    if (p)
-    {
-        while (!osal_str_list_iter(nn_buf, sizeof(nn_buf), &p, OSAL_STR_NEXT_ITEM) &&
-            m_nro_published < IOAPP_MAX_PUBLISHED_NETWORKS)
-        {
-            m_published[m_nro_published++] = new FrankAccounts(nn_buf);
-        }
-    }
+    /* Publish IO networks hosted by frank, such as "iocafenet" or "asteroidnet"
      */
+    ioc_publish_bserver_networks(&m_bmain, publish);
 }
 
 
@@ -85,7 +75,6 @@ FrankMain::~FrankMain()
 {
     os_int i;
 
-
     /* Finish with 'frank' applications.
      */
     for (i = 0; i < MAX_APPS; i++)
@@ -93,14 +82,7 @@ FrankMain::~FrankMain()
         delete m_app[i];
     }
 
-    /* Delete publiched IO network structures.
-     */
-    /* for (i = 0; i < m_nro_published; i++)
-    {
-        delete m_published[i];
-    } */
-
-    ioc_release_bserver_main(&m_bmain);
+    ioc_release_bserver(&m_bmain);
 }
 
 
@@ -162,18 +144,9 @@ osalStatus FrankMain::connect_to_device()
 */
 void FrankMain::run()
 {
-    os_int i;
-
     /* Call basic server implementation to maintain control streams.
      */
     ioc_run_bserver_main(&m_bmain);
-
-    /* Run published IO network structures.
-    for (i = 0; i < m_nro_published; i++)
-    {
-        m_published[i]->run();
-    }
-     */
 }
 
 

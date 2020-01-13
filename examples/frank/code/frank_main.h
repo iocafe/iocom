@@ -14,10 +14,6 @@
 ****************************************************************************************************
 */
 
-/* Maximum number of IO networks to publish by this application.
- */
-#define IOAPP_MAX_PUBLISHED_NETWORKS 20
-
 
 /**
 ****************************************************************************************************
@@ -57,7 +53,7 @@ private:
 
     /* Number of published IO networks.
      */
-    os_int m_nro_published;
+    // os_int m_nro_published;
 
     /* Basic server  (from ioserver extensions) main structure.
      */
@@ -65,8 +61,7 @@ private:
 
     /* Structure holding signals for the IO node.
      */
-    frank_t
-        m_signals;
+    frank_t m_signals;
 
     static const os_int MAX_APPS = 20;
     class FrankApplication *m_app[MAX_APPS];
