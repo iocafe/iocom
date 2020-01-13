@@ -90,7 +90,7 @@ void ioc_setup_bserver_mblks(
 
     blockprm.mblk_name = "info";
     blockprm.buf = (char*)signal_config;
-    blockprm.nbytes = signal_config_sz;
+    blockprm.nbytes = (os_int)signal_config_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&m->info, OS_NULL, m->root, &blockprm);
 
@@ -156,7 +156,7 @@ void ioc_setup_bserver_accounts(
 
     blockprm.mblk_name = "info";
     blockprm.buf = (os_char*)account_config;
-    blockprm.nbytes = account_config_sz;
+    blockprm.nbytes = (os_int)account_config_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&a->accounts_info, OS_NULL, a->root, &blockprm);
 
