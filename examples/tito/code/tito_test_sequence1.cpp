@@ -84,7 +84,7 @@ void TitoTestSequence1::run()
     {
         if (os_elapsed(&start_t, 50))
         {
-            touch_sensor = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits);
+            touch_sensor = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits, IOC_SIGNAL_DEFAULT);
             //osal_trace_int("touch = ", touch_sensor);
 
             if (up) brig *= 2;
@@ -95,7 +95,6 @@ void TitoTestSequence1::run()
             ioc_sets_int(&gina1->imp.dimmer_led, brig, OSAL_STATE_CONNECTED);
             if (brig >= 4090) up = 0;
             if (brig == 0) {up = 1; brig = 1;}
-
 
             os_get_timer(&start_t);
             led_on = !led_on;

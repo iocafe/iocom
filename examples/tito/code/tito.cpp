@@ -46,7 +46,7 @@ osalStatus osal_main(
     /* Initialize communication root object.
      */
     ioc_initialize_root(&tito_root);
-    ioc_set_iodevice_id(&ioapp_root, "tito", IOC_AUTO_DEVICE_NR, "iocafenet");
+    ioc_set_iodevice_id(&tito_root, "tito", IOC_AUTO_DEVICE_NR, "iocafenet");
 
     /* Initialize the transport, socket, TLS, serial, etc..
      */

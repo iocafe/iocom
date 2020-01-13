@@ -14,6 +14,7 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#include "ioserver.h"
 #include "gina-for-tito.h"
 #include "tito_main.h"
 #include "tito_io_device.h"
