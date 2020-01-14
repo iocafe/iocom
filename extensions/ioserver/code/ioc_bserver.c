@@ -242,16 +242,14 @@ static void ioc_setup_bserver_network(
     const os_char *network_name)
 {
     iocMemoryBlockParams blockprm;
-    const os_char *accounts_device_name = "accounts";
-    const os_int accounts_device_nr = 1;
 
     os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
 
     /* Generate memory blocks.
      */
     os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.device_name = accounts_device_name;
-    blockprm.device_nr = accounts_device_nr;
+    blockprm.device_name = ioc_accounts_device_name;
+    blockprm.device_nr = ioc_accounts_device_nr;
     blockprm.network_name = n->network_name;
 
     blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;

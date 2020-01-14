@@ -522,7 +522,7 @@ static osalStatus ioc_nconf_process_block(
 /**
 ****************************************************************************************************
 
-  @brief Set up node configuuration search structure (pointers).
+  @brief Set up node configuration search structure (pointers).
 
   Call this function when device configuration has been loaded or default configuration is seleted
   for use. The function sets. Pointers to configuration data so that it is easy to use it

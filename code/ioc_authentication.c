@@ -244,11 +244,11 @@ osalStatus ioc_process_received_authentication_frame(
     /* Authenticate user
      */
     root = con->link.root;
-    if (root->authentication_func)
+    if (root->authorization_func)
     {
         ioc_release_allowed_networks(&con->allowed_networks);
-        s = root->authentication_func(root, &con->allowed_networks,
-            &user_account, &root->authentication_context);
+        s = root->authorization_func(root, &con->allowed_networks,
+            &user_account, &root->authorization_context);
         if (s) return s;
     }
 
@@ -285,8 +285,8 @@ void ioc_enable_user_authentication(
     ioc_authenticate_user_func *func,
     void *context)
 {
-    root->authentication_func = func;
-    root->authentication_context = context;
+    root->authorization_func = func;
+    root->authorization_context = context;
 }
 
 
