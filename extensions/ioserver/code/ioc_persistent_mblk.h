@@ -1,6 +1,6 @@
 /**
 
-  @file    ioc_load_persistent_into_mblk.h
+  @file    ioc_persistent_mblk.h
   @brief   Load persistent data block as memory block content.
   @author  Pekka Lehtikoski
   @version 1.0

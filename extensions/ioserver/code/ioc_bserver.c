@@ -1,6 +1,6 @@
 /**
 
-  @file    ioc_basic_server.h
+  @file    ioc_bserver.c
   @brief   Structures and functions to implement basic server.
   @author  Pekka Lehtikoski
   @version 1.0

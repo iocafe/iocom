@@ -272,7 +272,7 @@ osal_debug_error("HERE AUTH RECEIVED");
 
   @param   root Pointer to iocom root object.
   @param   func Pointer to authentication function. Authentication function needs to check
-           if user/device can connect and which IO networks it can access. Set ioc_authenticate
+           if user/device can connect and which IO networks it can access. Set ioc_authorize
            here to use default ioserver extension library authentication.
   @param   contect Pointer to pass to authentication callback. Can be used to pass any
            application data to the callback. Set OS_NULL if not needed.

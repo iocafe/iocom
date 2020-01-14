@@ -1,7 +1,7 @@
 /**
 
-  @file    ioc_bserver_config.c
-  @brief   Basic server, compile code based on JSON configuration.
+  @file    ioc_authorize.c
+  @brief   User/device accounts.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    12.1.2020
@@ -14,12 +14,20 @@
 ****************************************************************************************************
 */
 #include "ioserver.h"
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
 
-#include "account-signals.h"
-#include "account-defaults.h"
-#include "accounts-mblk-binary.h"
 
-#include "account-signals.c"
-#include "account-defaults.c"
-#include "accounts-mblk-binary.c"
 
+
+osalStatus ioc_authorize(
+    struct iocRoot *root,
+    iocAllowedNetworkConf *allowed_networks,
+    iocUserAccount *user_account,
+    void *context)
+{
+    return OSAL_SUCCESS;
+    // return OSAL_STATUS_FAILED;
+}
+
+
+#endif
