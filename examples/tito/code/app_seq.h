@@ -1,7 +1,7 @@
 /**
 
-  @file    tito_gina_io_device.h
-  @brief   Wrapper representing Gina IO device interface.
+  @file    app_seq.h
+  @brief   Sequence base class.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
@@ -14,33 +14,32 @@
 ****************************************************************************************************
 */
 
+class AppInstance;
+
 /**
 ****************************************************************************************************
-  IO device interface wrapper class.
+
+  Application instance running one IO network.
+
 ****************************************************************************************************
 */
-class TitoGinaIoDevice : public TitoIoDevice
+class AppSequence
 {
 public:
     /* Constructor and virtual destructor.
-     */
-    TitoGinaIoDevice();
-    virtual ~TitoGinaIoDevice();
+	 */
+    AppSequence();
+    virtual ~AppSequence();
 
-    gina_t *inititalize(const os_char *network_name, os_uint device_nr);
-    virtual void release();
+    virtual void start(AppInstance *app);
+    virtual void stop();
+    virtual void run() {};
 
-    os_boolean
-        m_initialized;
+    gina_t *gina1;
+    gina_t *gina2;
 
-    /* Memory block handles.
-     */
-    iocHandle
-        m_gina_export,
-        m_gina_import;
-
-    /* Gina IO definition structure.
-     */
-    gina_t
-        m_gina_def;
+    osalEvent m_event;
+    osalThreadHandle *m_thread;
+    os_boolean m_stop_thread;
+    os_boolean m_started;
 };

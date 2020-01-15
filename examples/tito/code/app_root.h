@@ -1,7 +1,7 @@
 /**
 
-  @file    tito_test_application.h
-  @brief   Controller application running for one IO device network.
+  @file    app_root.h
+  @brief   Controller example with static IO defice configuration.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
@@ -14,32 +14,30 @@
 ****************************************************************************************************
 */
 
+
+
 /**
 ****************************************************************************************************
 
-  Application instance running one IO network.
+  Tito main object.
 
 ****************************************************************************************************
 */
-class TitoTestApplication : public TitoApplication
+class AppRoot
 {
 public:
     /* Constructor.
 	 */
-    TitoTestApplication();
+    AppRoot();
 
 	/* Virtual destructor.
  	 */
-    virtual ~TitoTestApplication();
+    virtual ~AppRoot();
 
-    virtual void start(const os_char *network_name, os_uint device_nr);
-    virtual void stop();
-    virtual void run();
+    static const os_int MAX_APPS = 20;
+    os_int m_nro_apps;
+    class AppInstance *m_app[MAX_APPS];
 
-    TitoGinaIoDevice m_gina1;
-    TitoGinaIoDevice m_gina2;
-    gina_t *m_gina1_def;
-    gina_t *m_gina2_def;
-
-    TitoTestSequence1 m_test_seq1;
+    osalStatus listen_for_clients();
+    osalStatus loop();
 };

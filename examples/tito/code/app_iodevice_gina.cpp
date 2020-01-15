@@ -1,6 +1,6 @@
 /**
 
-  @file    gina_io_device.cpp
+  @file    app_iodevice_gina.cpp
   @brief   Wrapper representing Gina IO device interface.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "tito.h"
+#include "app_main.h"
 
 
 /**
@@ -27,7 +27,7 @@
 
 ****************************************************************************************************
 */
-TitoGinaIoDevice::TitoGinaIoDevice() : TitoIoDevice()
+GinaIoDevice::GinaIoDevice() : AppIoDevice()
 {
     os_strncpy(m_device_name, "gina", IOC_NAME_SZ);
     m_initialized = OS_FALSE;
@@ -45,13 +45,13 @@ TitoGinaIoDevice::TitoGinaIoDevice() : TitoIoDevice()
 
 ****************************************************************************************************
 */
-TitoGinaIoDevice::~TitoGinaIoDevice()
+GinaIoDevice::~GinaIoDevice()
 {
     release();
 }
 
 
-gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr)
+gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr)
 {
     iocMemoryBlockParams blockprm;
 
@@ -62,7 +62,6 @@ gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_uint devic
     /* Setup initial Gina IO board definition structure.
      */
     gina_init_signal_struct(&m_gina_def);
-
 
     /* Dynamic conf: put data from json in
      */
@@ -77,12 +76,12 @@ gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_uint devic
     blockprm.mblk_name = m_gina_def.exp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.exp.hdr.mblk_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_gina_export, OS_NULL, &tito_root, &blockprm);
+    ioc_initialize_memory_block(&m_gina_export, OS_NULL, &app_iocom, &blockprm);
 
     blockprm.mblk_name = m_gina_def.imp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.imp.hdr.mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_gina_import, OS_NULL, &tito_root, &blockprm);
+    ioc_initialize_memory_block(&m_gina_import, OS_NULL, &app_iocom, &blockprm);
 
     ioc_set_handle_to_signals(&m_gina_def.imp.hdr, &m_gina_import);
     ioc_set_handle_to_signals(&m_gina_def.exp.hdr, &m_gina_export);
@@ -97,7 +96,7 @@ gina_t *TitoGinaIoDevice::inititalize(const os_char *network_name, os_uint devic
 }
 
 
-void TitoGinaIoDevice::release()
+void GinaIoDevice::release()
 {
     if (!m_initialized) return;
     ioc_release_memory_block(&m_gina_export);

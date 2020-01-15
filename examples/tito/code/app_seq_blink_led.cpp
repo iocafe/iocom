@@ -1,6 +1,6 @@
 /**
 
-  @file    tito_test_sequence1.cpp
+  @file    app_seq_blink_led.cpp
   @brief   Some example sequence as own thread.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "tito.h"
+#include "app_main.h"
 
 
 /**
@@ -26,7 +26,7 @@
 
 ****************************************************************************************************
 */
-TitoTestSequence1::TitoTestSequence1() : TitoSequence()
+BlinkLedSequence::BlinkLedSequence() : AppSequence()
 {
     gina1 = 0;
 }
@@ -42,22 +42,22 @@ TitoTestSequence1::TitoTestSequence1() : TitoSequence()
 
 ****************************************************************************************************
 */
-TitoTestSequence1::~TitoTestSequence1()
+BlinkLedSequence::~BlinkLedSequence()
 {
 }
 
 
-void TitoTestSequence1::start(TitoTestApplication *app)
+void BlinkLedSequence::start(AppInstance *app)
 {
     if (m_started) return;
-    TitoSequence::start(app);
+    AppSequence::start(app);
 }
 
 
-void TitoTestSequence1::stop()
+void BlinkLedSequence::stop()
 {
     if (!m_started) return;
-    TitoSequence::stop();
+    AppSequence::stop();
 }
 
 
@@ -71,7 +71,7 @@ void TitoTestSequence1::stop()
 
 ****************************************************************************************************
 */
-void TitoTestSequence1::run()
+void BlinkLedSequence::run()
 {
     os_boolean led_on = OS_TRUE;
     os_char state_bits;

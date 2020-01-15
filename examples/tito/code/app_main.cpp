@@ -1,6 +1,6 @@
 /**
 
-  @file    tito.c
+  @file    app_main.c
   @brief   Tito controller using static IO device configuration.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,14 +13,14 @@
 
 ****************************************************************************************************
 */
-#include "tito.h"
+#include "app_main.h"
 
 /* The devicedir is here for testing only, take away.
  */
 #include "devicedir.h"
 
-iocRoot tito_root;
-static TitoMain *tito_main;
+iocRoot app_iocom;
+static AppRoot *tito_main;
 
 
 /**
@@ -45,8 +45,8 @@ osalStatus osal_main(
 
     /* Initialize communication root object.
      */
-    ioc_initialize_root(&tito_root);
-    ioc_set_iodevice_id(&tito_root, "tito", IOC_AUTO_DEVICE_NR, "pass", "iocafenet");
+    ioc_initialize_root(&app_iocom);
+    ioc_set_iodevice_id(&app_iocom, "tito", IOC_AUTO_DEVICE_NR, "pass", "iocafenet");
 
     /* Initialize the transport, socket, TLS, serial, etc..
      */
@@ -55,7 +55,7 @@ osalStatus osal_main(
 
     /* Create tito main object and start listening for clients.
      */
-    tito_main = new TitoMain;
+    tito_main = new AppRoot;
     tito_main->listen_for_clients();
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
@@ -85,7 +85,7 @@ osalStatus osal_loop(
 {
     /* The devicedir call is here for testing only, take away.
      */
-    io_device_console(&tito_root);
+    io_device_console(&app_iocom);
 
     return tito_main->loop();
 }
@@ -112,7 +112,7 @@ void osal_main_cleanup(
 {
     delete tito_main;
 
-    ioc_release_root(&tito_root);
+    ioc_release_root(&app_iocom);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }

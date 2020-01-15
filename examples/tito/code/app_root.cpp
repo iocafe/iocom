@@ -1,6 +1,6 @@
 /**
 
-  @file    tito_main.h
+  @file    app_root.cpp
   @brief   Controller example with static IO defice configuration.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "tito.h"
+#include "app_main.h"
 
 
 /**
@@ -27,26 +27,26 @@
 
 ****************************************************************************************************
 */
-TitoMain::TitoMain()
+AppRoot::AppRoot()
 {
-    TitoApplication *app;
+    AppInstance *app;
     /* Lauch tour 'tito' applications, one for iocafenet, one for markkunet and two for surfnet.
      */
     m_nro_apps = 0;
 
-    app = new TitoTestApplication();
+    app = new AppInstance();
     app->start("iocafenet", 1);
     m_app[m_nro_apps++] = app;
 
-    /* app = new TitoTestApplication();
+    /* app = new AppInstance();
     app->start("markkunet", 1);
     m_app[m_nro_apps++] = app;
 
-    app = new TitoTestApplication();
+    app = new AppInstance();
     app->start("surfnet", 1);
     m_app[m_nro_apps++] = app;
 
-    app = new TitoTestApplication();
+    app = new AppInstance();
     app->start("surfnet", 2);
     m_app[m_nro_apps++] = app; */
 
@@ -65,7 +65,7 @@ TitoMain::TitoMain()
 
 ****************************************************************************************************
 */
-TitoMain::~TitoMain()
+AppRoot::~AppRoot()
 {
     os_int i;
 
@@ -78,14 +78,14 @@ TitoMain::~TitoMain()
 }
 
 
-osalStatus TitoMain::listen_for_clients()
+osalStatus AppRoot::listen_for_clients()
 {
     iocEndPoint *ep = OS_NULL;
     iocEndPointParams epprm;
 
     const osalStreamInterface *iface = OSAL_TLS_IFACE;
 
-    ep = ioc_initialize_end_point(OS_NULL, &tito_root);
+    ep = ioc_initialize_end_point(OS_NULL, &app_iocom);
     os_memclear(&epprm, sizeof(epprm));
     epprm.iface = iface;
     epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD;
@@ -96,7 +96,7 @@ osalStatus TitoMain::listen_for_clients()
 }
 
 
-osalStatus TitoMain::loop()
+osalStatus AppRoot::loop()
 {
     os_sleep(100);
     return OSAL_SUCCESS;

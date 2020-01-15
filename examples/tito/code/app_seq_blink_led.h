@@ -1,7 +1,7 @@
 /**
 
-  @file    tito_main.h
-  @brief   Controller example with static IO defice configuration.
+  @file    app_seq_blink_led.h
+  @brief   Some example sequence as own thread.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
@@ -14,30 +14,22 @@
 ****************************************************************************************************
 */
 
-
-
 /**
 ****************************************************************************************************
 
-  Tito main object.
+  Application instance running one IO network.
 
 ****************************************************************************************************
 */
-class TitoMain
+class BlinkLedSequence : public AppSequence
 {
 public:
-    /* Constructor.
-	 */
-    TitoMain();
+    /* Constructor and virtual destructor.
+     */
+    BlinkLedSequence();
+    virtual ~BlinkLedSequence();
 
-	/* Virtual destructor.
- 	 */
-    virtual ~TitoMain();
-
-    static const os_int MAX_APPS = 20;
-    os_int m_nro_apps;
-    class TitoApplication *m_app[MAX_APPS];
-
-    osalStatus listen_for_clients();
-    osalStatus loop();
+    virtual void start(AppInstance *app);
+    virtual void stop();
+    virtual void run();
 };

@@ -1,7 +1,7 @@
 /**
 
-  @file    tito_test_application.cpp
-  @brief   Controller application running for one IO device network.
+  @file    app_seq.cpp
+  @brief   Sequence base class.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
@@ -13,7 +13,9 @@
 
 ****************************************************************************************************
 */
-#include "tito.h"
+#include "app_main.h"
+
+static void tito_test_sequence_thread_func(void *prm, osalEvent done);
 
 
 /**
@@ -27,8 +29,10 @@
 
 ****************************************************************************************************
 */
-TitoTestApplication::TitoTestApplication() : TitoApplication()
+AppSequence::AppSequence()
 {
+    m_event = osal_event_create();
+    m_started = OS_FALSE;
 }
 
 
@@ -43,45 +47,47 @@ TitoTestApplication::TitoTestApplication() : TitoApplication()
 
 ****************************************************************************************************
 */
-TitoTestApplication::~TitoTestApplication()
+AppSequence::~AppSequence()
 {
+    stop();
+    osal_event_delete(m_event);
 }
 
 
-void TitoTestApplication::start(const os_char *network_name, os_uint device_nr)
+void AppSequence::start(AppInstance *app)
 {
     if (m_started) return;
 
-    initialize(network_name, device_nr);
+    gina1 = app->m_gina1_def;
+    gina2 = app->m_gina2_def;
 
-    m_gina1_def = m_gina1.inititalize(m_network_name, 1);
-    m_gina2_def = m_gina2.inititalize(m_network_name, 2);
+    /* Start running test_sequence for this IO device network in own thread.
+     */
+    m_stop_thread = OS_FALSE;
+    m_thread = osal_thread_create(tito_test_sequence_thread_func, this,
+        OS_NULL, OSAL_THREAD_ATTACHED);
 
-    TitoApplication::startapp();
-
-    m_test_seq1.start(this);
+    m_started = OS_TRUE;
 }
 
-void TitoTestApplication::stop()
+
+/* Join worker thread to this thread.
+ */
+void AppSequence::stop()
 {
     if (!m_started) return;
 
-    TitoApplication::stop();
+    m_stop_thread = OS_TRUE;
+    osal_event_set(m_event);
+    osal_thread_join(m_thread);
+    m_started = OS_FALSE;
 }
 
-void TitoTestApplication::run()
+
+
+static void tito_test_sequence_thread_func(void *prm, osalEvent done)
 {
-
-    while (!m_stop_thread && osal_go())
-    {
-//        osal_event_wait(m_event, OSAL_EVENT_INFINITE);
-
-        os_sleep(5);
-        ioc_send(&m_gina1.m_gina_import);
-        ioc_send(&m_gina2.m_gina_import);
-        ioc_receive(&m_gina1.m_gina_export);
-        ioc_receive(&m_gina2.m_gina_export);
-    }
-
-    m_test_seq1.stop();
+    AppSequence *seq = (AppSequence*)prm;
+    osal_event_set(done);
+    seq->run();
 }

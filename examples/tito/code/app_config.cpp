@@ -1,7 +1,7 @@
 /**
 
-  @file    config.c
-  @brief   Tito IO board example featuring  IoT device.
+  @file    app_config.cpp
+  @brief   Compile automatically generated C code.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
@@ -15,7 +15,7 @@
 
 ****************************************************************************************************
 */
-#include "tito.h"
+#include "app_main.h"
 
 #include "gina-for-tito.c"
 

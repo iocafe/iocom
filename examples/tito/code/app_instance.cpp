@@ -1,10 +1,10 @@
 /**
 
-  @file    tito_application.cpp
-  @brief   Controller application base class.
+  @file    app_instance.cpp
+  @brief   IO controller application's base class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    15.1.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,9 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "tito.h"
-
-static void tito_application_thread_func(void *prm, osalEvent done);
+#include "app_main.h"
 
 
 /**
@@ -30,10 +28,8 @@ static void tito_application_thread_func(void *prm, osalEvent done);
 
 ****************************************************************************************************
 */
-TitoApplication::TitoApplication()
+AppInstance::AppInstance()
 {
-    m_event = osal_event_create();
-    m_started = OS_FALSE;
 }
 
 
@@ -48,55 +44,43 @@ TitoApplication::TitoApplication()
 
 ****************************************************************************************************
 */
-TitoApplication::~TitoApplication()
+AppInstance::~AppInstance()
 {
-    stop();
-    osal_event_delete(m_event);
 }
 
 
-void TitoApplication::initialize(const os_char *network_name, os_uint device_nr)
+void AppInstance::initialize(const os_char *network_name, os_uint device_nr)
 {
 
-    os_strncpy(m_controller_device_name, "tito", IOC_NAME_SZ);
+//    os_strncpy(m_controller_device_name, "tito", IOC_NAME_SZ);
     os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
-    m_controller_device_nr = device_nr;
+//    m_controller_device_nr = device_nr;
 }
 
-void TitoApplication::startapp()
+
+void AppInstance::start(const os_char *network_name, os_uint device_nr)
 {
-    if (m_started) return;
+    initialize(network_name, device_nr);
 
-    m_stop_thread = OS_FALSE;
-    m_thread = osal_thread_create(tito_application_thread_func, this,
-        OS_NULL, OSAL_THREAD_ATTACHED);
+    m_gina1_def = m_gina1.inititalize(m_network_name, 1);
+    m_gina2_def = m_gina2.inititalize(m_network_name, 2);
 
-    m_started = OS_TRUE;
+    m_test_seq1.start(this);
 }
 
-void TitoApplication::stop()
+void AppInstance::stop()
 {
-    if (!m_started) return;
-
-    m_stop_thread = OS_TRUE;
-    osal_event_set(m_event);
-    osal_thread_join(m_thread);
-    m_started = OS_FALSE;
+    m_test_seq1.stop();
 }
 
-
-
-void TitoApplication::run()
+void AppInstance::run()
 {
-    while (!m_stop_thread && osal_go())
-    {
-        osal_event_wait(m_event, OSAL_EVENT_INFINITE);
-    }
+    os_sleep(5);
+    ioc_send(&m_gina1.m_gina_import);
+    ioc_send(&m_gina2.m_gina_import);
+    ioc_receive(&m_gina1.m_gina_export);
+    ioc_receive(&m_gina2.m_gina_export);
+
 }
 
-static void tito_application_thread_func(void *prm, osalEvent done)
-{
-    TitoApplication *app = (TitoApplication*)prm;
-    osal_event_set(done);
-    app->run();
-}
+
