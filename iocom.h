@@ -75,6 +75,12 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+/* Security and testing is difficult with security on, define to turn much of it off.
+ */
+#ifndef IOC_RELAX_SECURITY
+#define IOC_RELAX_SECURITY 0
+#endif
+
 /* Include all base iocom headers.
  */
 #include "code/ioc_timing.h"

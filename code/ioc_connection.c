@@ -403,6 +403,9 @@ osalStatus ioc_connect(
     }
 #endif
     os_strncpy(con->parameters, prm->parameters, IOC_CONNECTION_PRMSTR_SZ);
+#if IOC_AUTHENTICATION_CODE
+    os_strncpy(con->password_override, prm->password_override, IOC_PASSWORD_SZ);
+#endif
 
     /* Release any previously allocated buffers.
      */

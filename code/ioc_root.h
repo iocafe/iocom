@@ -247,7 +247,7 @@ typedef struct iocRoot
 #endif
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    ioc_authenticate_user_func *authorization_func;
+    ioc_authorize_user_func *authorization_func;
     void *authorization_context;
 #endif
 }

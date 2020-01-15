@@ -86,8 +86,18 @@ void ioc_make_authentication_frame(
 
     ioc_msg_setstr(root->network_name, &p);
 
-    password = (con->iface == OSAL_TLS_IFACE)
-        ? root->password_tls : root->password_clear;
+    /* If we have password given by user
+     */
+    if (con->password_override[0] != '\0')
+    {
+        password = con->password_override;
+    }
+    else
+    {
+        password = (con->iface == OSAL_TLS_IFACE)
+            ? root->password_tls : root->password_clear;
+    }
+
     ioc_msg_setstr(password, &p);
 
     /* If other end has not acknowledged enough data to send the
@@ -181,7 +191,7 @@ osalStatus ioc_process_received_authentication_frame(
     os_char *data)
 {
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    iocUserAccount user_account;
+    iocUser user;
     iocRoot *root;
     os_uint device_nr;
     os_uchar auth_flags, *p;
@@ -191,8 +201,8 @@ osalStatus ioc_process_received_authentication_frame(
     p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
 
-    os_memclear(&user_account, sizeof(user_account));
-    user_account.flags = auth_flags;
+    os_memclear(&user, sizeof(user));
+    user.flags = auth_flags;
 
     /* If listening end of connection (server).
      */
@@ -223,7 +233,7 @@ osalStatus ioc_process_received_authentication_frame(
 #endif
     }
 
-    s = ioc_msg_getstr(user_account.user_name, IOC_DEVICE_ID_SZ, &p);
+    s = ioc_msg_getstr(user.user_name, IOC_DEVICE_ID_SZ, &p);
     if (s) return s;
 
     device_nr = ioc_msg_get_uint(&p,
@@ -232,23 +242,23 @@ osalStatus ioc_process_received_authentication_frame(
     if (device_nr)
     {
         osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
-        os_strncat(user_account.user_name, nbuf, IOC_DEVICE_ID_SZ);
+        os_strncat(user.user_name, nbuf, IOC_DEVICE_ID_SZ);
     }
 
-    s = ioc_msg_getstr(user_account.network_name, IOC_NETWORK_NAME_SZ, &p);
+    s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
     if (s) return s;
 
-    s = ioc_msg_getstr(user_account.password, IOC_PASSWORD_SZ, &p);
+    s = ioc_msg_getstr(user.password, IOC_PASSWORD_SZ, &p);
     if (s) return s;
 
-    /* Authenticate user
+    /* Check user autorization.
      */
     root = con->link.root;
     if (root->authorization_func)
     {
         ioc_release_allowed_networks(&con->allowed_networks);
         s = root->authorization_func(root, &con->allowed_networks,
-            &user_account, &root->authorization_context);
+            &user, OS_NULL /* IP address */, &root->authorization_context);
         if (s) return s;
     }
 
@@ -282,7 +292,7 @@ osal_debug_error("HERE AUTH RECEIVED");
 */
 void ioc_enable_user_authentication(
     struct iocRoot *root,
-    ioc_authenticate_user_func *func,
+    ioc_authorize_user_func *func,
     void *context)
 {
     root->authorization_func = func;
@@ -293,7 +303,7 @@ void ioc_enable_user_authentication(
 /**
 ****************************************************************************************************
 
-  @brief Release allowed networks structure set up by ioc_authenticate_user_func()
+  @brief Release allowed networks structure set up by ioc_authorize_user_func()
   @anchor ioc_release_allowed_networks
 
   The ioc_release_allowed_networks() function frees memory reserved for allowed network

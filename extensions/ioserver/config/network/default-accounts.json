@@ -1,26 +1,26 @@
 {
 	"accounts": {
-		"title": "User account defaults",
+		"title": "Default user accounts",
 
 		"accounts": [{
-				"user": "ispy.iocafenet",
-				"password": "mypass",
+				"user": "ispy*",
+				"password": "pass",
 				"privileges": "admin"
 			},
 			{
-				"user": "gina2.iocafenet",
-				"password": "mypass"
+				"user": "gina2",
+				"password": "pass"
 			}
 		],
 
 		"requests": [{
 			"user": "gina1.iocafenet",
-			"password": "mypass"
+			"password": "pass"
 		}],
 
 		"alarms": [{
 			"user": "evil1.doomnet",
-			"password": "mypass"
+			"password": "pass"
 		}],
 
 		"whitelist": [{

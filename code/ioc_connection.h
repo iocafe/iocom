@@ -190,6 +190,14 @@ typedef struct
     /** Depending on connection type, can be "127.0.0.1:8817" for TCP socket.
      */
     const os_char *parameters;
+
+    /** User name to overide device name. Leave to OS_NULL for normal IO devices.
+     */
+    // const os_char *user_name_override;
+
+    /** Password to overide device default password. Leave to OS_NULL for normal IO devices.
+     */
+    const os_char *password_override;
   
     /** If socket connection is accepted by listening end point, this is
         the socket handle. Otherwise this argument needs to be OS_NULL.
@@ -429,6 +437,16 @@ typedef struct iocConnection
     /** Parameter string
      */
     os_char parameters[IOC_CONNECTION_PRMSTR_SZ];
+
+#if IOC_AUTHENTICATION_CODE
+    /** User name to overide device name. Empty string to use device name and number.
+     */
+    // os_char user_name_override[IOC_NAME_SZ];
+
+    /** Password to overide device default password. Empty string to use device password.
+     */
+    os_char password_override[IOC_PASSWORD_SZ];
+#endif
 
     /** Total frame size, constant for connection type. For example IOC_SOCKET_FRAME_SZ
         for socket communication.

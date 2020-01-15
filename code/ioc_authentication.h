@@ -41,7 +41,7 @@ struct iocConnection;
   User account.
 ****************************************************************************************************
 */
-typedef struct iocUserAccount
+typedef struct iocUser
 {
     /** Device or user name, including serial number (if applicable).
      */
@@ -59,7 +59,7 @@ typedef struct iocUserAccount
      */
     os_ushort flags;
 }
-iocUserAccount;
+iocUser;
 
 
 /**
@@ -124,20 +124,21 @@ osalStatus ioc_process_received_authentication_frame(
    accessed trough the connection and priviliges for each network. Must be released
    by ioc_release_allowed_networks().
  */
-typedef osalStatus ioc_authenticate_user_func(
+typedef osalStatus ioc_authorize_user_func(
     struct iocRoot *root,
     iocAllowedNetworkConf *allowed_networks,
-    iocUserAccount *user_account,
+    iocUser *user_account,
+    os_char *ip,
     void *context);
 
 /* Enable user authentication (set authentication callback function).
  */
 void ioc_enable_user_authentication(
     struct iocRoot *root,
-    ioc_authenticate_user_func *func,
+    ioc_authorize_user_func *func,
     void *context);
 
-/* Release allowed networks structure set up by ioc_authenticate_user_func()
+/* Release allowed networks structure set up by ioc_authorize_user_func()
  */
 void ioc_release_allowed_networks(
     iocAllowedNetworkConf *allowed_networks);

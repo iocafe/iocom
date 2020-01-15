@@ -28,12 +28,6 @@ typedef struct iocAccountConf
 }
 iocAccountConf;
 
-typedef struct iocUserAuthorizationData
-{
-    os_boolean priviliges;
-}
-iocUserAuthorizationData;
-
 
 extern const os_char ioc_accounts_device_name[];
 extern const os_int ioc_accounts_device_nr;
@@ -60,7 +54,8 @@ void ioc_publish_io_networks(
 osalStatus ioc_authorize(
     struct iocRoot *root,
     iocAllowedNetworkConf *allowed_networks,
-    iocUserAccount *user_account,
+    iocUser *user,
+    os_char *ip,
     void *context);
 
 #endif

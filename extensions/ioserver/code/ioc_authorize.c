@@ -20,23 +20,20 @@
  */
 typedef struct
 {
-    iocUserAuthorizationData *auth_data;
-    iocUserAccount *user_account;
+    iocUser *user;
 
-    /** Pointer to node configuration beging set up.
+    /** Pointers to data for current item in account info.
      */
-    // iocNodeConf *node;
-
-    /** Current network interface, wifi network and connection indices
-     */
-    // os_int nic_ix;
-    // os_int wifi_ix;
-    // os_int connection_ix;
+    const os_char *user_name, *password, *priviliges, *ip;
 
     /** Latest information parsed from JSON
         tag or key, '-' for array elements
      */
     const os_char *tag;
+
+    /** Decision on user authotization check.
+     */
+    os_boolean valid_user;
 }
 iocAccountsParserState;
 
@@ -53,8 +50,9 @@ static osalStatus ioc_authorize_process_block(
     osalJsonIndex *jindex);
 
 static osalStatus ioc_authorize_parse_accounts(
-    iocUserAuthorizationData *auth_data,
-    iocUserAccount *user_account,
+    iocAllowedNetworkConf *allowed_networks,
+    iocUser *user,
+    os_char *ip,
     const os_char *config,
     os_memsz config_sz);
 
@@ -63,49 +61,64 @@ static osalStatus ioc_authorize_parse_accounts(
 /**
 ****************************************************************************************************
 
-  @brief Check if user is authorized.
+  @brief Check if the user connecting is a legimate one.
 
-  The ioc_authorize() function checks if user (as specified by user_account) is authorized to
-  connect to this server and has root priviliges.
+  The ioc_authorize() function checks if user is authorized to connect to this server
+  and has root priviliges. The function fills list of networks which can be connected.
 
-  @param   user_account User account to check. This is the received user information.
-  @return  OSAL_SUCCESS if all is fine, other values indicate an error.
+  @param   root Pointer to iocom root structure.
+  @param   allowed_networks The function stores here list of networks the user is
+           allowed to connect to.
+  @param   user User account to check, received from the new connection.
+  @param   ip From which IP address the connection came from.
+  @param   contexe Pointer to extra implementation specific data, not used by this
+           default implementation.
+  @return  OSAL_SUCCESS if all is fine, other values indicate that user is not authenticated
+           to connect (or an error).
 
 ****************************************************************************************************
 */
 osalStatus ioc_authorize(
     struct iocRoot *root,
     iocAllowedNetworkConf *allowed_networks,
-    iocUserAccount *user_account,
+    iocUser *user,
+    os_char *ip,
     void *context)
 {
     iocMemoryBlock *mblk;
-    iocUserAuthorizationData auth_data;
     osalStatus s;
 
+    /* Synchronize.
+     */
     ioc_lock(root);
 
+    /* Find account data memory block for the IO network matching to the the connecting device.
+     */
     for (mblk = root->mblk.first;
          mblk;
          mblk = mblk->link.next)
     {
         if (mblk->device_name[0] != ioc_accounts_device_name[0] ||
             mblk->device_nr != ioc_accounts_device_nr) continue;
-        if (mblk->network_name[0] != user_account->network_name[0] ||
+        if (mblk->network_name[0] != user->network_name[0] ||
             mblk->mblk_name[0] != ioc_accounts_data_mblk_name[0]) continue;
         if (os_strcmp(mblk->mblk_name, ioc_accounts_data_mblk_name)) continue;
         if (os_strcmp(mblk->device_name, ioc_accounts_device_name)) continue;
-        if (os_strcmp(mblk->network_name, user_account->network_name)) continue;
+        if (os_strcmp(mblk->network_name, user->network_name)) continue;
 
         break;
     }
     if (mblk == OS_NULL) return OSAL_STATUS_FAILED;
 
-    s = ioc_authorize_parse_accounts(&auth_data, user_account,
-        mblk->buf, mblk->nbytes);
+    /* Check if user is allowed to connect to the network.
+     */
+    s = ioc_authorize_parse_accounts(allowed_networks, user,
+        ip, mblk->buf, mblk->nbytes);
 
+    /* All done
+     */
     ioc_unlock(root);
-    return OSAL_SUCCESS;
+    return s;
 }
 
 
@@ -195,26 +208,60 @@ static osalStatus ioc_authorize_process_block(
 {
     osalJsonItem item;
     osalStatus s;
-    os_boolean is_nic_block;
     os_char array_tag_buf[16];
-
-    /* If this is beginning of signal block.
-     */
-    is_nic_block = OS_FALSE;
-    if (!os_strcmp(state->tag, "-"))
-    {
-        if (!os_strcmp(array_tag, "nic"))
-        {
-            is_nic_block = OS_TRUE;
-//            state->nic_ix++;
-//            state->wifi_ix = 0;
-        }
-    }
+    os_boolean match;
 
     while (!(s = osal_get_json_item(jindex, &item)))
     {
         if (item.code == OSAL_JSON_END_BLOCK)
         {
+            match = osal_pattern_match(state->user->user_name, state->user_name, 0);
+
+            if (match && os_strcmp(state->password, "*"))
+            {
+                match = !os_strcmp(state->user->password, state->password);
+                if (!match)
+                {
+                    /* Password error */
+
+                }
+            }
+            /* if (!os_strcmp(state->user_name, "*"))
+            {
+                match = OS_TRUE;
+            }
+            else
+            {
+                match = !os_strcmp(state->user->user_name, state->user_name);
+            }
+            if (match && os_strcmp(state->password, "*") && state->password)
+            {
+                match = !os_strcmp(state->user->password, state->password);
+            } */
+
+            /* Check IP range, etc spec: to be implemented
+               if ((match || state->user_name == OS_NULL) && state->ip)
+            {
+                match == ioc_is_ip_within_spec(state->user->ip, state->ip)
+            } */
+
+            /* White list
+             */
+            if (match)
+            {
+                if (!os_strcmp(array_tag, "whitelist"))
+                {
+
+                }
+                else if (!os_strcmp(array_tag, "blacklist"))
+                {
+
+                }
+                else if (!os_strcmp(array_tag, "accounts"))
+                {
+                    state->valid_user = OS_TRUE;
+                }
+            }
             return OSAL_SUCCESS;
         }
 
@@ -227,6 +274,7 @@ static osalStatus ioc_authorize_process_block(
         switch (item.code)
         {
             case OSAL_JSON_START_BLOCK:
+                state->user_name = state->password = state->priviliges = state->ip = OS_NULL;
                 s = ioc_authorize_process_block(state, array_tag, jindex);
                 if (s) return s;
                 break;
@@ -238,23 +286,22 @@ static osalStatus ioc_authorize_process_block(
                 break;
 
             case OSAL_JSON_VALUE_STRING:
-                if (array_tag[0] == '\0')
+                if (!os_strcmp(state->tag, "user"))
                 {
-                    if (!os_strcmp(state->tag, "device_name"))
-                    {
-                        // node->device_id.device_name = item.value.s;
-                    }
+                    state->user_name = item.value.s;
                 }
-
-                //if (is_nic_block && state->nic_ix <= OSAL_MAX_NRO_NICS)
+                else if (!os_strcmp(state->tag, "priviliges"))
                 {
-                    // nic = node->nic + state->nic_ix - 1;
-                    if (!os_strcmp(state->tag, "name"))
-                    {
-                        // nic->nic_name = item.value.s;
-                    }
+                    state->priviliges = item.value.s;
                 }
-
+                else if (!os_strcmp(state->tag, "password"))
+                {
+                    state->password = item.value.s;
+                }
+                else if (!os_strcmp(state->tag, "ip"))
+                {
+                    state->ip = item.value.s;
+                }
                 break;
 
             case OSAL_JSON_VALUE_FLOAT:
@@ -275,21 +322,30 @@ static osalStatus ioc_authorize_process_block(
 /**
 ****************************************************************************************************
 
-  @brief X.
+  @brief Check if user is authorized for specific IO device network.
 
-  X.
+  The ioc_authorize_parse_accounts() function checks if user is authorized to connect
+  a specific IO device network.
 
-  @param   auth_data Authorization data to be filled in by this function.
-  @param   user_account User account to check.
+  @param   root Pointer to iocom root structure.
+  @param   allowed_networks The function stores here list of networks the user is
+           allowed to connect to.
+  @param   user User account to check, received from the new connection.
+  @param   ip From which IP address the connection came from.
+  @param   contexe Pointer to extra implementation specific data, not used by this
+           default implementation.
   @param   config Pointer to user account information (packed JSON) for the IO network.
   @param   config_sz Account infomration size in bytes.
-  @return  OSAL_SUCCESS if all is fine, other values indicate an error.
+
+  @return  OSAL_SUCCESS if all is fine, other values indicate that user is not authenticated
+           to connect (or an error).
 
 ****************************************************************************************************
 */
 static osalStatus ioc_authorize_parse_accounts(
-    iocUserAuthorizationData *auth_data,
-    iocUserAccount *user_account,
+    iocAllowedNetworkConf *allowed_networks,
+    iocUser *user,
+    os_char *ip,
     const os_char *config,
     os_memsz config_sz)
 {
@@ -298,8 +354,8 @@ static osalStatus ioc_authorize_parse_accounts(
     osalStatus s;
 
     os_memclear(&state, sizeof(state));
-    state.auth_data = auth_data;
-    state.user_account = user_account;
+    state.user = user;
+    state.ip = ip;
 
     s = osal_create_json_indexer(&jindex, config, config_sz, 0); /* HERE WE SHOULD ALLOW ZERO PADDED DATA */
     if (!s)
@@ -311,6 +367,15 @@ static osalStatus ioc_authorize_parse_accounts(
     {
         osal_debug_error_int("parsing user accounts failed:", s);
     }
+#endif
+    if (s) return s;
+
+    s = state.valid_user ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
+
+    /* Security and testing is difficult with security on, define to turn much of it off.
+     */
+#if IOC_RELAX_SECURITY
+    s = OSAL_SUCCESS;
 #endif
     return s;
 }
