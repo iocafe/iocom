@@ -183,7 +183,14 @@ class MySignal(MyVariable):
             self.signal.set(self.my_checkbox.active)
 
     def update_signal(self):
-        v = self.signal.get(check_tbuf=self.my_up)
+        try:
+            v = self.signal.get(check_tbuf=self.my_up)
+        except:
+            print("mysettings.py: update_signal failed")
+            self.my_text.text = '?'
+            self.my_state_bits = 6
+            return
+
         new_state_bits = int(v[0])
         if new_state_bits != self.my_state_bits:
             self.my_state_bits = new_state_bits
@@ -194,7 +201,7 @@ class MySignal(MyVariable):
             try:
                 checked = int(v[1]) != 0
             except:
-                print("mysignal.py: Unable to get check box state")        
+                print("mysettings.py: Unable to get check box state")        
 
             if self.my_checkbox.active != checked:
                 self.my_checkbox.active = checked
