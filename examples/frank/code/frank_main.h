@@ -47,15 +47,7 @@ public:
     void launch_app(os_char *network_name);
 
 private:
-    /* The IO application hosts account information for these IO networks.
-     */
-    // FrankAccounts *m_published[IOAPP_MAX_PUBLISHED_NETWORKS];
-
-    /* Number of published IO networks.
-     */
-    // os_int m_nro_published;
-
-    /* Basic server  (from ioserver extensions) main structure.
+    /* Basic server (ioserver extension) structure.
      */
     iocBServerMain m_bmain;
 

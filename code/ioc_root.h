@@ -182,18 +182,11 @@ typedef struct iocRoot
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
 
-    /** IO device only: User name. This can be used to authenticate user, if device number
-        is set automatically (IOC_AUTO_DEVICE_NR).
+#if IOC_AUTHENTICATION_CODE
+    /** Default password for the device.
      */
-    os_char user_name[IOC_NAME_SZ];
-
-    /** IO device only: Password for encrypted communication.
-     */
-    os_char password_tls[IOC_PASSWORD_SZ];
-
-    /** IO device only: Password for clear text communication.
-     */
-    os_char password_clear[IOC_PASSWORD_SZ];
+    os_char password[IOC_PASSWORD_SZ];
+#endif
 
     /** Pointer to static memory pool, OS_NULL is not used.
         Pool size is in bytes.
@@ -283,6 +276,7 @@ void ioc_set_iodevice_id(
     iocRoot *root,
     const os_char *device_name,
     os_int device_nr,
+    const os_char *password,
     const os_char *network_name);
 
 /* Run the communication.

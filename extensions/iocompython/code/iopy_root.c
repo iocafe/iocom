@@ -59,7 +59,8 @@ static PyObject *Root_new(
     const char
         *device_name = NULL,
         *network_name = NULL,
-        *security = NULL;
+        *security = NULL,
+        *password = NULL;
 
     int
         device_nr = IOC_AUTO_DEVICE_NR;
@@ -69,11 +70,12 @@ static PyObject *Root_new(
         "device_nr",
         "network_name",
         "security",
+        "password",
         NULL
     };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|siss",
-         kwlist, &device_name, &device_nr, &network_name, &security))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sisss",
+         kwlist, &device_name, &device_nr, &network_name, &security, &password))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         return NULL;
@@ -92,7 +94,7 @@ static PyObject *Root_new(
      */
     self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
     ioc_initialize_root(self->root);
-    ioc_set_iodevice_id(self->root, device_name, device_nr, network_name);
+    ioc_set_iodevice_id(self->root, device_name, device_nr, password, network_name);
     ioc_initialize_dynamic_root(self->root);
 
     /* Set callback function to receive information about new dynamic memory blocks.

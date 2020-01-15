@@ -155,6 +155,10 @@ typedef struct
      */
     os_uint device_nr;
 
+    /** Password for the device.
+     */
+    const os_char *password;
+
     /** IO device network name, like "iocafenet". Devices in same "network" can speak to each
         others.
      */

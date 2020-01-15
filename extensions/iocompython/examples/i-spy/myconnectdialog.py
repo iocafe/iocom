@@ -51,13 +51,6 @@ json = '''
     },
     {
         "type": "string",
-        "title": "user name",
-        "desc": "Authenticate to the device as (vieview is client)",
-        "section": "client",
-        "key": "conf_user"
-    },
-    {
-        "type": "string",
         "title": "certificate chain",
         "desc": "Chain of trust, PEM certificate bundle file (client)",
         "section": "client",

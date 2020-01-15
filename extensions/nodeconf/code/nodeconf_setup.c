@@ -350,10 +350,6 @@ static osalStatus ioc_nconf_process_block(
                     {
                         node->device_id.network_name = item.value.s;
                     }
-                    else if (!os_strcmp(state->tag, "user_name"))
-                    {
-                        node->device_id.user_name = item.value.s;
-                    }
                     else if (!os_strcmp(state->tag, "password"))
                     {
                         node->device_id.password = item.value.s;

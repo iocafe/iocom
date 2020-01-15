@@ -199,6 +199,7 @@ void ioc_release_root(
   @param   root Pointer to root structure.
   @param   device_name Device name to set. OS_NULL to clear network name.
   @param   device_nr Device number to set. Zero to clear.
+  @param   password password for the device.
   @param   network_name Network name to set. OS_NULL to clear network name.
   @return  None.
 
@@ -208,10 +209,14 @@ void ioc_set_iodevice_id(
     iocRoot *root,
     const os_char *device_name,
     os_int device_nr,
+    const os_char *password,
     const os_char *network_name)
 {
     os_strncpy(root->device_name, device_name, IOC_NAME_SZ);
     root->device_nr = device_nr;
+#if IOC_AUTHENTICATION_CODE
+    os_strncpy(root->password, password, IOC_PASSWORD_SZ);
+#endif
     os_strncpy(root->network_name, network_name, IOC_NETWORK_NAME_SZ);
 }
 

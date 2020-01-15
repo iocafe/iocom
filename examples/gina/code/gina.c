@@ -127,6 +127,7 @@ osalStatus osal_main(
     prm.iface = iface;
     prm.device_name = IOBOARD_DEVICE_NAME; /* or device_id->device name to allow change */
     prm.device_nr = device_id->device_nr;
+    prm.password = device_id->password;
     prm.network_name = device_id->network_name;
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = connconf->connection[0].parameters;
@@ -206,7 +207,8 @@ osalStatus osal_loop(
     static os_timer ti;
     static os_int i = 0;
     os_char buf[32], state_bits;
-    os_long l, prev_l;
+    os_long l;
+    static os_long prev_l = -1;
 
     if (i++ == 0) os_get_timer(&ti);
 

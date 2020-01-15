@@ -2,7 +2,7 @@
 "network" : {
 	"device_nr": "auto",
 	"network_name": "iocafenet",
-	"password": "auto",
+	"password": "pass",
 	"connect": [
 		{
 			"transport": "socket",

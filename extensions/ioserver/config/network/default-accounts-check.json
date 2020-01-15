@@ -7,7 +7,7 @@
 			"privileges": "admin"
 		},
 		{
-			"user": "gina2",
+			"user": "gina*",
 			"password": "pass"
 		}
 	],

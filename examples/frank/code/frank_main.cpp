@@ -136,7 +136,6 @@ osalStatus FrankMain::connect_to_device()
 }
 
 
-
 /**
 ****************************************************************************************************
   Keep the control stream alive.
@@ -144,9 +143,21 @@ osalStatus FrankMain::connect_to_device()
 */
 void FrankMain::run()
 {
+    os_int i;
+
     /* Call basic server implementation to maintain control streams.
      */
     ioc_run_bserver_main(&m_bmain);
+
+    /* Run applications.
+     */
+    for (i = 0; i < MAX_APPS; i++)
+    {
+        if (m_app[i])
+        {
+            m_app[i]->run();
+        }
+    }
 }
 
 
@@ -166,7 +177,8 @@ void FrankMain::launch_app(
     {
         if (m_app[i])
         {
-            if (!os_strcmp(network_name, m_app[i]->m_network_name)) return;
+            if (!os_strcmp(network_name, m_app[i]->network_name()))
+                return;
         }
     }
 
@@ -176,13 +188,12 @@ void FrankMain::launch_app(
     {
         if (m_app[i] == OS_NULL)
         {
-            m_app[i] = new FrankApplication();
-            m_app[i]->start(network_name, 1);
+            m_app[i] = new FrankApplication(network_name);
             return;
         }
     }
 
-    osal_debug_error("Too many IO networks");
+    osal_debug_error("Too many franks");
 }
 
 

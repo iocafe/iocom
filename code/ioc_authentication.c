@@ -94,8 +94,7 @@ void ioc_make_authentication_frame(
     }
     else
     {
-        password = (con->iface == OSAL_TLS_IFACE)
-            ? root->password_tls : root->password_clear;
+        password = root->password;
     }
 
     ioc_msg_setstr(password, &p);

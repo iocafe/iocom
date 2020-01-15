@@ -25,25 +25,26 @@ class FrankApplication
 public:
     /* Constructor and virtual destructor.
 	 */
-    FrankApplication();
+    FrankApplication(const os_char *network_name);
     ~FrankApplication();
 
-    /* Functions to start, stop and thread function to run the application.
-     */
-    void start(const os_char *network_name, os_uint device_nr);
-    void stop();
     void run();
 
-    /* Network topology stuff.
-     */
-    os_char m_controller_device_name[IOC_NAME_SZ];
-    os_char m_network_name[IOC_NETWORK_NAME_SZ];
-    os_uint m_controller_device_nr;
+    os_char *network_name()
+        {return m_network_name;}
 
-    /* Thread control.
-     */
-    osalEvent m_event;
-    osalThreadHandle *m_thread;
-    os_boolean m_stop_thread;
-    os_boolean m_started;
+private:
+    os_char
+        m_network_name[IOC_NETWORK_NAME_SZ];
+
+    iocSignal
+        *m_float_test,
+        *m_str_test,
+        *m_str_to_device;
+
+    os_timer
+        m_timer;
+
+    os_int
+        m_count;
 };

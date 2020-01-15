@@ -81,7 +81,8 @@ osalStatus osal_main(
     device_id = ioc_get_device_id(&ioapp_device_conf);
     // connconf = ioc_get_connection_conf(&ioapp_device_conf);
 
-    ioc_set_iodevice_id(&ioapp_root, device_name, device_id->device_nr, device_id->network_name);
+    ioc_set_iodevice_id(&ioapp_root, device_name, device_id->device_nr,
+        device_id->password, device_id->network_name);
     ioc_initialize_dynamic_root(&ioapp_root);
 
     ioc_enable_user_authentication(&ioapp_root, ioc_authorize, OS_NULL);
@@ -115,6 +116,7 @@ osalStatus osal_main(
     osal_simulated_loop(OS_NULL);
     return OSAL_SUCCESS;
 }
+
 
 
 /**
@@ -213,10 +215,12 @@ static void info_callback(
   @brief Callback when dynamic IO network, device, etc has been connected or disconnected.
 
   The root_callback() function is called when memory block, io device network or io device is
-  added or removed.
+  added or removed, etc.
 
   @param   root Pointer to the root object.
-  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
+  @param   event Either IOC_NEW_MEMORY_BLOCK, IOC_MBLK_CONNECTED_AS_SOURCE,
+           IOC_MBLK_CONNECTED_AS_TARGET, IOC_MEMORY_BLOCK_DELETED, IOC_NEW_NETWORK,
+           IOC_NETWORK_DISCONNECTED, IOC_NEW_DEVICE or IOC_DEVICE_DISCONNECTED.
   @param   dnetwork Pointer to dynamic network object which has just been connected or is
            about to be removed.
   @param   mblk Pointer to memory block structure, OS_NULL if not available for the event.
@@ -238,8 +242,6 @@ static void root_callback(
 
     switch (event)
     {
-        /* Process "new dynamic memory block" callback.
-         */
         case IOC_NEW_MEMORY_BLOCK:
             mblk_name = mblk->mblk_name;
 
@@ -259,14 +261,6 @@ static void root_callback(
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
             frank_main->launch_app(dnetwork->network_name);
-            break;
-
-        case IOC_NEW_DEVICE:
-            osal_trace2_str("IOC_NEW_DEVICE ", mblk->device_name);
-            break;
-
-        case IOC_NETWORK_DISCONNECTED:
-            osal_trace2("IOC_NETWORK_DISCONNECTED");
             break;
 
         default:
