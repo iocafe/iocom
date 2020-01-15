@@ -1,10 +1,14 @@
 /**
 
-  @file    frank_main.h
-  @brief   Controller example with static IO defice configuration.
+  @file    app_root.h
+  @brief   IO application's root class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    15.1.2020
+
+  The root class starts and runs basic server code from ioserver extension library. This
+  provides basic functionality like ability to connect to this application and configure it,
+  set up IO networks and user accounts, etc.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -14,36 +18,23 @@
 ****************************************************************************************************
 */
 
-
-/**
-****************************************************************************************************
-
-  Frank main object.
-
-****************************************************************************************************
-*/
-class FrankMain
+class AppRoot
 {
 public:
-    /* Constructor.
-	 */
-    FrankMain(
+    AppRoot(
         const os_char *device_name,
         os_int device_nr,
         const os_char *network_name,
         const os_char *publish);
 
-	/* Virtual destructor.
- 	 */
-    ~FrankMain();
-
-    osalStatus listen_for_clients();
-    osalStatus connect_to_device();
+    ~AppRoot();
 
     /* The run is repeatedly to keep control stream alive.
      */
     void run();
 
+    /* When an IO network is connected for the first time, IO application instance is launced.
+     */
     void launch_app(os_char *network_name);
 
 private:
@@ -55,6 +46,8 @@ private:
      */
     frank_t m_signals;
 
+    /* Array of pointers to launced application instances
+     */
     static const os_int MAX_APPS = 20;
-    class FrankApplication *m_app[MAX_APPS];
+    class AppInstance *m_app[MAX_APPS];
 };

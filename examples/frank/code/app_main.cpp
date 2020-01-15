@@ -1,10 +1,15 @@
 /**
 
-  @file    frank.c
-  @brief   Frank controller using static IO device configuration.
+  @file    app_main.cpp
+  @brief   Entry point and IO controller program set up.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    15.1.2020
+
+  Code here is general program setup code. It initializes iocom library to be used as dynamic
+  IO controller. This example code uses eosal functions everywhere, including the program
+  entry point osal_main(). If you use iocom library from an existing program, just call library
+  iocom functions from C or C++ code and ignore "framework style" code here.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,14 +18,14 @@
 
 ****************************************************************************************************
 */
-#include "frank.h"
+#include "app_main.h"
 
 /* The devicedir is here for testing only, take away.
  */
 #include "devicedir.h"
 
 iocRoot ioapp_root;
-static FrankMain *frank_main;
+static AppRoot *frank_main;
 
 /* IO device/network configuration.
  */
@@ -28,6 +33,10 @@ iocNodeConf ioapp_device_conf;
 
 /* Forward referred static functions.
  */
+osalStatus listen_for_clients();
+
+osalStatus connect_io_node();
+
 static void info_callback(
     struct iocHandle *handle,
     os_int start_addr,
@@ -89,7 +98,7 @@ osalStatus osal_main(
 
     /* Create frank main object
      */
-    frank_main = new FrankMain(device_name, device_id->device_nr, device_id->network_name,
+    frank_main = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
         device_id->publish);
 
     /* Set callback function to receive information about new dynamic memory blocks.
@@ -107,8 +116,8 @@ osalStatus osal_main(
 
     /* Ready to go, start listening for clients.
      */
-    frank_main->listen_for_clients();
-    // frank_main->connect_to_device();
+    listen_for_clients();
+    // connect_io_node();
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -117,6 +126,55 @@ osalStatus osal_main(
     return OSAL_SUCCESS;
 }
 
+
+/**
+****************************************************************************************************
+  Start thread which listens for client connections.
+****************************************************************************************************
+*/
+osalStatus listen_for_clients()
+{
+    iocEndPoint *ep = OS_NULL;
+    iocEndPointParams epprm;
+
+    const osalStreamInterface *iface = OSAL_TLS_IFACE;
+
+    ep = ioc_initialize_end_point(OS_NULL, &ioapp_root);
+    os_memclear(&epprm, sizeof(epprm));
+    epprm.iface = iface;
+    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS; /* Notice IOC_DYNAMIC_MBLKS */
+//    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
+    ioc_listen(ep, &epprm);
+
+    os_sleep(100);
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+  Or start thread which connects to client.
+****************************************************************************************************
+*/
+osalStatus connect_io_node()
+{
+    iocConnection *con = OS_NULL;
+    iocConnectionParams conprm;
+
+    const osalStreamInterface *iface = OSAL_TLS_IFACE;
+
+    con = ioc_initialize_connection(OS_NULL, &ioapp_root);
+    os_memclear(&conprm, sizeof(conprm));
+
+    conprm.iface = iface;
+    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+    // conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
+    conprm.parameters = "127.0.0.1";
+    ioc_connect(con, &conprm);
+
+    os_sleep(100);
+    return OSAL_SUCCESS;
+}
 
 
 /**

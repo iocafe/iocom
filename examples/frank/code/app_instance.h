@@ -1,10 +1,13 @@
 /**
 
-  @file    frank_application.h
-  @brief   Controller application base class.
+  @file    app_instance.h
+  @brief   IO controller application's base class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    15.1.2020
+
+  The application instance class wraps actual application functionality and current state for one
+  IO device network.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -15,18 +18,11 @@
 */
 
 
-/**
-****************************************************************************************************
-  Frank application base class.
-****************************************************************************************************
-*/
-class FrankApplication
+class AppInstance
 {
 public:
-    /* Constructor and virtual destructor.
-	 */
-    FrankApplication(const os_char *network_name);
-    ~FrankApplication();
+    AppInstance(const os_char *network_name);
+    ~AppInstance();
 
     void run();
 

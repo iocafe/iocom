@@ -1,10 +1,14 @@
 /**
 
-  @file    frank_main.h
-  @brief   Controller example with static IO defice configuration.
+  @file    app_root.cpp
+  @brief   IO application's root class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    15.1.2020
+
+  The root class starts and runs basic server code from ioserver extension library. This
+  provides basic functionality like ability to connect to this application and configure it,
+  set up IO networks and user accounts, etc.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +17,7 @@
 
 ****************************************************************************************************
 */
-#include "frank.h"
+#include "app_main.h"
 
 
 /**
@@ -24,7 +28,7 @@
 
 ****************************************************************************************************
 */
-FrankMain::FrankMain(
+AppRoot::AppRoot(
     const os_char *device_name,
     os_int device_nr,
     const os_char *network_name,
@@ -71,7 +75,7 @@ FrankMain::FrankMain(
   Application destructor.
 ****************************************************************************************************
 */
-FrankMain::~FrankMain()
+AppRoot::~AppRoot()
 {
     os_int i;
 
@@ -88,60 +92,10 @@ FrankMain::~FrankMain()
 
 /**
 ****************************************************************************************************
-  Start thread which listens for client connections.
-****************************************************************************************************
-*/
-osalStatus FrankMain::listen_for_clients()
-{
-    iocEndPoint *ep = OS_NULL;
-    iocEndPointParams epprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-    ep = ioc_initialize_end_point(OS_NULL, &ioapp_root);
-    os_memclear(&epprm, sizeof(epprm));
-    epprm.iface = iface;
-    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS; /* Notice IOC_DYNAMIC_MBLKS */
-//    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
-    ioc_listen(ep, &epprm);
-
-    os_sleep(100);
-    return OSAL_SUCCESS;
-}
-
-
-/**
-****************************************************************************************************
-  Or start thread which connects to client.
-****************************************************************************************************
-*/
-osalStatus FrankMain::connect_to_device()
-{
-    iocConnection *con = OS_NULL;
-    iocConnectionParams conprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-    con = ioc_initialize_connection(OS_NULL, &ioapp_root);
-    os_memclear(&conprm, sizeof(conprm));
-
-    conprm.iface = iface;
-    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-    // conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
-    conprm.parameters = "127.0.0.1";
-    ioc_connect(con, &conprm);
-
-    os_sleep(100);
-    return OSAL_SUCCESS;
-}
-
-
-/**
-****************************************************************************************************
   Keep the control stream alive.
 ****************************************************************************************************
 */
-void FrankMain::run()
+void AppRoot::run()
 {
     os_int i;
 
@@ -166,7 +120,7 @@ void FrankMain::run()
   Launc a client application.
 ****************************************************************************************************
 */
-void FrankMain::launch_app(
+void AppRoot::launch_app(
     os_char *network_name)
 {
     os_int i;
@@ -188,7 +142,7 @@ void FrankMain::launch_app(
     {
         if (m_app[i] == OS_NULL)
         {
-            m_app[i] = new FrankApplication(network_name);
+            m_app[i] = new AppInstance(network_name);
             return;
         }
     }

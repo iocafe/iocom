@@ -1,10 +1,13 @@
 /**
 
-  @file    frank_application.cpp
-  @brief   Controller application base class.
+  @file    app_instance.cpp
+  @brief   IO controller application's base class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    15.1.2020
+
+  The application instance class wraps actual application functionality and current state for one
+  IO device network.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +16,7 @@
 
 ****************************************************************************************************
 */
-#include "frank.h"
+#include "app_main.h"
 
 
 /**
@@ -21,7 +24,7 @@
   Application constructor.
 ****************************************************************************************************
 */
-FrankApplication::FrankApplication(const os_char *network_name)
+AppInstance::AppInstance(const os_char *network_name)
 {
     os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
     m_float_test = m_str_test = m_str_to_device = OS_NULL;
@@ -35,7 +38,7 @@ FrankApplication::FrankApplication(const os_char *network_name)
   Application destructor.
 ****************************************************************************************************
 */
-FrankApplication::~FrankApplication()
+AppInstance::~AppInstance()
 {
     ioc_delete_signal(m_float_test);
     ioc_delete_signal(m_str_test);
@@ -48,7 +51,7 @@ FrankApplication::~FrankApplication()
   Keep the application alive, called repeatedly.
 ****************************************************************************************************
 */
-void FrankApplication::run()
+void AppInstance::run()
 {
     os_char buf[32];
     os_float floats[5];
