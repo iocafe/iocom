@@ -46,7 +46,7 @@ private:
      */
     frank_t m_signals;
 
-    /* Array of pointers to launced application instances
+    /* Array of pointers to launced application instances.
      */
     static const os_int MAX_APPS = 20;
     class AppInstance *m_app[MAX_APPS];

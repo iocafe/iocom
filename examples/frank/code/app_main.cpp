@@ -24,27 +24,33 @@
  */
 #include "devicedir.h"
 
-iocRoot ioapp_root;
-static AppRoot *frank_main;
+/* IOCOM root object for this application
+ */
+iocRoot app_iocom;
+
+/* Pointer to IO application's root object.
+ */
+static AppRoot *app_root_obj;
 
 /* IO device/network configuration.
  */
-iocNodeConf ioapp_device_conf;
+static iocNodeConf app_device_conf;
 
 /* Forward referred static functions.
  */
-osalStatus listen_for_clients();
+void app_listen_for_clients();
 
-osalStatus connect_io_node();
+void app_connect_cloud(
+    iocConnectionConfig *connconf);
 
-static void info_callback(
+static void app_info_callback(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,
     os_ushort flags,
     void *context);
 
-static void root_callback(
+static void app_root_callback(
     struct iocRoot *root,
     iocEvent event,
     struct iocDynamicNetwork *dnetwork,
@@ -55,9 +61,11 @@ static void root_callback(
 /**
 ****************************************************************************************************
 
-  @brief Set up the communication.
+  @brief Program entry point.
 
-  Initialize transport stream and set interface
+  The osal_main function sets up iocom library for the application and creates the application
+  root object.
+
   @return  OSAL_SUCCESS if all fine, other values indicate an error.
 
 ****************************************************************************************************
@@ -68,7 +76,7 @@ osalStatus osal_main(
 {
     osPersistentParams persistentprm;
     iocDeviceId *device_id;
-    // iocConnectionConfig *connconf;
+    iocConnectionConfig *connconf;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
     const os_char *device_name = "frank";
@@ -76,7 +84,7 @@ osalStatus osal_main(
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
      */
-    ioc_initialize_root(&ioapp_root);
+    ioc_initialize_root(&app_iocom);
 
     /* Initialize persistent storage and load device/network configuration and device/user
        account congiguration (persistent storage is typically either file system or
@@ -86,38 +94,41 @@ osalStatus osal_main(
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.device_name = device_name;
     os_persistent_initialze(&persistentprm);
-    ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
-    device_id = ioc_get_device_id(&ioapp_device_conf);
-    // connconf = ioc_get_connection_conf(&ioapp_device_conf);
+    ioc_load_node_config(&app_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
+    device_id = ioc_get_device_id(&app_device_conf);
 
-    ioc_set_iodevice_id(&ioapp_root, device_name, device_id->device_nr,
+    ioc_set_iodevice_id(&app_iocom, device_name, device_id->device_nr,
         device_id->password, device_id->network_name);
-    ioc_initialize_dynamic_root(&ioapp_root);
+    ioc_initialize_dynamic_root(&app_iocom);
 
-    ioc_enable_user_authentication(&ioapp_root, ioc_authorize, OS_NULL);
+    ioc_enable_user_authentication(&app_iocom, ioc_authorize, OS_NULL);
 
     /* Create frank main object
      */
-    frank_main = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
+    app_root_obj = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
         device_id->publish);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
-    ioc_set_root_callback(&ioapp_root, root_callback, OS_NULL);
+    ioc_set_root_callback(&app_iocom, app_root_callback, OS_NULL);
 
     /* Setup network interface configuration and initialize transport library. This is
        partyly ignored if network interfaces are managed by operating system
        (Linux/Windows,etc),
      */
-    nics = ioc_get_nics(&ioapp_device_conf);
-    security = ioc_get_security_conf(&ioapp_device_conf);
+    nics = ioc_get_nics(&app_device_conf);
+    security = ioc_get_security_conf(&app_device_conf);
     osal_tls_initialize(nics->nic, nics->n_nics, security);
     osal_serial_initialize();
 
     /* Ready to go, start listening for clients.
      */
-    listen_for_clients();
-    // connect_io_node();
+    app_listen_for_clients();
+
+    /* Connect to cloud.
+     */
+    connconf = ioc_get_connection_conf(&app_device_conf);
+    app_connect_cloud(connconf);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -129,63 +140,13 @@ osalStatus osal_main(
 
 /**
 ****************************************************************************************************
-  Start thread which listens for client connections.
-****************************************************************************************************
-*/
-osalStatus listen_for_clients()
-{
-    iocEndPoint *ep = OS_NULL;
-    iocEndPointParams epprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-    ep = ioc_initialize_end_point(OS_NULL, &ioapp_root);
-    os_memclear(&epprm, sizeof(epprm));
-    epprm.iface = iface;
-    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS; /* Notice IOC_DYNAMIC_MBLKS */
-//    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
-    ioc_listen(ep, &epprm);
-
-    os_sleep(100);
-    return OSAL_SUCCESS;
-}
-
-
-/**
-****************************************************************************************************
-  Or start thread which connects to client.
-****************************************************************************************************
-*/
-osalStatus connect_io_node()
-{
-    iocConnection *con = OS_NULL;
-    iocConnectionParams conprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-    con = ioc_initialize_connection(OS_NULL, &ioapp_root);
-    os_memclear(&conprm, sizeof(conprm));
-
-    conprm.iface = iface;
-    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-    // conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
-    conprm.parameters = "127.0.0.1";
-    ioc_connect(con, &conprm);
-
-    os_sleep(100);
-    return OSAL_SUCCESS;
-}
-
-
-/**
-****************************************************************************************************
 
   @brief Loop function to be called repeatedly.
 
-  The osal_loop() function doesn't maintains testing console to print out memory structures,
-  but otherwise doesn's do anything.
+  The osal_loop() function is called repeatedly to keep the application alive.
 
-  @param   app_context Void pointer, to pass application context structure, etc.
+  @param   app_context A pointer to pass application context structure, etc. Not used by this
+           code example.
   @return  The function returns OSAL_SUCCESS to continue running. Other return values are
            to be interprened as reboot on micro-controller or quit the program on PC computer.
 
@@ -196,10 +157,10 @@ osalStatus osal_loop(
 {
     osalStatus s;
 
-    frank_main->run();
-
-    os_sleep(50);
-    s = io_device_console(&ioapp_root);
+    app_root_obj->run();
+    /* s = app_root_obj->run();
+    if (s == OSAL_SUCCESS) os_sleep(50); */
+    s = io_device_console(&app_iocom);
 
     return s;
 }
@@ -224,10 +185,10 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    ioc_set_root_callback(&ioapp_root, OS_NULL, OS_NULL);
-    delete frank_main;
+    ioc_set_root_callback(&app_iocom, OS_NULL, OS_NULL);
+    delete app_root_obj;
 
-    ioc_release_root(&ioapp_root);
+    ioc_release_root(&app_iocom);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }
@@ -236,12 +197,77 @@ void osal_main_cleanup(
 /**
 ****************************************************************************************************
 
+  @brief Listen for incoming connections.
+
+  The app_listen_for_clients creates iocom end point which listens for incoming connections
+  from IO nodes.
+
+  Notice flag IOC_DYNAMIC_MBLKS, this allows to create new memory blocks dynamically bu
+  received configuration information.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+void app_listen_for_clients()
+{
+    iocEndPoint *ep = OS_NULL;
+    iocEndPointParams epprm;
+
+    const osalStreamInterface *iface = OSAL_TLS_IFACE;
+
+    ep = ioc_initialize_end_point(OS_NULL, &app_iocom);
+    os_memclear(&epprm, sizeof(epprm));
+    epprm.iface = iface;
+    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+    ioc_listen(ep, &epprm);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Connect to cloud server.
+
+  If the IO controller (like this 'frank' example) runs in local network, a cloud server
+  can be used to pass connections from remote devices or other nodes. This function
+  connects this IO controller to cloud server application like 'claudia'.
+
+  @param   connconf Connection configuration (from persistent storate or JSON defaults).
+  @return  None.
+
+****************************************************************************************************
+*/
+void app_connect_cloud(
+    iocConnectionConfig *connconf)
+{
+    iocConnection *con = OS_NULL;
+    iocConnectionParams conprm;
+
+    const osalStreamInterface *iface = OSAL_TLS_IFACE;
+
+return;
+
+    con = ioc_initialize_connection(OS_NULL, &app_iocom);
+    os_memclear(&conprm, sizeof(conprm));
+
+    conprm.iface = iface;
+    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+    // conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
+    conprm.parameters = "127.0.0.1";
+    ioc_connect(con, &conprm);
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Callback function to add dynamic device information.
 
-  The info_callback() function is called when device information data is received from connection
-  or when connection status changes.
+  The app_info_callback() function is called when device information data is received from
+  connection or when connection status changes.
 
-  @param   mblk Pointer to the memory block object.
+  @param   handle Memory block handle.
   @param   start_addr Address of first changed byte.
   @param   end_addr Address of the last changed byte.
   @param   flags Reserved  for future.
@@ -251,7 +277,7 @@ void osal_main_cleanup(
 
 ****************************************************************************************************
 */
-static void info_callback(
+static void app_info_callback(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,
@@ -288,7 +314,7 @@ static void info_callback(
 
 ****************************************************************************************************
 */
-static void root_callback(
+static void app_root_callback(
     struct iocRoot *root,
     iocEvent event,
     struct iocDynamicNetwork *dnetwork,
@@ -306,7 +332,7 @@ static void root_callback(
             ioc_setup_handle(&handle, root, mblk);
             if (!os_strcmp(mblk_name, "info"))
             {
-                ioc_add_callback(&handle, info_callback, OS_NULL);
+                ioc_add_callback(&handle, app_info_callback, OS_NULL);
             }
             else
             {
@@ -318,7 +344,7 @@ static void root_callback(
 
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
-            frank_main->launch_app(dnetwork->network_name);
+            app_root_obj->launch_app(dnetwork->network_name);
             break;
 
         default:

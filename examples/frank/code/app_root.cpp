@@ -58,7 +58,7 @@ AppRoot::AppRoot(
     prm.signal_config_sz = sizeof(ioapp_signal_config);
     prm.network_defaults = ioapp_network_defaults;
     prm.network_defaults_sz = sizeof(ioapp_network_defaults);
-    ioc_initialize_bserver(&m_bmain, &ioapp_root, &prm);
+    ioc_initialize_bserver(&m_bmain, &app_iocom, &prm);
 
     /* Call basic server implementation macro to set up control stream.
      */
@@ -92,7 +92,7 @@ AppRoot::~AppRoot()
 
 /**
 ****************************************************************************************************
-  Keep the control stream alive.
+  Keep basic server and application instances alive.
 ****************************************************************************************************
 */
 void AppRoot::run()
@@ -117,7 +117,7 @@ void AppRoot::run()
 
 /**
 ****************************************************************************************************
-  Launc a client application.
+  Launch an application instance.
 ****************************************************************************************************
 */
 void AppRoot::launch_app(

@@ -22,13 +22,19 @@
 #include "nodeconf.h"
 #include "ioserver.h"
 
+/* Include headers generated from JSON configuration.
+ */
 OSAL_C_HEADER_BEGINS
 #include "network-defaults.h"
 #include "signals.h"
 #include "info-mblk-binary.h"
 OSAL_C_HEADER_ENDS
 
+/* Include header files of this module
+ */
 #include "app_root.h"
 #include "app_instance.h"
 
-extern iocRoot ioapp_root;
+/* IOCOM root object for this application
+ */
+extern iocRoot app_iocom;
