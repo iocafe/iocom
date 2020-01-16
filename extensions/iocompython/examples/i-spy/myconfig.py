@@ -1,4 +1,5 @@
 import json
+import re
 from kivy.config import ConfigParser
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
@@ -45,7 +46,8 @@ class MyConfig(MySettingsDisplay):
         sleep(0.1)
 
         if my_default_config.get("accounts", None) != None:
-            self.my_select = 4
+            temp = re.findall(r'[0-9]', device_path)
+            self.my_select = int(temp[0]) + 10
 
         else:            
             self.my_select = 2

@@ -30,7 +30,7 @@ public:
 
     /* The run is repeatedly to keep control stream alive.
      */
-    void run();
+    osalStatus run();
 
     /* When an IO network is connected for the first time, IO application instance is launced.
      */

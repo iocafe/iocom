@@ -93,15 +93,20 @@ AppRoot::~AppRoot()
 /**
 ****************************************************************************************************
   Keep basic server and application instances alive.
+
+  return If working in something, the function returns OSAL_SUCCESS. Return value
+         OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+         idle mode as far as the application root knows.
 ****************************************************************************************************
 */
-void AppRoot::run()
+osalStatus AppRoot::run()
 {
     os_int i;
+    osalStatus s;
 
     /* Call basic server implementation to maintain control streams.
      */
-    ioc_run_bserver_main(&m_bmain);
+    s = ioc_run_bserver(&m_bmain);
 
     /* Run applications.
      */
@@ -109,9 +114,12 @@ void AppRoot::run()
     {
         if (m_app[i])
         {
-            m_app[i]->run();
+            if (m_app[i]->run() != OSAL_STATUS_NOTHING_TO_DO)
+                s = OSAL_SUCCESS;
         }
     }
+
+    return s;
 }
 
 

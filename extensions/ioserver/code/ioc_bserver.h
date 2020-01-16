@@ -78,7 +78,7 @@ osalStatus ioc_publish_bserver_networks(
     iocBServerMain *m,
     const os_char *publish);
 
-void ioc_run_bserver_main(
+osalStatus ioc_run_bserver(
     iocBServerMain *m);
 
 #define IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(bmain, sig) \

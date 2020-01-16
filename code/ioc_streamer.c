@@ -1383,17 +1383,21 @@ void ioc_init_control_stream(
 
   @param   ctrl IO device control stream transfer state structure.
   @param   params Parameters for the streamer.
-  @return  None.
+
+  @return  If working in something, the function returns OSAL_SUCCESS. Return value
+           OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+           idle mode as far as the control stream knows.
 
 ****************************************************************************************************
 */
-void ioc_run_control_stream(
+osalStatus ioc_run_control_stream(
     iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
     iocStreamerState cmd;
     osPersistentBlockNr select;
     os_char state_bits;
+    osalStatus s = OSAL_STATUS_NOTHING_TO_DO;
 
     /* Just for debugging, assert here that ioc_init_control_stream() has been called.
      */
@@ -1437,6 +1441,7 @@ void ioc_run_control_stream(
     if (ctrl->frd)
     {
         ioc_ctrl_stream_from_device(ctrl, params);
+        s = OSAL_SUCCESS;
     }
 
     if (ctrl->tod  == OS_NULL)
@@ -1463,7 +1468,10 @@ void ioc_run_control_stream(
     if (ctrl->tod)
     {
         ioc_ctrl_stream_to_device(ctrl, params);
+        s = OSAL_SUCCESS;
     }
+
+    return s;
 }
 
 

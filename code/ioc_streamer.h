@@ -271,7 +271,7 @@ void ioc_init_control_stream(
 
 /* Keep control stream alive, move data to/from persistent memory (on IO device).
  */
-void ioc_run_control_stream(
+osalStatus ioc_run_control_stream(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
 

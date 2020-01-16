@@ -61,7 +61,7 @@ osalStatus ioc_load_persistent_into_mblk(
     {
         /* No success with direct pointer to flash, try loading from persisten storage.
          */
-        h = os_persistent_open(OS_PBNR_CONFIG, &block_sz, OSAL_STREAM_READ);
+        h = os_persistent_open(select, &block_sz, OSAL_STREAM_READ);
 
         /* If no success with persistent storage.
          */

@@ -22,7 +22,7 @@ public:
     AppInstance(const os_char *network_name);
     ~AppInstance();
 
-    void run();
+    osalStatus run();
 
     os_char *network_name()
         {return m_network_name;}

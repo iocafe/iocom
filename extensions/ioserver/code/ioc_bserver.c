@@ -54,12 +54,13 @@ static void ioc_setup_bserver_mblks(
 static void ioc_setup_bserver_network(
     iocBServerNetwork *n,
     iocRoot *root,
+    os_int select,
     const os_char *network_name);
 
 static void ioc_release_bserver_network(
     iocBServerNetwork *n);
 
-static void ioc_run_bserver_network(
+static osalStatus ioc_run_bserver_network(
     iocBServerNetwork *n);
 
 
@@ -101,18 +102,28 @@ void ioc_release_bserver(
     ioc_release_memory_block(&m->info);
 }
 
-
-void ioc_run_bserver_main(
+/*
+  return If working in something, the function returns OSAL_SUCCESS. Return value
+         OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+         idle mode as far as the bserver knows.
+         */
+osalStatus ioc_run_bserver(
     iocBServerMain *m)
 {
     os_int i;
+    osalStatus s;
 
-    ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
+    s = ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
 
     for (i = 0; i<m->nro_networks; i++)
     {
-        ioc_run_bserver_network(m->networks + i);
+        if (ioc_run_bserver_network(m->networks + i) != OSAL_STATUS_NOTHING_TO_DO)
+        {
+            s = OSAL_SUCCESS;
+        }
     }
+
+    return s;
 }
 
 
@@ -175,7 +186,7 @@ osalStatus ioc_publish_bserver_networks(
     os_char network_name[IOC_NETWORK_NAME_SZ];
     const os_char *p;
     iocBServerNetwork *n;
-    os_int nro_networks;
+    os_int nro_networks, select;
     os_memsz sz;
 
     /* Count number of networks to publish (nro_networks)
@@ -202,13 +213,19 @@ osalStatus ioc_publish_bserver_networks(
     m->nro_networks = nro_networks;
 
     p = publish;
+    select = OS_PBNR_ACCOUNTS_1;
     while (!osal_str_list_iter(network_name, sizeof(network_name), &p, OSAL_STR_NEXT_ITEM))
     {
         /* Setup signal structure structure for user accounts.
          */
         account_signals_init_signal_struct(&n->asignals);
 
-        ioc_setup_bserver_network(n, m->root, network_name);
+        if (select == OS_PBNR_ACCOUNTS_1 + OS_PB_MAX_NETWORKS)
+        {
+            osal_debug_error("ioc_bserver: too many published networks");
+        }
+
+        ioc_setup_bserver_network(n, m->root, select++, network_name);
 
         /* Set up control stream for user accounts.
          */
@@ -239,6 +256,7 @@ osalStatus ioc_publish_bserver_networks(
 static void ioc_setup_bserver_network(
     iocBServerNetwork *n,
     iocRoot *root,
+    os_int select,
     const os_char *network_name)
 {
     iocMemoryBlockParams blockprm;
@@ -249,7 +267,7 @@ static void ioc_setup_bserver_network(
      */
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.device_name = ioc_accounts_device_name;
-    blockprm.device_nr = ioc_accounts_device_nr;
+    blockprm.device_nr = select - OS_PBNR_ACCOUNTS_1 + 1; // ioc_accounts_device_nr;
     blockprm.network_name = n->network_name;
 
     blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;
@@ -268,7 +286,7 @@ static void ioc_setup_bserver_network(
     blockprm.mblk_name = "data";
     blockprm.flags = IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC;
     ioc_initialize_memory_block(&n->accounts_data, OS_NULL, root, &blockprm);
-    ioc_load_persistent_into_mblk(&n->accounts_data, 4, ioapp_account_defaults,
+    ioc_load_persistent_into_mblk(&n->accounts_data, select, ioapp_account_defaults,
         sizeof(ioapp_account_defaults));
 
     blockprm.mblk_name = "info";
@@ -295,9 +313,14 @@ static void ioc_release_bserver_network(
 }
 
 
-static void ioc_run_bserver_network(
+/*
+   return If working in something, the function returns OSAL_SUCCESS. Return value
+         OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+         idle mode as far as the bserver network knows.
+*/
+static osalStatus ioc_run_bserver_network(
     iocBServerNetwork *n)
 {
-    ioc_run_control_stream(&n->accounts_stream, &n->accounts_stream_params);
+    return ioc_run_control_stream(&n->accounts_stream, &n->accounts_stream_params);
 }
 

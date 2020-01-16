@@ -36,6 +36,15 @@ static AppRoot *app_root_obj;
  */
 static iocNodeConf app_device_conf;
 
+
+/* We may enter idle mode when nothing to do.
+ */
+#if OSAL_MULTITHREAD_SUPPORT
+static os_boolean idle_mode;
+static os_timer idle_timer;
+#endif
+
+
 /* Forward referred static functions.
  */
 void app_listen_for_clients();
@@ -144,6 +153,9 @@ osalStatus osal_main(
   @brief Loop function to be called repeatedly.
 
   The osal_loop() function is called repeatedly to keep the application alive.
+  If mutithreading is supported, this implements simple idle mode: Loop is slowed down
+  if there is no activity for two seconds. This allows more time for other threads to
+  run (not really useful in near real time environment, but useful in server).
 
   @param   app_context A pointer to pass application context structure, etc. Not used by this
            code example.
@@ -157,11 +169,23 @@ osalStatus osal_loop(
 {
     osalStatus s;
 
-    app_root_obj->run();
-    /* s = app_root_obj->run();
-    if (s == OSAL_SUCCESS) os_sleep(50); */
-    s = io_device_console(&app_iocom);
+    s = app_root_obj->run();
+#if OSAL_MULTITHREAD_SUPPORT
+    switch (s)
+    {
+        default:
+        case OSAL_SUCCESS:
+            os_get_timer(&idle_timer);
+            break;
 
+        case OSAL_STATUS_NOTHING_TO_DO:
+            if (idle_mode) os_sleep(50);
+            else idle_mode = os_elapsed(&idle_timer, 2000);
+            break;
+    }
+#endif
+
+    s = io_device_console(&app_iocom);
     return s;
 }
 
