@@ -299,6 +299,69 @@ void ioc_enable_user_authentication(
 }
 
 
+
+/**
+****************************************************************************************************
+
+  @brief Add a network to allowed networks structure
+  @anchor ioc_add_allowed_network
+
+  The ioc_add_allowed_network() function adds an allowed network to allowed networks structure
+
+  @param   allowed_networks Allowed networks structure.
+  @param   network_name Network name to add.
+  @param   flags Flags (priviliges, etc) to store for the network
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_add_allowed_network(
+    iocAllowedNetworkConf *allowed_networks,
+    os_char *network_name,
+    os_ushort flags)
+{
+    iocAllowedNetwork *n;
+    os_memsz needed, bytes;
+    os_int count, i;
+
+    /* If we already got this network, just "or" the flags in.
+     */
+    count  = allowed_networks->n_networs;
+    for (i = 0; i < count; i++)
+    {
+        if (!os_strcmp(network_name, allowed_networks->network[i].network_name))
+        {
+            allowed_networks->network[i].flags |= flags;
+            return;
+        }
+    }
+
+    /* Allocate (more) memory if needed.
+     */
+    needed = (count + 1) * sizeof(iocAllowedNetwork);
+    if (needed > allowed_networks->bytes)
+    {
+        n = (iocAllowedNetwork*)os_malloc(needed, &bytes);
+        if (n == OS_NULL) return;
+        os_memclear(n, bytes);
+        if (allowed_networks->network)
+        {
+            os_memcpy(n, allowed_networks->network,
+                count * sizeof(iocAllowedNetwork));
+            os_free(allowed_networks->network, allowed_networks->bytes);
+        }
+        allowed_networks->network = n;
+        allowed_networks->bytes = bytes;
+    }
+
+    /* Store name and flags of the added network and increment number of networks.
+     */
+    n = allowed_networks->network + allowed_networks->n_networs++;
+    os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
+    n->flags = flags;
+}
+
+
 /**
 ****************************************************************************************************
 
@@ -306,9 +369,9 @@ void ioc_enable_user_authentication(
   @anchor ioc_release_allowed_networks
 
   The ioc_release_allowed_networks() function frees memory reserved for allowed network
-  array, allocated by the authentication function. Notice that authentication
+  array, allocated by the authentication function.
 
-  @param   allowed_networks Allowed networks structure containing pointer to allocated data,
+  @param   allowed_networks Allowed networks structure containing pointer to allocated data.
            after this call the structure is clear enough for reuse.
   @return  None.
 
@@ -317,14 +380,61 @@ void ioc_enable_user_authentication(
 void ioc_release_allowed_networks(
     iocAllowedNetworkConf *allowed_networks)
 {
-    os_memsz bytes;
     if (allowed_networks->network)
     {
-        bytes = allowed_networks->n_networs * sizeof(iocAllowedNetwork);
-        os_free(allowed_networks->network, bytes);
+        os_free(allowed_networks->network, allowed_networks->bytes);
         os_memclear(allowed_networks, sizeof(iocAllowedNetworkConf));
     }
 }
+
+/**
+****************************************************************************************************
+
+  @brief Check if network is authorized.
+  @anchor ioc_is_network_authorized
+
+  The ioc_is_network_authorized() function checks if network name given as argument is in list
+  of allowed networks.
+
+  @param   allowed_networks Allowed networks structure.
+  @param   network_name Network name to check.
+  @param   flags Required priviliges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrarot.
+  @return  OS_TRUE if network is authorized to proceed, OS_FALSE if not.
+
+****************************************************************************************************
+*/
+os_boolean ioc_is_network_authorized(
+    struct iocRoot *root,
+    iocAllowedNetworkConf *allowed_networks,
+    os_char *network_name,
+    os_ushort flags)
+{
+#if IOC_RELAX_SECURITY
+    return OS_TRUE;
+#else
+    os_int count, i;
+
+    /* If security is not on, anything is fine.
+     */
+    if (root->authorization_func == OS_NULL) return OS_TRUE;
+
+    /* If we already got this network, just "or" the flags in.
+     */
+    count  = allowed_networks->n_networs;
+    for (i = 0; i < count; i++)
+    {
+        if (!os_strcmp(network_name, allowed_networks->network[i].network_name))
+        {
+            if (flags & IOC_AUTH_ADMINISTRATOR)
+                return (allowed_networks->network[i].flags & IOC_AUTH_ADMINISTRATOR) ? OS_TRUE : OS_FALSE;
+
+            return OS_TRUE;
+        }
+    }
+    return OS_FALSE;
+#endif
+}
+
 #endif
 
 #endif

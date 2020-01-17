@@ -22,6 +22,14 @@ typedef struct
 {
     iocUser *user;
 
+    /** Network name of accounts memory block.
+     */
+    os_char *mblk_network_name;
+
+    /* Pointer to allowed network list beging set up.
+     */
+    iocAllowedNetworkConf *allowed_networks;
+
     /** Pointers to data for current item in account info.
      */
     const os_char *user_name, *password, *priviliges, *ip;
@@ -53,6 +61,7 @@ static osalStatus ioc_authorize_parse_accounts(
     iocAllowedNetworkConf *allowed_networks,
     iocUser *user,
     os_char *ip,
+    os_char *network_name,
     const os_char *config,
     os_memsz config_sz);
 
@@ -113,7 +122,7 @@ osalStatus ioc_authorize(
     /* Check if user is allowed to connect to the network.
      */
     s = ioc_authorize_parse_accounts(allowed_networks, user,
-        ip, mblk->buf, mblk->nbytes);
+        ip, mblk->network_name, mblk->buf, mblk->nbytes);
 
     /* All done
      */
@@ -209,6 +218,7 @@ static osalStatus ioc_authorize_process_block(
     osalJsonItem item;
     osalStatus s;
     os_char array_tag_buf[16];
+    os_ushort flags;
     os_boolean match;
 
     while (!(s = osal_get_json_item(jindex, &item)))
@@ -260,6 +270,9 @@ static osalStatus ioc_authorize_process_block(
                 else if (!os_strcmp(array_tag, "accounts"))
                 {
                     state->valid_user = OS_TRUE;
+                    flags = 0;
+                    if (!os_strcmp(state->priviliges, "admin")) flags |= IOC_AUTH_ADMINISTRATOR;
+                    ioc_add_allowed_network(state->allowed_networks, state->mblk_network_name, flags);
                 }
             }
             return OSAL_SUCCESS;
@@ -346,6 +359,7 @@ static osalStatus ioc_authorize_parse_accounts(
     iocAllowedNetworkConf *allowed_networks,
     iocUser *user,
     os_char *ip,
+    os_char *network_name,
     const os_char *config,
     os_memsz config_sz)
 {
@@ -356,6 +370,8 @@ static osalStatus ioc_authorize_parse_accounts(
     os_memclear(&state, sizeof(state));
     state.user = user;
     state.ip = ip;
+    state.mblk_network_name = network_name;
+    state.allowed_networks = allowed_networks;
 
     s = osal_create_json_indexer(&jindex, config, config_sz, 0); /* HERE WE SHOULD ALLOW ZERO PADDED DATA */
     if (!s)
@@ -372,7 +388,7 @@ static osalStatus ioc_authorize_parse_accounts(
 
     s = state.valid_user ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
 
-    /* Security and testing is difficult with security on, define to turn much of it off.
+    /* Security and testing is difficult with security on, define to turn it off.
      */
 #if IOC_RELAX_SECURITY
     s = OSAL_SUCCESS;

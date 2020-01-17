@@ -90,6 +90,10 @@ typedef struct iocAllowedNetworkConf
 {
     iocAllowedNetwork *network;
     os_int n_networs;
+
+    /** Number of bytes allocated for network array.
+     */
+    os_memsz bytes;
 }
 iocAllowedNetworkConf;
 
@@ -138,10 +142,25 @@ void ioc_enable_user_authentication(
     ioc_authorize_user_func *func,
     void *context);
 
+/* Add a network to allowed networks structure
+ */
+void ioc_add_allowed_network(
+    iocAllowedNetworkConf *allowed_networks,
+    os_char *network_name,
+    os_ushort flags);
+
 /* Release allowed networks structure set up by ioc_authorize_user_func()
  */
 void ioc_release_allowed_networks(
     iocAllowedNetworkConf *allowed_networks);
+
+/* Check if network is authorized.
+ */
+os_boolean ioc_is_network_authorized(
+    struct iocRoot *root,
+    iocAllowedNetworkConf *allowed_networks,
+    os_char *network_name,
+    os_ushort flags);
 
 /*@}*/
 

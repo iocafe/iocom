@@ -318,19 +318,14 @@ osalStatus ioc_process_received_mbinfo_frame(
     root = con->link.root;
     if (mbinfo.device_nr == IOC_AUTO_DEVICE_NR)
     {
-        /*if (root->device_nr != IOC_AUTO_DEVICE_NR  ||
-            os_strcmp(mbinfo.device_name, root->device_name) ||
-            os_strcmp(mbinfo.network_name, root->network_name) )
-        { */
-            /* If we do not have automatic device number, reserve one now
-             */
-            if (!con->auto_device_nr)
-            {
-                con->auto_device_nr = ioc_get_unique_device_id(root);
-            }
-            mbinfo.device_nr = con->auto_device_nr;
-            mbinfo.local_flags = IOC_MBLK_LOCAL_AUTO_ID;
-         /* } */
+        /* If we do not have automatic device number, reserve one now
+         */
+        if (!con->auto_device_nr)
+        {
+            con->auto_device_nr = ioc_get_unique_device_id(root);
+        }
+        mbinfo.device_nr = con->auto_device_nr;
+        mbinfo.local_flags = IOC_MBLK_LOCAL_AUTO_ID;
     }
 
     /* If this is message to device with automatic device number and this device has
@@ -391,10 +386,20 @@ void ioc_mbinfo_received(
     iocDynamicNetwork *dnetwork;
 #endif
 
+    root = con->link.root;
+
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    /* If network is not authorized, just drop the received information.
+     */
+    if (!ioc_is_network_authorized(root, &con->allowed_networks, info->network_name, 0))
+    {
+        return;
+    }
+#endif
+
     /* Find if we have memory block with device name, number and memory block
        number. If not, do nothing.
      */
-    root = con->link.root;
     mblk = root->mblk.first;
     while (OS_TRUE)
     {
