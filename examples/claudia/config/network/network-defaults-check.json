@@ -4,6 +4,20 @@
 	"network_name": "cloudnet",
 	"publish": "cloudnet",
 	"password": "auto",
+	"connect": [
+		{
+			"transport": "tls",
+			"parameters": ":6367",
+			"listen": 1,
+			"down": 1
+		},
+		{
+			"transport": "none",
+			"parameters": ":6369",
+			"listen": 1,
+			"down": 1
+		}
+	],
 	"security": [
 		{
 			"certchainfile": "bob-bundle.crt",

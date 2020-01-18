@@ -47,10 +47,10 @@ static os_timer idle_timer;
 
 /* Forward referred static functions.
  */
-static void app_listen_for_clients();
+// static void app_listen_for_clients();
 
-static void app_connect_cloud(
-    iocConnectionConfig *connconf);
+// static void app_connect_cloud(
+//    iocConnectionConfig *connconf);
 
 static void app_info_callback(
     struct iocHandle *handle,
@@ -132,12 +132,17 @@ osalStatus osal_main(
 
     /* Ready to go, start listening for clients.
      */
-    app_listen_for_clients();
+    // app_listen_for_clients();
 
     /* Connect to cloud.
      */
+    // connconf = ioc_get_connection_conf(&app_device_conf);
+    // app_connect_cloud(connconf);
+
+    /* Connect to network.
+     */
     connconf = ioc_get_connection_conf(&app_device_conf);
-    app_connect_cloud(connconf);
+    ioc_connect_node(&app_iocom, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -218,6 +223,7 @@ void osal_main_cleanup(
 }
 
 
+#if 0
 /**
 ****************************************************************************************************
 
@@ -288,6 +294,8 @@ static void app_connect_cloud(
         break;
     }
 }
+#endif
+
 
 
 /**

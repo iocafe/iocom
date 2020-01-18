@@ -117,6 +117,7 @@ osalStatus ioc_authorize(
     }
     if (mblk == OS_NULL)
     {
+        ioc_unlock(root);
         return OSAL_STATUS_FAILED;
     }
 

@@ -1,25 +1,29 @@
 {
-  "network": {
-    "title": "Network configuration defaults",
-    "device_nr": "auto",
-    "network_name": "iocafenet",
-    "publish": "iocafenet,asteroidnet",
-    "password": "auto",
+	"network": {
+		"title": "Network configuration defaults",
+		"device_nr": "auto",
+		"network_name": "iocafenet",
+		"publish": "iocafenet,asteroidnet",
+		"password": "auto",
 
-    "connect": [
-      {
-        "transport": "tls",
-        "ip": "127.0.0.1",
-        "down": 1
-      }
-    ],
+		"connect": [{
+				"transport": "tls",
+				"parameters": ":6369",
+				"listen": 1,
+				"down": 1
+			},
+			{
+				"transport": "tls",
+				"parameters": "127.0.0.1:6367",
+				"listen": 0,
+				"down": 1
+			}
+		],
 
-    "security": [
-      {
-        "certchainfile": "bob-bundle.crt",
-        "certfile": "alice.crt",
-        "keyfile": "alice.key"
-      }
-    ]
-  }
+		"security": [{
+			"certchainfile": "bob-bundle.crt",
+			"certfile": "alice.crt",
+			"keyfile": "alice.key"
+		}]
+	}
 }

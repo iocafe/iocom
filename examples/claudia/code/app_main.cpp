@@ -47,8 +47,6 @@ static os_timer idle_timer;
 
 /* Forward referred static functions.
  */
-static void app_listen_for_clients();
-
 static void app_info_callback(
     struct iocHandle *handle,
     os_int start_addr,
@@ -84,6 +82,7 @@ osalStatus osal_main(
     iocDeviceId *device_id;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
+    iocConnectionConfig *connconf;
     const os_char *device_name = "claudia";
 
     /* Initialize communication root and dymanic structure data root objects.
@@ -126,9 +125,10 @@ osalStatus osal_main(
     osal_tls_initialize(nics->nic, nics->n_nics, security);
     osal_serial_initialize();
 
-    /* Ready to go, start listening for clients.
+    /* Ready to go, connect to network.
      */
-    app_listen_for_clients();
+    connconf = ioc_get_connection_conf(&app_device_conf);
+    ioc_connect_node(&app_iocom, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -206,36 +206,6 @@ void osal_main_cleanup(
     ioc_release_root(&app_iocom);
     osal_tls_shutdown();
     osal_serial_shutdown();
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Listen for incoming connections.
-
-  The app_listen_for_clients creates iocom end point which listens for incoming connections
-  from IO nodes.
-
-  Notice flag IOC_DYNAMIC_MBLKS, this allows to create new memory blocks dynamically bu
-  received configuration information.
-
-  @return  None.
-
-****************************************************************************************************
-*/
-static void app_listen_for_clients()
-{
-    iocEndPoint *ep = OS_NULL;
-    iocEndPointParams epprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-    ep = ioc_initialize_end_point(OS_NULL, &app_iocom);
-    os_memclear(&epprm, sizeof(epprm));
-    epprm.iface = iface;
-    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-    ioc_listen(ep, &epprm);
 }
 
 

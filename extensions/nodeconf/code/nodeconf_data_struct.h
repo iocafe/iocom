@@ -60,7 +60,9 @@ typedef enum iocTransportEnum
     IOC_TCP_SOCKET,
     IOC_TLS_SOCKET,
     IOC_SERIAL_PORT,
-    IOC_BLUETOOTH
+    IOC_BLUETOOTH,
+
+    IOC_NO_TRANSPORT = -1
 }
 iocTransportEnum;
 

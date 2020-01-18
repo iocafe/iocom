@@ -7,7 +7,14 @@
 	"connect": [
 		{
 			"transport": "tls",
-			"ip": "127.0.0.1",
+			"parameters": ":6369",
+			"listen": 1,
+			"down": 1
+		},
+		{
+			"transport": "tls",
+			"parameters": "127.0.0.1:6367",
+			"listen": 0,
 			"down": 1
 		}
 	],

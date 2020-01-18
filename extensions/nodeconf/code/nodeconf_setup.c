@@ -438,9 +438,12 @@ static osalStatus ioc_nconf_process_block(
                         {
                             conn->transport = IOC_BLUETOOTH;
                         }
+                        else if (!os_strcmp(item.value.s, "none"))
+                        {
+                            conn->transport = IOC_NO_TRANSPORT;
+                        }
                     }
-                    else if (!os_strcmp(state->tag, "ip") ||
-                        !os_strcmp(state->tag, "port"))
+                    else if (!os_strcmp(state->tag, "parameters"))
                     {
                         conn->parameters = item.value.s;
                     }
