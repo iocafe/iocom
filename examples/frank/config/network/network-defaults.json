@@ -4,7 +4,7 @@
 		"device_nr": "auto",
 		"network_name": "iocafenet",
 		"publish": "iocafenet,asteroidnet",
-		"password": "auto",
+		"password": "pass",
 
 		"connect": [{
 				"transport": "tls",

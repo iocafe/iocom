@@ -146,7 +146,7 @@ void ioc_enable_user_authentication(
  */
 void ioc_add_allowed_network(
     iocAllowedNetworkConf *allowed_networks,
-    os_char *network_name,
+    const os_char *network_name,
     os_ushort flags);
 
 /* Release allowed networks structure set up by ioc_authorize_user_func()

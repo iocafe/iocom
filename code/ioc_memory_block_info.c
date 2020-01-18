@@ -391,9 +391,12 @@ void ioc_mbinfo_received(
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     /* If network is not authorized, just drop the received information.
      */
-    if (!ioc_is_network_authorized(root, &con->allowed_networks, info->network_name, 0))
+    if ((con->flags & IOC_NO_USER_AUTHORIZATION) == 0)
     {
-        return;
+        if (!ioc_is_network_authorized(root, &con->allowed_networks, info->network_name, 0))
+        {
+            return;
+        }
     }
 #endif
 

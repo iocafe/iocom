@@ -88,6 +88,9 @@
  - IOC_LISTENER Listening end of serial communication. Effects to line negotiation
  - IOC_CONNECT_UP Connect up to upper level of IO device hierarchy.
  - IOC_DYNAMIC_MBLKS Dynamically create dynamic memory blocks as needed.
+ - IOC_NO_USER_AUTHORIZATION Do not authenticate users trough this connection. This is needed
+   when controller connects to other connections to avoid authentication both ways. Local flag,
+   not serialized.
  */
 /*@{*/
 #define IOC_SERIAL 0
@@ -103,6 +106,8 @@
 #define IOC_LISTENER 32
 #define IOC_DISABLE_SELECT 64
 #define IOC_CONNECT_UP 128
+
+#define IOC_NO_USER_AUTHORIZATION 256
 /*@}*/
 
 

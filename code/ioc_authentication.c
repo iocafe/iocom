@@ -274,7 +274,7 @@ osalStatus ioc_process_received_authentication_frame(
     /* Check user autorization.
      */
     root = con->link.root;
-    if (root->authorization_func)
+    if (root->authorization_func && (con->flags & IOC_NO_USER_AUTHORIZATION) == 0)
     {
         ioc_release_allowed_networks(&con->allowed_networks);
         s = root->authorization_func(root, &con->allowed_networks,
@@ -320,7 +320,6 @@ void ioc_enable_user_authentication(
 }
 
 
-
 /**
 ****************************************************************************************************
 
@@ -338,7 +337,7 @@ void ioc_enable_user_authentication(
 */
 void ioc_add_allowed_network(
     iocAllowedNetworkConf *allowed_networks,
-    os_char *network_name,
+    const os_char *network_name,
     os_ushort flags)
 {
     iocAllowedNetwork *n;
@@ -441,13 +440,14 @@ os_boolean ioc_is_network_authorized(
 
     /* If we already got this network, just "or" the flags in.
      */
-    count  = allowed_networks->n_networs;
+    count = allowed_networks->n_networs;
     for (i = 0; i < count; i++)
     {
         if (!os_strcmp(network_name, allowed_networks->network[i].network_name))
         {
             if (flags & IOC_AUTH_ADMINISTRATOR)
-                return (allowed_networks->network[i].flags & IOC_AUTH_ADMINISTRATOR) ? OS_TRUE : OS_FALSE;
+                return (allowed_networks->network[i].flags & IOC_AUTH_ADMINISTRATOR)
+                    ? OS_TRUE : OS_FALSE;
 
             return OS_TRUE;
         }

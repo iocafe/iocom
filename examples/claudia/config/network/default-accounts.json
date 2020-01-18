@@ -6,6 +6,11 @@
 				"user": "ispy*",
 				"password": "pass",
 				"privileges": "admin"
+			},
+			{
+				"user": "frank*.iocafenet",
+				"password": "pass",
+				"privileges": "admin"
 			}
 		],
 

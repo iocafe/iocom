@@ -80,7 +80,14 @@ osalStatus ioc_connect_node(
         }
         else
         {
+            /* If listening end of serial connection?
+             */
             if (c->listen) flags |= IOC_LISTENER;
+
+            /* If controller socket connecting to cloud server?
+             */
+            if ((flags & IOC_SOCKET) && c->down) flags |= IOC_NO_USER_AUTHORIZATION;
+
             con = ioc_initialize_connection(OS_NULL, root);
             os_memclear(&conprm, sizeof(conprm));
             conprm.iface = iface;
