@@ -49,9 +49,6 @@ static os_timer idle_timer;
  */
 static void app_listen_for_clients();
 
-static void app_connect_cloud(
-    iocConnectionConfig *connconf);
-
 static void app_info_callback(
     struct iocHandle *handle,
     os_int start_addr,
@@ -85,10 +82,9 @@ osalStatus osal_main(
 {
     osPersistentParams persistentprm;
     iocDeviceId *device_id;
-    iocConnectionConfig *connconf;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
-    const os_char *device_name = "frank";
+    const os_char *device_name = "claudia";
 
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
@@ -112,7 +108,7 @@ osalStatus osal_main(
 
     ioc_enable_user_authentication(&app_iocom, ioc_authorize, OS_NULL);
 
-    /* Create frank main object
+    /* Create claudia main object
      */
     app_root_obj = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
         device_id->publish);
@@ -133,11 +129,6 @@ osalStatus osal_main(
     /* Ready to go, start listening for clients.
      */
     app_listen_for_clients();
-
-    /* Connect to cloud.
-     */
-    connconf = ioc_get_connection_conf(&app_device_conf);
-    app_connect_cloud(connconf);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -251,41 +242,6 @@ static void app_listen_for_clients()
 /**
 ****************************************************************************************************
 
-  @brief Connect to cloud server.
-
-  If the IO controller (like this 'frank' example) runs in local network, a cloud server
-  can be used to pass connections from remote devices or other nodes. This function
-  connects this IO controller to cloud server application like 'claudia'.
-
-  @param   connconf Connection configuration (from persistent storate or JSON defaults).
-  @return  None.
-
-****************************************************************************************************
-*/
-static void app_connect_cloud(
-    iocConnectionConfig *connconf)
-{
-    iocConnection *con = OS_NULL;
-    iocConnectionParams conprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-return;
-
-    con = ioc_initialize_connection(OS_NULL, &app_iocom);
-    os_memclear(&conprm, sizeof(conprm));
-
-    conprm.iface = iface;
-    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-    // conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
-    conprm.parameters = "127.0.0.1";
-    ioc_connect(con, &conprm);
-}
-
-
-/**
-****************************************************************************************************
-
   @brief Callback function to add dynamic device information.
 
   The app_info_callback() function is called when device information data is received from
@@ -368,7 +324,7 @@ static void app_root_callback(
 
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
-            app_root_obj->launch_app(dnetwork->network_name);
+            // app_root_obj->launch_app(dnetwork->network_name);     XXXXXXXXXXXXXXXXXXXXXXXXXX
             break;
 
         default:

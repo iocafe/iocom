@@ -1,0 +1,43 @@
+{
+"accounts" : {
+	"accounts": [
+		{
+			"user": "ispy*",
+			"password": "pass",
+			"privileges": "admin"
+		},
+		{
+			"user": "gina*",
+			"password": "pass"
+		}
+	],
+	"requests": [
+		{
+			"user": "gina1.iocafenet",
+			"password": "pass"
+		}
+	],
+	"alarms": [
+		{
+			"user": "evil1.doomnet",
+			"password": "pass"
+		}
+	],
+	"whitelist": [
+		{
+			"user": "*.iocafenet"
+		},
+		{
+			"ip": "192.168.1.2,192.168.1.253"
+		}
+	],
+	"blacklist": [
+		{
+			"user": "evil1.doomnet"
+		},
+		{
+			"ip": "139.74.17.0,139.74.18.255"
+		}
+	]
+}
+}

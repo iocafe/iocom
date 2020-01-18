@@ -1,0 +1,15 @@
+{
+  "network": {
+    "title": "Network configuration defaults",
+    "device_nr": "auto",
+    "network_name": "cloudnet",
+    "publish": "cloudnet",
+    "password": "auto",
+
+    "security": [{
+      "certchainfile": "bob-bundle.crt",
+      "certfile": "alice.crt",
+      "keyfile": "alice.key"
+    }]
+  }
+}

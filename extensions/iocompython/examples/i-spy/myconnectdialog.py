@@ -28,6 +28,13 @@ json = '''
         "options": ["SERVER", "CLIENT"]
     },
     {
+        "type": "string",
+        "title": "User name",
+        "desc": "User name to use for connect.",
+        "section": "client",
+        "key": "conf_user"
+    },
+    {
         "type": "options",
         "title": "transport",
         "desc": "What kind of data transport: Secure TLS, plain socket or serial communication?",
@@ -113,7 +120,7 @@ class MyConnectDialog(SettingsWithNoMenu):
 
         config = ConfigParser()
         config.setdefaults('common', {'conf_role': 'SERVER', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1'})
-        config.setdefaults('client', {'conf_user': 'administrator', 'conf_cert_chain': 'bob-bundle.crt'})
+        config.setdefaults('client', {'conf_user': 'ispy.iocafenet', 'conf_cert_chain': 'bob-bundle.crt'})
         config.setdefaults('server', {'conf_serv_cert': 'alice.crt', 'conf_serv_key': 'alice.key'})
         self.myconfig = config;
         try:
@@ -149,18 +156,23 @@ class MyConnectDialog(SettingsWithNoMenu):
         content = BoxLayout(orientation='vertical', spacing='5dp')
         popup_width = min(0.95 * Window.width, dp(500))
         self.popup = popup = Popup(
-            title="password", content=content, size_hint=(None, None),
+            title="connect as", content=content, size_hint=(None, None),
             size=(popup_width, '250dp'))
 
-        # create the textinput used for numeric input
-        textinput = TextInput(
+        # create the text input widgets for user name and password
+        user_name_input = TextInput(
+            text=self.myconfig.get('client', 'conf_user'), font_size='24sp', multiline=False,
+            size_hint_y=None, height='42sp')
+        self.user_name_input = user_name_input
+        password_input = TextInput(
             text="", font_size='24sp', multiline=False,
             size_hint_y=None, height='42sp')
-        self.textinput = textinput
+        self.password_input = password_input
 
         # construct the content, widget are used as a spacer
         content.add_widget(Widget())
-        content.add_widget(textinput)
+        content.add_widget(user_name_input)
+        content.add_widget(password_input)
         content.add_widget(Widget())
 
         # 2 buttons are created for connect or cancel
@@ -175,12 +187,13 @@ class MyConnectDialog(SettingsWithNoMenu):
 
         # all done, open the popup and set input focus !
         popup.open()
-        textinput.focus = True
+        password_input.focus = True
 
     def on_password(self, instance):
-        password = self.textinput.text
+        user_name = self.user_name_input.text
+        password = self.password_input.text
         self.popup.dismiss()
-        self.dispatch('on_connect', password, self.get_settings())
+        self.dispatch('on_connect', user_name, password, self.get_settings())
 
     def on_connect(self, *args):
         self.myconfig.write();

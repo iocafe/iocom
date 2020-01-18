@@ -30,15 +30,16 @@ class MainApp(App):
         if self.ioc_root != None:
             self.disconnect()
 
-        ioc_password = args[0]
-        self.ioc_params = args[1]
+        ioc_user = args[0]
+        ioc_password = args[1]
+        self.ioc_params = args[2]
         transport_flag = self.ioc_params['transport'].lower();
 
         if self.ioc_params['role'] == "CLIENT":
             # self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
             self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
             self.ioc_root.queue_events()
-            self.ioc_connection = Connection(self.ioc_root, parameters=self.ioc_params['ip'], flags=transport_flag + ',down,dynamic,bidirectional', password=ioc_password)
+            self.ioc_connection = Connection(self.ioc_root, parameters=self.ioc_params['ip'], flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user, password=ioc_password)
 
         else:
             self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])

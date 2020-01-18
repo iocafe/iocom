@@ -52,14 +52,19 @@ void ioc_make_authentication_frame(
         *start;
 
     os_char
-        *password;
+        *network_name,
+        *user_name,
+        user_name_buf[IOC_NAME_SZ],
+        *password,
+        *q;
 
     os_int
         content_bytes,
         used_bytes;
 
     os_int
-        bytes;
+        bytes,
+        device_nr;
 
     os_ushort
         crc,
@@ -80,11 +85,27 @@ void ioc_make_authentication_frame(
     auth_flags_ptr = p;
     *(p++) = 0;
 
-    ioc_msg_setstr(root->device_name, &p);
-    ioc_msg_set_uint(root->device_nr < IOC_AUTO_DEVICE_NR ? root->device_nr : 0,
-        &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
+    network_name = root->network_name;
+    user_name = root->device_name;
+    device_nr = root->device_nr;
 
-    ioc_msg_setstr(root->network_name, &p);
+    /* If we have user name, we use it instead of device name. User name
+       may have also network name, like ispy.iocafenet.
+     */
+    if (con->user_override[0] != '\0')
+    {
+        os_strncpy(user_name_buf, con->user_override, sizeof(user_name_buf));
+        q = os_strchr(user_name_buf, '.');
+        if (q) *q = '\0';
+        device_nr = 0;
+        q = os_strchr(con->user_override, '.');
+        if (q) network_name = q + 1;
+    }
+
+    ioc_msg_setstr(user_name, &p);
+    ioc_msg_set_uint(device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0,
+        &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
+    ioc_msg_setstr(network_name, &p);
 
     /* If we have password given by user
      */

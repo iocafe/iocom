@@ -117,7 +117,10 @@ osalStatus ioc_authorize(
 
         break;
     }
-    if (mblk == OS_NULL) return OSAL_STATUS_FAILED;
+    if (mblk == OS_NULL)
+    {
+        return OSAL_STATUS_FAILED;
+    }
 
     /* Check if user is allowed to connect to the network.
      */
@@ -378,21 +381,23 @@ static osalStatus ioc_authorize_parse_accounts(
     {
         s = ioc_authorize_process_block(&state, "", &jindex);
     }
+
 #if OSAL_DEBUG
     if (s)
     {
         osal_debug_error_int("parsing user accounts failed:", s);
     }
 #endif
-    if (s) return s;
-
-    s = state.valid_user ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
 
     /* Security and testing is difficult with security on, define to turn it off.
      */
 #if IOC_RELAX_SECURITY
-    s = OSAL_SUCCESS;
+    return OSAL_SUCCESS;
 #endif
+
+    if (s) return s;
+
+    s = state.valid_user ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
     return s;
 }
 

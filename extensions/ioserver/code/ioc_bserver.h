@@ -34,6 +34,8 @@ typedef struct iocBServerParams
     os_memsz signal_config_sz;
     const os_char *network_defaults;
     os_memsz network_defaults_sz;
+    const os_char *account_defaults;
+    os_memsz account_defaults_sz;
 }
 iocBServerParams;
 
@@ -62,6 +64,11 @@ typedef struct iocBServerMain
      */
     struct iocBServerNetwork *networks;
     os_int nro_networks;
+
+    /* Saved pointers from parameters.
+     */
+    const os_char *account_defaults;
+    os_memsz account_defaults_sz;
 }
 iocBServerMain;
 

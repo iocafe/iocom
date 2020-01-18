@@ -46,12 +46,14 @@ static PyObject *Connection_new(
     const char
         *parameters = NULL,
         *flags = NULL,
+        *user = NULL,
         *password = NULL;
 
     static char *kwlist[] = {
         "root",
         "parameters",
         "flags",
+        "user",
         "password",
         NULL
     };
@@ -64,8 +66,8 @@ static PyObject *Connection_new(
 
     os_memclear(&prm, sizeof(prm));
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|sss",
-         kwlist, &pyroot, &parameters, &flags, &password))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ssss",
+         kwlist, &pyroot, &parameters, &flags, &user, &password))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         goto failed;
@@ -97,6 +99,7 @@ static PyObject *Connection_new(
         goto failed;
     }
     prm.parameters = parameters;
+    prm.user_override = user;
     prm.password_override = password;
 
     if (flags == OS_NULL)
