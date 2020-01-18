@@ -98,7 +98,7 @@ osalStatus ioc_load_persistent_into_mblk(
 
     /* If we need to transfer the changes?
      */
-    ioc_mblk_invalidate(mblk, 0, block_sz-1);
+    ioc_mblk_invalidate(mblk, 0, (os_int)block_sz - 1);
 
 getout:
     /* End syncronization.

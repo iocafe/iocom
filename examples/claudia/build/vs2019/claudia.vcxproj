@@ -19,17 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\config.c" />
-    <ClCompile Include="..\..\code\frank.cpp" />
-    <ClCompile Include="..\..\code\frank_accounts.cpp" />
-    <ClCompile Include="..\..\code\frank_application.cpp" />
-    <ClCompile Include="..\..\code\frank_main.cpp" />
+    <ClCompile Include="..\..\code\app_config.c" />
+    <ClCompile Include="..\..\code\app_instance.cpp" />
+    <ClCompile Include="..\..\code\app_main.cpp" />
+    <ClCompile Include="..\..\code\app_root.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\frank.h" />
-    <ClInclude Include="..\..\code\frank_accounts.h" />
-    <ClInclude Include="..\..\code\frank_application.h" />
-    <ClInclude Include="..\..\code\frank_main.h" />
+    <ClInclude Include="..\..\code\app_instance.h" />
+    <ClInclude Include="..\..\code\app_main.h" />
+    <ClInclude Include="..\..\code\app_root.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
