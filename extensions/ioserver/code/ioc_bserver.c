@@ -297,6 +297,7 @@ static void ioc_setup_bserver_network(
      */
     blockprm.mblk_name = "data";
     blockprm.flags = IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC;
+    blockprm.nbytes = 0;
     ioc_initialize_memory_block(&n->accounts_data, OS_NULL, m->root, &blockprm);
     ioc_load_persistent_into_mblk(&n->accounts_data, select, account_defaults,
         account_defaults_sz);
