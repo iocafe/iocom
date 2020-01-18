@@ -266,20 +266,27 @@ static void app_connect_cloud(
     iocConnectionConfig *connconf)
 {
     iocConnection *con = OS_NULL;
+    iocOneConnectionConf *c;
     iocConnectionParams conprm;
-
     const osalStreamInterface *iface = OSAL_TLS_IFACE;
+    os_int i;
 
-return;
+    /* Just take first TLS connect downwards in object hierarchy
+     */
+    for (i = 0; i < connconf->n_connections; i++)
+    {
+        c = connconf->connection + i;
+        if (c->listen || !c->down || c->transport != IOC_TLS_SOCKET) continue;
 
-    con = ioc_initialize_connection(OS_NULL, &app_iocom);
-    os_memclear(&conprm, sizeof(conprm));
+        con = ioc_initialize_connection(OS_NULL, &app_iocom);
+        os_memclear(&conprm, sizeof(conprm));
 
-    conprm.iface = iface;
-    conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-    // conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS|IOC_BIDIRECTIONAL_MBLKS;
-    conprm.parameters = "127.0.0.1";
-    ioc_connect(con, &conprm);
+        conprm.iface = iface;
+        conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
+        conprm.parameters = connconf->connection->parameters;
+        ioc_connect(con, &conprm);
+        break;
+    }
 }
 
 

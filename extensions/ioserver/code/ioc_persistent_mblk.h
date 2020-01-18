@@ -14,6 +14,8 @@
 ****************************************************************************************************
 */
 
+/* Load persistent data as memory block content.
+ */
 osalStatus ioc_load_persistent_into_mblk(
     iocHandle *handle,
     os_int select,

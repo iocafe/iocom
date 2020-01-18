@@ -103,7 +103,7 @@ osalStatus ioc_initialize_memory_block(
      */
     buf = prm->buf;
     nbytes = prm->nbytes;
-    if (buf == OS_NULL)
+    if (buf == OS_NULL && nbytes > 0)
     {
         buf = ioc_malloc(root, nbytes, OS_NULL);
         mblk->buf_allocated = OS_TRUE;
@@ -1031,7 +1031,9 @@ osalStatus ioc_resize_mblk(
         return OSAL_STATUS_NOT_SUPPORTED;
     }
 
-    if (!mblk->buf_allocated)
+    /* If zero size memory block was allocated first, it can be resized.
+     */
+    if (!mblk->buf_allocated && mblk->buf)
     {
         osal_debug_error("Attempt to resize memory block with static buffer");
         return OSAL_STATUS_FAILED;
@@ -1057,9 +1059,12 @@ osalStatus ioc_resize_mblk(
     root = mblk->link.root;
     newbuf = ioc_malloc(root, nbytes, OS_NULL);
     if (newbuf == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
-    os_memcpy(newbuf, mblk->buf, mblk->nbytes);
     os_memclear(newbuf + mblk->nbytes, nbytes - mblk->nbytes);
-    ioc_free(root, mblk->buf, mblk->nbytes);
+    if (mblk->buf)
+    {
+        os_memcpy(newbuf, mblk->buf, mblk->nbytes);
+        ioc_free(root, mblk->buf, mblk->nbytes);
+    }
     mblk->buf = newbuf;
     mblk->nbytes = nbytes;
 

@@ -1,13 +1,14 @@
 {
 "network" : {
 	"device_nr": "auto",
-	"network_name": "cloudnet",
+	"network_name": "iocafenet",
 	"publish": "iocafenet,asteroidnet",
 	"password": "auto",
 	"connect": [
 		{
-			"transport": "socket",
-			"ip": "192.168.1.220"
+			"transport": "tls",
+			"ip": "127.0.0.1",
+			"down": 1
 		}
 	],
 	"security": [
