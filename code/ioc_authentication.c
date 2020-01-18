@@ -331,7 +331,7 @@ void ioc_enable_user_authentication(
 
   @param   allowed_networks Allowed networks structure.
   @param   network_name Network name to add.
-  @param   flags Flags (priviliges, etc) to store for the network
+  @param   flags Flags (privileges, etc) to store for the network
   @return  None.
 
 ****************************************************************************************************
@@ -419,7 +419,7 @@ void ioc_release_allowed_networks(
 
   @param   allowed_networks Allowed networks structure.
   @param   network_name Network name to check.
-  @param   flags Required priviliges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrarot.
+  @param   flags Required privileges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrarot.
   @return  OS_TRUE if network is authorized to proceed, OS_FALSE if not.
 
 ****************************************************************************************************

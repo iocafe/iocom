@@ -9,15 +9,9 @@
 			}
 		],
 
-		"requests": [{
-			"user": "gina1.iocafenet",
-			"password": "pass"
-		}],
+		"requests": [],
 
-		"alarms": [{
-			"user": "evil1.doomnet",
-			"password": "pass"
-		}],
+		"alarms": [],
 
 		"whitelist": [{
 				"user": "*.iocafenet"

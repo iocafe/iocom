@@ -8,16 +8,8 @@
 		}
 	],
 	"requests": [
-		{
-			"user": "gina1.iocafenet",
-			"password": "pass"
-		}
 	],
 	"alarms": [
-		{
-			"user": "evil1.doomnet",
-			"password": "pass"
-		}
 	],
 	"whitelist": [
 		{

@@ -255,9 +255,9 @@ class MyConfig(MySettingsDisplay):
             grid.add_widget(Label(text='password'));
             grid.add_widget(self.password_input)
 
-            self.priviliges_input = make_my_text_input("")
-            grid.add_widget(Label(text='priviliges'));
-            grid.add_widget(self.priviliges_input)
+            self.privileges_input = make_my_text_input("")
+            grid.add_widget(Label(text='privileges'));
+            grid.add_widget(self.privileges_input)
             nrows += 2
 
         if groupname == "blacklist" or groupname == "whitelist":
@@ -302,8 +302,8 @@ class MyConfig(MySettingsDisplay):
 
         if groupname == "accounts":
             item['password'] = self.password_input.text;
-            if self.priviliges_input.text != "":
-                item['priviliges'] = self.priviliges_input.text;
+            if self.privileges_input.text != "":
+                item['privileges'] = self.privileges_input.text;
 
         if groupname == "blacklist" or groupname == "whitelist":
             item['ip'] = self.ip_input.text;

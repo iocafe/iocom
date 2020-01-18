@@ -32,7 +32,7 @@ typedef struct
 
     /** Pointers to data for current item in account info.
      */
-    const os_char *user_name, *password, *priviliges, *ip;
+    const os_char *user_name, *password, *privileges, *ip;
 
     /** Latest information parsed from JSON
         tag or key, '-' for array elements
@@ -73,7 +73,7 @@ static osalStatus ioc_authorize_parse_accounts(
   @brief Check if the user connecting is a legimate one.
 
   The ioc_authorize() function checks if user is authorized to connect to this server
-  and has root priviliges. The function fills list of networks which can be connected.
+  and has root privileges. The function fills list of networks which can be connected.
 
   @param   root Pointer to iocom root structure.
   @param   allowed_networks The function stores here list of networks the user is
@@ -274,7 +274,7 @@ static osalStatus ioc_authorize_process_block(
                 {
                     state->valid_user = OS_TRUE;
                     flags = 0;
-                    if (!os_strcmp(state->priviliges, "admin")) flags |= IOC_AUTH_ADMINISTRATOR;
+                    if (!os_strcmp(state->privileges, "admin")) flags |= IOC_AUTH_ADMINISTRATOR;
                     ioc_add_allowed_network(state->allowed_networks, state->mblk_network_name, flags);
                 }
             }
@@ -290,7 +290,7 @@ static osalStatus ioc_authorize_process_block(
         switch (item.code)
         {
             case OSAL_JSON_START_BLOCK:
-                state->user_name = state->password = state->priviliges = state->ip = OS_NULL;
+                state->user_name = state->password = state->privileges = state->ip = OS_NULL;
                 s = ioc_authorize_process_block(state, array_tag, jindex);
                 if (s) return s;
                 break;
@@ -306,9 +306,9 @@ static osalStatus ioc_authorize_process_block(
                 {
                     state->user_name = item.value.s;
                 }
-                else if (!os_strcmp(state->tag, "priviliges"))
+                else if (!os_strcmp(state->tag, "privileges"))
                 {
-                    state->priviliges = item.value.s;
+                    state->privileges = item.value.s;
                 }
                 else if (!os_strcmp(state->tag, "password"))
                 {

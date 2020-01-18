@@ -55,7 +55,7 @@ typedef struct iocUser
      */
     os_char password[IOC_NAME_SZ];
 
-    /** Flags (priviliges, etc)
+    /** Flags (privileges, etc)
      */
     os_ushort flags;
 }
@@ -69,9 +69,9 @@ iocUser;
   identification is matched to user accounts in server, resulting accepted or terminated
   connection and set of IO networks which can be accessed tough this connection.
   This list is stored in iocConnection structure as iocAllowedNetworkConf.
-  The iocAllowedNetwork names one allowed network, like "iocafenet". Allowed priviliges
+  The iocAllowedNetwork names one allowed network, like "iocafenet". Allowed privileges
   are stored in flags. IOC_AUTH_ADMINISTRATOR bit indicates that administrative
-  (configuration and software update) priviliges.
+  (configuration and software update) privileges.
 ****************************************************************************************************
 */
 typedef struct iocAllowedNetwork
@@ -80,7 +80,7 @@ typedef struct iocAllowedNetwork
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
 
-    /** Flags (priviliges, etc)
+    /** Flags (privileges, etc)
      */
     os_ushort flags;
 }
@@ -125,7 +125,7 @@ osalStatus ioc_process_received_authentication_frame(
    implementing user authentication mechanism for application. ioserver extension
    library contains the default iocom user authentication.
    The allowed_networks is structure set up to hold list of networks which can be
-   accessed trough the connection and priviliges for each network. Must be released
+   accessed trough the connection and privileges for each network. Must be released
    by ioc_release_allowed_networks().
  */
 typedef osalStatus ioc_authorize_user_func(

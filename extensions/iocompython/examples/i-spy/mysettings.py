@@ -316,11 +316,11 @@ class MyUserManagementItem(MyVariable):
         self.my_label.text = '[size=16]' + text + '[/size]'
 
         description = ip
-        priviliges = item.get("priviliges", None)
-        if priviliges != None:
+        privileges = item.get("privileges", None)
+        if privileges != None:
             if description != "":
                 description += " "
-            description += '[color=9090FF]' + priviliges + '[/color]'
+            description += '[color=9090FF]' + privileges + '[/color]'
         password = item.get("password", None)            
         if password != None:
             if description != "":
@@ -377,9 +377,9 @@ class MyUserManagementItem(MyVariable):
             grid.add_widget(Label(text='password'));
             grid.add_widget(self.password_input)
 
-            self.priviliges_input = make_my_text_input(item.get('priviliges', ''))
-            grid.add_widget(Label(text='priviliges'));
-            grid.add_widget(self.priviliges_input)
+            self.privileges_input = make_my_text_input(item.get('privileges', ''))
+            grid.add_widget(Label(text='privileges'));
+            grid.add_widget(self.privileges_input)
             nrows += 2
 
         if groupname == "blacklist" or groupname == "whitelist":
@@ -422,11 +422,11 @@ class MyUserManagementItem(MyVariable):
 
         if groupname == "accounts":
             self.my_set_account_attr("password", self.password_input.text)
-            self.my_set_account_attr("priviliges", self.priviliges_input.text)
+            self.my_set_account_attr("privileges", self.privileges_input.text)
 
         else:
             self.my_set_account_attr("password", "")
-            self.my_set_account_attr("priviliges", "")
+            self.my_set_account_attr("privileges", "")
 
         if groupname == "blacklist" or groupname == "whitelist":
             self.my_set_account_attr("ip", self.ip_input.text)
