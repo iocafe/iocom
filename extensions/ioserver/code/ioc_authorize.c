@@ -47,7 +47,6 @@ iocAccountsParserState;
 
 
 const os_char ioc_accounts_device_name[] = "accounts";
-// const os_int ioc_accounts_device_nr = 1;
 const os_char ioc_accounts_data_mblk_name[] = "data";
 
 /* Prototypes for forward referred static functions.
@@ -107,8 +106,7 @@ osalStatus ioc_authorize(
          mblk;
          mblk = mblk->link.next)
     {
-        if (mblk->device_name[0] != ioc_accounts_device_name[0] /* ||
-            mblk->device_nr != ioc_accounts_device_nr */) continue;
+        if (mblk->device_name[0] != ioc_accounts_device_name[0]) continue;
         if (mblk->network_name[0] != user->network_name[0] ||
             mblk->mblk_name[0] != ioc_accounts_data_mblk_name[0]) continue;
         if (os_strcmp(mblk->mblk_name, ioc_accounts_data_mblk_name)) continue;

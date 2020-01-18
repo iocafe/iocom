@@ -20,6 +20,11 @@
 
 struct iocBServerNetwork;
 
+/**
+****************************************************************************************************
+  Basic server parameters
+****************************************************************************************************
+ */
 typedef struct iocBServerParams
 {
     const os_char *device_name;
@@ -39,6 +44,12 @@ typedef struct iocBServerParams
 }
 iocBServerParams;
 
+
+/**
+****************************************************************************************************
+  Basic server state structure
+****************************************************************************************************
+ */
 typedef struct iocBServerMain
 {
     /* Pointer to IOCOM root structure.
@@ -73,21 +84,36 @@ typedef struct iocBServerMain
 iocBServerMain;
 
 
+/**
+****************************************************************************************************
+  Basic server functions and macros
+****************************************************************************************************
+ */
+/* Initialize basic server components.
+ */
 void ioc_initialize_bserver(
     iocBServerMain *m,
     iocRoot *root,
     iocBServerParams *prm);
 
+/* Release basic server components.
+ */
 void ioc_release_bserver(
     iocBServerMain *m);
 
+/* Publish IO device networks.
+ */
 osalStatus ioc_publish_bserver_networks(
     iocBServerMain *m,
     const os_char *publish);
 
+/* Keep basic server functionality alive.
+ */
 osalStatus ioc_run_bserver(
     iocBServerMain *m);
 
+/* Macro to set up a control stream by typical signal configuration.
+ */
 #define IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(bmain, sig) \
     bmain.ctrl_stream_params.is_device = OS_TRUE; \
     bmain.ctrl_stream_params.frd.cmd = &sig.conf_imp.frd_cmd; \

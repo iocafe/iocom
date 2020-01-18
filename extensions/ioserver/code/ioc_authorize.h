@@ -30,7 +30,6 @@ iocAccountConf;
 
 
 extern const os_char ioc_accounts_device_name[];
-// extern const os_int ioc_accounts_device_nr;
 extern const os_char ioc_accounts_data_mblk_name[];
 
 /**

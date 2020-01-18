@@ -22,7 +22,8 @@
 #include "account-defaults.h"
 #include "accounts-mblk-binary.h"
 
-
+/* Internal basic server state structure to publish account information of an IO network.
+ */
 typedef struct iocBServerNetwork
 {
     /* IO device/user account IO definition structure.
@@ -64,6 +65,28 @@ static osalStatus ioc_run_bserver_network(
     iocBServerNetwork *n);
 
 
+/**
+****************************************************************************************************
+
+  @brief Initialize basic server components.
+
+  The ioc_initialize_bserver() function sets up basic server main structure. The structure holds
+  static information for transferring configuration, published networks, etc.
+
+  Flat basic server structure is allocated by application, but this function allocates additional
+  memory for published networks. Thus it is important that the structure initialized by this
+  function is released by calling ioc_release_bserver().
+
+  Note: If server application has other memory blocks, set these up before initializing
+  the basic server components.
+
+  @param   m Pointer to basic server structure to initialize.
+  @param   root Pointer to iocom root structure.
+  @param   prm Parameters for basic server.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_initialize_bserver(
     iocBServerMain *m,
     iocRoot *root,
@@ -82,6 +105,19 @@ void ioc_initialize_bserver(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Release basic server components.
+
+  The ioc_release_bserver() function releases memory allocated for basic server functionality
+  and detchased handles from iocom.
+
+  @param   m Pointer to basic server structure to release.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_release_bserver(
     iocBServerMain *m)
 {
@@ -104,11 +140,22 @@ void ioc_release_bserver(
     ioc_release_memory_block(&m->info);
 }
 
-/*
-  return If working in something, the function returns OSAL_SUCCESS. Return value
-         OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
-         idle mode as far as the bserver knows.
-         */
+
+/**
+****************************************************************************************************
+
+  @brief Keep basic server functionality alive.
+
+  The ioc_run_bserver() function needs to be called repeatedly to keep basic server
+  functionality responsive.
+
+  @param   m Pointer to basic server structure.
+  @return  If working in something, the function returns OSAL_SUCCESS. Return value
+           OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+           idle mode as far as the bserver knows.
+
+****************************************************************************************************
+*/
 osalStatus ioc_run_bserver(
     iocBServerMain *m)
 {
@@ -129,8 +176,24 @@ osalStatus ioc_run_bserver(
 }
 
 
-/* Set up memory blocks and signals.
- */
+/**
+****************************************************************************************************
+
+  @brief Set up memory blocks and signals.
+
+  The ioc_setup_bserver_mblks() function sets memory blocks:
+  - conf_exp and cond_imp memory blocks are used to transfer network configuration data as stream.
+  - info memory block blublishes information about server's memory blocks.
+
+  Note: If server application has other memory blocks, set these up before initializing
+  the basic server components.
+
+  @param   m Pointer to basic server structure.
+  @param   prm Parameters for basic server.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_setup_bserver_mblks(
     iocBServerMain *m,
     iocBServerParams *prm)
@@ -181,6 +244,21 @@ static void ioc_setup_bserver_mblks(
     m->ctrl_stream_params.default_config_sz = prm->network_defaults_sz;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Publish IO device networks.
+
+  The ioc_publish_bserver_networks() function published IO device network "hosted" by this IO
+  server. Here publishing means making user account accessible.
+
+  @param   m Pointer to basic server structure.
+  @param   publish List containing network to publish, comma is separator.
+  @return  If successfull, the function returns OSAL_SUCCESS. Other values indicate an error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_publish_bserver_networks(
     iocBServerMain *m,
     const os_char *publish)
@@ -255,6 +333,23 @@ osalStatus ioc_publish_bserver_networks(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Set up memory blocks, etc. to published IO network.
+
+  The ioc_setup_bserver_network() function sets up IO network structure and memory blocks
+  for published used accounts.
+
+  @param   n Pointer to IO network structure.
+  @param   m Pointer to basic server structure.
+  @param   select Persistent block number (on flash or in file system) where the user account
+           configuration is stored.
+  @param   network_name Network name for the published IO network.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_setup_bserver_network(
     iocBServerNetwork *n,
     iocBServerMain *m,
@@ -268,10 +363,11 @@ static void ioc_setup_bserver_network(
     os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
 
     /* Generate memory blocks.
+       Note: Device number for accounts is calculated from persistent block number.
      */
     os_memclear(&blockprm, sizeof(blockprm));
     blockprm.device_name = ioc_accounts_device_name;
-    blockprm.device_nr = select - OS_PBNR_ACCOUNTS_1 + 1; // ioc_accounts_device_nr;
+    blockprm.device_nr = select - OS_PBNR_ACCOUNTS_1 + 1;
     blockprm.network_name = n->network_name;
 
     blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;
@@ -316,6 +412,19 @@ static void ioc_setup_bserver_network(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Release resources allocated for published network (internal).
+
+  The ioc_release_bserver_network() function releases iocom memory blocks used for
+  published account information.
+
+  @param   n Pointer to published network structure.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_release_bserver_network(
     iocBServerNetwork *n)
 {
@@ -326,10 +435,20 @@ static void ioc_release_bserver_network(
 }
 
 
-/*
-   return If working in something, the function returns OSAL_SUCCESS. Return value
-         OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
-         idle mode as far as the bserver network knows.
+/**
+****************************************************************************************************
+
+  @brief Keep account configuration responsive (internal).
+
+  The ioc_run_bserver_network() function needs to be called repeatedly to keep published
+  network account configuration responsive.
+
+  @param   n Pointer to published network structure.
+  @return  If working in something, the function returns OSAL_SUCCESS. Return value
+           OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+           idle mode as far as the bserver knows.
+
+****************************************************************************************************
 */
 static osalStatus ioc_run_bserver_network(
     iocBServerNetwork *n)
