@@ -29,6 +29,7 @@ struct iocConnection;
 ****************************************************************************************************
 */
 #define IOC_AUTH_ADMINISTRATOR 1
+#define IOC_AUTH_CLOUD_CON 8
 #define IOC_AUTH_CONNECT_UP 16
 #define IOC_AUTH_DEVICE_NR_2_BYTES 32
 #define IOC_AUTH_DEVICE_NR_4_BYTES 64

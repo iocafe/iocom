@@ -145,6 +145,10 @@ void ioc_make_authentication_frame(
         flags |= IOC_AUTH_BIDIRECTIONAL_COM;
     }
 #endif
+    if (con->flags & IOC_CLOUD_CONNECTION)
+    {
+        flags |= IOC_AUTH_CLOUD_CON;
+    }
 
     /* Fill in data size, flag as system frame, and flags for authentication data.
      */
@@ -251,6 +255,10 @@ osalStatus ioc_process_received_authentication_frame(
             con->flags &= ~IOC_BIDIRECTIONAL_MBLKS;
         }
 #endif
+    }
+    if (auth_flags & IOC_AUTH_CLOUD_CON)
+    {
+        con->flags |= IOC_CLOUD_CONNECTION;
     }
 
     s = ioc_msg_getstr(user.user_name, IOC_DEVICE_ID_SZ, &p);

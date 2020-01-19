@@ -108,6 +108,8 @@ void devicedir_memory_blocks(
 #if IOC_BIDIRECTIONAL_MBLK_CODE
         if (mflags & IOC_BIDIRECTIONAL) devicedir_append_flag(list, "bdsupport", &isfirst);
 #endif
+        if (mflags & IOC_CLOUD_ONLY) devicedir_append_flag(list, "cloud-only", &isfirst);
+        if (mflags & IOC_NO_CLOUD) devicedir_append_flag(list, "no-cloud", &isfirst);
 
         osal_stream_print_str(list, "\"", 0);
 

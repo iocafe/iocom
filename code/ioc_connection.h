@@ -92,6 +92,7 @@
    when controller connects to other connections to avoid authentication both ways. Local flag,
    not serialized.
  - IOC_CLOUD_CONNECTION This is connection from this top level controller to cloud server.
+   Serialized in authentication message.
  */
 /*@{*/
 #define IOC_SERIAL 0

@@ -100,6 +100,8 @@ void ioc_initialize_bserver(
     os_strncpy(m->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
     m->account_defaults = prm->account_defaults;
     m->account_defaults_sz = prm->account_defaults_sz;
+    m->is_bypass_server = prm->is_bypass_server;
+    m->is_cloud_server = prm->is_cloud_server;
 
     ioc_setup_bserver_mblks(m, prm);
 }
@@ -392,7 +394,9 @@ static void ioc_setup_bserver_network(
      * as data memory block.
      */
     blockprm.mblk_name = "data";
-    blockprm.flags = IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC;
+    blockprm.flags = (m->is_bypass_server || m->is_cloud_server)
+        ? IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY|IOC_NO_CLOUD
+        : IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY;
     blockprm.nbytes = 0;
     ioc_initialize_memory_block(&n->accounts_data, OS_NULL, m->root, &blockprm);
     ioc_load_persistent_into_mblk(&n->accounts_data, select, account_defaults,
@@ -401,7 +405,9 @@ static void ioc_setup_bserver_network(
     blockprm.mblk_name = "info";
     blockprm.buf = (os_char*)ioserver_account_config;
     blockprm.nbytes = sizeof(ioserver_account_config);
-    blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
+    blockprm.flags = m->is_cloud_server
+        ? IOC_MBLK_UP|IOC_STATIC|IOC_NO_CLOUD
+        : IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&n->accounts_info, OS_NULL, m->root, &blockprm);
 
     ioc_set_handle_to_signals(&n->asignals.conf_imp.hdr, &n->accounts_imp);

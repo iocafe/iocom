@@ -47,6 +47,7 @@ AppRoot::AppRoot(
     claudia_init_signal_struct(&m_signals);
 
     os_memclear(&prm, sizeof(prm));
+    prm.is_cloud_server = OS_TRUE;
     prm.device_name = device_name;
     prm.device_nr = device_nr;
     prm.network_name = network_name;
@@ -60,6 +61,7 @@ AppRoot::AppRoot(
     prm.network_defaults_sz = sizeof(ioapp_network_defaults);
     prm.account_defaults = ioapp_account_defaults;
     prm.account_defaults_sz = sizeof(ioapp_account_defaults);
+
 
     ioc_initialize_bserver(&m_bmain, &app_iocom, &prm);
 

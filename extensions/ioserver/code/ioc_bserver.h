@@ -31,6 +31,9 @@ typedef struct iocBServerParams
     os_int device_nr;
     const os_char *network_name;
 
+    os_boolean is_bypass_server;
+    os_boolean is_cloud_server;
+
     iocMblkSignalHdr *signals_exp_hdr;
     iocMblkSignalHdr *signals_imp_hdr;
     iocMblkSignalHdr *signals_conf_exp_hdr;
@@ -61,6 +64,9 @@ typedef struct iocBServerMain
     os_char device_name[IOC_NAME_SZ];
     os_int device_nr;
     os_char network_name[IOC_NETWORK_NAME_SZ];
+
+    os_boolean is_bypass_server;
+    os_boolean is_cloud_server;
 
     /* Memory block handles for the server.
      */

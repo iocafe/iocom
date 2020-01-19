@@ -98,6 +98,8 @@ void devicedir_connections(
 #if IOC_BIDIRECTIONAL_MBLK_CODE
         if (cflags & IOC_BIDIRECTIONAL_MBLKS) devicedir_append_flag(list, "bidirectional", &isfirst);
 #endif
+        if (cflags & IOC_NO_USER_AUTHORIZATION) devicedir_append_flag(list, "no-auth", &isfirst);
+        if (cflags & IOC_CLOUD_CONNECTION) devicedir_append_flag(list, "cloud", &isfirst);
 
         osal_stream_print_str(list, "\"", 0);
 
