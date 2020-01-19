@@ -65,7 +65,7 @@ void ioc_add_mblk_to_global_mbinfo(
 
     for (con = root->con.first; con; con = con->link.next)
     {
-        if (con->flags & IOC_CONNECT_UP)
+        if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
         {
             if (con->sinfo.current_mblk == OS_NULL)
             {
@@ -100,7 +100,7 @@ void ioc_add_con_to_global_mbinfo(
 
     /* Be sure to ignore previous value of current_mblk.
      */
-    if (con->flags & IOC_CONNECT_UP)
+    if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
     {
         root = con->link.root;
         con->sinfo.current_mblk = root->mblk.first;
@@ -148,7 +148,7 @@ void ioc_mbinfo_con_is_closed(
 struct iocMemoryBlock *ioc_get_mbinfo_to_send(
     struct iocConnection *con)
 {
-    if (con->flags & IOC_CONNECT_UP)
+    if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
     {
         return con->sinfo.current_mblk;
     }
@@ -192,7 +192,7 @@ void ioc_mbinfo_sent(
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf;
 
-    if (con->flags & IOC_CONNECT_UP)
+    if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
     {
         con->sinfo.current_mblk = OS_NULL;
         if (mblk == OS_NULL) return;

@@ -91,6 +91,7 @@
  - IOC_NO_USER_AUTHORIZATION Do not authenticate users trough this connection. This is needed
    when controller connects to other connections to avoid authentication both ways. Local flag,
    not serialized.
+ - IOC_CLOUD_CONNECTION This is connection from this top level controller to cloud server.
  */
 /*@{*/
 #define IOC_SERIAL 0
@@ -108,6 +109,7 @@
 #define IOC_CONNECT_UP 128
 
 #define IOC_NO_USER_AUTHORIZATION 256
+#define IOC_CLOUD_CONNECTION 512
 /*@}*/
 
 

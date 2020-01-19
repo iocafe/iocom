@@ -86,7 +86,10 @@ osalStatus ioc_connect_node(
 
             /* If controller socket connecting to cloud server?
              */
-            if ((flags & IOC_SOCKET) && c->down) flags |= IOC_NO_USER_AUTHORIZATION;
+            if ((flags & IOC_SOCKET) && c->down)
+            {
+                flags |= IOC_NO_USER_AUTHORIZATION|IOC_CLOUD_CONNECTION;
+            }
 
             con = ioc_initialize_connection(OS_NULL, root);
             os_memclear(&conprm, sizeof(conprm));
