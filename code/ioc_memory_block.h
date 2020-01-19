@@ -36,6 +36,12 @@
     As memory block flag, IOC_BIDIRECTIONAL means that memory block can support
     bidirectional transfers, not that it is used. As source/target buffer
     initialization flag this means actual use.
+    The IOC_CLOUD_ONLY flag indicates that memory block is transferred only
+    between cloud server and server in local network, from local server to
+    cloud server. This is used for "data" blocks containing user account information.
+    The flag must be serialized in memory block info.
+    The IOC_NO_CLOUD flag indicates that this memory block is not transferred
+    to between cloud server and server in local net.
  */
 /*@{*/
 #define IOC_DEFAULT 0
@@ -50,6 +56,9 @@
 #define IOC_DYNAMIC 16
 #define IOC_ALLOW_RESIZE 32
 #define IOC_STATIC 64
+#define IOC_CLOUD_ONLY 128
+#define IOC_NO_CLOUD 256
+
 /*@}*/
 
 /* Local memory block flags (not serialized)

@@ -269,6 +269,7 @@ static osalStatus ioc_nconf_process_block(
     os_boolean is_connect_block;
     os_boolean is_security_block;
     os_char array_tag_buf[16];
+    const os_char *p;
     iocNodeConf *node;
     node = state->node;
 
@@ -447,6 +448,23 @@ static osalStatus ioc_nconf_process_block(
                     {
                         conn->parameters = item.value.s;
                     }
+
+                    else if (!os_strcmp(state->tag, "flags"))
+                    {
+                        p = item.value.s;
+                        if (os_strstr(p, "cloud", OSAL_STRING_SEARCH_ITEM_NAME))
+                        {
+                            conn->flags |= IOC_CLOUD_CONNECTION|IOC_NO_USER_AUTHORIZATION;
+                        }
+                        else if (os_strstr(p, "up", OSAL_STRING_SEARCH_ITEM_NAME))
+                        {
+                            conn->flags = IOC_CONNECT_UP;
+                        }
+                        else if (os_strstr(p, "listen", OSAL_STRING_SEARCH_ITEM_NAME))
+                        {
+                            conn->listen = OS_TRUE;
+                        }
+                    }
                 }
 
                 if (is_security_block)
@@ -486,19 +504,6 @@ static osalStatus ioc_nconf_process_block(
                     if (!os_strcmp(state->tag, "dhcp"))
                     {
                         nic->no_dhcp = (os_boolean)!item.value.l;
-                    }
-                }
-
-                if (is_connect_block && state->connection_ix <= IOC_MAX_NCONF_CONNECTIONS)
-                {
-                    conn = node->connection + state->connection_ix - 1;
-                    if (!os_strcmp(state->tag, "down"))
-                    {
-                        conn->down = (os_boolean)item.value.l;
-                    }
-                    else if (!os_strcmp(state->tag, "listen"))
-                    {
-                        conn->listen = (os_boolean)item.value.l;
                     }
                 }
                 break;

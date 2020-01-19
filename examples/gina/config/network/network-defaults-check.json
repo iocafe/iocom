@@ -5,8 +5,9 @@
 	"password": "pass",
 	"connect": [
 		{
-			"transport": "socket",
-			"ip": "192.168.1.220"
+			"transport": "tls",
+			"parameters": "127.0.0.1:6369",
+			"flags": "connect,up"
 		}
 	],
 	"nic": [

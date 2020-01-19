@@ -78,9 +78,10 @@ typedef struct iocOneConnectionConf
      */
     iocTransportEnum transport;
 
-    /** This is connection downwards in network hierarchy
+    /** Bit flags for connection: IOC_CLOUD_CONNECTION, IOC_NO_USER_AUTHORIZATION
+        and IOC_CONNECT_UP bits, same bits as for iocConnection and iocEndPoint.
      */
-    os_boolean down;
+    os_short flags;
 
     /** This connection point listens for incoming connections and
         doesn't actively connect.

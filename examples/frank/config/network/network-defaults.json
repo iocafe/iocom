@@ -9,14 +9,12 @@
 		"connect": [{
 				"transport": "tls",
 				"parameters": ":6369",
-				"listen": 1,
-				"down": 1
+		        "flags": "listen,down"
 			},
 			{
 				"transport": "tls",
 				"parameters": "127.0.0.1:6367",
-				"listen": 0,
-				"down": 1
+		        "flags": "connect,down,cloud"
 			}
 		],
 

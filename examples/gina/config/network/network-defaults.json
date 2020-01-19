@@ -5,40 +5,34 @@
     "network_name": "iocafenet",
     "password": "pass",
 
-    "connect": [
-      {
-        "transport": "socket",
-        "ip": "192.168.1.220"
-      }
-    ],
+    "connect": [{
+      "transport": "tls",
+      "parameters": "127.0.0.1:6369",
+      "flags": "connect,up"
+    }],
 
-    "nic": [
-      {
-        "wifi": [
-          {
-            "network": "julian",
-            "password": "talvi333"
-          },
-          {
-            "network": "bean24",
-            "password": "talvi333"
-          }
-        ],
+    "nic": [{
+      "wifi": [{
+          "network": "julian",
+          "password": "talvi333"
+        },
+        {
+          "network": "bean24",
+          "password": "talvi333"
+        }
+      ],
 
-        "dhcp": 1,
-        "ip": "192.168.1.217",
-        "subnet": "255.255.255.0",
-        "gateway": "192.168.1.254",
-        "dns": "8.8.4.4",
-        "dns2": "8.8.8.8",
-        "mac": "36:12:64:A4:B4:C4"
-      }
-    ],
+      "dhcp": 1,
+      "ip": "192.168.1.217",
+      "subnet": "255.255.255.0",
+      "gateway": "192.168.1.254",
+      "dns": "8.8.4.4",
+      "dns2": "8.8.8.8",
+      "mac": "36:12:64:A4:B4:C4"
+    }],
 
-    "security": [
-      {
-        "certchainfile": "bob-bundle.crt"
-      }
-    ]
+    "security": [{
+      "certchainfile": "bob-bundle.crt"
+    }]
   }
 }
