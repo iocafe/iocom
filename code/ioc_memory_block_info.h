@@ -36,7 +36,7 @@
 
 /** Maximum passwordk name string length.
  */
-#define IOC_PASSWORD_SZ 16
+#define IOC_PASSWORD_SZ 28
 
 /** Maximum network name string length.
  */

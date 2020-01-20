@@ -2,37 +2,96 @@
 "name": "account_signals",
 "mblk": [
 	{
-		"name": "conf_exp",
-		"flags": "up,conf",
+		"name": "exp",
+		"flags": "up",
 		"groups": [
 			{
-				"name": "transfer to the IO node",
+				"name": "new devices",
 				"signals": [
 					{
-						"name": "tod_state",
-						"type": "char"
+						"name": "new1_name",
+						"type": "char",
+						"array": 28
 					},
 					{
-						"name": "tod_tail",
+						"name": "new1_password",
+						"type": "char",
+						"array": 28
+					},
+					{
+						"name": "new1_count",
+						"type": "int"
+					},
+					{
+						"name": "new2_name",
+						"type": "char",
+						"array": 28
+					},
+					{
+						"name": "new2_password",
+						"type": "char",
+						"array": 28
+					},
+					{
+						"name": "new2_count",
+						"type": "int"
+					},
+					{
+						"name": "new3_name",
+						"type": "char",
+						"array": 28
+					},
+					{
+						"name": "new3_password",
+						"type": "char",
+						"array": 28
+					},
+					{
+						"name": "new3_count",
 						"type": "int"
 					}
 				]
 			},
 			{
-				"name": "transfer from IO node",
+				"name": "security alarms",
 				"signals": [
 					{
-						"name": "frd_state",
-						"type": "char"
+						"name": "alarm1_name",
+						"type": "char",
+						"array": 28
 					},
 					{
-						"name": "frd_buf",
-						"type": "uchar",
-						"array": 257
+						"name": "alarm1_password",
+						"type": "char",
+						"array": 28
 					},
 					{
-						"name": "frd_head",
+						"name": "alarm1_count",
 						"type": "int"
+					},
+					{
+						"name": "alarm1_text",
+						"type": "char",
+						"array": 30
+					},
+					{
+						"name": "alarm2_name",
+						"type": "char",
+						"array": 28
+					},
+					{
+						"name": "alarm2_password",
+						"type": "char",
+						"array": 28
+					},
+					{
+						"name": "alarm2_count",
+						"type": "int"
+					},
+					{
+						"name": "alarm2_text",
+						"type": "char",
+						"array": 30
 					}
 				]
 			}
@@ -43,7 +102,7 @@
 		"flags": "down,conf",
 		"groups": [
 			{
-				"name": "transfer to IO node",
+				"name": "transfer downwards, commands",
 				"signals": [
 					{
 						"name": "tod_cmd",
@@ -65,7 +124,7 @@
 				]
 			},
 			{
-				"name": "transfer from IO node",
+				"name": "transfer upwards, commands",
 				"signals": [
 					{
 						"name": "frd_cmd",
@@ -77,6 +136,43 @@
 					},
 					{
 						"name": "frd_tail",
+						"type": "int"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "conf_exp",
+		"flags": "up,conf",
+		"groups": [
+			{
+				"name": "transfer downwards, replies",
+				"signals": [
+					{
+						"name": "tod_state",
+						"type": "char"
+					},
+					{
+						"name": "tod_tail",
+						"type": "int"
+					}
+				]
+			},
+			{
+				"name": "transfer upwards, replies",
+				"signals": [
+					{
+						"name": "frd_state",
+						"type": "char"
+					},
+					{
+						"name": "frd_buf",
+						"type": "uchar",
+						"array": 257
+					},
+					{
+						"name": "frd_head",
 						"type": "int"
 					}
 				]

@@ -31,6 +31,7 @@ OSAL_C_HEADER_BEGINS
 
 #include "code/ioc_authorize.h"
 #include "code/ioc_server_util.h"
+#include "code/ioc_security_status.h"
 #include "code/ioc_bserver.h"
 #include "code/ioc_persistent_mblk.h"
 

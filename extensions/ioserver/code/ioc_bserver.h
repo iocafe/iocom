@@ -86,6 +86,10 @@ typedef struct iocBServerMain
      */
     const os_char *account_defaults;
     os_memsz account_defaults_sz;
+
+    /* Security status.
+     */
+    iocSecurityStatus sec_status;
 }
 iocBServerMain;
 
