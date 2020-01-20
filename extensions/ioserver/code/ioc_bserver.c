@@ -211,22 +211,22 @@ static void ioc_setup_bserver_mblks(
 
     blockprm.mblk_name = prm->signals_exp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_exp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
     ioc_initialize_memory_block(&m->exp, OS_NULL, m->root, &blockprm);
 
     blockprm.mblk_name = prm->signals_imp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_imp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
     ioc_initialize_memory_block(&m->imp, OS_NULL, m->root, &blockprm);
 
     blockprm.mblk_name = prm->signals_conf_exp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_conf_exp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
     ioc_initialize_memory_block(&m->conf_exp, OS_NULL, m->root, &blockprm);
 
     blockprm.mblk_name = prm->signals_conf_imp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_conf_imp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
     ioc_initialize_memory_block(&m->conf_imp, OS_NULL, m->root, &blockprm);
 
     blockprm.mblk_name = "info";
@@ -374,12 +374,16 @@ static void ioc_setup_bserver_network(
 
     blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;
     blockprm.nbytes = n->asignals.conf_exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC;
+    blockprm.flags = m->is_cloud_server
+        ? IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
+        : IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
     ioc_initialize_memory_block(&n->accounts_exp, OS_NULL, m->root, &blockprm);
 
     blockprm.mblk_name = n->asignals.conf_imp.hdr.mblk_name;
     blockprm.nbytes = n->asignals.conf_imp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC;
+    blockprm.flags = m->is_cloud_server
+        ? IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
+        : IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
     ioc_initialize_memory_block(&n->accounts_imp, OS_NULL, m->root, &blockprm);
 
     account_defaults = m->account_defaults;
@@ -395,7 +399,7 @@ static void ioc_setup_bserver_network(
      */
     blockprm.mblk_name = "data";
     blockprm.flags = (m->is_bypass_server || m->is_cloud_server)
-        ? IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY|IOC_NO_CLOUD
+        ? IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY|IOC_NO_CLOUD|IOC_FLOOR
         : IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY;
     blockprm.nbytes = 0;
     ioc_initialize_memory_block(&n->accounts_data, OS_NULL, m->root, &blockprm);
@@ -406,7 +410,7 @@ static void ioc_setup_bserver_network(
     blockprm.buf = (os_char*)ioserver_account_config;
     blockprm.nbytes = sizeof(ioserver_account_config);
     blockprm.flags = m->is_cloud_server
-        ? IOC_MBLK_UP|IOC_STATIC|IOC_NO_CLOUD
+        ? IOC_MBLK_UP|IOC_STATIC // |IOC_NO_CLOUD
         : IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&n->accounts_info, OS_NULL, m->root, &blockprm);
 

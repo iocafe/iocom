@@ -75,6 +75,18 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+/* Support server <-> cloud server connections. This enables passing user account
+   data "backwards" to cloud and strips off unwanted configuration, etc. memory
+   blocks from transfers between local and cloud servers.
+ */
+#ifndef IOC_SERVER2CLOUD_CODE
+  #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    #define IOC_SERVER2CLOUD_CODE 1
+  #else
+    #define IOC_SERVER2CLOUD_CODE 0
+  #endif
+#endif
+
 /* Security and testing is difficult with security on, define to turn much of it off.
  */
 #ifndef IOC_RELAX_SECURITY

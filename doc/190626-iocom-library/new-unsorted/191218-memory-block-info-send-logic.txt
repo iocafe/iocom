@@ -23,6 +23,9 @@ Logic for sending memory block info messages
   pointer (con->sinfo.current_mblk), chain of all memory blocks (mblk->link.next) is used
   to move to next item in list.
 
+*** Special transfer list for cloud specific account data memory blocks:
+- current_cloud_mblk, works much the same as current_mblk, but downwards and only for specific memory blocks.
+
 - connections downwnwards transfer list is kept trough transfer buffers, so two heads (separate ones 
   for source and target buffers). Heads are con->sbuf.mbinfo_down and con->tbuf.mbinfo_down .
   links are sbuf->clink.next and tbuf->clink.next.

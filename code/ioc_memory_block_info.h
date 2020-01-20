@@ -93,6 +93,13 @@ typedef struct
         which info needs to be sent upwards trough this connection.
      */
     struct iocMemoryBlock *current_mblk;
+
+#if IOC_SERVER2CLOUD_CODE
+    /** Pointer to next cloud specific memory block whose info needs to be send trough
+        downwards connection.
+     */
+    struct iocMemoryBlock *current_cloud_mblk;
+#endif
 }
 iocSendInfoInCon;
 

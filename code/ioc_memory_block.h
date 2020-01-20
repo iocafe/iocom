@@ -24,24 +24,27 @@
     ioc_send() is called every time ioc_write() is called. Similarly IOC_AUTO_SYNC
     causes ioc_receive() to be called every time ioc_read() is called. This is not
     really unefficient, and can be recommended in many cases.
-    The IOC_ALLOW_RESIZE flag allows resizing memory block to match memory block
-    information received from the other end (IO device, etc).
-    The IOC_STATIC tells that memory block contains static data and doesn't need
-    to be synchronized. If IOC_STATIC flag is given, also IOC_MBLK_UP flag must
-    be set and application allocated static buffer (and may be constant) must be
-    given.
-    Flag IOC_DYNAMIC indicates that the memory block was dynamically
-    allocated, and needs to be deleted when last source or target buffer attached
-    to it is deleted.
-    As memory block flag, IOC_BIDIRECTIONAL means that memory block can support
-    bidirectional transfers, not that it is used. As source/target buffer
-    initialization flag this means actual use.
-    The IOC_CLOUD_ONLY flag indicates that memory block is transferred only
-    between cloud server and server in local network, from local server to
-    cloud server. This is used for "data" blocks containing user account information.
-    The flag must be serialized in memory block info.
-    The IOC_NO_CLOUD flag indicates that this memory block is not transferred
-    to between cloud server and server in local net.
+    - The IOC_ALLOW_RESIZE flag allows resizing memory block to match memory block
+      information received from the other end (IO device, etc).
+    - The IOC_STATIC tells that memory block contains static data and doesn't need
+      to be synchronized. If IOC_STATIC flag is given, also IOC_MBLK_UP flag must
+      be set and application allocated static buffer (and may be constant) must be
+      given.
+    - Flag IOC_DYNAMIC indicates that the memory block was dynamically
+      allocated, and needs to be deleted when last source or target buffer attached
+      to it is deleted.
+    - As memory block flag, IOC_BIDIRECTIONAL means that memory block can support
+      bidirectional transfers, not that it is used. As source/target buffer
+      initialization flag this means actual use.
+    - The IOC_CLOUD_ONLY flag indicates that memory block is transferred only
+      between cloud server and server in local network, from local server to
+      cloud server. This is used for "data" blocks containing user account information.
+      The flag must be serialized in memory block info.
+    - The IOC_NO_CLOUD flag indicates that this memory block is not transferred
+      to between cloud server and server in local net.
+    - IOC_FLOOR flag: This memory block is floor level in memory block hierarchy.
+      Meaning that memory block information send to below of this level is never
+      initiated.
  */
 /*@{*/
 #define IOC_DEFAULT 0
@@ -58,6 +61,7 @@
 #define IOC_STATIC 64
 #define IOC_CLOUD_ONLY 128
 #define IOC_NO_CLOUD 256
+#define IOC_FLOOR 512
 
 /*@}*/
 

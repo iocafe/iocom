@@ -23,6 +23,9 @@
 
 /* Forward referred static functions.
  */
+static iocMemoryBlock *ioc_get_mbinfo_to_send2(
+    struct iocConnection *con);
+
 static void ioc_mbinfo_new_sbuf(
     iocConnection *con,
     iocMemoryBlock *mblk,
@@ -65,13 +68,31 @@ void ioc_add_mblk_to_global_mbinfo(
 
     for (con = root->con.first; con; con = con->link.next)
     {
-        if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
+#if IOC_SERVER2CLOUD_CODE
+        if (con->flags & IOC_CLOUD_CONNECTION)
+        {
+            if (mblk->flags & IOC_NO_CLOUD) continue;
+        }
+        else
+        {
+            if (mblk->flags & IOC_CLOUD_ONLY) continue;
+        }
+#endif
+        if (con->flags & IOC_CONNECT_UP)
         {
             if (con->sinfo.current_mblk == OS_NULL)
             {
                 con->sinfo.current_mblk = mblk;
             }
         }
+
+#if IOC_SERVER2CLOUD_CODE
+        else if ((con->flags & IOC_CLOUD_CONNECTION) &&
+            (mblk->flags & (IOC_CLOUD_ONLY|IOC_NO_CLOUD)) == IOC_CLOUD_ONLY)
+        {
+             con->sinfo.current_cloud_mblk = mblk;
+        }
+#endif
     }
 }
 
@@ -97,14 +118,20 @@ void ioc_add_con_to_global_mbinfo(
     struct iocConnection *con)
 {
     iocRoot *root;
+    root = con->link.root;
 
     /* Be sure to ignore previous value of current_mblk.
      */
-    if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
+    if (con->flags & IOC_CONNECT_UP)
     {
-        root = con->link.root;
         con->sinfo.current_mblk = root->mblk.first;
     }
+#if IOC_SERVER2CLOUD_CODE
+    else if (con->flags & IOC_CLOUD_CONNECTION)
+    {
+        con->sinfo.current_cloud_mblk = root->mblk.first;
+    }
+#endif
 }
 
 
@@ -126,6 +153,9 @@ void ioc_mbinfo_con_is_closed(
     struct iocConnection *con)
 {
     con->sinfo.current_mblk = OS_NULL;
+#if IOC_SERVER2CLOUD_CODE
+    con->sinfo.current_cloud_mblk = OS_NULL;
+#endif
 }
 
 
@@ -138,6 +168,8 @@ void ioc_mbinfo_con_is_closed(
   The ioc_get_mbinfo_to_send() function checks if there is memory block information which
   needs to be sent through the connection before any data can be sent.
 
+  Moves on
+
   ioc_lock() must be on when this function is called.
 
   @param   con Pointer to the connection object.
@@ -148,12 +180,61 @@ void ioc_mbinfo_con_is_closed(
 struct iocMemoryBlock *ioc_get_mbinfo_to_send(
     struct iocConnection *con)
 {
-    if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
+    iocMemoryBlock *mblk;
+
+    while ((mblk = ioc_get_mbinfo_to_send2(con)))
+    {
+#if IOC_SERVER2CLOUD_CODE
+        if (con->flags & IOC_CLOUD_CONNECTION)
+        {
+            if (mblk->flags & IOC_NO_CLOUD) goto skipit;
+        }
+        else
+        {
+            if (mblk->flags & IOC_CLOUD_ONLY) goto skipit;
+        }
+#endif
+        if (con->flags & IOC_CONNECT_UP) break;
+        if ((mblk->flags & IOC_FLOOR) == 0) break;
+skipit:
+        ioc_mbinfo_sent(con, mblk);
+    }
+
+    return mblk;
+}
+
+
+
+/**
+****************************************************************************************************
+
+  @brief Check if we have something which might be sent trough the connection.
+  @anchor ioc_get_mbinfo_to_send2
+
+  The ioc_get_mbinfo_to_send2() ...
+
+  ioc_lock() must be on when this function is called.
+
+  @param   con Pointer to the connection object.
+  @return  Pointer to memory block whose info to send to this connection, or OS NULL if nont.
+
+****************************************************************************************************
+*/
+static iocMemoryBlock *ioc_get_mbinfo_to_send2(
+    struct iocConnection *con)
+{
+    if (con->flags & IOC_CONNECT_UP)
     {
         return con->sinfo.current_mblk;
     }
     else
     {
+#if IOC_SERVER2CLOUD_CODE
+        if (con->sinfo.current_cloud_mblk)
+        {
+            return con->sinfo.current_cloud_mblk;
+        }
+#endif
         if (con->sbuf.mbinfo_down)
         {
             return con->sbuf.mbinfo_down->mlink.mblk;
@@ -192,7 +273,7 @@ void ioc_mbinfo_sent(
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf;
 
-    if (con->flags & (IOC_CONNECT_UP|IOC_CLOUD_CONNECTION))
+    if (con->flags & IOC_CONNECT_UP)
     {
         con->sinfo.current_mblk = OS_NULL;
         if (mblk == OS_NULL) return;
@@ -201,6 +282,13 @@ void ioc_mbinfo_sent(
     }
     else
     {
+#if IOC_SERVER2CLOUD_CODE
+        if (mblk == con->sinfo.current_cloud_mblk)
+        {
+            con->sinfo.current_cloud_mblk = mblk->link.next;
+        }
+#endif
+
         tbuf = con->tbuf.mbinfo_down;
         if (tbuf)
         {
@@ -253,9 +341,15 @@ void ioc_mbinfo_mblk_is_deleted(
         {
             con->sinfo.current_mblk = mblk->link.next;
         }
+
+#if IOC_SERVER2CLOUD_CODE
+        if (con->sinfo.current_cloud_mblk == mblk)
+        {
+            con->sinfo.current_cloud_mblk = mblk->link.next;
+        }
+#endif
     }
 }
-
 
 
 /**
@@ -589,11 +683,23 @@ goon:
     /* Mark that we need to send memory block info back. If pointer is
        set, do nothing because the source buffer was added to last in list.
      */
-    if ((con->flags & IOC_CONNECT_UP) == 0 &&
-        con->sbuf.mbinfo_down == OS_NULL && sbuf)
+    if ((con->flags & IOC_CONNECT_UP) == 0)
     {
-        con->sbuf.mbinfo_down = sbuf;
+        if (con->sbuf.mbinfo_down == OS_NULL)
+        {
+            con->sbuf.mbinfo_down = sbuf;
+        }
     }
+#if IOC_SERVER2CLOUD_CODE
+    else if ((con->flags & IOC_CLOUD_CONNECTION) &&
+        (mblk->flags & (IOC_CLOUD_ONLY|IOC_NO_CLOUD)) == IOC_CLOUD_ONLY)
+    {
+        if (con->sinfo.current_cloud_mblk == OS_NULL)
+        {
+            con->sinfo.current_cloud_mblk = mblk;
+        }
+    }
+#endif
 }
 
 
@@ -675,9 +781,21 @@ static void ioc_mbinfo_new_tbuf(
     /* Mark that we need to send memory block info back. If pointer is
        set, do nothing because the source buffer was added to last in list.
      */
-    if ((con->flags & IOC_CONNECT_UP) == 0 &&
-        con->tbuf.mbinfo_down == OS_NULL)
+    if ((con->flags & IOC_CONNECT_UP) == 0)
     {
-        con->tbuf.mbinfo_down = tbuf;
+        if (con->tbuf.mbinfo_down == OS_NULL)
+        {
+            con->tbuf.mbinfo_down = tbuf;
+        }
     }
+#if IOC_SERVER2CLOUD_CODE
+    else if ((con->flags & IOC_CLOUD_CONNECTION) &&
+        (mblk->flags & (IOC_CLOUD_ONLY|IOC_NO_CLOUD)) == IOC_CLOUD_ONLY)
+    {
+        if (con->sinfo.current_cloud_mblk == OS_NULL)
+        {
+            con->sinfo.current_cloud_mblk = mblk;
+        }
+    }
+#endif
 }
