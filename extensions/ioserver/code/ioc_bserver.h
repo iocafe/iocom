@@ -111,7 +111,7 @@ typedef struct iocBServerNetwork
 
     /* Memory block handles for accounts.
      */
-    iocHandle accounts_exp, accounts_imp, accounts_data, accounts_info;
+    iocHandle accounts_exp, accounts_conf_exp, accounts_conf_imp, accounts_data, accounts_info;
 
     /* Control stream to configure the device/user accounts.
      */

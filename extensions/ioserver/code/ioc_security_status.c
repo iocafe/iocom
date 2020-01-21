@@ -16,15 +16,24 @@
 #define BSERVER_INTERNALS
 #include "ioserver.h"
 
-static os_int ioc_make_new_device_notification_table(
+/* Forward referred static functions.
+ */
+static void ioc_set_notification(
+    iocNotificationSignalRow *table,
+    os_short nrows,
+    iocNoteCode code,
+    iocSecurityNotification *note);
+
+static os_short ioc_setup_notification_table(
     iocNotificationSignalRow *table,
     os_int max_rows,
     iocBServerNetwork *n);
 
+
 /**
 ****************************************************************************************************
 
-  @brief Share security note in communication.
+  @brief Share security notification (in iocom memory block).
   @anchor ioc_secutiry_notify
 
   The ioc_secutiry_notify() function...
@@ -49,7 +58,6 @@ void ioc_secutiry_notify(
 
     if (m->networks == OS_NULL) return;
 
-
     for (i = 0; i<m->nro_networks; i++)
     {
         n = m->networks + i;
@@ -60,17 +68,82 @@ void ioc_secutiry_notify(
         ss = &n->sec_status;
         if (!ss->initialized)
         {
-            ss->new_device_nrows = ioc_make_new_device_notification_table(ss->new_device,
+            ss->new_device_nrows = ioc_setup_notification_table(ss->new_device,
                 IOC_MAX_NEW_DEVICE_NOTIFICATIONS, n);
 
             ss->initialized = OS_TRUE;
         }
+
+        /* Set notification to be accessible from communication.
+         */
+        ioc_set_notification(ss->new_device, ss->new_device_nrows, code, note);
     }
 }
 
 
+/**
+****************************************************************************************************
 
-static os_int ioc_make_new_device_notification_table(
+  @brief Set up notification table (sets signal pointers).
+  @anchor ioc_setup_notification_table
+
+  The ioc_set_notification() function...
+
+  @param   table Pointer to notification table.
+  @param   nrows Number of valid row structures in table.
+  @param   note Pointer to security note structure. Contains network name, device/user name,
+           password used to log in, etc.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_set_notification(
+    iocNotificationSignalRow *table,
+    os_short nrows,
+    iocNoteCode code,
+    iocSecurityNotification *note)
+{
+    iocNotificationSignalRow *r;
+    os_timer t_now;
+    os_short row;
+
+    /* If we have row for this device already, update it
+     */
+
+    /* Select empty row. If no empty rows, select the oldest
+     */
+
+    row = 0;
+    r = table + row;
+    ioc_sets_str(r->user_name, note->user);
+    ioc_sets_str(r->password, note->password);
+    ioc_sets_str(r->privileges, note->privileges);
+    ioc_sets_str(r->ip, note->ip);
+    ioc_sets0_int(r->count, 1);
+    os_get_timer(&t_now);
+    ioc_sets0_int(r->timer, t_now);
+    ioc_sets_str(r->text, note->text);
+
+    ioc_send(r->user_name->handle);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Set up notification table (sets signal pointers).
+  @anchor ioc_setup_notification_table
+
+  The ioc_setup_notification_table() function...
+
+  @param   table Pointer to notification table, array or row signal structures to set up.
+  @param   max_rows Number of row structures allocated in table.
+  @param   n Basic server network structure pointer. Holds signal structure.
+  @return  None.
+
+****************************************************************************************************
+*/
+static os_short ioc_setup_notification_table(
     iocNotificationSignalRow *table,
     os_int max_rows,
     iocBServerNetwork *n)
@@ -83,6 +156,7 @@ static os_int ioc_make_new_device_notification_table(
     table[nrows].privileges = &n->asignals.exp.new1_privileges;
     table[nrows].ip = &n->asignals.exp.new1_ip;
     table[nrows].count = &n->asignals.exp.new1_count;
+    table[nrows].timer = &n->asignals.exp.new1_timer;
     table[nrows].text = &n->asignals.exp.new1_text;
     if (nrows < max_rows) nrows++;
 #endif
@@ -93,6 +167,7 @@ static os_int ioc_make_new_device_notification_table(
     table[nrows].privileges = &n->asignals.exp.new2_privileges;
     table[nrows].ip = &n->asignals.exp.new2_ip;
     table[nrows].count = &n->asignals.exp.new2_count;
+    table[nrows].timer = &n->asignals.exp.new2_timer;
     table[nrows].text = &n->asignals.exp.new2_text;
     if (nrows < max_rows) nrows++;
 #endif

@@ -686,7 +686,6 @@ os_char ioc_moves_str(
     /* Check function arguments.
      */
     osal_debug_assert(handle != OS_NULL);
-    osal_debug_assert(str != OS_NULL);
 
     /* If the value in memory block is actually integer or float.
      */
@@ -720,10 +719,15 @@ os_char ioc_moves_str(
             }
     }
 
-    /* In case of errors.
+    /* Handle null string pointer and if reading set returned string to empty in case of errors.
      */
-    if ((flags & IOC_SIGNAL_WRITE) == 0) *str = '\0';
-
+    if (flags & IOC_SIGNAL_WRITE) {
+        if (str == OS_NULL) str = "";
+    }
+    else {
+        if (str == OS_NULL) return 0;
+        *str = '\0';
+    }
 
     /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
      */

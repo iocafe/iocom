@@ -743,6 +743,8 @@ void ioc_send(
     iocMemoryBlock *mblk;
     iocSourceBuffer *sbuf;
 
+    if (handle == OS_NULL) return;
+
     /* Get memory block pointer and start synchronization.
      */
     mblk = ioc_handle_lock_to_mblk(handle, &root);

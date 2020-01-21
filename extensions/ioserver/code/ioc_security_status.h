@@ -31,6 +31,7 @@ typedef struct iocSecurityNotification
 {
     const os_char *user;
     const os_char *password;
+    const os_char *privileges;
     const os_char *ip;
     const os_char *text;
     const os_char *network_name;
@@ -48,6 +49,7 @@ typedef struct
     iocSignal *privileges;
     iocSignal *ip;
     iocSignal *count;
+    iocSignal *timer;
     iocSignal *text;
 }
 iocNotificationSignalRow;

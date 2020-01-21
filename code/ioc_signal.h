@@ -160,7 +160,7 @@ iocValue;
 
 /* Set or get a string using initialized signal structure.
  */
-#define ioc_sets_str(s,st) ioc_moves_str((s), (st), -1, OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_STR)
+#define ioc_sets_str(s,st) ioc_moves_str((s), (os_char*)(st), -1, OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_STR)
 #define ioc_gets_str(s,st,ss) ioc_moves_str((s), (st), (ss), OSAL_STATE_CONNECTED, OS_STR)
 
 /* Set array of values without initialized signal structure..

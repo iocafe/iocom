@@ -346,19 +346,24 @@ static void ioc_setup_bserver_network(
     blockprm.device_nr = select - OS_PBNR_ACCOUNTS_1 + 1;
     blockprm.network_name = n->network_name;
 
+    blockprm.mblk_name = n->asignals.exp.hdr.mblk_name;
+    blockprm.nbytes = n->asignals.exp.hdr.mblk_sz;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR;
+    ioc_initialize_memory_block(&n->accounts_exp, OS_NULL, m->root, &blockprm);
+
     blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;
     blockprm.nbytes = n->asignals.conf_exp.hdr.mblk_sz;
     blockprm.flags = m->is_cloud_server
         ? IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
         : IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_exp, OS_NULL, m->root, &blockprm);
+    ioc_initialize_memory_block(&n->accounts_conf_exp, OS_NULL, m->root, &blockprm);
 
     blockprm.mblk_name = n->asignals.conf_imp.hdr.mblk_name;
     blockprm.nbytes = n->asignals.conf_imp.hdr.mblk_sz;
     blockprm.flags = m->is_cloud_server
         ? IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
         : IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_imp, OS_NULL, m->root, &blockprm);
+    ioc_initialize_memory_block(&n->accounts_conf_imp, OS_NULL, m->root, &blockprm);
 
     account_defaults = m->account_defaults;
     account_defaults_sz = m->account_defaults_sz;
@@ -388,8 +393,9 @@ static void ioc_setup_bserver_network(
         : IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&n->accounts_info, OS_NULL, m->root, &blockprm);
 
-    ioc_set_handle_to_signals(&n->asignals.conf_imp.hdr, &n->accounts_imp);
-    ioc_set_handle_to_signals(&n->asignals.conf_exp.hdr, &n->accounts_exp);
+    ioc_set_handle_to_signals(&n->asignals.exp.hdr, &n->accounts_exp);
+    ioc_set_handle_to_signals(&n->asignals.conf_imp.hdr, &n->accounts_conf_imp);
+    ioc_set_handle_to_signals(&n->asignals.conf_exp.hdr, &n->accounts_conf_exp);
 
     n->accounts_stream_params.default_config = account_defaults;
     n->accounts_stream_params.default_config_sz = account_defaults_sz;
@@ -412,8 +418,8 @@ static void ioc_setup_bserver_network(
 static void ioc_release_bserver_network(
     iocBServerNetwork *n)
 {
-    ioc_release_memory_block(&n->accounts_exp);
-    ioc_release_memory_block(&n->accounts_imp);
+    ioc_release_memory_block(&n->accounts_conf_exp);
+    ioc_release_memory_block(&n->accounts_conf_imp);
     ioc_release_memory_block(&n->accounts_data);
     ioc_release_memory_block(&n->accounts_info);
 }
