@@ -34,9 +34,12 @@
  */
 #define IOC_DEVICE_ID_SZ 28
 
-/** Maximum passwordk name string length.
+/** Maximum passwordk name string length. We use SHA-256 to encrypt passwords, and convert
+    result to string, so we need 11 * 4 + 2 = 46 bytes. 11 = SHA hash is 32 bytes, we have
+    11 groups of three bytes each. 4 = each 3 byte group on is converted to 4 characters in
+    string. 2 = one byte for '!' prefix and one byte for terminating '\0' character.
  */
-#define IOC_PASSWORD_SZ 28
+#define IOC_PASSWORD_SZ 46
 
 /** Maximum network name string length.
  */
