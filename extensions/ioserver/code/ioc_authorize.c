@@ -45,9 +45,18 @@ typedef struct
      */
     const os_char *tag;
 
-    /** Decision on user authotization check.
+    /** Decision on user authorization check.
      */
     os_boolean valid_user;
+
+    /* Cause for denied access.
+     */
+    iocNoteCode ncode;
+
+    /** Context pointer of the ioc_authorize() function. This is pointer to basic server.
+        state structure.
+     */
+//    void *context;
 }
 iocAccountsParserState;
 
@@ -70,7 +79,8 @@ static void ioc_authorize_parse_accounts(
     const os_char *user_name,
     const os_char *network_name,
     const os_char *config,
-    os_memsz config_sz);
+    os_memsz config_sz,
+    void *context);
 
 
 
@@ -150,7 +160,7 @@ osalStatus ioc_authorize(
         if (!os_strcmp(mblk->network_name, user->network_name))
         {
             ioc_authorize_parse_accounts(allowed_networks, &is_valid_user, user,
-                ip, user->user_name, mblk->network_name, mblk->buf, mblk->nbytes);
+                ip, user->user_name, mblk->network_name, mblk->buf, mblk->nbytes, context);
             if (n_to_check-- <= 1) break;
         }
 
@@ -160,7 +170,7 @@ osalStatus ioc_authorize(
         else if (!os_strcmp(mblk->network_name, check_root_network))
         {
             ioc_authorize_parse_accounts(allowed_networks, &is_valid_user, user,
-                ip, user_and_net, user->network_name, mblk->buf, mblk->nbytes);
+                ip, user_and_net, user->network_name, mblk->buf, mblk->nbytes, context);
             if (n_to_check-- <= 1) break;
         }
     }
@@ -284,8 +294,10 @@ static osalStatus ioc_authorize_process_block(
                 match = !os_strcmp(state->user->password, state->password);
                 if (!match)
                 {
-                    /* Password error */
+                    /* User device has wrong password
+                     */
                     osal_debug_error("authorization check: wrong password");
+                    state->ncode = IOC_NOTE_WRONG_IO_DEVICE_PASSWORD;
                 }
             }
             /* if (!os_strcmp(state->user_name, "*"))
@@ -416,7 +428,8 @@ static void ioc_authorize_parse_accounts(
     const os_char *user_name,
     const os_char *network_name,
     const os_char *config,
-    os_memsz config_sz)
+    os_memsz config_sz,
+    void *context)
 {
 #if IOC_RELAX_SECURITY
     /* Security and testing is difficult with security on, IOC_RELAX_SECURITY define
@@ -427,6 +440,7 @@ static void ioc_authorize_parse_accounts(
 #else
     osalJsonIndex jindex;
     iocAccountsParserState state;
+    iocSecurityNotification note;
     osalStatus s;
 
     os_memclear(&state, sizeof(state));
@@ -435,6 +449,8 @@ static void ioc_authorize_parse_accounts(
     state.checked_user_name = user_name;
     state.mblk_network_name = network_name;
     state.allowed_networks = allowed_networks;
+    // state.context = context;
+    state.ncode = IOC_NOTE_NEW_IO_DEVICE;
 
     s = osal_create_json_indexer(&jindex, config, config_sz, 0); /* HERE WE SHOULD ALLOW ZERO PADDED DATA */
     if (s)
@@ -450,7 +466,23 @@ static void ioc_authorize_parse_accounts(
         }
     }
 
-    if (state.valid_user) *is_valid_user = OS_TRUE;
+    if (state.valid_user)
+    {
+        *is_valid_user = OS_TRUE;
+    }
+
+    /* Generate rest of notifications.
+     */
+    else if (context)
+    {
+        os_memclear(&note, sizeof(note));
+        note.network_name = network_name;
+        note.user = user_name;
+        note.password = user->password;
+        note.ip = ip;
+        ioc_secutiry_notify((iocBServer*)context, state.ncode, &note);
+    }
+
 #endif
 }
 

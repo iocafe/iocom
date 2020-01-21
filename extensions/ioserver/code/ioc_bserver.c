@@ -17,44 +17,18 @@
 
 ****************************************************************************************************
 */
+#define BSERVER_INTERNALS
 #include "ioserver.h"
-#include "account-signals.h"
-#include "account-defaults.h"
-#include "accounts-mblk-binary.h"
-
-/* Internal basic server state structure to publish account information of an IO network.
- */
-typedef struct iocBServerNetwork
-{
-    /* IO device/user account IO definition structure.
-     */
-    account_signals_t asignals;
-
-    /* Network name, accounts are for this IO network.
-     */
-    os_char network_name[IOC_NETWORK_NAME_SZ];
-
-    /* Memory block handles for accounts.
-     */
-    iocHandle accounts_exp, accounts_imp, accounts_data, accounts_info;
-
-    /* Control stream to configure the device/user accounts.
-     */
-    iocStreamerParams accounts_stream_params;
-    iocControlStreamState accounts_stream;
-}
-iocBServerNetwork;
-
 
 /* Prototypes for forward referred static functions.
  */
 static void ioc_setup_bserver_mblks(
-    iocBServerMain *m,
+    iocBServer *m,
     iocBServerParams *prm);
 
 static void ioc_setup_bserver_network(
     iocBServerNetwork *n,
-    iocBServerMain *m,
+    iocBServer *m,
     os_int select,
     const os_char *network_name);
 
@@ -88,11 +62,11 @@ static osalStatus ioc_run_bserver_network(
 ****************************************************************************************************
 */
 void ioc_initialize_bserver(
-    iocBServerMain *m,
+    iocBServer *m,
     iocRoot *root,
     iocBServerParams *prm)
 {
-    os_memclear(m, sizeof(iocBServerMain));
+    os_memclear(m, sizeof(iocBServer));
 
     m->root = root;
     os_strncpy(m->device_name, prm->device_name, IOC_NAME_SZ);
@@ -121,7 +95,7 @@ void ioc_initialize_bserver(
 ****************************************************************************************************
 */
 void ioc_release_bserver(
-    iocBServerMain *m)
+    iocBServer *m)
 {
     os_int i;
 
@@ -159,7 +133,7 @@ void ioc_release_bserver(
 ****************************************************************************************************
 */
 osalStatus ioc_run_bserver(
-    iocBServerMain *m)
+    iocBServer *m)
 {
     os_int i;
     osalStatus s;
@@ -197,7 +171,7 @@ osalStatus ioc_run_bserver(
 ****************************************************************************************************
 */
 static void ioc_setup_bserver_mblks(
-    iocBServerMain *m,
+    iocBServer *m,
     iocBServerParams *prm)
 {
     iocMemoryBlockParams blockprm;
@@ -262,7 +236,7 @@ static void ioc_setup_bserver_mblks(
 ****************************************************************************************************
 */
 osalStatus ioc_publish_bserver_networks(
-    iocBServerMain *m,
+    iocBServer *m,
     const os_char *publish)
 {
     os_char network_name[IOC_NETWORK_NAME_SZ];
@@ -354,7 +328,7 @@ osalStatus ioc_publish_bserver_networks(
 */
 static void ioc_setup_bserver_network(
     iocBServerNetwork *n,
-    iocBServerMain *m,
+    iocBServer *m,
     os_int select,
     const os_char *network_name)
 {

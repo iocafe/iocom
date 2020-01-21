@@ -15,10 +15,11 @@
 */
 #include "ioserver.h"
 
-struct iocBServerMain;
+struct iocBServer;
 
 typedef enum
 {
+    IOC_NOTE_NONE = 0,
     IOC_NOTE_NEW_IO_DEVICE,
     IOC_NOTE_WRONG_IO_DEVICE_PASSWORD,
     IOC_NOTE_BLACKLISTED_IO_DEVICE,
@@ -26,25 +27,54 @@ typedef enum
 iocNoteCode;
 
 
-typedef struct iocSecurityNote
+typedef struct iocSecurityNotification
 {
-    os_char *user;
-    os_char *password;
-    os_char *ip;
-    os_char *text;
-    os_char *network_name;
+    const os_char *user;
+    const os_char *password;
+    const os_char *ip;
+    const os_char *text;
+    const os_char *network_name;
 }
-iocSecurityNote;
+iocSecurityNotification;
 
+/* For setting up signal pointers for "new device" and "alarm" tables in memory block.
+ */
+#define IOC_MAX_NEW_DEVICE_NOTIFICATIONS 4
+#define IOC_MAX_ALARM_NOTIFICATIONS 4
+typedef struct
+{
+    iocSignal *user_name;
+    iocSignal *password;
+    iocSignal *privileges;
+    iocSignal *ip;
+    iocSignal *count;
+    iocSignal *text;
+}
+iocNotificationSignalRow;
+
+/* Network security status structure.
+ */
 typedef struct iocSecurityStatus
 {
-    os_int dummy;
+    /* Security status structure initialized flag.
+     */
+    os_boolean initialized;
+
+    /* iocom signals for "new device" table.
+     */
+    iocNotificationSignalRow new_device[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
+    os_short new_device_nrows;
+
+    /* iocom signals for "alarms" table.
+     */
+    iocNotificationSignalRow alarm[IOC_MAX_ALARM_NOTIFICATIONS];
+    os_short alarm_nrows;
 }
 iocSecurityStatus;
 
 
-void ioc_secutiry_note(
-    struct iocBServerMain *m,
+void ioc_secutiry_notify(
+    struct iocBServer *m,
     iocNoteCode code,
-    iocSecurityNote *note);
+    iocSecurityNotification *note);
 

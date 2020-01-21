@@ -18,6 +18,12 @@
 ****************************************************************************************************
 */
 
+#ifdef BSERVER_INTERNALS
+#include "account-signals.h"
+#include "account-defaults.h"
+#include "accounts-mblk-binary.h"
+#endif
+
 struct iocBServerNetwork;
 
 /**
@@ -53,7 +59,7 @@ iocBServerParams;
   Basic server state structure
 ****************************************************************************************************
  */
-typedef struct iocBServerMain
+typedef struct iocBServer
 {
     /* Pointer to IOCOM root structure.
      */
@@ -86,12 +92,38 @@ typedef struct iocBServerMain
      */
     const os_char *account_defaults;
     os_memsz account_defaults_sz;
+}
+iocBServer;
+
+
+#ifdef BSERVER_INTERNALS
+/* Internal basic server state structure to publish account information of an IO network.
+ */
+typedef struct iocBServerNetwork
+{
+    /* IO device/user account IO definition structure.
+     */
+    account_signals_t asignals;
+
+    /* Network name, accounts are for this IO network.
+     */
+    os_char network_name[IOC_NETWORK_NAME_SZ];
+
+    /* Memory block handles for accounts.
+     */
+    iocHandle accounts_exp, accounts_imp, accounts_data, accounts_info;
+
+    /* Control stream to configure the device/user accounts.
+     */
+    iocStreamerParams accounts_stream_params;
+    iocControlStreamState accounts_stream;
 
     /* Security status.
      */
     iocSecurityStatus sec_status;
 }
-iocBServerMain;
+iocBServerNetwork;
+#endif
 
 
 /**
@@ -102,25 +134,25 @@ iocBServerMain;
 /* Initialize basic server components.
  */
 void ioc_initialize_bserver(
-    iocBServerMain *m,
+    iocBServer *m,
     iocRoot *root,
     iocBServerParams *prm);
 
 /* Release basic server components.
  */
 void ioc_release_bserver(
-    iocBServerMain *m);
+    iocBServer *m);
 
 /* Publish IO device networks.
  */
 osalStatus ioc_publish_bserver_networks(
-    iocBServerMain *m,
+    iocBServer *m,
     const os_char *publish);
 
 /* Keep basic server functionality alive.
  */
 osalStatus ioc_run_bserver(
-    iocBServerMain *m);
+    iocBServer *m);
 
 /* Macro to set up a control stream by typical signal configuration.
  */

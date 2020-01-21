@@ -39,7 +39,7 @@ public:
 private:
     /* Basic server (ioserver extension) structure.
      */
-    iocBServerMain m_bmain;
+    iocBServer m_bmain;
 
     /* Structure holding signals for the IO node.
      */

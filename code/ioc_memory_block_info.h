@@ -34,7 +34,7 @@
  */
 #define IOC_DEVICE_ID_SZ 28
 
-/** Maximum passwordk name string length. We use SHA-256 to encrypt passwords, and convert
+/** Maximum password string length. We use SHA-256 to encrypt passwords, and convert
     result to string, so we need 11 * 4 + 2 = 46 bytes. 11 = SHA hash is 32 bytes, we have
     11 groups of three bytes each. 4 = each 3 byte group on is converted to 4 characters in
     string. 2 = one byte for '!' prefix and one byte for terminating '\0' character.
@@ -89,7 +89,6 @@ iocMemoryBlockInfo;
     Send info structure within a connection.
 ****************************************************************************************************
 */
-
 typedef struct
 {
     /** Global upwards info transfer list. Pointer to the first memory block for
@@ -145,6 +144,8 @@ void ioc_mbinfo_sent(
 void ioc_mbinfo_mblk_is_deleted(
     struct iocMemoryBlock *mblk);
 
+/* Process memory block information frame received from socket or serial port.
+ */
 osalStatus ioc_process_received_mbinfo_frame(
     struct iocConnection *con,
     os_uint mblk_id,

@@ -110,8 +110,6 @@ osalStatus osal_main(
         device_id->password, device_id->network_name);
     ioc_initialize_dynamic_root(&app_iocom);
 
-    ioc_enable_user_authentication(&app_iocom, ioc_authorize, OS_NULL);
-
     /* Create frank main object
      */
     app_root_obj = new AppRoot(device_name, device_id->device_nr, device_id->network_name,

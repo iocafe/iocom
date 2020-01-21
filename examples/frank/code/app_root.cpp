@@ -67,6 +67,12 @@ AppRoot::AppRoot(
     /* Publish IO networks hosted by frank, such as "iocafenet" or "asteroidnet"
      */
     ioc_publish_bserver_networks(&m_bmain, publish);
+
+    /* Enable user authentication. Basic server pointer (m_bmain) is set as context, this
+     * is needed to pass notifications (like "new device", or "wrong password") to server
+     * status signals.
+     */
+    ioc_enable_user_authentication(&app_iocom, ioc_authorize, &m_bmain);
 }
 
 
