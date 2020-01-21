@@ -283,7 +283,7 @@ static PyObject *Root_list_devices(
     iocMemoryBlock *mblk;
     PyObject *pydevname, *rval;
     const char *network_name = OS_NULL;
-    os_char device_name[IOC_NAME_SZ + 8]; /* +8 for device number */
+    os_char device_name[IOC_DEVICE_ID_SZ];
     os_char nbuf[OSAL_NBUF_SZ];
 
     root = self->root;
@@ -455,7 +455,7 @@ static PyObject *Root_wait_for_com_event(
     PyObject *rval;
     int timeout_ms;
     iocQueuedEvent *e;
-    os_char device_name[IOC_NAME_SZ+8];
+    os_char device_name[IOC_DEVICE_ID_SZ];
     os_char nbuf[OSAL_NBUF_SZ], *event_name;
 
     root = self->root;

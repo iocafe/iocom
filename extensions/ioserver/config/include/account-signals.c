@@ -14,81 +14,81 @@ void account_signals_init_signal_struct(account_signals_t *s)
 
  /* new1_password */
   s->exp.new1_password.addr = 29;
-  s->exp.new1_password.n = 28;
+  s->exp.new1_password.n = 46;
   s->exp.new1_password.flags = OS_CHAR;
 
  /* new1_count */
-  s->exp.new1_count.addr = 58;
+  s->exp.new1_count.addr = 76;
   s->exp.new1_count.n = 1;
   s->exp.new1_count.flags = OS_INT;
 
  /* new2_name */
-  s->exp.new2_name.addr = 63;
+  s->exp.new2_name.addr = 81;
   s->exp.new2_name.n = 28;
   s->exp.new2_name.flags = OS_CHAR;
 
  /* new2_password */
-  s->exp.new2_password.addr = 92;
-  s->exp.new2_password.n = 28;
+  s->exp.new2_password.addr = 110;
+  s->exp.new2_password.n = 46;
   s->exp.new2_password.flags = OS_CHAR;
 
  /* new2_count */
-  s->exp.new2_count.addr = 121;
+  s->exp.new2_count.addr = 157;
   s->exp.new2_count.n = 1;
   s->exp.new2_count.flags = OS_INT;
 
  /* new3_name */
-  s->exp.new3_name.addr = 126;
+  s->exp.new3_name.addr = 162;
   s->exp.new3_name.n = 28;
   s->exp.new3_name.flags = OS_CHAR;
 
  /* new3_password */
-  s->exp.new3_password.addr = 155;
-  s->exp.new3_password.n = 28;
+  s->exp.new3_password.addr = 191;
+  s->exp.new3_password.n = 46;
   s->exp.new3_password.flags = OS_CHAR;
 
  /* new3_count */
-  s->exp.new3_count.addr = 184;
+  s->exp.new3_count.addr = 238;
   s->exp.new3_count.n = 1;
   s->exp.new3_count.flags = OS_INT;
 
  /* alarm1_name */
-  s->exp.alarm1_name.addr = 189;
+  s->exp.alarm1_name.addr = 243;
   s->exp.alarm1_name.n = 28;
   s->exp.alarm1_name.flags = OS_CHAR;
 
  /* alarm1_password */
-  s->exp.alarm1_password.addr = 218;
-  s->exp.alarm1_password.n = 28;
+  s->exp.alarm1_password.addr = 272;
+  s->exp.alarm1_password.n = 46;
   s->exp.alarm1_password.flags = OS_CHAR;
 
  /* alarm1_count */
-  s->exp.alarm1_count.addr = 247;
+  s->exp.alarm1_count.addr = 319;
   s->exp.alarm1_count.n = 1;
   s->exp.alarm1_count.flags = OS_INT;
 
  /* alarm1_text */
-  s->exp.alarm1_text.addr = 252;
+  s->exp.alarm1_text.addr = 324;
   s->exp.alarm1_text.n = 30;
   s->exp.alarm1_text.flags = OS_CHAR;
 
  /* alarm2_name */
-  s->exp.alarm2_name.addr = 283;
+  s->exp.alarm2_name.addr = 355;
   s->exp.alarm2_name.n = 28;
   s->exp.alarm2_name.flags = OS_CHAR;
 
  /* alarm2_password */
-  s->exp.alarm2_password.addr = 312;
-  s->exp.alarm2_password.n = 28;
+  s->exp.alarm2_password.addr = 384;
+  s->exp.alarm2_password.n = 46;
   s->exp.alarm2_password.flags = OS_CHAR;
 
  /* alarm2_count */
-  s->exp.alarm2_count.addr = 341;
+  s->exp.alarm2_count.addr = 431;
   s->exp.alarm2_count.n = 1;
   s->exp.alarm2_count.flags = OS_INT;
 
  /* alarm2_text */
-  s->exp.alarm2_text.addr = 346;
+  s->exp.alarm2_text.addr = 436;
   s->exp.alarm2_text.n = 30;
   s->exp.alarm2_text.flags = OS_CHAR;
   s->mblk_list[0] = &s->exp.hdr;

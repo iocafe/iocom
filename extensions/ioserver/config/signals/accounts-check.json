@@ -16,7 +16,7 @@
 					{
 						"name": "new1_password",
 						"type": "char",
-						"array": 28
+						"array": 46
 					},
 					{
 						"name": "new1_count",
@@ -30,7 +30,7 @@
 					{
 						"name": "new2_password",
 						"type": "char",
-						"array": 28
+						"array": 46
 					},
 					{
 						"name": "new2_count",
@@ -44,7 +44,7 @@
 					{
 						"name": "new3_password",
 						"type": "char",
-						"array": 28
+						"array": 46
 					},
 					{
 						"name": "new3_count",
@@ -63,7 +63,7 @@
 					{
 						"name": "alarm1_password",
 						"type": "char",
-						"array": 28
+						"array": 46
 					},
 					{
 						"name": "alarm1_count",
@@ -82,7 +82,7 @@
 					{
 						"name": "alarm2_password",
 						"type": "char",
-						"array": 28
+						"array": 46
 					},
 					{
 						"name": "alarm2_count",

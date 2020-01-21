@@ -39,9 +39,7 @@ public:
 
     /* Network topology stuff.
      */
-    // os_char m_controller_device_name[IOC_NAME_SZ];
     os_char m_network_name[IOC_NETWORK_NAME_SZ];
-    // os_uint m_controller_device_nr;
 
     GinaIoDevice m_gina1;
     GinaIoDevice m_gina2;

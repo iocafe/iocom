@@ -54,7 +54,7 @@ typedef struct iocUser
 
     /** Password (cryprographic hash).
      */
-    os_char password[IOC_NAME_SZ];
+    os_char password[IOC_PASSWORD_SZ];
 
     /** Flags (privileges, etc)
      */
