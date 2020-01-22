@@ -10,12 +10,16 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.metrics import dp
 
-from iocompython import Root,bin2json, json2bin
-from mysettings import MySettingsDisplay, MySettingsGroup, MyButton, make_my_text_input
-from myiconbutton import MyIconButton
 from time import sleep
 
-class MyConfig(MySettingsDisplay):
+from panel import Panel
+from item import make_my_text_input
+from item_heading import HeadingItem
+from item_button import ButtonItem
+from iconbutton import IconButton
+from iocompython import Root, bin2json, json2bin
+
+class ConfigurationPanel(Panel):
     def set_device(self, ioc_root, device_path):
         self.ioc_root = ioc_root
         self.device_path = device_path
@@ -82,7 +86,7 @@ class MyConfig(MySettingsDisplay):
         pass
 
     def run(self):
-        for s in self.my_variables:
+        for s in self.run_list:
             s.update_signal()
         pass
 
@@ -98,14 +102,14 @@ class MyConfig(MySettingsDisplay):
             if net == None:
                 print("'network' not found in configuration")
 
-        title = MySettingsGroup()
+        title = HeadingItem()
         title.set_group_label("configure", self.device_path, 1)
-        self.my_add_widget(title)
-        b = MyButton()
+        self.add_my_widget(title)
+        b = ButtonItem()
         b.setup_button("save to device", self)
-        self.my_add_widget(b)
+        self.add_my_widget(b)
 
-        self.new_settings_group("general", None, 2)
+        self.add_heading("general", None, 2)
         self.process_network(net_d, net)
 
     def process_network(self, data_d, data):
@@ -119,7 +123,7 @@ class MyConfig(MySettingsDisplay):
                 description = ''
                 description += "default: " + str(value_d)
 
-                self.new_setting(self.ioc_root, item_d, data_d, value_d, value, description)
+                self.add_configuration_item(self.ioc_root, item_d, data_d, value_d, value, description)
 
         g_d = data_d.get("connect", None)
         if g_d != None:
@@ -162,7 +166,7 @@ class MyConfig(MySettingsDisplay):
             if n > 1:
                 mylabel += " " + str(i+1)                    
 
-            self.new_settings_group(mylabel, None, 2)
+            self.add_heading(mylabel, None, 2)
             self.process_network(a_d, a)
 
     # Save configuration to device  
@@ -195,17 +199,17 @@ class MyConfig(MySettingsDisplay):
         if my_config != None:
             accounts = my_config.get("accounts", None)
 
-        title = MySettingsGroup()
+        title = HeadingItem()
         title.set_group_label("user", self.device_path, 1)
         g = GridLayout()
         g.cols = 2
         g.size_hint_y = None
         g.height = 60 
         g.add_widget(title)
-        b = MyButton()
+        b = ButtonItem()
         b.setup_button("save to device", self)
         g.add_widget(b)
-        self.my_add_widget(g)
+        self.add_my_widget(g)
 
         grouplist = {"requests":["new devices", "accept,delete,blacklist"], "alarms":["alarms", "delete"]}
         for g in grouplist:
@@ -224,16 +228,16 @@ class MyConfig(MySettingsDisplay):
         ##################xxx
 
     def make_notification_group(self, groupname, label, flags):
-        self.new_settings_group(label, None, 2)
-        self.new_notification(self.ioc_root, "new1_text", "addr", "type", 1, "exp", "up", self.device_path)
+        self.add_heading(label, None, 2)
+        self.add_notification(self.ioc_root, "new1_text", "exp", self.device_path, flags)
         
     def process_accounts_group(self, groupdict, groupname, label, group_d, group, flags):
         if group_d == None:
             return
             
-        title = self.new_settings_group(label, None, 2)
+        title = self.add_heading(label, None, 2)
         if label != 'new devices' and label != 'alarms':
-            b = MyIconButton()
+            b = IconButton()
             b.set_image("new", groupdict, groupname)
             b.bind(on_release = self.new_account_item)
             title.add_widget(b)
@@ -246,7 +250,7 @@ class MyConfig(MySettingsDisplay):
                 group_d.append(item)
 
         for item_d in group_d:
-            u = self.add_user_management_item(self.ioc_root, groupdict, groupname, group_d, item_d, flags)
+            u = self.add_user_account_item(self.ioc_root, groupdict, groupname, group_d, item_d, flags)
             u.bind(on_remake_page = self.remake_accounts_page)
 
     def new_account_item(self, source_object):

@@ -1,9 +1,9 @@
 from kivy.uix.button import Button
 from kivy.uix.image import Image
 
-class MyIconButton(Button):
+class IconButton(Button):
     def __init__(self, **kwargs):
-        super(MyIconButton, self).__init__(**kwargs)
+        super(IconButton, self).__init__(**kwargs)
         self.background_color = [0,0,0,0]
         self.size_hint_x = None
         self.width = 60

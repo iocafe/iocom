@@ -1,9 +1,9 @@
 from kivy.config import ConfigParser
-from iocompython import Root, MemoryBlock, bin2json
 import json
 
-from mysettings import MySettingsDisplay 
+from panel import Panel 
 
+from iocompython import Root, MemoryBlock, bin2json
 
 # Size excludes signal state byte. 
 osal_typeinfo = {
@@ -25,7 +25,7 @@ osal_typeinfo = {
     "object" : 0,
     "pointer" : 0}
 
-class MyDevice(ConfigParser):
+class IoDevice(ConfigParser):
     def set_device(self, ioc_root, settings, device_path):
         self.ioc_root = ioc_root
         self.device_path = device_path
@@ -33,7 +33,7 @@ class MyDevice(ConfigParser):
         self.my_signal_panel = None
 
     def create_signal_display(self):
-        p = MySettingsDisplay()
+        p = Panel()
         self.my_signal_panel = p;
 
         info = MemoryBlock(self.ioc_root, mblk_name='info.' + self.device_path)
@@ -68,7 +68,7 @@ class MyDevice(ConfigParser):
             print("'mblk' not found")
             return
 
-        self.my_signal_panel.new_settings_group("signals - ", self.device_path, 1)
+        self.my_signal_panel.add_heading("signals - ", self.device_path, 1)
             
         for mblk in mblks:
             self.process_mblk(mblk)
@@ -96,7 +96,7 @@ class MyDevice(ConfigParser):
         if signals == None:
             return;
 
-        self.my_signal_panel.new_settings_group(group_name, mblk_name, 2)
+        self.my_signal_panel.add_heading(group_name, mblk_name, 2)
 
         for signal in signals:
             self.process_signal(signal, group_name, mblk_name, mblk_flags)
@@ -111,7 +111,7 @@ class MyDevice(ConfigParser):
             self.signal_addr = signal_addr
         n = data.get("array", 1)
 
-        self.my_signal_panel.new_signal(self.ioc_root, signal_name, self.signal_addr, 
+        self.my_signal_panel.add_io_signal(self.ioc_root, signal_name, self.signal_addr, 
             self.signal_type, n, mblk_name, mblk_flags, self.device_path);
                 
         if self.signal_type == "boolean":

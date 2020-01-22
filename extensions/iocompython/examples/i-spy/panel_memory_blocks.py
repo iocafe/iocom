@@ -2,17 +2,17 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 import json
 from time import time
-from mysettings import MySettingsDisplay 
+from panel import Panel 
 
-class MyMemoryBlockDialog(MySettingsDisplay):
+class MemoryBlockPanel(Panel):
     def __init__(self, **kwargs):
-        super(MyMemoryBlockDialog, self).__init__(**kwargs)
+        super(MemoryBlockPanel, self).__init__(**kwargs)
         self.cols = 1
 
     def add_mblk_to_page(self, ioc_root, device_path):
         mblk_path = "*." + device_path
         self.clear_widgets()
-        self.new_settings_group("memory - ", device_path, 1)
+        self.add_heading("memory - ", device_path, 1)
 
         json_text = ioc_root.print('memory_blocks', mblk_path, 'data')
         self.process_json(json_text)
@@ -47,7 +47,7 @@ class MyMemoryBlockDialog(MySettingsDisplay):
         sz = data.get("size", 0)
         flags = data.get("flags", "none")
 
-        self.new_settings_group(mblk_name, None, 2)
+        self.add_heading(mblk_name, None, 2)
         self.append_text_line('id=' + str(mblk_id) + ', size=' + str(sz) + ", flags=" + flags)
 
         data = data.get("data", None)

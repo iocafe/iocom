@@ -7,11 +7,11 @@ from kivy.core.window import Window
 
 from myactionbar import MyActionBar 
 from myconnectdialog import MyConnectDialog
-from mywaitdialog import MyWaitDialog
-from mymblkdialog import MyMemoryBlockDialog
-from mydevice import MyDevice
-from myconfig import MyConfig
-from myprogram import MyProgram
+from panel_wait import WaitPanel
+from panel_memory_blocks import MemoryBlockPanel
+from panel_configuration import ConfigurationPanel
+from panel_program import ProgramPanel
+from iodevice import IoDevice
 
 from iocompython import Root, MemoryBlock, Connection, EndPoint, Signal, json2bin
 
@@ -36,13 +36,13 @@ class MainApp(App):
         transport_flag = self.ioc_params['transport'].lower();
 
         if self.ioc_params['role'] == "CLIENT":
-            # self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
-            self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
+            self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
+            # self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
             self.ioc_root.queue_events()
             self.ioc_connection = Connection(self.ioc_root, parameters=self.ioc_params['ip'], flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user, password=ioc_password)
 
         else:
-            self.ioc_root = Root('ispy', device_nr=10000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
+            self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
             # self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
             self.ioc_root.queue_events()
             self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
@@ -98,7 +98,7 @@ class MainApp(App):
                 a = self.ioc_devices.get(device_path, None)
                 if a == None:
                     print("new device " + device_path)
-                    d = MyDevice()
+                    d = IoDevice()
                     self.ioc_devices[device_path] = d
                     d.set_device(self.ioc_root, self.ioc_params, device_path)
 
@@ -185,7 +185,7 @@ class MainApp(App):
         self.my_scroll_panel = my_scroll_view
 
         if page_name == 'wait':
-            dlg = MyWaitDialog()
+            dlg = WaitPanel()
             self.my_view = dlg;           
             my_scroll_view.add_widget(dlg)
             return
@@ -203,15 +203,15 @@ class MainApp(App):
             dlg = d.create_signal_display()
 
         elif page_name == 'configure':
-            dlg = MyConfig()
+            dlg = ConfigurationPanel()
             dlg.set_device(self.ioc_root, device_path)
 
         elif page_name == 'program':
-            dlg = MyProgram()
+            dlg = ProgramPanel()
             dlg.set_device(self.ioc_root, device_path)
 
         elif page_name == 'memory':
-            dlg = MyMemoryBlockDialog()
+            dlg = MemoryBlockPanel()
             dlg.add_mblk_to_page(self.ioc_root, device_path);
 
         else:

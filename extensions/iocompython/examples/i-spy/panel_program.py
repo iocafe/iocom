@@ -6,9 +6,9 @@ from kivy.uix.filechooser import FileChooserIconView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 
+from item_heading import HeadingItem
+from item_button import ButtonItem
 from iocompython import Root,bin2json, json2bin
-from mysettings import MySettingsGroup, MyButton
-
 
 class MyFileChooser(FileChooserIconView):
     def __init__(self, **kwargs):
@@ -16,20 +16,20 @@ class MyFileChooser(FileChooserIconView):
 
     pass
 
-class MyProgram(GridLayout):
-# class MyProgram(MySettingsDisplay):
+class ProgramPanel(GridLayout):
+# class ProgramPanel(Panel):
     def __init__(self, **kwargs):
-        super(MyProgram, self).__init__(**kwargs)
+        super(ProgramPanel, self).__init__(**kwargs)
         self.cols = 1
 
         g = GridLayout(cols = 2)
         g.height = 60
         g.size_hint_y = None
-        title = MySettingsGroup()
+        title = HeadingItem()
         g.add_widget(title)
         self.my_title = title
 
-        b = MyButton()
+        b = ButtonItem()
         b.setup_button("program flash", self)
         g.add_widget(b)
 
@@ -75,7 +75,7 @@ class MyProgramButton(Button):
 
 class MainApp(App):
     def build(self):
-        self.root = MyProgram()
+        self.root = ProgramPanel()
         self.root.set_device(Root('testwidget'), "gina2.iocafenet")
         return self.root
 

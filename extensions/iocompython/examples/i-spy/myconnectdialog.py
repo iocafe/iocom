@@ -202,7 +202,7 @@ class MyConnectDialog(SettingsWithNoMenu):
 
     def on_config_change(self, config, section, key, value):
         print(
-            "main.py: MySettingsWithNoMenu.on_config_change: "
+            "main.py: ConfigurationItemsWithNoMenu.on_config_change: "
             "{0}, {1}, {2}, {3}".format(config, section, key, value))
 
         if section == "common":
