@@ -15,35 +15,30 @@ typedef struct account_signals_t
     iocSignal new1_privileges;
     iocSignal new1_ip;
     iocSignal new1_count;
-    iocSignal new1_timer;
     iocSignal new2_text;
     iocSignal new2_name;
     iocSignal new2_password;
     iocSignal new2_privileges;
     iocSignal new2_ip;
     iocSignal new2_count;
-    iocSignal new2_timer;
     iocSignal new3_text;
     iocSignal new3_name;
     iocSignal new3_password;
     iocSignal new3_privileges;
     iocSignal new3_ip;
     iocSignal new3_count;
-    iocSignal new3_timer;
     iocSignal alarm1_text;
     iocSignal alarm1_name;
     iocSignal alarm1_password;
     iocSignal alarm1_privileges;
     iocSignal alarm1_ip;
     iocSignal alarm1_count;
-    iocSignal alarm1_timer;
     iocSignal alarm2_text;
     iocSignal alarm2_name;
     iocSignal alarm2_password;
     iocSignal alarm2_privileges;
     iocSignal alarm2_ip;
     iocSignal alarm2_count;
-    iocSignal alarm2_timer;
   }
   exp;
 
@@ -73,7 +68,7 @@ typedef struct account_signals_t
 }
 account_signals_t;
 
-#define ACCOUNT_SIGNALS_EXP_MBLK_SZ 945
+#define ACCOUNT_SIGNALS_EXP_MBLK_SZ 900
 #define ACCOUNT_SIGNALS_CONF_IMP_MBLK_SZ 276
 #define ACCOUNT_SIGNALS_CONF_EXP_MBLK_SZ 272
 

@@ -18,13 +18,27 @@
 
 /* Forward referred static functions.
  */
+static osalStatus ioc_security_notify2(
+    struct iocBServer *m,
+    iocNoteCode code,
+    iocSecurityNotification *note,
+    os_char *network_name);
+
 static void ioc_set_notification(
     iocNotificationSignalRow *table,
     os_timer *timers,
+    os_boolean *is_set,
     os_short nrows,
     iocNoteCode code,
     iocSecurityNotification *note,
     const os_char *text);
+
+static void ioc_notifications_time_out(
+    iocNotificationSignalRow *table,
+    os_timer *timers,
+    os_boolean *is_set,
+    os_short nrows,
+    os_int timeout_ms);
 
 static os_short ioc_setup_new_device_notification_table(
     iocNotificationSignalRow *table,
@@ -41,9 +55,9 @@ static os_short ioc_setup_alarm_notification_table(
 ****************************************************************************************************
 
   @brief Share security notification (in iocom memory block).
-  @anchor ioc_secutiry_notify
+  @anchor ioc_security_notify
 
-  The ioc_secutiry_notify() function...
+  The ioc_security_notify() function...
 
   @param   m Pointer to basic server object.
   @param   code Reason for notification, like IOC_NOTE_NEW_IO_DEVICE,
@@ -54,22 +68,91 @@ static os_short ioc_setup_alarm_notification_table(
 
 ****************************************************************************************************
 */
-void ioc_secutiry_notify(
+void ioc_security_notify(
     struct iocBServer *m,
     iocNoteCode code,
     iocSecurityNotification *note)
 {
-    iocBServerNetwork *n;
+    if (m->networks == OS_NULL) return;
+
+    if (ioc_security_notify2(m, code, note, OS_NULL))
+    {
+        ioc_security_notify2(m, code, note, m->network_name);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Run security (make "new device" and "alarm" notifications time out)
+  @anchor ioc_run_security
+
+  The ioc_run_security() function...
+
+  @param   m Pointer to basic server object.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_run_security(
+    struct iocBServer *m)
+{
     iocSecurityStatus *ss;
-    os_char *text;
     os_int i;
 
     if (m->networks == OS_NULL) return;
 
     for (i = 0; i<m->nro_networks; i++)
     {
+        ss = &m->networks[i].sec_status;
+
+        ioc_notifications_time_out(ss->new_device, ss->new_device_timer,
+            ss->new_device_is_set, ss->new_device_nrows, 2000);
+
+        ioc_notifications_time_out(ss->alarm, ss->alarm_timer,
+            ss->alarm_is_set, ss->alarm_nrows, 5000);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Share security notification (in iocom memory block).
+  @anchor ioc_security_notify
+
+  The ioc_security_notify() function...
+
+  @param   m Pointer to basic server object.
+  @param   code Reason for notification, like IOC_NOTE_NEW_IO_DEVICE,
+           IOC_NOTE_WRONG_IO_DEVICE_PASSWORD,  or IOC_NOTE_BLACKLISTED_IO_DEVICE.
+  @param   note Pointer to security note structure. Contains network name, device/user name,
+           password used to log in, etc.
+  @param   network_name Set network name to process for a specficic network, or OS_NULL to
+           select network by network name in note.
+  @return  If alarm was processed, the function returns OSAL_SUCCESS. Other values indicate
+           that alarm was not processed.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_security_notify2(
+    struct iocBServer *m,
+    iocNoteCode code,
+    iocSecurityNotification *note,
+    os_char *network_name)
+{
+    iocBServerNetwork *n;
+    iocSecurityStatus *ss;
+    os_char *text = OS_NULL;
+    osalStatus s = OSAL_STATUS_FAILED;
+    os_int i;
+
+    for (i = 0; i<m->nro_networks; i++)
+    {
         n = m->networks + i;
-        if (os_strcmp(note->network_name, n->network_name)) continue;
+        if (os_strcmp(network_name ? network_name : note->network_name, n->network_name)) continue;
+        s = OSAL_SUCCESS;
 
         /* Initialize signal pointers for "new device" and "alarm" tables.
          */
@@ -90,20 +173,32 @@ void ioc_secutiry_notify(
         switch (code)
         {
             case IOC_NOTE_NEW_IO_DEVICE:
+                text =  "NEW DEVICE";
+                /* continues... */
+
             case IOC_NOTE_WRONG_IO_DEVICE_PASSWORD:
-                text = (code == IOC_NOTE_NEW_IO_DEVICE) ? "NEW DEVICE" : "WRONG PASSWORD";
-                ioc_set_notification(ss->new_device, ss->new_device_timer,
+                if (text == OS_NULL) {
+                    text = os_strcmp(note->password, "") ? "WRONG PASSWORD" : "NO PASSWORD";
+                }
+                ioc_set_notification(ss->new_device, ss->new_device_timer, ss->new_device_is_set,
                     ss->new_device_nrows, code, note, text);
                 break;
 
-            default:
             case IOC_NOTE_BLACKLISTED_IO_DEVICE:
-                text = (code == IOC_NOTE_BLACKLISTED_IO_DEVICE) ? "BLACKLISTED" : "UNKNOWN ALARM";
-                ioc_set_notification(ss->alarm, ss->alarm_timer,
+                text = "BLACKLISTED";
+                /* continues... */
+
+            default:
+                if (text == OS_NULL) {
+                    text =  "UNKNOWN ALARM";
+                }
+                ioc_set_notification(ss->alarm, ss->alarm_timer, ss->alarm_is_set,
                     ss->alarm_nrows, code, note, text);
                 break;
         }
     }
+
+    return s;
 }
 
 
@@ -111,12 +206,13 @@ void ioc_secutiry_notify(
 ****************************************************************************************************
 
   @brief Set up notification table (sets signal pointers).
-  @anchor ioc_setup_new_device_notification_table
+  @anchor ioc_set_notification
 
   The ioc_set_notification() function...
 
   @param   table Pointer to notification table.
   @param   timers Timer for each notification table row.
+  @param   is_set Array of "notification row has data" flags.
   @param   nrows Number of valid row structures in table.
   @param   note Pointer to security note structure. Contains network name, device/user name,
            password used to log in, etc.
@@ -128,6 +224,7 @@ void ioc_secutiry_notify(
 static void ioc_set_notification(
     iocNotificationSignalRow *table,
     os_timer *timers,
+    os_boolean *is_set,
     os_short nrows,
     iocNoteCode code,
     iocSecurityNotification *note,
@@ -136,6 +233,8 @@ static void ioc_set_notification(
     iocNotificationSignalRow *r;
     os_char buf[IOC_NAME_SZ];
     os_short row, empty_row;
+    os_boolean reset_count = OS_FALSE;
+    os_long count = 1;
 
     /* If we have row for this user/device already, just update it.
      * Otherwise select empty row, if any.
@@ -147,6 +246,7 @@ static void ioc_set_notification(
         if (!os_strcmp(buf, note->user)) goto row_selected;
         if (buf[0] == '\0' && empty_row == -1) empty_row = row;
     }
+    reset_count = OS_TRUE;
     if (empty_row >= 0)
     {
         row = empty_row;
@@ -163,11 +263,74 @@ row_selected:
     ioc_sets_str(r->password, note->password);
     ioc_sets_str(r->privileges, note->privileges);
     ioc_sets_str(r->ip, note->ip);
-    ioc_sets0_int(r->count, 1);
+    if (!reset_count)
+    {
+        count = ioc_gets0_int(r->count) + 1;
+    }
+    ioc_sets0_int(r->count, count);
     ioc_sets_str(r->text, text);
     os_get_timer(&timers[row]);
+    is_set[row] = OS_TRUE;
 
     ioc_send(r->user_name->handle);
+}
+
+
+
+/**
+****************************************************************************************************
+
+  @brief Make notifications to time out.
+  @anchor ioc_notifications_time_out
+
+  The ioc_notifications_time_out() function...
+
+  @param   table Pointer to notification table.
+  @param   timers Timer for each notification table row.
+  @param   is_set Array of "notification row has data" flags.
+  @param   nrows Number of valid row structures in table.
+  @param   timeout_ms How long for notifications to time out.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_notifications_time_out(
+    iocNotificationSignalRow *table,
+    os_timer *timers,
+    os_boolean *is_set,
+    os_short nrows,
+    os_int timeout_ms)
+{
+    iocNotificationSignalRow *r;
+    os_timer now_t;
+    os_short row;
+    os_boolean changed = OS_FALSE;
+
+    os_get_timer(&now_t);
+
+    /* If we have row for this user/device already, just update it.
+     * Otherwise select empty row, if any.
+     */
+    for (row = 0; row < nrows; row++)
+    {
+        if (!is_set[row]) continue;
+        if (!os_elapsed2(&timers[row], &now_t, timeout_ms)) continue;
+
+        r = table + row;
+        ioc_sets_str(r->user_name, OS_NULL);
+        ioc_sets_str(r->password, OS_NULL);
+        ioc_sets_str(r->privileges, OS_NULL);
+        ioc_sets_str(r->ip, OS_NULL);
+        ioc_sets0_int(r->count, 0);
+        ioc_sets_str(r->text, OS_NULL);
+        is_set[row] = OS_FALSE;
+        changed = OS_TRUE;
+    }
+
+    if (changed)
+    {
+        ioc_send(r->user_name->handle);
+    }
 }
 
 

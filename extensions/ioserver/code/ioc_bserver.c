@@ -76,6 +76,7 @@ void ioc_initialize_bserver(
     m->account_defaults_sz = prm->account_defaults_sz;
     m->is_bypass_server = prm->is_bypass_server;
     m->is_cloud_server = prm->is_cloud_server;
+    os_get_timer(&m->sec_timer);
 
     ioc_setup_bserver_mblks(m, prm);
 }
@@ -139,6 +140,14 @@ osalStatus ioc_run_bserver(
     osalStatus s;
 
     s = ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
+
+    /* Run security about twice per second.
+     */
+    if (os_elapsed(&m->sec_timer, 522))
+    {
+        os_get_timer(&m->sec_timer);
+        ioc_run_security(m);
+    }
 
     for (i = 0; i<m->nro_networks; i++)
     {

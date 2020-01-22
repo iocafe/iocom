@@ -149,7 +149,7 @@ class MyConnectDialog(SettingsWithNoMenu):
 
     def password_popup(self):
         if  self.myconfig.get('common', 'conf_role') == "SERVER":
-            self.dispatch('on_connect', None, self.get_settings())
+            self.dispatch('on_connect', None, None, self.get_settings())
             return
 
         # create popup layout

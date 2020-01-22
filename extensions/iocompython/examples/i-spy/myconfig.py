@@ -82,6 +82,8 @@ class MyConfig(MySettingsDisplay):
         pass
 
     def run(self):
+        for s in self.my_variables:
+            s.update_signal()
         pass
 
     def process_json(self, my_default_config, my_config):
@@ -205,7 +207,12 @@ class MyConfig(MySettingsDisplay):
         g.add_widget(b)
         self.my_add_widget(g)
 
-        grouplist = {"accounts": ["user accounts", "edit,delete,blacklist"], "requests":["new devices", "accept,delete,blacklist"], "alarms":["alarms", "delete"], "whitelist":["whitelist", "edit,delete,blacklist"], "blacklist":["blacklist","edit,delete"]}
+        grouplist = {"requests":["new devices", "accept,delete,blacklist"], "alarms":["alarms", "delete"]}
+        for g in grouplist:
+            k = grouplist[g]
+            self.make_notification_group(g, k[0], k[1])
+
+        grouplist = {"accounts": ["user accounts", "edit,delete,blacklist"], "whitelist":["whitelist", "edit,delete,blacklist"], "blacklist":["blacklist","edit,delete"]}
         for g in grouplist:
             group_d = accounts_d.get(g, None)
             group = None
@@ -213,6 +220,12 @@ class MyConfig(MySettingsDisplay):
                 group = accounts.get(g, None)
             k = grouplist[g]
             self.process_accounts_group(accounts_d, g, k[0], group_d, group, k[1])
+
+        ##################xxx
+
+    def make_notification_group(self, groupname, label, flags):
+        self.new_settings_group(label, None, 2)
+        self.new_notification(self.ioc_root, "new1_text", "addr", "type", 1, "exp", "up", self.device_path)
         
     def process_accounts_group(self, groupdict, groupname, label, group_d, group, flags):
         if group_d == None:

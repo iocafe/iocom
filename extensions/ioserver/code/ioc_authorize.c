@@ -480,7 +480,7 @@ static void ioc_authorize_parse_accounts(
         note.user = user_name;
         note.password = user->password;
         note.ip = ip;
-        ioc_secutiry_notify((iocBServer*)context, state.ncode, &note);
+        ioc_security_notify((iocBServer*)context, state.ncode, &note);
     }
 
 #endif

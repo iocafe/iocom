@@ -38,10 +38,6 @@
 						"type": "int"
 					},
 					{
-						"name": "new1_timer",
-						"type": "long"
-					},
-					{
 						"name": "new2_text",
 						"type": "str",
 						"array": 16
@@ -71,10 +67,6 @@
 						"type": "int"
 					},
 					{
-						"name": "new2_timer",
-						"type": "long"
-					},
-					{
 						"name": "new3_text",
 						"type": "str",
 						"array": 16
@@ -102,10 +94,6 @@
 					{
 						"name": "new3_count",
 						"type": "int"
-					},
-					{
-						"name": "new3_timer",
-						"type": "long"
 					}
 				]
 			},
@@ -142,10 +130,6 @@
 						"type": "int"
 					},
 					{
-						"name": "alarm1_timer",
-						"type": "long"
-					},
-					{
 						"name": "alarm2_text",
 						"type": "str",
 						"array": 16
@@ -173,10 +157,6 @@
 					{
 						"name": "alarm2_count",
 						"type": "int"
-					},
-					{
-						"name": "alarm2_timer",
-						"type": "long"
 					}
 				]
 			}

@@ -64,19 +64,25 @@ typedef struct iocSecurityStatus
      */
     iocNotificationSignalRow new_device[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
     os_timer new_device_timer[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
+    os_boolean new_device_is_set[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
     os_short new_device_nrows;
 
     /* iocom signals for "alarms" table.
      */
     iocNotificationSignalRow alarm[IOC_MAX_ALARM_NOTIFICATIONS];
     os_timer alarm_timer[IOC_MAX_ALARM_NOTIFICATIONS];
+    os_boolean alarm_is_set[IOC_MAX_ALARM_NOTIFICATIONS];
     os_short alarm_nrows;
 }
 iocSecurityStatus;
 
 
-void ioc_secutiry_notify(
+void ioc_security_notify(
     struct iocBServer *m,
     iocNoteCode code,
     iocSecurityNotification *note);
 
+/* Run security (make "new device" and "alarm" notifications time out)
+ */
+void ioc_run_security(
+    struct iocBServer *m);

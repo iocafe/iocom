@@ -92,6 +92,10 @@ typedef struct iocBServer
      */
     const os_char *account_defaults;
     os_memsz account_defaults_sz;
+
+    /** Security run timer.
+     */
+    os_timer sec_timer;
 }
 iocBServer;
 
