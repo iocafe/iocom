@@ -16,7 +16,6 @@
           {"name": "new1_privileges", "type": "str", "array": 16},
           {"name": "new1_ip", "type": "str", "array": 64},
           {"name": "new1_count", "type": "int"},
-          {"name": "new1_timer", "type": "long"},
 
           {"name": "new2_text", "type": "str", "array": 16},
           {"name": "new2_name", "type": "str", "array": 28},
@@ -24,15 +23,13 @@
           {"name": "new2_privileges", "type": "str", "array": 16},
           {"name": "new2_ip", "type": "str", "array": 64},
           {"name": "new2_count", "type": "int"},
-          {"name": "new2_timer", "type": "long"},
 
           {"name": "new3_text", "type": "str", "array": 16},
           {"name": "new3_name", "type": "str", "array": 28},
           {"name": "new3_password", "type": "str", "array": 46},
           {"name": "new3_privileges", "type": "str", "array": 16},
           {"name": "new3_ip", "type": "str", "array": 64},
-          {"name": "new3_count", "type": "int"},
-          {"name": "new3_timer", "type": "long"}
+          {"name": "new3_count", "type": "int"}
         ]
       },
       {
@@ -44,15 +41,13 @@
           {"name": "alarm1_privileges", "type": "str", "array": 16},
           {"name": "alarm1_ip", "type": "str", "array": 64},
           {"name": "alarm1_count", "type": "int"},
-          {"name": "alarm1_timer", "type": "long"},
 
           {"name": "alarm2_text", "type": "str", "array": 16},
           {"name": "alarm2_name", "type": "str", "array": 28},
           {"name": "alarm2_password", "type": "str", "array": 46},
           {"name": "alarm2_privileges", "type": "str", "array": 16},
           {"name": "alarm2_ip", "type": "str", "array": 64},
-          {"name": "alarm2_count", "type": "int"},
-          {"name": "alarm2_timer", "type": "long"}
+          {"name": "alarm2_count", "type": "int"}
         ]
       }
     ]

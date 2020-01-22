@@ -33,7 +33,6 @@ typedef struct iocSecurityNotification
     const os_char *password;
     const os_char *privileges;
     const os_char *ip;
-    const os_char *text;
     const os_char *network_name;
 }
 iocSecurityNotification;
@@ -49,7 +48,6 @@ typedef struct
     iocSignal *privileges;
     iocSignal *ip;
     iocSignal *count;
-    iocSignal *timer;
     iocSignal *text;
 }
 iocNotificationSignalRow;
@@ -65,11 +63,13 @@ typedef struct iocSecurityStatus
     /* iocom signals for "new device" table.
      */
     iocNotificationSignalRow new_device[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
+    os_timer new_device_timer[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
     os_short new_device_nrows;
 
     /* iocom signals for "alarms" table.
      */
     iocNotificationSignalRow alarm[IOC_MAX_ALARM_NOTIFICATIONS];
+    os_timer alarm_timer[IOC_MAX_ALARM_NOTIFICATIONS];
     os_short alarm_nrows;
 }
 iocSecurityStatus;
