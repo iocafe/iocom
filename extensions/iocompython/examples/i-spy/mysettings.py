@@ -217,9 +217,78 @@ class MySignal(MyVariable):
             print("Conversion failed")
 
 
-class MyNotification(MyVariable):
+class MyNotification(GridLayout):
     def __init__(self, **kwargs):
+        self.my_state_bits = 0
+        self.my_up = True
+        self.my_down = True
         super(MyNotification, self).__init__(**kwargs)
+        self.cols = 2
+        self.padding = [8, 6]
+
+        self.size_hint_y = None
+        self.height = 60 
+
+        l = Label(text = '', markup = True, halign="left")
+        l.bind(size=l.setter('text_size')) 
+        self.my_label = l
+
+        d = Label(text = '', markup = True, halign="left")
+        d.bind(size=d.setter('text_size')) 
+        self.my_description = d
+
+        lb = GridLayout()
+        lb.cols = 1
+        lb.size_hint = (0.65, 1) 
+
+        lb.add_widget(l)
+        lb.add_widget(d)
+        self.add_widget(lb)
+
+    def setup_variable(self, ioc_root, label_text, description, use_checkbox):
+        self.my_label_text = label_text
+
+        t = Button(text = '', markup = True, halign="center", valign="center")
+        t.size_hint = (0.35, 1)
+        t.bind(size=t.setter('text_size')) 
+        t.background_color = [0 , 0, 0, 0]
+        #if self.my_down:
+        #    t.bind(on_release = self.my_create_popup)
+        self.add_widget(t)
+        self.my_text = t
+        self.my_checkbox = None
+
+        self.my_label.text = '[size=16]' + label_text + '[/size]'
+        self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
+
+    def on_size(self, *args):
+        self.my_redraw_state_bits(args)
+
+    def on_pos(self, *args):
+        self.my_redraw_state_bits(args)
+
+    def my_redraw_state_bits(self, *args):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            Color(0.8, 0.8, 0.8, 0.25)
+            mysz = self.size.copy()
+            mysz[1] = 1
+            Rectangle(pos=self.pos, size=mysz)            
+
+            if self.my_state_bits == -1: 
+                return;
+
+            if self.my_state_bits & 2 == 0: 
+                Color(0.5, 0.5, 0.5, 1)
+            elif self.my_state_bits & 12 == 12:
+                Color(1.0, 0, 0, 1)
+            elif self.my_state_bits & 8 == 8:
+                Color(1.0, 1.0, 0, 1)
+            elif self.my_state_bits & 4 == 4:
+                Color(1.0, 0.65, 0, 1)
+            else:
+                Color(0, 1, 0, 1)
+            Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
 
     def delete(self):
         self.signal.delete()
@@ -238,13 +307,6 @@ class MyNotification(MyVariable):
         self.setup_variable(ioc_root, signal_name, description, signal_type == "boolean" and n <= 1)
         self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + device_path)
 
-    def on_checkbox_modified(self, i):
-        if self.my_up and not self.my_down:
-            self.update_signal()
-
-        else:            
-            self.signal.set(self.my_checkbox.active)
-
     def update_signal(self):
         try:
             v = self.signal.get(check_tbuf=self.my_up)
@@ -259,26 +321,9 @@ class MyNotification(MyVariable):
             self.my_state_bits = new_state_bits
             self.my_redraw_state_bits(None)
 
-        if self.my_checkbox != None:
-            checked = False
-            try:
-                checked = int(v[1]) != 0
-            except:
-                print("mysettings.py: Unable to get check box state")        
-
-            if self.my_checkbox.active != checked:
-                self.my_checkbox.active = checked
-
         if self.my_text != None:
             self.my_text.text = str(v[1])
 
-    def my_user_input(self, instance):
-        try:
-            v = self.textinput.text
-            self.popup.dismiss()
-            self.signal.set(v)
-        except:
-            print("Conversion failed")
 
 class MySetting(MyVariable):
     def __init__(self, **kwargs):
