@@ -124,41 +124,49 @@ class NotificationItem(GridLayout):
             return
 
         try:
-            text = self.text_signal.get0()
+            text = str(self.text_signal.get0())
         except:
             text = '?'
 
         try:
-            password = self.password_signal.get0()
+            password = str(self.password_signal.get0())
         except:
             password = '?'
 
         try:
-            privileges = self.privileges_signal.get0()
+            privileges = str(self.privileges_signal.get0())
         except:
             privileges = '?'
 
         try:
-            ip = self.ip_signal.get0()
+            ip = str(self.ip_signal.get0())
         except:
             ip = '?'
 
         try:
-            count = self.count_signal.get0()
+            count = str(self.count_signal.get0())
         except:
             count = '?'
 
         self.my_label.text = str(name[1])
-        self.my_text.text = str(text)
+        self.my_text.text = text
 
-        description = str(privileges) + ' ' + str(ip) + ' ' + str(password) + ' ' + str(count)
 
-        self.my_description.text = description
+        description = str(ip)
+        if privileges != '':
+            if description != "":
+                description += " "
+            description += '[color=9090FF]' + str(privileges) + '[/color]'
+        if password != '':
+            if description != "":
+                description += " "
+            description += '([color=FF9090]' + str(password) + '[/color])'
+
+        self.my_description.text = '[color=909090][size=14]' + description + ' count=' + count + '[/size][/color]'
+
         self.show_control_buttons()
         self.height = 60 
 
-        # self.my_label.text = '[size=16]' + "PEPEPEP"  + '[/size]'
-        # self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 #        new_state_bits = int(v[0])
 #        if new_state_bits != self.my_state_bits:
 #            self.my_state_bits = new_state_bits

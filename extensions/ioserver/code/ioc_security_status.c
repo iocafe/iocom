@@ -317,12 +317,19 @@ static void ioc_notifications_time_out(
         if (!os_elapsed2(&timers[row], &now_t, timeout_ms)) continue;
 
         r = table + row;
-        ioc_sets_str(r->user_name, OS_NULL);
-        ioc_sets_str(r->password, OS_NULL);
+        ioc_moves_str(r->password, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_moves_str(r->privileges, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_moves_str(r->ip, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_moves_str(r->text, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_sets_int(r->count, 0, 0);
+        ioc_moves_str(r->user_name, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+
+        /* ioc_sets_str(r->password, OS_NULL);
         ioc_sets_str(r->privileges, OS_NULL);
         ioc_sets_str(r->ip, OS_NULL);
         ioc_sets0_int(r->count, 0);
-        ioc_sets_str(r->text, OS_NULL);
+        ioc_sets_str(r->text, OS_NULL); */
+
         is_set[row] = OS_FALSE;
         changed = OS_TRUE;
     }
