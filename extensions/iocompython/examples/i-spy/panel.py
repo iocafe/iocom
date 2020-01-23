@@ -36,11 +36,12 @@ class Panel(GridLayout):
         self.add_my_widget(s)
         self.run_list.append(s)
 
-    def add_notification(self, ioc_root, prefix, nr, mblk_name, device_path, flags):
+    def add_notification(self, ioc_root, groupdict, prefix, nr, mblk_name, device_path, flags):
         n = NotificationItem()
-        n.setup_notification(ioc_root, prefix, nr, mblk_name, device_path, flags)
+        n.setup_notification(ioc_root, groupdict, prefix, nr, mblk_name, device_path, flags)
         self.add_my_widget(n)
         self.run_list.append(n)
+        return n
 
     def add_configuration_item(self, ioc_root, setting_name, dict, value_d, value, description):
         s = ConfigurationItem()

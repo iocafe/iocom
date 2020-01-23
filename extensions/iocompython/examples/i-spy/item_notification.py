@@ -62,10 +62,8 @@ class NotificationItem(GridLayout):
         self.ip_signal = None
         self.count_signal = None
 
-    def setup_notification(self, ioc_root, prefix, nr, mblk_name, device_path, flags):
-
-        # description = "jeppo"
-
+    def setup_notification(self, ioc_root, groupdict, prefix, nr, mblk_name, device_path, flags):
+        self.my_groupdict = groupdict
         t = Button(text = '', markup = True, halign="center", valign="center")
         t.size_hint = (0.35, 1)
         t.bind(size=t.setter('text_size')) 
@@ -73,6 +71,8 @@ class NotificationItem(GridLayout):
         self.add_widget(t)
         self.my_text = t
         self.my_flags = flags
+
+        self.register_event_type('on_remake_page')
 
         self.text_signal = Signal(ioc_root, prefix + str(nr) + "_text." + mblk_name + "." + device_path)
         self.name_signal = Signal(ioc_root, prefix + str(nr) + "_name." + mblk_name + "." + device_path)
@@ -96,7 +96,7 @@ class NotificationItem(GridLayout):
             b = IconButton()
             b.set_image(button_name, None, None) # groupdict, groupname)
             b.my_button_action = button_name
-            # b.bind(on_release = self.my_user_button_pressed)
+            b.bind(on_release = self.my_user_button_pressed)
             lb.add_widget(b)
             ncols += 1
 
@@ -108,6 +108,32 @@ class NotificationItem(GridLayout):
         if self.control_buttons != None:
             self.remove_widget(self.control_buttons)
             self.control_buttons = None
+
+    def my_user_button_pressed(self, instance):
+        action = instance.my_button_action
+        p = self.parent
+        if action == 'delete':
+            pass
+            # self.my_group.remove(self.my_item)
+            # p.remove_widget(self)
+
+        if action == 'blacklist':
+            pass
+            item = {}
+            item['ip'] = 'kaviaaria'
+            item['user'] = 'ja heti'
+
+            self.my_groupdict['blacklist'].append(item);
+            self.dispatch('on_remake_page', action)
+
+        if action == 'accept':
+            pass
+            # self.my_groupdict['accounts'].append(self.my_item);
+            # self.dispatch('on_remake_page', action)
+
+    def on_remake_page(self, *args):
+        pass
+        print("user button press dispatched")
 
     def update_signal(self):
         try:

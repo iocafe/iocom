@@ -26,7 +26,6 @@ class UserAccountItem(Item):
         self.my_item = item
         self.set_value()
 
-
         self.register_event_type('on_remake_page')
 
         lb = GridLayout()
@@ -74,7 +73,6 @@ class UserAccountItem(Item):
 
     def on_remake_page(self, *args):
         pass
-        print("user button press dispatched")
 
     def my_user_button_pressed(self, instance):
         action = instance.my_button_action
