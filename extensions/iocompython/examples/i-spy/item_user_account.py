@@ -10,7 +10,6 @@ from kivy.metrics import dp
 
 from item import Item, make_my_text_input
 from iconbutton import IconButton
-# from iocompython import Signal
 
 class UserAccountItem(Item):
     def __init__(self, **kwargs):
@@ -27,13 +26,14 @@ class UserAccountItem(Item):
         self.my_item = item
         self.set_value()
 
+
+        self.register_event_type('on_remake_page')
+
         lb = GridLayout()
         lb.size_hint = (0.65, 1) 
-
-        # Make buttons
-        self.register_event_type('on_remake_page')
         lb.add_widget(Widget())
 
+        # Make buttons
         ncols = 1
         flaglist = flags.split(',')
         for button_name in flaglist:

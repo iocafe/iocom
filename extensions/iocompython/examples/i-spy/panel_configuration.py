@@ -211,10 +211,10 @@ class ConfigurationPanel(Panel):
         g.add_widget(b)
         self.add_my_widget(g)
 
-        grouplist = {"requests":["new devices", "accept,delete,blacklist"], "alarms":["alarms", "delete"]}
+        grouplist = {"requests":["new devices", "accept,delete,blacklist", "new"], "alarms":["alarms", "delete", "alarm"]}
         for g in grouplist:
             k = grouplist[g]
-            self.make_notification_group(g, k[0], k[1])
+            self.make_notification_group(k[0], k[2], k[1])
 
         grouplist = {"accounts": ["user accounts", "edit,delete,blacklist"], "whitelist":["whitelist", "edit,delete,blacklist"], "blacklist":["blacklist","edit,delete"]}
         for g in grouplist:
@@ -227,9 +227,10 @@ class ConfigurationPanel(Panel):
 
         ##################xxx
 
-    def make_notification_group(self, groupname, label, flags):
+    def make_notification_group(self, label, prefix, flags):
         self.add_heading(label, None, 2)
-        self.add_notification(self.ioc_root, "new1_text", "exp", self.device_path, flags)
+        for i in range(5):
+            self.add_notification(self.ioc_root, prefix, i+1, "exp", self.device_path, flags)
         
     def process_accounts_group(self, groupdict, groupname, label, group_d, group, flags):
         if group_d == None:

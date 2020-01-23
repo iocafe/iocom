@@ -1,14 +1,17 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
+from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle, Line
+from iconbutton import IconButton
 from iocompython import Signal
 
 class NotificationItem(GridLayout):
     def __init__(self, **kwargs):
         self.my_state_bits = 0
+        self.control_buttons = None
         super(NotificationItem, self).__init__(**kwargs)
-        self.cols = 2
+        self.cols = 3
         self.padding = [8, 6]
 
         self.size_hint_y = None
@@ -39,34 +42,29 @@ class NotificationItem(GridLayout):
     def my_redraw_state_bits(self, *args):
         self.canvas.before.clear()
         with self.canvas.before:
-            Color(0.8, 0.8, 0.8, 0.25)
-            mysz = self.size.copy()
-            mysz[1] = 1
-            Rectangle(pos=self.pos, size=mysz)            
-
-            ''' if self.my_state_bits == -1: 
-                return;
-
-            if self.my_state_bits & 2 == 0: 
-                Color(0.5, 0.5, 0.5, 1)
-            elif self.my_state_bits & 12 == 12:
-                Color(1.0, 0, 0, 1)
-            elif self.my_state_bits & 8 == 8:
-                Color(1.0, 1.0, 0, 1)
-            elif self.my_state_bits & 4 == 4:
-                Color(1.0, 0.65, 0, 1)
-            else:
-                Color(0, 1, 0, 1)
-            Line(circle=(self.pos[0] + 0.9 * self.size[0], self.pos[1] + 12, 6))
-            '''
+            if self.control_buttons != None:
+                Color(0.8, 0.8, 0.8, 0.25)
+                mysz = self.size.copy()
+                mysz[1] = 1
+                Rectangle(pos=self.pos, size=mysz)            
 
     def delete(self):
-        self.signal.delete()
-        self.signal = None
+        self.text_signal.delete()
+        self.name_signal.delete()
+        self.password_signal.delete()
+        self.privileges_signal.delete()
+        self.ip_signal.delete()
+        self.count_signal.delete()
+        self.text_signal = None
+        self.name_signal = None
+        self.password_signal = None
+        self.privileges_signal = None
+        self.ip_signal = None
+        self.count_signal = None
 
-    def setup_notification(self, ioc_root, signal_name, mblk_name, device_path, flags):
+    def setup_notification(self, ioc_root, prefix, nr, mblk_name, device_path, flags):
 
-        description = "jeppo"
+        # description = "jeppo"
 
         t = Button(text = '', markup = True, halign="center", valign="center")
         t.size_hint = (0.35, 1)
@@ -74,25 +72,95 @@ class NotificationItem(GridLayout):
         t.background_color = [0 , 0, 0, 0]
         self.add_widget(t)
         self.my_text = t
+        self.my_flags = flags
 
-        self.my_label.text = '[size=16]' + "PEPEPEP"  + '[/size]'
-        self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
+        self.text_signal = Signal(ioc_root, prefix + str(nr) + "_text." + mblk_name + "." + device_path)
+        self.name_signal = Signal(ioc_root, prefix + str(nr) + "_name." + mblk_name + "." + device_path)
+        self.password_signal = Signal(ioc_root, prefix + str(nr) + "_password." + mblk_name + "." + device_path)
+        self.privileges_signal = Signal(ioc_root, prefix + str(nr) + "_privileges." + mblk_name + "." + device_path)
+        self.ip_signal = Signal(ioc_root, prefix + str(nr) + "_ip." + mblk_name + "." + device_path)
+        self.count_signal = Signal(ioc_root, prefix + str(nr) + "_count." + mblk_name + "." + device_path)
 
-        self.signal = Signal(ioc_root, signal_name + "." + mblk_name + "." + device_path)
+    def show_control_buttons(self):
+        if self.control_buttons != None:
+            return
+
+        lb = GridLayout()
+        lb.size_hint = (0.65, 1) 
+        lb.add_widget(Widget())
+
+        # Make buttons
+        ncols = 1
+        flaglist = self.my_flags.split(',')
+        for button_name in flaglist:
+            b = IconButton()
+            b.set_image(button_name, None, None) # groupdict, groupname)
+            b.my_button_action = button_name
+            # b.bind(on_release = self.my_user_button_pressed)
+            lb.add_widget(b)
+            ncols += 1
+
+        lb.cols = ncols
+        self.add_widget(lb)
+        self.control_buttons = lb
+
+    def hide_control_buttons(self):
+        if self.control_buttons != None:
+            self.remove_widget(self.control_buttons)
+            self.control_buttons = None
 
     def update_signal(self):
         try:
-            v = self.signal.get(check_tbuf=True)
+            name = self.name_signal.get(check_tbuf=True)
         except:
-            print("mysettings.py: update_signal failed")
-            self.my_text.text = '?'
-            self.my_state_bits = 6
+            name = [0, "?"]
+
+        if (name[0] & 2) == 0:            
+            self.my_label.text = ''
+            self.my_text.text = ''
+            self.my_description.text = ''
+            self.hide_control_buttons()
+            self.height = 0
             return
 
-        new_state_bits = int(v[0])
-        if new_state_bits != self.my_state_bits:
-            self.my_state_bits = new_state_bits
-            self.my_redraw_state_bits(None)
+        try:
+            text = self.text_signal.get0()
+        except:
+            text = '?'
 
-        if self.my_text != None:
-            self.my_text.text = str(v[1])
+        try:
+            password = self.password_signal.get0()
+        except:
+            password = '?'
+
+        try:
+            privileges = self.privileges_signal.get0()
+        except:
+            privileges = '?'
+
+        try:
+            ip = self.ip_signal.get0()
+        except:
+            ip = '?'
+
+        try:
+            count = self.count_signal.get0()
+        except:
+            count = '?'
+
+        self.my_label.text = str(name[1])
+        self.my_text.text = str(text)
+
+        description = str(privileges) + ' ' + str(ip) + ' ' + str(password) + ' ' + str(count)
+
+        self.my_description.text = description
+        self.show_control_buttons()
+        self.height = 60 
+
+        # self.my_label.text = '[size=16]' + "PEPEPEP"  + '[/size]'
+        # self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
+#        new_state_bits = int(v[0])
+#        if new_state_bits != self.my_state_bits:
+#            self.my_state_bits = new_state_bits
+#            self.my_redraw_state_bits(None)
+
