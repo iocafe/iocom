@@ -3,7 +3,7 @@ void account_signals_init_signal_struct(account_signals_t *s)
 {
   os_memclear(s, sizeof(account_signals_t));
   s->exp.hdr.mblk_name = "exp";
-  s->exp.hdr.n_signals = 30;
+  s->exp.hdr.n_signals = 18;
   s->exp.hdr.mblk_sz = ACCOUNT_SIGNALS_EXP_MBLK_SZ;
   s->exp.hdr.first_signal = &s->exp.new1_text;
 
@@ -96,66 +96,6 @@ void account_signals_init_signal_struct(account_signals_t *s)
   s->exp.new3_count.addr = 535;
   s->exp.new3_count.n = 1;
   s->exp.new3_count.flags = OS_INT;
-
- /* alarm1_text */
-  s->exp.alarm1_text.addr = 540;
-  s->exp.alarm1_text.n = 16;
-  s->exp.alarm1_text.flags = OS_STR;
-
- /* alarm1_name */
-  s->exp.alarm1_name.addr = 557;
-  s->exp.alarm1_name.n = 28;
-  s->exp.alarm1_name.flags = OS_STR;
-
- /* alarm1_password */
-  s->exp.alarm1_password.addr = 586;
-  s->exp.alarm1_password.n = 46;
-  s->exp.alarm1_password.flags = OS_STR;
-
- /* alarm1_privileges */
-  s->exp.alarm1_privileges.addr = 633;
-  s->exp.alarm1_privileges.n = 16;
-  s->exp.alarm1_privileges.flags = OS_STR;
-
- /* alarm1_ip */
-  s->exp.alarm1_ip.addr = 650;
-  s->exp.alarm1_ip.n = 64;
-  s->exp.alarm1_ip.flags = OS_STR;
-
- /* alarm1_count */
-  s->exp.alarm1_count.addr = 715;
-  s->exp.alarm1_count.n = 1;
-  s->exp.alarm1_count.flags = OS_INT;
-
- /* alarm2_text */
-  s->exp.alarm2_text.addr = 720;
-  s->exp.alarm2_text.n = 16;
-  s->exp.alarm2_text.flags = OS_STR;
-
- /* alarm2_name */
-  s->exp.alarm2_name.addr = 737;
-  s->exp.alarm2_name.n = 28;
-  s->exp.alarm2_name.flags = OS_STR;
-
- /* alarm2_password */
-  s->exp.alarm2_password.addr = 766;
-  s->exp.alarm2_password.n = 46;
-  s->exp.alarm2_password.flags = OS_STR;
-
- /* alarm2_privileges */
-  s->exp.alarm2_privileges.addr = 813;
-  s->exp.alarm2_privileges.n = 16;
-  s->exp.alarm2_privileges.flags = OS_STR;
-
- /* alarm2_ip */
-  s->exp.alarm2_ip.addr = 830;
-  s->exp.alarm2_ip.n = 64;
-  s->exp.alarm2_ip.flags = OS_STR;
-
- /* alarm2_count */
-  s->exp.alarm2_count.addr = 895;
-  s->exp.alarm2_count.n = 1;
-  s->exp.alarm2_count.flags = OS_INT;
   s->mblk_list[0] = &s->exp.hdr;
 
   s->conf_imp.hdr.mblk_name = "conf_imp";

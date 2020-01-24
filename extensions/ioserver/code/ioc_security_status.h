@@ -36,10 +36,9 @@ typedef struct iocSecurityNotification
 }
 iocSecurityNotification;
 
-/* For setting up signal pointers for "new device" and "alarm" tables in memory block.
+/* Signal pointers for "new devices" table row in memory block.
  */
 #define IOC_MAX_NEW_DEVICE_NOTIFICATIONS 4
-#define IOC_MAX_ALARM_NOTIFICATIONS 4
 typedef struct
 {
     iocSignal *user_name;
@@ -65,13 +64,6 @@ typedef struct iocSecurityStatus
     os_timer new_device_timer[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
     os_boolean new_device_is_set[IOC_MAX_NEW_DEVICE_NOTIFICATIONS];
     os_short new_device_nrows;
-
-    /* iocom signals for "alarms" table.
-     */
-    iocNotificationSignalRow alarm[IOC_MAX_ALARM_NOTIFICATIONS];
-    os_timer alarm_timer[IOC_MAX_ALARM_NOTIFICATIONS];
-    os_boolean alarm_is_set[IOC_MAX_ALARM_NOTIFICATIONS];
-    os_short alarm_nrows;
 }
 iocSecurityStatus;
 
@@ -81,7 +73,7 @@ void ioc_security_notify(
     iocNoteCode code,
     iocSecurityNotification *note);
 
-/* Run security (make "new device" and "alarm" notifications time out)
+/* Run security (make "new device" notifications time out)
  */
 void ioc_run_security(
     struct iocBServer *m);

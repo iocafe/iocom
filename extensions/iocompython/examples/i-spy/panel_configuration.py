@@ -211,7 +211,7 @@ class ConfigurationPanel(Panel):
         g.add_widget(b)
         self.add_my_widget(g)
 
-        grouplist = {"requests":["new devices", "accept", "new"], "alarms":["alarms", "delete", "alarm"]}
+        grouplist = {"requests":["new devices", "accept", "new"]}
         for g in grouplist:
             k = grouplist[g]
             self.make_notification_group(accounts_d, k[0], k[2], k[1])
@@ -238,7 +238,7 @@ class ConfigurationPanel(Panel):
             return
             
         title = self.add_heading(label, None, 2)
-        if label != 'new devices' and label != 'alarms':
+        if label != 'new devices':
             b = IconButton()
             b.set_image("new", groupdict, groupname)
             b.bind(on_release = self.new_account_item)

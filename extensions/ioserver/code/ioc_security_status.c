@@ -45,11 +45,6 @@ static os_short ioc_setup_new_device_notification_table(
     os_int max_rows,
     iocBServerNetwork *n);
 
-static os_short ioc_setup_alarm_notification_table(
-    iocNotificationSignalRow *table,
-    os_int max_rows,
-    iocBServerNetwork *n);
-
 
 /**
 ****************************************************************************************************
@@ -85,7 +80,7 @@ void ioc_security_notify(
 /**
 ****************************************************************************************************
 
-  @brief Run security (make "new device" and "alarm" notifications time out)
+  @brief Run security (make "new device" notifications time out)
   @anchor ioc_run_security
 
   The ioc_run_security() function...
@@ -108,10 +103,7 @@ void ioc_run_security(
         ss = &m->networks[i].sec_status;
 
         ioc_notifications_time_out(ss->new_device, ss->new_device_timer,
-            ss->new_device_is_set, ss->new_device_nrows, 2000);
-
-        ioc_notifications_time_out(ss->alarm, ss->alarm_timer,
-            ss->alarm_is_set, ss->alarm_nrows, 5000);
+            ss->new_device_is_set, ss->new_device_nrows, 4000);
     }
 }
 
@@ -131,8 +123,8 @@ void ioc_run_security(
            password used to log in, etc.
   @param   network_name Set network name to process for a specficic network, or OS_NULL to
            select network by network name in note.
-  @return  If alarm was processed, the function returns OSAL_SUCCESS. Other values indicate
-           that alarm was not processed.
+  @return  If notification was processed, the function returns OSAL_SUCCESS. Other values indicate
+           that it was not processed.
 
 ****************************************************************************************************
 */
@@ -154,16 +146,13 @@ static osalStatus ioc_security_notify2(
         if (os_strcmp(network_name ? network_name : note->network_name, n->network_name)) continue;
         s = OSAL_SUCCESS;
 
-        /* Initialize signal pointers for "new device" and "alarm" tables.
+        /* Initialize signal pointers for "new devices" table.
          */
         ss = &n->sec_status;
         if (!ss->initialized)
         {
             ss->new_device_nrows = ioc_setup_new_device_notification_table(ss->new_device,
                 IOC_MAX_NEW_DEVICE_NOTIFICATIONS, n);
-
-            ss->alarm_nrows = ioc_setup_alarm_notification_table(ss->alarm,
-                IOC_MAX_ALARM_NOTIFICATIONS, n);
 
             ss->initialized = OS_TRUE;
         }
@@ -185,11 +174,6 @@ static osalStatus ioc_security_notify2(
                 break;
 
             default:
-                if (text == OS_NULL) {
-                    text =  "UNKNOWN ALARM";
-                }
-                ioc_set_notification(ss->alarm, ss->alarm_timer, ss->alarm_is_set,
-                    ss->alarm_nrows, code, note, text);
                 break;
         }
     }
@@ -376,52 +360,6 @@ static os_short ioc_setup_new_device_notification_table(
     table[nrows].ip = &n->asignals.exp.new2_ip;
     table[nrows].count = &n->asignals.exp.new2_count;
     table[nrows].text = &n->asignals.exp.new2_text;
-    if (nrows < max_rows) nrows++;
-#endif
-
-    return nrows;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Set up alarm notification table (sets signal pointers).
-  @anchor ioc_setup_alarm_notification_table
-
-  The ioc_setup_alarm_notification_table() function...
-
-  @param   table Pointer to notification table, array or row signal structures to set up.
-  @param   max_rows Number of row structures allocated in table.
-  @param   n Basic server network structure pointer. Holds signal structure.
-  @return  None.
-
-****************************************************************************************************
-*/
-static os_short ioc_setup_alarm_notification_table(
-    iocNotificationSignalRow *table,
-    os_int max_rows,
-    iocBServerNetwork *n)
-{
-    os_short nrows = 0;
-
-#ifdef ACCOUNT_SIGNALS_EXP_ALARM1_NAME_ARRAY_SZ
-    table[nrows].user_name = &n->asignals.exp.alarm1_name;
-    table[nrows].password = &n->asignals.exp.alarm1_password;
-    table[nrows].privileges = &n->asignals.exp.alarm1_privileges;
-    table[nrows].ip = &n->asignals.exp.alarm1_ip;
-    table[nrows].count = &n->asignals.exp.alarm1_count;
-    table[nrows].text = &n->asignals.exp.alarm1_text;
-    if (nrows < max_rows) nrows++;
-#endif
-
-#ifdef ACCOUNT_SIGNALS_EXP_ALARM2_NAME_ARRAY_SZ
-    table[nrows].user_name = &n->asignals.exp.alarm2_name;
-    table[nrows].password = &n->asignals.exp.alarm2_password;
-    table[nrows].privileges = &n->asignals.exp.alarm2_privileges;
-    table[nrows].ip = &n->asignals.exp.alarm2_ip;
-    table[nrows].count = &n->asignals.exp.alarm2_count;
-    table[nrows].text = &n->asignals.exp.alarm2_text;
     if (nrows < max_rows) nrows++;
 #endif
 

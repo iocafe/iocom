@@ -27,18 +27,6 @@ typedef struct account_signals_t
     iocSignal new3_privileges;
     iocSignal new3_ip;
     iocSignal new3_count;
-    iocSignal alarm1_text;
-    iocSignal alarm1_name;
-    iocSignal alarm1_password;
-    iocSignal alarm1_privileges;
-    iocSignal alarm1_ip;
-    iocSignal alarm1_count;
-    iocSignal alarm2_text;
-    iocSignal alarm2_name;
-    iocSignal alarm2_password;
-    iocSignal alarm2_privileges;
-    iocSignal alarm2_ip;
-    iocSignal alarm2_count;
   }
   exp;
 
@@ -68,7 +56,7 @@ typedef struct account_signals_t
 }
 account_signals_t;
 
-#define ACCOUNT_SIGNALS_EXP_MBLK_SZ 900
+#define ACCOUNT_SIGNALS_EXP_MBLK_SZ 540
 #define ACCOUNT_SIGNALS_CONF_IMP_MBLK_SZ 276
 #define ACCOUNT_SIGNALS_CONF_EXP_MBLK_SZ 272
 
@@ -88,16 +76,6 @@ void account_signals_init_signal_struct(account_signals_t *s);
 #define ACCOUNT_SIGNALS_EXP_NEW3_PASSWORD_ARRAY_SZ 46
 #define ACCOUNT_SIGNALS_EXP_NEW3_PRIVILEGES_ARRAY_SZ 16
 #define ACCOUNT_SIGNALS_EXP_NEW3_IP_ARRAY_SZ 64
-#define ACCOUNT_SIGNALS_EXP_ALARM1_TEXT_ARRAY_SZ 16
-#define ACCOUNT_SIGNALS_EXP_ALARM1_NAME_ARRAY_SZ 28
-#define ACCOUNT_SIGNALS_EXP_ALARM1_PASSWORD_ARRAY_SZ 46
-#define ACCOUNT_SIGNALS_EXP_ALARM1_PRIVILEGES_ARRAY_SZ 16
-#define ACCOUNT_SIGNALS_EXP_ALARM1_IP_ARRAY_SZ 64
-#define ACCOUNT_SIGNALS_EXP_ALARM2_TEXT_ARRAY_SZ 16
-#define ACCOUNT_SIGNALS_EXP_ALARM2_NAME_ARRAY_SZ 28
-#define ACCOUNT_SIGNALS_EXP_ALARM2_PASSWORD_ARRAY_SZ 46
-#define ACCOUNT_SIGNALS_EXP_ALARM2_PRIVILEGES_ARRAY_SZ 16
-#define ACCOUNT_SIGNALS_EXP_ALARM2_IP_ARRAY_SZ 64
 #define ACCOUNT_SIGNALS_CONF_IMP_TOD_BUF_ARRAY_SZ 257
 #define ACCOUNT_SIGNALS_CONF_EXP_FRD_BUF_ARRAY_SZ 257
 
