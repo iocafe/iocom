@@ -113,6 +113,10 @@ typedef struct iocBServerNetwork
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
 
+    /* Persistent block number in which account configuration is saved.
+     */
+    os_short select;
+
     /* Memory block handles for accounts.
      */
     iocHandle accounts_exp, accounts_conf_exp, accounts_conf_imp, accounts_data, accounts_info;

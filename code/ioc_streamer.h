@@ -86,6 +86,21 @@ iocStreamerState;
 /**
 ****************************************************************************************************
 
+  Block transfer status.
+
+****************************************************************************************************
+ */
+typedef enum iocBlockTransferStatus
+{
+    IOC_NO_BLOCK_TRANSFERRED = 0,
+    IOC_BLOCK_WRITTEN
+}
+iocBlockTransferStatus;
+
+
+/**
+****************************************************************************************************
+
   @name Parameter structure for opening a streamer (options).
 
   is_device set to OS_TRUE if this is IO device end of communication. This effects logic of
@@ -187,6 +202,14 @@ typedef struct
      */
     osalStream tod;
     osPersistentHandle *tod_persistent;
+
+    /* Block transfer status. Used to find out when a block transfer, like programming
+       or configuration has been completed. transferred_block_nr is persistent block
+       number of block written to persistent storage. Valid only if transfer_status
+       is IOC_BLOCK_WRITTEN.
+     */
+   iocBlockTransferStatus transfer_status;
+   os_short transferred_block_nr;
 
     /* Timer to interrupt wait for space in memory block.
      */

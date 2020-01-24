@@ -1403,6 +1403,10 @@ osalStatus ioc_run_control_stream(
      */
     osal_debug_assert(ctrl->initialized == 'I');
 
+    /* No status yet
+     */
+    ctrl->transfer_status = IOC_NO_BLOCK_TRANSFERRED;
+
     if (ctrl->frd == OS_NULL)
     {
         cmd = (iocStreamerState)ioc_gets_int(params->frd.cmd, &state_bits, IOC_SIGNAL_DEFAULT);
@@ -1454,6 +1458,7 @@ osalStatus ioc_run_control_stream(
             if (ctrl->tod)
             {
                 select = (osPersistentBlockNr)ioc_gets0_int(params->tod.select);
+                ctrl->transferred_block_nr = select;
                 ctrl->tod_persistent = os_persistent_open(select, OS_NULL, OSAL_STREAM_WRITE);
 #if OSAL_DEBUG
                 if (ctrl->tod_persistent == OS_NULL)
@@ -1621,6 +1626,7 @@ void ioc_ctrl_stream_to_device(
 
     if (ctrl->tod_persistent)
     {
+        ctrl->transfer_status = IOC_BLOCK_WRITTEN;
         os_persistent_close(ctrl->tod_persistent, stream_flags);
         ctrl->tod_persistent = OS_NULL;
     }

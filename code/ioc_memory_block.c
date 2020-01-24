@@ -1069,6 +1069,7 @@ osalStatus ioc_resize_mblk(
     }
     mblk->buf = newbuf;
     mblk->nbytes = nbytes;
+    mblk->buf_allocated = OS_TRUE;
 
     return OSAL_STATUS_COMPLETED;
 }

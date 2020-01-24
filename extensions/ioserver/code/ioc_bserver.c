@@ -36,7 +36,8 @@ static void ioc_release_bserver_network(
     iocBServerNetwork *n);
 
 static osalStatus ioc_run_bserver_network(
-    iocBServerNetwork *n);
+    iocBServerNetwork *n,
+    iocBServer *m);
 
 
 /**
@@ -151,7 +152,7 @@ osalStatus ioc_run_bserver(
 
     for (i = 0; i<m->nro_networks; i++)
     {
-        if (ioc_run_bserver_network(m->networks + i) != OSAL_STATUS_NOTHING_TO_DO)
+        if (ioc_run_bserver_network(m->networks + i, m) != OSAL_STATUS_NOTHING_TO_DO)
         {
             s = OSAL_SUCCESS;
         }
@@ -346,6 +347,7 @@ static void ioc_setup_bserver_network(
     os_memsz account_defaults_sz;
 
     os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
+    n->select = select;
 
     /* Generate memory blocks.
        Note: Device number for accounts is calculated from persistent block number.
@@ -450,8 +452,27 @@ static void ioc_release_bserver_network(
 ****************************************************************************************************
 */
 static osalStatus ioc_run_bserver_network(
-    iocBServerNetwork *n)
+    iocBServerNetwork *n,
+    iocBServer *m)
 {
-    return ioc_run_control_stream(&n->accounts_stream, &n->accounts_stream_params);
+    osalStatus s;
+
+    s = ioc_run_control_stream(&n->accounts_stream, &n->accounts_stream_params);
+
+    /* If running control stream returns information that the user account intomation has
+       been changed, reload it.
+     */
+    if (s == OSAL_SUCCESS || s == OSAL_STATUS_NOTHING_TO_DO)
+    {
+        if (n->accounts_stream.transfer_status == IOC_BLOCK_WRITTEN &&
+            n->accounts_stream.transferred_block_nr == n->select)
+        {
+            ioc_load_persistent_into_mblk(&n->accounts_data, n->select, m->account_defaults,
+                m->account_defaults_sz);
+        }
+    }
+
+    return s;
+
 }
 
