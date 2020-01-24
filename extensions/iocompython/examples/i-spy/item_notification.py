@@ -33,6 +33,11 @@ class NotificationItem(GridLayout):
         lb.add_widget(d)
         self.add_widget(lb)
 
+        self.my_user_name = ''
+        self.my_password = ''
+        self.my_privileges = ''
+        self.my_ip = ''
+
     def on_size(self, *args):
         self.my_redraw_state_bits(args)
 
@@ -111,33 +116,21 @@ class NotificationItem(GridLayout):
 
     def my_user_button_pressed(self, instance):
         action = instance.my_button_action
-        p = self.parent
-        if action == 'delete':
-            pass
-            # self.my_group.remove(self.my_item)
-            # p.remove_widget(self)
-
-        if action == 'blacklist':
-            pass
-            item = {}
-            item['ip'] = 'kaviaaria'
-            item['user'] = 'ja heti'
-
-            self.my_groupdict['blacklist'].append(item);
-            self.dispatch('on_remake_page', action)
 
         if action == 'accept':
-            pass
-            # self.my_groupdict['accounts'].append(self.my_item);
-            # self.dispatch('on_remake_page', action)
+            item = {}
+            item['user'] = self.my_user_name
+            item['password'] = self.my_password
+            item['privileges'] = self.my_privileges
+            self.my_groupdict['accounts'].append(item);
+            self.dispatch('on_remake_page', action)
 
     def on_remake_page(self, *args):
         pass
-        print("user button press dispatched")
 
     def update_signal(self):
         try:
-            name = self.name_signal.get(check_tbuf=True)
+            name = self.name_signal.get_ext(check_tbuf=True)
         except:
             name = [0, "?"]
 
@@ -150,33 +143,37 @@ class NotificationItem(GridLayout):
             return
 
         try:
-            text = str(self.text_signal.get0())
+            text = str(self.text_signal.get())
         except:
             text = '?'
 
         try:
-            password = str(self.password_signal.get0())
+            password = str(self.password_signal.get())
         except:
             password = '?'
 
         try:
-            privileges = str(self.privileges_signal.get0())
+            privileges = str(self.privileges_signal.get())
         except:
             privileges = '?'
 
         try:
-            ip = str(self.ip_signal.get0())
+            ip = str(self.ip_signal.get())
         except:
             ip = '?'
 
         try:
-            count = str(self.count_signal.get0())
+            count = str(self.count_signal.get())
         except:
             count = '?'
 
-        self.my_label.text = str(name[1])
-        self.my_text.text = text
 
+        self.my_user_name = str(name[1])
+        self.my_label.text = str(self.my_user_name)
+        self.my_text.text = text
+        self.my_password = password
+        self.my_privileges = privileges
+        self.my_ip = ip
 
         description = str(ip)
         if privileges != '':
@@ -192,6 +189,8 @@ class NotificationItem(GridLayout):
 
         self.show_control_buttons()
         self.height = 60 
+
+        
 
 #        new_state_bits = int(v[0])
 #        if new_state_bits != self.my_state_bits:

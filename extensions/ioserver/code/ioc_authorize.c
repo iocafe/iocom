@@ -327,10 +327,6 @@ static osalStatus ioc_authorize_process_block(
                 {
 
                 }
-                else if (!os_strcmp(array_tag, "blacklist"))
-                {
-
-                }
                 else if (!os_strcmp(array_tag, "accounts"))
                 {
                     state->valid_user = OS_TRUE;

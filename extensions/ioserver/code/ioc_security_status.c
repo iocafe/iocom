@@ -61,7 +61,7 @@ static os_short ioc_setup_alarm_notification_table(
 
   @param   m Pointer to basic server object.
   @param   code Reason for notification, like IOC_NOTE_NEW_IO_DEVICE,
-           IOC_NOTE_WRONG_IO_DEVICE_PASSWORD,  or IOC_NOTE_BLACKLISTED_IO_DEVICE.
+           IOC_NOTE_WRONG_IO_DEVICE_PASSWORD.
   @param   note Pointer to security note structure. Contains network name, device/user name,
            password used to log in, etc.
   @return  None.
@@ -126,7 +126,7 @@ void ioc_run_security(
 
   @param   m Pointer to basic server object.
   @param   code Reason for notification, like IOC_NOTE_NEW_IO_DEVICE,
-           IOC_NOTE_WRONG_IO_DEVICE_PASSWORD,  or IOC_NOTE_BLACKLISTED_IO_DEVICE.
+           IOC_NOTE_WRONG_IO_DEVICE_PASSWORD.
   @param   note Pointer to security note structure. Contains network name, device/user name,
            password used to log in, etc.
   @param   network_name Set network name to process for a specficic network, or OS_NULL to
@@ -183,10 +183,6 @@ static osalStatus ioc_security_notify2(
                 ioc_set_notification(ss->new_device, ss->new_device_timer, ss->new_device_is_set,
                     ss->new_device_nrows, code, note, text);
                 break;
-
-            case IOC_NOTE_BLACKLISTED_IO_DEVICE:
-                text = "BLACKLISTED";
-                /* continues... */
 
             default:
                 if (text == OS_NULL) {

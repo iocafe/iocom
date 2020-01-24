@@ -104,7 +104,7 @@ def update(dt):
     exp.send();
 
     imp.receive();
-    state_bits, nro_objects = imp_nro_objects.get()
+    state_bits, nro_objects = imp_nro_objects.get_ext()
 
     total_array_n = imp_object_data.get_attribute("n")
     data_vector_n = imp_object_data.get_attribute("ncolumns")

@@ -9,15 +9,10 @@
 		{
 			"user": "frank*.iocafenet",
 			"password": "pass",
-			"privileges": "admin"
+			"privileges": "server"
 		}
 	],
 	"whitelist": [
-	],
-	"blacklist": [
-		{
-			"ip": "139.74.17.0,139.74.18.255"
-		}
 	]
 }
 }

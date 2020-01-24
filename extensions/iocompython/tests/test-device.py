@@ -36,12 +36,12 @@ def main():
 
         # If this device receives "what is congifuration" command, return it. Here massive "Hulabaloo" 
         # for any persistent block number.
-        state_bits, cmd = frd_cmd.get()
+        state_bits, cmd = frd_cmd.get_ext()
         if (state_bits & 2) and cmd == 1:
             print(root.setconf(full_device_name, str.encode("Hulabaloo"), flags = 'device'))
 
         # If this device receives "configure youself" command, just print the received configuration.
-        state_bits, cmd = tod_cmd.get()
+        state_bits, cmd = tod_cmd.get_ext()
         if (state_bits & 2) and cmd == 1:
             print(root.getconf(full_device_name, flags = 'device'))
 

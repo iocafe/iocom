@@ -211,12 +211,12 @@ class ConfigurationPanel(Panel):
         g.add_widget(b)
         self.add_my_widget(g)
 
-        grouplist = {"requests":["new devices", "accept,delete,blacklist", "new"], "alarms":["alarms", "delete", "alarm"]}
+        grouplist = {"requests":["new devices", "accept", "new"], "alarms":["alarms", "delete", "alarm"]}
         for g in grouplist:
             k = grouplist[g]
             self.make_notification_group(accounts_d, k[0], k[2], k[1])
 
-        grouplist = {"accounts": ["user accounts", "edit,delete,blacklist"], "whitelist":["whitelist", "edit,delete,blacklist"], "blacklist":["blacklist","edit,delete"]}
+        grouplist = {"accounts": ["user accounts", "edit,delete"], "whitelist":["whitelist", "edit,delete"]}
         for g in grouplist:
             group_d = accounts_d.get(g, None)
             group = None
@@ -256,7 +256,7 @@ class ConfigurationPanel(Panel):
             u.bind(on_remake_page = self.remake_accounts_page)
 
     def new_account_item(self, source_object):
-        titlelist = {"accounts": "new user account", "whitelist":"whitelist user or IP addresses", "blacklist":"blacklist user or IP addresses"}
+        titlelist = {"accounts": "new user account", "whitelist":"whitelist user or IP addresses"}
         self.my_groupdict = source_object.my_groupdict
         groupname = source_object.my_groupname
         self.my_groupname = groupname
@@ -279,7 +279,7 @@ class ConfigurationPanel(Panel):
             grid.add_widget(self.privileges_input)
             nrows += 2
 
-        if groupname == "blacklist" or groupname == "whitelist":
+        if groupname == "whitelist":
             self.ip_input = make_my_text_input("")
             grid.add_widget(Label(text='ip'));
             grid.add_widget(self.ip_input)
@@ -324,7 +324,7 @@ class ConfigurationPanel(Panel):
             if self.privileges_input.text != "":
                 item['privileges'] = self.privileges_input.text;
 
-        if groupname == "blacklist" or groupname == "whitelist":
+        if groupname == "whitelist":
             item['ip'] = self.ip_input.text;
 
         groupdict[groupname].append(item)

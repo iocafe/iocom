@@ -81,13 +81,9 @@ class UserAccountItem(Item):
             return
 
         p = self.parent
-        if action == 'delete' or action == 'blacklist' or action == 'accept':
+        if action == 'delete' or action == 'accept':
             self.my_group.remove(self.my_item)
             p.remove_widget(self)
-
-        if action == 'blacklist':
-            self.my_groupdict['blacklist'].append(self.my_item);
-            self.dispatch('on_remake_page', action)
 
         if action == 'accept':
             self.my_groupdict['accounts'].append(self.my_item);
@@ -101,7 +97,7 @@ class UserAccountItem(Item):
             self.my_item[attr] = value
 
     def my_edit_user_popup(self):
-        titlelist = {"accounts": "edit user account", "whitelist":"edit whitelisted item", "blacklist":"edit blacklisted item"}
+        titlelist = {"accounts": "edit user account", "whitelist": "edit whitelisted item"}
         item = self.my_item
         groupname = self.my_groupname
 
@@ -123,7 +119,7 @@ class UserAccountItem(Item):
             grid.add_widget(self.privileges_input)
             nrows += 2
 
-        if groupname == "blacklist" or groupname == "whitelist":
+        if groupname == "whitelist":
             self.ip_input = make_my_text_input(item.get('ip', ''))
             grid.add_widget(Label(text='ip'));
             grid.add_widget(self.ip_input)
@@ -169,7 +165,7 @@ class UserAccountItem(Item):
             self.my_set_account_attr("password", "")
             self.my_set_account_attr("privileges", "")
 
-        if groupname == "blacklist" or groupname == "whitelist":
+        if groupname == "whitelist":
             self.my_set_account_attr("ip", self.ip_input.text)
         else:
             self.my_set_account_attr("ip", "")

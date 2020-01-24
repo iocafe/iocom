@@ -31,12 +31,10 @@ class IoSignalItem(Item):
 
     def update_signal(self):
         try:
-            v = self.signal.get(check_tbuf=self.my_up)
+            v = self.signal.get_ext(check_tbuf=self.my_up)
         except:
             print("mysettings.py: update_signal failed")
-            self.my_text.text = '?'
-            self.my_state_bits = 6
-            return
+            v = (0, 0)
 
         new_state_bits = int(v[0])
         if new_state_bits != self.my_state_bits:

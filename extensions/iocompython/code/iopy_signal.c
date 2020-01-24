@@ -27,6 +27,7 @@ typedef struct
     osalTypeId type_id;
     os_boolean is_array;
     os_boolean is_string;
+    os_char state_bits;
 
     os_int n_values;
     os_int max_values;
@@ -499,7 +500,7 @@ static void Signal_set_one_value(
 
     if (state->n_values)
     {
-        state->storage.vv.state_bits = OSAL_STATE_CONNECTED;
+        state->storage.vv.state_bits = state->state_bits;
         ioc_movex_signals(state->signal, &state->storage.vv, 1,
             IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
     }
@@ -522,14 +523,19 @@ static void Signal_set_string_value(
 {
     os_char *str_value = NULL;
 
+osal_debug_error("HERE 1");
+
     if (!PyArg_ParseTuple(args, "s", &str_value))
     {
+osal_debug_error("HERE 2");
         PyErr_SetString(iocomError, "String argument expected");
         return;
     }
+osal_debug_error("HERE 3");
 
-    ioc_sets_str(state->signal, str_value);
+    ioc_moves_str(state->signal, str_value, -1, state->state_bits, IOC_SIGNAL_WRITE|OS_STR);
 }
+
 
 /**
 ****************************************************************************************************
@@ -566,7 +572,7 @@ static void Signal_set_array(
     /* Write always all values in array, even if caller would provides fewer. Rest will be zeros.
      */
     ioc_moves_array(state->signal, offset, state->buf, state->max_values,
-        OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
+        state->state_bits, IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
 
     /* If we allocated extra buffer space, free it.
      */
@@ -617,6 +623,7 @@ static PyObject *Signal_set(
      */
     state.type_id = (state.signal->flags & OSAL_TYPEID_MASK);
     state.max_values = state.signal->n;
+    state.state_bits = OSAL_STATE_CONNECTED;
     if (state.type_id == OS_STR)
     {
         state.is_string = OS_TRUE;
@@ -632,6 +639,90 @@ static PyObject *Signal_set(
     }
 
     /* Otherwise this is single value signal.
+     */
+    else
+    {
+        Signal_set_one_value(args, &state);
+    }
+
+    ioc_unlock(iocroot);
+
+getout:
+    Py_RETURN_NONE;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Store signal value with state bits into memory block.
+  @anchor Signal_set_ext
+
+  The Signal.set_ext() sets signal value and state bits. For example
+  mysignal.set_ext(value=(1), state_bits=3).
+
+****************************************************************************************************
+*/
+static PyObject *Signal_set_ext(
+    Signal *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    iocRoot *iocroot;
+    SignalSetParseState state;
+    PyObject *value = NULL;
+    int state_bits = OSAL_STATE_CONNECTED;
+
+    static char *kwlist[] = {
+        "value",
+        "state_bits",
+        NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i",
+         kwlist, &value, &state_bits))
+    {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    /* Get IOC root pointer. Check not to crash on exceptional situations.
+     */
+    if (self->pyroot == OS_NULL) goto getout;
+    iocroot = self->pyroot->root;
+    if (iocroot == OS_NULL) goto getout;
+    ioc_lock(iocroot);
+
+    /* Find dynamic information for this signal.
+     */
+    os_memclear(&state, sizeof(state));
+    state.signal = &self->signal;
+    state.state_bits = (os_char)state_bits;
+    if (Signal_try_setup(self, iocroot))
+    {
+        ioc_unlock(iocroot);
+        goto getout;
+    }
+
+    /* If string?
+     */
+    state.type_id = (state.signal->flags & OSAL_TYPEID_MASK);
+    state.max_values = state.signal->n;
+    if (state.type_id == OS_STR)
+    {
+        state.is_string = OS_TRUE;
+        Signal_set_string_value(args, &state);
+    }
+
+    /* If array?
+     */
+    else if (state.max_values > 1)
+    {
+        state.is_array = OS_TRUE;
+        Signal_set_array(value, &state);
+    }
+
+    /* Otherwise single value
      */
     else
     {
@@ -925,11 +1016,7 @@ static PyObject *Signal_get_array(
 ****************************************************************************************************
 
   @brief Get signal value from memory block.
-  @anchor Signal_get
-
-  The Signal.get() function finds mathing dynamic information for this signal, and according
-  to the information reads signal value: string, array or one numerical value from the memory
-  block and returns it.
+  @anchor Signal_get_internal
 
   @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
            checking if target buffer is connected to this memory block.
@@ -1010,7 +1097,7 @@ getout:
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get(
+static PyObject *Signal_get_ext(
     Signal *self,
     PyObject *args,
     PyObject *kwds)
@@ -1048,7 +1135,7 @@ static PyObject *Signal_get(
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get0(
+static PyObject *Signal_get(
     Signal *self,
     PyObject *args,
     PyObject *kwds)
@@ -1168,8 +1255,9 @@ static PyMemberDef Signal_members[] = {
 static PyMethodDef Signal_methods[] = {
     {"delete", (PyCFunction)Signal_delete, METH_NOARGS, "Deletes IOCOM signal"},
     {"set", (PyCFunction)Signal_set, METH_VARARGS, "Store signal data"},
-    {"get", (PyCFunction)Signal_get, METH_VARARGS|METH_KEYWORDS, "Get signal data"},
-    {"get0", (PyCFunction)Signal_get0, METH_VARARGS|METH_KEYWORDS, "Get signal data without state bits"},
+    {"set_ext", (PyCFunction)Signal_set_ext, METH_VARARGS|METH_KEYWORDS, "Set data and state bits"},
+    {"get", (PyCFunction)Signal_get, METH_VARARGS|METH_KEYWORDS, "Get signal data without state bits"},
+    {"get_ext", (PyCFunction)Signal_get_ext, METH_VARARGS|METH_KEYWORDS, "Get signal data and state bits"},
     {"get_attribute", (PyCFunction)Signal_get_attribute, METH_VARARGS|METH_KEYWORDS, "Get signal attribute"},
     {NULL} /* Sentinel */
 };

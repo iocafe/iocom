@@ -39,11 +39,11 @@ class AsteroidPlayer(object):
     # data vector for the space ship.
     def run(self, dt):
         self.root.receive(self.device_path)
-        force_x = self.exp_force_x.get0()
-        force_y = self.exp_force_y.get0()
-        self.rotation = self.exp_rotation.get0()
-        engine_visible = self.exp_engine_visible.get0()
-        state_bits, self.shoot = self.exp_shoot.get()
+        force_x = self.exp_force_x.get()
+        force_y = self.exp_force_y.get()
+        self.rotation = self.exp_rotation.get()
+        engine_visible = self.exp_engine_visible.get()
+        state_bits, self.shoot = self.exp_shoot.get_ext()
         if (state_bits & 2) == 0:
             self.opacity = 30;
             return
