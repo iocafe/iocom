@@ -221,6 +221,9 @@ osalStatus ioc_process_received_authentication_frame(
     os_uchar auth_flags, *p;
     os_char nbuf[OSAL_NBUF_SZ];
     osalStatus s;
+#if OSAL_SECRET_SUPPORT
+    os_char tmp_password[IOC_PASSWORD_SZ];
+#endif
 
     p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
@@ -276,8 +279,23 @@ osalStatus ioc_process_received_authentication_frame(
     s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
     if (s) return s;
 
+    /* Get password and hash it
+     */
+#if OSAL_SECRET_SUPPORT
+    s = ioc_msg_getstr(tmp_password, IOC_PASSWORD_SZ, &p);
+    if (s) return s;
+    if (tmp_password[0])
+    {
+        osal_hash_password(user.password, tmp_password, IOC_PASSWORD_SZ);
+    }
+    else
+    {
+        os_strncpy(user.password, tmp_password, IOC_PASSWORD_SZ);
+    }
+#else
     s = ioc_msg_getstr(user.password, IOC_PASSWORD_SZ, &p);
     if (s) return s;
+#endif
 
     /* Check user autorization.
      */

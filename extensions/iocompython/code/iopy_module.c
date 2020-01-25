@@ -236,8 +236,13 @@ void iocom_python_release(void)
 ****************************************************************************************************
 */
 static PyMethodDef iocomPythonMethods[] = {
-    {"json2bin", (PyCFunction)iocom_python_json2bin, METH_VARARGS, "Convert JSON from text to packed binary format."},
-    {"bin2json", (PyCFunction)iocom_python_bin2json, METH_VARARGS, "Convert JSON from packed binary format to text."},
+    {"json2bin",   (PyCFunction)iocom_python_json2bin, METH_VARARGS, "Convert JSON from text to packed binary format."},
+    {"bin2json",   (PyCFunction)iocom_python_bin2json, METH_VARARGS, "Convert JSON from packed binary format to text."},
+    {"get_secret", (PyCFunction)iocom_python_get_secret, METH_NOARGS, "Get security secret"},
+    {"get_password", (PyCFunction)iocom_python_get_password, METH_NOARGS, "Get automatically generated password"},
+    {"hash_password", (PyCFunction)iocom_python_hash_password, METH_VARARGS, "Hash password (run SHA-256 hash on password)"},
+    {"forget_secret", (PyCFunction)iocom_python_forget_secret, METH_NOARGS, "Forget the secret (and password)"},
+
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

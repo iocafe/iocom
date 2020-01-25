@@ -215,7 +215,18 @@ void ioc_set_iodevice_id(
     os_strncpy(root->device_name, device_name, IOC_NAME_SZ);
     root->device_nr = device_nr;
 #if IOC_AUTHENTICATION_CODE
+  #if OSAL_SECRET_SUPPORT
+    if (password == OS_NULL || !os_strcmp(password, "auto"))
+    {
+        os_strncpy(root->password, password, IOC_PASSWORD_SZ);
+    }
+    else
+    {
+        osal_get_password(root->password, IOC_PASSWORD_SZ);
+    }
+  #else
     os_strncpy(root->password, password, IOC_PASSWORD_SZ);
+  #endif
 #endif
     os_strncpy(root->network_name, network_name, IOC_NETWORK_NAME_SZ);
 }

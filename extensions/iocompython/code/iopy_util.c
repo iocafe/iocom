@@ -94,3 +94,52 @@ PyObject *iocom_python_bin2json(
     osal_stream_close(uncompressed, OSAL_STREAM_DEFAULT);
     return rval;
 }
+
+
+/* Get security secret.
+ */
+PyObject *iocom_python_get_secret(
+    PyObject *self)
+{
+    os_char secret[OSAL_SECRET_STR_SZ];
+    osal_get_secret(secret, OSAL_SECRET_STR_SZ);
+    return Py_BuildValue("s#", (char *)secret, (int)OSAL_SECRET_STR_SZ);
+}
+
+/* Get automatically generated device password.
+ */
+PyObject *iocom_python_get_password(
+    PyObject *self)
+{
+    os_char password[OSAL_SECRET_STR_SZ];
+    osal_get_password(password, OSAL_SECRET_STR_SZ);
+    return Py_BuildValue("s#", (char *)password, (int)OSAL_SECRET_STR_SZ);
+}
+
+/* Hash password (run SHA-256 hash on password).
+ */
+PyObject *iocom_python_hash_password(
+    PyObject *self,
+    PyObject *args)
+{
+    const char *password = NULL;
+    os_char hashed[OSAL_SECRET_STR_SZ];
+    if (!PyArg_ParseTuple(args, "s", &password))
+    {
+        PyErr_SetString(iocomError, "Password expected as argument");
+        return NULL;
+    }
+
+    osal_hash_password(hashed, password, OSAL_SECRET_STR_SZ);
+    return Py_BuildValue("s#", (char *)hashed, (int)OSAL_SECRET_STR_SZ);
+}
+
+/* Forget the secret (and password).
+ */
+PyObject *iocom_python_forget_secret(
+    PyObject *self)
+{
+    osal_forget_secret();
+    Py_RETURN_NONE;
+}
+

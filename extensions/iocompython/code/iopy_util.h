@@ -25,3 +25,24 @@ PyObject *iocom_python_json2bin(
 PyObject *iocom_python_bin2json(
     PyObject *self,
     PyObject *args);
+
+/* Get security secret.
+ */
+PyObject *iocom_python_get_secret(
+    PyObject *self);
+
+/* Get automatically generated device password.
+ */
+PyObject *iocom_python_get_password(
+    PyObject *self);
+
+/* Hash password (run SHA-256 hash on password).
+ */
+PyObject *iocom_python_hash_password(
+    PyObject *self,
+    PyObject *args);
+
+/* Forget the secret (and password).
+ */
+PyObject *iocom_python_forget_secret(
+    PyObject *self);
