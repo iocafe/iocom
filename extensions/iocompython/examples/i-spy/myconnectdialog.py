@@ -73,7 +73,7 @@ json = '''
     {
         "type": "string",
         "title": "server key",
-        "desc": "Server's private key (seacret)",
+        "desc": "Server's private key (secret)",
         "section": "server",
         "key": "conf_serv_key"
     },

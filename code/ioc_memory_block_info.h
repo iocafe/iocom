@@ -39,7 +39,7 @@
     11 groups of three bytes each. 4 = each 3 byte group on is converted to 4 characters in
     string. 2 = one byte for '!' prefix and one byte for terminating '\0' character.
  */
-#define IOC_PASSWORD_SZ OSAL_SEACRET_STR_SZ
+#define IOC_PASSWORD_SZ OSAL_SECRET_STR_SZ
 
 /** Maximum network name string length.
  */
