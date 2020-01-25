@@ -3,12 +3,12 @@
 	"accounts": [
 		{
 			"user": "ispy*",
-			"password": "pass",
+			"password": "!WdjEE1b87DwXX81xJEtDpbQ_Y_ecFo6lPzSonKFoSz8",
 			"privileges": "admin"
 		},
 		{
 			"user": "frank*.iocafenet",
-			"password": "pass",
+			"password": "!WdjEE1b87DwXX81xJEtDpbQ_Y_ecFo6lPzSonKFoSz8",
 			"privileges": "server"
 		}
 	],

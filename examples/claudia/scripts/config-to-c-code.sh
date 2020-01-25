@@ -20,7 +20,7 @@ ${JSONTOOL} --t2b -title ${MYNETDEFAULTS}.json ${MYNETDEFAULTS}.binjson
 ${JSONTOOL} --b2t  ${MYNETDEFAULTS}.binjson ${MYNETDEFAULTS}-check.json
 ${BINTOC} -v ioapp_network_defaults ${MYNETDEFAULTS}.binjson -o ${MYINCLUDE}/network-defaults.c
 
-${JSONTOOL} --t2b -title ${MYACCOUNTSDEFAULTS}.json ${MYACCOUNTSDEFAULTS}.binjson
+${JSONTOOL} --t2b --hash-pw -title ${MYACCOUNTSDEFAULTS}.json ${MYACCOUNTSDEFAULTS}.binjson
 ${JSONTOOL} --b2t  ${MYACCOUNTSDEFAULTS}.binjson ${MYACCOUNTSDEFAULTS}-check.json
 ${BINTOC} -v ioapp_account_defaults ${MYACCOUNTSDEFAULTS}.binjson -o ${MYINCLUDE}/app-account-defaults.c
 

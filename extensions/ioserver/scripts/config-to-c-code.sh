@@ -14,7 +14,7 @@ ${JSONTOOL} --b2t  ${MYACCOUNTS}.binjson ${MYACCOUNTS}-check.json
 ${SIGNALSTOC} -a controller-static ${MYACCOUNTS}.json -o ${MYCONFIG}/include/account-signals.c
 ${BINTOC} -v ioserver_account_config ${MYACCOUNTS}.binjson -o ${MYINCLUDE}/accounts-mblk-binary.c
 
-${JSONTOOL} --t2b -title ${MYACCOUNTSDEFAULTS}.json ${MYACCOUNTSDEFAULTS}.binjson
+${JSONTOOL} --t2b --hash-pw -title ${MYACCOUNTSDEFAULTS}.json ${MYACCOUNTSDEFAULTS}.binjson
 ${JSONTOOL} --b2t  ${MYACCOUNTSDEFAULTS}.binjson ${MYACCOUNTSDEFAULTS}-check.json
 ${BINTOC} -v ioserver_account_defaults ${MYACCOUNTSDEFAULTS}.binjson -o ${MYINCLUDE}/account-defaults.c
 
