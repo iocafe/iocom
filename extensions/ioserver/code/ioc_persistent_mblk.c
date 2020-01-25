@@ -56,12 +56,12 @@ osalStatus ioc_load_persistent_into_mblk(
     /* If persistant storage is in micro-controller's flash, we can just get pointer to data block
        and data size.
      */
-    s = os_persistent_get_ptr(select, &block, &block_sz);
+    s = os_persistent_get_ptr(select, &block, &block_sz, OSAL_PERSISTENT_DEFAULT);
     if (s != OSAL_SUCCESS)
     {
         /* No success with direct pointer to flash, try loading from persisten storage.
          */
-        h = os_persistent_open(select, &block_sz, OSAL_STREAM_READ);
+        h = os_persistent_open(select, &block_sz, OSAL_PERSISTENT_READ);
 
         /* If no success with persistent storage.
          */
@@ -85,7 +85,7 @@ osalStatus ioc_load_persistent_into_mblk(
     if (h)
     {
         n_read = os_persistent_read(h, mblk->buf, block_sz);
-        os_persistent_close(h, OSAL_STREAM_DEFAULT);
+        os_persistent_close(h, OSAL_PERSISTENT_DEFAULT);
     }
 
     /* If we didn't read from persistent storage using handle, copy either from

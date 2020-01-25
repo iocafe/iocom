@@ -1428,7 +1428,7 @@ osalStatus ioc_run_control_stream(
                 }
                 else
                 {
-                    ctrl->fdr_persistent = os_persistent_open(select, OS_NULL, OSAL_STREAM_READ);
+                    ctrl->fdr_persistent = os_persistent_open(select, OS_NULL, OSAL_PERSISTENT_READ);
                     ctrl->fdr_persistent_ok = (ctrl->fdr_persistent != OS_NULL);
 #if OSAL_DEBUG
                     if (ctrl->fdr_persistent == OS_NULL)
@@ -1459,7 +1459,7 @@ osalStatus ioc_run_control_stream(
             {
                 select = (osPersistentBlockNr)ioc_gets0_int(params->tod.select);
                 ctrl->transferred_block_nr = select;
-                ctrl->tod_persistent = os_persistent_open(select, OS_NULL, OSAL_STREAM_WRITE);
+                ctrl->tod_persistent = os_persistent_open(select, OS_NULL, OSAL_PERSISTENT_WRITE);
 #if OSAL_DEBUG
                 if (ctrl->tod_persistent == OS_NULL)
                 {
@@ -1559,7 +1559,7 @@ void ioc_ctrl_stream_from_device(
             bytes -= n_read;
         }
 
-        os_persistent_close(ctrl->fdr_persistent, 0);
+        os_persistent_close(ctrl->fdr_persistent, OSAL_PERSISTENT_DEFAULT);
         ctrl->fdr_persistent = OS_NULL;
     }
 
