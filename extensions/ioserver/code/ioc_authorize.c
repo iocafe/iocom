@@ -32,13 +32,17 @@ typedef struct
      */
     const os_char *mblk_network_name;
 
-    /* Pointer to allowed network list beging set up.
+    /** The authentication info was received from IP.
+     */
+    const os_char *recieved_ip;
+
+    /** Pointer to allowed network list beging set up.
      */
     iocAllowedNetworkConf *allowed_networks;
 
     /** Pointers to data for current item in account info.
      */
-    const os_char *user_name, *password, *privileges, *ip;
+    const os_char *user_name, *password, *privileges, *ip_start, *ip_end;
 
     /** Latest information parsed from JSON
         tag or key, '-' for array elements
@@ -49,14 +53,9 @@ typedef struct
      */
     os_boolean valid_user;
 
-    /* Cause for denied access.
+    /** Cause for denied access.
      */
     iocNoteCode ncode;
-
-    /** Context pointer of the ioc_authorize() function. This is pointer to basic server.
-        state structure.
-     */
-//    void *context;
 }
 iocAccountsParserState;
 
@@ -70,6 +69,14 @@ static osalStatus ioc_authorize_process_block(
     iocAccountsParserState *state,
     os_char *array_tag,
     osalJsonIndex *jindex);
+
+static os_boolean ioc_check_whitelist(
+    iocAccountsParserState *state);
+
+static os_short ioc_compare_ip(
+    os_uchar *a,
+    os_uchar *b,
+    os_int sz);
 
 static void ioc_authorize_parse_accounts(
     iocAllowedNetworkConf *allowed_networks,
@@ -287,47 +294,36 @@ static osalStatus ioc_authorize_process_block(
     {
         if (item.code == OSAL_JSON_END_BLOCK)
         {
-            match = osal_pattern_match(state->checked_user_name, state->user_name, 0);
-
-            if (match && os_strcmp(state->password, "*"))
+            if (!os_strcmp(array_tag, "whitelist"))
             {
-                match = !os_strcmp(state->user->password, state->password);
-                if (!match)
+                if (!state->valid_user)
                 {
-                    /* User device has wrong password
-                     */
-                    osal_debug_error("authorization check: wrong password");
-                    state->ncode = IOC_NOTE_WRONG_IO_DEVICE_PASSWORD;
+                    if (ioc_check_whitelist(state))
+                    {
+                        state->valid_user = OS_TRUE;
+                        ioc_add_allowed_network(state->allowed_networks, state->mblk_network_name, 0);
+                    }
                 }
             }
-            /* if (!os_strcmp(state->user_name, "*"))
+            else if (!os_strcmp(array_tag, "accounts"))
             {
-                match = OS_TRUE;
-            }
-            else
-            {
-                match = !os_strcmp(state->checked_user_name, state->user_name);
-            }
-            if (match && os_strcmp(state->password, "*") && state->password)
-            {
-                match = !os_strcmp(state->user->password, state->password);
-            } */
+                /* Find maching user name in user accounts.
+                 */
+                match = osal_pattern_match(state->checked_user_name, state->user_name, 0);
 
-            /* Check IP range, etc spec: to be implemented
-               if ((match || state->user_name == OS_NULL) && state->ip)
-            {
-                match == ioc_is_ip_within_spec(state->user->ip, state->ip)
-            } */
-
-            /* White list
-             */
-            if (match)
-            {
-                if (!os_strcmp(array_tag, "whitelist"))
-                {
-
+                /* Check password, unless '*' in user accounts accepts any passowrd.
+                 */
+                if (match && os_strcmp(state->password, "*")) {
+                    match = !os_strcmp(state->user->password, state->password);
+                    if (!match) {
+                        /* User device has wrong password
+                         */
+                        osal_debug_error("authorization check: wrong password");
+                        state->ncode = IOC_NOTE_WRONG_IO_DEVICE_PASSWORD;
+                    }
                 }
-                else if (!os_strcmp(array_tag, "accounts"))
+
+                if (match)
                 {
                     state->valid_user = OS_TRUE;
                     flags = 0;
@@ -347,7 +343,7 @@ static osalStatus ioc_authorize_process_block(
         switch (item.code)
         {
             case OSAL_JSON_START_BLOCK:
-                state->user_name = state->password = state->privileges = state->ip = OS_NULL;
+                state->user_name = state->password = state->privileges = state->ip_start = state->ip_end = OS_NULL;
                 s = ioc_authorize_process_block(state, array_tag, jindex);
                 if (s) return s;
                 break;
@@ -373,7 +369,11 @@ static osalStatus ioc_authorize_process_block(
                 }
                 else if (!os_strcmp(state->tag, "ip"))
                 {
-                    state->ip = item.value.s;
+                    state->ip_start = item.value.s;
+                }
+                else if (!os_strcmp(state->tag, "last_ip"))
+                {
+                    state->ip_end = item.value.s;
                 }
                 break;
 
@@ -389,6 +389,72 @@ static osalStatus ioc_authorize_process_block(
     }
 
     return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Check if IP address from which authentication was received is white listed.
+
+  White list defines address ranges from which devices can connect without being authenticated.
+  This can be used for low security "in device" network, etc, to make configuration easier.
+
+  @param   a First IP address. IP address is byte array, most significant byte first format highest.
+  @param   b Second IP address
+  @return  -1 if a < b, 0 if a == b, 1 if a > b.
+
+****************************************************************************************************
+*/
+static os_boolean ioc_check_whitelist(
+    iocAccountsParserState *state)
+{
+    os_uchar first_ip[16];
+    os_uchar last_ip[16];
+    os_uchar received_ip[16];
+    osalStatus s;
+
+    s = osal_ip_from_str(first_ip, sizeof(first_ip), state->ip_start);
+    if (s != OSAL_SUCCESS && s != OSAL_STATUS_IS_IPV6) return OS_FALSE;
+    s = osal_ip_from_str(last_ip, sizeof(last_ip), state->ip_end);
+    if (s != OSAL_SUCCESS && s != OSAL_STATUS_IS_IPV6) return OS_FALSE;
+
+    s = osal_ip_from_str(received_ip, sizeof(received_ip), state->recieved_ip);
+    if (s != OSAL_SUCCESS && s != OSAL_STATUS_IS_IPV6) return OS_FALSE;
+
+    if (ioc_compare_ip(received_ip, first_ip, sizeof(received_ip)) < 0) return OS_FALSE;
+    if (ioc_compare_ip(received_ip, last_ip, sizeof(received_ip)) > 0) return OS_FALSE;
+    return OS_TRUE;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Compare two IP addressess.
+
+  The ioc_compare_ip() function compares two binary IP addressess. The IP addressess can be
+  either IPv4 or IPv6 addressess, but both have to be in same format.
+
+  @param   a First IP address. IP address is byte array, most significant byte first format highest.
+  @param   b Second IP address
+  @return  -1 if a < b, 0 if a == b, 1 if a > b.
+
+****************************************************************************************************
+*/
+static os_short ioc_compare_ip(
+    os_uchar *a,
+    os_uchar *b,
+    os_int sz)
+{
+    while (sz--)
+    {
+        if (*a < *b) return -1;
+        if (*a > *b) return 1;
+        a++;
+        b++;
+    }
+    return 0;
 }
 
 
@@ -441,11 +507,10 @@ static void ioc_authorize_parse_accounts(
 
     os_memclear(&state, sizeof(state));
     state.user = user;
-    state.ip = ip;
+    state.recieved_ip = ip;
     state.checked_user_name = user_name;
     state.mblk_network_name = network_name;
     state.allowed_networks = allowed_networks;
-    // state.context = context;
     state.ncode = IOC_NOTE_NEW_IO_DEVICE;
 
     s = osal_create_json_indexer(&jindex, config, config_sz, 0); /* HERE WE SHOULD ALLOW ZERO PADDED DATA */
