@@ -524,7 +524,7 @@ osalStatus ioc_run_connection(
      */
     if (con->stream == OS_NULL)
     {
-        /* Do nothing if ioc_connect() has not been called. Should we report a program error?
+        /* Do nothing if ioc_connect() has not been called.
          */
         if (con->parameters[0] == '\0')
             return OSAL_SUCCESS;
@@ -563,7 +563,7 @@ osalStatus ioc_run_connection(
 #endif
 
     os_get_timer(&tnow);
-    count = 32; /* How ever fasw we write, we cannot block here */
+    count = 32; /* How ever fast we write, we cannot block here */
     while (count--)
     {
         /* Receive as much data as we can
@@ -712,18 +712,9 @@ static osalStatus ioc_try_to_connect(
         if (!os_elapsed(&con->socket_open_try_timer, 500)) return OSAL_STATUS_PENDING;
     }
 
-    /* Select serial or socket interface by flags and operating system abstraction layer support.
+    /* Save stream interface pointer.
      */
     iface = con->iface;
-/* #if OSAL_SERIAL_SUPPORT
-    iface = OSAL_SERIAL_IFACE;
-#if OSAL_SOCKET_SUPPORT
-    iface = (con->flags & IOC_SOCKET) ? OSAL_SOCKET_IFACE : OSAL_SERIAL_IFACE;
-#endif
-#else
-    iface = OSAL_SOCKET_IFACE;
-#endif
-*/
 
     /* Try to open listening socket port.
      */
@@ -780,7 +771,6 @@ void ioc_reset_connection_state(
     con->authentication_sent = OS_FALSE;
     con->authentication_received = OS_FALSE;
 osal_debug_error("HERE AUTH CLEARED");
-
 
     /* Clear flow control variables.
      */

@@ -464,7 +464,8 @@ static osalStatus ioc_try_accept_new_sockets(
 
     /* Try to accept an incoming socket connection.
      */
-    newsocket = osal_stream_accept(epoint->socket, remote_ip_addr, sizeof(remote_ip_addr), &status, OSAL_STREAM_TCP_NODELAY);
+    newsocket = osal_stream_accept(epoint->socket, remote_ip_addr, sizeof(remote_ip_addr),
+        &status, OSAL_STREAM_TCP_NODELAY);
     switch (status)
     {
         case OSAL_SUCCESS:

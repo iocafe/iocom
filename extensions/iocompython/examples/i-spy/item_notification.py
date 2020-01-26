@@ -183,9 +183,10 @@ class NotificationItem(GridLayout):
         if password != '':
             if description != "":
                 description += " "
-            description += '([color=FF9090]' + str(password) + '[/color])'
+            shortpasswd = (password[:7] + '..') if len(password) > 8 else password
+            description += '([color=FF9090]' + shortpasswd + '[/color])'
 
-        self.my_description.text = '[color=909090][size=14]' + description + ' count=' + count + '[/size][/color]'
+        self.my_description.text = '[color=909090][size=14]' + description + ' n=' + count + '[/size][/color]'
 
         self.show_control_buttons()
         self.height = 60 

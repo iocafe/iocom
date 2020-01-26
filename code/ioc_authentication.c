@@ -309,7 +309,7 @@ osalStatus ioc_process_received_authentication_frame(
     {
         ioc_release_allowed_networks(&con->allowed_networks);
         s = root->authorization_func(root, &con->allowed_networks,
-            &user, OS_NULL /* IP address */, root->authorization_context);
+            &user, con->parameters, root->authorization_context);
         if (s) return s;
     }
 

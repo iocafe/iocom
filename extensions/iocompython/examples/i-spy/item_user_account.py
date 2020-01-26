@@ -67,7 +67,8 @@ class UserAccountItem(Item):
         if password != None:
             if description != "":
                 description += " "
-            description += '([color=FF9090]' + password + '[/color])'
+            shortpasswd = (password[:7] + '..') if len(password) > 8 else password
+            description += '([color=FF9090]' + shortpasswd + '[/color])'
 
         self.my_description.text = '[size=14][color=909090]' + description + '[/color][/size]'
 
