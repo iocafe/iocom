@@ -194,6 +194,16 @@ struct iocMemoryBlock *ioc_get_mbinfo_to_send(
             if (mblk->flags & IOC_CLOUD_ONLY) goto skipit;
         }
 #endif
+
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+        /* If network is not authorized, just drop skip the memory block.
+         */
+        if (!ioc_is_network_authorized(con, mblk->network_name, 0))
+        {
+            goto skipit;
+        }
+#endif
+
         if (con->flags & IOC_CONNECT_UP) break;
         if ((mblk->flags & IOC_FLOOR) == 0) break;
 skipit:
@@ -485,12 +495,9 @@ void ioc_mbinfo_received(
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     /* If network is not authorized, just drop the received information.
      */
-    if ((con->flags & IOC_NO_USER_AUTHORIZATION) == 0)
+    if (!ioc_is_network_authorized(con, info->network_name, 0))
     {
-        if (!ioc_is_network_authorized(root, &con->allowed_networks, info->network_name, 0))
-        {
-            return;
-        }
+        return;
     }
 #endif
 

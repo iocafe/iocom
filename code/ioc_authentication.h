@@ -158,8 +158,7 @@ void ioc_release_allowed_networks(
 /* Check if network is authorized.
  */
 os_boolean ioc_is_network_authorized(
-    struct iocRoot *root,
-    iocAllowedNetworkConf *allowed_networks,
+    struct iocConnection *con,
     os_char *network_name,
     os_ushort flags);
 

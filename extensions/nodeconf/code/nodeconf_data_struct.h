@@ -78,8 +78,8 @@ typedef struct iocOneConnectionConf
      */
     iocTransportEnum transport;
 
-    /** Bit flags for connection: IOC_CLOUD_CONNECTION, IOC_NO_USER_AUTHORIZATION
-        and IOC_CONNECT_UP bits, same bits as for iocConnection and iocEndPoint.
+    /** Bit flags for connection: IOC_CLOUD_CONNECTION and IOC_CONNECT_UP bits,
+        same bits as for iocConnection and iocEndPoint.
      */
     os_short flags;
 

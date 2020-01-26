@@ -107,17 +107,20 @@ void ioc_make_authentication_frame(
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
     ioc_msg_setstr(network_name, &p);
 
-    /* If we have password given by user
-     */
-    if (con->password_override[0] != '\0')
+    password = "";
+    if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION)) == IOC_SECURE_CONNECTION)
     {
-        password = con->password_override;
+        /* If we have password given by user
+         */
+        if (con->password_override[0] != '\0')
+        {
+            password = con->password_override;
+        }
+        else
+        {
+            password = root->password;
+        }
     }
-    else
-    {
-        password = root->password;
-    }
-
     ioc_msg_setstr(password, &p);
 
     /* If other end has not acknowledged enough data to send the
@@ -300,7 +303,9 @@ osalStatus ioc_process_received_authentication_frame(
     /* Check user autorization.
      */
     root = con->link.root;
-    if (root->authorization_func && (con->flags & IOC_NO_USER_AUTHORIZATION) == 0)
+    if (root->authorization_func &&
+        (con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
+         == (IOC_LISTENER|IOC_SECURE_CONNECTION))
     {
         ioc_release_allowed_networks(&con->allowed_networks);
         s = root->authorization_func(root, &con->allowed_networks,
@@ -436,43 +441,45 @@ void ioc_release_allowed_networks(
 /**
 ****************************************************************************************************
 
-  @brief Check if network is authorized.
+  @brief Check if network is authorized for a connection.
   @anchor ioc_is_network_authorized
 
   The ioc_is_network_authorized() function checks if network name given as argument is in list
   of allowed networks.
 
-  @param   allowed_networks Allowed networks structure.
-  @param   network_name Network name to check.
+  @param   con Connection structure pointer.
   @param   flags Required privileges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrarot.
   @return  OS_TRUE if network is authorized to proceed, OS_FALSE if not.
 
 ****************************************************************************************************
 */
 os_boolean ioc_is_network_authorized(
-    struct iocRoot *root,
-    iocAllowedNetworkConf *allowed_networks,
+    struct iocConnection *con,
     os_char *network_name,
     os_ushort flags)
 {
 #if IOC_RELAX_SECURITY
     return OS_TRUE;
 #else
+    iocAllowedNetwork *networks;
     os_int count, i;
 
     /* If security is not on, anything is fine.
      */
-    if (root->authorization_func == OS_NULL) return OS_TRUE;
+    if (con->link.root->authorization_func == OS_NULL) return OS_TRUE;
+    if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
+         != (IOC_LISTENER|IOC_SECURE_CONNECTION)) return OS_TRUE;
 
     /* If we already got this network, just "or" the flags in.
      */
-    count = allowed_networks->n_networs;
+    networks = con->allowed_networks.network;
+    count = con->allowed_networks.n_networs;
     for (i = 0; i < count; i++)
     {
-        if (!os_strcmp(network_name, allowed_networks->network[i].network_name))
+        if (!os_strcmp(network_name, networks[i].network_name))
         {
             if (flags & IOC_AUTH_ADMINISTRATOR)
-                return (allowed_networks->network[i].flags & IOC_AUTH_ADMINISTRATOR)
+                return (networks[i].flags & IOC_AUTH_ADMINISTRATOR)
                     ? OS_TRUE : OS_FALSE;
 
             return OS_TRUE;

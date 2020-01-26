@@ -85,12 +85,12 @@
 
 
 /** Flags for ioc_connect() and ioc_listen() functions. Bit fields.
- - IOC_LISTENER Listening end of serial communication. Effects to line negotiation
+ - IOC_LISTENER Listening end of communication. Effects to line negotiation, etc.
  - IOC_CONNECT_UP Connect up to upper level of IO device hierarchy.
  - IOC_DYNAMIC_MBLKS Dynamically create dynamic memory blocks as needed.
- - IOC_NO_USER_AUTHORIZATION Do not authenticate users trough this connection. This is needed
    when controller connects to other connections to avoid authentication both ways. Local flag,
    not serialized.
+ - IOC_SECURE_CONNECTION means secured connection using authentications, practically TLS.
  - IOC_CLOUD_CONNECTION This is connection from this top level controller to cloud server.
    Serialized in authentication message.
  */
@@ -109,7 +109,7 @@
 #define IOC_DISABLE_SELECT 64
 #define IOC_CONNECT_UP 128
 
-#define IOC_NO_USER_AUTHORIZATION 256
+#define IOC_SECURE_CONNECTION 256
 #define IOC_CLOUD_CONNECTION 512
 /*@}*/
 
@@ -156,7 +156,7 @@ iocSystemFrameType;
 
 /* Pointers to modify generated header afterwards.
  */
-typedef struct
+typedef struct iocSendHeaderPtrs
 {
     /** Pointer to check sum in header
      */
@@ -188,7 +188,7 @@ iocSendHeaderPtrs;
     Parameters for ioc_connect() function.
 ****************************************************************************************************
 */
-typedef struct
+typedef struct iocConnectionParams
 {
     /** Stream interface, use one of OSAL_SERIAL_IFACE, OSAL_BLUETOOTH_IFACE, OSAL_SOCKET_IFACE
         or OSAL_TLS_IFACE defines.
@@ -274,7 +274,7 @@ iocConnectionOutgoingFrame;
     Member variables for incoming frame.
 ****************************************************************************************************
 */
-typedef struct
+typedef struct iocConnectionIncomingFrame
 {
     /** Pointer to infoming frame buffer.
      */
@@ -301,7 +301,7 @@ iocConnectionIncomingFrame;
     Worker thread specific member variables.
 ****************************************************************************************************
 */
-typedef struct
+typedef struct iocConnectionWorkerThread
 {
     /** Event to activate the worker thread.
      */
