@@ -256,7 +256,7 @@ class ConfigurationPanel(Panel):
             u.bind(on_remake_page = self.remake_accounts_page)
 
     def new_account_item(self, source_object):
-        titlelist = {"accounts": "new user account", "whitelist":"whitelist user or IP addresses"}
+        titlelist = {"accounts": "new user account", "whitelist":"whitelist new IP address range"}
         self.my_groupdict = source_object.my_groupdict
         groupname = source_object.my_groupname
         self.my_groupname = groupname
@@ -266,10 +266,13 @@ class ConfigurationPanel(Panel):
         grid.cols = 2;
         grid.spacing = [6, 6]
         nrows = 1
-        self.user_name_input = make_my_text_input("")
-        grid.add_widget(Label(text='user name'));
-        grid.add_widget(self.user_name_input)
+        focus_input = None
         if groupname == "accounts":
+            self.user_name_input = make_my_text_input("")
+            grid.add_widget(Label(text='user name'));
+            grid.add_widget(self.user_name_input)
+            focus_input = self.user_name_input
+
             self.password_input = make_my_text_input("")
             grid.add_widget(Label(text='password'));
             grid.add_widget(self.password_input)
@@ -277,13 +280,18 @@ class ConfigurationPanel(Panel):
             self.privileges_input = make_my_text_input("")
             grid.add_widget(Label(text='privileges'));
             grid.add_widget(self.privileges_input)
-            nrows += 2
+            nrows += 3
 
         if groupname == "whitelist":
             self.ip_input = make_my_text_input("")
-            grid.add_widget(Label(text='ip'));
+            grid.add_widget(Label(text='first ip'));
             grid.add_widget(self.ip_input)
-            nrows += 1
+            focus_input = self.ip_input
+
+            self.last_ip_input = make_my_text_input("")
+            grid.add_widget(Label(text='last ip'));
+            grid.add_widget(self.last_ip_input)
+            nrows += 2
         
         content = GridLayout()
         content.padding = [6, 6]
@@ -311,21 +319,24 @@ class ConfigurationPanel(Panel):
 
         # all done, open the popup
         popup.open()
-        self.user_name_input.focus = True
+        if focus_input != None:
+            focus_input.focus = True
 
     def my_new_account_ok_button_pressed(self, instance):
         groupname = self.my_groupname
         groupdict = self.my_groupdict
         item = {}
-        item['user'] = self.user_name_input.text;
 
         if groupname == "accounts":
-            item['password'] = self.password_input.text;
+            item['user'] = self.user_name_input.text;
+            if self.password_input.text != "":
+                item['password'] = self.password_input.text;
             if self.privileges_input.text != "":
                 item['privileges'] = self.privileges_input.text;
 
         if groupname == "whitelist":
             item['ip'] = self.ip_input.text;
+            item['last_ip'] = self.last_ip_input.text;
 
         groupdict[groupname].append(item)
         self.popup.dismiss()

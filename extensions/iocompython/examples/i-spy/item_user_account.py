@@ -50,6 +50,7 @@ class UserAccountItem(Item):
         item = self.my_item
 
         ip = item.get("ip", "")
+        last_ip = item.get("last_ip", "")
         text = item.get("user", "")
         if text == "":
             text = ip
@@ -57,7 +58,7 @@ class UserAccountItem(Item):
 
         self.my_label.text = '[size=16]' + text + '[/size]'
 
-        description = ip
+        description = ip + "..." + last_ip
         privileges = item.get("privileges", None)
         if privileges != None:
             if description != "":
@@ -98,7 +99,7 @@ class UserAccountItem(Item):
             self.my_item[attr] = value
 
     def my_edit_user_popup(self):
-        titlelist = {"accounts": "edit user account", "whitelist": "edit whitelisted item"}
+        titlelist = {"accounts": "edit user account", "whitelist": "edit whitelisted IP range"}
         item = self.my_item
         groupname = self.my_groupname
 
@@ -107,10 +108,13 @@ class UserAccountItem(Item):
         grid.cols = 2;
         grid.spacing = [6, 6]
         nrows = 1
-        self.user_name_input = make_my_text_input(item.get('user', ''))
-        grid.add_widget(Label(text='user name'));
-        grid.add_widget(self.user_name_input)
+        focus_input = None
         if groupname == "accounts":
+            self.user_name_input = make_my_text_input(item.get('user', ''))
+            grid.add_widget(Label(text='user name'));
+            grid.add_widget(self.user_name_input)
+            focus_input = self.user_name_input
+
             self.password_input = make_my_text_input(item.get('password', ''))
             grid.add_widget(Label(text='password'));
             grid.add_widget(self.password_input)
@@ -118,13 +122,18 @@ class UserAccountItem(Item):
             self.privileges_input = make_my_text_input(item.get('privileges', ''))
             grid.add_widget(Label(text='privileges'));
             grid.add_widget(self.privileges_input)
-            nrows += 2
+            nrows += 3
 
         if groupname == "whitelist":
             self.ip_input = make_my_text_input(item.get('ip', ''))
-            grid.add_widget(Label(text='ip'));
+            grid.add_widget(Label(text='first ip'));
             grid.add_widget(self.ip_input)
-            nrows += 1
+            focus_input = self.ip_input
+
+            self.last_ip_input = make_my_text_input(item.get('last_ip', ''))
+            grid.add_widget(Label(text='last ip'));
+            grid.add_widget(self.last_ip_input)
+            nrows += 2
 
         content = GridLayout()
         content.padding = [6, 6]
@@ -152,24 +161,28 @@ class UserAccountItem(Item):
 
         # all done, open the popup !
         popup.open()
-        self.user_name_input.focus = True
+        if focus_input != None:
+            focus_input.focus = True
 
     def my_user_edit_ok_button_pressed(self, instance):
         groupname = self.my_groupname
-        self.my_set_account_attr("user", self.user_name_input.text)
 
         if groupname == "accounts":
+            self.my_set_account_attr("user", self.user_name_input.text)
             self.my_set_account_attr("password", self.password_input.text)
             self.my_set_account_attr("privileges", self.privileges_input.text)
 
         else:
+            self.my_set_account_attr("user", "")
             self.my_set_account_attr("password", "")
             self.my_set_account_attr("privileges", "")
 
         if groupname == "whitelist":
             self.my_set_account_attr("ip", self.ip_input.text)
+            self.my_set_account_attr("last_ip", self.last_ip_input.text)
         else:
             self.my_set_account_attr("ip", "")
+            self.my_set_account_attr("last_ip", "")
 
         self.set_value()
         self.popup.dismiss()
