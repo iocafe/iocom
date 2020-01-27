@@ -156,13 +156,3 @@ osalSecurityConfig *ioc_get_security_conf(
  */
 iocConnectionConfig *ioc_get_connection_conf(
     iocNodeConf *node);
-
-
-
-/* void nodeconf_verify_server(
-    iocNodeConf *node,
-    os_char *node_name,
-    os_char *network_name); */
-
-/* Server side client authentication elsewhere, not in nodeconf
- */
