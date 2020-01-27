@@ -281,12 +281,10 @@ static void ioc_notifications_time_out(
     os_short nrows,
     os_int timeout_ms)
 {
-    iocNotificationSignalRow *r;
+    iocNotificationSignalRow *r = OS_NULL;
     os_timer now_t;
     os_short row;
     os_boolean changed = OS_FALSE;
-
-    os_get_timer(&now_t);
 
     /* If we have row for this user/device already, just update it.
      * Otherwise select empty row, if any.
@@ -303,18 +301,10 @@ static void ioc_notifications_time_out(
         ioc_moves_str(r->text, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
         ioc_sets_int(r->count, 0, 0);
         ioc_moves_str(r->user_name, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
-
-        /* ioc_sets_str(r->password, OS_NULL);
-        ioc_sets_str(r->privileges, OS_NULL);
-        ioc_sets_str(r->ip, OS_NULL);
-        ioc_sets0_int(r->count, 0);
-        ioc_sets_str(r->text, OS_NULL); */
-
         is_set[row] = OS_FALSE;
-        changed = OS_TRUE;
     }
 
-    if (changed)
+    if (r)
     {
         ioc_send(r->user_name->handle);
     }
