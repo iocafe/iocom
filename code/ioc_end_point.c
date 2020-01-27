@@ -237,7 +237,7 @@ osalStatus ioc_listen(
     ioc_lock(root);
 
     flags = prm->flags;
-    if (prm->iface == OSAL_TLS_IFACE) flags |= IOC_SECURE_CONNECTION;
+    if (prm->iface) if (prm->iface->is_secure) flags |= IOC_SECURE_CONNECTION;
     epoint->flags = flags;
     epoint->iface = prm->iface;
 
