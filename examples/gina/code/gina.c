@@ -206,7 +206,7 @@ osalStatus osal_loop(
     static os_float f[5] = {1, 2, 3, 4, 5};
     static os_timer ti;
     static os_int i = 0;
-    os_char buf[32], state_bits;
+    os_char /* buf[32], */ state_bits;
     os_long l;
     static os_long prev_l = -1;
 
