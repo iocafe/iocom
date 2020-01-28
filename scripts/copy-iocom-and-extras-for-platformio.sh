@@ -14,6 +14,9 @@ python3 ./copy-devicedir-for-platformio.py
 cd /coderoot/iocom/extensions/nodeconf/build/arduino-platformio
 python3 ./copy-nodeconf-for-platformio.py
 
+cd /coderoot/iocom/extensions/ioserver/build/arduino-platformio
+python3 ./copy-ioserver-for-platformio.py
+
 cd /coderoot/pins/build/arduino-platformio
 python3 ./copy-pins-for-platformio.py
 
