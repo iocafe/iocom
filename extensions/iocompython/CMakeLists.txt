@@ -17,9 +17,8 @@ add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/devicedir "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/devicedir")
 
 # Set path to where to keep libraries.
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIB})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_BIN})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIB})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
 
 # Set path to source files.
 set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")

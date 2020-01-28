@@ -284,7 +284,6 @@ static void ioc_notifications_time_out(
     iocNotificationSignalRow *r = OS_NULL;
     os_timer now_t;
     os_short row;
-    os_boolean changed = OS_FALSE;
 
     /* If we have row for this user/device already, just update it.
      * Otherwise select empty row, if any.
