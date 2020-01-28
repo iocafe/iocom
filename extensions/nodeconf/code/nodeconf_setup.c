@@ -469,6 +469,7 @@ static osalStatus ioc_nconf_process_block(
 
                 if (is_security_block)
                 {
+#if OSAL_FILESYS_SUPPORT
                     if (!os_strcmp(state->tag, "certdir"))
                     {
                         node->security_conf.certs_dir = item.value.s;
@@ -485,6 +486,7 @@ static osalStatus ioc_nconf_process_block(
                     {
                         node->security_conf.client_cert_chain_file = item.value.s;
                     }
+#endif
                 }
                 break;
 

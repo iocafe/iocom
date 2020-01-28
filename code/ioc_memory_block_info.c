@@ -206,7 +206,9 @@ struct iocMemoryBlock *ioc_get_mbinfo_to_send(
 
         if (con->flags & IOC_CONNECT_UP) break;
         if ((mblk->flags & IOC_FLOOR) == 0) break;
+#if IOC_SERVER2CLOUD_CODE
 skipit:
+#endif
         ioc_mbinfo_sent(con, mblk);
     }
 

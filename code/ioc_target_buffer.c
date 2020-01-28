@@ -49,8 +49,10 @@ iocTargetBuffer *ioc_initialize_target_buffer(
 {
     iocRoot *root;
     iocTargetBuffer *tbuf;
+#if IOC_BIDIRECTIONAL_MBLK_CODE
     os_char *p;
     os_int count;
+#endif
 
     /* Check that connection and memory block are valid pointers.
      */
