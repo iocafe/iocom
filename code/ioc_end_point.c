@@ -255,7 +255,7 @@ osalStatus ioc_listen(
     }
 #endif
     osal_socket_embed_default_port(prm->parameters,
-        epoint->parameters, IOC_END_POINT_PRMSTR_SZ, OSAL_STREAM_LISTEN,
+        epoint->parameters, IOC_END_POINT_PRMSTR_SZ,
         epoint->iface == OSAL_TLS_IFACE ? IOC_DEFAULT_TLS_PORT : IOC_DEFAULT_SOCKET_PORT);
 
 #if OSAL_MULTITHREAD_SUPPORT
