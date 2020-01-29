@@ -203,7 +203,7 @@ osalStatus osal_loop(
 
     /* Run the IO device functionality.
      */
-    static os_float f[5] = {1, 2, 3, 4, 5};
+    // static os_float f[5] = {1, 2, 3, 4, 5};
     static os_timer ti;
     static os_int i = 0;
     os_char /* buf[32], */ state_bits;
