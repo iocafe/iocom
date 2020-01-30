@@ -6,10 +6,6 @@
 				"user": "ispy*",
 				"password": "pass",
 				"privileges": "admin"
-			},
-			{
-				"user": "gina*",
-				"password": "pass"
 			}
 		],
 

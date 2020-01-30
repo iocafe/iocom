@@ -9,7 +9,7 @@ data_vector_n = 0
 with open('resources/asteroid-signals.json', 'r') as file:
     signal_conf = file.read()
 
-root = Root('spacepilot', device_nr=my_player_nr, network_name='iocafenet', security='certchainfile=bob-bundle.crt')
+root = Root('spacepilot', device_nr=my_player_nr, network_name='iocafenet', security='certchainfile=myhome-bundle.crt')
 exp = MemoryBlock(root, 'up', 'exp')
 imp = MemoryBlock(root, 'down', 'imp')
 data = json2bin(signal_conf)

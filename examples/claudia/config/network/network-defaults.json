@@ -20,9 +20,9 @@
     ],
 
     "security": [{
-      "certchainfile": "bob-bundle.crt",
-      "certfile": "alice.crt",
-      "keyfile": "alice.key"
+      "certchainfile": "myhome-bundle.crt",
+      "certfile": "rootca.crt",
+      "keyfile": "secret/rootca.key"
     }]
   }
 }

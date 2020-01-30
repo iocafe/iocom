@@ -33,7 +33,7 @@
 	],
 	"security": [
 		{
-			"certchainfile": "bob-bundle.crt"
+			"certchainfile": "myhome-bundle.crt"
 		}
 	]
 }
