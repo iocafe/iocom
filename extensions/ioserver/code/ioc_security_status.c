@@ -288,6 +288,7 @@ static void ioc_notifications_time_out(
     /* If we have row for this user/device already, just update it.
      * Otherwise select empty row, if any.
      */
+    os_get_timer(&now_t);
     for (row = 0; row < nrows; row++)
     {
         if (!is_set[row]) continue;
