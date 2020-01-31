@@ -942,6 +942,17 @@ static void ioc_connection_thread(
         {
             status = osal_stream_select(&con->stream, 1, con->worker.trig,
                 &selectdata, check_timeouts_ms, OSAL_STREAM_DEFAULT);
+
+            if (status == OSAL_STATUS_NULL_FUNC)
+            {
+                os_timeslice();
+            }
+
+            else if (status)
+            {
+                osal_debug_error("osal_stream_select failed");
+                goto failed;
+            }
         }
         os_get_timer(&tnow);
 

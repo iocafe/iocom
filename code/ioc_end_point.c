@@ -596,7 +596,7 @@ static void ioc_endpoint_thread(
                 os_sleep(100);
             }
 
-            if (status)
+            else if (status)
             {
                 osal_debug_error("osal_stream_select failed");
                 osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
