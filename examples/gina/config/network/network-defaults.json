@@ -1,9 +1,9 @@
 {
   "network": {
-    "title": "Network configuration defaults for IO device 'gina'",
+    "title": "Network configuration for 'gina' IO device",
     "device_nr": "auto",
     "network_name": "iocafenet",
-    "password": "pass",
+    "password": "*",
 
     "connect": [{
       "transport": "tls",

@@ -4,7 +4,7 @@
     "device_nr": "auto",
     "network_name": "cloudnet",
     "publish": "cloudnet",
-    "password": "auto",
+    "password": "*",
 
     "connect": [{
         "transport": "tls",

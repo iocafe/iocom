@@ -2,7 +2,7 @@
 "network" : {
 	"device_nr": "auto",
 	"network_name": "iocafenet",
-	"password": "pass",
+	"password": "*",
 	"connect": [
 		{
 			"transport": "tls",
@@ -29,11 +29,6 @@
 			"dns": "8.8.4.4",
 			"dns2": "8.8.8.8",
 			"mac": "36:12:64:A4:B4:C4"
-		}
-	],
-	"security": [
-		{
-			"certchainfile": "myhome-bundle.crt"
 		}
 	]
 }
