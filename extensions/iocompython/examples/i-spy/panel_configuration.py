@@ -51,7 +51,7 @@ class ConfigurationPanel(Panel):
 
         if my_default_config.get("accounts", None) != None:
             temp = re.findall(r'[0-9]', device_path)
-            self.my_select = int(temp[0]) + 10
+            self.my_select = int(temp[0]) + 20
 
         else:            
             self.my_select = 2

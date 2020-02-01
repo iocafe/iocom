@@ -482,6 +482,10 @@ static osalStatus ioc_nconf_process_block(
                     {
                         node->security_conf.server_key_file = item.value.s;
                     }
+                    else if (!os_strcmp(state->tag, "rootcertfile"))
+                    {
+                        node->security_conf.root_cert_file = item.value.s;
+                    }
                     else if (!os_strcmp(state->tag, "certchainfile"))
                     {
                         node->security_conf.client_cert_chain_file = item.value.s;

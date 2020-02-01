@@ -42,6 +42,7 @@ osalStatus osal_main(
     os_memclear(&security_prm, sizeof(security_prm));
     security_prm.server_cert_file = "myhome.crt";
     security_prm.server_key_file = "secret/myhome.key";
+    security_prm.root_cert_file = security_prm.server_cert_file;
 
     /* Initialize communication root object.
      */
