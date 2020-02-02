@@ -5,7 +5,6 @@ class ButtonItem(Item):
     def __init__(self, **kwargs):
         super(ButtonItem, self).__init__(**kwargs)
         b = Button()
-        # b.size_hint = (0.35, 1)
         self.add_widget(b)
         self.my_button = b
 
