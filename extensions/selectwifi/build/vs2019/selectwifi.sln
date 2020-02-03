@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ioserver", "ioserver.vcxproj", "{35825D48-F2F0-4A44-BB17-170DE8D691FA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "selectwifi", "selectwifi.vcxproj", "{35825D48-F2F0-4A44-BB17-170DE8D691FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

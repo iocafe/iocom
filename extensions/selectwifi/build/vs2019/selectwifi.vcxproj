@@ -19,20 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\ioc_authorize.c" />
-    <ClCompile Include="..\..\code\ioc_bserver.c" />
-    <ClCompile Include="..\..\code\ioc_bserver_config.c" />
-    <ClCompile Include="..\..\code\ioc_persistent_mblk.c" />
-    <ClCompile Include="..\..\code\ioc_security_status.c" />
-    <ClCompile Include="..\..\code\ioc_server_util.c" />
+    <ClInclude Include="..\..\code\ioc_selectwifi.h" />
+    <ClInclude Include="..\..\selectwifi.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\ioc_authorize.h" />
-    <ClInclude Include="..\..\code\ioc_bserver.h" />
-    <ClInclude Include="..\..\code\ioc_persistent_mblk.h" />
-    <ClInclude Include="..\..\code\ioc_security_status.h" />
-    <ClInclude Include="..\..\code\ioc_server_util.h" />
-    <ClInclude Include="..\..\ioserver.h" />
+    <ClCompile Include="..\..\code\ioc_selectwifi.c" />
+    <ClCompile Include="..\..\code\ioc_selectwifi_config.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -113,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\ioserver\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -127,7 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\ioserver\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -143,7 +135,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\ioserver\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -161,7 +153,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\ioserver\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
