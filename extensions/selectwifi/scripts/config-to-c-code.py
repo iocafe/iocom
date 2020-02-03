@@ -24,7 +24,7 @@ def runcmd(cmd):
 
 runcmd(JSONTOOL + ' --t2b -title ' + MYSIGNALS + '.json ' + MYSIGNALS + '.binjson')
 runcmd(JSONTOOL + ' --b2t ' + MYSIGNALS + '.binjson ' + MYSIGNALS + '-check.json')
-runcmd(BINTOC + ' -v ioapp_signal_config ' + MYSIGNALS + '.binjson -o ' + MYINCLUDE + '/swf-info-mblk.c')
+runcmd(BINTOC + ' -v selectwifi_signal_config ' + MYSIGNALS + '.binjson -o ' + MYINCLUDE + '/swf-info-mblk.c')
 runcmd(SIGNALSTOC + ' ' + MYSIGNALS + '.json -o ' + MYINCLUDE + '/swf-signals.c')
 
 print("*** Check that the output files have been generated (error checks are still missing).")

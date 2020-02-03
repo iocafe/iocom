@@ -59,6 +59,7 @@ void ioc_initialize_selectwifi(
 
     ioc_initialize_root(&swf.root);
     ioc_set_memory_pool(&swf.root, swf_pool, sizeof(swf_pool));
+    ioc_set_iodevice_id(&swf.root, device_name, device_nr, OS_NULL, network_name);
 
     /* Generate memory blocks.
      */
@@ -78,8 +79,8 @@ void ioc_initialize_selectwifi(
     ioc_initialize_memory_block(&swf.imp, &swf.imp_mblk, &swf.root, &blockprm);
 
     blockprm.mblk_name = "info";
-    blockprm.buf = (char*)&ioapp_signal_config;
-    blockprm.nbytes = sizeof(ioapp_signal_config);
+    blockprm.buf = (char*)&selectwifi_signal_config;
+    blockprm.nbytes = sizeof(selectwifi_signal_config);
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&swf.info, &swf.info_mblk, &swf.root, &blockprm);
 

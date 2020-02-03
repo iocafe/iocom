@@ -28,6 +28,13 @@
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
 #include "gina.h"
 
+/* Enable wifi selection by blue tooth (0 or 1) ?.
+ */
+#define GINA_USE_SELECTWIFI 1
+#if GINA_USE_SELECTWIFI
+#include "selectwifi.h"
+#endif
+
 /* The devicedir is here for testing only, take away.
  */
 #include "devicedir.h"
@@ -160,6 +167,12 @@ osalStatus osal_main(
      */
     ioc_init_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
+    /* Enable wifi selection by blue tooth.
+     */
+#if GINA_USE_SELECTWIFI
+    ioc_initialize_selectwifi(OS_NULL);
+#endif
+
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
@@ -266,6 +279,10 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
+#if GINA_USE_SELECTWIFI
+    ioc_release_selectwifi();
+#endif
+
     ioboard_end_communication();
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     osal_tls_shutdown();
