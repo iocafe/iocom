@@ -16,6 +16,20 @@
 #define SELECTWIFI_INTERNALS
 #include "selectwifi.h"
 
+/* We may want to run connection in separate thread, if multithreading is supported?
+ */
+#if OSAL_MULTITHREAD_SUPPORT
+    #define SWF_CREATE_THREAD 1
+#else
+    #define SWF_CREATE_THREAD 0
+#endif
+
+/* Static global signal structure for select wifi.
+ */
+iocSelectWiFi swf;
+static os_char swf_pool[10000]; // CALCULATE POOL SIZE NEEDED ????????????????????????????????????????????????
+
+
 /* Prototypes for forward referred static functions.
  */
 
@@ -34,23 +48,51 @@
 ****************************************************************************************************
 */
 void ioc_initialize_selectwifi(
-    iocSelectWiFi *swf,
     iocSelectWiFiParams *prm)
 {
-    os_memclear(swf, sizeof(iocSelectWiFi));
+    const os_char device_name[] = "wifi";
+    os_int device_nr = IOC_AUTO_DEVICE_NR;
+    const os_char network_name[] = "iocafenet";
 
-    /* m->root = root;
-    os_strncpy(m->device_name, prm->device_name, IOC_NAME_SZ);
-    m->device_nr = prm->device_nr;
-    os_strncpy(m->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
-    m->account_defaults = prm->account_defaults;
-    m->account_defaults_sz = prm->account_defaults_sz;
-    m->is_bypass_server = prm->is_bypass_server;
-    m->is_cloud_server = prm->is_cloud_server;
-    os_get_timer(&m->sec_timer);
+    iocMemoryBlockParams blockprm;
+    os_memclear(&swf, sizeof(iocSelectWiFi));
 
-    ioc_setup_bserver_mblks(m, prm); */
+    ioc_initialize_root(&swf.root);
+    ioc_set_memory_pool(&swf.root, swf_pool, sizeof(swf_pool));
 
+    /* Generate memory blocks.
+     */
+    os_memclear(&blockprm, sizeof(blockprm));
+    blockprm.device_name = device_name;
+    blockprm.device_nr = device_nr;
+    blockprm.network_name = network_name;
+
+    blockprm.mblk_name = selectwifi.exp.hdr.mblk_name;
+    blockprm.nbytes = SELECTWIFI_EXP_MBLK_SZ;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
+    ioc_initialize_memory_block(&swf.exp, &swf.exp_mblk, &swf.root, &blockprm);
+
+    blockprm.mblk_name = selectwifi.imp.hdr.mblk_name;
+    blockprm.nbytes = SELECTWIFI_IMP_MBLK_SZ;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
+    ioc_initialize_memory_block(&swf.imp, &swf.imp_mblk, &swf.root, &blockprm);
+
+    blockprm.mblk_name = "info";
+    blockprm.buf = (char*)&ioapp_signal_config;
+    blockprm.nbytes = sizeof(ioapp_signal_config);
+    blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
+    ioc_initialize_memory_block(&swf.info, &swf.info_mblk, &swf.root, &blockprm);
+
+    iocEndPoint *epoint = ioc_initialize_end_point(OS_NULL, &swf.root);
+    iocEndPointParams epprm;
+    os_memclear(&epprm, sizeof(epprm));
+    epprm.iface = OSAL_SOCKET_IFACE;
+#if SWF_CREATE_THREAD
+    epprm.flags = IOC_SOCKET | IOC_CONNECT_UP | IOC_CREATE_THREAD ;
+#else
+    epprm.flags = IOC_SOCKET | IOC_CONNECT_UP;
+#endif
+    ioc_listen(epoint, &epprm);
 }
 
 
@@ -68,11 +110,11 @@ void ioc_initialize_selectwifi(
 ****************************************************************************************************
 */
 void ioc_release_selectwifi(
-    iocSelectWiFi *swf)
+    void)
 {
-    ioc_release_memory_block(&swf->exp);
-    ioc_release_memory_block(&swf->imp);
-    ioc_release_memory_block(&swf->info);
+    ioc_release_memory_block(&swf.exp);
+    ioc_release_memory_block(&swf.imp);
+    ioc_release_memory_block(&swf.info);
 }
 
 
@@ -92,465 +134,7 @@ void ioc_release_selectwifi(
 ****************************************************************************************************
 */
 osalStatus ioc_run_selectwifi(
-    iocSelectWiFi *swf)
+    void)
 {
-#if 0
-    os_int i;
-    osalStatus s;
-
-    s = ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
-
-    /* Run security about twice per second.
-     */
-    if (os_elapsed(&m->sec_timer, 522))
-    {
-        os_get_timer(&m->sec_timer);
-        ioc_run_security(m);
-    }
-
-    for (i = 0; i<m->nro_networks; i++)
-    {
-        if (ioc_run_bserver_network(m->networks + i, m) != OSAL_STATUS_NOTHING_TO_DO)
-        {
-            s = OSAL_SUCCESS;
-        }
-    }
-
-    return s;
-#endif
-return OSAL_SUCCESS;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Set up memory blocks, etc.
-
-  The ioc_setup_bserver_network() function sets up IO network structure and memory blocks
-  for published used accounts.
-
-  @param   n Pointer to IO network structure.
-  @param   network_name Network name for the published IO network.
-  @return  None.
-
-****************************************************************************************************
-*/
-static void ioc_setup_selectwifi_network(
-    iocSelectWiFi *swf,
-    const os_char *device_name,
-    os_int device_nr,
-    const os_char *network_name)
-{
-    iocMemoryBlockParams blockprm;
-    const os_char *account_defaults;
-    os_memsz account_defaults_sz;
-
-    /* Generate memory blocks.
-     */
-    os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.device_name = device_name;
-    blockprm.device_nr = device_nr;
-    blockprm.network_name = network_name;
-
-    blockprm.mblk_name = prm->signals_exp_hdr->mblk_name;
-    blockprm.nbytes = prm->signals_exp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&swf->exp, OS_NULL, &swf->root, &blockprm);
-
-    blockprm.mblk_name = prm->signals_imp_hdr->mblk_name;
-    blockprm.nbytes = prm->signals_imp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&swf->imp, OS_NULL, &swf->root, &blockprm);
-
-    blockprm.mblk_name = "info";
-    blockprm.buf = (char*)prm->signal_config;
-    blockprm.nbytes = (os_int)prm->signal_config_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
-    ioc_initialize_memory_block(&swf->info, OS_NULL, &swf->root, &blockprm);
-
-#if 0
-
-    /* Generate memory blocks.
-       Note: Device number for accounts is calculated from persistent block number.
-     */
-    os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.device_name = ioc_accounts_device_name;
-    blockprm.device_nr = select - OS_PBNR_ACCOUNTS_1 + 1;
-    blockprm.network_name = n->network_name;
-
-    blockprm.mblk_name = n->asignals.exp.hdr.mblk_name;
-    blockprm.nbytes = n->asignals.exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_exp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;
-    blockprm.nbytes = n->asignals.conf_exp.hdr.mblk_sz;
-    blockprm.flags = m->is_cloud_server
-        ? IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
-        : IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_conf_exp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = n->asignals.conf_imp.hdr.mblk_name;
-    blockprm.nbytes = n->asignals.conf_imp.hdr.mblk_sz;
-    blockprm.flags = m->is_cloud_server
-        ? IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
-        : IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_conf_imp, OS_NULL, m->root, &blockprm);
-
-    account_defaults = m->account_defaults;
-    account_defaults_sz = m->account_defaults_sz;
-    if (account_defaults == OS_NULL)
-    {
-        account_defaults = ioserver_account_defaults;
-        account_defaults_sz  = sizeof(ioserver_account_defaults);
-    }
-
-    /* Load user account configuration from persistent storage and publish it
-     * as data memory block.
-     */
-    blockprm.mblk_name = "data";
-    blockprm.flags = (m->is_bypass_server || m->is_cloud_server)
-        ? IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY|IOC_NO_CLOUD|IOC_FLOOR
-        : IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY;
-    blockprm.nbytes = 0;
-    ioc_initialize_memory_block(&n->accounts_data, OS_NULL, m->root, &blockprm);
-    ioc_load_persistent_into_mblk(&n->accounts_data, select, account_defaults,
-        account_defaults_sz);
-
-    blockprm.mblk_name = "info";
-    blockprm.buf = (os_char*)ioserver_account_config;
-    blockprm.nbytes = sizeof(ioserver_account_config);
-    blockprm.flags = m->is_cloud_server
-        ? IOC_MBLK_UP|IOC_STATIC // |IOC_NO_CLOUD
-        : IOC_MBLK_UP|IOC_STATIC;
-    ioc_initialize_memory_block(&n->accounts_info, OS_NULL, m->root, &blockprm);
-
-    ioc_set_handle_to_signals(&n->asignals.exp.hdr, &n->accounts_exp);
-    ioc_set_handle_to_signals(&n->asignals.conf_imp.hdr, &n->accounts_conf_imp);
-    ioc_set_handle_to_signals(&n->asignals.conf_exp.hdr, &n->accounts_conf_exp);
-
-    n->accounts_stream_params.default_config = account_defaults;
-    n->accounts_stream_params.default_config_sz = account_defaults_sz;
-#endif
-}
-
-
-#if 0
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-/**
-****************************************************************************************************
-
-  @brief Set up memory blocks and signals.
-
-  The ioc_setup_bserver_mblks() function sets memory blocks:
-  - conf_exp and cond_imp memory blocks are used to transfer network configuration data as stream.
-  - info memory block blublishes information about server's memory blocks.
-
-  Note: If server application has other memory blocks, set these up before initializing
-  the basic server components.
-
-  @param   m Pointer to basic server structure.
-  @param   prm Parameters for basic server.
-  @return  None.
-
-****************************************************************************************************
-*/
-static void ioc_setup_bserver_mblks(
-    iocBServer *m,
-    iocBServerParams *prm)
-{
-    iocMemoryBlockParams blockprm;
-
-    /* Generate memory blocks.
-     */
-    os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.device_name = m->device_name;
-    blockprm.device_nr = m->device_nr;
-    blockprm.network_name = m->network_name;
-
-    blockprm.mblk_name = prm->signals_exp_hdr->mblk_name;
-    blockprm.nbytes = prm->signals_exp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&m->exp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = prm->signals_imp_hdr->mblk_name;
-    blockprm.nbytes = prm->signals_imp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&m->imp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = prm->signals_conf_exp_hdr->mblk_name;
-    blockprm.nbytes = prm->signals_conf_exp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&m->conf_exp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = prm->signals_conf_imp_hdr->mblk_name;
-    blockprm.nbytes = prm->signals_conf_imp_hdr->mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&m->conf_imp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = "info";
-    blockprm.buf = (char*)prm->signal_config;
-    blockprm.nbytes = (os_int)prm->signal_config_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
-    ioc_initialize_memory_block(&m->info, OS_NULL, m->root, &blockprm);
-
-    /* Store memory block handle pointer for signals within the "signals" structure.
-     */
-    ioc_set_handle_to_signals(prm->signals_exp_hdr, &m->exp);
-    ioc_set_handle_to_signals(prm->signals_imp_hdr, &m->imp);
-    ioc_set_handle_to_signals(prm->signals_conf_exp_hdr, &m->conf_exp);
-    ioc_set_handle_to_signals(prm->signals_conf_imp_hdr, &m->conf_imp);
-
-    m->ctrl_stream_params.default_config = prm->network_defaults;
-    m->ctrl_stream_params.default_config_sz = prm->network_defaults_sz;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Publish IO device networks.
-
-  The ioc_publish_bserver_networks() function published IO device network "hosted" by this IO
-  server. Here publishing means making user account accessible.
-
-  @param   m Pointer to basic server structure.
-  @param   publish List containing network to publish, comma is separator.
-  @return  If successfull, the function returns OSAL_SUCCESS. Other values indicate an error.
-
-****************************************************************************************************
-*/
-osalStatus ioc_publish_bserver_networks(
-    iocBServer *m,
-    const os_char *publish)
-{
-    os_char network_name[IOC_NETWORK_NAME_SZ];
-    const os_char *p;
-    iocBServerNetwork *n;
-    os_int nro_networks, select;
-    os_memsz sz;
-
-    /* Count number of networks to publish (nro_networks)
-     */
-    p = publish;
-    nro_networks = 0;
-    while (!osal_str_list_iter(network_name, sizeof(network_name), &p, OSAL_STR_NEXT_ITEM))
-    {
-        nro_networks++;
-    }
-    if (nro_networks == 0)
-    {
-        osal_debug_error("bserver: no networks to publish");
-        return OSAL_STATUS_FAILED;
-    }
-
-    /* Allocate memory for networks.
-     */
-    sz = sizeof(iocBServerNetwork) * nro_networks;
-    n = (iocBServerNetwork*)os_malloc(sz, OS_NULL);
-    os_memclear(n, sz);
-    if (n== OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
-    m->networks = n;
-    m->nro_networks = nro_networks;
-
-    p = publish;
-    select = OS_PBNR_ACCOUNTS_1;
-    while (!osal_str_list_iter(network_name, sizeof(network_name), &p, OSAL_STR_NEXT_ITEM))
-    {
-        /* Setup signal structure structure for user accounts.
-         */
-        account_signals_init_signal_struct(&n->asignals);
-
-        if (select == OS_PBNR_ACCOUNTS_1 + OS_PB_MAX_NETWORKS)
-        {
-            osal_debug_error("ioc_bserver: too many published networks");
-        }
-
-        ioc_setup_bserver_network(n, m, select++, network_name);
-
-        /* Set up control stream for user accounts.
-         */
-        n->accounts_stream_params.is_device = OS_TRUE;
-        n->accounts_stream_params.frd.cmd = &n->asignals.conf_imp.frd_cmd;
-        n->accounts_stream_params.frd.select = &n->asignals.conf_imp.frd_select;
-        n->accounts_stream_params.frd.buf = &n->asignals.conf_exp.frd_buf;
-        n->accounts_stream_params.frd.head = &n->asignals.conf_exp.frd_head;
-        n->accounts_stream_params.frd.tail = &n->asignals.conf_imp.frd_tail;
-        n->accounts_stream_params.frd.state = &n->asignals.conf_exp.frd_state;
-        n->accounts_stream_params.frd.to_device = OS_FALSE;
-        n->accounts_stream_params.tod.cmd = &n->asignals.conf_imp.tod_cmd;
-        n->accounts_stream_params.tod.select = &n->asignals.conf_imp.tod_select;
-        n->accounts_stream_params.tod.buf = &n->asignals.conf_imp.tod_buf;
-        n->accounts_stream_params.tod.head = &n->asignals.conf_imp.tod_head;
-        n->accounts_stream_params.tod.tail = &n->asignals.conf_exp.tod_tail;
-        n->accounts_stream_params.tod.state = &n->asignals.conf_exp.tod_state;
-        n->accounts_stream_params.tod.to_device = OS_TRUE;
-        ioc_init_control_stream(&n->accounts_stream, &n->accounts_stream_params);
-
-        n++;
-    }
-
     return OSAL_SUCCESS;
 }
-
-
-/**
-****************************************************************************************************
-
-  @brief Set up memory blocks, etc. to published IO network.
-
-  The ioc_setup_bserver_network() function sets up IO network structure and memory blocks
-  for published used accounts.
-
-  @param   n Pointer to IO network structure.
-  @param   m Pointer to basic server structure.
-  @param   select Persistent block number (on flash or in file system) where the user account
-           configuration is stored.
-  @param   network_name Network name for the published IO network.
-  @return  None.
-
-****************************************************************************************************
-*/
-static void ioc_setup_bserver_network(
-    iocBServerNetwork *n,
-    iocBServer *m,
-    os_int select,
-    const os_char *network_name)
-{
-    iocMemoryBlockParams blockprm;
-    const os_char *account_defaults;
-    os_memsz account_defaults_sz;
-
-    os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
-    n->select = select;
-
-    /* Generate memory blocks.
-       Note: Device number for accounts is calculated from persistent block number.
-     */
-    os_memclear(&blockprm, sizeof(blockprm));
-    blockprm.device_name = ioc_accounts_device_name;
-    blockprm.device_nr = select - OS_PBNR_ACCOUNTS_1 + 1;
-    blockprm.network_name = n->network_name;
-
-    blockprm.mblk_name = n->asignals.exp.hdr.mblk_name;
-    blockprm.nbytes = n->asignals.exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_exp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;
-    blockprm.nbytes = n->asignals.conf_exp.hdr.mblk_sz;
-    blockprm.flags = m->is_cloud_server
-        ? IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
-        : IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_conf_exp, OS_NULL, m->root, &blockprm);
-
-    blockprm.mblk_name = n->asignals.conf_imp.hdr.mblk_name;
-    blockprm.nbytes = n->asignals.conf_imp.hdr.mblk_sz;
-    blockprm.flags = m->is_cloud_server
-        ? IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
-        : IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
-    ioc_initialize_memory_block(&n->accounts_conf_imp, OS_NULL, m->root, &blockprm);
-
-    account_defaults = m->account_defaults;
-    account_defaults_sz = m->account_defaults_sz;
-    if (account_defaults == OS_NULL)
-    {
-        account_defaults = ioserver_account_defaults;
-        account_defaults_sz  = sizeof(ioserver_account_defaults);
-    }
-
-    /* Load user account configuration from persistent storage and publish it
-     * as data memory block.
-     */
-    blockprm.mblk_name = "data";
-    blockprm.flags = (m->is_bypass_server || m->is_cloud_server)
-        ? IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY|IOC_NO_CLOUD|IOC_FLOOR
-        : IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY;
-    blockprm.nbytes = 0;
-    ioc_initialize_memory_block(&n->accounts_data, OS_NULL, m->root, &blockprm);
-    ioc_load_persistent_into_mblk(&n->accounts_data, select, account_defaults,
-        account_defaults_sz);
-
-    blockprm.mblk_name = "info";
-    blockprm.buf = (os_char*)ioserver_account_config;
-    blockprm.nbytes = sizeof(ioserver_account_config);
-    blockprm.flags = m->is_cloud_server
-        ? IOC_MBLK_UP|IOC_STATIC // |IOC_NO_CLOUD
-        : IOC_MBLK_UP|IOC_STATIC;
-    ioc_initialize_memory_block(&n->accounts_info, OS_NULL, m->root, &blockprm);
-
-    ioc_set_handle_to_signals(&n->asignals.exp.hdr, &n->accounts_exp);
-    ioc_set_handle_to_signals(&n->asignals.conf_imp.hdr, &n->accounts_conf_imp);
-    ioc_set_handle_to_signals(&n->asignals.conf_exp.hdr, &n->accounts_conf_exp);
-
-    n->accounts_stream_params.default_config = account_defaults;
-    n->accounts_stream_params.default_config_sz = account_defaults_sz;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Release resources allocated for published network (internal).
-
-  The ioc_release_bserver_network() function releases iocom memory blocks used for
-  published account information.
-
-  @param   n Pointer to published network structure.
-  @return  None.
-
-****************************************************************************************************
-*/
-static void ioc_release_bserver_network(
-    iocBServerNetwork *n)
-{
-    ioc_release_memory_block(&n->accounts_conf_exp);
-    ioc_release_memory_block(&n->accounts_conf_imp);
-    ioc_release_memory_block(&n->accounts_data);
-    ioc_release_memory_block(&n->accounts_info);
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Keep account configuration responsive (internal).
-
-  The ioc_run_bserver_network() function needs to be called repeatedly to keep published
-  network account configuration responsive.
-
-  @param   n Pointer to published network structure.
-  @return  If working in something, the function returns OSAL_SUCCESS. Return value
-           OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
-           idle mode as far as the bserver knows.
-
-****************************************************************************************************
-*/
-static osalStatus ioc_run_bserver_network(
-    iocBServerNetwork *n,
-    iocBServer *m)
-{
-    osalStatus s;
-
-    s = ioc_run_control_stream(&n->accounts_stream, &n->accounts_stream_params);
-
-    /* If running control stream returns information that the user account intomation has
-       been changed, reload it.
-     */
-    if (s == OSAL_SUCCESS || s == OSAL_STATUS_NOTHING_TO_DO)
-    {
-        if (n->accounts_stream.transfer_status == IOC_BLOCK_WRITTEN &&
-            n->accounts_stream.transferred_block_nr == n->select)
-        {
-            ioc_load_persistent_into_mblk(&n->accounts_data, n->select, m->account_defaults,
-                m->account_defaults_sz);
-        }
-    }
-
-    return s;
-
-}
-
-#endif

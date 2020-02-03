@@ -215,7 +215,7 @@ typedef struct iocRoot
      */
     void *callback_context;
 
-    /** Pointer to static structure defining signals.
+    /** Pointer to static structure defining signals (for pins library).
      */
     const struct iocDeviceHdr *device_signal_hdr;
 

@@ -3,6 +3,7 @@
   "mblk": [
   {
     "name": "exp",
+    "handle": "&swf.exp", 
     "title": "WiFi network names (SSIDs)",
     "flags": "up",
     "groups": [
@@ -25,6 +26,7 @@
 
   {
     "name": "imp",
+    "handle": "&swf.imp", 
     "title": "WiFi network settings",
     "flags": "down",
     "groups": [

@@ -3,6 +3,7 @@
 "mblk": [
 	{
 		"name": "exp",
+		"handle": "&swf.exp",
 		"flags": "up",
 		"groups": [
 			{
@@ -19,11 +20,25 @@
 						"array": 16
 					}
 				]
+			},
+			{
+				"name": "state and diagnostics",
+				"signals": [
+					{
+						"name": "wifi_connected_1",
+						"type": "boolean"
+					},
+					{
+						"name": "wifi_connected_2",
+						"type": "boolean"
+					}
+				]
 			}
 		]
 	},
 	{
 		"name": "imp",
+		"handle": "&swf.imp",
 		"flags": "down",
 		"groups": [
 			{

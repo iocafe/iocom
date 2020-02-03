@@ -204,7 +204,7 @@ typedef struct
      */
     os_boolean auto_synchronization;
 
-    /** Pointer to static structure defining signals.
+    /** Pointer to static structure defining signals (for pins library).
      */
     const struct iocDeviceHdr *device_signal_hdr;
 

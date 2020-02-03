@@ -8,6 +8,8 @@ typedef struct selectwifi_t
     iocMblkSignalHdr hdr;
     iocSignal net_1;
     iocSignal net_2;
+    iocSignal wifi_connected_1;
+    iocSignal wifi_connected_2;
   }
   exp;
 
@@ -23,7 +25,7 @@ typedef struct selectwifi_t
 }
 selectwifi_t;
 
-#define SELECTWIFI_EXP_MBLK_SZ 34
+#define SELECTWIFI_EXP_MBLK_SZ 36
 #define SELECTWIFI_IMP_MBLK_SZ 68
 
 extern const selectwifi_t selectwifi;
