@@ -1,3 +1,4 @@
-8.1.2020 / pekka
-The ioserver directory contains server end related extensions for base iocom. User accounts.
+3.2.2020 / pekka
+The ioserver library server/controller extensions for iocom and implements basic server. 
+The server functionality provided here is for IO network topology, user account and authentication.
 

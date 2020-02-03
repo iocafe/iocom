@@ -1,0 +1,37 @@
+{
+  "name": "selectwifi",
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "WiFi network names (SSIDs)",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "used wifi networks",
+        "signals": [
+          {"name": "net_1", "type": "str", "array": 16},
+          {"name": "net_2", "type": "str", "array": 16}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "WiFi network settings",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "set wifi networks",
+        "signals": [
+           {"name": "set_net_1", "type": "str", "array": 16},
+           {"name": "set_password_1", "type": "str", "array": 16},
+           {"name": "set_net_2", "type": "str", "array": 16},
+           {"name": "set_password_2", "type": "str", "array": 16}
+         ]
+      }
+    ]
+  }
+  ]
+}
+
