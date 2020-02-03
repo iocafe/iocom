@@ -180,5 +180,5 @@ osalStatus ioc_run_bserver(
     bmain.ctrl_stream_params.tod.tail = &sig.conf_exp.tod_tail; \
     bmain.ctrl_stream_params.tod.state = &sig.conf_exp.tod_state; \
     bmain.ctrl_stream_params.tod.to_device = OS_TRUE; \
-    ioc_init_control_stream(&bmain.ctrl_stream, &bmain.ctrl_stream_params); \
+    ioc_init_control_stream(&bmain.ctrl_stream, &bmain.ctrl_stream_params);
 

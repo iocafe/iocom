@@ -1,14 +1,16 @@
 /**
 
-  @file    ioserver.h
-  @brief   Extension library for implementing server with authentication and authorization.
+  @file    selectwifi.h
+  @brief   Library's top header file.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    3.2.2020
 
-  The ioserver is optional extension library for implementing server. This should be sufficient
-  for simple secure servers as is, or as starting point for implementing your own authentication
-  and authorization.
+  The selectwifi is small library to allow setting wifi network name (SSID) and password (pre
+  shared key) over blue tooth or serial port. This library can be used when connecting IO
+  board without display/keyboard to WiFi network. Functionality is limited to WiFi connection
+  settigs: Since the blue tooth and serial port connections are unsecure, there is no support
+  for software updates or further network or security configuration.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -17,8 +19,8 @@
 
 ****************************************************************************************************
 */
-#ifndef IOSERVER_INCLUDED
-#define IOSERVER_INCLUDED
+#ifndef SELECTWIFI_INCLUDED
+#define SELECTWIFI_INCLUDED
 
 /* Include iocom and operating system abstraction layer.
  */
@@ -29,11 +31,7 @@
  */
 OSAL_C_HEADER_BEGINS
 
-#include "code/ioc_authorize.h"
-#include "code/ioc_server_util.h"
-#include "code/ioc_security_status.h"
-#include "code/ioc_bserver.h"
-#include "code/ioc_persistent_mblk.h"
+#include "code/ioc_selectwifi.h"
 
 /* If C++ compilation, end the undecorated code.
  */

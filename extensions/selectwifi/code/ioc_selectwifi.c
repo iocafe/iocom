@@ -1,14 +1,10 @@
 /**
 
-  @file    ioc_bserver.c
-  @brief   Structures and functions to implement basic server.
+  @file    ioc_selectwifi.h
+  @brief   Set wifi network name and password over blue tooth or serial port.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    12.1.2020
-
-  The basic server helpers functions and structures here wrap together bunch of IOCOM structures
-  and API calls which are needed by typical basic server, much like ioc_ioboard does for IO boards.
-  This layer is optional and written only for convinience.
+  @date    3.2.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -17,59 +13,33 @@
 
 ****************************************************************************************************
 */
-#define BSERVER_INTERNALS
-#include "ioserver.h"
+#define SELECTWIFI_INTERNALS
+#include "selectwifi.h"
 
 /* Prototypes for forward referred static functions.
  */
-static void ioc_setup_bserver_mblks(
-    iocBServer *m,
-    iocBServerParams *prm);
-
-static void ioc_setup_bserver_network(
-    iocBServerNetwork *n,
-    iocBServer *m,
-    os_int select,
-    const os_char *network_name);
-
-static void ioc_release_bserver_network(
-    iocBServerNetwork *n);
-
-static osalStatus ioc_run_bserver_network(
-    iocBServerNetwork *n,
-    iocBServer *m);
 
 
 /**
 ****************************************************************************************************
 
-  @brief Initialize basic server components.
+  @brief Initialize selecy wifi library.
 
-  The ioc_initialize_bserver() function sets up basic server main structure. The structure holds
-  static information for transferring configuration, published networks, etc.
+  The ioc_initialize_selectwifi() function sets up the wifi select functionality.
 
-  Flat basic server structure is allocated by application, but this function allocates additional
-  memory for published networks. Thus it is important that the structure initialized by this
-  function is released by calling ioc_release_bserver().
-
-  Note: If server application has other memory blocks, set these up before initializing
-  the basic server components.
-
-  @param   m Pointer to basic server structure to initialize.
-  @param   root Pointer to iocom root structure.
-  @param   prm Parameters for basic server.
+  @param   swf Pointer to wifi network select object to be initialized.
+  @param   prm Flat parameter structure.
   @return  None.
 
 ****************************************************************************************************
 */
-void ioc_initialize_bserver(
-    iocBServer *m,
-    iocRoot *root,
-    iocBServerParams *prm)
+void ioc_initialize_selectwifi(
+    iocSelectWiFi *swf,
+    iocSelectWiFiParams *prm)
 {
-    os_memclear(m, sizeof(iocBServer));
+    os_memclear(swf, sizeof(iocSelectWiFi));
 
-    m->root = root;
+    /* m->root = root;
     os_strncpy(m->device_name, prm->device_name, IOC_NAME_SZ);
     m->device_nr = prm->device_nr;
     os_strncpy(m->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
@@ -79,64 +49,52 @@ void ioc_initialize_bserver(
     m->is_cloud_server = prm->is_cloud_server;
     os_get_timer(&m->sec_timer);
 
-    ioc_setup_bserver_mblks(m, prm);
+    ioc_setup_bserver_mblks(m, prm); */
+
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Release basic server components.
+  @brief Release resources allocated for select wifi library.
 
-  The ioc_release_bserver() function releases memory allocated for basic server functionality
-  and detchased handles from iocom.
+  The ioc_release_selectwifi() function releases memory and other resources allocated for
+  wifi network select.
 
-  @param   m Pointer to basic server structure to release.
+  @param   swf Pointer to wifi network select object.
   @return  None.
 
 ****************************************************************************************************
 */
-void ioc_release_bserver(
-    iocBServer *m)
+void ioc_release_selectwifi(
+    iocSelectWiFi *swf)
 {
-    os_int i;
-
-    if (m->networks)
-    {
-        for (i = 0; i<m->nro_networks; i++)
-        {
-            ioc_release_bserver_network(m->networks + i);
-        }
-
-        os_free(m->networks, sizeof(iocBServerNetwork) * m->nro_networks);
-    }
-
-    ioc_release_memory_block(&m->exp);
-    ioc_release_memory_block(&m->imp);
-    ioc_release_memory_block(&m->conf_exp);
-    ioc_release_memory_block(&m->conf_imp);
-    ioc_release_memory_block(&m->info);
+    ioc_release_memory_block(&swf->exp);
+    ioc_release_memory_block(&swf->imp);
+    ioc_release_memory_block(&swf->info);
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Keep basic server functionality alive.
+  @brief Keep wifi selection functionality alive.
 
-  The ioc_run_bserver() function needs to be called repeatedly to keep basic server
+  The ioc_run_selectwifi() function needs to be called repeatedly to keep the
   functionality responsive.
 
-  @param   m Pointer to basic server structure.
+  @param   swf Pointer to wifi network select object.
   @return  If working in something, the function returns OSAL_SUCCESS. Return value
            OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
            idle mode as far as the bserver knows.
 
 ****************************************************************************************************
 */
-osalStatus ioc_run_bserver(
-    iocBServer *m)
+osalStatus ioc_run_selectwifi(
+    iocSelectWiFi *swf)
 {
+#if 0
     os_int i;
     osalStatus s;
 
@@ -159,8 +117,127 @@ osalStatus ioc_run_bserver(
     }
 
     return s;
+#endif
+return OSAL_SUCCESS;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Set up memory blocks, etc.
+
+  The ioc_setup_bserver_network() function sets up IO network structure and memory blocks
+  for published used accounts.
+
+  @param   n Pointer to IO network structure.
+  @param   network_name Network name for the published IO network.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_setup_selectwifi_network(
+    iocSelectWiFi *swf,
+    const os_char *device_name,
+    os_int device_nr,
+    const os_char *network_name)
+{
+    iocMemoryBlockParams blockprm;
+    const os_char *account_defaults;
+    os_memsz account_defaults_sz;
+
+    /* Generate memory blocks.
+     */
+    os_memclear(&blockprm, sizeof(blockprm));
+    blockprm.device_name = device_name;
+    blockprm.device_nr = device_nr;
+    blockprm.network_name = network_name;
+
+    blockprm.mblk_name = prm->signals_exp_hdr->mblk_name;
+    blockprm.nbytes = prm->signals_exp_hdr->mblk_sz;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
+    ioc_initialize_memory_block(&swf->exp, OS_NULL, &swf->root, &blockprm);
+
+    blockprm.mblk_name = prm->signals_imp_hdr->mblk_name;
+    blockprm.nbytes = prm->signals_imp_hdr->mblk_sz;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
+    ioc_initialize_memory_block(&swf->imp, OS_NULL, &swf->root, &blockprm);
+
+    blockprm.mblk_name = "info";
+    blockprm.buf = (char*)prm->signal_config;
+    blockprm.nbytes = (os_int)prm->signal_config_sz;
+    blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
+    ioc_initialize_memory_block(&swf->info, OS_NULL, &swf->root, &blockprm);
+
+#if 0
+
+    /* Generate memory blocks.
+       Note: Device number for accounts is calculated from persistent block number.
+     */
+    os_memclear(&blockprm, sizeof(blockprm));
+    blockprm.device_name = ioc_accounts_device_name;
+    blockprm.device_nr = select - OS_PBNR_ACCOUNTS_1 + 1;
+    blockprm.network_name = n->network_name;
+
+    blockprm.mblk_name = n->asignals.exp.hdr.mblk_name;
+    blockprm.nbytes = n->asignals.exp.hdr.mblk_sz;
+    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR;
+    ioc_initialize_memory_block(&n->accounts_exp, OS_NULL, m->root, &blockprm);
+
+    blockprm.mblk_name = n->asignals.conf_exp.hdr.mblk_name;
+    blockprm.nbytes = n->asignals.conf_exp.hdr.mblk_sz;
+    blockprm.flags = m->is_cloud_server
+        ? IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
+        : IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
+    ioc_initialize_memory_block(&n->accounts_conf_exp, OS_NULL, m->root, &blockprm);
+
+    blockprm.mblk_name = n->asignals.conf_imp.hdr.mblk_name;
+    blockprm.nbytes = n->asignals.conf_imp.hdr.mblk_sz;
+    blockprm.flags = m->is_cloud_server
+        ? IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_NO_CLOUD|IOC_FLOOR
+        : IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
+    ioc_initialize_memory_block(&n->accounts_conf_imp, OS_NULL, m->root, &blockprm);
+
+    account_defaults = m->account_defaults;
+    account_defaults_sz = m->account_defaults_sz;
+    if (account_defaults == OS_NULL)
+    {
+        account_defaults = ioserver_account_defaults;
+        account_defaults_sz  = sizeof(ioserver_account_defaults);
+    }
+
+    /* Load user account configuration from persistent storage and publish it
+     * as data memory block.
+     */
+    blockprm.mblk_name = "data";
+    blockprm.flags = (m->is_bypass_server || m->is_cloud_server)
+        ? IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY|IOC_NO_CLOUD|IOC_FLOOR
+        : IOC_MBLK_DOWN|IOC_ALLOW_RESIZE|IOC_AUTO_SYNC|IOC_CLOUD_ONLY;
+    blockprm.nbytes = 0;
+    ioc_initialize_memory_block(&n->accounts_data, OS_NULL, m->root, &blockprm);
+    ioc_load_persistent_into_mblk(&n->accounts_data, select, account_defaults,
+        account_defaults_sz);
+
+    blockprm.mblk_name = "info";
+    blockprm.buf = (os_char*)ioserver_account_config;
+    blockprm.nbytes = sizeof(ioserver_account_config);
+    blockprm.flags = m->is_cloud_server
+        ? IOC_MBLK_UP|IOC_STATIC // |IOC_NO_CLOUD
+        : IOC_MBLK_UP|IOC_STATIC;
+    ioc_initialize_memory_block(&n->accounts_info, OS_NULL, m->root, &blockprm);
+
+    ioc_set_handle_to_signals(&n->asignals.exp.hdr, &n->accounts_exp);
+    ioc_set_handle_to_signals(&n->asignals.conf_imp.hdr, &n->accounts_conf_imp);
+    ioc_set_handle_to_signals(&n->asignals.conf_exp.hdr, &n->accounts_conf_exp);
+
+    n->accounts_stream_params.default_config = account_defaults;
+    n->accounts_stream_params.default_config_sz = account_defaults_sz;
+#endif
+}
+
+
+#if 0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 /**
 ****************************************************************************************************
@@ -476,3 +553,4 @@ static osalStatus ioc_run_bserver_network(
 
 }
 
+#endif
