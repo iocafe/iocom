@@ -6,10 +6,11 @@ MYHW = 'carol'
 if platform.system() == 'Windows':
     MYPYTHON = 'python'
     MYCODEROOT = 'c:/coderoot'
+    JSONTOOL = MYCODEROOT + '/bin/win32/json'
 else:
     MYPYTHON = 'python3'
     MYCODEROOT = '/coderoot'
-JSONTOOL = MYCODEROOT + '/bin/linux/json'
+    JSONTOOL = MYCODEROOT + '/bin/linux/json'
 PINSTOC = MYPYTHON + ' ' + MYCODEROOT + '/pins/scripts/pins-to-c.py'
 BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin-to-c.py'
 SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals-to-c.py'
