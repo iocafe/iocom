@@ -10,11 +10,12 @@ const struct selectwifi_t selectwifi =
   },
 
   {
-    {"imp", &swf.imp, 4, SELECTWIFI_IMP_MBLK_SZ, (iocSignal*)&selectwifi.imp.set_net_1},
+    {"imp", &swf.imp, 5, SELECTWIFI_IMP_MBLK_SZ, (iocSignal*)&selectwifi.imp.set_net_1},
     {0, 16, OS_STR, &swf.imp, OS_NULL}, /* set_net_1 */
     {17, 16, OS_STR, &swf.imp, OS_NULL}, /* set_password_1 */
     {34, 16, OS_STR, &swf.imp, OS_NULL}, /* set_net_2 */
-    {51, 16, OS_STR, &swf.imp, OS_NULL} /* set_password_2 */
+    {51, 16, OS_STR, &swf.imp, OS_NULL}, /* set_password_2 */
+    {68, 1, OS_BOOLEAN, &swf.imp, OS_NULL} /* save */
   }
 };
 

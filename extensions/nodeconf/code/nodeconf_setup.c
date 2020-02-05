@@ -261,8 +261,8 @@ static osalStatus ioc_nconf_process_block(
 {
     osalJsonItem item;
     osalStatus s;
-    osalNetworkInterface2 *nic;
-    osalWifiNetworkConfig *wifi;
+    osalNetworkInterface *nic;
+    osalWifiNetwork *wifi;
     iocOneConnectionConf *conn;
     os_boolean is_nic_block;
     os_boolean is_wifi_block;
@@ -285,7 +285,6 @@ static osalStatus ioc_nconf_process_block(
         {
             is_nic_block = OS_TRUE;
             state->nic_ix++;
-            state->wifi_ix = 0;
         }
         else if (!os_strcmp(array_tag, "wifi"))
         {
@@ -403,11 +402,9 @@ static osalStatus ioc_nconf_process_block(
                 }
 
                 if (is_wifi_block &&
-                    state->nic_ix <= OSAL_MAX_NRO_NICS &&
                     state->wifi_ix <= OSAL_MAX_NRO_WIFI_NETWORKS)
                 {
-                    nic = node->nic + state->nic_ix - 1;
-                    wifi = nic->wifinet + state->wifi_ix - 1;
+                    wifi = node->wifi + state->wifi_ix - 1;
                     if (!os_strcmp(state->tag, "network"))
                     {
                         wifi->wifi_net_name = item.value.s;
@@ -554,7 +551,7 @@ static osalStatus ioc_nconf_setup_structure(
     osalJsonIndex jindex;
     iocNconfParseState state;
     osalStatus s;
-    os_int n_nics, n_connections;
+    os_int n_nics, n_wifis, n_connections;
 
     os_memclear(&state, sizeof(state));
     state.node = node;
@@ -569,6 +566,11 @@ static osalStatus ioc_nconf_setup_structure(
     if (n_nics > OSAL_MAX_NRO_NICS) n_nics = OSAL_MAX_NRO_NICS;
     node->nics.nic = node->nic;
     node->nics.n_nics = n_nics;
+
+    n_wifis = state.wifi_ix;
+    if (n_wifis > OSAL_MAX_NRO_WIFI_NETWORKS) n_wifis = OSAL_MAX_NRO_WIFI_NETWORKS;
+    node->wifis.wifi = node->wifi;
+    node->wifis.n_wifi = n_wifis;
 
     n_connections = state.connection_ix;
     if (n_connections > IOC_MAX_NCONF_CONNECTIONS) n_connections = IOC_MAX_NCONF_CONNECTIONS;

@@ -17,11 +17,12 @@
 #include "selectwifi.h"
 
 /* We may want to run connection in separate thread, if multithreading is supported?
+   Define SWL_CT_FLAG either as IOC_CREATE_THREAD or zero.
  */
 #if OSAL_MULTITHREAD_SUPPORT
-    #define SWF_CREATE_THREAD 1
+    #define SWL_CT_FLAG IOC_CREATE_THREAD
 #else
-    #define SWF_CREATE_THREAD 0
+    #define SWL_CT_FLAG 0
 #endif
 
 /* Static global signal structure for select wifi.
@@ -32,6 +33,12 @@ static os_char swf_pool[10000]; // CALCULATE POOL SIZE NEEDED ??????????????????
 
 /* Prototypes for forward referred static functions.
  */
+static void ioc_selectfiwi_imp_data_changed(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context);
 
 
 /**
@@ -53,9 +60,21 @@ void ioc_initialize_selectwifi(
     const os_char device_name[] = "wifi";
     os_int device_nr = IOC_AUTO_DEVICE_NR;
     const os_char network_name[] = "iocafenet";
-
+    const os_char *parameters;
     iocMemoryBlockParams blockprm;
+    iocConnectionParams conprm;
+    iocEndPointParams epprm;
+
+    /* Parameters
+     */
     os_memclear(&swf, sizeof(iocSelectWiFi));
+    swf.transport = IOC_SWF_SOCKET_TEST;
+    parameters = OS_NULL;
+    if (prm)
+    {
+        swf.transport = prm->transport;
+        parameters = prm->parameters;
+    }
 
     ioc_initialize_root(&swf.root);
     ioc_set_memory_pool(&swf.root, swf_pool, sizeof(swf_pool));
@@ -84,16 +103,34 @@ void ioc_initialize_selectwifi(
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&swf.info, &swf.info_mblk, &swf.root, &blockprm);
 
-    iocEndPoint *epoint = ioc_initialize_end_point(OS_NULL, &swf.root);
-    iocEndPointParams epprm;
-    os_memclear(&epprm, sizeof(epprm));
-    epprm.iface = OSAL_SOCKET_IFACE;
-#if SWF_CREATE_THREAD
-    epprm.flags = IOC_SOCKET | IOC_CONNECT_UP | IOC_CREATE_THREAD ;
-#else
-    epprm.flags = IOC_SOCKET | IOC_CONNECT_UP;
-#endif
-    ioc_listen(epoint, &epprm);
+    /* Set callback to know when user wants to save changes.
+     */
+    ioc_add_callback(&swf.imp, ioc_selectfiwi_imp_data_changed, OS_NULL);
+    os_get_timer(&swf.boot_timer);
+
+    switch (swf.transport)
+    {
+        case IOC_SWF_BLUE_TOOTH:
+        case IOC_SWF_SERIAL_PORT:
+            os_memclear(&conprm, sizeof(conprm));
+            swf.con = ioc_initialize_connection(OS_NULL, &swf.root);
+            conprm.iface = swf.transport == IOC_SWF_BLUE_TOOTH
+                ? OSAL_BLUETOOTH_IFACE : OSAL_SERIAL_IFACE;
+            conprm.parameters = parameters;
+            conprm.flags = IOC_LISTENER | IOC_SERIAL
+                | IOC_DISABLE_SELECT | IOC_CONNECT_UP | SWL_CT_FLAG;
+            ioc_connect(swf.con, &conprm);
+            break;
+
+        case IOC_SWF_SOCKET_TEST:
+            os_memclear(&epprm, sizeof(epprm));
+            swf.epoint = ioc_initialize_end_point(OS_NULL, &swf.root);
+            epprm.iface = OSAL_SOCKET_IFACE;
+            epprm.parameters = parameters;
+            epprm.flags = IOC_SOCKET | IOC_CONNECT_UP | SWL_CT_FLAG;
+            ioc_listen(swf.epoint, &epprm);
+            break;
+    }
 }
 
 
@@ -113,9 +150,42 @@ void ioc_initialize_selectwifi(
 void ioc_release_selectwifi(
     void)
 {
-    ioc_release_memory_block(&swf.exp);
+    /* ioc_release_memory_block(&swf.exp);
     ioc_release_memory_block(&swf.imp);
-    ioc_release_memory_block(&swf.info);
+    ioc_release_memory_block(&swf.info); */
+    ioc_release_root(&swf.root);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Callback function when "imp" memory block changes.
+
+  Here we want to detect is user have set on "save" flag (pressed save button, etc). If so,
+  we want to modify network configuration of the device, save it and reboot.
+
+  @param   swf Pointer to wifi network select object.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_selectfiwi_imp_data_changed(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context)
+{
+    if (flags != IOC_MBLK_CALLBACK_RECEIVE) return;
+
+    if (ioc_is_my_address(&selectwifi.imp.save, start_addr, end_addr))
+    {
+        if (ioc_gets0_int(&selectwifi.imp.save))
+        {
+            if (!os_elapsed(&swf.boot_timer, 5000)) return;
+        }
+    }
 }
 
 

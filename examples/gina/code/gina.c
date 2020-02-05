@@ -84,6 +84,7 @@ osalStatus osal_main(
     osalSecurityConfig *security;
 #endif
     iocNetworkInterfaces *nics;
+    osalWifiNetworks *wifis;
     iocDeviceId *device_id;
     iocConnectionConfig *connconf;
     ioboardParams prm;
@@ -116,11 +117,12 @@ osalStatus osal_main(
        system (Linux/Windows,etc),
      */
     nics = ioc_get_nics(&ioapp_device_conf);
+    wifis = ioc_get_wifis(&ioapp_device_conf);
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     security = ioc_get_security_conf(&ioapp_device_conf);
-    osal_tls_initialize(nics->nic, nics->n_nics, security);
+    osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
 #else
-    osal_socket_initialize(nics->nic, nics->n_nics);
+    osal_socket_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi);
 #endif
     osal_serial_initialize();
 

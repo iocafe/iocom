@@ -22,10 +22,24 @@
   Library initialization parameter structure
 ****************************************************************************************************
  */
+typedef enum
+{
+    IOC_SWF_BLUE_TOOTH,
+    IOC_SWF_SERIAL_PORT,
+    IOC_SWF_SOCKET_TEST
+}
+iocSelectWiFiTransport;
+
+
 typedef struct iocSelectWiFiParams
 {
-    int uke;
+    /** Transport, one of IOC_SWF_BLUE_TOOTH, IOC_SWF_SERIAL_PORT, or IOC_SWF_SOCKET_TEST.
+     */
+    iocSelectWiFiTransport transport;
 
+    /** Parameter string for the transport.
+     */
+    const os_char *parameters;
 }
 iocSelectWiFiParams;
 
@@ -37,19 +51,34 @@ iocSelectWiFiParams;
  */
 typedef struct iocSelectWiFi
 {
-    /* Pointer to IOCOM root structure.
+    /** Pointer to IOCOM root structure.
      */
     iocRoot root;
 
-    /* Memory block handles for the server.
+    /** Memory block handles for the server.
      */
     iocHandle exp, imp, info;
 
-    /* Memory block structures.
+    /** Memory block structures.
      */
     iocMemoryBlock exp_mblk, imp_mblk, info_mblk;
 
-    // os_timer sec_timer;
+    /** Transport, one of IOC_SWF_BLUE_TOOTH, IOC_SWF_SERIAL_PORT, or IOC_SWF_SOCKET_TEST.
+     */
+    iocSelectWiFiTransport transport;
+
+    /** End point when testing with socket.
+     */
+    iocEndPoint *epoint;
+
+    /** Blue tooth or serial connection.
+     */
+    iocConnection *con;
+
+    /** Time when we rebooted. We do not allow reboot request for 5 seconds after boot,
+        just in case there is old one hanging on.
+     */
+    os_timer boot_timer;
 }
 iocSelectWiFi;
 

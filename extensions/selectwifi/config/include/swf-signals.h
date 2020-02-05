@@ -20,13 +20,14 @@ typedef struct selectwifi_t
     iocSignal set_password_1;
     iocSignal set_net_2;
     iocSignal set_password_2;
+    iocSignal save;
   }
   imp;
 }
 selectwifi_t;
 
 #define SELECTWIFI_EXP_MBLK_SZ 36
-#define SELECTWIFI_IMP_MBLK_SZ 68
+#define SELECTWIFI_IMP_MBLK_SZ 69
 
 extern const selectwifi_t selectwifi;
 extern const iocDeviceHdr selectwifi_hdr;

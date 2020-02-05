@@ -82,6 +82,7 @@ osalStatus osal_main(
     iocDeviceId *device_id;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
+    osalWifiNetworks *wifis;
     iocConnectionConfig *connconf;
     const os_char *device_name = "claudia";
 
@@ -119,8 +120,9 @@ osalStatus osal_main(
        (Linux/Windows,etc),
      */
     nics = ioc_get_nics(&app_device_conf);
+    wifis = ioc_get_wifis(&app_device_conf);
     security = ioc_get_security_conf(&app_device_conf);
-    osal_tls_initialize(nics->nic, nics->n_nics, security);
+    osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
     osal_serial_initialize();
 
     /* Ready to go, connect to network.

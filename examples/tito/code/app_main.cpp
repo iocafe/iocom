@@ -51,7 +51,7 @@ osalStatus osal_main(
 
     /* Initialize the transport, socket, TLS, serial, etc..
      */
-    osal_tls_initialize(OS_NULL, 0, &security_prm);
+    osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &security_prm);
     osal_serial_initialize();
 
     /* Create tito main object and start listening for clients.

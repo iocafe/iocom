@@ -63,6 +63,10 @@
 						"name": "set_password_2",
 						"type": "str",
 						"array": 16
+					},
+					{
+						"name": "save",
+						"type": "boolean"
 					}
 				]
 			}

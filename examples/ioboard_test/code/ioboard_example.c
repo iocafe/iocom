@@ -111,8 +111,8 @@ static void ioboard_fc_callback(
     os_ushort flags,
     void *context);
 
-static void ioboard_show_communication_status(
-    MyAppContext *acontext);
+/* static void ioboard_show_communication_status(
+    MyAppContext *acontext); */
 
 
 /**
@@ -131,18 +131,18 @@ osalStatus osal_main(
     os_char *argv[])
 {
     ioboardParams prm;
-    osalNetworkInterface nic;
+    osalWifiNetwork wifi[2];
     const osalStreamInterface *iface;
 
     /* Setup network interface configuration for micro-controller environment. This is ignored
        if network interfaces are managed by operating system (Linux/Windows,etc), or if we are
        connecting trough wired Ethernet. If only one subnet, set wifi_net_name_1.
      */
-    os_memclear(&nic, sizeof(osalNetworkInterface));
-    os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
+    os_memclear(&wifi, sizeof(osalWifiNetwork));
+    wifi[0].wifi_net_name = "julian";
+    wifi[0].wifi_net_password = "talvi333";
+    wifi[1].wifi_net_name = "bean24";
+    wifi[1].wifi_net_password = "talvi333";
 
     /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
        and osal_tls_initialize(). These use the same underlying library.
@@ -152,10 +152,10 @@ osalStatus osal_main(
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET
   #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     static osalSecurityConfig tlsprm = {EXAMPLE_TLS_SERVER_CERT, EXAMPLE_TLS_SERVER_KEY};
-    osal_tls_initialize(&nic, 1, &tlsprm);
+    osal_tls_initialize(OS_NULL, 0, wifi, 2, &tlsprm);
     iface = OSAL_TLS_IFACE;
   #else
-    osal_socket_initialize(&nic, 1);
+    osal_socket_initialize(OS_NULL, 0, wifi, 2);
     iface = OSAL_SOCKET_IFACE;
   #endif
 #else
@@ -247,14 +247,15 @@ osalStatus osal_loop(
        some operation of IO board. The command is eached back in address 2 to allow
        controller to know that command has been regognized.
      */
-    command = ioc_getp_short(&ioboard_imp, 2);
+    /* OBSOLETE, NEEDS REWRITING
+     * command = ioc_getp_short(&ioboard_imp, 2);
     if (command != acontext->prev_command) {
         if (command == 1) {
             osal_console_write("Command 1, working on it.\n");
         }
         acontext->prev_command = command;
         ioc_setp_short(&ioboard_exp, 2, command);
-    }
+    } */
 
     /* Send periodic signal to controller.
      */
@@ -264,7 +265,7 @@ osalStatus osal_loop(
         ioc_sets_int(&my_tc_count, ++my_signal_count, OSAL_STATE_CONNECTED);
     }
 
-    ioboard_show_communication_status(acontext);
+    /* ioboard_show_communication_status(acontext); */
 
     return OSAL_SUCCESS;
 }
@@ -349,6 +350,8 @@ static void ioboard_fc_callback(
 
 ****************************************************************************************************
 */
+/*
+ * OBSOLETE, NEEDS REWRITING
 static void ioboard_show_communication_status(
     MyAppContext *acontext)
 {
@@ -359,7 +362,7 @@ static void ioboard_show_communication_status(
     os_char
         nbuf[32];
 
-    nro_connections = ioc_getp_short(&ioboard_imp, IOC_NRO_CONNECTED_STREAMS);
+    nro_connections = ioc_gets_short(&ioboard_imp, IOC_NRO_CONNECTED_STREAMS);
     drop_count = ioc_getp_int(&ioboard_imp, IOC_CONNECTION_DROP_COUNT);
     if (nro_connections != acontext->prev_nro_connections ||
         drop_count != acontext->prev_drop_count)
@@ -376,3 +379,4 @@ static void ioboard_show_communication_status(
         acontext->prev_drop_count = drop_count;
     }
 }
+*/

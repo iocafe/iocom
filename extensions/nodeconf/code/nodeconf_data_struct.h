@@ -47,10 +47,19 @@ iocDeviceId;
  */
 typedef struct osalNetworkInterfaces
 {
-    osalNetworkInterface2 *nic;
+    osalNetworkInterface *nic;
     os_int n_nics;
 }
 iocNetworkInterfaces;
+
+/* Structure for passing information about all WiFi networks
+ */
+typedef struct osalWifiNetworks
+{
+    osalWifiNetwork *wifi;
+    os_int n_wifi;
+}
+osalWifiNetworks;
 
 /* Transport types.
  */
@@ -107,29 +116,37 @@ typedef struct iocNodeConf
 {
     iocDeviceId device_id;
 
-    /* Array of network interfaces.
+    /** Array of network interfaces.
      */
-    osalNetworkInterface2 nic[OSAL_MAX_NRO_NICS];
+    osalNetworkInterface nic[OSAL_MAX_NRO_NICS];
 
-    /* Strtucture to map network interfaces in array together.
+    /** Structure to map network interfaces in array together.
      */
     iocNetworkInterfaces nics;
 
-    /* Security configuration, user name, password, trusted parties, certificates.
+    /** Array of wifi networks.
+     */
+    osalWifiNetwork wifi[OSAL_MAX_NRO_WIFI_NETWORKS];
+
+    /** Structure for passing information about all WiFi networks
+     */
+    osalWifiNetworks wifis;
+
+    /** Security configuration, user name, password, trusted parties, certificates.
      */
     osalSecurityConfig security_conf;
 
-    /* Array of connections points.
+    /** Array of connections points.
      */
     iocOneConnectionConf connection[IOC_MAX_NCONF_CONNECTIONS];
 
-    /* Strtucture to map connection points together.
+    /** Structure to map connection points together.
      */
     iocConnectionConfig connections;
 
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION
-    /* Dynamically allocated buffer for loaded persistent configuration.
-       OS_NULL if buffer is not needed.
+    /** Dynamically allocated buffer for loaded persistent configuration.
+        OS_NULL if buffer is not needed.
      */
     os_char *allocated_buf;
     os_memsz allocated_sz;
@@ -145,6 +162,11 @@ iocDeviceId *ioc_get_device_id(
 /* Get network interface configuration.
  */
 iocNetworkInterfaces *ioc_get_nics(
+    iocNodeConf *node);
+
+/* Get wifi network interface configuration.
+ */
+osalWifiNetworks *ioc_get_wifis(
     iocNodeConf *node);
 
 /* Get network interface configuration.

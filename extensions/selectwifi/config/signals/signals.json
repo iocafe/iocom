@@ -36,7 +36,8 @@
            {"name": "set_net_1", "type": "str", "array": 16},
            {"name": "set_password_1", "type": "str", "array": 16},
            {"name": "set_net_2", "type": "str", "array": 16},
-           {"name": "set_password_2", "type": "str", "array": 16}
+           {"name": "set_password_2", "type": "str", "array": 16},
+           {"name": "save", "type": "boolean"}
          ]
       }
     ]

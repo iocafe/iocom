@@ -88,6 +88,7 @@ osalStatus osal_main(
     iocConnectionConfig *connconf;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
+    osalWifiNetworks *wifis;
     const os_char *device_name = "frank";
 
     /* Initialize communication root and dymanic structure data root objects.
@@ -124,8 +125,9 @@ osalStatus osal_main(
        (Linux/Windows,etc),
      */
     nics = ioc_get_nics(&app_device_conf);
+    wifis = ioc_get_wifis(&app_device_conf);
     security = ioc_get_security_conf(&app_device_conf);
-    osal_tls_initialize(nics->nic, nics->n_nics, security);
+    osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
     osal_serial_initialize();
 
     /* Ready to go, start listening for clients.
