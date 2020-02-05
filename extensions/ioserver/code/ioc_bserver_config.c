@@ -15,11 +15,11 @@
 */
 #include "ioserver.h"
 
-#include "account-signals.h"
-#include "account-defaults.h"
-#include "accounts-mblk-binary.h"
+#include "config/include/account-signals.h"
+#include "config/include/account-defaults.h"
+#include "config/include/accounts-mblk-binary.h"
 
-#include "account-signals.c"
-#include "account-defaults.c"
-#include "accounts-mblk-binary.c"
+#include "config/include/account-signals.c"
+#include "config/include/account-defaults.c"
+#include "config/include/accounts-mblk-binary.c"
 
