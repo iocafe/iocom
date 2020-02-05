@@ -40,6 +40,12 @@ static void ioc_selectfiwi_imp_data_changed(
     os_ushort flags,
     void *context);
 
+static void ioc_selectfiwi_load(
+    void);
+
+static void ioc_selectfiwi_save(
+    void);
+
 
 /**
 ****************************************************************************************************
@@ -102,6 +108,10 @@ void ioc_initialize_selectwifi(
     blockprm.nbytes = sizeof(selectwifi_signal_config);
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&swf.info, &swf.info_mblk, &swf.root, &blockprm);
+
+    /* Load data from persistent storage to memory block
+     */
+    ioc_selectfiwi_load();
 
     /* Set callback to know when user wants to save changes.
      */
@@ -184,8 +194,95 @@ static void ioc_selectfiwi_imp_data_changed(
         if (ioc_gets0_int(&selectwifi.imp.save))
         {
             if (!os_elapsed(&swf.boot_timer, 5000)) return;
+            ioc_selectfiwi_save();
         }
     }
+}
+
+
+
+/**
+****************************************************************************************************
+
+  @brief Load wifi configuration from persistent storage.
+
+  X..
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_selectfiwi_load(
+    void)
+{
+    osalWifiPersistent block;
+
+    ioc_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
+
+    ioc_sets_str(&selectwifi.exp.net_1, block.wifi[0].wifi_net_name);
+
+#ifdef SELECTWIFI_IMP_SET_NET_2_ARRAY_SZ
+    ioc_sets_str(&selectwifi.exp.net_2, block.wifi[1].wifi_net_name);
+#endif
+
+#ifdef SELECTWIFI_IMP_SET_NET_3_ARRAY_SZ
+    ioc_sets_str(&selectwifi.exp.net_3, block.wifi[2].wifi_net_name);
+#endif
+
+#ifdef SELECTWIFI_IMP_SET_NET_4_ARRAY_SZ
+    ioc_sets_str(&selectwifi.exp.net_4, block.wifi[3].wifi_net_name);
+#endif
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Save wifi configuration to persistent storage.
+
+  X..
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_selectfiwi_save(
+    void)
+{
+    osalWifiPersistent block;
+    os_char str[OSAL_WIFI_PRM_SZ];
+
+    ioc_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
+
+    ioc_gets_str(&selectwifi.imp.set_net_1, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[0].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
+    ioc_gets_str(&selectwifi.imp.set_password_1, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[0].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
+
+#ifdef SELECTWIFI_IMP_SET_NET_2_ARRAY_SZ
+    ioc_gets_str(&selectwifi.imp.set_net_2, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[1].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
+    ioc_gets_str(&selectwifi.imp.set_password_2, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[1].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
+#endif
+
+#ifdef SELECTWIFI_IMP_SET_NET_3_ARRAY_SZ
+    ioc_gets_str(&selectwifi.imp.set_net_3, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[2].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
+    ioc_gets_str(&selectwifi.imp.set_password_3, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[2].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
+#endif
+
+#ifdef SELECTWIFI_IMP_SET_NET_4_ARRAY_SZ
+    ioc_gets_str(&selectwifi.imp.set_net_4, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[3].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
+    ioc_gets_str(&selectwifi.imp.set_password_4, str, OSAL_WIFI_PRM_SZ);
+    if (str[0]) os_strncpy(block.wifi[3].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
+#endif
+
+    ioc_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
+
+    /* Load to show change to user immediately.
+     */
+    ioc_selectfiwi_load();
 }
 
 

@@ -2,7 +2,6 @@
 "network" : {
 	"device_nr": "auto",
 	"network_name": "iocafenet",
-	"password": "*",
 	"connect": [
 		{
 			"transport": "tls",
@@ -12,16 +11,6 @@
 	],
 	"nic": [
 		{
-			"wifi": [
-				{
-					"network": "julian",
-					"password": "talvi333"
-				},
-				{
-					"network": "bean24",
-					"password": "talvi333"
-				}
-			],
 			"dhcp": 1,
 			"ip": "192.168.1.217",
 			"subnet": "255.255.255.0",
@@ -29,6 +18,16 @@
 			"dns": "8.8.4.4",
 			"dns2": "8.8.8.8",
 			"mac": "36:12:64:A4:B4:C4"
+		}
+	],
+	"wifi": [
+		{
+			"network": "julian",
+			"password": "talvi333"
+		},
+		{
+			"network": "bean24",
+			"password": "talvi333"
 		}
 	]
 }

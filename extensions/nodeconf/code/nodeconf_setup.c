@@ -75,6 +75,8 @@ static osalStatus ioc_nconf_setup_structure(
   @param   node Node (IO device) configuration to set up.
   @param   default_config Congifuration as packed JSON.
   @param   default_config_sz Default configuration size in bytes.
+  @param   flags 0 for default operation. IOC_LOAD_PBNR_WIFI = Optionally load wifi from separate
+           memory block (use with selectwifi library).
   @return  None.
 
 ****************************************************************************************************
@@ -82,13 +84,16 @@ static osalStatus ioc_nconf_setup_structure(
 void ioc_load_node_config(
     iocNodeConf *node,
     const os_char *default_config,
-    os_memsz default_config_sz)
+    os_memsz default_config_sz,
+    os_int flags)
 {
     const os_char *block;
     os_char *loadblock;
+    osalWifiNetworkBuf *wifibuf;
+    osPersistentHandle *h;
     os_memsz block_sz, n_read;
     osalStatus s;
-    osPersistentHandle *h;
+    os_int i;
 
     os_memclear(node, sizeof(iocNodeConf));
 
@@ -141,13 +146,31 @@ void ioc_load_node_config(
 
     /* Fill in pointers within node structure to access configuation data.
        If we are processing configurable data and it fails, revert to
-       default configuration as last measure.
+       default configuration.
      */
 gotit:
     if (ioc_nconf_setup_structure(node, block, block_sz) != OSAL_SUCCESS &&
         block != default_config)
     {
         ioc_nconf_setup_structure(node, default_config, default_config_sz);
+    }
+
+    /* If we can have wifi configuration as separate persistent block, try to load it and
+       use it if it was set up (used with selectwifi library).
+     */
+    if (flags & IOC_LOAD_PBNR_WIFI)
+    {
+        ioc_load_persistent(OS_PBNR_WIFI, (os_char*)&node->wifi_pbnr_wifi, sizeof(osalWifiPersistent));
+        for (i = 0; i < OSAL_MAX_NRO_WIFI_NETWORKS; i++)
+        {
+            wifibuf = &node->wifi_pbnr_wifi.wifi[i];
+            if (wifibuf->wifi_net_name[0] && wifibuf->wifi_net_password[0])
+            {
+                node->wifi[i].wifi_net_name = wifibuf->wifi_net_name;
+                node->wifi[i].wifi_net_password = wifibuf->wifi_net_password;
+                node->wifis.n_wifi = i + 1;
+            }
+        }
     }
 }
 
@@ -371,11 +394,7 @@ static osalStatus ioc_nconf_process_block(
                 if (is_nic_block && state->nic_ix <= OSAL_MAX_NRO_NICS)
                 {
                     nic = node->nic + state->nic_ix - 1;
-                    if (!os_strcmp(state->tag, "name"))
-                    {
-                        nic->nic_name = item.value.s;
-                    }
-                    else if (!os_strcmp(state->tag, "ip"))
+                    if (!os_strcmp(state->tag, "ip"))
                     {
                         nic->ip_address = item.value.s;
                     }

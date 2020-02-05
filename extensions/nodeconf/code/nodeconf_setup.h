@@ -14,12 +14,18 @@
 ****************************************************************************************************
 */
 
+/* Flags for ioc_load_node_config():
+   IOC_LOAD_PBNR_WIFI = Optionally load wifi from separate memory block (use with selectwifi library).
+ */
+#define IOC_LOAD_PBNR_WIFI 1
+
 /* Load network node configuration.
  */
 void ioc_load_node_config(
     iocNodeConf *node,
     const os_char *default_config,
-    os_memsz default_config_sz);
+    os_memsz default_config_sz,
+    os_int flags);
 
 /* Release any memory allocated for node configuration.
  */

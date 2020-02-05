@@ -91,20 +91,23 @@ osalStatus osal_main(
     osalWifiNetworks *wifis;
     const os_char *device_name = "frank";
 
+    /* Initialize persistent storage
+     */
+    os_memclear(&persistentprm, sizeof(persistentprm));
+    persistentprm.device_name = device_name;
+    os_persistent_initialze(&persistentprm);
+
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
      */
     ioc_initialize_root(&app_iocom);
 
-    /* Initialize persistent storage and load device/network configuration and device/user
-       account congiguration (persistent storage is typically either file system or
-       micro-controller's flash). Defaults are set in network-defaults.json and
-       in account-defaults.json.
+    /* Load device/network configuration and device/user account congiguration
+       (persistent storage is typically either file system or micro-controller's flash).
+       Defaults are set in network-defaults.json and in account-defaults.json.
      */
-    os_memclear(&persistentprm, sizeof(persistentprm));
-    persistentprm.device_name = device_name;
-    os_persistent_initialze(&persistentprm);
-    ioc_load_node_config(&app_device_conf, ioapp_network_defaults, sizeof(ioapp_network_defaults));
+    ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
+        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
     device_id = ioc_get_device_id(&app_device_conf);
 
     ioc_set_iodevice_id(&app_iocom, device_name, device_id->device_nr,

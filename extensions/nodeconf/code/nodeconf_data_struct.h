@@ -124,9 +124,13 @@ typedef struct iocNodeConf
      */
     iocNetworkInterfaces nics;
 
-    /** Array of wifi networks.
+    /** Array of wifi networks (in JSON).
      */
     osalWifiNetwork wifi[OSAL_MAX_NRO_WIFI_NETWORKS];
+
+    /** Wifi can alternatively set in persistent block OS_PBNR_WIFI.
+     */
+    osalWifiPersistent wifi_pbnr_wifi;
 
     /** Structure for passing information about all WiFi networks
      */
