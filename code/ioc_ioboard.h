@@ -40,6 +40,8 @@ extern iocHandle
     ioboard_conf_imp,
     ioboard_conf_exp;
 
+#endif
+
 /* Communication between controller and the IO board.
  */
 #define IOBOARD_CTRL_IS_SOCKET 1
@@ -113,6 +115,8 @@ extern iocHandle
     + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
     + IOC_BIDSZ(SEND_BLOCK_SZ) \
     + IOC_BIDSZ(RECEIVE_BLOCK_SZ)
+
+#ifdef IOCOM_IOBOARD
 
 /* Macro to get interface by other defines.
  */

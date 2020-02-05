@@ -16,6 +16,11 @@
 #define SELECTWIFI_INTERNALS
 #include "selectwifi.h"
 
+/* Define 1 to enable testing selectwi library trough socket. Normally
+   it works only trough serial and blue tooth connections.
+ */
+#define SELECTWIFI_ENABLE_SOCKET_TEST (OSAL_MICROCONTROLLER == 0)
+
 /* We may want to run connection in separate thread, if multithreading is supported?
    Define SWL_CT_FLAG either as IOC_CREATE_THREAD or zero.
  */
@@ -25,11 +30,24 @@
     #define SWL_CT_FLAG 0
 #endif
 
-/* Static global signal structure for select wifi.
+
+/* Sey maximum number of connections and connection type to enable using
+   macros in ioboard.h to calculate necessary pool size.
+ */
+#define IOBOARD_MAX_CONNECTIONS 1
+#if SELECTWIFI_ENABLE_SOCKET_TEST
+#define IOBOARD_CTRL_CON IOBOARD_CTRL_LISTEN_SOCKET
+#else
+#define IOBOARD_CTRL_CON IOBOARD_CTRL_LISTEN_SERIAL
+#endif
+
+/* Static global signal structure for select wifi. Calculate precise pool size necessary
+   using macros in ioboard.h header (somewhat complex).
  */
 iocSelectWiFi swf;
-static os_char swf_pool[10000]; // CALCULATE POOL SIZE NEEDED ????????????????????????????????????????????????
-
+static os_char swf_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
+        SELECTWIFI_EXP_MBLK_SZ, SELECTWIFI_IMP_MBLK_SZ)
+        + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)];
 
 /* Prototypes for forward referred static functions.
  */
@@ -132,6 +150,7 @@ void ioc_initialize_selectwifi(
             ioc_connect(swf.con, &conprm);
             break;
 
+#if SELECTWIFI_ENABLE_SOCKET_TEST
         case IOC_SWF_SOCKET_TEST:
             os_memclear(&epprm, sizeof(epprm));
             swf.epoint = ioc_initialize_end_point(OS_NULL, &swf.root);
@@ -140,6 +159,7 @@ void ioc_initialize_selectwifi(
             epprm.flags = IOC_SOCKET | IOC_CONNECT_UP | SWL_CT_FLAG;
             ioc_listen(swf.epoint, &epprm);
             break;
+#endif
     }
 }
 
@@ -198,7 +218,6 @@ static void ioc_selectfiwi_imp_data_changed(
         }
     }
 }
-
 
 
 /**
