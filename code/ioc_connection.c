@@ -973,19 +973,19 @@ static void ioc_connection_thread(
 #if OSAL_SOCKET_SUPPORT
         /* If socket has been closed by the other end.
          */
-        if (selectdata.eventflags & OSAL_STREAM_CLOSE_EVENT)
+        /* if (selectdata.eventflags & OSAL_STREAM_CLOSE_EVENT)
         {
             osal_trace("stream close event");
             goto failed;
-        }
+        } */
 
         /* Anything error after checking for close event is interprented as broken socket.
          */
-        if (selectdata.errorcode)
+        /* if (selectdata.errorcode)
         {
             osal_trace("socket broken, stream error");
             goto failed;
-        }
+        } */
 #endif
 
         /* Receive and send in loop as long as we can without waiting.
