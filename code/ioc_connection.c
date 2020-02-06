@@ -357,7 +357,10 @@ osalStatus ioc_connect(
 #endif
 
     flags = prm->flags;
-    if (prm->iface) if (prm->iface->is_secure) flags |= IOC_SECURE_CONNECTION;
+    if (prm->iface) if (prm->iface->iflags & OSAL_STREAM_IFLAG_SECURE)
+    {
+        flags |= IOC_SECURE_CONNECTION;
+    }
 #if OSAL_MULTITHREAD_SUPPORT==0
     /* If we have no multithread support, make sure that
        IOC_CREATE_THREAD flag is not given.

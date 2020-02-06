@@ -1640,7 +1640,8 @@ void ioc_ctrl_stream_to_device(
     function pointers to memory block streamer implementation.
  */
 const osalStreamInterface ioc_streamer_iface
- = {ioc_streamer_open,
+ = {OSAL_STREAM_IFLAG_NONE,
+    ioc_streamer_open,
     ioc_streamer_close,
     osal_stream_default_accept,
     ioc_streamer_flush,
