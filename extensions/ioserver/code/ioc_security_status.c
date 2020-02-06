@@ -103,7 +103,7 @@ void ioc_run_security(
         ss = &m->networks[i].sec_status;
 
         ioc_notifications_time_out(ss->new_device, ss->new_device_timer,
-            ss->new_device_is_set, ss->new_device_nrows, 4000);
+            ss->new_device_is_set, ss->new_device_nrows, 8000);
     }
 }
 
