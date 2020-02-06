@@ -201,8 +201,6 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
-os_sleep(100);
-return OSAL_SUCCESS;
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
