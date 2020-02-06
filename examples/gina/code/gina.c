@@ -30,7 +30,7 @@
 
 /* Enable wifi selection by blue tooth (0 or 1) ?.
  */
-#define GINA_USE_SELECTWIFI 1
+#define GINA_USE_SELECTWIFI 0
 #if GINA_USE_SELECTWIFI
 #include "selectwifi.h"
 #endif
@@ -201,6 +201,8 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+os_sleep(100);
+return OSAL_SUCCESS;
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
