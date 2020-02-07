@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import platform
 
@@ -39,3 +40,4 @@ runcmd(BINTOC + ' -v ioapp_network_defaults ' + MYNETDEFAULTS + '.binjson -o ' +
 
 print("*** Check that the output files have been generated (error checks are still missing).")
 print("*** You may need to recompile all C code since generated files in config/include folder are not in compiler dependencies.")
+

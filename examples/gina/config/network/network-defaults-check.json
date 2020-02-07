@@ -5,7 +5,7 @@
 	"connect": [
 		{
 			"transport": "tls",
-			"parameters": "192.168.1.220:6367",
+			"parameters": "192.168.1.220:6369",
 			"flags": "connect,up"
 		}
 	],
