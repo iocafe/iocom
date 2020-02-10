@@ -39,6 +39,11 @@ osalStatus osal_main(
 {
     osalSecurityConfig security_prm;
 
+    /* Setup error handling. Here we select to keep track of network state. We could also
+       set application specific error handler callback by calling osal_set_error_handler().
+     */
+    osal_initialize_net_state();
+
     os_memclear(&security_prm, sizeof(security_prm));
     security_prm.server_cert_file = "myhome.crt";
     security_prm.server_key_file = "secret/myhome.key";

@@ -3,7 +3,7 @@
 	"device_nr": "auto",
 	"network_name": "iocafenet",
 	"publish": "iocafenet,asteroidnet",
-	"password": "pass",
+	"password": "",
 	"connect": [
 		{
 			"transport": "tls",
@@ -11,7 +11,7 @@
 			"flags": "listen,down"
 		},
 		{
-			"transport": "tls",
+			"transport": "none",
 			"parameters": "127.0.0.1:6367",
 			"flags": "connect,down,cloud"
 		}

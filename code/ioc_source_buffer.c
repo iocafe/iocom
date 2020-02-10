@@ -399,7 +399,7 @@ osalStatus ioc_sbuf_synchronize(
     if ((!sbuf->changed.range_set && !sbuf->syncbuf.make_keyframe) ||
         sbuf->syncbuf.used)
     {
-        return sbuf->changed.range_set ? OSAL_STATUS_PENDING : OSAL_SUCCESS;
+        return sbuf->changed.range_set ? OSAL_PENDING : OSAL_SUCCESS;
     }
 
     buf = sbuf->mlink.mblk->buf;

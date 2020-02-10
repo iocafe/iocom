@@ -101,7 +101,7 @@ AppRoot::~AppRoot()
   Keep basic server and application instances alive.
 
   return If working in something, the function returns OSAL_SUCCESS. Return value
-         OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+         OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
          idle mode as far as the application root knows.
 ****************************************************************************************************
 */
@@ -120,7 +120,7 @@ osalStatus AppRoot::run()
     {
         if (m_app[i])
         {
-            if (m_app[i]->run() != OSAL_STATUS_NOTHING_TO_DO)
+            if (m_app[i]->run() != OSAL_NOTHING_TO_DO)
                 s = OSAL_SUCCESS;
         }
     }

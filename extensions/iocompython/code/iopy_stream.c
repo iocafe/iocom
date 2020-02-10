@@ -303,7 +303,7 @@ static PyObject *Stream_run(
         case OSAL_SUCCESS:
             Py_RETURN_NONE;
 
-        case OSAL_STATUS_COMPLETED:
+        case OSAL_COMPLETED:
             return Py_BuildValue("s", "completed");
 
         default:
@@ -473,7 +473,7 @@ PyObject *iocom_stream_getconf(
         Py_END_ALLOW_THREADS
     }
 
-    if (s == OSAL_STATUS_COMPLETED)
+    if (s == OSAL_COMPLETED)
     {
         data = ioc_get_stream_data(stream, &sz, 0);
         if (data == NULL) data = "";
@@ -573,7 +573,7 @@ PyObject *iocom_stream_setconf(
     }
 
     ioc_release_stream(stream);
-    return Py_BuildValue("s", s == OSAL_STATUS_COMPLETED ? "completed" : "failed");
+    return Py_BuildValue("s", s == OSAL_COMPLETED ? "completed" : "failed");
 }
 
 

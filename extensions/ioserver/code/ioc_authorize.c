@@ -415,12 +415,12 @@ static os_boolean ioc_check_whitelist(
     osalStatus s;
 
     s = osal_ip_from_str(first_ip, sizeof(first_ip), state->ip_start);
-    if (s != OSAL_SUCCESS && s != OSAL_STATUS_IS_IPV6) return OS_FALSE;
+    if (s != OSAL_SUCCESS && s != OSAL_IS_IPV6) return OS_FALSE;
     s = osal_ip_from_str(last_ip, sizeof(last_ip), state->ip_end);
-    if (s != OSAL_SUCCESS && s != OSAL_STATUS_IS_IPV6) return OS_FALSE;
+    if (s != OSAL_SUCCESS && s != OSAL_IS_IPV6) return OS_FALSE;
 
     s = osal_ip_from_str(received_ip, sizeof(received_ip), state->recieved_ip);
-    if (s != OSAL_SUCCESS && s != OSAL_STATUS_IS_IPV6) return OS_FALSE;
+    if (s != OSAL_SUCCESS && s != OSAL_IS_IPV6) return OS_FALSE;
 
     if (ioc_compare_ip(received_ip, first_ip, sizeof(received_ip)) < 0) return OS_FALSE;
     if (ioc_compare_ip(received_ip, last_ip, sizeof(received_ip)) > 0) return OS_FALSE;

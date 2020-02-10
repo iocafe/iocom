@@ -108,7 +108,7 @@ osalStatus io_device_console(
 
         case 'g':
         case 'G':
-            return OSAL_STATUS_COMPLETED;
+            return OSAL_COMPLETED;
             break;
 
         default:

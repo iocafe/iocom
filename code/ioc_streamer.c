@@ -241,7 +241,7 @@ void ioc_streamer_close(
   @param   flags Flags for the function, bits. Set OSAL_STREAM_DEFAULT (0) for normal operation
            or OSAL_STREAM_INTERRUPT to interrupt the transfer (final handshake) as failed.
 
-  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and OSAL_STATUS_PENDING
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and OSAL_PENDING
            that finald closing handshake is still going on. All other values indicate an error.
 
 ****************************************************************************************************
@@ -258,8 +258,8 @@ osalStatus ioc_streamer_flush(
         s = ioc_streamer_write(stream, "", -1, &n_written, flags);
         switch (s)
         {
-            case OSAL_SUCCESS: return OSAL_STATUS_PENDING;
-            case OSAL_STATUS_COMPLETED: return OSAL_SUCCESS;
+            case OSAL_SUCCESS: return OSAL_PENDING;
+            case OSAL_COMPLETED: return OSAL_SUCCESS;
             default: return s;
         }
     }
@@ -275,7 +275,7 @@ osalStatus ioc_streamer_flush(
   @anchor ioc_streamer_write
 
   The ioc_streamer_write() function writes up to n bytes of data from buffer to the stream.
-  Call this function repeatedly to send the content until it returns OSAL_STATUS_COMPLETED
+  Call this function repeatedly to send the content until it returns OSAL_COMPLETED
   or error code. Call the function with n argument -1 to mark successfull completion
   of the transfer.
 
@@ -289,7 +289,7 @@ osalStatus ioc_streamer_flush(
            or OSAL_STREAM_INTERRUPT to interrupt the transfer as failed.
 
   @return  OSAL_SUCCESS if transfer is still running.
-           OSAL_STATUS_COMPLETED transnsfer has been completed.
+           OSAL_COMPLETED transnsfer has been completed.
            Other return values indicate an error.
 
 ****************************************************************************************************
@@ -340,7 +340,7 @@ osalStatus ioc_streamer_write(
   @anchor ioc_streamer_read
 
   The ioc_streamer_read() function reads up to n bytes of data from streamer port into buffer.
-  Call this function repeatedly to receive the content until it returns OSAL_STATUS_COMPLETED
+  Call this function repeatedly to receive the content until it returns OSAL_COMPLETED
   or error code. If transfer needs to be interrupted in middle, call ioc_streamer_close()
   function.
 
@@ -354,7 +354,7 @@ osalStatus ioc_streamer_write(
   @param   flags Flags for the function, set OSAL_STREAM_DEFAULT (0).
 
   @return  OSAL_SUCCESS if transfer is still running.
-           OSAL_STATUS_COMPLETED transnsfer has been completed.
+           OSAL_COMPLETED transnsfer has been completed.
            Other return values indicate an error.
 
 ****************************************************************************************************
@@ -407,7 +407,7 @@ osalStatus ioc_streamer_read(
   @anchor ioc_streamer_device_write
 
   The ioc_streamer_device_write() function handles IO device writing data to stream.
-  Call this function repeatedly to receive the content until it returns OSAL_STATUS_COMPLETED
+  Call this function repeatedly to receive the content until it returns OSAL_COMPLETED
   or error code. Call the function with n argument -1 to mark successfull completion
   of the transfer. Alternativelu, ioc_streamer_flush() with OSAL_STREAM_FINAL_HANDSHAKE
   flag does call write with n = -1 and return SUCCESS/pending return values. This is propably
@@ -424,7 +424,7 @@ osalStatus ioc_streamer_read(
            or OSAL_STREAM_INTERRUPT to interrupt the transfer as failed.
 
   @return  OSAL_SUCCESS if transfer is still running.
-           OSAL_STATUS_COMPLETED transnsfer has been completed.
+           OSAL_COMPLETED transnsfer has been completed.
            Other return values indicate an error.
 
 ****************************************************************************************************
@@ -562,7 +562,7 @@ getout:
             break;
 
         case IOC_SSTEP_ALL_COMPLETED:
-            s = OSAL_STATUS_COMPLETED;
+            s = OSAL_COMPLETED;
             break;
 
         default:
@@ -582,7 +582,7 @@ getout:
 
   The ioc_streamer_device_read() function handles receiving data from stream, by IO device.
   Call this function repeatedly to receive the content until it returns
-  OSAL_STATUS_COMPLETED or error code. If transfer needs to be interrupted in middle,
+  OSAL_COMPLETED or error code. If transfer needs to be interrupted in middle,
   call ioc_streamer_close() function.
 
   @param   streamer Pointer to streamer structure.
@@ -596,7 +596,7 @@ getout:
            or OSAL_STREAM_INTERRUPT to interrupt the transfer as failed.
 
   @return  OSAL_SUCCESS if transfer is still running.
-           OSAL_STATUS_COMPLETED transnsfer has been completed.
+           OSAL_COMPLETED transnsfer has been completed.
            Other return values indicate an error.
 
 ****************************************************************************************************
@@ -734,7 +734,7 @@ getout:
             break;
 
         case IOC_SSTEP_ALL_COMPLETED:
-            s = OSAL_STATUS_COMPLETED;
+            s = OSAL_COMPLETED;
             break;
 
         default:
@@ -914,7 +914,7 @@ getout:
             break;
 
         case IOC_SSTEP_ALL_COMPLETED:
-            s = OSAL_STATUS_COMPLETED;
+            s = OSAL_COMPLETED;
             break;
 
         default:
@@ -1097,7 +1097,7 @@ getout:
             break;
 
         case IOC_SSTEP_ALL_COMPLETED:
-            s = OSAL_STATUS_COMPLETED;
+            s = OSAL_COMPLETED;
             break;
 
         default:
@@ -1385,7 +1385,7 @@ void ioc_init_control_stream(
   @param   params Parameters for the streamer.
 
   @return  If working in something, the function returns OSAL_SUCCESS. Return value
-           OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+           OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
            idle mode as far as the control stream knows.
 
 ****************************************************************************************************
@@ -1397,7 +1397,7 @@ osalStatus ioc_run_control_stream(
     iocStreamerState cmd;
     osPersistentBlockNr select;
     os_char state_bits;
-    osalStatus s = OSAL_STATUS_NOTHING_TO_DO;
+    osalStatus s = OSAL_NOTHING_TO_DO;
 
     /* Just for debugging, assert here that ioc_init_control_stream() has been called.
      */
@@ -1569,7 +1569,7 @@ void ioc_ctrl_stream_from_device(
         ? OSAL_STREAM_FINAL_HANDSHAKE
         : OSAL_STREAM_FINAL_HANDSHAKE|OSAL_STREAM_INTERRUPT);
 
-    if (s == OSAL_STATUS_PENDING) return;
+    if (s == OSAL_PENDING) return;
 
     /* Close the stream
      */
@@ -1622,7 +1622,7 @@ void ioc_ctrl_stream_to_device(
     }
     while (s == OSAL_SUCCESS);
 
-    if (s != OSAL_STATUS_COMPLETED) stream_flags = OSAL_STREAM_INTERRUPT;
+    if (s != OSAL_COMPLETED) stream_flags = OSAL_STREAM_INTERRUPT;
 
     if (ctrl->tod_persistent)
     {

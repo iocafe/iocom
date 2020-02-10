@@ -29,7 +29,7 @@
 
   @param   con Pointer to the connection object.
   @return  OSAL_SUCCESS if all connection is establised and we can transfer data normally.
-           OSAL_STATUS_PENDING = we are estabilishing serial connection
+           OSAL_PENDING = we are estabilishing serial connection
            Other return values indicate on error.
 
 ****************************************************************************************************
@@ -237,7 +237,7 @@ osalStatus ioc_establish_serial_connection(
     /* Still establishing serial connection.
      */
     ioc_unlock(root);
-    return OSAL_STATUS_PENDING;
+    return OSAL_PENDING;
 }
 
 

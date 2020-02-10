@@ -51,7 +51,7 @@ AppInstance::~AppInstance()
   Keep the application alive, called repeatedly.
 
   return If working in something, the function returns OSAL_SUCCESS. Return value
-         OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+         OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
          idle mode as far as the application instance knows.
 
 ****************************************************************************************************
@@ -76,7 +76,7 @@ osalStatus AppInstance::run()
         ioc_gets_array(m_float_test, floats, sizeof(floats)/sizeof(os_float));
     }
 
-    return OSAL_STATUS_NOTHING_TO_DO;
+    return OSAL_NOTHING_TO_DO;
 }
 
 

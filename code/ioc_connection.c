@@ -533,7 +533,7 @@ osalStatus ioc_run_connection(
             return OSAL_SUCCESS;
 
         status = ioc_try_to_connect(con);
-        if (status == OSAL_STATUS_PENDING) return OSAL_SUCCESS;
+        if (status == OSAL_PENDING) return OSAL_SUCCESS;
         if (status) return status;
 
         /* Reset connection state
@@ -551,7 +551,7 @@ osalStatus ioc_run_connection(
         /* Check if we need to initiate the serial connection.
          */
         status = ioc_establish_serial_connection(con);
-        if (status == OSAL_STATUS_PENDING) return OSAL_SUCCESS;
+        if (status == OSAL_PENDING) return OSAL_SUCCESS;
         if (status) goto failed;
 
         silence_ms = IOC_SERIAL_SILENCE_MS;
@@ -574,7 +574,7 @@ osalStatus ioc_run_connection(
         while (osal_go())
         {
             status = ioc_connection_receive(con);
-            if (status == OSAL_STATUS_PENDING)
+            if (status == OSAL_PENDING)
             {
                 break;
             }
@@ -587,7 +587,7 @@ osalStatus ioc_run_connection(
         /* Send one frame to connection
          */
         status = ioc_connection_send(con);
-        if (status == OSAL_STATUS_PENDING)
+        if (status == OSAL_PENDING)
         {
             break;
         }
@@ -654,7 +654,7 @@ failed:
   ioc_lock() must be on when this function is called.
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if no worker thread is running. OSAL_STATUS_PENDING if worker
+  @return  OSAL_SUCCESS if no worker thread is running. OSAL_PENDING if worker
            thread is still running.
 
 ****************************************************************************************************
@@ -669,7 +669,7 @@ osalStatus ioc_terminate_connection_thread(
     {
         con->worker.stop_thread = OS_TRUE;
         if (con->worker.trig) osal_event_set(con->worker.trig);
-        status = OSAL_STATUS_PENDING;
+        status = OSAL_PENDING;
     }
 
     return status;
@@ -708,11 +708,11 @@ static osalStatus ioc_try_to_connect(
      */
     if (!osal_int64_is_zero(&con->socket_open_fail_timer))
     {
-        if (!os_elapsed(&con->socket_open_fail_timer, 2000)) return OSAL_STATUS_PENDING;
+        if (!os_elapsed(&con->socket_open_fail_timer, 2000)) return OSAL_PENDING;
     }
     if (!osal_int64_is_zero(&con->socket_open_try_timer))
     {
-        if (!os_elapsed(&con->socket_open_try_timer, 500)) return OSAL_STATUS_PENDING;
+        if (!os_elapsed(&con->socket_open_try_timer, 500)) return OSAL_PENDING;
     }
 
     /* Save stream interface pointer.
@@ -921,7 +921,7 @@ static void ioc_connection_thread(
         if (con->stream == OS_NULL)
         {
             status = ioc_try_to_connect(con);
-            if (status == OSAL_STATUS_PENDING)
+            if (status == OSAL_PENDING)
             {
                 os_timeslice();
                 goto failed;
@@ -965,7 +965,7 @@ static void ioc_connection_thread(
         if (is_serial)
         {
             status = ioc_establish_serial_connection(con);
-            if (status == OSAL_STATUS_PENDING) continue;
+            if (status == OSAL_PENDING) continue;
             if (status) goto failed;
         }
 #endif
@@ -998,7 +998,7 @@ static void ioc_connection_thread(
                 /* Try receiving data from the connection.
                  */
                 status = ioc_connection_receive(con);
-                if (status == OSAL_STATUS_PENDING)
+                if (status == OSAL_PENDING)
                 {
                     break;
                 }
@@ -1015,7 +1015,7 @@ static void ioc_connection_thread(
             /* Try sending data though the connection.
              */
             status = ioc_connection_send(con);
-            if (status == OSAL_STATUS_PENDING)
+            if (status == OSAL_PENDING)
             {
                 break;
             }

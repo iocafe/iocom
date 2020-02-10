@@ -91,6 +91,11 @@ osalStatus osal_main(
     osalWifiNetworks *wifis;
     const os_char *device_name = "frank";
 
+    /* Setup error handling. Here we select to keep track of network state. We could also
+       set application specific error handler callback by calling osal_set_error_handler().
+     */
+    osal_initialize_net_state();
+
     /* Initialize persistent storage
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
@@ -186,7 +191,7 @@ osalStatus osal_loop(
             os_get_timer(&idle_timer);
             break;
 
-        case OSAL_STATUS_NOTHING_TO_DO:
+        case OSAL_NOTHING_TO_DO:
             if (idle_mode) os_sleep(50);
             else idle_mode = os_elapsed(&idle_timer, 2000);
             break;

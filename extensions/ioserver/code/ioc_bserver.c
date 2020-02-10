@@ -129,7 +129,7 @@ void ioc_release_bserver(
 
   @param   m Pointer to basic server structure.
   @return  If working in something, the function returns OSAL_SUCCESS. Return value
-           OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+           OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
            idle mode as far as the bserver knows.
 
 ****************************************************************************************************
@@ -152,7 +152,7 @@ osalStatus ioc_run_bserver(
 
     for (i = 0; i<m->nro_networks; i++)
     {
-        if (ioc_run_bserver_network(m->networks + i, m) != OSAL_STATUS_NOTHING_TO_DO)
+        if (ioc_run_bserver_network(m->networks + i, m) != OSAL_NOTHING_TO_DO)
         {
             s = OSAL_SUCCESS;
         }
@@ -446,7 +446,7 @@ static void ioc_release_bserver_network(
 
   @param   n Pointer to published network structure.
   @return  If working in something, the function returns OSAL_SUCCESS. Return value
-           OSAL_STATUS_NOTHING_TO_DO indicates that this thread can be switched to slow
+           OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
            idle mode as far as the bserver knows.
 
 ****************************************************************************************************
@@ -462,7 +462,7 @@ static osalStatus ioc_run_bserver_network(
     /* If running control stream returns information that the user account intomation has
        been changed, reload it.
      */
-    if (s == OSAL_SUCCESS || s == OSAL_STATUS_NOTHING_TO_DO)
+    if (s == OSAL_SUCCESS || s == OSAL_NOTHING_TO_DO)
     {
         if (n->accounts_stream.transfer_status == IOC_BLOCK_WRITTEN &&
             n->accounts_stream.transferred_block_nr == n->select)

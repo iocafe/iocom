@@ -47,7 +47,7 @@ static osalStatus ioc_store_data_frame(
   The ioc_connection_receive() function
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if whole frame was received. OSAL_STATUS_PENDING if nothing or
+  @return  OSAL_SUCCESS if whole frame was received. OSAL_PENDING if nothing or
            some data was received. Other values indicate broken connection error.
 
 ****************************************************************************************************
@@ -286,7 +286,7 @@ osalStatus ioc_connection_receive(
     if (n < needed)
     {
         ioc_unlock(root);
-        return OSAL_STATUS_PENDING;
+        return OSAL_PENDING;
     }
 
     /* If this is acknowledge.

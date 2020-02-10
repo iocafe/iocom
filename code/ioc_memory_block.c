@@ -1007,7 +1007,7 @@ void ioc_mblk_invalidate(
   @param   flags IOC_RESIZE_PRECISE IOC_to allocate precisely up to nbytes. Otherwise
            memory block size will be rounded up to memory allocation block.
            Flag DISCONNECT_MBLK_ON_RESIZE disconnects memory block if it is resized.
-  @return  If memory block change was changed, the function returns OSAL_STATUS_COMPLETED.
+  @return  If memory block change was changed, the function returns OSAL_COMPLETED.
            If memory block was already big enough, the function returns OSAL_SUCCESS.
            Return value OSAL_STATUS_NOT_SUPPORTED indicates that memory block doesn't have
            IOC_ALLOW_RESIZE flag set.
@@ -1071,7 +1071,7 @@ osalStatus ioc_resize_mblk(
     mblk->nbytes = nbytes;
     mblk->buf_allocated = OS_TRUE;
 
-    return OSAL_STATUS_COMPLETED;
+    return OSAL_COMPLETED;
 }
 #endif
 

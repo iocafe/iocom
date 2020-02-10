@@ -351,7 +351,7 @@ void ioc_run_endpoint(
   ioc_lock() must be on when this function is called.
 
   @param   epoint Pointer to the end_point object.
-  @return  OSAL_SUCCESS if no worker thread is running. OSAL_STATUS_PENDING if there is .
+  @return  OSAL_SUCCESS if no worker thread is running. OSAL_PENDING if there is .
 
 ****************************************************************************************************
 */
@@ -365,7 +365,7 @@ osalStatus ioc_terminate_end_point_thread(
     {
         epoint->stop_worker_thread = OS_TRUE;
         if (epoint->trig) osal_event_set(epoint->trig);
-        status = OSAL_STATUS_PENDING;
+        status = OSAL_PENDING;
     }
 
     return status;
@@ -399,7 +399,7 @@ static osalStatus ioc_try_to_open_endpoint(
      */
     if (!osal_int64_is_zero(&epoint->socket_open_fail_timer))
     {
-        if (!os_elapsed(&epoint->socket_open_fail_timer, 2000)) return OSAL_STATUS_PENDING;
+        if (!os_elapsed(&epoint->socket_open_fail_timer, 2000)) return OSAL_PENDING;
     }
 
     /* Try to open listening socket port.

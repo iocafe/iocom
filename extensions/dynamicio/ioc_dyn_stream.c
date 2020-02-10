@@ -479,7 +479,7 @@ void ioc_start_stream_write(
            to move data between memory block and transport (sync buffers).
   @return  As long as transfer is still going on, the function returns OSAL_SUCCESS.
            Once the transfer has successfully been completed, the function returns
-           OSAL_STATUS_COMPLETED. Other values indicate an error.
+           OSAL_COMPLETED. Other values indicate an error.
 
 ****************************************************************************************************
 */
@@ -494,7 +494,7 @@ osalStatus ioc_run_stream(
     s = ioc_stream_try_setup(stream);
     if (s)
     {
-        return OSAL_STATUS_PENDING;
+        return OSAL_PENDING;
     }
 
     if (flags & IOC_CALL_SYNC)
@@ -623,7 +623,7 @@ osalStatus ioc_stream_initconf(
     s = ioc_stream_try_setup(stream);
     if (s)
     {
-        return OSAL_STATUS_PENDING;
+        return OSAL_PENDING;
     }
 
     if (!stream->streamer_opened)

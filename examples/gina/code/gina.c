@@ -91,6 +91,11 @@ osalStatus osal_main(
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
 
+    /* Setup error handling. Here we select to keep track of network state. We could also
+       set application specific error handler callback by calling osal_set_error_handler().
+     */
+    osal_initialize_net_state();
+
     /* Initialize persistent storage (typically flash is running in micro-controller)
      */
     os_memclear(&persistentprm, sizeof(persistentprm));

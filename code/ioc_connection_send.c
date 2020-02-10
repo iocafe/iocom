@@ -42,7 +42,7 @@ static void ioc_make_mblk_info_frame(
   and calls ioc_send_frame to send it.
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if all data was sent. OSAL_STATUS_PENDING if nothing or part of data
+  @return  OSAL_SUCCESS if all data was sent. OSAL_PENDING if nothing or part of data
            was sent. Other values indicate broken connection error.
 
 ****************************************************************************************************
@@ -60,7 +60,7 @@ osalStatus ioc_connection_send(
         *sbuf;
 
     osalStatus
-        status = OSAL_STATUS_PENDING;
+        status = OSAL_PENDING;
 
     ioc_set_mt_root(root, con->link.root);
     ioc_lock(root);
@@ -83,7 +83,7 @@ osalStatus ioc_connection_send(
         case OSAL_SUCCESS:
             break;
 
-        case OSAL_STATUS_PENDING:
+        case OSAL_PENDING:
             goto just_move_data;
 
         default:
@@ -91,12 +91,12 @@ osalStatus ioc_connection_send(
             return OSAL_STATUS_FAILED;
     }
 
-    /* Did we send whole acknowledge? If not, return OSAL_STATUS_PENDING
+    /* Did we send whole acknowledge? If not, return OSAL_PENDING
      */
     if (con->frame_out.used)
     {
         ioc_unlock(root);
-        return OSAL_STATUS_PENDING;
+        return OSAL_PENDING;
     }
 
     /* We must send and receive authentication before sending anything else.
@@ -479,7 +479,7 @@ static void ioc_make_mblk_info_frame(
   to send for a while.
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if all data was sent. OSAL_STATUS_PENDING if nothing or part of data
+  @return  OSAL_SUCCESS if all data was sent. OSAL_PENDING if nothing or part of data
            was sent. Other values indicate broken connection error.
 
 ****************************************************************************************************
@@ -506,7 +506,7 @@ osalStatus ioc_send_acknowledge(
     if (con->frame_out.used)
     {
         ioc_unlock(root);
-        return OSAL_STATUS_PENDING;
+        return OSAL_PENDING;
     }
 
     /* Generate acknowledge/keepalive message
@@ -574,7 +574,7 @@ osalStatus ioc_send_timed_keepalive(
     if (timed_keepalive)
     {
         status = ioc_send_acknowledge(con);
-        if (status != OSAL_SUCCESS && status != OSAL_STATUS_PENDING)
+        if (status != OSAL_SUCCESS && status != OSAL_PENDING)
         {
             osal_debug_error("send keepalive failed");
             return OSAL_STATUS_FAILED;
@@ -602,7 +602,7 @@ osalStatus ioc_send_timed_keepalive(
 
   @param   con Pointer to the connection object.
   @return  The function returns OSAL_SUCCESS if acknowledgement was not needed or was sent (at
-           least stored in frame out buffer). The function returns OSAL_STATUS_PENDING is
+           least stored in frame out buffer). The function returns OSAL_PENDING is
            other end has not acknowledged enough free space for acknowledge message.
            Other return values indicate a broken connection.
 
@@ -621,13 +621,13 @@ osalStatus ioc_acknowledge_as_needed(
         status;
 
     /* If other end has not acknowledged 3 bytes of free space, return
-       OSAL_STATUS_PENDING.
+       OSAL_PENDING.
      */
     u = con->bytes_sent - con->processed_bytes;
     bytes = (os_int)con->max_ack_in_air - (os_int)u;
     if (bytes < IOC_ACK_SIZE)
     {
-        return OSAL_STATUS_PENDING;
+        return OSAL_PENDING;
     }
 
     /* If we have received enough unacknowledged bytes to acknowledge now.
@@ -639,7 +639,7 @@ osalStatus ioc_acknowledge_as_needed(
     }
 
     status = ioc_send_acknowledge(con);
-    if (status != OSAL_SUCCESS && status != OSAL_STATUS_PENDING)
+    if (status != OSAL_SUCCESS && status != OSAL_PENDING)
     {
         osal_debug_error("send acknowledge failed");
         return OSAL_STATUS_FAILED;
@@ -659,7 +659,7 @@ osalStatus ioc_acknowledge_as_needed(
   The ioc_write_to_stream() function sends one frame to connection.
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if all data was sent. OSAL_STATUS_PENDING if nothing or part of data
+  @return  OSAL_SUCCESS if all data was sent. OSAL_PENDING if nothing or part of data
            was sent. Other values indicate broken connection error.
 
 ****************************************************************************************************
@@ -682,7 +682,7 @@ static osalStatus ioc_write_to_stream(
 #endif
 
     n = con->frame_out.used - con->frame_out.pos;
-    if (n <= 0) return OSAL_STATUS_PENDING;
+    if (n <= 0) return OSAL_PENDING;
 
     status = osal_stream_write(
         con->stream,
@@ -713,11 +713,11 @@ static osalStatus ioc_write_to_stream(
      */
     if (!status && n != n_written)
     {
-        status = OSAL_STATUS_PENDING;
+        status = OSAL_PENDING;
     }
 
 #if OSAL_DEBUG
-    if (status && status != OSAL_STATUS_PENDING)
+    if (status && status != OSAL_PENDING)
     {
         osal_trace("Writing to stream failed");
     }

@@ -29,7 +29,7 @@
   @param   select Persisent block number to load.
   @param   default_data Default content to store to memory block if loading fails.
   @param   default_data_sz Default content size in bytes.
-  @return  OSAL_STATUS_COMPLETED: The memory block succesfully loaded from persistent storage.
+  @return  OSAL_COMPLETED: The memory block succesfully loaded from persistent storage.
            OSAL_SUCCESS: Default data given as argument was used.
            Other return values indicate an error.
 
@@ -76,7 +76,7 @@ osalStatus ioc_load_persistent_into_mblk(
     /* CHECK WHAT TO DO WITH OPEN SOURCE/TARGET BUFFERS IF BLOCK SIZE IS INCREASED.
      */
     s = ioc_resize_mblk(mblk, (os_int)block_sz, IOC_DISCONNECT_MBLK_ON_RESIZE);
-    if (s != OSAL_SUCCESS && s != OSAL_STATUS_COMPLETED)
+    if (s != OSAL_SUCCESS && s != OSAL_COMPLETED)
     {
         osal_debug_error("resizing memory block failed");
         goto getout;
