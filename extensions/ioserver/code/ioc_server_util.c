@@ -49,3 +49,78 @@ void ioc_set_handle_to_signals(
     }
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Get data from persistent block or from file.
+  @anchor osal_get_persistent_block_or_file
+
+  The osal_get_persistent_block_or_file() function reads either a file (if we have file system
+  support) or persistent memory block, depending on file_name.
+
+  This is used by basic server to get client certificate chain to set up and IO device.
+
+  Buffer may be allocated by os_malloc and must be released by calling os_free(buf, n_read) if
+  the function returns OSAL_MEMORY_ALLOCATED.
+
+  @param   default_block_nr If reading from persistent storage, this is default block
+           number for the case when file name doesn't specify one.
+  @param   dir Directory from where files are read, if using file system.
+  @oaram   file_name Specifies file name or persistent block number.
+  @param   buf Where to store pointer to data buffer.
+  @param   n_read Number of data bytes in buffer.
+  @return  OSAL_SUCCESS or OSAL_MEMORY_ALLOCATED if data was loaded. OSAL_MEMORY_ALLOCATED
+           return code means that memory was allocated and must be released by os_free().
+           Other return values indicate that it was not loaded (missing or error).
+
+****************************************************************************************************
+*/
+osalStatus osal_get_persistent_block_or_file(
+    osPersistentBlockNr default_block_nr,
+    const os_char *dir,
+    const os_char *file_name,
+    os_char **buf,
+    os_memsz *n_read)
+{
+    osPersistentBlockNr block_nr;
+    osalStatus s;
+    os_char *block;
+
+#if OSAL_FILESYS_SUPPORT
+    os_char path[OSAL_PATH_SZ];
+
+    *buf = OS_NULL;
+
+    /* If we have file name which doesn't start with number, we will read from file.
+     */
+    if (file_name) if (!osal_char_isdigit(*file_name) && *file_name != '\0')
+    {
+        if (dir == OS_NULL)
+        {
+            dir = OSAL_FS_ROOT "coderoot/eosal/extensions/tls/keys-and-certs/";
+        }
+
+        os_strncpy(path, dir, sizeof(path));
+        os_strncat(path, file_name, sizeof(path));
+
+        *buf = os_read_file_alloc(path, n_read, OS_FILE_DEFAULT);
+        if (*buf) return OSAL_MEMORY_ALLOCATED;
+
+        osal_debug_error_str("bserver: reading file failed ", path);
+        return OSAL_STATUS_FAILED;
+    }
+#endif
+
+    block_nr = (osPersistentBlockNr)osal_str_to_int(file_name, OS_NULL);
+    if (block_nr == 0) block_nr = default_block_nr;
+
+    s = ioc_load_persistent_malloc(block_nr, &block, n_read);
+    if (s != OSAL_SUCCESS && s != OSAL_MEMORY_ALLOCATED)
+    {
+        osal_debug_error_int("ioc_load_persistent_malloc failed ", block_nr);
+        return OSAL_STATUS_FAILED;
+    }
+    *buf = block;
+    return s;
+}

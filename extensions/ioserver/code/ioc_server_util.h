@@ -20,3 +20,11 @@ void ioc_set_handle_to_signals(
     iocMblkSignalHdr *mblk_hdr,
     iocHandle *handle);
 
+/* Get data from persistent block or from file.
+ */
+osalStatus osal_get_persistent_block_or_file(
+    osPersistentBlockNr default_block_nr,
+    const os_char *dir,
+    const os_char *file_name,
+    os_char **buf,
+    os_memsz *n_read);
