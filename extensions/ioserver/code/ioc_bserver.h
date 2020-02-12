@@ -25,6 +25,7 @@
 #endif
 
 struct iocBServerNetwork;
+struct iocPersistentWriter;
 
 /**
 ****************************************************************************************************
@@ -92,6 +93,11 @@ typedef struct iocBServer
      */
     const os_char *account_defaults;
     os_memsz account_defaults_sz;
+
+    /** Pointer to persistent writer object, if currently uploading client certificate
+        or automatically updating IO device's flash program.
+     */
+    struct iocPersistentWriter *persistent_writer;
 
     /** Security run timer.
      */

@@ -459,7 +459,7 @@ static osalStatus ioc_run_bserver_network(
 
     s = ioc_run_control_stream(&n->accounts_stream, &n->accounts_stream_params);
 
-    /* If running control stream returns information that the user account intomation has
+    /* If running control stream returns information that the user account information has
        been changed, reload it.
      */
     if (s == OSAL_SUCCESS || s == OSAL_NOTHING_TO_DO)
@@ -472,7 +472,8 @@ static osalStatus ioc_run_bserver_network(
         }
     }
 
+
+    ioc_upload_cert_chain_or_flash_prog(m);
+
     return s;
-
 }
-

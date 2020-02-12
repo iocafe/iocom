@@ -34,6 +34,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_security_status.h"
 #include "code/ioc_bserver.h"
 #include "code/ioc_persistent_mblk.h"
+#include "code/ioc_persistent_writer.h"
 
 /* If C++ compilation, end the undecorated code.
  */
