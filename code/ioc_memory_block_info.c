@@ -38,6 +38,14 @@ static void ioc_mbinfo_new_tbuf(
     iocMemoryBlockInfo *info,
     os_short bdflags);
 
+#if IOC_DYNAMIC_MBLK_CODE
+static void ioc_mbinfo_info_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context);
+#endif
 
 /**
 ****************************************************************************************************
@@ -546,6 +554,13 @@ void ioc_mbinfo_received(
                     {
                         ioc_add_mblk_shortcut(dnetwork, mblk);
                     }
+
+                    /* If this is info memory block, add callback to receive dynamic info.
+                     */
+                    if (!os_strcmp(mblk->mblk_name, "info"))
+                    {
+                        ioc_add_callback(&mblk->handle, ioc_mbinfo_info_callback, OS_NULL);
+                    }
                 }
 
                 ioc_new_root_event(root, IOC_NEW_MEMORY_BLOCK, OS_NULL, mblk,
@@ -808,3 +823,38 @@ static void ioc_mbinfo_new_tbuf(
     }
 #endif
 }
+
+#if IOC_DYNAMIC_MBLK_CODE
+/**
+****************************************************************************************************
+
+  @brief Callback function to add dynamic device information.
+
+  The ioc_mbinfo_info_callback() function is called when device information data is received from
+  connection or when connection status changes.
+
+  @param   handle Memory block handle.
+  @param   start_addr Address of first changed byte.
+  @param   end_addr Address of the last changed byte.
+  @param   flags Reserved  for future.
+  @param   context Application specific pointer passed to this callback function.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_mbinfo_info_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context)
+{
+    /* If actual data received (not connection status change).
+     */
+    if (end_addr >= 0)
+    {
+        ioc_add_dynamic_info(handle, OS_FALSE);
+    }
+}
+#endif

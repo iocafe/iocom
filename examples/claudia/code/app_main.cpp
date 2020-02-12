@@ -47,13 +47,6 @@ static os_timer idle_timer;
 
 /* Forward referred static functions.
  */
-static void app_info_callback(
-    struct iocHandle *handle,
-    os_int start_addr,
-    os_int end_addr,
-    os_ushort flags,
-    void *context);
-
 static void app_root_callback(
     struct iocRoot *root,
     iocEvent event,
@@ -220,40 +213,6 @@ void osal_main_cleanup(
 /**
 ****************************************************************************************************
 
-  @brief Callback function to add dynamic device information.
-
-  The app_info_callback() function is called when device information data is received from
-  connection or when connection status changes.
-
-  @param   handle Memory block handle.
-  @param   start_addr Address of first changed byte.
-  @param   end_addr Address of the last changed byte.
-  @param   flags Reserved  for future.
-  @param   context Application specific pointer passed to this callback function.
-
-  @return  None.
-
-****************************************************************************************************
-*/
-static void app_info_callback(
-    struct iocHandle *handle,
-    os_int start_addr,
-    os_int end_addr,
-    os_ushort flags,
-    void *context)
-{
-    /* If actual data received (not connection status change).
-     */
-    if (end_addr >= 0)
-    {
-        ioc_add_dynamic_info(handle, OS_FALSE);
-    }
-}
-
-
-/**
-****************************************************************************************************
-
   @brief Callback when dynamic IO network, device, etc has been connected or disconnected.
 
   The root_callback() function is called when memory block, io device network or io device is
@@ -279,25 +238,14 @@ static void app_root_callback(
     struct iocMemoryBlock *mblk,
     void *context)
 {
-    os_char *mblk_name;
-    iocHandle handle;
-
     switch (event)
     {
         case IOC_NEW_MEMORY_BLOCK:
-            mblk_name = mblk->mblk_name;
-
-            ioc_setup_handle(&handle, root, mblk);
-            if (!os_strcmp(mblk_name, "info"))
+            if (os_strcmp(mblk->mblk_name, "info"))
             {
-                ioc_add_callback(&handle, app_info_callback, OS_NULL);
-            }
-            else
-            {
-                ioc_memory_block_set_int_param(&handle,
+                ioc_memory_block_set_int_param(&mblk->handle,
                     IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
             }
-            ioc_release_handle(&handle);
             break;
 
         case IOC_NEW_NETWORK:

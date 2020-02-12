@@ -274,6 +274,11 @@ osalStatus ioc_process_received_authentication_frame(
         con->flags |= IOC_CLOUD_CONNECTION;
     }
 
+    if (auth_flags & IOC_AUTH_NO_CERT_CHAIN)
+    {
+        con->flags |= IOC_NO_CERT_CHAIN;
+    }
+
     s = ioc_msg_getstr(user.user_name, IOC_DEVICE_ID_SZ, &p);
     if (s) return s;
 

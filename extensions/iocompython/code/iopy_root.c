@@ -24,21 +24,6 @@ typedef enum
 iocSendReceiveOp;
 
 
-static void Root_callback(
-    struct iocRoot *root,
-    iocEvent event,
-    struct iocDynamicNetwork *dnetwork,
-    struct iocMemoryBlock *mblk,    
-    void *context);
-
-static void Root_info_callback(
-    struct iocHandle *handle,
-    os_int start_addr,
-    os_int end_addr,
-    os_ushort flags,
-    void *context);
-
-
 /**
 ****************************************************************************************************
 
@@ -96,10 +81,6 @@ static PyObject *Root_new(
     ioc_initialize_root(self->root);
     ioc_set_iodevice_id(self->root, device_name, device_nr, password, network_name);
     ioc_initialize_dynamic_root(self->root);
-
-    /* Set callback function to receive information about new dynamic memory blocks.
-     */
-    ioc_set_root_callback(self->root, Root_callback, self);
 
     /* Save network and device.
      */
@@ -542,93 +523,6 @@ static PyObject *Root_wait_for_com_event(
      */
     Py_INCREF(Py_None);
     return Py_None;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Callback when dynamic IO network, device, etc has been connected or disconnected.
-
-  The info_Root_callback() function is called when memory block, io device network or io device is
-  added or removed.
-
-  @param   root Pointer to the root object.
-  @param   event Either IOC_NEW_NETWORK, IOC_NEW_DEVICE or IOC_NETWORK_DISCONNECTED.
-  @param   dnetwork Pointer to dynamic network object which has just been connected or is
-           about to be removed.
-  @param   mblk Pointer to memory block structure, OS_NULL if not available for the event.
-  @param   context Application specific pointer passed to this callback function.
-
-  @return  None.
-
-****************************************************************************************************
-*/
-static void Root_callback(
-    struct iocRoot *root,
-    iocEvent event,
-    struct iocDynamicNetwork *dnetwork,
-    struct iocMemoryBlock *mblk,    
-    void *context)
-{
-    os_char *mblk_name; 
-    iocHandle handle;
-
-    switch (event)
-    {
-        /* Process "new dynamic memory block" callback.
-         */
-        case IOC_NEW_MEMORY_BLOCK:
-            mblk_name = mblk->mblk_name;
-
-            if (!os_strcmp(mblk_name, "info"))
-            {
-                ioc_setup_handle(&handle, root, mblk);
-                ioc_add_callback(&handle, Root_info_callback, OS_NULL);
-                ioc_release_handle(&handle);
-            }
-            break;
-
-        default:
-            break;
-    }
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Callback function to add dynamic device information.
-
-  The info_callback() function is called when device information data is received from connection
-  or when connection status changes.
-
-  @param   mblk Pointer to the memory block object.
-  @param   start_addr Address of first changed byte.
-  @param   end_addr Address of the last changed byte.
-  @param   flags Reserved  for future.
-  @param   context Application specific pointer passed to this callback function.
-
-  @return  None.
-
-****************************************************************************************************
-*/
-static void Root_info_callback(
-    struct iocHandle *handle,
-    os_int start_addr,
-    os_int end_addr,
-    os_ushort flags,
-    void *context)
-{
-    iocRoot *root;
-    root = handle->root;
-
-    /* If actual data received (not connection status change).
-     */
-    if (end_addr >= 0 && root)
-    {
-        ioc_add_dynamic_info(handle, OS_FALSE);
-    }
 }
 
 
