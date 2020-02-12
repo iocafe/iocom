@@ -120,6 +120,13 @@ void ioc_make_authentication_frame(
         {
             password = root->password;
         }
+
+        /* If we do not have client certificate chain, set flag to indicate it.
+         */
+        if (osal_get_network_state_item(OSAL_NS_NO_CERT_CHAIN, 0))
+        {
+            flags |= IOC_AUTH_NO_CERT_CHAIN;
+        }
     }
     ioc_msg_setstr(password, &p);
 
