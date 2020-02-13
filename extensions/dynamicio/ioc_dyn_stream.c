@@ -272,24 +272,23 @@ static void ioc_stream_cleanup(
     stream->streamer_opened = OS_FALSE;
     stream->streamer = OS_NULL;
 
-    if (stream->read_buf)
-    {
+    if (stream->read_buf) {
         osal_stream_buffer_close(stream->read_buf, OSAL_STREAM_DEFAULT);
         stream->read_buf = OS_NULL;
     }
 
-    if (stream->write_buf)
-    {
-        os_free(stream->write_buf, stream->write_buf_sz);
+    if (stream->write_buf) {
+        if (stream->write_buf_allocated) {
+            os_free(stream->write_buf, stream->write_buf_sz);
+        }
         stream->write_buf = OS_NULL;
     }
 
-    if (stream->exp_handle.mblk)
-    {
+    if (stream->exp_handle.mblk) {
         ioc_release_handle(&stream->exp_handle);
     }
-    if (stream->imp_handle.mblk)
-    {
+
+    if (stream->imp_handle.mblk) {
         ioc_release_handle(&stream->imp_handle);
     }
 }
@@ -441,6 +440,8 @@ void ioc_start_stream_read(
   @param   buf Pointer to data to write. This can be network configuration as packed JSON
            or flash program, etc.
   @param   buf_sz Data size in bytes.
+  @param   copy_buf If OS_TRUE, new buffer is allocated and content is copied to it.
+           If OS_FALSE, buffer is used as is and must extst until stream is released.
   @return  None.
 
 ****************************************************************************************************
@@ -448,16 +449,26 @@ void ioc_start_stream_read(
 void ioc_start_stream_write(
     iocStream *stream,
     const os_char *buf,
-    os_memsz buf_sz)
+    os_memsz buf_sz,
+    os_boolean copy_buf)
 {
     ioc_stream_cleanup(stream);
     stream->flags = OSAL_STREAM_WRITE;
 
     stream->write_buf_sz = (os_int)buf_sz;
-    stream->write_buf = os_malloc(buf_sz, OS_NULL);
     stream->write_buf_pos = 0;
-    if (stream->write_buf == OS_NULL) return;
-    os_memcpy(stream->write_buf, buf, buf_sz);
+    stream->write_buf_allocated = copy_buf;
+
+    if (copy_buf)
+    {
+        stream->write_buf = os_malloc(buf_sz, OS_NULL);
+        if (stream->write_buf == OS_NULL) return;
+        os_memcpy(stream->write_buf, buf, buf_sz);
+    }
+    else
+    {
+        stream->write_buf = (os_char*)buf;
+    }
 }
 
 

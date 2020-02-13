@@ -142,12 +142,22 @@ osalStatus ioc_run_bserver(
 
     s = ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
 
-    /* Run security about twice per second.
+    /* Run security about twice per second and move set flag check_cert_chain_etc from root
+       to bserver.
      */
     if (os_elapsed(&m->sec_timer, 522))
     {
         os_get_timer(&m->sec_timer);
         ioc_run_security(m);
+
+        /* This is used by ioc_upload_cert_chain_or_flash_prog() to trigger check for missing
+           IO device certificate chain (new device installation), etc.
+         */
+        if (!m->check_cert_chain_etc && m->root->check_cert_chain_etc)
+        {
+            m->root->check_cert_chain_etc = OS_FALSE;
+            m->check_cert_chain_etc = OS_TRUE;
+        }
     }
 
     for (i = 0; i<m->nro_networks; i++)
@@ -157,6 +167,11 @@ osalStatus ioc_run_bserver(
             s = OSAL_SUCCESS;
         }
     }
+
+    /* Handle uploading certificate chain to IO device, and optionally (in future?) updating
+       flash program version.
+     */
+    ioc_upload_cert_chain_or_flash_prog(m);
 
     return s;
 }
@@ -471,9 +486,6 @@ static osalStatus ioc_run_bserver_network(
                 m->account_defaults_sz);
         }
     }
-
-
-    ioc_upload_cert_chain_or_flash_prog(m);
 
     return s;
 }

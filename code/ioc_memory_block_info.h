@@ -45,6 +45,17 @@
  */
 #define IOC_NETWORK_NAME_SZ 24
 
+/** Signal path is signal.mblk.deviceX.network", thus maximum path size in bytes is:
+ */
+#define IOC_SIGNAL_PATH_SZ (IOC_SIGNAL_NAME_SZ + IOC_NAME_SZ + IOC_DEVICE_ID_SZ + IOC_NETWORK_NAME_SZ + 1)
+
+/** Memory block path is "mblk.deviceX.network", thus maximum path size in bytes is:
+ */
+#define IOC_MBLK_PATH_SZ (IOC_NAME_SZ + IOC_DEVICE_ID_SZ + IOC_NETWORK_NAME_SZ + 1)
+
+/** Device path is "deviceX.network", thus maximum path size in bytes is:
+ */
+#define IOC_DEVICE_PATH_SZ (IOC_DEVICE_ID_SZ + IOC_NETWORK_NAME_SZ + 1)
 
 /** "1/2 byte" and "has string", etc flags for packing memory block info.
  */

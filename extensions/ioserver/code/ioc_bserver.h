@@ -75,6 +75,11 @@ typedef struct iocBServer
     os_boolean is_bypass_server;
     os_boolean is_cloud_server;
 
+    /* Check for missing certificate chain and flash program versions. This is optimization flag
+       for automatic uploader.
+     */
+    os_boolean check_cert_chain_etc;
+
     /* Memory block handles for the server.
      */
     iocHandle exp, imp, conf_exp, conf_imp, info;

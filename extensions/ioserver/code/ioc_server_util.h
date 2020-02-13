@@ -27,4 +27,5 @@ osalStatus osal_get_persistent_block_or_file(
     const os_char *dir,
     const os_char *file_name,
     os_char **buf,
-    os_memsz *n_read);
+    os_memsz *n_read,
+    os_int flags);

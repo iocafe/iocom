@@ -41,6 +41,10 @@ struct iocDynamicRoot;
 struct iocDynamicNetwork;
 struct iocEventQueue;
 
+/* Module name used by iocom library to report errors.
+ */
+const extern os_char eosal_iocom[];
+
 /** Start automatically given device numbers from IOC_AUTO_DEVICE_NR + 1. This can be changed by
     compiler define, but communicating devices using automatic device numbers
     must use the same define.
@@ -243,6 +247,11 @@ typedef struct iocRoot
     ioc_authorize_user_func *authorization_func;
     void *authorization_context;
 #endif
+
+    /** Flag for basic server (iocBServer). Check for missing certificate chain and
+        flash program versions. This is optimization flag for automatic uploader.
+     */
+    os_boolean check_cert_chain_etc;
 }
 iocRoot;
 

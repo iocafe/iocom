@@ -30,7 +30,9 @@
   @param   default_block_nr If reading from persistent storage, this is default block
            number for the case when file name doesn't specify one.
   @param   dir Directory from where files are read, if using file system.
-  @oaram   file_name Specifies file name or persistent block number.
+  @param   file_name Specifies file name or persistent block number.
+  @param   mblk Pointer to memory block. Used to get path to device, thus any device's
+           memory block will do.
 
   @return  Pointer to persistent writer object, or OSAL_NULL if the function failed.
            The persistant writer object returned by this function must be released by
@@ -41,25 +43,34 @@
 iocPersistentWriter *ioc_start_persistent_writer(
     osPersistentBlockNr default_block_nr,
     const os_char *dir,
-    const os_char *file_name)
+    const os_char *file_name,
+    iocMemoryBlock *mblk)
 {
     iocPersistentWriter *wr;
+    iocStream *stream;
     osalStatus s;
     os_char *buf;
     os_memsz n_read;
+    os_int select;
 
-    /* If communication is busy writing something else?
-     */
-/*     stream = ioc_open_stream(
-        iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
-        OS_NULL, 0, OS_NULL, os_strstr(flags, "device",
-        OSAL_STRING_SEARCH_ITEM_NAME) ?  IOC_IS_DEVICE : IOC_IS_CONTROLLER); */
+select = OS_PBNR_CLIENT_CERT_CHAIN; // Block number on target IO device
 
+    stream = ioc_open_stream(mblk->link.root, select, "frd_buf", "tod_buf", "conf_exp", "conf_imp",
+        mblk->device_name, mblk->device_nr, mblk->network_name, IOC_IS_CONTROLLER);
+    if (stream == OS_NULL)
+    {
+        osal_error(OSAL_WARNING, eosal_iocom, OSAL_STATUS_FAILED,
+            "opening upload stream to IO device failed");
+        return OS_NULL;
+    }
 
     /* Get data from persistent block or from file.
      */
-    s = osal_get_persistent_block_or_file(default_block_nr, dir, file_name, &buf, &n_read);
+    s = osal_get_persistent_block_or_file(default_block_nr, dir,
+        file_name, &buf, &n_read, OS_FILE_NULL_CHAR);
     if (OSAL_IS_ERROR(s)) {
+        osal_error(OSAL_WARNING, eosal_iocom, s, "no data to upload");
+        ioc_release_stream(stream);
         return OS_NULL;
     }
 
@@ -71,13 +82,16 @@ iocPersistentWriter *ioc_start_persistent_writer(
         if (s == OSAL_MEMORY_ALLOCATED) {
             os_free(buf, n_read);
         }
+        ioc_release_stream(stream);
         return OS_NULL;
     }
     os_memclear(wr, sizeof(iocPersistentWriter));
     wr->buf_allocated = (os_boolean) (s == OSAL_MEMORY_ALLOCATED);
     wr->buf = buf;
     wr->buf_sz = n_read;
+    wr->stream = stream;
 
+    ioc_start_stream_write(stream, buf, n_read, OS_FALSE);
     return wr;
 }
 
@@ -100,6 +114,8 @@ void ioc_release_persistent_writer(
     iocPersistentWriter *wr)
 {
     if (wr == OS_NULL) return;
+
+    ioc_release_stream(wr->stream);
 
     if (wr->buf_allocated) {
         os_free(wr->buf, wr->buf_sz);
@@ -127,8 +143,14 @@ void ioc_release_persistent_writer(
 osalStatus ioc_run_persistent_writer(
     iocPersistentWriter *wr)
 {
+    osalStatus s;
 
-    return OSAL_COMPLETED;
+    s = ioc_run_stream(wr->stream, IOC_CALL_SYNC);
+    if (OSAL_IS_ERROR(s))
+    {
+        osal_error(OSAL_WARNING, eosal_iocom, s, "upload to IO device failed");
+    }
+    return s;
 }
 
 
@@ -153,19 +175,26 @@ void ioc_upload_cert_chain_or_flash_prog(
     iocBServer *m)
 {
     iocConnection *con;
-
-return;
-
-//    if (!root->check_cert_chain_or_prog_updates && m->wr == OS_NULL) return;
-
+    iocTargetBuffer *tbuf;
+    iocMemoryBlock *mblk;
+    osalStatus s;
 
     /* If we have persistent writer, keep on writing.
      */
     if (m->persistent_writer)
     {
-
+        s = ioc_run_persistent_writer(m->persistent_writer);
+        if (s)
+        {
+            ioc_release_persistent_writer(m->persistent_writer);
+            m->persistent_writer = OS_NULL;
+        }
         return;
     }
+
+    /* If we are not triggered to scan for updates, we have nothing to do.
+     */
+    if (!m->check_cert_chain_etc) return;
 
     /* Synchronize.
      */
@@ -179,105 +208,32 @@ return;
     {
         if (con->flags & IOC_NO_CERT_CHAIN)
         {
-            /* * iocPersistentWriter *ioc_start_persistent_writer(
-                osPersistentBlockNr default_block_nr,
-                    const os_char *dir,
-                    const os_char *file_name) */
+            for (tbuf = con->tbuf.first; tbuf; tbuf = tbuf->clink.next)
+            {
+                mblk = tbuf->mlink.mblk;
+
+                if (!os_strcmp(mblk->mblk_name, "info"))
+                {
+                    m->persistent_writer = ioc_start_persistent_writer(OS_PBNR_CLIENT_CERT_CHAIN,
+                        OS_NULL, "myhome-bundle.crt", mblk);
+
+                    break;
+                }
+            }
 
             con->flags &= ~IOC_NO_CERT_CHAIN;
+            break;
         }
     }
 
     /* End synchronization.
      */
     ioc_unlock(m->root);
+
+    /* If we dodn't find connection to process.
+     */
+    if (con == OS_NULL)
+    {
+        m->check_cert_chain_etc = OS_FALSE;
+    }
 }
-
-
-
-
-#if 0
-****************************************************************************************************
-  Global blocking function, set configuration.
-****************************************************************************************************
-*/
-PyObject *iocom_stream_setconf(
-    PyObject *self,
-    PyObject *args,
-    PyObject *kwds)
-{
-    const char
-        *frd_buf_name = "frd_buf",
-        *tod_buf_name = "tod_buf",
-        *device_path = OS_NULL,
-        *flags = "";
-
-    int
-        select = OS_PBNR_CONFIG;
-
-    os_char
-        exp_mblk_path[64],
-        imp_mblk_path[64];
-
-    osalStatus s;
-    iocStream *stream;
-    Root *root;
-    iocRoot *iocroot;
-    PyObject *pydata = NULL;
-    char *buffer;
-    Py_ssize_t length;
-    int count = -1;
-    int pos = 0;
-
-    static char *kwlist[] = {
-        "path",
-        "data",
-        "pos",
-        "n",
-        "select",
-        "flags",
-        NULL
-    };
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|iiis",
-         kwlist, &device_path, &pydata, &pos, &count, &select, &flags))
-    {
-        PyErr_SetString(iocomError, "Device path mydevice.mynetwork and byte data to send are expected as arguments.");
-        return NULL;
-    }
-
-    root = (Root*)self;
-    iocroot = root->root;
-    if (iocroot == OS_NULL)
-    {
-        PyErr_SetString(iocomError, "IOCOM root object has been deleted");
-        return NULL;
-    }
-
-    os_strncpy(exp_mblk_path, "conf_exp.", sizeof(exp_mblk_path));
-    os_strncat(exp_mblk_path, device_path, sizeof(exp_mblk_path));
-    os_strncpy(imp_mblk_path, "conf_imp.", sizeof(imp_mblk_path));
-    os_strncat(imp_mblk_path, device_path, sizeof(imp_mblk_path));
-
-    stream = ioc_open_stream(
-        iocroot, select, frd_buf_name, tod_buf_name, exp_mblk_path, imp_mblk_path,
-        OS_NULL, 0, OS_NULL, os_strstr(flags, "device",
-        OSAL_STRING_SEARCH_ITEM_NAME) ?  IOC_IS_DEVICE : IOC_IS_CONTROLLER);
-
-    PyBytes_AsStringAndSize(pydata, &buffer, &length);
-    if (count < 0) count = length;
-    if (pos + count > length) count = length - pos;
-    if (count < 0) count = 0;
-    ioc_start_stream_write(stream, buffer + pos, count);
-
-    while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS && osal_go())
-    {
-        Py_BEGIN_ALLOW_THREADS
-        os_timeslice();
-        Py_END_ALLOW_THREADS
-    }
-
-    ioc_release_stream(stream);
-    return Py_BuildValue("s", s == OSAL_COMPLETED ? "completed" : "failed");
-}
-#endif

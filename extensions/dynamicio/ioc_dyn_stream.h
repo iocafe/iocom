@@ -114,6 +114,7 @@ typedef struct iocStream
     os_char *write_buf;
     os_int write_buf_sz;
     os_int write_buf_pos;
+    os_boolean write_buf_allocated;
 
     /** Read buffer, stream buffer class. OS_NULL if none.
      */
@@ -156,7 +157,8 @@ void ioc_start_stream_read(
 void ioc_start_stream_write(
     iocStream *stream,
     const os_char *buf,
-    os_memsz buf_sz);
+    os_memsz buf_sz,
+    os_boolean copy_buf);
 
 /* Call run repeatedly until data transfer is complete or has failed.
  */

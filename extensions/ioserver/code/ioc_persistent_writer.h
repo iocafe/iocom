@@ -28,6 +28,10 @@ typedef struct iocPersistentWriter
      */
     os_char *buf;
     os_memsz buf_sz;
+
+    /* Writing stream
+     */
+    iocStream *stream;
 }
 iocPersistentWriter;
 
@@ -37,7 +41,8 @@ iocPersistentWriter;
 iocPersistentWriter *ioc_start_persistent_writer(
     osPersistentBlockNr default_block_nr,
     const os_char *dir,
-    const os_char *file_name);
+    const os_char *file_name,
+    iocMemoryBlock *mblk);
 
 /* Release persistent writer object.
  */

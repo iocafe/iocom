@@ -268,7 +268,7 @@ static PyObject *Stream_start_write(
     if (count < 0) count = length;
     if (pos + count > length) count = length - pos;
     if (count < 0) count = 0;
-    ioc_start_stream_write(self->stream, buffer + pos, count);
+    ioc_start_stream_write(self->stream, buffer + pos, count, OS_TRUE);
 
     Py_RETURN_NONE;
 }
@@ -421,8 +421,8 @@ PyObject *iocom_stream_getconf(
         select = OS_PBNR_CONFIG;
 
     os_char
-        exp_mblk_path[64],
-        imp_mblk_path[64],
+        exp_mblk_path[IOC_MBLK_PATH_SZ],
+        imp_mblk_path[IOC_MBLK_PATH_SZ],
         *data;
 
     os_memsz sz;
@@ -511,8 +511,8 @@ PyObject *iocom_stream_setconf(
         select = OS_PBNR_CONFIG;
 
     os_char
-        exp_mblk_path[64],
-        imp_mblk_path[64];
+        exp_mblk_path[IOC_MBLK_PATH_SZ],
+        imp_mblk_path[IOC_MBLK_PATH_SZ];
 
     osalStatus s;
     iocStream *stream;
@@ -563,7 +563,7 @@ PyObject *iocom_stream_setconf(
     if (count < 0) count = length;
     if (pos + count > length) count = length - pos;
     if (count < 0) count = 0;
-    ioc_start_stream_write(stream, buffer + pos, count);
+    ioc_start_stream_write(stream, buffer + pos, count, OS_TRUE);
 
     while ((s = ioc_run_stream(stream, IOC_CALL_SYNC)) == OSAL_SUCCESS && osal_go())
     {
@@ -594,8 +594,8 @@ PyObject *iocom_initconf(
         *flags = "";
 
     os_char
-        exp_mblk_path[64],
-        imp_mblk_path[64];
+        exp_mblk_path[IOC_MBLK_PATH_SZ],
+        imp_mblk_path[IOC_MBLK_PATH_SZ];
 
     iocStream *stream;
     Root *root;

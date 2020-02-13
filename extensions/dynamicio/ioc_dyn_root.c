@@ -745,6 +745,11 @@ osalStatus ioc_add_dynamic_info(
     }
     ioc_new_root_event(root, IOC_NEW_DEVICE, state.dnetwork, mblk, root->callback_context);
 
+    /* Flag for basic server (iocBServer). Check for missing certificate chain and
+       flash program versions.
+     */
+    root->check_cert_chain_etc = OS_TRUE;
+
     /* End syncronization and return.
      */
 getout:

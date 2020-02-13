@@ -70,6 +70,8 @@ void ioc_set_handle_to_signals(
   @oaram   file_name Specifies file name or persistent block number.
   @param   buf Where to store pointer to data buffer.
   @param   n_read Number of data bytes in buffer.
+  @param   flags OS_FILE_NULL_CHAR to terminate buffer with NULL character.
+           OS_FILE_DEFAULT for default operation.
   @return  OSAL_SUCCESS or OSAL_MEMORY_ALLOCATED if data was loaded. OSAL_MEMORY_ALLOCATED
            return code means that memory was allocated and must be released by os_free().
            Other return values indicate that it was not loaded (missing or error).
@@ -81,7 +83,8 @@ osalStatus osal_get_persistent_block_or_file(
     const os_char *dir,
     const os_char *file_name,
     os_char **buf,
-    os_memsz *n_read)
+    os_memsz *n_read,
+    os_int flags)
 {
     osPersistentBlockNr block_nr;
     osalStatus s;
@@ -104,7 +107,7 @@ osalStatus osal_get_persistent_block_or_file(
         os_strncpy(path, dir, sizeof(path));
         os_strncat(path, file_name, sizeof(path));
 
-        *buf = os_read_file_alloc(path, n_read, OS_FILE_DEFAULT);
+        *buf = os_read_file_alloc(path, n_read, flags);
         if (*buf) return OSAL_MEMORY_ALLOCATED;
 
         osal_debug_error_str("bserver: reading file failed ", path);
