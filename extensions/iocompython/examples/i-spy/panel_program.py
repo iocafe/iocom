@@ -1,4 +1,5 @@
 import json
+import os
 from kivy.app import App
 from kivy.config import ConfigParser
 from kivy.uix.filechooser import FileChooserListView
@@ -9,10 +10,12 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 from kivy.metrics import dp
 
 from item_heading import HeadingItem
 from item_button import ButtonItem
+from item import make_my_text_input
 from iocompython import Root,bin2json, json2bin
 
 class MyFileChooser(FileChooserIconView):
@@ -46,16 +49,13 @@ class ProgramPanel(GridLayout):
         self.my_block_button = b
 
         b = Button(text='read')
+        b.bind(on_release = self.my_read_block_dialog)
         bg.add_widget(b)
 
         b = Button(text='write')
         bg.add_widget(b)
 
-        # b = ButtonItem()
-        #b.setup_button("write", self)
-        #bg.add_widget(b)
         g.add_widget(bg)
-
         self.add_widget(g)
 
         g = GridLayout(cols = 2)
@@ -75,8 +75,6 @@ class ProgramPanel(GridLayout):
         self.my_file_chooser = MyFileChooser(path=self.current_path, size_hint=(1, 1), dirselect=True)
         self.add_widget(self.my_file_chooser)
 
-        #self.my_file_chooser.bind(selection=lambda *x: print("selection: %s" % x[1:]))
-        #self.my_file_chooser.bind(path=lambda *x: print("path: %s" % x[1:]))
         self.my_file_chooser.bind(selection=lambda *x: self.my_select(x[1:]))
         self.my_file_chooser.bind(path=lambda *x: self.my_set_path(x[1:]))
 
@@ -118,6 +116,60 @@ class ProgramPanel(GridLayout):
 
     def run(self):
         pass
+
+    def my_read_block_dialog(self, instance):
+        grid = GridLayout()
+        grid.cols = 1
+        grid.spacing = [6, 6]
+        grid.padding = [6, 6]
+
+        my_path = os.path.join(self.my_path.text, self.my_fname.text)
+
+        if os.path.isdir(my_path):
+            my_path = os.path.join(my_path, "unnamed.dat")
+
+        if os.path.isfile(my_path):
+            warn = Label(text = "FILE ALREADY EXISTS, IF YOU SELECT DOWNLOAD\nTHE FILE WILL BE OVERWRITTEN", markup = True, halign="center")
+            grid.add_widget(warn)
+
+        pathinput = make_my_text_input(my_path)
+        grid.add_widget(pathinput)
+        self.pathinput = pathinput
+
+        self.popup = popup = Popup(
+            title='confirm persistent block download', content=grid)
+
+        bg = GridLayout(cols = 2)
+        bg.spacing = [6, 6]
+
+        b = Button(text='close')
+        b.height = 60
+        b.size_hint_y = None
+        b.bind(on_release = popup.dismiss)
+        bg.add_widget(b)
+
+        b = Button(text='download')
+        b.height = 60
+        b.size_hint_y = None
+        b.bind(on_release = self.read_selected)
+        bg.add_widget(b)
+
+        grid.add_widget(bg)
+
+        # all done, open the popup !
+        popup.open()
+
+    def read_selected(self, instance):
+        # self.my_block_button.text = instance.text
+        file_content = self.ioc_root.getconf(self.device_path, select=7)
+        if file_content == None:
+            return
+
+        with open(self.pathinput.text, mode='wb') as file: # b is important -> binary
+            file.write(file_content)
+         
+        self.popup.dismiss()
+
 
     def my_select_block_dialog(self, instance):
         button_list = ["1. program", "2. config", "3. defaults", "4. server key", "6. server cert", "7. cert chain", "8. root cert", "12. cust", "21. accounts"]

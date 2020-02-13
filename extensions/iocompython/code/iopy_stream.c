@@ -404,6 +404,12 @@ PyTypeObject StreamType = {
 /**
 ****************************************************************************************************
   Global blocking function, get configuration.
+
+  device_path = 'gina3.iocafenet'
+  file_content = ioc_root.getconf(device_path, select=7)
+  if file_content == None:
+    print('download fails')
+
 ****************************************************************************************************
 */
 PyObject *iocom_stream_getconf(
