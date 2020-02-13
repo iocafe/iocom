@@ -13,7 +13,7 @@ from kivy.uix.widget import Widget
 from iocompython import Signal
 
 def make_my_text_input(text):
-    return TextInput(text=text, font_size='24sp', multiline=False,
+    return TextInput(text=text, font_size='24sp', multiline=False, write_tab=False, 
         size_hint_y=None, height='42sp')
 
 class Item(GridLayout):
@@ -109,7 +109,7 @@ class Item(GridLayout):
 
         # create the textinput used for numeric input
         textinput = TextInput(
-            text=self.my_text.text, font_size='24sp', multiline=False,
+            text=self.my_text.text, font_size='24sp', multiline=False, write_tab=False,
             size_hint_y=None, height='42sp')
         # textinput.bind(on_text_validate=self._validate)
         self.textinput = textinput

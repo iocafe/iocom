@@ -161,7 +161,7 @@ class MyConnectDialog(SettingsWithNoMenu):
 
         # create the text input widgets for user name and password
         user_name_input = TextInput(
-            text=self.myconfig.get('client', 'conf_user'), font_size='24sp', multiline=False,
+            text=self.myconfig.get('client', 'conf_user'), font_size='24sp', multiline=False, write_tab=False, 
             size_hint_y=None, height='42sp')
         self.user_name_input = user_name_input
         password_input = TextInput(

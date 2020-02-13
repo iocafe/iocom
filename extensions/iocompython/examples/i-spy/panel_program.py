@@ -6,6 +6,10 @@ from kivy.uix.filechooser import FileChooserIconView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
+from kivy.uix.widget import Widget
+from kivy.core.window import Window
+from kivy.uix.popup import Popup
+from kivy.metrics import dp
 
 from item_heading import HeadingItem
 from item_button import ButtonItem
@@ -36,9 +40,10 @@ class ProgramPanel(GridLayout):
         bg = GridLayout(cols = 3)
         bg.padding = [8, 6]
 
-        b = Button(text='block')
-        # b.setup_button("block", self)
+        b = Button(text='1. program')
+        b.bind(on_release = self.my_select_block_dialog)
         bg.add_widget(b)
+        self.my_block_button = b
 
         b = Button(text='read')
         bg.add_widget(b)
@@ -60,14 +65,14 @@ class ProgramPanel(GridLayout):
 
         self.current_path = '/coderoot'
 
-        self.my_path = TextInput(text=self.current_path,  multiline=False)
+        self.my_path = TextInput(text=self.current_path,  multiline=False, write_tab=False)
         g.add_widget(self.my_path)
-        self.my_fname = TextInput(text='',  multiline=False)
+        self.my_fname = TextInput(text='',  multiline=False, write_tab=False)
         g.add_widget(self.my_fname)
 
         self.add_widget(g)
 
-        self.my_file_chooser  = MyFileChooser(path=self.current_path, size_hint=(1, 1), dirselect=True)
+        self.my_file_chooser = MyFileChooser(path=self.current_path, size_hint=(1, 1), dirselect=True)
         self.add_widget(self.my_file_chooser)
 
         #self.my_file_chooser.bind(selection=lambda *x: print("selection: %s" % x[1:]))
@@ -113,6 +118,31 @@ class ProgramPanel(GridLayout):
 
     def run(self):
         pass
+
+    def my_select_block_dialog(self, instance):
+        button_list = ["1. program", "2. config", "3. defaults", "4. server key", "6. server cert", "7. cert chain", "8. root cert", "12. cust", "21. accounts"]
+
+        grid = GridLayout()
+        grid.cols = 2;
+        grid.spacing = [6, 6]
+        grid.padding = [6, 6]
+
+        for button_text in button_list:
+            b = Button(text=button_text)
+            b.height = 60
+            b.size_hint_y = None
+            b.bind(on_release = self.block_selected)
+            grid.add_widget(b)
+
+        self.popup = popup = Popup(
+            title='select persistent block', content=grid)
+
+        # all done, open the popup !
+        popup.open()
+
+    def block_selected(self, instance):
+        self.my_block_button.text = instance.text
+        self.popup.dismiss()
 
 class MyProgramButton(Button):
     def __init__(self, **kwargs):

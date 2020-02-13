@@ -191,10 +191,3 @@ class NotificationItem(GridLayout):
         self.show_control_buttons()
         self.height = 60 
 
-        
-
-#        new_state_bits = int(v[0])
-#        if new_state_bits != self.my_state_bits:
-#            self.my_state_bits = new_state_bits
-#            self.my_redraw_state_bits(None)
-
