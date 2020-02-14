@@ -37,13 +37,11 @@ class MainApp(App):
 
         if self.ioc_params['role'] == "CLIENT":
             self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
-            # self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
             self.ioc_root.queue_events()
             self.ioc_connection = Connection(self.ioc_root, parameters=self.ioc_params['ip'], flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user, password=ioc_password)
 
         else:
             self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
-            # self.ioc_root = Root('ispy', device_nr=1, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
             self.ioc_root.queue_events()
             self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
 
@@ -73,25 +71,6 @@ class MainApp(App):
             device_name = e[2]
             network_name = e[1]
             device_path = device_name + '.' + network_name;
-
-            '''
-            # New network, means a new game board
-            if event == 'new_network':
-                ioc_devices[network_name] = asteroidapp.start(root, network_name)
-
-            # Close the game board
-            if event == 'network_disconnected':
-                a = ioc_devices.get(network_name, None)
-                if a != None:
-                    a[1].put('exit ' + network_name)
-                    del ioc_devices[network_name]
-
-            # Switch 'imp' and 'exp' memory blocks to manual synchronization
-            if event == 'new_mblk':
-                mblk_path = mblk_name + '.' + device_name + '.' + network_name
-                if mblk_name == 'imp' or mblk_name == 'exp':
-                    root.set_mblk_param(mblk_path, "auto", 0)
-            '''
 
             # Device connected
             if event == 'new_device':
