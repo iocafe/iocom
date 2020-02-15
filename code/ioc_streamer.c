@@ -484,6 +484,17 @@ static osalStatus ioc_streamer_device_write(
 
             buf_sz = signals->buf->n;
             tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
+
+/* os_int newtail;
+do
+{
+ tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
+os_sleep(20);
+newtail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
+} while(tail != newtail); */
+
+
+
             if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
             {
                 osal_trace3("IOC_SSTEP_FAILED, no tail");
@@ -525,6 +536,7 @@ static osalStatus ioc_streamer_device_write(
                 if (!os_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT)) break;
             }
             ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
+            ioc_sets0_int(signals->head, 0);
             streamer->step = IOC_SSTEP_ALL_COMPLETED;
             osal_trace3("IOC_SSTEP_ALL_COMPLETED");
             break;
@@ -543,6 +555,7 @@ static osalStatus ioc_streamer_device_write(
             }
 
             ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
+            ioc_sets0_int(signals->head, 0);
             streamer->step = IOC_SSTEP_FAILED_AND_IDLE_SET;
             osal_trace3("IOC_SSTEP_FAILED_AND_IDLE_SET");
             break;
@@ -1062,6 +1075,7 @@ static osalStatus ioc_streamer_controller_read(
                 if (!os_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT)) break;
             }
             streamer->step = IOC_SSTEP_ALL_COMPLETED;
+            ioc_sets0_int(signals->tail, 0);
             osal_trace3("IOC_SSTEP_ALL_COMPLETED");
             break;
 
@@ -1150,8 +1164,6 @@ static os_int ioc_streamer_read_internal(
             *tail += rdnow;
             if (*tail >= buf_sz) *tail = 0;
 
-            ioc_sets0_int(signals->tail, *tail);
-
             buf += rdnow;
             n -= rdnow;
             nbytes += rdnow;
@@ -1171,11 +1183,14 @@ static os_int ioc_streamer_read_internal(
             if ((state_bits & OSAL_STATE_CONNECTED) == 0) return -1;
 
             *tail += rdnow;
-            ioc_sets0_int(signals->tail, *tail);
-
             nbytes += rdnow;
             osal_trace3_int("DATA MOVED 2, bytes = ", rdnow);
         }
+    }
+
+    if (nbytes)
+    {
+        ioc_sets0_int(signals->tail, *tail);
     }
 
     return nbytes;
@@ -1220,8 +1235,6 @@ static os_int ioc_streamer_write_internal(
             *head += wrnow;
             if (*head >= buf_sz) *head = 0;
 
-            ioc_sets0_int(signals->head, *head);
-
             buf += wrnow;
             n -= wrnow;
             nbytes += wrnow;
@@ -1239,9 +1252,13 @@ static os_int ioc_streamer_write_internal(
                 OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
 
             *head += wrnow;
-            ioc_sets0_int(signals->head, *head);
             nbytes += wrnow;
         }
+    }
+
+    if (nbytes)
+    {
+        ioc_sets0_int(signals->head, *head);
     }
 
     return nbytes;

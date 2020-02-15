@@ -809,6 +809,7 @@ void ioc_receive(
 #if IOC_BIDIRECTIONAL_MBLK_CODE
             if (tbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
             {
+// Find if we have echo buffer
                 bits = (os_uchar*)tbuf->syncbuf.buf + tbuf->syncbuf.ndata;
                 dpos = mblk->buf;
                 spos = tbuf->syncbuf.buf;
@@ -820,9 +821,12 @@ void ioc_receive(
                         dpos[i] = spos[i];
                     }
                 }
-                bitsi = start_addr >> 3;
-                i = (end_addr >> 3) - bitsi + 1;
-                os_memclear(bits + bitsi, i);
+                if (mblk->sbuf.first == OS_NULL)
+                {
+                    bitsi = start_addr >> 3;
+                    i = (end_addr >> 3) - bitsi + 1;
+                    os_memclear(bits + bitsi, i);
+                }
             }
             else
             {
@@ -853,26 +857,52 @@ void ioc_receive(
             if (mblk->sbuf.first)
             {
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-                for (sbuf = mblk->sbuf.first;
-                     sbuf;
-                     sbuf = sbuf->mlink.next)
+                if (tbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
                 {
-                    if (sbuf->clink.con == tbuf->clink.con)
+                    bits = (os_uchar*)tbuf->syncbuf.buf + tbuf->syncbuf.ndata;
+
+                    for (sbuf = mblk->sbuf.first;
+                         sbuf;
+                         sbuf = sbuf->mlink.next)
                     {
-                        if ((sbuf->clink.con->flags & IOC_CONNECT_UP) == 0)
+                        if (sbuf->clink.con == tbuf->clink.con)
                         {
-                            if (sbuf->remote_mblk_id == tbuf->remote_mblk_id)
+                            if ((sbuf->remote_mblk_id == tbuf->remote_mblk_id) &&
+                                (sbuf->clink.con->flags & IOC_CONNECT_UP) == 0)
                             {
                                 continue;
                             }
                         }
+
+                        /* Invalidate changed bytes only */
+                        if (sbuf->syncbuf.flags & IOC_BIDIRECTIONAL)
+                        {
+                            for (i = start_addr; i <= end_addr; ++i)
+                            {
+                                bitsi = i >> 3;
+                                if ((bits[bitsi] >> (i & 7)) & 1)
+                                {
+                                    ioc_sbuf_invalidate(sbuf, i, i);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
+                        }
+                        if (mblk->flags & IOC_AUTO_SYNC)
+                        {
+                            ioc_mblk_auto_sync(sbuf);
+                        }
                     }
 
-                    ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
-                    if (mblk->flags & IOC_AUTO_SYNC)
-                    {
-                        ioc_mblk_auto_sync(sbuf);
-                    }
+                    bitsi = start_addr >> 3;
+                    i = (end_addr >> 3) - bitsi + 1;
+                    os_memclear(bits + bitsi, i);
+                }
+                else
+                {
+                    ioc_mblk_invalidate(mblk, start_addr, end_addr);
                 }
 #else
                 ioc_mblk_invalidate(mblk, start_addr, end_addr);

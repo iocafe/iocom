@@ -65,6 +65,9 @@ static osalStatus ioc_stream_setup_one(
     iocRoot *root);
 
 
+static int count; // xxxxxxxxxxxxxx
+
+
 /**
 ****************************************************************************************************
 
@@ -130,6 +133,8 @@ iocStream *ioc_open_stream(
     stream->select = select;
 
     prm = &stream->prm;
+
+count = 0;
 
     ioc_stream_init_signals(&prm->frd, &stream->frd, &stream->exp_handle,
         &stream->imp_handle, OS_TRUE);
@@ -534,6 +539,11 @@ osalStatus ioc_run_stream(
         if (n_read > 0)
         {
             osal_stream_buffer_write(stream->read_buf, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
+
+count += n_read;
+osal_debug_error_int("HERE cc ", count);
+
+
         }
         if (s)
         {

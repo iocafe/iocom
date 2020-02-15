@@ -70,7 +70,7 @@ osalStatus AppInstance::run()
         buf[3] = '0' + (os_char)m_count;
         if (++m_count > 9) m_count = 0;
         ioc_maintain_signal(&app_iocom, "strtodevice", m_network_name, &m_str_to_device);
-        ioc_sets_str(m_str_to_device, buf);
+        // ioc_sets_str(m_str_to_device, buf);
 
         ioc_maintain_signal(&app_iocom, "testfloat", m_network_name, &m_float_test);
         ioc_gets_array(m_float_test, floats, sizeof(floats)/sizeof(os_float));

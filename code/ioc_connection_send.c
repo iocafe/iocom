@@ -207,9 +207,6 @@ static void ioc_make_data_frame(
         crc,
         u;
 
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-#endif
-
     /* Set frame header
      */
     saved_start_addr = sbuf->syncbuf.start_addr;
@@ -241,15 +238,10 @@ static void ioc_make_data_frame(
        *ptrs.flags |= IOC_DELTA_ENCODED;
 #endif
     }
-if (start_addr == 309)
-{
-    osal_debug_error("Here");
-}
     compressed_bytes = ioc_compress(delta,
         &start_addr,
         sbuf->syncbuf.end_addr,
         dst, max_dst_bytes);
-
 
     src_bytes = sbuf->syncbuf.end_addr - saved_start_addr + 1;
     if (src_bytes > max_dst_bytes) src_bytes = max_dst_bytes;
@@ -309,7 +301,7 @@ if (start_addr == 309)
         else
         {
 #if 0
-            THIS SHOULD NOT BE NECESSARY, INVALIDATED RANGE TO BE TRAFSVERRED WILL BE COPIED
+            THIS SHOULD NOT BE NECESSARY, INVALIDATED RANGE TO BE TRAFSFERRED WILL BE COPIED
             SO NO HARM TO LEAVE OLD MARK BITS LAYING AROUND.
             if (sbuf->syncbuf.bidir_start_addr > 0) /* cannot be 0, there is data */
             {

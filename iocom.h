@@ -65,6 +65,8 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+// #define IOC_BIDIRECTIONAL_MBLK_CODE 0
+
 /* Support for bidirectional memory blocks.
  */
 #ifndef IOC_BIDIRECTIONAL_MBLK_CODE
