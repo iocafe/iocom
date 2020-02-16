@@ -266,7 +266,8 @@ static void ioc_free_source_and_target_bufs(
 #if IOC_DYNAMIC_MBLK_CODE
     iocHandle handle;
 
-    /* Release all source buffers.
+    /* Release all source buffers. Tricky use of handles is on purpose to ensure that
+       invalid pointer to memory block or source/target buffer doesn't get used.
      */
     while (con->sbuf.first)
     {
@@ -565,11 +566,13 @@ osalStatus ioc_run_connection(
     silence_ms = IOC_SOCKET_SILENCE_MS;
 #endif
 
+    /* How ever fast we write, we cannot block here.
+     */
     os_get_timer(&tnow);
-    count = 32; /* How ever fast we write, we cannot block here */
+    count = 32;
     while (count--)
     {
-        /* Receive as much data as we can
+        /* Receive as much data as we can.
          */
         while (osal_go())
         {
@@ -597,7 +600,7 @@ osalStatus ioc_run_connection(
         }
     }
 
-    /* If too much time elapsed sice last receive
+    /* If too much time elapsed sice last receive.
      */
     if (os_elapsed2(&con->last_receive, &tnow, silence_ms))
     {
@@ -970,27 +973,10 @@ static void ioc_connection_thread(
         }
 #endif
 
-#if OSAL_SOCKET_SUPPORT
-        /* If socket has been closed by the other end.
-         */
-        /* if (selectdata.eventflags & OSAL_STREAM_CLOSE_EVENT)
-        {
-            osal_trace("stream close event");
-            goto failed;
-        } */
-
-        /* Anything error after checking for close event is interprented as broken socket.
-         */
-        /* if (selectdata.errorcode)
-        {
-            osal_trace("socket broken, stream error");
-            goto failed;
-        } */
-#endif
-
         /* Receive and send in loop as long as we can without waiting.
+           How ever fast we write, we cannot block here (count=32) !
          */
-        count = 32; /* How ever fast we write, we cannot block here */
+        count = 32;
         while (count--)
         {
             while (osal_go())

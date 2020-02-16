@@ -318,6 +318,10 @@ void ioc_release_dynamic_mblk_if_not_attached(
         if (con) if ((con->flags & IOC_CONNECT_UP) == 0) goto getout;
     }
 
+// #if IOC_DYNAMIC_MBLK_CODE ALREADY
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXX     We may have some target and source buffers connected to remote memory block left.
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXX     Add those to "delete memory block sequest" queues for the connections.                    inside ioc_release_memory_block? NO HERE IS GOOD.
+
     ioc_release_memory_block(handle);
 getout:
     ioc_unlock(root);

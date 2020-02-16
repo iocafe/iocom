@@ -111,6 +111,11 @@ osalStatus ioc_connection_send(
         goto just_move_data;
     }
 
+#if IOC_DYNAMIC_MBLK_CODE
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXX If we have queued "delete memory block requests" to send for the connection, send these now.
+
+#endif
+
     /* Do we have memory block information to send?
      */
     mblk = ioc_get_mbinfo_to_send(con);
