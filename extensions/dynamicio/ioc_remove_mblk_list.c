@@ -184,4 +184,66 @@ void ioc_remote_mblk_deleted(
 #endif
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Make authentication data frame.
+  @anchor ioc_make_authentication_frame
+
+  The ioc_make_authentication_frame() generates outgoing data frame which contains information
+  to authenticate this IO device, etc.
+
+  @param   con Pointer to the connection object.
+  @return  OSAL_COMPLETED = All done, no more remove requests to send.
+           OSAL_SUCCESS = frame was placed in outgoing data buffer
+           OSAL_PENDING = Send delayed by flow control.
+        ?None.
+
+****************************************************************************************************
+*/
+osalStatus ioc_make_remove_mblk_req_frame(
+    iocConnection *con,
+    os_int remote_mblk_id)
+{
+    iocSendHeaderPtrs
+        ptrs;
+
+    os_uchar
+        *p,
+        *start;
+
+    // root = con->link.root;
+
+    // PACK MULTIPLE REMOVES IN ONE FRAME
+
+    /* Set frame header.
+     */
+    ioc_generate_header(con, con->frame_out.buf, &ptrs, remote_mblk_id, 0);
+
+    /* Generate frame content. Here we do not check for buffer overflow,
+       we know (and trust) that it fits within one frame.
+     */
+    p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
+    *(p++) = IOC_REMOVE_MBLK_REQUEST;
+
+    /* Frame not rejected by flow control, increment frame number.
+     */
+    if (con->frame_out.frame_nr++ >= IOC_MAX_FRAME_NR)
+    {
+        con->frame_out.frame_nr = 1;
+    }
+
+    /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
+       if transmission is blocked by flow control.
+     */
+    if (ioc_finish_frame(con, &ptrs, start, p))
+        return;
+
+    // con->authentication_sent = OS_TRUE;
+osal_debug_error("HERE REMOVE REQ SENT");
+return OSAL_COMPLETED;
+}
+
+
 #endif

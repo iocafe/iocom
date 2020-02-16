@@ -28,7 +28,7 @@
   @brief Make authentication data frame.
   @anchor ioc_make_authentication_frame
 
-  The ioc_make_authentication_frame() generates ourgoind data frame which contains information
+  The ioc_make_authentication_frame() generates outgoing data frame which contains information
   to authenticate this IO device, etc.
 
   @param   con Pointer to the connection object.
@@ -59,16 +59,7 @@ void ioc_make_authentication_frame(
         *q;
 
     os_int
-        content_bytes,
-        used_bytes;
-
-    os_int
-        bytes,
         device_nr;
-
-    os_ushort
-        crc,
-        u;
 
     root = con->link.root;
 
@@ -130,19 +121,6 @@ void ioc_make_authentication_frame(
     }
     ioc_msg_setstr(password, &p);
 
-    /* If other end has not acknowledged enough data to send the
-       frame, cancel the send.
-     */
-    content_bytes = (os_int)(p - start);
-    used_bytes = content_bytes + ptrs.header_sz;
-    u = con->bytes_sent - con->processed_bytes;
-    bytes = con->max_in_air - (os_int)u;
-    if (used_bytes > bytes)
-    {
-        osal_trace2_int("Authentication canceled by flow control, free space on air=", bytes);
-        return;
-    }
-
     /* Set connect up and bidirectional flags.
      */
     if (con->flags & IOC_CONNECT_UP)
@@ -160,6 +138,22 @@ void ioc_make_authentication_frame(
         flags |= IOC_AUTH_CLOUD_CON;
     }
 
+    *auth_flags_ptr = flags;
+
+#if 0
+    /* If other end has not acknowledged enough data to send the
+       frame, cancel the send.
+     */
+    content_bytes = (os_int)(p - start);
+    used_bytes = content_bytes + ptrs.header_sz;
+    u = con->bytes_sent - con->processed_bytes;
+    bytes = con->max_in_air - (os_int)u;
+    if (used_bytes > bytes)
+    {
+        osal_trace2_int("Authentication canceled by flow control, free space on air=", bytes);
+        return;
+    }
+
     /* Fill in data size, flag as system frame, and flags for authentication data.
      */
     *ptrs.data_sz_low = (os_uchar)content_bytes;
@@ -170,7 +164,6 @@ void ioc_make_authentication_frame(
     }
     con->frame_out.used = used_bytes;
     *ptrs.flags |= IOC_SYSTEM_FRAME;
-    *auth_flags_ptr = flags;
 
     /* Frame not rejected by flow control, increment frame number.
      */
@@ -188,6 +181,13 @@ void ioc_make_authentication_frame(
         *ptrs.checksum_low = (os_uchar)crc;
         *ptrs.checksum_high = (os_uchar)(crc >> 8);
     }
+#endif
+
+    /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
+     * if transmission is blocked by flow control.
+     */
+    if (ioc_finish_frame(con, &ptrs, start, p))
+        return;
 
     con->authentication_sent = OS_TRUE;
 osal_debug_error("HERE AUTH SENT");

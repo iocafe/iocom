@@ -361,19 +361,19 @@ static void ioc_make_mblk_info_frame(
         *start,
         *iflags;
 
-    os_int
-        content_bytes,
-        used_bytes;
+//    os_int
+//        content_bytes,
+//        used_bytes;
 
     os_uint
         device_nr;
 
-    os_int
-        bytes;
+//    os_int
+//        bytes;
 
-    os_ushort
-        crc,
-        u;
+//    os_ushort
+//        crc,
+//        u;
 
     /* Set frame header.
      */
@@ -415,6 +415,8 @@ static void ioc_make_mblk_info_frame(
         *iflags |= IOC_INFO_HAS_MBLK_NAME;
     }
 
+#if 0
+
     /* If other end has not acknowledged enough data to send the
        frame, cancel the send.
      */
@@ -455,11 +457,19 @@ static void ioc_make_mblk_info_frame(
         *ptrs.checksum_low = (os_uchar)crc;
         *ptrs.checksum_high = (os_uchar)(crc >> 8);
     }
+#endif
+
+    /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
+     * if transmission is blocked by flow control.
+     */
+    if (ioc_finish_frame(con, &ptrs, start, p))
+        return;
 
     /* Memory block succesfully placed to frame out buffer, now we can forget about it.
      */
     ioc_mbinfo_sent(con, mblk);
 }
+
 
 
 /**
@@ -762,7 +772,7 @@ static osalStatus ioc_write_to_stream(
 
   @param   con Pointer to the connection object.
   @param   hdr Ponter to buffer where to store the generated binary header.
-  @param   ptrs Pointers to structure into which to store pointers to binary header fileds
+  @param   ptrs Pointers to structure into which to store pointers to binary header fields
            which need to be set or modfied later. Generates header length is also stored
            in this structure.
   @param   remote_mblk_id Identifier of remote memory block to which the message being
@@ -843,6 +853,86 @@ void ioc_generate_header(
      */
     *ptrs->flags = flags;
     ptrs->header_sz = (os_int)(p - (os_uchar*)hdr);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Finish outgoing frame with data size, frame number, and optional checksum.
+  @anchor ioc_generate_header
+
+  The ioc_finish_frame() function ...
+
+  Quit here if transmission is blocked by flow control.
+
+  @param   con Pointer to the connection object.
+  @param   ptrs Structure with pointers to binary header fields.
+  @param   start Start position of content data.
+  @param   p End position of content data.
+
+  @return  OSAL_SUCCESS if successfull. OSAL_PENDING transmission is blocked by the flow
+           control and needs to be retried later.
+
+****************************************************************************************************
+*/
+osalStatus ioc_finish_frame(
+    iocConnection *con,
+    iocSendHeaderPtrs *ptrs,
+    os_uchar *start,
+    os_uchar *p)
+{
+    os_int
+        content_bytes,
+        used_bytes,
+        bytes;
+
+    os_ushort
+        crc,
+        u;
+
+    /* If other end has not acknowledged enough data to send the
+       frame, cancel the send.
+     */
+    content_bytes = (os_int)(p - start);
+    used_bytes = content_bytes + ptrs->header_sz;
+    u = con->bytes_sent - con->processed_bytes;
+    bytes = con->max_in_air - (os_int)u;
+    if (used_bytes > bytes)
+    {
+        osal_trace2_int("MBLK info canceled by flow control, free space on air=", bytes);
+        return OSAL_PENDING;
+    }
+
+    /* Fill in data size and flag as system frame.
+     */
+    *ptrs->data_sz_low = (os_uchar)content_bytes;
+    if (ptrs->data_sz_high)
+    {
+        content_bytes >>= 8;
+        *ptrs->data_sz_high = (os_uchar)content_bytes;
+    }
+    con->frame_out.used = used_bytes;
+    *ptrs->flags |= IOC_SYSTEM_FRAME;
+
+    /* Frame not rejected by flow control, increment frame number.
+     */
+    if (con->frame_out.frame_nr++ >= IOC_MAX_FRAME_NR)
+    {
+        con->frame_out.frame_nr = 1;
+    }
+
+    /* Calculate check sum out of whole used frame buffer. Notice that check sum
+     * position within frame is zeros when calculating the check sum.
+     */
+    if (ptrs->checksum_low)
+    {
+        crc = os_checksum(con->frame_out.buf, con->frame_out.used, OS_NULL);
+        *ptrs->checksum_low = (os_uchar)crc;
+        *ptrs->checksum_high = (os_uchar)(crc >> 8);
+    }
+
+    return OSAL_SUCCESS;
 }
 
 

@@ -141,7 +141,8 @@
 typedef enum
 {
     IOC_SYSRAME_MBLK_INFO = 1,
-    IOC_AUTHENTICATION_DATA = 2
+    IOC_AUTHENTICATION_DATA = 2,
+    IOC_REMOVE_MBLK_REQUEST = 3
 }
 iocSystemFrameType;
 
@@ -675,6 +676,14 @@ void ioc_generate_header(
     iocSendHeaderPtrs *ptrs,
     os_int remote_mblk_id,
     os_int addr);
+
+/* Finish outgoing frame with general stuff.
+ */
+osalStatus ioc_finish_frame(
+    iocConnection *con,
+    iocSendHeaderPtrs *ptrs,
+    os_uchar *start,
+    os_uchar *p);
 
 /* Store string into message beging generated.
  */
