@@ -86,6 +86,8 @@
  */
 #define IOC_MIN_UNIQUE_ID 8
 
+struct iocConnection;
+
 /**
 ****************************************************************************************************
     Parameters for ioc_initialize_memory_block() function.
@@ -334,6 +336,13 @@ typedef struct iocMemoryBlock
     /** Flag indicating that the data buffer was dynamically allocated.
      */
     os_boolean buf_allocated;
+
+#if IOC_DYNAMIC_MBLK_CODE
+    /** Memory block being deleted flag, ioc_release_dynamic_mblk_if_not_attached()
+        and ioc_generate_del_mblk_request() functions.
+     */
+    os_boolean to_be_deleted;
+#endif
 }
 iocMemoryBlock;
 
@@ -370,7 +379,15 @@ void ioc_release_memory_block(
 /* Release dynamic memory block if it is no longer attached.
  */
 void ioc_release_dynamic_mblk_if_not_attached(
-    iocHandle *handle);
+    iocMemoryBlock *mblk,
+    struct iocConnection *deleting_con,
+    os_boolean really_delete);
+
+/* Generate "remove memory block" requests.
+ */
+void ioc_generate_del_mblk_request(
+    iocMemoryBlock *mblk,
+    struct iocConnection *deleting_con);
 #endif
 
 /* Set memory block parameter.

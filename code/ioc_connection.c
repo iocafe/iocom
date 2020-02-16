@@ -263,6 +263,14 @@ static void ioc_free_connection_bufs(
 
   The ioc_free_source_and_target_bufs() function...
 
+  When dynamic mblk code is used, this becomes a bit of chicken and egg problem with
+  interdependencies. When connection is beging closed:
+    - All source and target buffers related to connection to be closed are to be deleted.
+    - Then we need to delete memory blocks which have no connections left "down"
+    - And for those memory blocks which are deleted and have connections "up" we need
+      to generate a remove memory block request.
+    - It is nice to do this without allocating memory, as far as we can.
+
   Mutex lock must be on.
 
   @param   root Pointer to root object.
@@ -276,28 +284,50 @@ static void ioc_free_source_and_target_bufs(
     iocConnection *con)
 {
 #if IOC_DYNAMIC_MBLK_CODE
-    iocHandle handle;
+    iocMemoryBlock *mblk;
+    iocSourceBuffer *sbuf;
+    iocTargetBuffer *tbuf;
 
-    /* Release all source buffers. Tricky use of handles is on purpose to ensure that
-       invalid pointer to memory block or source/target buffer doesn't get used.
+    /* Set "to_be_deleted" flags in memory blocks which will be deleted when this
+     * connection closes.
      */
-    while (con->sbuf.first)
+    for (sbuf = con->sbuf.first; sbuf; sbuf = sbuf->clink.next)
     {
-        ioc_setup_handle(&handle, root, con->sbuf.first->mlink.mblk);
-        ioc_release_source_buffer(con->sbuf.first);
-        ioc_release_dynamic_mblk_if_not_attached(&handle);
-        ioc_release_handle(&handle);
+        ioc_release_dynamic_mblk_if_not_attached(sbuf->mlink.mblk, con, OS_FALSE);
+    }
+    for (tbuf = con->tbuf.first; tbuf; tbuf = tbuf->clink.next)
+    {
+        ioc_release_dynamic_mblk_if_not_attached(tbuf->mlink.mblk, con, OS_FALSE);
     }
 
-    /* Release all target buffers.
+    /* Generate "remove memory block" requests for other connections which will
+       be left but access a memory block to be deleted as consequence of deleting
+       this connection.
      */
-    while (con->tbuf.first)
+    for (sbuf = con->sbuf.first; sbuf; sbuf = sbuf->clink.next)
     {
-        ioc_setup_handle(&handle, root, con->tbuf.first->mlink.mblk);
-        ioc_release_target_buffer(con->tbuf.first);
-        ioc_release_dynamic_mblk_if_not_attached(&handle);
-        ioc_release_handle(&handle);
+        ioc_generate_del_mblk_request(sbuf->mlink.mblk, con);
     }
+    for (tbuf = con->tbuf.first; tbuf; tbuf = tbuf->clink.next)
+    {
+        ioc_generate_del_mblk_request(tbuf->mlink.mblk, con);
+    }
+
+    /* Delete source and target buffers and memory blocks to be consequentally deleted
+     */
+    while ((sbuf = con->sbuf.first))
+    {
+        mblk = sbuf->mlink.mblk;
+        ioc_release_source_buffer(sbuf);
+        ioc_release_dynamic_mblk_if_not_attached(mblk, con, OS_TRUE);
+    }
+    while ((tbuf = con->tbuf.first))
+    {
+        mblk = tbuf->mlink.mblk;
+        ioc_release_target_buffer(tbuf);
+        ioc_release_dynamic_mblk_if_not_attached(mblk, con, OS_TRUE);
+    }
+
 #else
     /* Release all source buffers.
      */

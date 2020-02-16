@@ -284,30 +284,34 @@ void ioc_release_memory_block(
   block, if it is no longer attached downwards (checked trough source and target buffers)
   This function is called when connection cleans up resources.
 
+  ioc_lock must be on when calling this function.
+
   @param   handle Memory block handle.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_release_dynamic_mblk_if_not_attached(
-    iocHandle *handle)
+    iocMemoryBlock *mblk,
+    struct iocConnection *deleting_con,
+    os_boolean really_delete)
 {
-    iocRoot *root;
-    iocMemoryBlock *mblk;
     iocSourceBuffer *sbuf;
     iocTargetBuffer *tbuf;
     iocConnection *con;
 
-    mblk = ioc_handle_lock_to_mblk(handle, &root);
     if (mblk == OS_NULL) return;
-    if ((mblk->flags & IOC_DYNAMIC) == 0) goto getout;
+    if ((mblk->flags & IOC_DYNAMIC) == 0) return;
 
     for (sbuf = mblk->sbuf.first;
          sbuf;
          sbuf = sbuf->mlink.next)
     {
         con = sbuf->clink.con;
-        if (con) if ((con->flags & IOC_CONNECT_UP) == 0) goto getout;
+        if (con && con != deleting_con)
+        {
+            if ((con->flags & IOC_CONNECT_UP) == 0) return;
+        }
     }
 
     for (tbuf = mblk->tbuf.first;
@@ -315,17 +319,82 @@ void ioc_release_dynamic_mblk_if_not_attached(
          tbuf = tbuf->mlink.next)
     {
         con = tbuf->clink.con;
-        if (con) if ((con->flags & IOC_CONNECT_UP) == 0) goto getout;
+        if (con && con != deleting_con)
+        {
+            if ((con->flags & IOC_CONNECT_UP) == 0) return;
+        }
     }
 
-// #if IOC_DYNAMIC_MBLK_CODE ALREADY
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXX     We may have some target and source buffers connected to remote memory block left.
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXX     Add those to "delete memory block sequest" queues for the connections.                    inside ioc_release_memory_block? NO HERE IS GOOD.
-
-    ioc_release_memory_block(handle);
-getout:
-    ioc_unlock(root);
+    if (really_delete)
+    {
+        ioc_release_memory_block(&mblk->handle);
+    }
+    else
+    {
+        mblk->to_be_deleted = OS_TRUE;
+    }
 }
+#endif
+
+
+#if IOC_DYNAMIC_MBLK_CODE
+/**
+****************************************************************************************************
+
+  @brief Generate "remove memory block" requests.
+  @anchor ioc_generate_del_mblk_request
+
+  We need to generate "remove memory block" requests for those memory blocks which are to
+  be deleted deleted and have connections "up".
+
+  ioc_lock must be on when calling this function.
+
+  @param   mblk Pointer to memory block perhaps being deleted ("to_be_deleted" flag).
+  @param   deleting_con Connection beging deleted.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_generate_del_mblk_request(
+    iocMemoryBlock *mblk,
+    struct iocConnection *deleting_con)
+{
+    iocSourceBuffer *sbuf;
+    iocTargetBuffer *tbuf;
+    iocConnection *con;
+
+    if (mblk == OS_NULL) return;
+    if (!mblk->to_be_deleted) return;
+
+    for (sbuf = mblk->sbuf.first;
+         sbuf;
+         sbuf = sbuf->mlink.next)
+    {
+        con = sbuf->clink.con;
+        if (con && con != deleting_con)
+        {
+            if (con->flags & IOC_CONNECT_UP)
+            {
+                ioc_add_request_to_remove_mblk(&con->del_mlk_req_list, sbuf->remote_mblk_id);
+            }
+        }
+    }
+
+    for (tbuf = mblk->tbuf.first;
+         tbuf;
+         tbuf = tbuf->mlink.next)
+    {
+        con = tbuf->clink.con;
+        if (con && con != deleting_con)
+        {
+            if (con->flags & IOC_CONNECT_UP)
+            {
+                ioc_add_request_to_remove_mblk(&con->del_mlk_req_list, tbuf->remote_mblk_id);
+            }
+        }
+    }
+}
+
 #endif
 
 
