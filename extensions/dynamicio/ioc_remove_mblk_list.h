@@ -29,6 +29,10 @@
 */
 #if IOC_DYNAMIC_MBLK_CODE
 
+/** Number of requests to pack in together (to send as one frame)
+ */
+#define IOC_PACK_N_REQUESTS 2
+
 /**
 ****************************************************************************************************
     Delete memory block request (item of linked list)
@@ -38,7 +42,11 @@ typedef struct iocDeleteMblkRequest
 {
     /** Identifier of memory block to remove (as top level memory block identifier)
      */
-    os_int remote_mblk_id;
+    os_int remote_mblk_id[IOC_PACK_N_REQUESTS];
+
+    /** Number of items in remote_mblk_id array
+     */
+    os_int n_requests;
 
     /** Next request of the memory block request list. OS_NULL if this is the last item on list.
      */

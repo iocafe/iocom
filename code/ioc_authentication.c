@@ -140,51 +140,8 @@ void ioc_make_authentication_frame(
 
     *auth_flags_ptr = flags;
 
-#if 0
-    /* If other end has not acknowledged enough data to send the
-       frame, cancel the send.
-     */
-    content_bytes = (os_int)(p - start);
-    used_bytes = content_bytes + ptrs.header_sz;
-    u = con->bytes_sent - con->processed_bytes;
-    bytes = con->max_in_air - (os_int)u;
-    if (used_bytes > bytes)
-    {
-        osal_trace2_int("Authentication canceled by flow control, free space on air=", bytes);
-        return;
-    }
-
-    /* Fill in data size, flag as system frame, and flags for authentication data.
-     */
-    *ptrs.data_sz_low = (os_uchar)content_bytes;
-    if (ptrs.data_sz_high)
-    {
-        content_bytes >>= 8;
-        *ptrs.data_sz_high = (os_uchar)content_bytes;
-    }
-    con->frame_out.used = used_bytes;
-    *ptrs.flags |= IOC_SYSTEM_FRAME;
-
-    /* Frame not rejected by flow control, increment frame number.
-     */
-    if (con->frame_out.frame_nr++ >= IOC_MAX_FRAME_NR)
-    {
-        con->frame_out.frame_nr = 1;
-    }
-
-    /* Calculate check sum out of whole used frame buffer. Notice that check sum
-     * position within frame is zeros when calculating the check sum.
-     */
-    if (ptrs.checksum_low)
-    {
-        crc = os_checksum(con->frame_out.buf, con->frame_out.used, OS_NULL);
-        *ptrs.checksum_low = (os_uchar)crc;
-        *ptrs.checksum_high = (os_uchar)(crc >> 8);
-    }
-#endif
-
     /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
-     * if transmission is blocked by flow control.
+       if transmission is blocked by flow control.
      */
     if (ioc_finish_frame(con, &ptrs, start, p))
         return;

@@ -95,6 +95,15 @@ void ioc_add_request_to_remove_mblk(
 {
     iocDeleteMblkRequest *r;
 
+    /* See if we can merge this to the last one
+     */
+    r = drl->last;
+    if (r) if (r->n_requests < IOC_PACK_N_REQUESTS)
+    {
+        r->remote_mblk_id[r->n_requests++] = remote_mblk_id;
+        return;
+    }
+
 #if OSAL_DEBUG
     if (drl->count >= IOC_MAX_REMOVE_MBLK_REQS)
     {
@@ -106,7 +115,8 @@ void ioc_add_request_to_remove_mblk(
     r = (iocDeleteMblkRequest*)os_malloc(sizeof(iocDeleteMblkRequest), OS_NULL);
     if (r == OS_NULL) return;
     os_memclear(r, sizeof(iocDeleteMblkRequest));
-    r->remote_mblk_id = remote_mblk_id;
+    r->remote_mblk_id[0] = remote_mblk_id;
+    r->n_requests = 1;
 
     r->prev = drl->last;
     if (drl->last) {
@@ -133,7 +143,7 @@ void ioc_add_request_to_remove_mblk(
 
 ****************************************************************************************************
 */
-os_int ioc_get_remote_mblk_to_delete(
+/* os_int ioc_get_remote_mblk_to_delete(
     iocDeleteMblkReqList *drl)
 {
     if (drl->first) {
@@ -142,6 +152,7 @@ os_int ioc_get_remote_mblk_to_delete(
 
     return -1;
 }
+*/
 
 
 /**
@@ -206,14 +217,16 @@ osalStatus ioc_make_remove_mblk_req_frame(
     iocConnection *con,
     os_int remote_mblk_id)
 {
-    iocSendHeaderPtrs
-        ptrs;
+    iocDeleteMblkRequest *r;
+    iocSendHeaderPtrs ptrs;
+    os_uchar *p, *start;
 
-    os_uchar
-        *p,
-        *start;
-
-    // root = con->link.root;
+    /* If nothing to do, return that completed to indicate that all remove requests have been sent.
+     */
+    r = con->del_mlk_req_list.first;
+    if (r == OS_NULL) {
+        return OSAL_COMPLETED;
+    }
 
     // PACK MULTIPLE REMOVES IN ONE FRAME
 
@@ -238,11 +251,15 @@ osalStatus ioc_make_remove_mblk_req_frame(
        if transmission is blocked by flow control.
      */
     if (ioc_finish_frame(con, &ptrs, start, p))
-        return;
+        return OSAL_PENDING;
 
-    // con->authentication_sent = OS_TRUE;
+    /* We have processed this remove request block, remove from queue.
+     */
+    ioc_remote_mblk_deleted(&con->del_mlk_req_list);
+
 osal_debug_error("HERE REMOVE REQ SENT");
-return OSAL_COMPLETED;
+
+    return OSAL_COMPLETED;
 }
 
 

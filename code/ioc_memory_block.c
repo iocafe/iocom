@@ -365,6 +365,7 @@ void ioc_generate_del_mblk_request(
 
     if (mblk == OS_NULL) return;
     if (!mblk->to_be_deleted) return;
+    mblk->to_be_deleted = OS_FALSE;
 
     for (sbuf = mblk->sbuf.first;
          sbuf;
