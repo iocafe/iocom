@@ -96,7 +96,7 @@ OSAL_C_HEADER_BEGINS
 #define IOC_RELAX_SECURITY EOSAL_RELAX_SECURITY
 #endif
 
-/* Include all base iocom headers.
+/* Include all base iocom headers and some extension headers needed early.
  */
 #include "code/ioc_timing.h"
 #include "code/ioc_debug.h"
@@ -106,9 +106,12 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_root.h"
 #include "code/ioc_memory_block.h"
 #include "code/ioc_signal.h"
+#if IOC_DYNAMIC_MBLK_CODE
+  #include "extensions/dynamicio/ioc_remove_mblk_list.h"
+#endif
 #include "code/ioc_connection.h"
 #if OSAL_SOCKET_SUPPORT
-#include "code/ioc_end_point.h"
+  #include "code/ioc_end_point.h"
 #endif
 #include "code/ioc_source_buffer.h"
 #include "code/ioc_target_buffer.h"

@@ -65,6 +65,12 @@ typedef struct iocDeleteMblkReqList
     /** Last request of the "remove memory block request" list. OS_NULL if the list is empty.
      */
     iocDeleteMblkRequest *last;
+
+#if OSAL_DEBUG
+    /** Number of requests on list. Used to detect programming errors.
+     */
+    os_int count;
+#endif
 }
 iocDeleteMblkReqList;
 

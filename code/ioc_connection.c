@@ -101,6 +101,12 @@ iocConnection *ioc_initialize_connection(
     }
     root->con.last = con;
 
+    /* Initialize the "remove memory block request" list root structure to as empty list.
+     */
+#if IOC_DYNAMIC_MBLK_CODE
+    ioc_initialize_remove_mblk_req_list(&con->del_mlk_req_list);
+#endif
+
     /* Mark connection structure as initialized connection object (for debugging).
      */
     IOC_SET_DEBUG_ID(con, 'C')
@@ -188,6 +194,12 @@ void ioc_release_connection(
      */
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     ioc_release_allowed_networks(&con->allowed_networks);
+#endif
+
+    /* Release memory allocated for the "remove memory block request" list.
+     */
+#if IOC_DYNAMIC_MBLK_CODE
+    ioc_release_remove_mblk_req_list(&con->del_mlk_req_list);
 #endif
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
@@ -809,6 +821,11 @@ osal_debug_error("HERE AUTH CLEARED");
         tbuf->syncbuf.has_new_data = OS_FALSE;
         tbuf->syncbuf.newdata_start_addr = tbuf->syncbuf.newdata_end_addr = 0;
     }
+
+#if IOC_DYNAMIC_MBLK_CODE
+    ioc_release_remove_mblk_req_list(&con->del_mlk_req_list);
+    ioc_initialize_remove_mblk_req_list(&con->del_mlk_req_list);
+#endif
 }
 
 /**

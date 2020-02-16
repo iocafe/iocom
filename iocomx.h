@@ -37,7 +37,6 @@ OSAL_C_HEADER_BEGINS
 #include "extensions/dynamicio/ioc_dyn_mblk_list.h"
 #include "extensions/dynamicio/ioc_dyn_queue.h"
 #include "extensions/dynamicio/ioc_dyn_stream.h"
-#include "extensions/dynamicio/ioc_remove_mblk_list.h"
 #endif
 
 /* If C++ compilation, end the undecorated code.

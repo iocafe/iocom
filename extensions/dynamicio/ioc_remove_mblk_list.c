@@ -30,6 +30,11 @@
 #include "iocom.h"
 #if IOC_DYNAMIC_MBLK_CODE
 
+/* Limit for number of requests. Used to detect programming errors.
+ */
+#ifndef IOC_MAX_REMOVE_MBLK_REQS
+#define IOC_MAX_REMOVE_MBLK_REQS 1000
+#endif
 
 /**
 ****************************************************************************************************
@@ -90,6 +95,14 @@ void ioc_add_request_to_remove_mblk(
 {
     iocDeleteMblkRequest *r;
 
+#if OSAL_DEBUG
+    if (drl->count >= IOC_MAX_REMOVE_MBLK_REQS)
+    {
+        osal_debug_error_int("ioc_add_request_to_remove_mblk: Too many items on list ", drl->count);
+        return;
+    }
+#endif
+
     r = (iocDeleteMblkRequest*)os_malloc(sizeof(iocDeleteMblkRequest), OS_NULL);
     if (r == OS_NULL) return;
     os_memclear(r, sizeof(iocDeleteMblkRequest));
@@ -102,6 +115,10 @@ void ioc_add_request_to_remove_mblk(
     else {
         drl->first = r;
     }
+
+#if OSAL_DEBUG
+    drl->count++;
+#endif
 }
 
 
@@ -161,7 +178,10 @@ void ioc_remote_mblk_deleted(
     drl->first = r->next;
 
     os_free(r, sizeof(iocDeleteMblkRequest));
-}
 
+#if OSAL_DEBUG
+    drl->count--;
+#endif
+}
 
 #endif

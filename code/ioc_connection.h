@@ -589,6 +589,12 @@ typedef struct iocConnection
      */
     iocAllowedNetworkConf allowed_networks;
 #endif
+
+#if IOC_DYNAMIC_MBLK_CODE
+    /** Delete memory block request list (list's root structure).
+     */
+    iocDeleteMblkReqList del_mlk_req_list;
+#endif
 }
 iocConnection;
 
