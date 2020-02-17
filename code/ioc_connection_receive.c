@@ -417,12 +417,15 @@ static osalStatus ioc_process_received_data_frame(
      */
     if (tbuf == OS_NULL)
     {
-        osal_trace3("Data for unlinked memory block");
+        osal_trace3("data for unlinked memory block");
         return OSAL_SUCCESS;
     }
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     /* If network is not authorized, report error. This may be intrusion attempt.
+       IS THIS AN UNNECESSARY DOUBLE CHECK? WHEN WE ASSIGN TRANSFER BUFFER TO CONNECTION DO
+       WE CHECK THIS ALREADY. MAKE SURE BEFORE REMOVING THIS. NO HARM IF HERE, MAY BE
+       SECURITY BREACH IF REMOVED.
      */
     if (!ioc_is_network_authorized(con, tbuf->mlink.mblk->network_name, 0))
     {
@@ -483,8 +486,17 @@ static osalStatus ioc_process_received_system_frame(
         case IOC_AUTHENTICATION_DATA:
             return ioc_process_received_authentication_frame(con, mblk_id, data);
 
+#if IOC_DYNAMIC_MBLK_CODE
+        /* Remove memory block request.
+         */
+        case IOC_REMOVE_MBLK_REQUEST:
+            return ioc_process_remove_mblk_req_frame(con, mblk_id, data);
+#endif
+
         default:
-            osal_debug_error("Unknown system frame received");
+            /* Ignore there, new frame types may be added later and they are to be ignored.
+             */
+            osal_trace3("Unknown system frame received");
             break;
     }
 

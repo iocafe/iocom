@@ -36,6 +36,16 @@
 #define IOC_MAX_REMOVE_MBLK_REQS 1000
 #endif
 
+/* Forward referred static functions.
+ */
+static void ioc_remove_mblk_req_processed(
+    iocDeleteMblkReqList *drl);
+
+static void ioc_remove_mblk_by_request(
+    iocMemoryBlock *mblk,
+    iocConnection *con);
+
+
 /**
 ****************************************************************************************************
 
@@ -146,7 +156,7 @@ void ioc_add_request_to_remove_mblk(
 
 ****************************************************************************************************
 */
-void ioc_remove_mblk_req_processed(
+static void ioc_remove_mblk_req_processed(
     iocDeleteMblkReqList *drl)
 {
     iocDeleteMblkRequest *r;
@@ -205,10 +215,10 @@ osalStatus ioc_make_remove_mblk_req_frame(
         return OSAL_COMPLETED;
     }
 
-    /* Set frame header (set number of items as address field).
+    /* Set frame header (set number of items as mblk id field).
      */
     n = r->n_requests;
-    ioc_generate_header(con, con->frame_out.buf, &ptrs, 0, n);
+    ioc_generate_header(con, con->frame_out.buf, &ptrs, n, 0);
 
     /* Generate frame content. Here we do not check for buffer overflow,
        we know (and trust) that it fits within one frame.
@@ -237,5 +247,97 @@ osalStatus ioc_make_remove_mblk_req_frame(
     osal_trace("remove mblk request sent");
     return OSAL_SUCCESS;
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief Process "remove memory block" request frame received from socket or serial port.
+  @anchor ioc_ioc_process_remove_mblk_req_frame
+
+  The ioc_process_remove_mblk_req_frame() function is called once a system frame
+  containing remove memory block request list is received.
+
+  ioc_lock() must be on before calling this function.
+
+  @param   con Pointer to the connection object.
+  @param   mblk_id Memory block identifier in this end.
+  @param   data Received data, can be compressed and delta encoded, check flags.
+
+  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
+
+****************************************************************************************************
+*/
+osalStatus ioc_process_remove_mblk_req_frame(
+    struct iocConnection *con,
+    os_uint n_requests,
+    os_char *data)
+{
+    iocSourceBuffer *sbuf;
+    iocTargetBuffer *tbuf;
+    os_char *p;
+    os_long mblk_id;
+    os_int i, bytes;
+
+    if (n_requests < 1 || n_requests > IOC_PACK_ABS_MAX_REQUESTS)
+        return OSAL_STATUS_FAILED;
+
+    p = data + 1; /* Skip system frame IOC_REMOVE_MBLK_REQUEST byte. */
+
+    for (i = 0; i<n_requests; i++)
+    {
+        bytes = osal_intser_reader(p, &mblk_id);
+        p += bytes;
+
+        for (tbuf = con->tbuf.first;
+             tbuf;
+             tbuf = tbuf->clink.next)
+        {
+            if (mblk_id == tbuf->mlink.mblk->mblk_id)
+            {
+                ioc_remove_mblk_by_request(tbuf->mlink.mblk, con);
+                goto next_req;
+            }
+        }
+
+        for (sbuf = con->sbuf.first;
+             sbuf;
+             sbuf = sbuf->clink.next)
+        {
+            if (mblk_id == sbuf->mlink.mblk->mblk_id)
+            {
+                ioc_remove_mblk_by_request(sbuf->mlink.mblk, con);
+                goto next_req;
+            }
+        }
+
+next_req:;
+    }
+
+    return OSAL_SUCCESS;
+}
+
+
+static void ioc_remove_mblk_by_request(
+    iocMemoryBlock *mblk,
+    iocConnection *con)
+{
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    /* If network is not authorized, report error. This may be intrusion attempt.
+       IS THIS AN UNNECESSARY DOUBLE CHECK? WHEN WE ASSIGN TRANSFER BUFFER TO CONNECTION DO
+       WE CHECK THIS ALREADY. MAKE SURE BEFORE REMOVING THIS. NO HARM IF HERE, MAY BE
+       SECURITY BREACH IF REMOVED.
+     */
+    if (!ioc_is_network_authorized(con, mblk->network_name, 0))
+    {
+        osal_error(OSAL_WARNING, eosal_iocom, OSAL_STATUS_NOT_AUTOHORIZED,
+            "attempt to remove memory block in unauthorized network");
+        return;
+    }
+#endif
+
+
+}
+
 
 #endif

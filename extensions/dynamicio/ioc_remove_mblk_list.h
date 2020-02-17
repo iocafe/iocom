@@ -33,7 +33,13 @@ struct iocConnection;
 
 /** Number of requests to pack in together (to send as one frame).
  */
+#ifndef IOC_PACK_N_REQUESTS
 #define IOC_PACK_N_REQUESTS 2
+#endif
+
+/** Maximum possible value for IOC_PACK_N_REQUESTS. This must not be modified.
+ */
+#define IOC_PACK_ABS_MAX_REQUESTS 32
 
 /**
 ****************************************************************************************************
@@ -108,15 +114,17 @@ void ioc_add_request_to_remove_mblk(
     iocDeleteMblkReqList *drl,
     os_int remote_mblk_id);
 
-/* The first item on request list has been sent trogh the connection, remove it from list.
- */
-void ioc_remove_mblk_req_processed(
-    iocDeleteMblkReqList *drl);
-
 /* Make remove memory block request frame.
  */
 osalStatus ioc_make_remove_mblk_req_frame(
     struct iocConnection *con);
+
+/* Process "remove memory block" request frame received from socket or serial port.
+ */
+osalStatus ioc_process_remove_mblk_req_frame(
+    struct iocConnection *con,
+    os_uint n_requests,
+    os_char *data);
 
 /*@}*/
 
