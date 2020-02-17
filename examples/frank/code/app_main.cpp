@@ -47,11 +47,6 @@ static os_timer idle_timer;
 
 /* Forward referred static functions.
  */
-// static void app_listen_for_clients();
-
-// static void app_connect_cloud(
-//    iocConnectionConfig *connconf);
-
 static void app_root_callback(
     struct iocRoot *root,
     iocEvent event,
@@ -130,15 +125,6 @@ osalStatus osal_main(
     security = ioc_get_security_conf(&app_device_conf);
     osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
     osal_serial_initialize();
-
-    /* Ready to go, start listening for clients.
-     */
-    // app_listen_for_clients();
-
-    /* Connect to cloud.
-     */
-    // connconf = ioc_get_connection_conf(&app_device_conf);
-    // app_connect_cloud(connconf);
 
     /* Connect to network.
      */
@@ -224,80 +210,6 @@ void osal_main_cleanup(
 }
 
 
-#if 0
-/**
-****************************************************************************************************
-
-  @brief Listen for incoming connections.
-
-  The app_listen_for_clients creates iocom end point which listens for incoming connections
-  from IO nodes.
-
-  Notice flag IOC_DYNAMIC_MBLKS, this allows to create new memory blocks dynamically bu
-  received configuration information.
-
-  @return  None.
-
-****************************************************************************************************
-*/
-static void app_listen_for_clients()
-{
-    iocEndPoint *ep = OS_NULL;
-    iocEndPointParams epprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-    ep = ioc_initialize_end_point(OS_NULL, &app_iocom);
-    os_memclear(&epprm, sizeof(epprm));
-    epprm.iface = iface;
-    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-    ioc_listen(ep, &epprm);
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Connect to cloud server.
-
-  If the IO controller (like this 'frank' example) runs in local network, a cloud server
-  can be used to pass connections from remote devices or other nodes. This function
-  connects this IO controller to cloud server application like 'claudia'.
-
-  @param   connconf Connection configuration (from persistent storate or JSON defaults).
-  @return  None.
-
-****************************************************************************************************
-*/
-static void app_connect_cloud(
-    iocConnectionConfig *connconf)
-{
-    iocConnection *con = OS_NULL;
-    iocOneConnectionConf *c;
-    iocConnectionParams conprm;
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-    os_int i;
-
-    /* Just take first TLS connect downwards in object hierarchy
-     */
-    for (i = 0; i < connconf->n_connections; i++)
-    {
-        c = connconf->connection + i;
-        if (c->listen || !c->down || c->transport != IOC_TLS_SOCKET) continue;
-
-        con = ioc_initialize_connection(OS_NULL, &app_iocom);
-        os_memclear(&conprm, sizeof(conprm));
-
-        conprm.iface = iface;
-        conprm.flags = IOC_SOCKET|IOC_CREATE_THREAD|IOC_DYNAMIC_MBLKS;
-        conprm.parameters = connconf->connection->parameters;
-        ioc_connect(con, &conprm);
-        break;
-    }
-}
-#endif
-
-
 /**
 ****************************************************************************************************
 
@@ -337,7 +249,7 @@ static void app_root_callback(
             break;
 
         case IOC_NEW_DEVICE:
-            osal_debug_error("here");
+            osal_trace2_str("IOC_NEW_DEVICE ", mblk->device_name);
             break;
 
         case IOC_NEW_NETWORK:

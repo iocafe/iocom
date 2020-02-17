@@ -249,7 +249,8 @@ static void app_root_callback(
             break;
 
         case IOC_NEW_DEVICE:
-            check
+            osal_trace2_str("IOC_NEW_DEVICE ", mblk->device_name);
+            break;
 
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);

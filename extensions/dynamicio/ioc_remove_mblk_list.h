@@ -31,15 +31,16 @@
 
 struct iocConnection;
 
-/** Number of requests to pack in together (to send as one frame).
+/** Number of requests to pack in together (to send as one frame). 12 is selected so that
+ *  resulting frame size is always belog also maximum serial frame size.
  */
 #ifndef IOC_PACK_N_REQUESTS
-#define IOC_PACK_N_REQUESTS 2
+#define IOC_PACK_N_REQUESTS 12
 #endif
 
 /** Maximum possible value for IOC_PACK_N_REQUESTS. This must not be modified.
  */
-#define IOC_PACK_ABS_MAX_REQUESTS 32
+#define IOC_PACK_ABS_MAX_REQUESTS 16
 
 /**
 ****************************************************************************************************

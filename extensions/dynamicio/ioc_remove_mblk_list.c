@@ -135,6 +135,7 @@ void ioc_add_request_to_remove_mblk(
     else {
         drl->first = r;
     }
+    drl->last = r;
 
 #if OSAL_DEBUG
     drl->count++;
@@ -337,6 +338,7 @@ static void ioc_remove_mblk_by_request(
 #endif
 
 
+    ioc_release_memory_block(&mblk->handle);
 }
 
 
