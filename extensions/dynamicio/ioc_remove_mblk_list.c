@@ -135,33 +135,10 @@ void ioc_add_request_to_remove_mblk(
 /**
 ****************************************************************************************************
 
-  @brief Get remote memory block id to remove, -1 if none.
+  @brief The first item on request list has been sent trogh the connection, remove it from list.
 
-  @param   dlr Pointer to root structure of the "remove memory block request" list. Memory
-           allocated for the root structure itself is not freed.
-  @return  Remote memory block ID, or -1 if the list is empty.
-
-****************************************************************************************************
-*/
-/* os_int ioc_get_remote_mblk_to_delete(
-    iocDeleteMblkReqList *drl)
-{
-    if (drl->first) {
-        return drl->first->remote_mblk_id;
-    }
-
-    return -1;
-}
-*/
-
-
-/**
-****************************************************************************************************
-
-  @brief Request has been sent, remove from list.
-
-  Called when remote memory block returned by ioc_get_remote_mblk_to_delete() request has
-  been sent through connection. Removes first item from the request list.
+  Called when renice memory block request block request has been sent to the connection.
+  Removes the first item from the request list.
 
   @param   dlr Pointer to root structure of the "remove memory block request" list. Memory
            allocated for the root structure itself is not freed.
@@ -169,14 +146,14 @@ void ioc_add_request_to_remove_mblk(
 
 ****************************************************************************************************
 */
-void ioc_remote_mblk_deleted(
+void ioc_remove_mblk_req_processed(
     iocDeleteMblkReqList *drl)
 {
     iocDeleteMblkRequest *r;
 
     r = drl->first;
     if (r == OS_NULL) {
-        osal_debug_error("ioc_remote_mblk_deleted() called on empty list");
+        osal_debug_error("ioc_remove_mblk_req_processed() called on empty list");
         return;
     }
 
@@ -199,40 +176,39 @@ void ioc_remote_mblk_deleted(
 /**
 ****************************************************************************************************
 
-  @brief Make authentication data frame.
-  @anchor ioc_make_authentication_frame
+  @brief Make remove memory block request frame.
+  @anchor ioc_make_remove_mblk_req_frame
 
-  The ioc_make_authentication_frame() generates outgoing data frame which contains information
-  to authenticate this IO device, etc.
+  The ioc_make_remove_mblk_req_frame() generates outgoing data frame which lists IDs of memory
+  blocks to delete at remote end.
 
   @param   con Pointer to the connection object.
   @return  OSAL_COMPLETED = All done, no more remove requests to send.
            OSAL_SUCCESS = frame was placed in outgoing data buffer
            OSAL_PENDING = Send delayed by flow control.
-        ?None.
 
 ****************************************************************************************************
 */
 osalStatus ioc_make_remove_mblk_req_frame(
-    iocConnection *con,
-    os_int remote_mblk_id)
+    struct iocConnection *con)
 {
     iocDeleteMblkRequest *r;
     iocSendHeaderPtrs ptrs;
     os_uchar *p, *start;
+    os_int i, n, bytes;
 
     /* If nothing to do, return that completed to indicate that all remove requests have been sent.
      */
     r = con->del_mlk_req_list.first;
-    if (r == OS_NULL) {
+    if (r == OS_NULL)
+    {
         return OSAL_COMPLETED;
     }
 
-    // PACK MULTIPLE REMOVES IN ONE FRAME
-
-    /* Set frame header.
+    /* Set frame header (set number of items as address field).
      */
-    ioc_generate_header(con, con->frame_out.buf, &ptrs, remote_mblk_id, 0);
+    n = r->n_requests;
+    ioc_generate_header(con, con->frame_out.buf, &ptrs, 0, n);
 
     /* Generate frame content. Here we do not check for buffer overflow,
        we know (and trust) that it fits within one frame.
@@ -240,27 +216,26 @@ osalStatus ioc_make_remove_mblk_req_frame(
     p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
     *(p++) = IOC_REMOVE_MBLK_REQUEST;
 
-    /* Frame not rejected by flow control, increment frame number.
-     */
-    if (con->frame_out.frame_nr++ >= IOC_MAX_FRAME_NR)
+    for (i = 0; i<n; i++)
     {
-        con->frame_out.frame_nr = 1;
+        bytes = osal_intser_writer((os_char*)p, r->remote_mblk_id[i]);
+        p += bytes;
     }
 
     /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
        if transmission is blocked by flow control.
      */
     if (ioc_finish_frame(con, &ptrs, start, p))
+    {
         return OSAL_PENDING;
+    }
 
     /* We have processed this remove request block, remove from queue.
      */
-    ioc_remote_mblk_deleted(&con->del_mlk_req_list);
+    ioc_remove_mblk_req_processed(&con->del_mlk_req_list);
 
-osal_debug_error("HERE REMOVE REQ SENT");
-
-    return OSAL_COMPLETED;
+    osal_trace("remove mblk request sent");
+    return OSAL_SUCCESS;
 }
-
 
 #endif

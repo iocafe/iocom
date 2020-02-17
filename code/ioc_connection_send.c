@@ -112,8 +112,13 @@ osalStatus ioc_connection_send(
     }
 
 #if IOC_DYNAMIC_MBLK_CODE
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXX If we have queued "delete memory block requests" to send for the connection, send these now.
-
+    /* If we have queued "delete memory block requests" to send for the connection,
+       then send these now.
+     */
+    if (ioc_make_remove_mblk_req_frame(con) != OSAL_COMPLETED)
+    {
+        goto just_move_data;
+    }
 #endif
 
     /* Do we have memory block information to send?

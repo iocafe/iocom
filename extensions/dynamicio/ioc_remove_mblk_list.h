@@ -29,7 +29,9 @@
 */
 #if IOC_DYNAMIC_MBLK_CODE
 
-/** Number of requests to pack in together (to send as one frame)
+struct iocConnection;
+
+/** Number of requests to pack in together (to send as one frame).
  */
 #define IOC_PACK_N_REQUESTS 2
 
@@ -106,16 +108,15 @@ void ioc_add_request_to_remove_mblk(
     iocDeleteMblkReqList *drl,
     os_int remote_mblk_id);
 
-/* Get remote memory block id to remove, -1 if none.
+/* The first item on request list has been sent trogh the connection, remove it from list.
  */
-os_int ioc_get_remote_mblk_to_delete(
+void ioc_remove_mblk_req_processed(
     iocDeleteMblkReqList *drl);
 
-/* Called when remote memory block returned by ioc_get_remote_mblk_to_delete() request has
-   been sent through connection. Removes first item from the request list.
+/* Make remove memory block request frame.
  */
-void ioc_remote_mblk_deleted(
-    iocDeleteMblkReqList *drl);
+osalStatus ioc_make_remove_mblk_req_frame(
+    struct iocConnection *con);
 
 /*@}*/
 

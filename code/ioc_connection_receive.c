@@ -421,6 +421,17 @@ static osalStatus ioc_process_received_data_frame(
         return OSAL_SUCCESS;
     }
 
+#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    /* If network is not authorized, report error. This may be intrusion attempt.
+     */
+    if (!ioc_is_network_authorized(con, tbuf->mlink.mblk->network_name, 0))
+    {
+        osal_error(OSAL_WARNING, eosal_iocom, OSAL_STATUS_NOT_AUTOHORIZED,
+            "attempt to access an unauthorized network");
+        return OSAL_SUCCESS;
+    }
+#endif
+
     /* Store data to target buffer and optionally directly to memory block.
      */
     if (ioc_store_data_frame(tbuf, addr, data, data_sz, flags))
