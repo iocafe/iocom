@@ -350,7 +350,8 @@ void ioc_release_dynamic_mblk_if_not_attached(
   ioc_lock must be on when calling this function.
 
   @param   mblk Pointer to memory block perhaps being deleted ("to_be_deleted" flag).
-  @param   deleting_con Connection beging deleted.
+  @param   deleting_con Connection beging deleted. Set OS_NULL to send del request to all
+           memory blocks upwards.
   @return  None.
 
 ****************************************************************************************************

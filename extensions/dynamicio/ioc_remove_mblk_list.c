@@ -319,6 +319,22 @@ next_req:;
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Delete a memory block by request and forward the request upwards.
+  @anchor ioc_remove_mblk_by_request
+
+  The ioc_remove_mblk_by_request() function...
+
+  ioc_lock() must be on before calling this function.
+
+  @param   mblk Pointer to memory block to delete.
+  @param   con Pointer to the connection object.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_remove_mblk_by_request(
     iocMemoryBlock *mblk,
     iocConnection *con)
@@ -337,9 +353,11 @@ static void ioc_remove_mblk_by_request(
     }
 #endif
 
-
+    /* Send delete request to upper levels of hierarcy and delete the memory block.
+     */
+    mblk->to_be_deleted = OS_TRUE;
+    ioc_generate_del_mblk_request(mblk, OS_NULL);
     ioc_release_memory_block(&mblk->handle);
 }
-
 
 #endif
