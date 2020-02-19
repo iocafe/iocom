@@ -22,6 +22,17 @@
  */
 typedef struct LighthouseClient
 {
+    /** UDP socket handle. OS_NULL if UDP socket is not open.
+     */
+    osalStream udp_socket;
+
+    /** Timer for retrying UDP socket open.
+     */
+    os_timer socket_error_timer;
+
+    /** Time out for retrying, ms (socket_error_timer).
+     */
+    os_int socket_error_timeout;
 }
 LighthouseClient;
 

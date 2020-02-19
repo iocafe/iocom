@@ -68,6 +68,8 @@ osalStatus ioc_get_lighthouse_info(
         }
     }
 
+    *transport = 0;
+    *port_nr = 0;
     return OSAL_STATUS_FAILED;
 }
 
