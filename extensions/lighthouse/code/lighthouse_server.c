@@ -38,5 +38,3 @@ osalStatus ioc_run_lighthouse_server(
 {
     return OSAL_SUCCESS;
 }
-
-
