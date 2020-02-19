@@ -1,6 +1,6 @@
-# copy-selectwifi-for-platformio.py 12.1.2020/pekka
-# Copies selectwifi library files needed for PlatformIO Arduino build
-# into /coderoot/lib/arduino-platformio/selectwifi directory. 
+# copy-lighthouse-for-platformio.py 12.1.2020/pekka
+# Copies lighthouse library files needed for PlatformIO Arduino build
+# into /coderoot/lib/arduino-platformio/lighthouse directory. 
 # To make this look like Arduino library all .c and .cpp
 # files are copied to target root folder, and all header
 # files info subfolders.
@@ -57,4 +57,4 @@ def copy_level_1(sourcedir,targetdir):
     copy_info('library.properties', sourcedir, targetdir)
 
 
-copy_level_1("/coderoot/iocom/extensions/selectwifi", "/coderoot/lib/arduino-platformio/selectwifi")
+copy_level_1("/coderoot/iocom/extensions/lighthouse", "/coderoot/lib/arduino-platformio/lighthouse")

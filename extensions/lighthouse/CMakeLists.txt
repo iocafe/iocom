@@ -1,8 +1,8 @@
-# iocom/extensions/nodeconf/CmakeLists.txt - Cmake build for selectwifi library.
+# iocom/extensions/lighthouse/CmakeLists.txt - Cmake build for lighthouse library.
 cmake_minimum_required(VERSION 2.8.11)
 
 # Set project name (= project root folder name).
-set(E_PROJECT "selectwifi")
+set(E_PROJECT "lighthouse")
 project(${E_PROJECT})
 
 # include build environment setting common to all projects.
