@@ -454,6 +454,8 @@ osalStatus ioc_connect(
     os_strncpy(con->user_override, prm->user_override, IOC_NAME_SZ);
     os_strncpy(con->password_override, prm->password_override, IOC_PASSWORD_SZ);
 #endif
+    con->lighthouse_func = prm->lighthouse_func;
+    con->lighthouse = prm->lighthouse;
 
     /* Release any previously allocated buffers.
      */

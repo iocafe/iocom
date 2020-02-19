@@ -28,6 +28,10 @@
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
 #include "gina.h"
 
+/* The devicedir is here for testing only, take away.
+ */
+#include "devicedir.h"
+
 /* Enable wifi selection by blue tooth (0 or 1) ?.
  */
 #define GINA_USE_SELECTWIFI 0
@@ -35,9 +39,13 @@
 #include "selectwifi.h"
 #endif
 
-/* The devicedir is here for testing only, take away.
+/* Get controller IP address from UDP multicast (0 or 1) ?.
  */
-#include "devicedir.h"
+#define GINA_USE_LIGHTHOUSE 1
+#if GINA_USE_LIGHTHOUSE
+#include "lighthouse.h"
+static LighthouseClient lighthouse;
+#endif
 
 /* IO device configuration.
  */
@@ -158,6 +166,10 @@ osalStatus osal_main(
     prm.device_info_sz = sizeof(ioapp_signal_config);
     prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
     prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
+#if GINA_USE_LIGHTHOUSE
+    prm.lighthouse = &lighthouse;
+    prm.lighthouse_func = ioc_get_lighthouse_server;
+#endif
 
     /* Start communication.
      */
@@ -179,6 +191,12 @@ osalStatus osal_main(
      */
 #if GINA_USE_SELECTWIFI
     ioc_initialize_selectwifi(OS_NULL);
+#endif
+
+    /* Listen for UDP broadcasts with server address.
+     */
+#if GINA_USE_LIGHTHOUSE
+    ioc_initialize_lighthouse_client(&lighthouse, OS_NULL);
 #endif
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
@@ -206,6 +224,12 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+    /* Run light house.
+     */
+#if GINA_USE_LIGHTHOUSE
+    ioc_run_lighthouse_client(&lighthouse);
+#endif
+
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
@@ -287,6 +311,10 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
+#if GINA_USE_LIGHTHOUSE
+    ioc_release_lighthouse_client(&lighthouse);
+#endif
+
 #if GINA_USE_SELECTWIFI
     ioc_release_selectwifi();
 #endif

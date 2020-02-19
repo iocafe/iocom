@@ -135,6 +135,12 @@
 #define IOC_EXTRA_NO_ZERO 128
 /*@}*/
 
+struct LighthouseClient;
+
+typedef osalStatus ioc_lighthouse_func(
+    struct LighthouseClient *c);
+
+
 /** Transport types.
  */
 typedef enum iocTransportEnum
@@ -250,7 +256,15 @@ typedef struct iocConnectionParams
         - IOC_CREATE_THREAD Create thread to run connection (multithread support needed).
      */
     os_short flags;
-} 
+
+    /** Light house "run" function, used to get IP address to connect to by UDP multicast.
+     */
+    ioc_lighthouse_func *lighthouse_func;
+
+    /** Pointer to initialized light house state structure for the light house function.
+     */
+    struct LighthouseClient *lighthouse;
+}
 iocConnectionParams;
 
 
@@ -595,6 +609,14 @@ typedef struct iocConnection
     /** Flag indicating that the connection structure was dynamically allocated.
      */
     os_boolean allocated;
+
+    /** Light house "run" function, used to get IP address to connect to by UDP multicast.
+     */
+    ioc_lighthouse_func *lighthouse_func;
+
+    /** Pointer to initialized light house state structure for the light house function.
+     */
+    struct LighthouseClient *lighthouse;
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     /** The allowed_networks is structure set up by user authentication to hold list of networks

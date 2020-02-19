@@ -19,7 +19,8 @@
 /* Initialize the lighthouse client.
  */
 void ioc_initialize_lighthouse_client(
-    LighthouseClient *c)
+    LighthouseClient *c,
+    void *reserved)
 {
 }
 
@@ -33,6 +34,15 @@ void ioc_release_lighthouse_client(
 /* Keep lighthouse client functionality alive.
  */
 osalStatus ioc_run_lighthouse_client(
+    LighthouseClient *c)
+{
+    return OSAL_SUCCESS;
+}
+
+/* Get server (controller) IP address and port by transport,
+ * if received by UDP broadcast.
+ */
+osalStatus ioc_get_lighthouse_server(
     LighthouseClient *c)
 {
     return OSAL_SUCCESS;

@@ -160,8 +160,8 @@ void ioboard_start_communication(
                 | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
             break;
 	}
-
-// TEST conprm.flags |= IOC_BIDIRECTIONAL_MBLKS	; // kjaslkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
+    conprm.lighthouse_func = prm->lighthouse_func;
+    conprm.lighthouse = prm->lighthouse;
 
     ioboard_connection = ioc_initialize_connection(OS_NULL, &ioboard_communication);
     ioc_connect(ioboard_connection, &conprm);

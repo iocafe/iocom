@@ -217,6 +217,14 @@ typedef struct
      */
      os_int conf_send_block_sz;
      os_int conf_receive_block_sz;
+
+    /** Light house "run" function, used to get IP address to connect to by UDP multicast.
+     */
+    ioc_lighthouse_func *lighthouse_func;
+
+    /** Pointer to initialized light house state structure for the light house function.
+     */
+    struct LighthouseClient *lighthouse;
 }
 ioboardParams;
 
