@@ -32,7 +32,9 @@ AppRoot::AppRoot(
     const os_char *device_name,
     os_int device_nr,
     const os_char *network_name,
-    const os_char *publish)
+    const os_char *publish,
+    os_int ep_port_nr,
+    iocTransportEnum ep_transport)
 {
     iocBServerParams prm;
     os_int i;
@@ -73,6 +75,11 @@ AppRoot::AppRoot(
      * status signals.
      */
     ioc_enable_user_authentication(&app_iocom, ioc_authorize, &m_bmain);
+
+    /* Initialize light house. Sends periodic UDP broadcards to so that this service
+       can be detected in network.
+     */
+    ioc_initialize_lighthouse_server(&m_lighthouse, publish, ep_port_nr, ep_transport);
 }
 
 
@@ -92,6 +99,9 @@ AppRoot::~AppRoot()
         delete m_app[i];
     }
 
+    /* Finished with lighthouse and basic server.
+     */
+    ioc_release_lighthouse_server(&m_lighthouse);
     ioc_release_bserver(&m_bmain);
 }
 
@@ -124,6 +134,10 @@ osalStatus AppRoot::run()
                 s = OSAL_SUCCESS;
         }
     }
+
+    /* Run light house (send periodic UDP broadcasts so that this service can be detected)
+     */
+    ioc_run_lighthouse_server(&m_lighthouse);
 
     return s;
 }

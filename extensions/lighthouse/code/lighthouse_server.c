@@ -17,9 +17,14 @@
 #include "lighthouse.h"
 
 /* Initialize the lighthouse server.
+   @param   ep_port_nr Listening TCP port number.
+   @param   ep_transport Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET.
  */
 void ioc_initialize_lighthouse_server(
-    LighthouseServer *c)
+    LighthouseServer *c,
+    const os_char *publish,
+    os_int ep_port_nr,
+    iocTransportEnum ep_transport)
 {
 
 }

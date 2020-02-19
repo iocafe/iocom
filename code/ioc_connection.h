@@ -135,6 +135,19 @@
 #define IOC_EXTRA_NO_ZERO 128
 /*@}*/
 
+/** Transport types.
+ */
+typedef enum iocTransportEnum
+{
+    IOC_DEFAULT_TRANSPORT = 0, /* Undefined */
+    IOC_TCP_SOCKET,
+    IOC_TLS_SOCKET,
+    IOC_SERIAL_PORT,
+    IOC_BLUETOOTH,
+
+    IOC_NO_TRANSPORT = -1
+}
+iocTransportEnum;
 
 /** System frame types.
  */

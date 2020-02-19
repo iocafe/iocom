@@ -21,6 +21,7 @@
 #include "iocom.h"
 #include "nodeconf.h"
 #include "ioserver.h"
+#include "lighthouse.h"
 
 /* Include headers generated from JSON configuration.
  */

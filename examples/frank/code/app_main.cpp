@@ -78,6 +78,8 @@ osalStatus osal_main(
     iocNetworkInterfaces *nics;
     osalWifiNetworks *wifis;
     const os_char *device_name = "frank";
+    os_int ep_port_nr;
+    iocTransportEnum ep_transport;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().
@@ -107,10 +109,15 @@ osalStatus osal_main(
         device_id->password, device_id->network_name);
     ioc_initialize_dynamic_root(&app_iocom);
 
+    /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
+     */
+    connconf = ioc_get_connection_conf(&app_device_conf);
+    ioc_get_lighthouse_info(connconf, &ep_port_nr, &ep_transport);
+
     /* Create frank main object
      */
     app_root_obj = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
-        device_id->publish);
+        device_id->publish, ep_port_nr, ep_transport);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
@@ -128,7 +135,6 @@ osalStatus osal_main(
 
     /* Connect to network.
      */
-    connconf = ioc_get_connection_conf(&app_device_conf);
     ioc_connect_node(&app_iocom, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on

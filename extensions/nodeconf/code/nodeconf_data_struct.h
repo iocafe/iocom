@@ -61,20 +61,6 @@ typedef struct osalWifiNetworks
 }
 osalWifiNetworks;
 
-/* Transport types.
- */
-typedef enum iocTransportEnum
-{
-    IOC_DEFAULT_TRANSPORT = 0, /* Undefined */
-    IOC_TCP_SOCKET,
-    IOC_TLS_SOCKET,
-    IOC_SERIAL_PORT,
-    IOC_BLUETOOTH,
-
-    IOC_NO_TRANSPORT = -1
-}
-iocTransportEnum;
-
 /** Structure for passing information about all network interfaces
  */
 typedef struct iocOneConnectionConf

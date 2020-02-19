@@ -33,6 +33,7 @@ OSAL_C_HEADER_BEGINS
 #include "extensions/nodeconf/code/nodeconf_data_struct.h"
 #include "code/nodeconf_setup.h"
 #include "code/nodeconf_connect.h"
+#include "code/nodeconf_lighthouse.h"
 
 /* If C++ compilation, end the undecorated code.
  */

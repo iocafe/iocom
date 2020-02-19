@@ -4,7 +4,7 @@ service discovery using UDP multicasts
 - Clients listens for these
 
 Multicast contains
-IO network name/service IP address/port/protocol. 0 address means sender of multicast. Protocol = service protocol iocom+tls, iocom+socket, eobjects+tls
+IO network names which reply to multicast (first network name to be used, if client doesn't know it's network name). 
 Time stamp
 Random number
-Network name to use if unspecified.
+.

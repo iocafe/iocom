@@ -34,7 +34,10 @@ LighthouseServer;
 /* Initialize the lighthouse server.
  */
 void ioc_initialize_lighthouse_server(
-    LighthouseServer *c);
+    LighthouseServer *c,
+    const os_char *publish,
+    os_int ep_port_nr,
+    iocTransportEnum ep_transport);
 
 /* Release resources allocated for lighthouse server.
  */
