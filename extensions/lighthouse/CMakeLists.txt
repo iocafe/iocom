@@ -1,4 +1,4 @@
-# iocom/extensions/selectwifi/CmakeLists.txt - Cmake build for selectwifi library.
+# iocom/extensions/nodeconf/CmakeLists.txt - Cmake build for selectwifi library.
 cmake_minimum_required(VERSION 2.8.11)
 
 # Set project name (= project root folder name).
