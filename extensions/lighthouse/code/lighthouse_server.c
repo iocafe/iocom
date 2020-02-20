@@ -1,4 +1,3 @@
-
 /**
 
   @file    lighthouse_server.c
@@ -6,6 +5,9 @@
   @author  Pekka Lehtikoski
   @version 1.0
   @date    18.2.2020
+
+  The server, or controller, sends periodic UDP multicasts. This allows clients in same network
+  to locate the controller without pre configured address.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -16,10 +18,24 @@
 */
 #include "lighthouse.h"
 
-/* Initialize the lighthouse server.
-   @param   ep_port_nr Listening TCP port number.
-   @param   ep_transport Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Initialize the lighthouse server.
+
+  The ioc_initialize_lighthouse_server() function initializes light house server structure
+  and stores static information about the service to multicast.
+
+  @param   c Pointer to the light house server object structure.
+  @param   publish List of network names to publish, separated by comma.
+           For example "iocafenet,asteroidnet".
+  @param   ep_port_nr Listening TCP port number.
+  @param   ep_transport Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
@@ -41,8 +57,20 @@ void ioc_initialize_lighthouse_server(
     c->msg.hdr.publish_sz = (os_uchar)os_strlen(c->msg.publish); /* Use this, may be cut */
 }
 
-/* Release resources allocated for lighthouse server.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Release resources allocated for lighthouse server.
+
+  The ioc_release_lighthouse_server() function releases the resources allocated for lighthouse
+  server. In practice the function closes the socket used to send multicasts.
+
+  @param   c Pointer to the light house server object structure.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_release_lighthouse_server(
     LighthouseServer *c)
 {
@@ -53,8 +81,21 @@ void ioc_release_lighthouse_server(
     }
 }
 
-/* Keep lighthouse server functionality alive.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Keep lighthouse server functionality alive, send UDP multicasts.
+
+  The ioc_run_lighthouse_server() function is called repeatedly keep sending UDP multicast about
+  once per four seconds. This informs IO devices (clients) that the service is here.
+
+  @param   c Pointer to the light house client object structure.
+  @return  OSAL_SUCCESS or OSAL_PENDING if all is fine. Latter indicates that we are waiting
+           for next time to try to open a socket. Other values indicate a network error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_run_lighthouse_server(
     LighthouseServer *c)
 {

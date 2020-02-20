@@ -6,6 +6,13 @@
   @version 1.0
   @date    18.2.2020
 
+  The lighthouse client can be used by an IO device to detect controller in local area
+  network. It monitors for UDP multicasts sent by server and collects network information.
+
+  Server to connect to (IP address and port) is resolved by IO network name and transport.
+  The library supports also auto selecting IO network, assuming the local net has only
+  one IO network using the specified transport.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -13,7 +20,6 @@
 
 ****************************************************************************************************
 */
-
 
 /**
 ****************************************************************************************************

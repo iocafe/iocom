@@ -6,6 +6,13 @@
   @version 1.0
   @date    18.2.2020
 
+  The lighthouse client can be used by an IO device to detect controller in local area
+  network. It monitors for UDP multicasts sent by server and collects network information.
+
+  Server to connect to (IP address and port) is resolved by IO network name and transport.
+  The library supports also auto selecting IO network, assuming the local net has only
+  one IO network using the specified transport.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -26,8 +33,19 @@ static void ioc_add_lighthouse_net(
     os_timer *received_timer);
 
 
-/* Initialize the lighthouse client.
- */
+/**
+****************************************************************************************************
+
+  @brief Initialize the lighthouse client.
+
+  The ioc_initialize_lighthouse_client() function initializes light house client structure.
+
+  @param   c Pointer to the light house client object structure.
+  @param   reserved Reserved for future, set OS_NULL.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_initialize_lighthouse_client(
     LighthouseClient *c,
     void *reserved)
@@ -37,8 +55,21 @@ void ioc_initialize_lighthouse_client(
     c->socket_error_timeout = 100;
 }
 
-/* Release resources allocated for lighthouse client.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Release resources allocated for lighthouse client.
+
+  The ioc_release_lighthouse_client() function releases the resources allocated for lighthouse
+  client. In practice the function closes the socket, which listens for UDP multicasts.
+  The function doesn't release memory allocated for the client structure.
+
+  @param   c Pointer to the light house client object structure.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_release_lighthouse_client(
     LighthouseClient *c)
 {
@@ -49,8 +80,22 @@ void ioc_release_lighthouse_client(
     }
 }
 
-/* Keep lighthouse client functionality alive.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Keep lighthouse client functionality alive, poll for UDP multicasts.
+
+  The ioc_run_lighthouse_client() function is called repeatedly to poll for received
+  lighthouse UDP messages. The IO network information received is stores within
+  the lighthouse client structure.
+
+  @param   c Pointer to the light house client object structure.
+  @return  OSAL_SUCCESS or OSAL_PENDING if all is fine. Latter indicates that we are waiting
+           for next time to try to open a socket. Other values indicate a network error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_run_lighthouse_client(
     LighthouseClient *c)
 {
@@ -148,7 +193,8 @@ osalStatus ioc_run_lighthouse_client(
         n = e - p + 1;
         if (n > sizeof(network_name)) n = sizeof(network_name);
         os_strncpy(network_name, p, n);
-        ioc_add_lighthouse_net(c, remote_addr, port_nr, msg.hdr.transport, network_name, &received_timer);
+        ioc_add_lighthouse_net(c, remote_addr, port_nr,
+            msg.hdr.transport, network_name, &received_timer);
         if (*e == '\0') break;
         p = e + 1;
     }
@@ -156,6 +202,26 @@ osalStatus ioc_run_lighthouse_client(
     return OSAL_SUCCESS;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Store information about an IO network to lighthouse client structure (internal).
+
+  The ioc_add_lighthouse_net() function is called for each network when lighthouse UDP is
+  received.
+
+  @param   c Pointer to the light house client object structure.
+  @param   ip_address Something like "192.168.1.220".
+  @param   port_nr TCP port number, for example 6369.
+  @param   transport Either IOC_TCP_SOCKET or IOC_TLS_SOCKET.
+  @param   network_name Network name, like "iocafenet".
+  @param   received_timer os_get_timer() value to drop oldest information first when
+           lighthouse client structure can hold no more information.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void ioc_add_lighthouse_net(
     LighthouseClient *c,
     os_char *ip_addr,
@@ -205,14 +271,15 @@ static void ioc_add_lighthouse_net(
         selected_i = 0;
         for (i = 1; i < LIGHTHOUSE_NRO_NETS; i++)
         {
-            if (!os_elapsed2(&c->net[selected_i].received_timer, &c->net[i].received_timer, 1))
+            if (!os_elapsed2(&c->net[selected_i].received_timer,
+                &c->net[i].received_timer, 1))
             {
                 selected_i = i;
             }
         }
     }
 
-    /* Save the network
+    /* Save the network.
      */
     n = c->net + selected_i;
     os_strncpy(n->ip_addr, ip_addr, OSAL_IPADDR_SZ);
@@ -223,12 +290,35 @@ static void ioc_add_lighthouse_net(
 }
 
 
-/* Get server (controller) IP address and port by transport,
- * if received by UDP broadcast.
- *
-   @param flags Flags as given to ioc_connect(): define IOC_SOCKET, IOC_SECURE_CONNECTION
-   @return OSAL_IO_NETWORK_NAME_SET IO network name has been changed.
- */
+/**
+****************************************************************************************************
+
+  @brief Get server (controller) IP address and port IO network name and transport.
+
+  The ioc_get_lighthouse_connectstr() function is typically called by ioc_connect.c trough
+  function pointer (if lighthouse library is used). The function resolved
+
+  @param   c Pointer to the light house client object structure.
+  @param   func_nr Reserved for future, set LIGHTHOUSE_GET_CONNECT_STR for now.
+  @param   network_name IO network name as input. If IO network name is empty string
+           or equals to "*", it will be set by this function. Simply first known IO
+           network name.
+  @param   network_name_sz Network name buffer size in bytes, meaningfull if this function
+           sets the network name. Should be at least IOC_NETWORK_NAME_SZ.
+  @param   flags Flags as given to ioc_connect(), these define the transport: Bit flag
+           IOC_SOCKET for both TLS and plain TCP socket,  IOC_SECURE_CONNECTION
+           for TLS socket.
+  @param   connectstr If successfull, "connect to" string with IP address and port number is
+           stored here, for example "192.168.1.220:6368".
+  @param   Size of connectstr buffer in bytes. Should be at least OSAL_HOST_BUF_SZ characters.
+
+  @return  If successfull, the function returns either OSAL_SUCCESS or OSAL_IO_NETWORK_NAME_SET.
+           The latter indicates that network_name was set by this function. The function
+           return OSAL_STATUS_FAILED or other error code if unable to resolve IP address/port
+           to connect to.
+
+****************************************************************************************************
+*/
 osalStatus ioc_get_lighthouse_connectstr(
     LighthouseClient *c,
     LighthouseFuncNr func_nr,

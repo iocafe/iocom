@@ -485,16 +485,6 @@ static osalStatus ioc_streamer_device_write(
             buf_sz = signals->buf->n;
             tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
 
-/* os_int newtail;
-do
-{
- tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
-os_sleep(20);
-newtail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
-} while(tail != newtail); */
-
-
-
             if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
             {
                 osal_trace3("IOC_SSTEP_FAILED, no tail");
