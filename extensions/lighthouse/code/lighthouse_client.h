@@ -16,6 +16,48 @@
 
 
 /**
+****************************************************************************************************
+  Lighthouse client data structures
+****************************************************************************************************
+ */
+/** Information about one IO network known by light house.
+ */
+typedef struct LightHouseNetwork
+{
+    /** Server IP address.
+     */
+    os_char ip_addr[OSAL_IPADDR_SZ];
+
+    /** Server TCP port.
+     */
+    os_int port_nr;
+
+    /** Transport, either IOC_TCP_SOCKET or IOC_TLS_SOCKET.
+     */
+    iocTransportEnum transport;
+
+    /** IO network name, like "iocafenet"
+     */
+    os_char network_name[IOC_NETWORK_NAME_SZ];
+
+    /** Timer when network information was received. Used to replace the oldest of too
+        many networks.
+     */
+    os_timer received_timer;
+}
+LightHouseNetwork;
+
+/** How many networks we can remember.
+ */
+#ifndef LIGHTHOUSE_NRO_NETS
+  #if OSAL_MICROCONTROLLER
+    #define LIGHTHOUSE_NRO_NETS 4
+  #else
+    #define LIGHTHOUSE_NRO_NETS 32
+  #endif
+#endif
+
+/** Light house client state
  */
 typedef struct LighthouseClient
 {
@@ -31,16 +73,16 @@ typedef struct LighthouseClient
      */
     os_int socket_error_timeout;
 
-    /* Last received complete message
+    /** Information about knwon networks.
      */
-    LighthouseMessage msg;
+    LightHouseNetwork net[LIGHTHOUSE_NRO_NETS];
 }
 LighthouseClient;
 
 
 /**
 ****************************************************************************************************
-  Functions
+  Lighthouse client functions
 ****************************************************************************************************
  */
 /* Initialize the lighthouse client.

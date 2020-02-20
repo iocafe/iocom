@@ -123,11 +123,78 @@ osalStatus ioc_run_lighthouse_client(
         return OSAL_SUCCESS;
     }
 
-    /* Save the message, all done.
-     */
-    c->msg = msg;
+
+
+    //c->msg = msg;
     return OSAL_SUCCESS;
 }
+
+static void ioc_add_lighthouse_net(
+    LighthouseClient *c,
+    os_char *ip_addr,
+    os_int port_nr,
+    iocTransportEnum transport,
+    os_char *network_name,
+    os_timer *received_timer)
+{
+    LightHouseNetwork *n;
+    os_int i, selected_i;
+
+    /* If we already have network with this name, update it.
+     */
+    selected_i = -1;
+    for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
+    {
+        /* Skip if transport doesn't match (skips also unused ones).
+         */
+        if (c->net[i].transport != transport) continue;
+
+        /* If network name doesn't match, skip.
+         */
+        if (os_strcmp(network_name, c->net[i].network_name)) continue;
+
+        /* Select this line.
+         */
+        selected_i = i;
+        break;
+    }
+
+    /* No matching network name, if we have empty one, use it.
+     */
+    if (selected_i < 0)
+    {
+        for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
+        {
+            if (c->net[i].transport) continue;
+            selected_i = i;
+            break;
+        }
+    }
+
+    /* No empty ones, pick up the oldest.
+     */
+    if (selected_i < 0)
+    {
+        selected_i = 0;
+        for (i = 1; i < LIGHTHOUSE_NRO_NETS; i++)
+        {
+            if (!os_elapsed2(&c->net[selected_i].received_timer, &c->net[i].received_timer, 1))
+            {
+                selected_i = i;
+            }
+        }
+    }
+
+    /* Save the network
+     */
+    n = c->net + selected_i;
+    os_strncpy(n->ip_addr, ip_addr, OSAL_IPADDR_SZ);
+    n->port_nr = port_nr;
+    n->transport = transport;
+    os_strncpy(n->network_name, network_name, OSAL_IPADDR_SZ);
+    n->received_timer = *received_timer;
+}
+
 
 /* Get server (controller) IP address and port by transport,
  * if received by UDP broadcast.
@@ -143,5 +210,60 @@ osalStatus ioc_get_lighthouse_connectstr(
     os_char *connectstr,
     os_memsz connectstr_sz)
 {
+    os_int i, selected_i;
+    os_char nbuf[OSAL_NBUF_SZ], *compare_name;
+    iocTransportEnum transport;
+
+    /* If this is not socket (TCP or TLS, we can do nothing)
+     * Set transport number, either IOC_TCP_SOCKET or IOC_TLS_SOCKET.
+     */
+    if (flags & IOC_SOCKET) return OSAL_STATUS_FAILED;
+    transport = (flags & IOC_SECURE_CONNECTION) ? IOC_TLS_SOCKET : IOC_TCP_SOCKET;
+
+    compare_name = network_name;
+    if (!os_strcmp(compare_name, "*")) compare_name = "";
+
+    selected_i = -1;
+    for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
+    {
+        /* Skip if transport doesn't match (skips also unused ones).
+         */
+        if (c->net[i].transport != transport) continue;
+
+        /* If network name doesn't match and we have network name, skip
+         */
+        if (*compare_name != '\0' &&  os_strcmp(compare_name, c->net[i].network_name)) continue;
+
+        /* If this is older than some previous match, skip
+         */
+        if (selected_i >= 0) {
+            if (!os_elapsed2(&c->net[selected_i].received_timer, &c->net[i].received_timer, 1)) {
+                continue;
+            }
+        }
+
+        /* Select this line.
+         */
+        selected_i = i;
+    }
+
+    /* If we found no match?
+     */
+    if (selected_i < 0) return OSAL_STATUS_FAILED;
+
+    /* Set connect string
+     */
+    os_strncpy(connectstr, c->net[selected_i].ip_addr, connectstr_sz);
+    osal_int_to_str(nbuf, sizeof(nbuf), c->net[selected_i].port_nr);
+    os_strncat(connectstr, ":", connectstr_sz);
+    os_strncat(connectstr, nbuf, connectstr_sz);
+
+    /* If we do not have network name, set it
+     */
+    if (*compare_name == '\0') {
+        os_strncpy(network_name, c->net[selected_i].network_name, network_name_sz);
+    }
+
     return OSAL_SUCCESS;
 }
+
