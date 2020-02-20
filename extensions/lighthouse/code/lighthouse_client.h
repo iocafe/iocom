@@ -33,6 +33,10 @@ typedef struct LighthouseClient
     /** Time out for retrying, ms (socket_error_timer).
      */
     os_int socket_error_timeout;
+
+    /* Last received complete message
+     */
+    LighthouseMessage msg;
 }
 LighthouseClient;
 

@@ -45,9 +45,10 @@ osalStatus ioc_run_lighthouse_client(
     LighthouseClient *c)
 {
     osalStatus s;
-    os_char buf[512];
+    LighthouseMessage msg;
     os_char remote_addr[OSAL_IPADDR_SZ];
-    os_memsz n_read;
+    os_memsz n_read, bytes;
+    os_ushort checksum;
 
     /* If UDP socket is not open
      */
@@ -79,7 +80,7 @@ osalStatus ioc_run_lighthouse_client(
 
     /* Send packet to UDP stream
      */
-    s = osal_stream_receive_packet(c->udp_socket, buf, sizeof(buf), &n_read,
+    s = osal_stream_receive_packet(c->udp_socket, (os_char*)&msg, sizeof(msg), &n_read,
         remote_addr, sizeof(remote_addr), OSAL_STREAM_DEFAULT);
     if (OSAL_IS_ERROR(s))
     {
@@ -91,6 +92,40 @@ osalStatus ioc_run_lighthouse_client(
         return s;
     }
 
+    /* If success, but nothing received
+     */
+    if (n_read == 0) return OSAL_SUCCESS;
+
+    /* Make sure that string is terminated (just in case) and
+       Validate the message id and size.
+     */
+    msg.publish[LIGHTHOUSE_PUBLISH_SZ-1] = '\0';
+    bytes = sizeof(LighthouseMessageHdr) + msg.hdr.publish_sz;
+    if (msg.hdr.msg_id != LIGHTHOUSE_MSG_ID ||
+        msg.hdr.publish_sz < 1 ||
+        msg.hdr.publish_sz > LIGHTHOUSE_PUBLISH_SZ ||
+        msg.hdr.hdr_sz !=  sizeof(LighthouseMessageHdr) ||
+        n_read < bytes)
+    {
+        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_UDP_MULTICAST, "content");
+        return OSAL_SUCCESS;
+    }
+
+    /* Verify checksum
+     */
+    checksum = msg.hdr.checksum_high;
+    checksum = (checksum << 8) | msg.hdr.checksum_low;
+
+    msg.hdr.checksum_high = msg.hdr.checksum_low = 0;
+    if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
+    {
+        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_UDP_MULTICAST, "checksum");
+        return OSAL_SUCCESS;
+    }
+
+    /* Save the message, all done.
+     */
+    c->msg = msg;
     return OSAL_SUCCESS;
 }
 

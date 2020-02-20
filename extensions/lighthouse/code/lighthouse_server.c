@@ -31,6 +31,14 @@ void ioc_initialize_lighthouse_server(
     c->socket_error_timeout = 100;
     os_get_timer(&c->multicast_timer);
     c->multicast_interval = 200;
+
+    c->msg.hdr.msg_id = LIGHTHOUSE_MSG_ID;
+    c->msg.hdr.hdr_sz = (os_uchar)sizeof(LighthouseMessageHdr);
+    c->msg.hdr.port_nr_low = (os_uchar)ep_port_nr;
+    c->msg.hdr.port_nr_high = (os_uchar)(ep_port_nr >> 8);
+    c->msg.hdr.transport = (os_uchar)ep_transport;
+    os_strncpy(c->msg.publish, publish, LIGHTHOUSE_PUBLISH_SZ);
+    c->msg.hdr.publish_sz = (os_uchar)os_strlen(c->msg.publish); /* Use this, may be cut */
 }
 
 /* Release resources allocated for lighthouse server.
@@ -51,6 +59,11 @@ osalStatus ioc_run_lighthouse_server(
     LighthouseServer *c)
 {
     osalStatus s;
+    os_memsz bytes;
+    os_ushort checksum, random_nr;
+    os_int64 tstamp;
+    os_ulong ul;
+    os_int i;
 
     /* If UDP socket is not open
      */
@@ -88,10 +101,30 @@ osalStatus ioc_run_lighthouse_server(
     os_get_timer(&c->multicast_timer);
     c->multicast_interval = 4000;
 
+    random_nr = osal_rand(0, 65535);
+    c->msg.hdr.random_nr_low = (os_uchar)random_nr;
+    c->msg.hdr.random_nr_high = (os_uchar)(random_nr >> 8);
+
+#if OSAL_TIME_SUPPORT
+#if OSAL_LONG_IS_64_BITS
+    os_time(&tstamp);
+    ul = (os_ulong)tstamp;
+    for (i = 0; i<8; i++) {
+        c->msg.hdr.tstamp[i] = (os_uchar)ul;
+        ul >>= 8;
+    }
+#endif
+#endif
+    c->msg.hdr.checksum_low = c->msg.hdr.checksum_high = 0;
+    bytes = sizeof(LighthouseMessageHdr) + c->msg.hdr.publish_sz;
+    checksum = os_checksum((const os_char*)&c->msg, bytes, OS_NULL);
+    c->msg.hdr.checksum_low = (os_uchar)checksum;
+    c->msg.hdr.checksum_high = (os_uchar)(checksum >> 8);
+
     /* Send packet to UDP stream
      */
     s = osal_stream_send_packet(c->udp_socket,
-        LIGHTHOUSE_IP LIGHTHOUSE_PORT, "MYdata", 5, OSAL_STREAM_DEFAULT);
+        LIGHTHOUSE_IP LIGHTHOUSE_PORT, (const os_char*)&c->msg, bytes, OSAL_STREAM_DEFAULT);
     if (OSAL_IS_ERROR(s))
     {
         osal_error(OSAL_ERROR, eosal_iocom,

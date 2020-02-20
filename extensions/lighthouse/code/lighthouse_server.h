@@ -41,6 +41,11 @@ typedef struct LighthouseServer
     /** How often to send UDP multicasts, ms.
      */
     os_int multicast_interval;
+
+
+    LighthouseMessage msg;
+
+    os_char *publish;
 }
 LighthouseServer;
 
