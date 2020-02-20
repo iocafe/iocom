@@ -20,6 +20,11 @@
  */
 #include "iocom.h"
 
+/* Lighthouse multicast IP and port
+ */
+#define LIGHTHOUSE_IP "239.255.255.250"
+#define LIGHTHOUSE_PORT ":6368"
+
 /* If C++ compilation, all functions, etc. from this point on in included headers are
    plain C and must be left undecorated.
  */
