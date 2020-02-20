@@ -2,11 +2,11 @@
 	"network": {
 		"title": "Network configuration for 'gina' IO device",
 		"device_nr": "auto",
-		"network_name": "*",
+		"network_name": "iocafenet",
 
 		"connect": [{
 			"transport": "tls",
-			"parameters": "*",
+			"parameters": "192.168.1.220:6369",
 			"flags": "connect,up"
 		}],
 

@@ -521,3 +521,39 @@ os_uint ioc_get_unique_device_id(
     osal_debug_error("Out of numbers (devices)");
     return 1;
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief Copy root's network name to memory blocks without name.
+  @anchor ioc_set_network_name
+
+  Copy network name from iocRoot object to memory blocks which have no network name as "*".
+  Called when root network name is changed afterwards (for now only by lighthouse).
+
+  This works only for an IO device using static signal. Controllers, etc. using dynamic signals
+  cannot change their network name on the fly.
+
+  @param   root Pointer to the root object.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_set_network_name(
+    iocRoot *root)
+{
+    iocMemoryBlock *mblk;
+
+    ioc_lock(root);
+
+    for (mblk = root->mblk.first; mblk; mblk = mblk->link.next)
+    {
+        if (!os_strcmp(mblk->network_name, "*") || mblk->network_name[0] == '\0')
+        {
+            os_strncpy(mblk->network_name, root->network_name, IOC_NETWORK_NAME_SZ);
+        }
+    }
+
+    ioc_unlock(root);
+}

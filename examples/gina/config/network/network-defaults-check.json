@@ -1,11 +1,11 @@
 {
 "network" : {
 	"device_nr": "auto",
-	"network_name": "iocafenet",
+	"network_name": "*",
 	"connect": [
 		{
 			"transport": "tls",
-			"parameters": "192.168.1.220:6369",
+			"parameters": "*",
 			"flags": "connect,up"
 		}
 	],

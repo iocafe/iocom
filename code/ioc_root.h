@@ -314,6 +314,11 @@ void ioc_new_root_event(
 os_uint ioc_get_unique_device_id(
     iocRoot *root);
 
+/* Copy root's network name to memory blocks without name.
+ */
+void ioc_set_network_name(
+    iocRoot *root);
+
 /*@}*/
 
 #if OSAL_MULTITHREAD_SUPPORT

@@ -15,6 +15,16 @@
 */
 #include "lighthouse.h"
 
+/* Forward referred static functions.
+ */
+static void ioc_add_lighthouse_net(
+    LighthouseClient *c,
+    os_char *ip_addr,
+    os_int port_nr,
+    iocTransportEnum transport,
+    os_char *network_name,
+    os_timer *received_timer);
+
 
 /* Initialize the lighthouse client.
  */
@@ -47,8 +57,10 @@ osalStatus ioc_run_lighthouse_client(
     osalStatus s;
     LighthouseMessage msg;
     os_char remote_addr[OSAL_IPADDR_SZ];
-    os_memsz n_read, bytes;
-    os_ushort checksum;
+    os_memsz n_read, bytes, n;
+    os_ushort checksum, port_nr;
+    os_char network_name[IOC_NETWORK_NAME_SZ], *p, *e;
+    os_timer received_timer;
 
     /* If UDP socket is not open
      */
@@ -123,9 +135,24 @@ osalStatus ioc_run_lighthouse_client(
         return OSAL_SUCCESS;
     }
 
+    /* Add networks.
+     */
+    port_nr = msg.hdr.port_nr_high;
+    port_nr = (port_nr << 8) | msg.hdr.port_nr_low;
+    os_get_timer(&received_timer);
+    p = msg.publish;
+    while (*p != '\0')
+    {
+        e = os_strchr(p, ',');
+        if (e == OS_NULL) e = os_strchr(p, '\0');
+        n = e - p + 1;
+        if (n > sizeof(network_name)) n = sizeof(network_name);
+        os_strncpy(network_name, p, n);
+        ioc_add_lighthouse_net(c, remote_addr, port_nr, msg.hdr.transport, network_name, &received_timer);
+        if (*e == '\0') break;
+        p = e + 1;
+    }
 
-
-    //c->msg = msg;
     return OSAL_SUCCESS;
 }
 
@@ -200,6 +227,7 @@ static void ioc_add_lighthouse_net(
  * if received by UDP broadcast.
  *
    @param flags Flags as given to ioc_connect(): define IOC_SOCKET, IOC_SECURE_CONNECTION
+   @return OSAL_IO_NETWORK_NAME_SET IO network name has been changed.
  */
 osalStatus ioc_get_lighthouse_connectstr(
     LighthouseClient *c,
@@ -217,7 +245,7 @@ osalStatus ioc_get_lighthouse_connectstr(
     /* If this is not socket (TCP or TLS, we can do nothing)
      * Set transport number, either IOC_TCP_SOCKET or IOC_TLS_SOCKET.
      */
-    if (flags & IOC_SOCKET) return OSAL_STATUS_FAILED;
+    if ((flags & IOC_SOCKET) == 0) return OSAL_STATUS_FAILED;
     transport = (flags & IOC_SECURE_CONNECTION) ? IOC_TLS_SOCKET : IOC_TCP_SOCKET;
 
     compare_name = network_name;
@@ -262,6 +290,7 @@ osalStatus ioc_get_lighthouse_connectstr(
      */
     if (*compare_name == '\0') {
         os_strncpy(network_name, c->net[selected_i].network_name, network_name_sz);
+        return OSAL_IO_NETWORK_NAME_SET;
     }
 
     return OSAL_SUCCESS;
