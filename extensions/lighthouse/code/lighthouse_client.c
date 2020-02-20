@@ -71,7 +71,7 @@ osalStatus ioc_run_lighthouse_client(
         if (c->udp_socket == OS_NULL)
         {
             osal_error(OSAL_ERROR, eosal_iocom,
-                OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, "5766");
+                OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
             return s;
         }
         osal_error(OSAL_CLEAR_ERROR, eosal_iocom,
