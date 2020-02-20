@@ -16,9 +16,6 @@
 
 
 /**
-****************************************************************************************************
-  X...
-****************************************************************************************************
  */
 typedef struct LighthouseClient
 {
@@ -65,5 +62,11 @@ osalStatus ioc_run_lighthouse_client(
 /* Get server (controller) IP address and port by transport,
  * if received by UDP broadcast.
  */
-osalStatus ioc_get_lighthouse_server(
-    LighthouseClient *c);
+osalStatus ioc_get_lighthouse_connectstr(
+    LighthouseClient *c,
+    LighthouseFuncNr func_nr,
+    os_char *network_name,
+    os_memsz network_name_sz,
+    os_short flags,
+    os_char *connectstr,
+    os_memsz connectstr_sz);

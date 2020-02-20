@@ -168,7 +168,7 @@ osalStatus osal_main(
     prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
 #if GINA_USE_LIGHTHOUSE
     prm.lighthouse = &lighthouse;
-    prm.lighthouse_func = ioc_get_lighthouse_server;
+    prm.lighthouse_func = ioc_get_lighthouse_connectstr;
 #endif
 
     /* Start communication.
@@ -234,12 +234,11 @@ osalStatus osal_loop(
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
      */
-// #if OSAL_MULTITHREAD_SUPPORT == 0
     ioc_run(&ioboard_communication);
-// #endif
     ioc_receive(&ioboard_imp);
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
+
 #if 1
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
@@ -279,7 +278,8 @@ osalStatus osal_loop(
         */
     }
 #endif
-    /* The devicedir call is here for testing only, take away.
+
+    /* The call is here for testing only, take away.
      */
     io_device_console(&ioboard_communication);
 

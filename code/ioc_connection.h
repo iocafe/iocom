@@ -135,21 +135,36 @@
 #define IOC_EXTRA_NO_ZERO 128
 /*@}*/
 
+/* Lighthouse library specific, what basic iocom needs to know to be able
+   to use the library if it is used.
+ */
 struct LighthouseClient;
 
+typedef enum LighthouseFuncNr
+{
+    LIGHTHOUSE_GET_CONNECT_STR
+}
+LighthouseFuncNr;
+
 typedef osalStatus ioc_lighthouse_func(
-    struct LighthouseClient *c);
+    struct LighthouseClient *c,
+    LighthouseFuncNr func_nr,
+    os_char *network_name,
+    os_memsz network_name_sz,
+    os_short flags,
+    os_char *connectstr,
+    os_memsz connectstr_sz);
 
 
-/** Transport types.
+/** Transport types. Do not change enum values, passed as is over lighthouse multicasts.
  */
 typedef enum iocTransportEnum
 {
     IOC_DEFAULT_TRANSPORT = 0, /* Undefined */
-    IOC_TCP_SOCKET,
-    IOC_TLS_SOCKET,
-    IOC_SERIAL_PORT,
-    IOC_BLUETOOTH,
+    IOC_TCP_SOCKET = 1,
+    IOC_TLS_SOCKET = 2,
+    IOC_SERIAL_PORT = 3,
+    IOC_BLUETOOTH = 4,
 
     IOC_NO_TRANSPORT = -1
 }
@@ -466,7 +481,7 @@ typedef struct iocConnection
      */
     IOC_DEBUG_ID
 
-    /** Flags as given to ioc_connect(): define IOC_SOCKE, IOC_CLOSE_CONNECTION_ON_ERROR
+    /** Flags as given to ioc_connect(): define IOC_SOCKET, IOC_CLOSE_CONNECTION_ON_ERROR
         IOC_CONNECT_UP...
      */
     os_short flags;

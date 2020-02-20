@@ -30,7 +30,8 @@ static void ioc_free_source_and_target_bufs(
     iocConnection *con);
 
 static osalStatus ioc_try_to_connect(
-    iocConnection *con);
+    iocConnection *con,
+    const os_char *parameters);
 
 #if OSAL_MULTITHREAD_SUPPORT
 static void ioc_connection_thread(
@@ -552,18 +553,13 @@ osalStatus ioc_run_connection(
 {
     IOC_MT_ROOT_PTR;
 
-    osalStatus
-        status;
+    const os_char *parameters;
+    os_char connectstr[OSAL_HOST_BUF_SZ];
+    osalStatus status;
+    os_timer tnow;
+    os_int silence_ms, count;
+    os_boolean is_serial;
 
-    os_timer
-        tnow;
-
-    os_int
-        silence_ms,
-        count;
-
-    os_boolean
-        is_serial;
 
     osal_debug_assert(con->debug_id == 'C');
 
@@ -574,14 +570,32 @@ osalStatus ioc_run_connection(
     {
         /* Do nothing if ioc_connect() has not been called.
          */
-        if (con->parameters[0] == '\0')
+        parameters = con->parameters;
+        if (parameters[0] == '\0') {
             return OSAL_SUCCESS;
+        }
 
-        status = ioc_try_to_connect(con);
+        /* If we have no connect to address or it is "*": If we have the lighthouse
+           functionality check if we have received the information by UDP broadcast.
+           If we got it, try it. Otherwise we can do nothing.
+         */
+        if (parameters[0] == '\0' || !os_strcmp(parameters, "*"))
+        {
+            if (con->lighthouse_func == OS_NULL) return OSAL_SUCCESS;
+            status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
+                con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
+                connectstr, sizeof(connectstr));
+            if (OSAL_IS_ERROR(status)) return OSAL_SUCCESS;
+            parameters = connectstr;
+        }
+
+        /* Try connecting the transport.
+         */
+        status = ioc_try_to_connect(con, parameters);
         if (status == OSAL_PENDING) return OSAL_SUCCESS;
         if (status) return status;
 
-        /* Reset connection state
+        /* Success, reset connection state.
          */
         ioc_reset_connection_state(con);
         return OSAL_SUCCESS;
@@ -740,7 +754,8 @@ osalStatus ioc_terminate_connection_thread(
 ****************************************************************************************************
 */
 static osalStatus ioc_try_to_connect(
-    iocConnection *con)
+    iocConnection *con,
+    const os_char *parameters)
 {
     osalStatus
         status;
@@ -773,7 +788,7 @@ static osalStatus ioc_try_to_connect(
     flags |= ((con->flags & IOC_DISABLE_SELECT) ? OSAL_STREAM_NO_SELECT : OSAL_STREAM_SELECT);
     os_get_timer(&con->socket_open_try_timer);
 
-    con->stream = osal_stream_open(iface, con->parameters, OS_NULL, &status, flags);
+    con->stream = osal_stream_open(iface, parameters, OS_NULL, &status, flags);
     if (con->stream == OS_NULL)
     {
         osal_debug_error("Opening stream failed");
@@ -912,28 +927,15 @@ static void ioc_connection_thread(
     void *prm,
     osalEvent done)
 {
-    iocRoot
-        *root;
-
-    iocConnection
-        *con;
-
-    osalStatus
-        status;
-
-    osalSelectData
-        selectdata;
-
-    os_timer
-        tnow;
-
-    os_int
-        check_timeouts_ms,
-        silence_ms,
-        count;
-
-    os_boolean
-        is_serial;
+    iocRoot *root;
+    iocConnection *con;
+    const os_char *parameters;
+    os_char connectstr[OSAL_HOST_BUF_SZ];
+    osalStatus status;
+    osalSelectData selectdata;
+    os_timer tnow;
+    os_int check_timeouts_ms, silence_ms, count;
+    os_boolean is_serial;
 
     osal_trace("connection: worker thread started");
 
@@ -972,7 +974,25 @@ static void ioc_connection_thread(
          */
         if (con->stream == OS_NULL)
         {
-            status = ioc_try_to_connect(con);
+            parameters = con->parameters;
+
+            /* If we have no connect to address or it is "*": If we have the lighthouse
+               functionality check if we have received the information by UDP broadcast.
+               If we got it, try it. Otherwise we can do nothing.
+             */
+            if (parameters[0] == '\0' || !os_strcmp(parameters, "*"))
+            {
+                if (con->lighthouse_func == OS_NULL) goto failed;
+                status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
+                    con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
+                    connectstr, sizeof(connectstr));
+                if (OSAL_IS_ERROR(status))  goto failed;
+                parameters = connectstr;
+            }
+
+            /* Try connecting the transport.
+             */
+            status = ioc_try_to_connect(con, parameters);
             if (status == OSAL_PENDING)
             {
                 os_timeslice();
