@@ -527,6 +527,14 @@ static osalStatus ioc_nconf_process_block(
                     {
                         nic->no_dhcp = (os_boolean)!item.value.l;
                     }
+                    else if (!os_strcmp(state->tag, "send_udp"))
+                    {
+                        nic->send_udp_multicasts = (os_boolean)item.value.l;
+                    }
+                    else if (!os_strcmp(state->tag, "receive_udp"))
+                    {
+                        nic->receive_udp_multicasts = (os_boolean)item.value.l;
+                    }
                 }
                 break;
 

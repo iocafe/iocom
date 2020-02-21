@@ -16,6 +16,12 @@
 			"flags": "connect,down,cloud"
 		}
 	],
+	"nic": [
+		{
+			"ip": "0.0.0.0",
+			"send_udp": 1
+		}
+	],
 	"security": [
 		{
 			"certchainfile": "myhome-bundle.crt",
