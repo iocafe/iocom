@@ -285,7 +285,7 @@ osalStatus ioc_process_remove_mblk_req_frame(
 
     p = data + 1; /* Skip system frame IOC_REMOVE_MBLK_REQUEST byte. */
 
-    for (i = 0; i<n_requests; i++)
+    for (i = 0; i<(os_int)n_requests; i++)
     {
         bytes = osal_intser_reader(p, &mblk_id);
         p += bytes;

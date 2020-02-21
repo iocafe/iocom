@@ -21,12 +21,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\code\nodeconf_connect.h" />
     <ClInclude Include="..\..\code\nodeconf_data_struct.h" />
+    <ClInclude Include="..\..\code\nodeconf_lighthouse.h" />
     <ClInclude Include="..\..\code\nodeconf_setup.h" />
     <ClInclude Include="..\..\nodeconf.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\code\nodeconf_connect.c" />
     <ClCompile Include="..\..\code\nodeconf_data_struct.c" />
+    <ClCompile Include="..\..\code\nodeconf_lighthouse.c" />
     <ClCompile Include="..\..\code\nodeconf_setup.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

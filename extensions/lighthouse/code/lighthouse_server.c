@@ -142,7 +142,7 @@ osalStatus ioc_run_lighthouse_server(
     os_get_timer(&c->multicast_timer);
     c->multicast_interval = 4000;
 
-    random_nr = osal_rand(0, 65535);
+    random_nr = (os_ushort)osal_rand(0, 65535);
     c->msg.hdr.random_nr_low = (os_uchar)random_nr;
     c->msg.hdr.random_nr_high = (os_uchar)(random_nr >> 8);
 

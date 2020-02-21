@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\code\ioc_bserver.c" />
     <ClCompile Include="..\..\code\ioc_bserver_config.c" />
     <ClCompile Include="..\..\code\ioc_persistent_mblk.c" />
+    <ClCompile Include="..\..\code\ioc_persistent_writer.c" />
     <ClCompile Include="..\..\code\ioc_security_status.c" />
     <ClCompile Include="..\..\code\ioc_server_util.c" />
   </ItemGroup>
@@ -30,6 +31,7 @@
     <ClInclude Include="..\..\code\ioc_authorize.h" />
     <ClInclude Include="..\..\code\ioc_bserver.h" />
     <ClInclude Include="..\..\code\ioc_persistent_mblk.h" />
+    <ClInclude Include="..\..\code\ioc_persistent_writer.h" />
     <ClInclude Include="..\..\code\ioc_security_status.h" />
     <ClInclude Include="..\..\code\ioc_server_util.h" />
     <ClInclude Include="..\..\ioserver.h" />
