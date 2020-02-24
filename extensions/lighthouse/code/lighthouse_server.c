@@ -122,7 +122,7 @@ osalStatus ioc_run_lighthouse_server(
         /* Try to open UDP socket. Set error state.
          */
         c->udp_socket = osal_stream_open(OSAL_SOCKET_IFACE, LIGHTHOUSE_PORT,
-            OS_NULL, &s, OSAL_STREAM_UDP_MULTICAST|OSAL_STREAM_USE_GLOBAL_SETTINGS);
+            LIGHTHOUSE_IP, &s, OSAL_STREAM_UDP_MULTICAST|OSAL_STREAM_USE_GLOBAL_SETTINGS);
         if (c->udp_socket == OS_NULL)
         {
             osal_error(OSAL_ERROR, eosal_iocom,
@@ -164,8 +164,7 @@ osalStatus ioc_run_lighthouse_server(
 
     /* Send packet to UDP stream
      */
-    s = osal_stream_send_packet(c->udp_socket,
-        LIGHTHOUSE_IP LIGHTHOUSE_PORT, (const os_char*)&c->msg, bytes, OSAL_STREAM_DEFAULT);
+    s = osal_stream_send_packet(c->udp_socket, (const os_char*)&c->msg, bytes, OSAL_STREAM_DEFAULT);
     if (OSAL_IS_ERROR(s))
     {
         osal_error(OSAL_ERROR, eosal_iocom,
