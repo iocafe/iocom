@@ -168,7 +168,7 @@ osalStatus ioc_run_lighthouse_server(
     if (OSAL_IS_ERROR(s))
     {
         osal_error(OSAL_ERROR, eosal_iocom,
-            OSAL_STATUS_SENDING_UDP_PACKET_FAILED, OS_NULL);
+            OSAL_STATUS_SEND_MULTICAST_FAILED, OS_NULL);
 
         osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
         c->udp_socket = OS_NULL;
