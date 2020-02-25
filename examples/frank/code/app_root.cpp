@@ -79,7 +79,7 @@ AppRoot::AppRoot(
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
      */
-    ioc_initialize_lighthouse_server(&m_lighthouse, publish, ep_port_nr, ep_transport);
+    ioc_initialize_lighthouse_server(&m_lighthouse, publish, ep_port_nr, ep_transport, OS_NULL);
 }
 
 

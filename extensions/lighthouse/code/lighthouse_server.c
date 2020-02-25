@@ -32,6 +32,7 @@
            For example "iocafenet,asteroidnet".
   @param   ep_port_nr Listening TCP port number.
   @param   ep_transport Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET.
+  @param   reserved Reserved for future, set OS_NULL for now.
   @return  None.
 
 ****************************************************************************************************
@@ -40,7 +41,8 @@ void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
     os_int ep_port_nr,
-    iocTransportEnum ep_transport)
+    iocTransportEnum ep_transport,
+    void *reserved)
 {
     os_memclear(c, sizeof(LighthouseServer));
     os_get_timer(&c->socket_error_timer);
