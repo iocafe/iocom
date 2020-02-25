@@ -124,7 +124,7 @@ osalStatus ioc_run_lighthouse_client(
          */
         c->udp_socket = osal_stream_open(OSAL_SOCKET_IFACE,
             LIGHTHOUSE_PORT, LIGHTHOUSE_IP, &s,
-            OSAL_STREAM_UDP_MULTICAST|OSAL_STREAM_LISTEN|OSAL_STREAM_USE_GLOBAL_SETTINGS);
+            OSAL_STREAM_MULTICAST|OSAL_STREAM_LISTEN|OSAL_STREAM_USE_GLOBAL_SETTINGS);
         if (c->udp_socket == OS_NULL)
         {
             osal_error(OSAL_ERROR, eosal_iocom,
@@ -142,7 +142,7 @@ osalStatus ioc_run_lighthouse_client(
     if (OSAL_IS_ERROR(s))
     {
         osal_error(OSAL_ERROR, eosal_iocom,
-            OSAL_STATUS_RECEIVING_UDP_PACKET_FAILED, OS_NULL);
+            OSAL_STATUS_RECEIVE_MULTICAST_FAILED, OS_NULL);
 
         osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
         c->udp_socket = OS_NULL;
@@ -164,7 +164,7 @@ osalStatus ioc_run_lighthouse_client(
         msg.hdr.hdr_sz !=  sizeof(LighthouseMessageHdr) ||
         n_read < bytes)
     {
-        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_UDP_MULTICAST, "content");
+        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
         return OSAL_SUCCESS;
     }
 
@@ -176,7 +176,7 @@ osalStatus ioc_run_lighthouse_client(
     msg.hdr.checksum_high = msg.hdr.checksum_low = 0;
     if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
     {
-        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_UDP_MULTICAST, "checksum");
+        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
         return OSAL_SUCCESS;
     }
 
