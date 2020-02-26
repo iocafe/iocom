@@ -7,7 +7,12 @@
 	"connect": [
 		{
 			"transport": "tls",
-			"parameters": ":6369",
+			"parameters": "*:6369",
+			"flags": "listen,down"
+		},
+		{
+			"transport": "tls",
+			"parameters": "[*]:6369",
 			"flags": "listen,down"
 		},
 		{
