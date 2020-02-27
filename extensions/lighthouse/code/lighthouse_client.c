@@ -48,11 +48,13 @@ static void ioc_add_lighthouse_net(
 */
 void ioc_initialize_lighthouse_client(
     LighthouseClient *c,
+    os_boolean is_ipv6,
     void *reserved)
 {
     os_memclear(c, sizeof(LighthouseClient));
     os_get_timer(&c->socket_error_timer);
     c->socket_error_timeout = 100;
+    c->multicast_ip = is_ipv6 ? LIGHTHOUSE_IP_IPV6 : LIGHTHOUSE_IP_IPV4;
 }
 
 
@@ -123,7 +125,7 @@ osalStatus ioc_run_lighthouse_client(
         /* Try to open UDP socket. Set error state.
          */
         c->udp_socket = osal_stream_open(OSAL_SOCKET_IFACE,
-            LIGHTHOUSE_PORT, LIGHTHOUSE_IP, &s,
+            LIGHTHOUSE_PORT, (void*)c->multicast_ip, &s,
             OSAL_STREAM_MULTICAST|OSAL_STREAM_LISTEN|OSAL_STREAM_USE_GLOBAL_SETTINGS);
         if (c->udp_socket == OS_NULL)
         {

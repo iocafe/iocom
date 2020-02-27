@@ -67,6 +67,10 @@ LightHouseNetwork;
  */
 typedef struct LighthouseClient
 {
+    /** Multicast group IP address.
+     */
+    const os_char *multicast_ip;
+
     /** UDP socket handle. OS_NULL if UDP socket is not open.
      */
     osalStream udp_socket;
@@ -95,6 +99,7 @@ LighthouseClient;
  */
 void ioc_initialize_lighthouse_client(
     LighthouseClient *c,
+    os_boolean is_ipv6,
     void *reserved);
 
 /* Release resources allocated for lighthouse client.

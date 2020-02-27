@@ -35,7 +35,7 @@ LighthouseAddressFamily;
  */
 typedef struct LighthouseServerOne
 {
-    /* Multicast group IP address.
+    /** Multicast group IP address.
      */
     const os_char *multicast_ip;
 

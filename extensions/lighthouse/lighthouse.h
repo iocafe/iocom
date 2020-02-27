@@ -23,13 +23,13 @@
 /* Lighthouse multicast IP and port
    239.0.0.0-239.255.255.255 Organization-Local Scope [David_Meyer][RFC2365]
  */
+#ifndef LIGHTHOUSE_IP_IPV4
 #define LIGHTHOUSE_IP_IPV4 "239.63.68.63"
-#define LIGHTHOUSE_IP_IPV6 "[FF08:0:0:0:0:0:EF3F:443F]"
-// #define LIGHTHOUSE_IP_IPV6 "ipv6.google.com"
-
-#ifndef LIGHTHOUSE_IP
-#define LIGHTHOUSE_IP LIGHTHOUSE_IP_IPV6
 #endif
+#ifndef LIGHTHOUSE_IP_IPV6
+#define LIGHTHOUSE_IP_IPV6 "[FF08:0:0:0:0:0:EF3F:443F]"
+#endif
+
 #ifndef LIGHTHOUSE_PORT
 #define LIGHTHOUSE_PORT ":6368"
 #endif

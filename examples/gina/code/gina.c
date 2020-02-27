@@ -193,10 +193,11 @@ osalStatus osal_main(
     ioc_initialize_selectwifi(OS_NULL);
 #endif
 
-    /* Listen for UDP broadcasts with server address.
+    /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection 
+       string starts with '[' (indicates IPv6 address).
      */
 #if GINA_USE_LIGHTHOUSE
-    ioc_initialize_lighthouse_client(&lighthouse, OS_NULL);
+    ioc_initialize_lighthouse_client(&lighthouse, prm.socket_con_str[0] == '[', OS_NULL);
 #endif
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
