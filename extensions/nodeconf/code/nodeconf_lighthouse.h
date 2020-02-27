@@ -14,9 +14,48 @@
 ****************************************************************************************************
 */
 
+
+#define IOC_LIGHTHOUSE_HAS_TCP_SOCKET 1
+#define IOC_LIGHTHOUSE_HAS_TLS_SOCKET 2
+
+/* Information anout one light house end point.
+ */
+typedef struct iocLighthouseEndPointInfo
+{
+    /** Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET.
+     */
+    iocTransportEnum transport;
+
+    /** TCP port number listened by server.
+     */
+    os_int port_nr;
+
+    /** OS_TRUE for IPv6 or OS_FALSE for IPv4.
+     */
+    os_boolean is_ipv6;
+} 
+iocLighthouseEndPointInfo;
+
+/* Maximum number of end points to store into info
+ */
+#define IOC_LIGHTHOUSE_INFO_MAX_END_POINTS 4
+
+/* Information for light house (multicast device discovery) from node configuration.
+ */
+typedef struct iocLighthouseInfo
+{
+    /** End point array
+     */
+    iocLighthouseEndPointInfo epoint[IOC_LIGHTHOUSE_INFO_MAX_END_POINTS];
+
+    /** Number of end points in array.
+     */
+    os_int n_epoints;
+}
+iocLighthouseInfo;
+
 /* Get listening socket port number and transport.
  */
 osalStatus ioc_get_lighthouse_info(
     iocConnectionConfig *connconf,
-    os_int *port,
-    iocTransportEnum *transport);
+    iocLighthouseInfo *info);

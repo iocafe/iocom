@@ -33,8 +33,7 @@ AppRoot::AppRoot(
     os_int device_nr,
     const os_char *network_name,
     const os_char *publish,
-    os_int ep_port_nr,
-    iocTransportEnum ep_transport)
+    iocLighthouseInfo *lighthouse_info)
 {
     iocBServerParams prm;
     os_int i;
@@ -79,7 +78,7 @@ AppRoot::AppRoot(
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
      */
-    ioc_initialize_lighthouse_server(&m_lighthouse, publish, ep_port_nr, ep_transport, OS_NULL);
+    ioc_initialize_lighthouse_server(&m_lighthouse, publish, lighthouse_info, OS_NULL);
 }
 
 

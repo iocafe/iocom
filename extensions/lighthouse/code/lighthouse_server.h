@@ -17,13 +17,28 @@
 ****************************************************************************************************
 */
 
+struct iocLighthouseInfo;
+
+typedef enum
+{
+    LIGHTHOUSE_IPV4 = 0,
+    LIGHTHOUSE_IPV6 = 1,
+    LIGHTHOUSE_NRO_ADDR_FAMILIES = 2
+}
+LighthouseAddressFamily;
+
+
 /**
 ****************************************************************************************************
-  Lighthouse server structure
+  Lighthouse server structure for one IP address family
 ****************************************************************************************************
  */
-typedef struct LighthouseServer
+typedef struct LighthouseServerOne
 {
+    /* Multicast group IP address.
+     */
+    const os_char *multicast_ip;
+
     /** UDP socket handle. OS_NULL if UDP socket is not open.
      */
     osalStream udp_socket;
@@ -48,6 +63,17 @@ typedef struct LighthouseServer
      */
     LighthouseMessage msg;
 }
+LighthouseServerOne;
+
+/**
+****************************************************************************************************
+  Lighthouse server structure
+****************************************************************************************************
+ */
+typedef struct LighthouseServer
+{
+    LighthouseServerOne f[LIGHTHOUSE_NRO_ADDR_FAMILIES];
+}
 LighthouseServer;
 
 
@@ -61,8 +87,7 @@ LighthouseServer;
 void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
-    os_int ep_port_nr,
-    iocTransportEnum ep_transport,
+    struct iocLighthouseInfo *lighthouse_info,
     void *reserved);
 
 /* Release resources allocated for lighthouse server.

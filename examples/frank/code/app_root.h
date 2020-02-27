@@ -25,8 +25,7 @@ public:
         os_int device_nr,
         const os_char *network_name,
         const os_char *publish,
-        os_int ep_port_nr,
-        iocTransportEnum ep_transport);
+        iocLighthouseInfo *lighthouse_info);
 
     ~AppRoot();
 

@@ -282,6 +282,7 @@ osalStatus ioc_listen(
         epoint->worker_thread_running = OS_TRUE;
         epoint->stop_worker_thread = OS_FALSE;
 
+        os_memclear(&opt, sizeof(osalThreadOptParams));
         opt.thread_name = "endpoint";
         opt.stack_size = 4000;
         opt.pin_to_core = OS_TRUE;

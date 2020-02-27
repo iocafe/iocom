@@ -78,8 +78,7 @@ osalStatus osal_main(
     iocNetworkInterfaces *nics;
     osalWifiNetworks *wifis;
     const os_char *device_name = "frank";
-    os_int ep_port_nr;
-    iocTransportEnum ep_transport;
+    iocLighthouseInfo lighthouse_info;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().
@@ -112,12 +111,12 @@ osalStatus osal_main(
     /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
      */
     connconf = ioc_get_connection_conf(&app_device_conf);
-    ioc_get_lighthouse_info(connconf, &ep_port_nr, &ep_transport);
+    ioc_get_lighthouse_info(connconf, &lighthouse_info);
 
     /* Create frank main object
      */
     app_root_obj = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
-        device_id->publish, ep_port_nr, ep_transport);
+        device_id->publish, &lighthouse_info);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */

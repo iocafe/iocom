@@ -4,7 +4,7 @@
   @brief   Service discovery using UDP multicasts (server).
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    18.2.2020
+  @date    26.2.2020
 
   The server, or controller, sends periodic UDP multicasts. This allows clients in same network
   to locate the controller without pre configured address.
@@ -17,6 +17,22 @@
 ****************************************************************************************************
 */
 #include "lighthouse.h"
+#include "nodeconf.h" /* we need iocLighthouseInfo from nodeconf headers */
+
+/* Forward referred static functions.
+ */
+static void ioc_initialize_lighthouse_server_one(
+    LighthouseServerOne *c,
+    const os_char *publish,
+    iocTransportEnum transport,
+    os_int port,
+    os_boolean is_ipv6);
+
+static void ioc_release_lighthouse_server_one(
+    LighthouseServerOne *c);
+
+static osalStatus ioc_run_lighthouse_server_one(
+    LighthouseServerOne *c);
 
 
 /**
@@ -40,23 +56,70 @@
 void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
-    os_int ep_port_nr,
-    iocTransportEnum ep_transport,
+    struct iocLighthouseInfo *lighthouse_info,
     void *reserved)
 {
+    iocLighthouseEndPointInfo *ep;
+    os_int i;
+    iocTransportEnum ipv4_transport = 0, ipv6_transport = 0;
+    os_int ipv4_port = 0, ipv6_port = 0;
+
     os_memclear(c, sizeof(LighthouseServer));
+
+    /* Select port number and transport separatelt for IPv4 and IPv6. Choose TLS over plain TCP.
+     */
+    for (i = 0; i<lighthouse_info->n_epoints; i++)
+    {
+        ep = &lighthouse_info->epoint[i];
+        if (ep->is_ipv6)
+        {
+            if (ep->transport == IOC_TLS_SOCKET || !ipv6_port)
+            {
+                ipv6_transport = ep->transport;
+                ipv6_port = ep->port_nr;
+            }
+        }
+        else {
+            if (ep->transport == IOC_TLS_SOCKET || !ipv4_port)
+            {
+                ipv4_transport = ep->transport;
+                ipv4_port = ep->port_nr;
+            }
+        }
+    }
+
+    if (ipv4_port) {
+        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4], 
+            publish, ipv4_transport, ipv4_port, OS_FALSE);
+    }
+    if (ipv6_port) {
+        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6], 
+            publish, ipv6_transport, ipv6_port, OS_TRUE);
+    }
+}
+
+static void ioc_initialize_lighthouse_server_one(
+    LighthouseServerOne *c,
+    const os_char *publish,
+    iocTransportEnum transport,
+    os_int port,
+    os_boolean is_ipv6)
+{
+    c->multicast_ip = is_ipv6 ? LIGHTHOUSE_IP_IPV6 : LIGHTHOUSE_IP_IPV4;
+
     os_get_timer(&c->socket_error_timer);
     c->socket_error_timeout = 100;
     os_get_timer(&c->multicast_timer);
-    c->multicast_interval = 200;
+    c->multicast_interval = 400;
 
     c->msg.hdr.msg_id = LIGHTHOUSE_MSG_ID;
     c->msg.hdr.hdr_sz = (os_uchar)sizeof(LighthouseMessageHdr);
-    c->msg.hdr.port_nr_low = (os_uchar)ep_port_nr;
-    c->msg.hdr.port_nr_high = (os_uchar)(ep_port_nr >> 8);
-    c->msg.hdr.transport = (os_uchar)ep_transport;
+    c->msg.hdr.port_nr_low = (os_uchar)port;
+    c->msg.hdr.port_nr_high = (os_uchar)(port >> 8);
+    c->msg.hdr.transport = (os_uchar)transport; 
     os_strncpy(c->msg.publish, publish, LIGHTHOUSE_PUBLISH_SZ);
     c->msg.hdr.publish_sz = (os_uchar)os_strlen(c->msg.publish); /* Use this, may be cut */
+
 }
 
 
@@ -75,6 +138,21 @@ void ioc_initialize_lighthouse_server(
 */
 void ioc_release_lighthouse_server(
     LighthouseServer *c)
+{
+    if (c->f[LIGHTHOUSE_IPV4].msg.hdr.msg_id)
+    {
+        ioc_release_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4]);
+    }
+
+    if (c->f[LIGHTHOUSE_IPV6].msg.hdr.msg_id)
+    {
+        ioc_release_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6]);
+    }
+}
+
+
+static void ioc_release_lighthouse_server_one(
+    LighthouseServerOne *c)
 {
     if (c->udp_socket)
     {
@@ -101,6 +179,23 @@ void ioc_release_lighthouse_server(
 osalStatus ioc_run_lighthouse_server(
     LighthouseServer *c)
 {
+    osalStatus s4 = OSAL_SUCCESS, s6 = OSAL_SUCCESS;
+    if (c->f[LIGHTHOUSE_IPV4].msg.hdr.msg_id)
+    {
+        s4 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4]);
+    }
+
+    if (c->f[LIGHTHOUSE_IPV6].msg.hdr.msg_id)
+    {
+        s6 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6]);
+    }
+
+    return s4 ? s4 : s6;
+}
+
+static osalStatus ioc_run_lighthouse_server_one(
+    LighthouseServerOne *c)
+{
     osalStatus s;
     os_memsz bytes;
     os_ushort checksum, random_nr;
@@ -124,7 +219,7 @@ osalStatus ioc_run_lighthouse_server(
         /* Try to open UDP socket. Set error state.
          */
         c->udp_socket = osal_stream_open(OSAL_SOCKET_IFACE, LIGHTHOUSE_PORT,
-            LIGHTHOUSE_IP, &s, OSAL_STREAM_MULTICAST|OSAL_STREAM_USE_GLOBAL_SETTINGS);
+            (void*)c->multicast_ip, &s, OSAL_STREAM_MULTICAST|OSAL_STREAM_USE_GLOBAL_SETTINGS);
         if (c->udp_socket == OS_NULL)
         {
             osal_error(OSAL_ERROR, eosal_iocom,
