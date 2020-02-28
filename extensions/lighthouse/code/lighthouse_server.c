@@ -17,7 +17,6 @@
 ****************************************************************************************************
 */
 #include "lighthouse.h"
-#include "nodeconf.h" /* we need iocLighthouseInfo from nodeconf headers */
 
 /* Forward referred static functions.
  */
