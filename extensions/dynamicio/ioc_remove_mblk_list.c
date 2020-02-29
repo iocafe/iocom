@@ -347,7 +347,7 @@ static void ioc_remove_mblk_by_request(
      */
     if (!ioc_is_network_authorized(con, mblk->network_name, 0))
     {
-        osal_error(OSAL_WARNING, eosal_iocom, OSAL_STATUS_NOT_AUTOHORIZED,
+        osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_NOT_AUTOHORIZED,
             "attempt to remove memory block in unauthorized network");
         return;
     }

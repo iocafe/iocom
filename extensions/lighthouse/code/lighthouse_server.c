@@ -221,11 +221,11 @@ static osalStatus ioc_run_lighthouse_server_one(
             (void*)c->multicast_ip, &s, OSAL_STREAM_MULTICAST|OSAL_STREAM_USE_GLOBAL_SETTINGS);
         if (c->udp_socket == OS_NULL)
         {
-            osal_error(OSAL_ERROR, eosal_iocom,
+            osal_error(OSAL_ERROR, iocom_mod,
                 OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
             return s;
         }
-        osal_error(OSAL_CLEAR_ERROR, eosal_iocom,
+        osal_error(OSAL_CLEAR_ERROR, iocom_mod,
             OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
     }
 
@@ -263,7 +263,7 @@ static osalStatus ioc_run_lighthouse_server_one(
     s = osal_stream_send_packet(c->udp_socket, (const os_char*)&c->msg, bytes, OSAL_STREAM_DEFAULT);
     if (OSAL_IS_ERROR(s))
     {
-        osal_error(OSAL_ERROR, eosal_iocom,
+        osal_error(OSAL_ERROR, iocom_mod,
             OSAL_STATUS_SEND_MULTICAST_FAILED, OS_NULL);
 
         osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);

@@ -19,7 +19,7 @@
 
 /* Module name used by iocom library to report errors.
  */
-const os_char eosal_iocom[] = "iocom";
+const os_char iocom_mod[] = "iocom";
 
 
 /**

@@ -43,7 +43,7 @@ struct iocEventQueue;
 
 /* Module name used by iocom library to report errors.
  */
-const extern os_char eosal_iocom[];
+const extern os_char iocom_mod[];
 
 /** Start automatically given device numbers from IOC_AUTO_DEVICE_NR + 1. This can be changed by
     compiler define, but communicating devices using automatic device numbers

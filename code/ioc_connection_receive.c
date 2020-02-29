@@ -429,7 +429,7 @@ static osalStatus ioc_process_received_data_frame(
      */
     if (!ioc_is_network_authorized(con, tbuf->mlink.mblk->network_name, 0))
     {
-        osal_error(OSAL_WARNING, eosal_iocom, OSAL_STATUS_NOT_AUTOHORIZED,
+        osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_NOT_AUTOHORIZED,
             "attempt to access an unauthorized network");
         return OSAL_SUCCESS;
     }

@@ -129,11 +129,11 @@ osalStatus ioc_run_lighthouse_client(
             OSAL_STREAM_MULTICAST|OSAL_STREAM_LISTEN|OSAL_STREAM_USE_GLOBAL_SETTINGS);
         if (c->udp_socket == OS_NULL)
         {
-            osal_error(OSAL_ERROR, eosal_iocom,
+            osal_error(OSAL_ERROR, iocom_mod,
                 OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
             return s;
         }
-        osal_error(OSAL_CLEAR_ERROR, eosal_iocom,
+        osal_error(OSAL_CLEAR_ERROR, iocom_mod,
             OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
     }
 
@@ -143,7 +143,7 @@ osalStatus ioc_run_lighthouse_client(
         remote_addr, sizeof(remote_addr), OSAL_STREAM_DEFAULT);
     if (OSAL_IS_ERROR(s))
     {
-        osal_error(OSAL_ERROR, eosal_iocom,
+        osal_error(OSAL_ERROR, iocom_mod,
             OSAL_STATUS_RECEIVE_MULTICAST_FAILED, OS_NULL);
 
         osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
@@ -166,7 +166,7 @@ osalStatus ioc_run_lighthouse_client(
         msg.hdr.hdr_sz !=  sizeof(LighthouseMessageHdr) ||
         n_read < bytes)
     {
-        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
+        osal_error(OSAL_WARNING, iocom_mod, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
         return OSAL_SUCCESS;
     }
 
@@ -178,7 +178,7 @@ osalStatus ioc_run_lighthouse_client(
     msg.hdr.checksum_high = msg.hdr.checksum_low = 0;
     if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
     {
-        osal_error(OSAL_WARNING, eosal_iocom, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
+        osal_error(OSAL_WARNING, iocom_mod, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
         return OSAL_SUCCESS;
     }
 
@@ -234,10 +234,12 @@ static void ioc_add_lighthouse_net(
 {
     LightHouseNetwork *n;
     os_int i, selected_i;
+    os_boolean update_iface;
 
     /* If we already have network with this name, update it.
      */
     selected_i = -1;
+    update_iface = OS_FALSE;
     for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
     {
         /* Skip if transport doesn't match (skips also unused ones).
@@ -251,6 +253,7 @@ static void ioc_add_lighthouse_net(
         /* Select this line.
          */
         selected_i = i;
+        update_iface = OS_TRUE;
         break;
     }
 
@@ -281,9 +284,23 @@ static void ioc_add_lighthouse_net(
         }
     }
 
-    /* Save the network.
+    /* If we already got loopback interface and new received interface is
+       something else, we prefer to keep the loopback unless it is very old (20 seconds).
      */
     n = c->net + selected_i;
+    if (update_iface &&
+        (!os_strcmp(n->ip_addr, "127.0.0.1") || !os_strcmp(n->ip_addr, "::1")) &&
+         os_strcmp(ip_addr, "127.0.0.1") &&
+         os_strcmp(ip_addr, "::1"))
+    {
+        if (!os_elapsed2(&n->received_timer, received_timer, 20000))
+        {
+            return;
+        }
+    }
+
+    /* Save or update the network.
+     */
     os_strncpy(n->ip_addr, ip_addr, OSAL_IPADDR_SZ);
     n->port_nr = port_nr;
     n->transport = transport;

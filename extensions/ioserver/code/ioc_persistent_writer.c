@@ -59,7 +59,7 @@ select = OS_PBNR_CLIENT_CERT_CHAIN; // Block number on target IO device
         mblk->device_name, mblk->device_nr, mblk->network_name, IOC_IS_CONTROLLER);
     if (stream == OS_NULL)
     {
-        osal_error(OSAL_WARNING, eosal_iocom, OSAL_STATUS_FAILED,
+        osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_FAILED,
             "opening upload stream to IO device failed");
         return OS_NULL;
     }
@@ -69,7 +69,7 @@ select = OS_PBNR_CLIENT_CERT_CHAIN; // Block number on target IO device
     s = osal_get_persistent_block_or_file(default_block_nr, dir,
         file_name, &buf, &n_read, OS_FILE_NULL_CHAR);
     if (OSAL_IS_ERROR(s)) {
-        osal_error(OSAL_WARNING, eosal_iocom, s, "no data to upload");
+        osal_error(OSAL_WARNING, iocom_mod, s, "no data to upload");
         ioc_release_stream(stream);
         return OS_NULL;
     }
@@ -148,7 +148,7 @@ osalStatus ioc_run_persistent_writer(
     s = ioc_run_stream(wr->stream, IOC_CALL_SYNC);
     if (OSAL_IS_ERROR(s))
     {
-        osal_error(OSAL_WARNING, eosal_iocom, s, "upload to IO device failed");
+        osal_error(OSAL_WARNING, iocom_mod, s, "upload to IO device failed");
     }
     return s;
 }
