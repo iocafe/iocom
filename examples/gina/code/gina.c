@@ -225,6 +225,8 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+    osalStatus s;
+
     /* Run light house.
      */
 #if GINA_USE_LIGHTHOUSE
@@ -282,14 +284,14 @@ osalStatus osal_loop(
 
     /* The call is here for testing only, take away.
      */
-    io_device_console(&ioboard_communication);
+    s = io_device_console(&ioboard_communication);
 
     /* Move data synchronously from outgoing memory block.
      */
     ioc_send(&ioboard_exp);
     ioc_send(&ioboard_conf_exp);
 
-    return OSAL_SUCCESS;
+    return s;
 }
 
 

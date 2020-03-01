@@ -475,7 +475,7 @@ static osalStatus ioc_try_accept_new_sockets(
         case OSAL_SUCCESS:
             /* We get success as status, assert that we have the socket struct pointer.
              */
-            osal_debug_assert(newsocket);
+            osal_debug_assert(newsocket != OS_NULL);
 
             osal_trace("end point: connection accepted");
             if (!ioc_establish_connection(epoint, newsocket, remote_ip_addr)) break;

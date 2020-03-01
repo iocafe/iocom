@@ -17,7 +17,7 @@
 #if OS_CONTROL_CONSOLE_SUPPORT
     osalStatus io_device_console(iocRoot *root);
 #else
-    #define io_device_console(r) OSAL_SUCCESS
+    #define io_device_console(r) (OSAL_SUCCESS)
 #endif
 
 /* Flags for devicedir_memory_blocks

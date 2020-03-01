@@ -198,9 +198,14 @@ static osalStatus ioc_run_lighthouse_server_one(
     osalStatus s;
     os_memsz bytes;
     os_ushort checksum, random_nr;
+
+#if OSAL_TIME_SUPPORT
+#if OSAL_LONG_IS_64_BITS
     os_int64 tstamp;
     os_ulong ul;
     os_int i;
+#endif
+#endif
 
     /* If UDP socket is not open
      */

@@ -17,8 +17,8 @@ python3 ./copy-nodeconf-for-platformio.py
 cd /coderoot/iocom/extensions/ioserver/build/arduino-platformio
 python3 ./copy-ioserver-for-platformio.py
 
-cd /coderoot/iocom/extensions/selectwifi/build/arduino-platformio
-python3 ./copy-selectwifi-for-platformio.py
+cd /coderoot/iocom/extensions/lighthouse/build/arduino-platformio
+python3 ./copy-lighthouse-for-platformio.py
 
 cd /coderoot/pins/build/arduino-platformio
 python3 ./copy-pins-for-platformio.py

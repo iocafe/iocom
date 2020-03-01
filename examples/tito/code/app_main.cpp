@@ -89,9 +89,12 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+    osalStatus s;
+
     /* The devicedir call is here for testing only, take away.
      */
-    io_device_console(&app_iocom);
+    s = io_device_console(&app_iocom);
+    if (s) return s;
 
     return tito_main->loop();
 }
