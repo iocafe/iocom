@@ -114,7 +114,7 @@ void ioc_make_authentication_frame(
 
         /* If we do not have client certificate chain, set flag to indicate it.
          */
-        if (osal_get_network_state_item(OSAL_NS_NO_CERT_CHAIN, 0))
+        if (osal_get_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0))
         {
             flags |= IOC_AUTH_NO_CERT_CHAIN;
         }

@@ -1448,7 +1448,7 @@ osalStatus ioc_run_control_stream(
                 /* If we are getting certificate chain, mark that we have it.
                  */
                 if (select == OS_PBNR_CLIENT_CERT_CHAIN) {
-                    osal_set_network_state_item(OSAL_NS_NO_CERT_CHAIN, 0, OS_FALSE);
+                    osal_set_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0, OS_FALSE);
                 }
 
                 os_get_timer(&ctrl->timer_ms);
