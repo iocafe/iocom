@@ -83,6 +83,10 @@ typedef struct LighthouseClient
      */
     os_int socket_error_timeout;
 
+    /** Counter to ocassionally check if there is expired network information to delete.
+     */
+    os_int check_expired_count;
+
     /** Information about knwon networks.
      */
     LightHouseNetwork net[LIGHTHOUSE_NRO_NETS];

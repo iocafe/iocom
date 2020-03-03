@@ -32,6 +32,8 @@ static void ioc_add_lighthouse_net(
     os_char *network_name,
     os_timer *received_timer);
 
+static void ioc_delete_expired_lighthouse_nets(
+    LighthouseClient *c);
 
 /**
 ****************************************************************************************************
@@ -137,7 +139,7 @@ osalStatus ioc_run_lighthouse_client(
             OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
     }
 
-    /* Send packet to UDP stream
+    /* Try to read multicast received from UDP stream
      */
     s = osal_stream_receive_packet(c->udp_socket, (os_char*)&msg, sizeof(msg), &n_read,
         remote_addr, sizeof(remote_addr), OSAL_STREAM_DEFAULT);
@@ -148,12 +150,24 @@ osalStatus ioc_run_lighthouse_client(
 
         osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
         c->udp_socket = OS_NULL;
+
         return s;
     }
 
     /* If success, but nothing received
      */
-    if (n_read == 0) return OSAL_SUCCESS;
+    if (n_read == 0)
+    {
+        /* Delete information about received networks which is exipired (internal).
+         */
+        if (c->check_expired_count++ > 17)
+        {
+            ioc_delete_expired_lighthouse_nets(c);
+            c->check_expired_count = 0;
+        }
+
+        return OSAL_SUCCESS;
+    }
 
     /* Make sure that string is terminated (just in case) and
        Validate the message id and size.
@@ -306,6 +320,39 @@ static void ioc_add_lighthouse_net(
     n->transport = transport;
     os_strncpy(n->network_name, network_name, OSAL_IPADDR_SZ);
     n->received_timer = *received_timer;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Delete information about received networks which is exipired (internal).
+
+  The ioc_delete_expired_lighthouse_nets() function...
+
+  @param   c Pointer to the light house client object structure.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_delete_expired_lighthouse_nets(
+    LighthouseClient *c)
+{
+    os_timer ti;
+    os_int i;
+
+    os_get_timer(&ti);
+
+    for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
+    {
+        if (!c->net[i].transport) continue;
+
+        /* 60s, shoud be linger than loopback expiration */
+        if (os_elapsed2(&c->net[i].received_timer, &ti, 60000))
+        {
+            c->net[i].transport = 0;
+        }
+    }
 }
 
 
