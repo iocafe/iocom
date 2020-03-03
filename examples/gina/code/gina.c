@@ -208,6 +208,8 @@ osalStatus osal_main(
      */
     morse_code_setup(&morse, &pins.outputs.led_builtin);
 
+set_morse_code(&morse, 3);
+
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
