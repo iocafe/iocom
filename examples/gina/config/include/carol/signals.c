@@ -25,7 +25,7 @@ const struct gina_t gina =
     {17, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
     {19, 1, OS_SHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.servo}, /* servo */
     {22, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
-    {27, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_imp, &pins.outputs.led_builtin} /* led_builtin */
+    {27, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL} /* led_builtin_x */
   },
 
   {

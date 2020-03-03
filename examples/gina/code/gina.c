@@ -206,7 +206,7 @@ osalStatus osal_main(
 
     /* Setup to blink LED bat boot errors, etc.
      */
-    morse_code_setup(&morse, &pins.outputs.led_builtin);
+    morse_code_setup(&morse, &pins.outputs.led_builtin, MORSE_LED_INVERTED);
 
 set_morse_code(&morse, 3);
 

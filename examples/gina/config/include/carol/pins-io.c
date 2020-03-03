@@ -21,8 +21,8 @@ static os_short pins_outputs_H_prm[]= {PIN_RV, PIN_RV};
 static os_short pins_analog_inputs_potentiometer_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 3, PIN_DELAY, 11};
 
 /* Parameters for pwm */
-static os_short pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 50, PIN_INIT, 2048, PIN_RESOLUTION, 12};
-static os_short pins_pwm_dimmer_led_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_INIT, 0, PIN_RESOLUTION, 12};
+static os_short pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 50, PIN_RESOLUTION, 12, PIN_INIT, 2048};
+static os_short pins_pwm_dimmer_led_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_RESOLUTION, 12, PIN_INIT, 0};
 
 /* GINA IO configuration structure */
 const pins_t pins =
@@ -34,7 +34,7 @@ const pins_t pins =
   },
 
   {{9, &pins.outputs.led_builtin}, /* outputs */
-    {PIN_OUTPUT, 0, 2, pins_outputs_led_builtin_prm, sizeof(pins_outputs_led_builtin_prm)/sizeof(os_short), OS_NULL, &gina.imp.led_builtin}, /* led_builtin */
+    {PIN_OUTPUT, 0, 2, pins_outputs_led_builtin_prm, sizeof(pins_outputs_led_builtin_prm)/sizeof(os_short), OS_NULL, OS_NULL}, /* led_builtin */
     {PIN_OUTPUT, 0, 2, pins_outputs_A_prm, sizeof(pins_outputs_A_prm)/sizeof(os_short), OS_NULL, &gina.exp.A}, /* A */
     {PIN_OUTPUT, 0, 2, pins_outputs_B_prm, sizeof(pins_outputs_B_prm)/sizeof(os_short), &pins.outputs.A, &gina.exp.B}, /* B */
     {PIN_OUTPUT, 0, 2, pins_outputs_C_prm, sizeof(pins_outputs_C_prm)/sizeof(os_short), &pins.outputs.B, &gina.exp.C}, /* C */

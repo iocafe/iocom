@@ -109,7 +109,7 @@
 				"name": "outputs",
 				"signals": [
 					{
-						"name": "led_builtin",
+						"name": "led_builtin_x",
 						"type": "boolean"
 					}
 				]

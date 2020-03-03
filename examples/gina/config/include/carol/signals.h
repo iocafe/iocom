@@ -30,7 +30,7 @@ typedef struct gina_t
     iocSignal seven_segment;
     iocSignal servo;
     iocSignal dimmer_led;
-    iocSignal led_builtin;
+    iocSignal led_builtin_x;
   }
   imp;
 
