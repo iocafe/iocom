@@ -51,6 +51,10 @@ static LighthouseClient lighthouse;
  */
 iocNodeConf ioapp_device_conf;
 
+/* Blinking LED by morse code to indicate boot error.
+ */
+static MorseCode morse;
+
 /* Maximum number of sockets, etc.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
@@ -200,6 +204,10 @@ osalStatus osal_main(
     ioc_initialize_lighthouse_client(&lighthouse, prm.socket_con_str[0] == '[', OS_NULL);
 #endif
 
+    /* Setup to blink LED bat boot errors, etc.
+     */
+    morse_code_setup(&morse, &pins.outputs.led_builtin);
+
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
@@ -225,13 +233,20 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
+    os_timer ti;
     osalStatus s;
+
+    os_get_timer(&ti);
 
     /* Run light house.
      */
 #if GINA_USE_LIGHTHOUSE
     ioc_run_lighthouse_client(&lighthouse);
 #endif
+
+    /* Keep the morse code LED alive.
+     */
+    blink_morse_code(&morse, &ti);
 
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
@@ -251,7 +266,6 @@ osalStatus osal_loop(
     /* Run the IO device functionality.
      */
     // static os_float f[5] = {1, 2, 3, 4, 5};
-    static os_timer ti;
     static os_int i = 0;
     os_char /* buf[32], */ state_bits;
     os_long l;
