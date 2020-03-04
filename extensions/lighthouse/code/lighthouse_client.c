@@ -180,7 +180,7 @@ osalStatus ioc_run_lighthouse_client(
         msg.hdr.hdr_sz !=  sizeof(LighthouseMessageHdr) ||
         n_read < bytes)
     {
-        osal_error(OSAL_WARNING, iocom_mod, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
+        osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
         return OSAL_SUCCESS;
     }
 
@@ -192,7 +192,7 @@ osalStatus ioc_run_lighthouse_client(
     msg.hdr.checksum_high = msg.hdr.checksum_low = 0;
     if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
     {
-        osal_error(OSAL_WARNING, iocom_mod, OSAL_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
+        osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
         return OSAL_SUCCESS;
     }
 

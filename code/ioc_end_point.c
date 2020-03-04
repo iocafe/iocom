@@ -484,7 +484,7 @@ static osalStatus ioc_try_accept_new_sockets(
             epoint->socket = OS_NULL;
             break;
 
-        case OSAL_STATUS_NO_NEW_CONNECTION:
+        case OSAL_NO_NEW_CONNECTION:
             break;
 
         default: /* failed, close the listening socket */
