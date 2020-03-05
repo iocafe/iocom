@@ -235,6 +235,7 @@ osalStatus osal_loop(
     void *app_context)
 {
     os_timer ti;
+    static os_timer sti;
     osalStatus s;
 
     os_get_timer(&ti);
@@ -262,21 +263,21 @@ osalStatus osal_loop(
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
-//     pins_read_all(&pins_hdr, PINS_DEFAULT);
+    pins_read_all(&pins_hdr, PINS_DEFAULT);
 
     /* Run the IO device functionality.
      */
-    // static os_float f[5] = {1, 2, 3, 4, 5};
+    static os_float f[5] = {1, 2, 3, 4, 5};
     static os_int i = 0;
-    os_char /* buf[32], */ state_bits;
+    os_char buf[32], state_bits;
     os_long l;
     static os_long prev_l = -1;
 
     if (i++ == 0) os_get_timer(&ti);
 
-    if (os_elapsed(&ti, 200))
+    if (os_elapsed(&sti, 200))
     {
-        os_get_timer(&ti);
+        os_get_timer(&sti);
 
         l = ioc_gets_int(&gina.conf_imp.frd_select, &state_bits, IOC_SIGNAL_DEFAULT);
         if (l != prev_l)
@@ -286,14 +287,13 @@ osalStatus osal_loop(
             prev_l = l;
         }
 
-        // ioc_sets_str(&gina.exp.teststr, "pekka");
+        ioc_sets_str(&gina.exp.teststr, "pekka");
 
-        /* f[2] = i++;
+        f[2] = i++;
         ioc_sets_array(&gina.exp.testfloat, f, 5);
 
         ioc_sets_str(&gina.exp.teststr, "pekka");
         ioc_gets_str(&gina.imp.strtodevice, buf, sizeof(buf));
-        */
     }
 #endif
 
