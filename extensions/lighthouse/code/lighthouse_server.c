@@ -258,7 +258,7 @@ static osalStatus ioc_run_lighthouse_server_one(
 #endif
 #endif
     c->msg.hdr.checksum_low = c->msg.hdr.checksum_high = 0;
-    bytes = sizeof(LighthouseMessageHdr) + c->msg.hdr.publish_sz;
+    bytes = sizeof(LighthouseMessageHdr) + (os_memsz)c->msg.hdr.publish_sz;
     checksum = os_checksum((const os_char*)&c->msg, bytes, OS_NULL);
     c->msg.hdr.checksum_low = (os_uchar)checksum;
     c->msg.hdr.checksum_high = (os_uchar)(checksum >> 8);
