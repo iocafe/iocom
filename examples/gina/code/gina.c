@@ -275,7 +275,7 @@ osalStatus osal_loop(
 
     if (i++ == 0) os_get_timer(&ti);
 
-    if (os_elapsed(&sti, 200))
+    if (os_elapsed(&sti, 50))
     {
         os_get_timer(&sti);
 
