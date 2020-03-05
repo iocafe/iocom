@@ -304,6 +304,7 @@ static void ioc_add_lighthouse_net(
     n = c->net + selected_i;
     if (update_iface &&
         (!os_strcmp(n->ip_addr, "127.0.0.1") || !os_strcmp(n->ip_addr, "::1")) &&
+         !os_strcmp(n->network_name, network_name) &&
          os_strcmp(ip_addr, "127.0.0.1") &&
          os_strcmp(ip_addr, "::1"))
     {
