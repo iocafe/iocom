@@ -397,6 +397,7 @@ osalStatus ioc_get_lighthouse_connectstr(
     os_int i, selected_i;
     os_char nbuf[OSAL_NBUF_SZ], *compare_name;
     iocTransportEnum transport;
+    os_boolean lighthouse_visible;
 
     /* If this is not socket (TCP or TLS, we can do nothing)
      * Set transport number, either IOC_TCP_SOCKET or IOC_TLS_SOCKET.
@@ -408,11 +409,14 @@ osalStatus ioc_get_lighthouse_connectstr(
     if (!os_strcmp(compare_name, "*")) compare_name = "";
 
     selected_i = -1;
+    lighthouse_visible = OS_FALSE;
     for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
     {
         /* Skip if transport doesn't match (skips also unused ones).
          */
         if (c->net[i].transport != transport) continue;
+
+        lighthouse_visible = OS_TRUE;
 
         /* If network name doesn't match and we have network name, skip
          */
@@ -433,7 +437,12 @@ osalStatus ioc_get_lighthouse_connectstr(
 
     /* If we found no match?
      */
-    if (selected_i < 0) return OSAL_STATUS_FAILED;
+    if (selected_i < 0)
+    {
+        osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, lighthouse_visible
+            ?  OSAL_NO_LIGHTHOUSE_FOR_THIS_IO_NETWORK : OSAL_LIGHTHOUSE_NOT_VISIBLE);
+        return OSAL_STATUS_FAILED;
+    }
 
     /* Set connect string
      */
@@ -449,6 +458,7 @@ osalStatus ioc_get_lighthouse_connectstr(
         return OSAL_IO_NETWORK_NAME_SET;
     }
 
+    osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, OSAL_LIGHTHOUSE_OK);
     return OSAL_SUCCESS;
 }
 
