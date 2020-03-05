@@ -15,7 +15,7 @@
 */
 
 #ifndef IOC_DEVICE_STREAMER
-#define IOC_DEVICE_STREAMER 1
+#define IOC_DEVICE_STREAMER OSAL_PERSISTENT_SUPPORT
 #endif
 #ifndef IOC_CONTROLLER_STREAMER
 #define IOC_CONTROLLER_STREAMER 1
@@ -171,7 +171,7 @@ typedef struct iocStreamer
 iocStreamer;
 
 
-
+#if IOC_DEVICE_STREAMER
 /**
 ****************************************************************************************************
 
@@ -216,7 +216,7 @@ typedef struct
     os_timer timer_ms;
 }
 iocControlStreamState;
-
+#endif
 
 /**
 ****************************************************************************************************
@@ -286,6 +286,7 @@ os_long ioc_streamer_get_parameter(
 void ioc_streamer_initialize(
     void);
 
+#if IOC_DEVICE_STREAMER
 /* Initialize control stream.
  */
 void ioc_init_control_stream(
@@ -297,6 +298,7 @@ void ioc_init_control_stream(
 osalStatus ioc_run_control_stream(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
+#endif
 
 /*@}*/
 

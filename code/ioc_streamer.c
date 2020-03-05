@@ -78,11 +78,11 @@ static os_int ioc_streamer_write_internal(
     os_int *head,
     os_int tail);
 
-void ioc_ctrl_stream_from_device(
+static void ioc_ctrl_stream_from_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
 
-void ioc_ctrl_stream_to_device(
+static void ioc_ctrl_stream_to_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
 
@@ -1335,6 +1335,7 @@ void ioc_streamer_initialize(
 }
 
 
+#if IOC_DEVICE_STREAMER
 /**
 ****************************************************************************************************
 
@@ -1511,7 +1512,7 @@ osalStatus ioc_run_control_stream(
 
 ****************************************************************************************************
 */
-void ioc_ctrl_stream_from_device(
+static void ioc_ctrl_stream_from_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
@@ -1610,7 +1611,7 @@ void ioc_ctrl_stream_from_device(
 
 ****************************************************************************************************
 */
-void ioc_ctrl_stream_to_device(
+static void ioc_ctrl_stream_to_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
@@ -1648,6 +1649,7 @@ void ioc_ctrl_stream_to_device(
     ioc_streamer_close(ctrl->tod, stream_flags);
     ctrl->tod = OS_NULL;
 }
+#endif
 
 
 /** Stream interface for OSAL streamers. This is structure is filled with
