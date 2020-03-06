@@ -207,7 +207,7 @@ osalStatus osal_main(
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
      */
     morse_code_setup(&morse, &pins.outputs.led_builtin,
-        MORSE_LED_INVERTED|MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
+        MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.

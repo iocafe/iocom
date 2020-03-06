@@ -13,10 +13,6 @@
   The library supports also auto selecting IO network, assuming the local net has only
   one IO network using the specified transport.
 
-  Note 6.3.2020/ESP32: Expressif 32 development package 1.11.2 is needed. The ESP32 will stop
-  working UDP multicasts after a few minuted with previous version. Like it wouldn't renew
-  multicast group memberships.
-
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -143,80 +139,83 @@ osalStatus ioc_run_lighthouse_client(
             OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
     }
 
-    /* Try to read multicast received from UDP stream
-     */
-    s = osal_stream_receive_packet(c->udp_socket, (os_char*)&msg, sizeof(msg), &n_read,
-        remote_addr, sizeof(remote_addr), OSAL_STREAM_DEFAULT);
-    if (OSAL_IS_ERROR(s))
+    while (1)
     {
-        osal_error(OSAL_ERROR, iocom_mod,
-            OSAL_STATUS_RECEIVE_MULTICAST_FAILED, OS_NULL);
-
-        osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
-        c->udp_socket = OS_NULL;
-
-        return s;
-    }
-
-    /* If success, but nothing received
-     */
-    if (n_read == 0)
-    {
-        /* Delete information about received networks which is exipired (internal).
+        /* Try to read multicast received from UDP stream
          */
-        if (c->check_expired_count++ > 17)
+        s = osal_stream_receive_packet(c->udp_socket, (os_char*)&msg, sizeof(msg), &n_read,
+            remote_addr, sizeof(remote_addr), OSAL_STREAM_DEFAULT);
+        if (OSAL_IS_ERROR(s))
         {
-            ioc_delete_expired_lighthouse_nets(c);
-            c->check_expired_count = 0;
+            osal_error(OSAL_ERROR, iocom_mod,
+                OSAL_STATUS_RECEIVE_MULTICAST_FAILED, OS_NULL);
+
+            osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
+            c->udp_socket = OS_NULL;
+
+            return s;
         }
 
-        return OSAL_SUCCESS;
-    }
+        /* If success, but nothing received
+         */
+        if (n_read == 0)
+        {
+            /* Delete information about received networks which is exipired (internal).
+             */
+            if (c->check_expired_count++ > 17)
+            {
+                ioc_delete_expired_lighthouse_nets(c);
+                c->check_expired_count = 0;
+            }
 
-    /* Make sure that string is terminated (just in case) and
-       Validate the message id and size.
-     */
-    msg.publish[LIGHTHOUSE_PUBLISH_SZ-1] = '\0';
-    bytes = sizeof(LighthouseMessageHdr) + msg.hdr.publish_sz;
-    if (msg.hdr.msg_id != LIGHTHOUSE_MSG_ID ||
-        msg.hdr.publish_sz < 1 ||
-        msg.hdr.publish_sz > LIGHTHOUSE_PUBLISH_SZ ||
-        msg.hdr.hdr_sz !=  sizeof(LighthouseMessageHdr) ||
-        n_read < bytes)
-    {
-        osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
-        return OSAL_SUCCESS;
-    }
+            break;
+        }
 
-    /* Verify checksum
-     */
-    checksum = msg.hdr.checksum_high;
-    checksum = (checksum << 8) | msg.hdr.checksum_low;
+        /* Make sure that string is terminated (just in case) and
+           Validate the message id and size.
+         */
+        msg.publish[LIGHTHOUSE_PUBLISH_SZ-1] = '\0';
+        bytes = sizeof(LighthouseMessageHdr) + msg.hdr.publish_sz;
+        if (msg.hdr.msg_id != LIGHTHOUSE_MSG_ID ||
+            msg.hdr.publish_sz < 1 ||
+            msg.hdr.publish_sz > LIGHTHOUSE_PUBLISH_SZ ||
+            msg.hdr.hdr_sz !=  sizeof(LighthouseMessageHdr) ||
+            n_read < bytes)
+        {
+            osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
+            return OSAL_SUCCESS;
+        }
 
-    msg.hdr.checksum_high = msg.hdr.checksum_low = 0;
-    if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
-    {
-        osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
-        return OSAL_SUCCESS;
-    }
+        /* Verify checksum
+         */
+        checksum = msg.hdr.checksum_high;
+        checksum = (checksum << 8) | msg.hdr.checksum_low;
 
-    /* Add networks.
-     */
-    port_nr = msg.hdr.port_nr_high;
-    port_nr = (port_nr << 8) | msg.hdr.port_nr_low;
-    os_get_timer(&received_timer);
-    p = msg.publish;
-    while (*p != '\0')
-    {
-        e = os_strchr(p, ',');
-        if (e == OS_NULL) e = os_strchr(p, '\0');
-        n = e - p + 1;
-        if (n > sizeof(network_name)) n = sizeof(network_name);
-        os_strncpy(network_name, p, n);
-        ioc_add_lighthouse_net(c, remote_addr, port_nr,
-            msg.hdr.transport, network_name, &received_timer);
-        if (*e == '\0') break;
-        p = e + 1;
+        msg.hdr.checksum_high = msg.hdr.checksum_low = 0;
+        if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
+        {
+            osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
+            break;
+        }
+
+        /* Add networks.
+         */
+        port_nr = msg.hdr.port_nr_high;
+        port_nr = (port_nr << 8) | msg.hdr.port_nr_low;
+        os_get_timer(&received_timer);
+        p = msg.publish;
+        while (*p != '\0')
+        {
+            e = os_strchr(p, ',');
+            if (e == OS_NULL) e = os_strchr(p, '\0');
+            n = e - p + 1;
+            if (n > sizeof(network_name)) n = sizeof(network_name);
+            os_strncpy(network_name, p, n);
+            ioc_add_lighthouse_net(c, remote_addr, port_nr,
+                msg.hdr.transport, network_name, &received_timer);
+            if (*e == '\0') break;
+            p = e + 1;
+        }
     }
 
     return OSAL_SUCCESS;
@@ -325,6 +324,13 @@ static void ioc_add_lighthouse_net(
     n->transport = transport;
     os_strncpy(n->network_name, network_name, OSAL_IPADDR_SZ);
     n->received_timer = *received_timer;
+
+    /* Provide faster infication of connects
+     */
+    if (!os_strcmp(network_name, c->network_name))
+    {
+        osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, OSAL_LIGHTHOUSE_OK);
+    }
 }
 
 
@@ -455,6 +461,10 @@ osalStatus ioc_get_lighthouse_connectstr(
     osal_int_to_str(nbuf, sizeof(nbuf), c->net[selected_i].port_nr);
     os_strncat(connectstr, ":", connectstr_sz);
     os_strncat(connectstr, nbuf, connectstr_sz);
+
+    /* Save the network name we are looking for to provide faster indication
+     */
+    os_strncpy(c->network_name, c->net[selected_i].network_name, IOC_NETWORK_NAME_SZ);
 
     /* If we do not have network name, set it
      */

@@ -90,6 +90,10 @@ typedef struct LighthouseClient
     /** Information about knwon networks.
      */
     LightHouseNetwork net[LIGHTHOUSE_NRO_NETS];
+
+    /** Network name we are looking for to get faster indication. Empty string if unknown.
+     */
+    os_char network_name[IOC_NETWORK_NAME_SZ];
 }
 LighthouseClient;
 
