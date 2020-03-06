@@ -98,7 +98,7 @@ typedef struct LighthouseClient
     /** Timer when last multicast was received. Used to close and reopen the socket
         if light house stops receiveing (problematic on some micro-controllers).
       */
-    os_int64 multicast_received;
+    os_timer multicast_received;
 
     /** Lighthouse if used for real in this device (no static IP settings, etc)
      */
