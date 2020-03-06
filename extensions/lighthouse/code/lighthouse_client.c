@@ -368,6 +368,7 @@ static void ioc_add_lighthouse_net(
 static void ioc_delete_expired_lighthouse_nets(
     LighthouseClient *c)
 {
+#if 0
     os_timer ti;
     os_int i;
 
@@ -383,6 +384,7 @@ static void ioc_delete_expired_lighthouse_nets(
             c->net[i].transport = 0;
         }
     }
+#endif
 }
 
 
