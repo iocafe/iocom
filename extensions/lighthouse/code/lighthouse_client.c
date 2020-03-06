@@ -13,6 +13,10 @@
   The library supports also auto selecting IO network, assuming the local net has only
   one IO network using the specified transport.
 
+  Note 6.3.2020/ESP32: Expressif 32 development package 1.11.2 is needed. The ESP32 will stop
+  working UDP multicasts after a few minuted with previous version. Like it wouldn't renew
+  multicast group memberships.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
