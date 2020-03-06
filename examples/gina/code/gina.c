@@ -297,6 +297,8 @@ osalStatus osal_loop(
     }
 #endif
 
+os_sleep(100);
+
     /* The call is here for testing only, take away.
      */
     s = io_device_console(&ioboard_communication);
