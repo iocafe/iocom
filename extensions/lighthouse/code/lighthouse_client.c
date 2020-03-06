@@ -226,7 +226,7 @@ osalStatus ioc_run_lighthouse_client(
 
     /* If we have not received anything for 30 seconds, close socket to reopen it
      */
-    if (c->lighthouse_really_needed)
+/*     if (c->lighthouse_really_needed)
     {
         if (os_elapsed(&c->multicast_received, 30000))
         {
@@ -235,6 +235,7 @@ osalStatus ioc_run_lighthouse_client(
             c->udp_socket = OS_NULL;
         }
     }
+*/
 
     return OSAL_SUCCESS;
 }
