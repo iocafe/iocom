@@ -443,7 +443,6 @@ osalStatus ioc_get_lighthouse_connectstr(
 
     selected_i = -1;
     lighthouse_visible = OS_FALSE;
-//    for (expierd = 0; expired; < 2; expierd++)
     for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
     {
         /* Skip if transport doesn't match (skips also unused ones).
