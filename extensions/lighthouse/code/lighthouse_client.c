@@ -137,6 +137,8 @@ osalStatus ioc_run_lighthouse_client(
         }
         osal_error(OSAL_CLEAR_ERROR, iocom_mod,
             OSAL_STATUS_OPENING_UDP_SOCKET_FAILED, OS_NULL);
+
+        os_get_timer(&c->multicast_received);
     }
 
     while (1)
@@ -155,6 +157,10 @@ osalStatus ioc_run_lighthouse_client(
 
             return s;
         }
+
+        /*  Recoed that we recieived a multicast.
+         */
+        os_get_timer(&c->multicast_received);
 
         /* If success, but nothing received
          */
@@ -215,6 +221,18 @@ osalStatus ioc_run_lighthouse_client(
                 msg.hdr.transport, network_name, &received_timer);
             if (*e == '\0') break;
             p = e + 1;
+        }
+    }
+
+    /* If we have not received anything for 30 seconds, close socket to reopen it
+     */
+    if (c->lighthouse_really_needed)
+    {
+        if (os_elapsed(&c->multicast_received, 30000))
+        {
+            osal_debug_error("No multicasts for 30s");
+            osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
+            c->udp_socket = OS_NULL;
         }
     }
 
@@ -311,7 +329,7 @@ static void ioc_add_lighthouse_net(
          os_strcmp(ip_addr, "127.0.0.1") &&
          os_strcmp(ip_addr, "::1"))
     {
-        if (!os_elapsed2(&n->received_timer, received_timer, 20000))
+        if (!os_elapsed2(&n->received_timer, received_timer, 10000))
         {
             return;
         }
@@ -342,7 +360,7 @@ static void ioc_add_lighthouse_net(
   The ioc_delete_expired_lighthouse_nets() function...
 
   @param   c Pointer to the light house client object structure.
-  @return  None.
+  @return  rNone.
 
 ****************************************************************************************************
 */
@@ -416,11 +434,16 @@ osalStatus ioc_get_lighthouse_connectstr(
     if ((flags & IOC_SOCKET) == 0) return OSAL_STATUS_FAILED;
     transport = (flags & IOC_SECURE_CONNECTION) ? IOC_TLS_SOCKET : IOC_TCP_SOCKET;
 
+    /* Mark that we are really using light house in this configuration.
+     */
+    c->lighthouse_really_needed = OS_TRUE;
+
     compare_name = network_name;
     if (!os_strcmp(compare_name, "*")) compare_name = "";
 
     selected_i = -1;
     lighthouse_visible = OS_FALSE;
+//    for (expierd = 0; expired; < 2; expierd++)
     for (i = 0; i < LIGHTHOUSE_NRO_NETS; i++)
     {
         /* Skip if transport doesn't match (skips also unused ones).
