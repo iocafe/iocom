@@ -313,9 +313,10 @@ static osalStatus ioc_authorize_process_block(
 
                 /* Check password, unless '*' in user accounts accepts any passowrd.
                  */
-                if (match && os_strcmp(state->password, "*")) {
-                    match = !os_strcmp(state->user->password, state->password);
-                    if (!match && state->ncode != IOC_NOTE_NEW_IO_DEVICE) {
+                if (match)
+                {
+                    if (os_strcmp(state->password, "*")) {
+                        match = !os_strcmp(state->user->password, state->password);
                         state->ncode = IOC_NOTE_WRONG_IO_DEVICE_PASSWORD;
                     }
                 }
@@ -325,7 +326,6 @@ static osalStatus ioc_authorize_process_block(
                     state->valid_user = OS_TRUE;
                     flags = 0;
                     if (!os_strcmp(state->privileges, "admin")) flags |= IOC_AUTH_ADMINISTRATOR;
-                    state->ncode = IOC_NOTE_NEW_IO_DEVICE;
                     ioc_add_allowed_network(state->allowed_networks, state->mblk_network_name, flags);
                 }
             }
@@ -509,7 +509,7 @@ static void ioc_authorize_parse_accounts(
     state.checked_user_name = user_name;
     state.mblk_network_name = network_name;
     state.allowed_networks = allowed_networks;
-    state.ncode = IOC_NOTE_NONE;
+    state.ncode = IOC_NOTE_NEW_IO_DEVICE;
 
     s = osal_create_json_indexer(&jindex, config, config_sz, 0); /* HERE WE SHOULD ALLOW ZERO PADDED DATA */
     if (s)
