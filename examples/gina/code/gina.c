@@ -277,6 +277,8 @@ osalStatus osal_loop(
 
     if (os_elapsed(&sti, 50))
     {
+osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);
+
         os_get_timer(&sti);
 
         l = ioc_gets_int(&gina.conf_imp.frd_select, &state_bits, IOC_SIGNAL_DEFAULT);
@@ -298,7 +300,7 @@ osalStatus osal_loop(
 #endif
 
 
-  // os_sleep(100);
+//    os_timeslice();
 
     /* The call is here for testing only, take away.
      */
