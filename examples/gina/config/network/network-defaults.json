@@ -21,11 +21,11 @@
 		}],
 
 		"wifi": [{
-				"network": "julian",
+				"network": "bean24",
 				"password": "talvi333"
 			},
 			{
-				"network": "bean24",
+				"network": "julian",
 				"password": "talvi333"
 			}
 		]
