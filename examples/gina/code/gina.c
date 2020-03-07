@@ -300,7 +300,7 @@ osalStatus osal_loop(
 #endif
 
 
-   os_sleep(50);
+//   os_sleep(50);
 
     /* The call is here for testing only, take away.
      */
