@@ -277,7 +277,7 @@ osalStatus osal_loop(
 
     if (os_elapsed(&sti, 50))
     {
-osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);
+// osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);
 
         os_get_timer(&sti);
 
@@ -300,7 +300,7 @@ osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);
 #endif
 
 
-//    os_timeslice();
+   os_sleep(50);
 
     /* The call is here for testing only, take away.
      */
