@@ -59,6 +59,10 @@ static MorseCode morse;
  */
 #define IOBOARD_MAX_CONNECTIONS 1
 
+/* Timer for sending
+ */
+static os_timer send_timer;
+
 /* Use static memory pool
  */
 static os_char
@@ -118,9 +122,7 @@ osalStatus osal_main(
      */
     pins_setup(&pins_hdr, 0);
 
-    /* disableCore0WDT();
-    disableCore1WDT();
-    disableLoopWDT(); */
+    os_get_timer(&send_timer);
 
     /* Load device configuration from peristant storage, or if not available use
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
@@ -250,11 +252,15 @@ osalStatus osal_loop(
      */
     blink_morse_code(&morse, &ti);
 
+// ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
+
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
      */
     ioc_run(&ioboard_communication);
+    // ioc_update(&ioboard_communication)
+
     ioc_receive(&ioboard_imp);
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
@@ -275,15 +281,15 @@ osalStatus osal_loop(
 
     if (i++ == 0) os_get_timer(&ti);
 
-    if (os_elapsed(&sti, 50))
+    if (os_elapsed(&sti, 1))
     {
-// osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);
 
         os_get_timer(&sti);
 
         l = ioc_gets_int(&gina.conf_imp.frd_select, &state_bits, IOC_SIGNAL_DEFAULT);
         if (l != prev_l)
         {
+// osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);
             osal_debug_error_int("~HERE CHANGE", l);
             osal_debug_error_int(" state ", state_bits);
             prev_l = l;
@@ -299,17 +305,31 @@ osalStatus osal_loop(
     }
 #endif
 
-
-   os_sleep(50);
+    // os_sleep(10);
+    os_timeslice();
 
     /* The call is here for testing only, take away.
      */
     s = io_device_console(&ioboard_communication);
 
-    /* Move data synchronously from outgoing memory block.
+    /* Send changed data synchronously from outgoing memory blocks every 50 ms. If we need
+       very low latency IO in local network we can have interval like 1 ms, or just call send
+       unconditionally.
+       If we are not in such hurry, we can save network resources by merging multiple changes.
+       to be sent together in TCP package and use value like 100 ms.
+       Especially in IoT we may want to minimize number of transferred TCP packets to
+       cloud server. In this case it is best to use to two timers and flush IOC_EXP and
+       IOC_CONF_EXP separately. We could evenu use value like 2000 ms or higher for
+       IOC_EXP. For IOC_CONF_EXP we need to use relatively short value, like 100 ms
+       even then to keep software updates, etc. working. This doesn't generate much
+       communication tough, conf_export doesn't change during normal operation.
      */
-    ioc_send(&ioboard_exp);
-    ioc_send(&ioboard_conf_exp);
+    if (os_timer_hit(&send_timer, &ti, 5000))
+    {
+        // ioc_flush(&ioboard_communication, IOC_EXP|IOC_CONF_EXP);
+        ioc_send(&ioboard_exp);
+        ioc_send(&ioboard_conf_exp);
+    }
 
     return s;
 }
