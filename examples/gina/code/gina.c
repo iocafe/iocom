@@ -15,6 +15,9 @@
 
   IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
 
+  Notes:
+  - ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept 
@@ -252,28 +255,21 @@ osalStatus osal_loop(
      */
     blink_morse_code(&morse, &ti);
 
-// ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
-
-
-// CHECK HOW IS THE LOGIC CALLING SEND ON RUN()
-
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
      */
     ioc_run(&ioboard_communication);
-    // ioc_update(&ioboard_communication)
-
     ioc_receive(&ioboard_imp);
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
-#if 1
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
+#if 1
     /* Run the IO device functionality.
      */
     static os_float f[5] = {1, 2, 3, 4, 5};
@@ -292,7 +288,6 @@ osalStatus osal_loop(
         l = ioc_gets_int(&gina.conf_imp.frd_select, &state_bits, IOC_SIGNAL_DEFAULT);
         if (l != prev_l)
         {
-// osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);
             osal_debug_error_int("~HERE CHANGE", l);
             osal_debug_error_int(" state ", state_bits);
             prev_l = l;
@@ -318,17 +313,17 @@ osalStatus osal_loop(
        If we are not in such hurry, we can save network resources by merging multiple changes.
        to be sent together in TCP package and use value like 100 ms.
        Especially in IoT we may want to minimize number of transferred TCP packets to
-       cloud server. In this case it is best to use to two timers and flush IOC_EXP and
-       IOC_CONF_EXP separately. We could evenu use value like 2000 ms or higher for
-       IOC_EXP. For IOC_CONF_EXP we need to use relatively short value, like 100 ms
+       cloud server. In this case it is best to use to two timers and flush ioboard_exp and
+       ioboard_conf_exp separately. We could evenu use value like 2000 ms or higher for
+       ioboard_exp. For ioboard_conf_exp we need to use relatively short value, like 100 ms
        even then to keep software updates, etc. working. This doesn't generate much
        communication tough, conf_export doesn't change during normal operation.
      */
     if (os_timer_hit(&send_timer, &ti, 50))
     {
-        // ioc_flush(&ioboard_communication, IOC_EXP|IOC_CONF_EXP);
         ioc_send(&ioboard_exp);
         ioc_send(&ioboard_conf_exp);
+        ioc_run(&ioboard_communication);
     }
 
     return s;
