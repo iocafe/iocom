@@ -254,6 +254,9 @@ osalStatus osal_loop(
 
 // ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
 
+
+// CHECK HOW IS THE LOGIC CALLING SEND ON RUN()
+
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
@@ -324,7 +327,7 @@ osalStatus osal_loop(
        even then to keep software updates, etc. working. This doesn't generate much
        communication tough, conf_export doesn't change during normal operation.
      */
-    if (os_timer_hit(&send_timer, &ti, 5000))
+    if (os_timer_hit(&send_timer, &ti, 50))
     {
         // ioc_flush(&ioboard_communication, IOC_EXP|IOC_CONF_EXP);
         ioc_send(&ioboard_exp);
