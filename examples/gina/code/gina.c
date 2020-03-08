@@ -4,24 +4,21 @@
   @brief   Gina IO board example featuring  IoT device.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    8.3.2020
 
   IOBOARD_CTRL_CON define selects how this IO device connects to control computer. One of
   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
 
   Serial port can be selected using Windows style using "COM1", "COM2"... These are mapped
-  to hardware/operating system in device specific manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
+  to hardware/operating system in device specific manner. On Linux port names like
+  "ttyS30,baud=115200" or "ttyUSB0" can be also used.
 
   IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
 
-<<<<<<< Updated upstream
   Notes:
   - ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
-=======
-  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
->>>>>>> Stashed changes
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
   it fully.
@@ -241,8 +238,12 @@ osalStatus osal_loop(
     void *app_context)
 {
     os_timer ti;
-    static os_timer sti;
     osalStatus s;
+
+    static os_timer sti;
+    static os_float f[5] = {1, 2, 3, 4, 5};
+    static os_int i = 0;
+    static os_char *test_str;
 
     os_get_timer(&ti);
 
@@ -252,7 +253,7 @@ osalStatus osal_loop(
     ioc_run_lighthouse_client(&lighthouse);
 #endif
 
-    /* Keep the morse code LED alive.
+    /* Keep the morse code LED alive. The LED indicates boot issues.
      */
     blink_morse_code(&morse, &ti);
 
@@ -270,39 +271,30 @@ osalStatus osal_loop(
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
-#if 1
     /* Run the IO device functionality.
      */
-    static os_float f[5] = {1, 2, 3, 4, 5};
-    static os_int i = 0;
-    os_char buf[32], state_bits;
-    os_long l;
-    static os_long prev_l = -1;
+    os_boolean command;
+    static os_boolean prev_command = -1;
 
     if (i++ == 0) os_get_timer(&ti);
 
+    if (os_timer_hit(&sti, &ti, 10))
     if (os_elapsed(&sti, 1))
     {
-
         os_get_timer(&sti);
-
-        l = ioc_gets_int(&gina.conf_imp.frd_select, &state_bits, IOC_SIGNAL_DEFAULT);
-        if (l != prev_l)
-        {
-            osal_debug_error_int("~HERE CHANGE", l);
-            osal_debug_error_int(" state ", state_bits);
-            prev_l = l;
-        }
-
-        ioc_sets_str(&gina.exp.teststr, "pekka");
 
         f[2] = i++;
         ioc_sets_array(&gina.exp.testfloat, f, 5);
-
-        ioc_sets_str(&gina.exp.teststr, "pekka");
-        ioc_gets_str(&gina.imp.strtodevice, buf, sizeof(buf));
     }
-#endif
+
+    command = ioc_gets0_int(&gina.imp.led_builtin_x);
+    if (command != prev_command)
+    {
+        f[0] = f[0] + 1.0F;
+        test_str = (int)f[0] % 2 ? "dance" : "gabriel";
+        ioc_sets_str(&gina.exp.teststr, test_str);
+        prev_command = command;
+    }
 
     /* The call is here for testing only, take away.
      */
@@ -404,10 +396,9 @@ void ioboard_communication_callback(
     os_char buf[GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ];
     const Pin *pin;
     os_short i;
-#endif
+
     if (flags & IOC_MBLK_CALLBACK_RECEIVE)
     {
-#ifdef PINS_SEGMENT7_GROUP
         /* Process 7 segment display. Since this is transferred as boolean array, the
            forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
            boolean array from communication signal, and write it to IO pins.
@@ -431,10 +422,17 @@ void ioboard_communication_callback(
                 osal_console_write("7 segment data DISCONNECTED\n");
             }
         }
-#endif
 
         /* Call pins library extension to forward communication signal changed to IO pins.
          */
         forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
     }
+#else
+    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
+    {
+        /* Call pins library extension to forward communication signal changed to IO pins.
+         */
+        forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
+    }
+#endif
 }
