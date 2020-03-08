@@ -9,25 +9,27 @@
   IOBOARD_CTRL_CON define selects how this IO device connects to control computer. One of
   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
 
-  GINA_SERIAL_PORT: Serial port can be selected using Windows style using "COM1",
-  "COM2"... These are mapped to hardware/operating system in device specific
-  manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
+  Serial port can be selected using Windows style using "COM1", "COM2"... These are mapped
+  to hardware/operating system in device specific manner. On Linux port names like "ttyS30,baud=115200" or "ttyUSB0" can be also used.
 
   IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
 
+<<<<<<< Updated upstream
   Notes:
   - ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+=======
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
+>>>>>>> Stashed changes
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
 */
 /* Select socket, TLS or serial communication before including gina.h.
  */
-// #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
 #include "gina.h"
 
@@ -125,8 +127,6 @@ osalStatus osal_main(
      */
     pins_setup(&pins_hdr, 0);
 
-    os_get_timer(&send_timer);
-
     /* Load device configuration from peristant storage, or if not available use
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
@@ -202,7 +202,7 @@ osalStatus osal_main(
     ioc_initialize_selectwifi(OS_NULL);
 #endif
 
-    /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection 
+    /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection
        string starts with '[' (indicates IPv6 address).
      */
 #if GINA_USE_LIGHTHOUSE
@@ -218,6 +218,7 @@ osalStatus osal_main(
        real micro-controller.
      */
     osal_simulated_loop(OS_NULL);
+    os_get_timer(&send_timer);
     return OSAL_SUCCESS;
 }
 
