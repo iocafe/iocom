@@ -308,9 +308,6 @@ osalStatus osal_loop(
     }
 #endif
 
-    // os_sleep(10);
-    os_timeslice();
-
     /* The call is here for testing only, take away.
      */
     s = io_device_console(&ioboard_communication);

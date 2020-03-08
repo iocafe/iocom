@@ -33,4 +33,8 @@ void loop()
     /* Forward loop call to osal_loop(). Reboot if osal_loop returns "no success".
      */
     if (osal_loop(osal_application_context)) osal_reboot(0);
+
+#ifdef ESP_PLATFORM
+    os_sleep(20);
+#endif
 }
