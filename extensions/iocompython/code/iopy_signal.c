@@ -523,15 +523,11 @@ static void Signal_set_string_value(
 {
     os_char *str_value = NULL;
 
-osal_debug_error("HERE 1");
-
     if (!PyArg_ParseTuple(args, "s", &str_value))
     {
-osal_debug_error("HERE 2");
         PyErr_SetString(iocomError, "String argument expected");
         return;
     }
-osal_debug_error("HERE 3");
 
     ioc_moves_str(state->signal, str_value, -1, state->state_bits, IOC_SIGNAL_WRITE|OS_STR);
 }
