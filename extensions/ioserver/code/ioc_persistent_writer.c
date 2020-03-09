@@ -53,7 +53,10 @@ iocPersistentWriter *ioc_start_persistent_writer(
     os_memsz n_read;
     os_int select;
 
-select = OS_PBNR_CLIENT_CERT_CHAIN; // Block number on target IO device
+    /* Block number on target IO device. Future: check default_block_nr
+       in case we are writing a program, and select different target block.
+     */
+    select = OS_PBNR_CLIENT_CERT_CHAIN;
 
     stream = ioc_open_stream(mblk->link.root, select, "frd_buf", "tod_buf", "conf_exp", "conf_imp",
         mblk->device_name, mblk->device_nr, mblk->network_name, IOC_IS_CONTROLLER);
@@ -214,7 +217,7 @@ void ioc_upload_cert_chain_or_flash_prog(
 
                 if (!os_strcmp(mblk->mblk_name, "info"))
                 {
-                    m->persistent_writer = ioc_start_persistent_writer(OS_PBNR_CLIENT_CERT_CHAIN,
+                    m->persistent_writer = ioc_start_persistent_writer(OS_PBNR_PUBLISH_CERT_CHAIN,
                         OS_NULL, "myhome-bundle.crt", mblk);
 
                     break;
