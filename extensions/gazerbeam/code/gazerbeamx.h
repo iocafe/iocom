@@ -23,7 +23,8 @@
 ****************************************************************************************************
 */
 
-
+/* Logical states of a received bit, one, zero or no bit received.
+ */
 typedef enum GazerbeamBit
 {
     GAZERBEAM_ZERO,
@@ -32,16 +33,53 @@ typedef enum GazerbeamBit
 }
 GazerbeamBit;
 
+/* Logical AD signal level.
+ */
+typedef enum
+{
+    GAZERBEAM_LOW,
+    GAZERBEAM_HIGH,
+    GAZERBEAM_CENTER
+}
+GazerbeamSignalLevel;
 
+/* Maximum limit for nro_layers setting.
+ */
 #define MAX_GAZERBEAM_LAYERS 10
+
+/* Type of AD conveted value in software.
+ */
 #define GAZERBEAM_VALUE_TYPE os_int
 
+/* Minimum and maximum AD signal must be at least this much apart
+   that we even try to get the signal.
+ */
+#define GAZERBEAM_AD_NOICE_LEVEL 40
+
+/* Maximum size of message in bytes.
+ */
+#define GAZERBEAM_MAX_MSG_SZ 199
+
+/* Gazerbeam state structure. Typically allocated as global flat structure.
+ */
 typedef struct GazerbeamBuffer
 {
+    /* Buffers for tracking minimum or maximum signal value.
+     */
     GAZERBEAM_VALUE_TYPE x[MAX_GAZERBEAM_LAYERS];
     GAZERBEAM_VALUE_TYPE z[MAX_GAZERBEAM_LAYERS];
+
+    /* Just internal counter for filling the x and z buffers.
+     */
     os_int run_count;
+
+    /* How many AD values are used to keep track maximum and minimum
+     * signal levels. N = 2^nro_layers.
+     */
     os_int nro_layers;
+
+    /* Looking for maximum or minimum signal value?
+     */
     os_boolean find_max;
 }
 GazerbeamBuffer;
@@ -51,7 +89,20 @@ GazerbeamBuffer;
  */
 typedef struct Gazerbeam
 {
-    GazerbeamBuffer xmin;
+    /* Mimumum and maximum filtering buffers.
+     */
+    GazerbeamBuffer xmin_buf, xmax_buf;
+
+    /* Previous signal value and digital level.
+     */
+    GAZERBEAM_VALUE_TYPE prev_x;
+    GazerbeamSignalLevel prev_signal;
+
+    os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 1];
+    os_int n_bytes;
+    os_int n_zeros;
+    os_int receive_pos;
+    os_char receive_bit;
 }
 Gazerbeam;
 
@@ -62,12 +113,27 @@ void initialize_gazerbeam(
     Gazerbeam *gb,
     os_short flags);
 
-/*
+/* Decode analog input reading to logical ones and zeroes.
  */
-GazerbeamBit gazerbeam_new_signal_value(
+GazerbeamBit gazerbeam_decode_modulation(
     Gazerbeam *gb,
-    os_int x);
+    GAZERBEAM_VALUE_TYPE x);
 
+/* Generate a message based on received data.
+ */
+osalStatus gazerbeam_decode_message(
+    Gazerbeam *gb,
+    GAZERBEAM_VALUE_TYPE x);
+
+/* Get the received message into buffer.
+ */
+os_memsz gazerbeam_get_message(
+    Gazerbeam *gb,
+    os_char *buf,
+    os_memsz buf_sz);
+
+/* Find out minimum or maximum value of the last N samples.
+ */
 GAZERBEAM_VALUE_TYPE gazerbeam_minmax(
     GazerbeamBuffer *gbb,
     GAZERBEAM_VALUE_TYPE x);
