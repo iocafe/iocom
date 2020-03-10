@@ -1,10 +1,12 @@
 /**
 
-  @file    ioc_selectwifi.h
+  @file    selectwifi.c
   @brief   Set wifi network name and password over blue tooth or serial port.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    3.2.2020
+
+  Configure microcontroller WiFi, etc, over blue tooth connection.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,

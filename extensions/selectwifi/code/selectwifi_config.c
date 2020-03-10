@@ -1,6 +1,6 @@
 /**
 
-  @file    ioc_selectwifi_config.c
+  @file    selectwifi_config.c
   @brief   Set wifi network name and password over blue tooth or serial port.
   @author  Pekka Lehtikoski
   @version 1.0
