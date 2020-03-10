@@ -1,12 +1,12 @@
 /**
 
   @file    common/pins_gazerbeam.h
-  @brief   LED to LED communication.
+  @brief   LED light communication.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    2.3.2020
 
-  Configure microcontroller WiFi, etc, using Android phone, etc. The idea is simple, an Andriod
+  Configure microcontroller WiFi, etc, using Android phone. The idea is simple, an Andriod
   phone blinks wifi network name (SSID) and password (PSK) with it's flash light. Microcontroller
   is equaipped with simple ambient light photo diode which sees the signal.
 

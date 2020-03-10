@@ -1,12 +1,12 @@
 /**
 
-  @file    selectwifi.c
-  @brief   Set wifi network name and password over blue tooth or serial port.
+  @file    gazerbeam_minmax.c
+  @brief   LED light communication.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    3.2.2020
+  @date    8.3.2020
 
-  Configure microcontroller WiFi, etc, over blue tooth connection.
+  Configure microcontroller WiFi, etc, using Android phone.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
