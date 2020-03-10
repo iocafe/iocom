@@ -33,32 +33,41 @@ typedef enum GazerbeamBit
 GazerbeamBit;
 
 
+#define MAX_GAZERBEAM_LAYERS 10
+#define GAZERBEAM_VALUE_TYPE os_int
+
+typedef struct GazerbeamBuffer
+{
+    GAZERBEAM_VALUE_TYPE x[MAX_GAZERBEAM_LAYERS];
+    GAZERBEAM_VALUE_TYPE z[MAX_GAZERBEAM_LAYERS];
+    os_int run_count;
+    os_int nro_layers;
+    os_boolean find_max;
+}
+GazerbeamBuffer;
+
+
 /* Gazerbeam state structure.
  */
 typedef struct Gazerbeam
 {
-    const Pin *pin;
-
-    os_timer timer;
-    os_int code;
-    os_int prev_code;
-    os_int pos;
-    os_boolean start_led_on;
-    os_boolean led_on;
-
-    MorseRecipe recipe;
+    GazerbeamBuffer xmin;
 }
 Gazerbeam;
 
 
-/* Setup the Gazer beam structure.
+/* Initialize the Gazerbeam structure.
  */
-void gazerbeam_setup(
+void initialize_gazerbeam(
     Gazerbeam *gb,
-    os_boolean flags);
+    os_short flags);
 
 /*
  */
-GazerbeamBit gazerbeam_new_value(
+GazerbeamBit gazerbeam_new_signal_value(
     Gazerbeam *gb,
-    os_int code);
+    os_int x);
+
+GAZERBEAM_VALUE_TYPE gazerbeam_minmax(
+    GazerbeamBuffer *gbb,
+    GAZERBEAM_VALUE_TYPE x);
