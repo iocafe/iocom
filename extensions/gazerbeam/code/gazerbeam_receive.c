@@ -108,6 +108,10 @@ GazerbeamBit gazerbeam_decode_modulation(
     else if (gb->prev_signal != GAZERBEAM_CENTER) {
         bit = GAZERBEAM_ZERO;
     }
+    else
+    {
+        bit = GAZERBEAM_NONE;
+    }
 
     gb->prev_signal = signal;
     return bit;
