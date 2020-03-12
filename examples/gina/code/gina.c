@@ -314,7 +314,7 @@ osalStatus osal_loop(
        even then to keep software updates, etc. working. This doesn't generate much
        communication tough, conf_export doesn't change during normal operation.
      */
-    if (os_timer_hit(&send_timer, &ti, 50))
+    if (os_timer_hit(&send_timer, &ti, 10))
     {
         ioc_send(&ioboard_exp);
         ioc_send(&ioboard_conf_exp);
