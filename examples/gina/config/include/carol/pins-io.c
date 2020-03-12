@@ -34,7 +34,7 @@ const pins_t pins =
   },
 
   {{9, &pins.outputs.led_builtin}, /* outputs */
-    {PIN_OUTPUT, 0, 1, pins_outputs_led_builtin_prm, sizeof(pins_outputs_led_builtin_prm)/sizeof(os_short), OS_NULL, OS_NULL}, /* led_builtin */
+    {PIN_OUTPUT, 0, 2, pins_outputs_led_builtin_prm, sizeof(pins_outputs_led_builtin_prm)/sizeof(os_short), OS_NULL, OS_NULL}, /* led_builtin */
     {PIN_OUTPUT, 0, 2, pins_outputs_A_prm, sizeof(pins_outputs_A_prm)/sizeof(os_short), OS_NULL, &gina.exp.A}, /* A */
     {PIN_OUTPUT, 0, 2, pins_outputs_B_prm, sizeof(pins_outputs_B_prm)/sizeof(os_short), &pins.outputs.A, &gina.exp.B}, /* B */
     {PIN_OUTPUT, 0, 2, pins_outputs_C_prm, sizeof(pins_outputs_C_prm)/sizeof(os_short), &pins.outputs.B, &gina.exp.C}, /* C */
