@@ -1,5 +1,5 @@
 # iocom/examples/ioboard2/CmakeLists.txt - Cmake build for IO board example.
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "3_ioboard_large_block")

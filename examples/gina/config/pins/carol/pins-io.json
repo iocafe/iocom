@@ -14,7 +14,7 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_builtin", "addr": 2},
+          {"name": "led_builtin", "addr": 1},
           {"name": "A", "addr": 2, "group" : "segment7"},
           {"name": "B", "addr": 2, "group" : "segment7"},
           {"name": "C", "addr": 2, "group" : "segment7"},
@@ -28,7 +28,7 @@
       {
         "name": "analog_inputs",
         "pins": [
-          {"name": "potentiometer", "addr": 25, "speed": 3, "delay": 11, "max": 4095}
+          {"name": "potentiometer", "addr": 36, "speed": 3, "delay": 11, "max": 4095}
         ]
       },
       {

@@ -300,6 +300,8 @@ osalStatus osal_loop(
      */
     s = io_device_console(&ioboard_communication);
 
+// osal_debug_error_int("HERE P ", pin_get(&pins.analog_inputs.potentiometer));
+
     /* Send changed data synchronously from outgoing memory blocks every 50 ms. If we need
        very low latency IO in local network we can have interval like 1 ms, or just call send
        unconditionally.

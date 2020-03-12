@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#include <FreeRTOS.h>
 #include <eosalx.h>
 
 /*

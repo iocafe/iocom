@@ -1,5 +1,5 @@
 # iocom/examples/tito/CmakeLists.txt - Cmake build for Tito IO controller example.
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "tito")

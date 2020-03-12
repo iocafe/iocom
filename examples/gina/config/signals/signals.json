@@ -17,7 +17,7 @@
       {
         "name": "analog inputs",
         "signals": [
-          {"name": "potentiometer"}
+          {"name": "potentiometer", "type": "ushort"}
         ]
       },
       {
@@ -53,8 +53,8 @@
       {
         "name": "pwm",
         "signals": [
-          {"name": "servo", "type": "short"},
-          {"name": "dimmer_led", "type": "float", "max": 100}
+          {"name": "servo", "type": "ushort"},
+          {"name": "dimmer_led", "type": "ushort", "max": 100}
         ]
       },
       {
