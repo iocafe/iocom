@@ -1,0 +1,2 @@
+rootProject.name='blinky'
+include ':app'
