@@ -23,11 +23,12 @@
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/wifi_network_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/wifi_network"
+                    android:id="@+id/wifi_network_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="wifi network"
@@ -35,22 +36,24 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/wifi_password"
+                android:id="@+id/wifi_password_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/wifi_password_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="wifi password" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/io_network_name_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/io_network_name"
+                    android:id="@+id/io_network_name_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="IO network name" />
@@ -58,22 +61,24 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/device_number_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/device_number"
+                    android:id="@+id/device_number_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="device number" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/connect_ip_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/connect_ip"
+                    android:id="@+id/connect_ip_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="connect IP" />
@@ -87,7 +92,7 @@
                 tools:visibility="visible" />
 
             <ToggleButton
-                android:id="@+id/toggleButton2"
+                android:id="@+id/blink_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="ToggleButton"

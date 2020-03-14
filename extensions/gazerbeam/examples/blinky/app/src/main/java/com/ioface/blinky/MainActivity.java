@@ -2,13 +2,12 @@ package com.ioface.blinky;
 
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -18,25 +17,57 @@ import android.os.AsyncTask;
 import android.os.Process;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
+    protected sendData
+            m_sender;
 
-    protected sendData sender;
+    TextInputLayout
+            m_wifi_network_layout,
+            m_wifi_password_layout,
+            io_network_name_layout,
+            m_device_number_layout,
+            m_connect_ip_layout;
+
+    protected TextInputEditText
+            m_wifi_network_edit,
+            m_wifi_password_edit,
+            io_network_name_edit,
+            m_device_number_edit,
+            m_connect_ip_edit;
+
+    String
+            m_wifi_network,
+            m_wifi_password,
+            io_network_name,
+            m_device_number,
+            m_connect_ip;
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
- /*       FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        }); */
+        m_wifi_network_layout = findViewById(R.id.wifi_network_layout);
+        m_wifi_password_layout = findViewById(R.id.wifi_password_layout);
+        io_network_name_layout = findViewById(R.id.io_network_name_layout);
+        m_device_number_layout = findViewById(R.id.device_number_layout);
+        m_connect_ip_layout = findViewById(R.id.connect_ip_layout);
+
+        m_wifi_network_edit = findViewById(R.id.wifi_network_edit);
+        m_wifi_password_edit = findViewById(R.id.wifi_password_edit);
+        io_network_name_edit = findViewById(R.id.io_network_name_edit);
+        m_device_number_edit = findViewById(R.id.device_number_edit);
+        m_connect_ip_edit = findViewById(R.id.connect_ip_edit);
+
+        // m_wifi_network_edit.setText("Nasse");
+
+        getUiState();
+
 
         byte b[];
         b = new byte [4];
@@ -51,14 +82,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -71,6 +104,47 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    protected void getUiState()
+    {
+        m_wifi_network = m_wifi_network_edit.getText().toString();
+        m_wifi_password = m_wifi_password_edit.getText().toString();
+        io_network_name = io_network_name_edit.getText().toString();
+        m_device_number = m_device_number_edit.getText().toString();
+        m_connect_ip = m_connect_ip_edit.getText().toString();
+    }
+
+    protected void setUiState()
+    {
+        m_wifi_network_edit.setText(m_wifi_network);
+        m_wifi_password_edit.setText(m_wifi_password);
+        io_network_name_edit.setText(io_network_name);
+        m_device_number_edit.setText(m_device_number);
+        m_connect_ip_edit.setText(m_connect_ip);
+    }
+
+    protected Bundle saveState()
+    {
+        Bundle b = new Bundle();
+
+        b.putString("wifi_network", m_wifi_network);
+        b.putString("wifi_password", m_wifi_password);
+        b.putString("io_network_name", io_network_name);
+        b.putString("device_number", m_device_number);
+        b.putString("connect_ip", m_connect_ip);
+        return b;
+    }
+
+    protected void loadState(Bundle b) {
+        m_wifi_network = b.getString("wifi_network");
+        m_wifi_password = b.getString("wifi_password");
+        io_network_name = b.getString("io_network_name");
+        m_device_number = b.getString("device_number");
+        m_connect_ip = b.getString("connect_ip");
+    }
+
+    // Storing bundle object into intent
+//                    in.putExtras(b);
 
     private class sendData extends AsyncTask<Void, Void, Boolean> {
         /**
