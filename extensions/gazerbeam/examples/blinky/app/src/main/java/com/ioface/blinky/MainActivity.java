@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        new DownloadImageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new sendData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
@@ -60,18 +60,16 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class DownloadImageTask extends AsyncTask<CameraManager, Integer, Long> {
+    private class sendData extends AsyncTask<String, Integer, Long> {
         /** The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute() */
-        protected Long doInBackground(CameraManager... objCameraManagers) {
+        protected Long doInBackground(String... data) {
 
             // CameraManager objCameraManager = objCameraManagers[0];
-            CameraManager objCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            objCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
             try {
-//            objCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
                 mCameraId = objCameraManager.getCameraIdList()[0];
-                // timer = new Timer();
                 Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
 
             } catch (Exception e) {
@@ -89,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // public CameraManager objCameraManager;
+        public CameraManager objCameraManager;
         private String mCameraId;
         private boolean uu;
 
