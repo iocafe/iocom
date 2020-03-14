@@ -126,15 +126,10 @@ public class MainActivity extends AppCompatActivity
 
         enableUiState(false);
         getUiState();
-        byte b[];
-        b = new byte [4];
-        b[0] = 100;
-        b[1] = 5;
-        b[2] = 55;
-        b[3] = 15;
+        int data[] = makeMessageData();
 
         sendData sender = new sendData();
-        sender.setByteData(b);
+        sender.setByteData(data);
         m_task = sender.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         m_task_running = true;
     }
@@ -218,6 +213,82 @@ public class MainActivity extends AppCompatActivity
         m_connect_ip = m_pref.getString("connect_ip", "");
     }
 
+    protected int[] makeMessageData()
+    {
+        int wn[] = convertString(m_wifi_network, 1);
+        int wp[] = convertString(m_wifi_password, 2);
+        int nn[] = convertString(io_network_name, 3);
+        int dn[] = convertString(m_device_number, 4);
+        int ip[] = convertString(m_connect_ip, 5);
+
+        int n = wn.length + wp.length;
+        int data[] = new int [n];
+        int pos = 0;
+
+        int item[];
+
+        item = wn;
+        if (item.length > 1) {
+            appendItem(data, pos, item);
+            pos += item.length;
+        }
+
+        item = wp;
+        if (item.length > 1) {
+            appendItem(data, pos, item);
+            pos += item.length;
+        }
+
+        item = nn;
+        if (item.length > 1) {
+            appendItem(data, pos, item);
+            pos += item.length;
+        }
+
+        item = dn;
+        if (item.length > 1) {
+            appendItem(data, pos, item);
+            pos += item.length;
+        }
+
+        item = ip;
+        if (item.length > 1) {
+            appendItem(data, pos, item);
+            pos += item.length;
+        }
+        return data;
+    }
+
+    // Maximum value x length 31 characters
+    protected int[] convertString(String x, int id)
+    {
+        byte[] b = x.getBytes();
+
+        int n = b.length + 1;
+        int item[] = new int[n];
+
+        item[0] = (id << 5) | b.length;
+        for (int i = 0; i < b.length; i++)
+        {
+            item[i+1] = converUnsignedValue(b[i]);
+        }
+
+        return item;
+    }
+
+    protected int converUnsignedValue(Byte x) {
+        // auto cast to int
+        return x & 0xFF;
+    }
+
+    protected void appendItem(int data[], int pos, int item[])
+    {
+        for (int i = 0; i < item.length; i++)
+        {
+            data[i + pos] = item[i];
+        }
+    }
+
     private class sendData extends AsyncTask<Void, Void, Boolean> {
 
         protected int m_short_pulse_ms;
@@ -226,7 +297,7 @@ public class MainActivity extends AppCompatActivity
 
         public CameraManager m_camera_manager;
         private String m_camera_id;
-        byte m_data[];
+        int m_data[];
 
         /**
          * The system calls this to perform work in a worker thread and
@@ -296,7 +367,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        public void setByteData(byte data[]) {
+        public void setByteData(int data[]) {
             m_data = data;
         }
     }
