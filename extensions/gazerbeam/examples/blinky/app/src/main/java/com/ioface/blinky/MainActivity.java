@@ -73,48 +73,80 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class sendData extends AsyncTask<Void, Void, Boolean> {
-        /** The system calls this to perform work in a worker thread and
-         * delivers it the parameters given to AsyncTask.execute() */
+        /**
+         * The system calls this to perform work in a worker thread and
+         * delivers it the parameters given to AsyncTask.execute()
+         */
         @Override
         protected Boolean doInBackground(Void... params) {
 
+            m_short_pulse_ms = 300;
+            m_long_pulse_ms = 1000;
+            m_led_on = false;
+
             // CameraManager objCameraManager = objCameraManagers[0];
-            mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            m_camera_manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
             try {
-                mCameraId = mCameraManager.getCameraIdList()[0];
+                m_camera_id = m_camera_manager.getCameraIdList()[0];
                 Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            int pos = 0;
-            int len = mData.length;
-            boolean led_on = false;
+            int len = m_data.length;
 
             while (true) {
-                try {
-                    led_on = !led_on;
-                    mCameraManager.setTorchMode(mCameraId, led_on);
-
-                    Thread.sleep(mData[pos], 0);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                // Send 10 zeroes followed by 1
+                for (int i = 0; i < 10; i++) {
+                    toggleLed(m_short_pulse_ms);
                 }
-                pos = pos + 1;
-                if (pos >= len) pos = 0;
+                toggleLed(m_long_pulse_ms);
+
+                // Send actual data bytes, each followed by 0 and 1
+                for (int i = 0; i < len; i++) {
+                    int v = m_data[i];
+                    for (int j = 0; j < 8; j++) {
+                        if ((v & 1) == 1)
+                        {
+                            toggleLed(m_long_pulse_ms);
+                        }
+                        else
+                        {
+                            toggleLed(m_short_pulse_ms);
+                        }
+                        v >>= 1;
+                    }
+                    toggleLed(m_short_pulse_ms);
+                    toggleLed(m_long_pulse_ms);
+                }
             }
             // return true;
         }
 
-        public void setByteData(byte data[]) {
-            mData = data;
+        protected void toggleLed(int pulse_ms) {
+            m_led_on = !m_led_on;
+
+            try {
+                m_camera_manager.setTorchMode(m_camera_id, m_led_on);
+                Thread.sleep(pulse_ms, 0);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        public CameraManager mCameraManager;
-        private String mCameraId;
-        byte mData[];
+        public void setByteData(byte data[]) {
+            m_data = data;
+        }
+
+        protected int m_short_pulse_ms;
+        protected int m_long_pulse_ms;
+        protected boolean m_led_on;
+
+        public CameraManager m_camera_manager;
+        private String m_camera_id;
+        byte m_data[];
 
 
         /** The system calls this to perform work in the UI thread and delivers
