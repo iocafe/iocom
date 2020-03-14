@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity
     {
         stopLED();
 
+        enableUiState(false);
         getUiState();
         byte b[];
         b = new byte [4];
@@ -143,6 +144,7 @@ public class MainActivity extends AppCompatActivity
         if (m_task_running) {
             m_task.cancel(true);
             m_task_running = false;
+            enableUiState(true);
         }
     }
 
@@ -186,6 +188,14 @@ public class MainActivity extends AppCompatActivity
         io_network_name_edit.setText(io_network_name);
         m_device_number_edit.setText(m_device_number);
         m_connect_ip_edit.setText(m_connect_ip);
+    }
+
+    protected void enableUiState(boolean enable) {
+        m_wifi_network_edit.setEnabled(enable);
+        m_wifi_password_edit.setEnabled(enable);
+        io_network_name_edit.setEnabled(enable);
+        m_device_number_edit.setEnabled(enable);
+        m_connect_ip_edit.setEnabled(enable);
     }
 
     protected void saveState()

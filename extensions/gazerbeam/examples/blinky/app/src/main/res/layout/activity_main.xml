@@ -44,7 +44,8 @@
                     android:id="@+id/wifi_password_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="wifi password" />
+                    android:hint="wifi password"
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -56,7 +57,8 @@
                     android:id="@+id/io_network_name_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="IO network name" />
+                    android:hint="IO network name"
+                    android:inputType="text" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -69,7 +71,8 @@
                     android:id="@+id/device_number_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="device number" />
+                    android:hint="device number"
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -81,7 +84,8 @@
                     android:id="@+id/connect_ip_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="connect IP" />
+                    android:hint="connect IP"
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <View
@@ -95,10 +99,11 @@
                 android:id="@+id/blink_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:backgroundTint="#FFFFFF"
                 android:text="ToggleButton"
                 android:textAllCaps="false"
-                android:textOff="blink off"
-                android:textOn="blink on" />
+                android:textOff="blink"
+                android:textOn="blink" />
 
         </LinearLayout>
     </ScrollView>
