@@ -20,6 +20,8 @@ import android.os.Process;
 
 public class MainActivity extends AppCompatActivity {
 
+    protected sendData sender;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,7 +37,17 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        new sendData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        byte b[];
+        b = new byte [4];
+        b[0] = 100;
+        b[1] = 5;
+        b[2] = 55;
+        b[3] = 15;
+
+        sendData sender = new sendData();
+        sender.setByteData(b);
+        sender.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
@@ -60,36 +72,49 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class sendData extends AsyncTask<String, Integer, Long> {
+    private class sendData extends AsyncTask<Void, Void, Boolean> {
         /** The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute() */
-        protected Long doInBackground(String... data) {
+        @Override
+        protected Boolean doInBackground(Void... params) {
 
             // CameraManager objCameraManager = objCameraManagers[0];
-            objCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
             try {
-                mCameraId = objCameraManager.getCameraIdList()[0];
+                mCameraId = mCameraManager.getCameraIdList()[0];
                 Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            int pos = 0;
+            int len = mData.length;
+            boolean led_on = false;
+
             while (true) {
                 try {
-                    objCameraManager.setTorchMode(mCameraId, uu);
-                    uu = !uu;
-                    Thread.sleep(10, 0);
+                    led_on = !led_on;
+                    mCameraManager.setTorchMode(mCameraId, led_on);
+
+                    Thread.sleep(mData[pos], 0);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                pos = pos + 1;
+                if (pos >= len) pos = 0;
             }
+            // return true;
         }
 
-        public CameraManager objCameraManager;
+        public void setByteData(byte data[]) {
+            mData = data;
+        }
+
+        public CameraManager mCameraManager;
         private String mCameraId;
-        private boolean uu;
+        byte mData[];
 
 
         /** The system calls this to perform work in the UI thread and delivers
