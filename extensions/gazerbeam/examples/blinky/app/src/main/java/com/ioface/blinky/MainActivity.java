@@ -4,7 +4,8 @@ import android.os.Bundle;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
+import android.widget.ToggleButton;
+import android.widget.CompoundButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -13,6 +14,8 @@ import android.view.MenuItem;
 
 import android.hardware.camera2.*;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Process;
 
@@ -22,7 +25,7 @@ public class MainActivity extends AppCompatActivity
     protected sendData
             m_sender;
 
-    TextInputLayout
+    protected TextInputLayout
             m_wifi_network_layout,
             m_wifi_password_layout,
             io_network_name_layout,
@@ -36,13 +39,25 @@ public class MainActivity extends AppCompatActivity
             m_device_number_edit,
             m_connect_ip_edit;
 
-    String
+    protected ToggleButton
+            m_blink_button;
+
+    protected String
             m_wifi_network,
             m_wifi_password,
             io_network_name,
             m_device_number,
             m_connect_ip;
 
+    protected SharedPreferences
+            m_pref;
+
+    protected AsyncTask<Void, Void, Boolean>
+            m_task;
+
+    protected boolean
+            m_task_running,
+            m_started;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -51,6 +66,9 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        m_task_running = false;
+        m_started = false;
 
         m_wifi_network_layout = findViewById(R.id.wifi_network_layout);
         m_wifi_password_layout = findViewById(R.id.wifi_password_layout);
@@ -64,11 +82,49 @@ public class MainActivity extends AppCompatActivity
         m_device_number_edit = findViewById(R.id.device_number_edit);
         m_connect_ip_edit = findViewById(R.id.connect_ip_edit);
 
-        // m_wifi_network_edit.setText("Nasse");
+        m_blink_button = findViewById(R.id.blink_button);
+        m_blink_button.setChecked(false);
+        m_blink_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    if (m_started) {
+                        startLED();
+                    }
+                    else {
+                        m_blink_button.setChecked(false);
+                    }
+                } else {
+                    stopLED();
+                }
+            }
+        });
+
+        m_pref = getApplicationContext().getSharedPreferences("BlinkyPref", Context.MODE_PRIVATE);
+    }
+
+    @Override
+    protected void onStart()
+    {
+        loadState();
+        setUiState();
+        super.onStart();
+        m_started = true;
+    }
+
+    @Override
+    protected void onStop()
+    {
+        getUiState();
+        saveState();
+        super.onStop();
+        m_started = false;
+    }
+
+    protected void startLED()
+    {
+        stopLED();
 
         getUiState();
-
-
         byte b[];
         b = new byte [4];
         b[0] = 100;
@@ -78,10 +134,19 @@ public class MainActivity extends AppCompatActivity
 
         sendData sender = new sendData();
         sender.setByteData(b);
-        sender.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        m_task = sender.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        m_task_running = true;
     }
 
-    @Override
+    protected void stopLED()
+    {
+        if (m_task_running) {
+            m_task.cancel(true);
+            m_task_running = false;
+        }
+    }
+
+     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -123,30 +188,36 @@ public class MainActivity extends AppCompatActivity
         m_connect_ip_edit.setText(m_connect_ip);
     }
 
-    protected Bundle saveState()
+    protected void saveState()
     {
-        Bundle b = new Bundle();
-
-        b.putString("wifi_network", m_wifi_network);
-        b.putString("wifi_password", m_wifi_password);
-        b.putString("io_network_name", io_network_name);
-        b.putString("device_number", m_device_number);
-        b.putString("connect_ip", m_connect_ip);
-        return b;
+        Editor editor = m_pref.edit();
+        editor.putString("wifi_network", m_wifi_network);
+        editor.putString("wifi_password", m_wifi_password);
+        editor.putString("io_network_name", io_network_name);
+        editor.putString("device_number", m_device_number);
+        editor.putString("connect_ip", m_connect_ip);
+        editor.commit();
     }
 
-    protected void loadState(Bundle b) {
-        m_wifi_network = b.getString("wifi_network");
-        m_wifi_password = b.getString("wifi_password");
-        io_network_name = b.getString("io_network_name");
-        m_device_number = b.getString("device_number");
-        m_connect_ip = b.getString("connect_ip");
+    protected void loadState()
+    {
+        m_wifi_network = m_pref.getString("wifi_network", "");
+        m_wifi_password = m_pref.getString("wifi_password", "");
+        io_network_name = m_pref.getString("io_network_name", "");
+        m_device_number = m_pref.getString("device_number", "");
+        m_connect_ip = m_pref.getString("connect_ip", "");
     }
-
-    // Storing bundle object into intent
-//                    in.putExtras(b);
 
     private class sendData extends AsyncTask<Void, Void, Boolean> {
+
+        protected int m_short_pulse_ms;
+        protected int m_long_pulse_ms;
+        protected boolean m_led_on;
+
+        public CameraManager m_camera_manager;
+        private String m_camera_id;
+        byte m_data[];
+
         /**
          * The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute()
@@ -154,8 +225,8 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            m_short_pulse_ms = 300;
-            m_long_pulse_ms = 1000;
+            m_short_pulse_ms = 30;
+            m_long_pulse_ms = 100;
             m_led_on = false;
 
             // CameraManager objCameraManager = objCameraManagers[0];
@@ -171,7 +242,7 @@ public class MainActivity extends AppCompatActivity
 
             int len = m_data.length;
 
-            while (true) {
+            while (!isCancelled()) {
                 // Send 10 zeroes followed by 1
                 for (int i = 0; i < 10; i++) {
                     toggleLed(m_short_pulse_ms);
@@ -179,9 +250,9 @@ public class MainActivity extends AppCompatActivity
                 toggleLed(m_long_pulse_ms);
 
                 // Send actual data bytes, each followed by 0 and 1
-                for (int i = 0; i < len; i++) {
+                for (int i = 0; i < len && !isCancelled(); i++) {
                     int v = m_data[i];
-                    for (int j = 0; j < 8; j++) {
+                    for (int j = 0; j < 8 && !isCancelled(); j++) {
                         if ((v & 1) == 1)
                         {
                             toggleLed(m_long_pulse_ms);
@@ -196,7 +267,12 @@ public class MainActivity extends AppCompatActivity
                     toggleLed(m_long_pulse_ms);
                 }
             }
-            // return true;
+
+            if (m_led_on)
+            {
+                toggleLed(0);
+            }
+            return true;
         }
 
         protected void toggleLed(int pulse_ms) {
@@ -213,20 +289,5 @@ public class MainActivity extends AppCompatActivity
         public void setByteData(byte data[]) {
             m_data = data;
         }
-
-        protected int m_short_pulse_ms;
-        protected int m_long_pulse_ms;
-        protected boolean m_led_on;
-
-        public CameraManager m_camera_manager;
-        private String m_camera_id;
-        byte m_data[];
-
-
-        /** The system calls this to perform work in the UI thread and delivers
-         * the result from doInBackground() */
-        //protected void onPostExecute(Bitmap result) {
-        // mImageView.setImageBitmap(result);
-        //}
     }
 }
