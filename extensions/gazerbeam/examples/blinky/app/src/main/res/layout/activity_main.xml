@@ -86,13 +86,6 @@
                 android:background="?android:attr/listDivider"
                 tools:visibility="visible" />
 
-            <Switch
-                android:id="@+id/switch1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="blink data"
-                tools:visibility="visible" />
-
             <ToggleButton
                 android:id="@+id/toggleButton2"
                 android:layout_width="match_parent"
