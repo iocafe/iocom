@@ -38,17 +38,14 @@ import android.hardware.camera2.*;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.AsyncTask;
-import android.os.Process;
+// import android.os.AsyncTask;
+// import android.os.Process;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity
 {
-    protected sendData
-            m_sender;
-
     protected TextInputLayout
             m_wifi_network_layout,
             m_wifi_password_layout,
@@ -76,12 +73,12 @@ public class MainActivity extends AppCompatActivity
     protected SharedPreferences
             m_pref;
 
-    protected AsyncTask<Void, Void, Boolean>
-            m_task;
-
     protected boolean
             m_task_running,
             m_started;
+
+    protected Timer
+            m_timer;
 
     int[] m_crc_table = {
             0X0000, 0XC0C1, 0XC181, 0X0140, 0XC301, 0X03C0, 0X0280, 0XC241,
@@ -186,9 +183,6 @@ public class MainActivity extends AppCompatActivity
         getUiState();
         int data[] = makeMessageData();
 
-        // sendData sender = new sendData();
-        // sender.setByteData(data);
-        // m_task = sender.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         startFlashing(data);
         m_task_running = true;
     }
@@ -373,141 +367,80 @@ public class MainActivity extends AppCompatActivity
         return w;
     }
 
-    /* Calculate modbus checksum for the buffer given as an argument.
-     */
+
+    protected byte[] makeRecipe(int data[])
+    {
+        int len = data.length;
+        int max_n = 12 + len * (16 + 3);
+        byte recipe[] = new byte[max_n];
+        int pos;
+
+        // Send 10 zeroes followed by 1
+        pos = 0;
+        for (int i = 0; i < 10; i++) {
+            recipe[pos++] = 1;
+        }
+        recipe[pos++] = 1;
+        recipe[pos++] = 0;
+
+        // Send actual data bytes, each followed by 0 and 1
+        for (int i = 0; i < len; i++) {
+            int v = data[i];
+            for (int j = 0; j < 8; j++) {
+                recipe[pos++] = 1;
+                if ((v & 1) == 1)
+                {
+                    recipe[pos++] = 0;
+                }
+                v >>= 1;
+            }
+            recipe[pos++] = 1;
+            recipe[pos++] = 1;
+            recipe[pos++] = 0;
+        }
+
+        byte rval[] = new byte[pos];
+        for (int i = 0; i < pos; i++)
+        {
+            rval[i] = recipe[i];
+        }
+        return rval;
+    }
+
+
     protected void startFlashing(int data[])
     {
-        Timer timer = new Timer();
+        m_timer = new Timer();
         Helper task = new Helper();
-        task.setup((CameraManager) getSystemService(Context.CAMERA_SERVICE), data);
 
-        timer.schedule(task, 2000, 10);
+        byte recipe[] = makeRecipe(data);
+
+        task.setup((CameraManager) getSystemService(Context.CAMERA_SERVICE), recipe);
+        m_timer.schedule(task, 2000, 10);
     }
 
-    /* Calculate modbus checksum for the buffer given as an argument.
-     */
     protected void stopFlashing()
     {
-    }
-
-    private class sendData extends AsyncTask<Void, Void, Boolean> {
-
-        protected int m_short_pulse_ms;
-        protected int m_long_pulse_ms;
-        protected boolean m_led_on;
-
-        public CameraManager m_camera_manager;
-        private String m_camera_id;
-        int m_data[];
-
-        /**
-         * The system calls this to perform work in a worker thread and
-         * delivers it the parameters given to AsyncTask.execute()
-         */
-        @Override
-        protected Boolean doInBackground(Void... params) {
-
-            m_short_pulse_ms = 5;
-            m_long_pulse_ms = 15;
-            m_led_on = false;
-
-            m_camera_manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-
-            try {
-                m_camera_id = m_camera_manager.getCameraIdList()[0];
-                Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
-                // Process.setThreadPriority(Process.THREAD_PRIORITY_VIDEO);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            int len = m_data.length;
-
-            try {
-            while (!isCancelled()) {
-                // Send 10 zeroes followed by 1
-                for (int i = 0; i < 10; i++) {
-                    m_led_on = !m_led_on; m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-                    //
-                    //
-                    // toggleLed(m_short_pulse_ms);
-                }
-                // toggleLed(m_long_pulse_ms);
-                m_led_on = !m_led_on; m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-
-
-                // Send actual data bytes, each followed by 0 and 1
-                for (int i = 0; i < len && !isCancelled(); i++) {
-                    int v = m_data[i];
-                    for (int j = 0; j < 8 && !isCancelled(); j++) {
-                        if ((v & 1) == 1)
-                        {
-                            // toggleLed(m_long_pulse_ms);
-                            m_led_on = !m_led_on; m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-                        }
-                        else
-                        {
-                            m_led_on = !m_led_on; m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-
-                            // toggleLed(m_short_pulse_ms);
-                        }
-                        v >>= 1;
-                    }
-                    //toggleLed(m_short_pulse_ms);
-                    //toggleLed(m_long_pulse_ms);
-
-                    m_led_on = !m_led_on; m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-                    m_led_on = !m_led_on; m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-                }
-            }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            if (m_led_on)
-            {
-                toggleLed(0);
-            }
-            return true;
-        }
-
-        protected void toggleLed(int pulse_ms) {
-            m_led_on = !m_led_on;
-
-            try {
-                m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-                // Thread.sleep(pulse_ms, 0);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void setByteData(int data[]) {
-            m_data = data;
-        }
+        m_timer.cancel();
+        m_timer.purge();
     }
 }
 
 class Helper extends TimerTask
 {
-    protected int m_short_pulse_ms;
-    protected int m_long_pulse_ms;
     protected boolean m_led_on;
 
-    public CameraManager m_camera_manager;
-    private String m_camera_id;
-    int m_data[];
+    protected CameraManager m_camera_manager;
+    protected String m_camera_id;
+    protected byte m_recipe[];
+    protected int m_pos;
 
-    public void setup(CameraManager camera_manager, int data[])
+    public void setup(CameraManager camera_manager, byte recipe[])
     {
         m_camera_manager = camera_manager;
-        m_data = data;
-        m_short_pulse_ms = 5;
-        m_long_pulse_ms = 15;
+        m_recipe = recipe;
+        m_pos = 0;
         m_led_on = false;
-
-//         m_camera_manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
         try {
             m_camera_id = m_camera_manager.getCameraIdList()[0];
@@ -520,12 +453,18 @@ class Helper extends TimerTask
 
     public void run()
     {
-        m_led_on = !m_led_on;
-        try {
-            m_camera_manager.setTorchMode(m_camera_id, m_led_on);
-            // Thread.sleep(pulse_ms, 0);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (m_recipe[m_pos] != 0)
+        {
+            m_led_on = !m_led_on;
+            try {
+                m_camera_manager.setTorchMode(m_camera_id, m_led_on);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (++m_pos >= m_recipe.length) {
+            m_pos = 0;
         }
     }
 }
