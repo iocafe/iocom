@@ -374,32 +374,35 @@ public class MainActivity extends AppCompatActivity
     protected byte[] makeRecipe(int data[])
     {
         int len = data.length;
-        int max_n = 12 + len * (16 + 3);
+        int max_n = 11 + len * (16 + 2);
         byte recipe[] = new byte[max_n];
         int pos;
 
-        // Send 10 zeroes followed by 1
+        // Send 9 zeroes followed by 1
         pos = 0;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 9; i++) {
             recipe[pos++] = 1;
         }
         recipe[pos++] = 1;
         recipe[pos++] = 0;
 
-        // Send actual data bytes, each followed by 0 and 1
+        // Send actual data bytes, if all 8 bits of byte are zeros, add extra 1 bit
         for (int i = 0; i < len; i++) {
             int v = data[i];
+            boolean has_one = false;
             for (int j = 0; j < 8; j++) {
                 recipe[pos++] = 1;
                 if ((v & 1) == 1)
                 {
+                    has_one = true;
                     recipe[pos++] = 0;
                 }
                 v >>= 1;
             }
-            recipe[pos++] = 1;
-            recipe[pos++] = 1;
-            recipe[pos++] = 0;
+            if (!has_one) {
+                recipe[pos++] = 1;
+                recipe[pos++] = 0;
+            }
         }
 
         byte rval[] = new byte[pos];
