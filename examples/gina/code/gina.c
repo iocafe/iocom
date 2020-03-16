@@ -272,7 +272,7 @@ osalStatus osal_loop(
     /* Initialize library to receive wifi configuration by phototransostor.
      */
 #if GINA_USE_GAZERBEAM
-    gazerbeam_decode_modulation(&gazerbeam, pin_get(&pins.analog_inputs.gazerbeam), &ti);
+    gazerbeam_decode_message(&gazerbeam, pin_get(&pins.analog_inputs.gazerbeam), &ti);
 #endif
 
     /* Keep the morse code LED alive. The LED indicates boot issues.
@@ -301,7 +301,7 @@ osalStatus osal_loop(
     if (i++ == 0) os_get_timer(&ti);
 
     if (os_timer_hit(&sti, &ti, 10))
-    if (os_elapsed(&sti, 1))
+    if (os_has_elapsed(&sti, 1))
     {
         os_get_timer(&sti);
 

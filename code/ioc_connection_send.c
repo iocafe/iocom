@@ -526,7 +526,7 @@ osalStatus ioc_send_timed_keepalive(
         return OSAL_SUCCESS;
     }
 
-    timed_keepalive = os_elapsed2(&con->last_send, tnow,
+    timed_keepalive = os_has_elapsed_since(&con->last_send, tnow,
         is_serial ? IOC_SERIAL_KEEPALIVE_MS : IOC_SOCKET_KEEPALIVE_MS);
     if (timed_keepalive)
     {

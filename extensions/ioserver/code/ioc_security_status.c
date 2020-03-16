@@ -292,7 +292,7 @@ static void ioc_notifications_time_out(
     for (row = 0; row < nrows; row++)
     {
         if (!is_set[row]) continue;
-        if (!os_elapsed2(&timers[row], &now_t, timeout_ms)) continue;
+        if (!os_has_elapsed_since(&timers[row], &now_t, timeout_ms)) continue;
 
         r = table + row;
         ioc_moves_str(r->password, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);

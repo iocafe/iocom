@@ -664,7 +664,7 @@ osalStatus ioc_run_connection(
 
     /* If too much time elapsed sice last receive.
      */
-    if (os_elapsed2(&con->last_receive, &tnow, silence_ms))
+    if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
     {
         osal_trace2("line is silent, closing connection");
         goto failed;
@@ -774,11 +774,11 @@ static osalStatus ioc_try_to_connect(
      */
     if (!osal_int64_is_zero(&con->socket_open_fail_timer))
     {
-        if (!os_elapsed(&con->socket_open_fail_timer, 2000)) return OSAL_PENDING;
+        if (!os_has_elapsed(&con->socket_open_fail_timer, 2000)) return OSAL_PENDING;
     }
     if (!osal_int64_is_zero(&con->socket_open_try_timer))
     {
-        if (!os_elapsed(&con->socket_open_try_timer, 500)) return OSAL_PENDING;
+        if (!os_has_elapsed(&con->socket_open_try_timer, 500)) return OSAL_PENDING;
     }
 
     /* Save stream interface pointer.
@@ -1090,7 +1090,7 @@ static void ioc_connection_thread(
 
         /* If too much time elapsed sice last receive?
          */
-        if (os_elapsed2(&con->last_receive, &tnow, silence_ms))
+        if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
         {
             osal_trace("line is silent, closing connection");
             goto failed;

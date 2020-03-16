@@ -187,7 +187,7 @@ osalStatus osal_main(
             // ioc_setp_short(&ioboard_exp, 2, command);
         }
 
-        if (os_elapsed(&ti, 100))
+        if (os_has_elapsed(&ti, 100))
         {
             HAL_GPIO_WritePin(leds[3].port, leds[3].pin, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
             state = !state;

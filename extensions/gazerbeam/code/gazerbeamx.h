@@ -88,15 +88,19 @@ GazerbeamBuffer;
  */
 typedef struct Gazerbeam
 {
-    /* Mimumum and maximum filtering buffers.
+    /* Mimumum and maximum signal level filtering buffers.
      */
     GazerbeamBuffer xmin_buf, xmax_buf;
 
+    /* Mimumum and maximum pulse length filtering buffers.
+     */
+    GazerbeamBuffer tmin_buf, tmax_buf;
+
     /* Previous signal value and digital level.
      */
-    // GAZERBEAM_VALUE prev_x;
-    os_timer prev_ti;
     GazerbeamSignalLevel prev_signal;
+    os_timer prev_ti;
+    os_timer pulse_timer;
 
     os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 1];
     os_int n_bytes;

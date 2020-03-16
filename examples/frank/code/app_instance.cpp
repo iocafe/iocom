@@ -61,7 +61,7 @@ osalStatus AppInstance::run()
     os_char buf[32];
     os_float floats[5];
 
-    if (os_elapsed(&m_timer, 2000))
+    if (os_has_elapsed(&m_timer, 2000))
     {
         os_get_timer(&m_timer);
         ioc_maintain_signal(&app_iocom, "teststr", m_network_name, &m_str_test);

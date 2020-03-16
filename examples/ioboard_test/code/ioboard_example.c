@@ -259,7 +259,7 @@ osalStatus osal_loop(
 
     /* Send periodic signal to controller.
      */
-    if (os_elapsed(&my_signal_timer, 2000))
+    if (os_has_elapsed(&my_signal_timer, 2000))
     {
         os_get_timer(&my_signal_timer);
         ioc_sets_int(&my_tc_count, ++my_signal_count, OSAL_STATE_CONNECTED);

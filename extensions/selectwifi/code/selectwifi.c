@@ -215,7 +215,7 @@ static void ioc_selectfiwi_imp_data_changed(
     {
         if (ioc_gets0_int(&selectwifi.imp.save))
         {
-            if (!os_elapsed(&swf.boot_timer, 5000)) return;
+            if (!os_has_elapsed(&swf.boot_timer, 5000)) return;
             ioc_selectfiwi_save();
         }
     }

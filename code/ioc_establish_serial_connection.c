@@ -122,7 +122,7 @@ osalStatus ioc_establish_serial_connection(
 
                 /* If time out while waiting for CONNECT_REPLY, start over.
                  */
-                if (os_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS))
+                if (os_has_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS))
                 {
                     con->sercon_state = OSAL_SERCON_STATE_INIT_1;
                 }
@@ -149,7 +149,7 @@ osalStatus ioc_establish_serial_connection(
 
                 /* If time out while waiting for CONFIRMT_REPLY, start over.
                  */
-                if (os_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS) /* || n_read */)
+                if (os_has_elapsed(&con->sercon_timer, IOC_SERIAL_CONNECT_PERIOD_MS) /* || n_read */)
                 {
                     con->sercon_state = OSAL_SERCON_STATE_INIT_1;
                 }

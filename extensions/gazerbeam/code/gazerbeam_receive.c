@@ -48,11 +48,12 @@ GazerbeamBit gazerbeam_decode_modulation(
     GAZERBEAM_VALUE x,
     os_timer *ti)
 {
-    GAZERBEAM_VALUE xmin, xmax, less_than_half, low_limit, high_limit;
+    GAZERBEAM_VALUE xmin, xmax, half, low_limit, high_limit;
+    GAZERBEAM_VALUE pulse_ms, tmin, tmax;
     GazerbeamSignalLevel signal;
     GazerbeamBit bit;
 
-    if (!os_elapsed2(&gb->prev_ti, ti, 2))
+    if (!os_has_elapsed_since(&gb->prev_ti, ti, 2))
     {
         return GAZERBEAM_NONE;
     }
@@ -70,9 +71,9 @@ GazerbeamBit gazerbeam_decode_modulation(
 
     /* Limits for high, low and stopped in middle levels.
      */
-    less_than_half = 2 * (xmax - xmin) / 5;
-    low_limit = xmin + less_than_half;
-    high_limit = xmax - less_than_half;
+    half = (xmax - xmin) / 2;
+    low_limit = xmin + half;
+    high_limit = xmax - half;
 
     /* Decide digital signal level, low, high or center.
      */
@@ -94,20 +95,30 @@ GazerbeamBit gazerbeam_decode_modulation(
     if (signal == gb->prev_signal) return GAZERBEAM_NONE;
     gb->prev_signal = signal;
 
+    /* Get minimum and maximum pulse length
+     */
+    pulse_ms = (GAZERBEAM_VALUE)os_get_ms_elapsed(&gb->pulse_timer, ti);
+    gb->pulse_timer = *ti;
+    tmin = gazerbeam_minmax(&gb->tmin_buf, pulse_ms);
+    tmax = gazerbeam_minmax(&gb->tmax_buf, pulse_ms);
+    if (tmin < 3 || tmax > 60) return GAZERBEAM_NONE;
+
     /* If we got one value (half transistion to center)
      */
-    if (signal == GAZERBEAM_HIGH) {
+    /* if (signal == GAZERBEAM_HIGH) {
         osal_debug_error_int("HERE high_detected ", x);
     }
     else
     {
         osal_debug_error_int("HERE low_detected ", x);
-    }
-    osal_debug_error_int("HERE lo lim ", xmin);
-    osal_debug_error_int("HERE hi lim ", xmax);
+    } */
+    //osal_debug_error_int("HERE lo lim ", tmin);
+    //osal_debug_error_int("HERE hi lim ", tmax);
 
+    bit = pulse_ms > (tmax + tmin)/2 ? GAZERBEAM_ONE : GAZERBEAM_ZERO;
 
-bit = GAZERBEAM_NONE; // GAZERBEAM_ONE; GAZERBEAM_ZERO;
+   // bit = pulse_ms > 25 ? GAZERBEAM_ONE : GAZERBEAM_ZERO;
+//osal_debug_error_int("HERE bit detected ", bit);
 
     return bit;
 }
@@ -158,6 +169,14 @@ osalStatus gazerbeam_decode_message(
             if (n_bytes > 0)
             {
                 gb->n_bytes = n_bytes;
+
+if (n_bytes > 5)
+{
+    gb->msgbuf[n_bytes] = '\0';
+    osal_console_write(gb->msgbuf + 3);
+    osal_debug_error_int("HERE ok received ", n_bytes);
+}
+
                 return OSAL_COMPLETED;
             }
         }
@@ -168,9 +187,10 @@ osalStatus gazerbeam_decode_message(
          */
         if (gb->n_zeros == 9)
         {
+osal_debug_error_int("HERE beginning of message ", bit);
             gb->receive_pos = 0;
             gb->receive_bit = 0;
-            return OSAL_PENDING;
+            os_memclear(gb->msgbuf, GAZERBEAM_MAX_MSG_SZ);
         }
 
         gb->n_zeros = 0;
@@ -186,10 +206,11 @@ osalStatus gazerbeam_decode_message(
         if (bit != GAZERBEAM_ONE)
         {
             gb->receive_pos = -1;
+osal_debug_error_int("HERE failed 1 ", bit);
             return OSAL_STATUS_FAILED;
         }
 
-        gb->msgbuf[gb->receive_pos] = (bit == GAZERBEAM_ONE ? 1 : 0);
+        // gb->msgbuf[gb->receive_pos] = (bit == GAZERBEAM_ONE ? 1 : 0);
         gb->receive_bit = 1;
     }
     else
@@ -198,12 +219,14 @@ osalStatus gazerbeam_decode_message(
         {
             gb->msgbuf[gb->receive_pos] |= gb->receive_bit;
         }
-        if (gb->receive_bit > 0x7F)
+        if (gb->receive_bit & 0x80)
         {
-            gb->receive_bit = 0;
+            gb->receive_bit = (gb->msgbuf[gb->receive_pos] ? 1 : 0);
+
             if (++(gb->receive_pos) > GAZERBEAM_MAX_MSG_SZ)
             {
                 gb->receive_pos = -1;
+osal_debug_error_int("HERE failed 2 ", bit);
                 return OSAL_STATUS_FAILED;
             }
         }

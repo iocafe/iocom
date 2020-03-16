@@ -145,7 +145,7 @@ osalStatus ioc_run_bserver(
     /* Run security about twice per second and move set flag check_cert_chain_etc from root
        to bserver.
      */
-    if (os_elapsed(&m->sec_timer, 522))
+    if (os_has_elapsed(&m->sec_timer, 522))
     {
         os_get_timer(&m->sec_timer);
         ioc_run_security(m);

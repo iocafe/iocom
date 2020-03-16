@@ -172,7 +172,7 @@ osalStatus osal_loop(
 
         case OSAL_NOTHING_TO_DO:
             if (idle_mode) os_sleep(50);
-            else idle_mode = os_elapsed(&idle_timer, 2000);
+            else idle_mode = os_has_elapsed(&idle_timer, 2000);
             break;
     }
 #endif

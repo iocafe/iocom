@@ -117,7 +117,7 @@ osalStatus ioc_run_lighthouse_client(
     {
         /* If not enough time has passed since last try.
          */
-        if (!os_elapsed(&c->socket_error_timer, c->socket_error_timeout))
+        if (!os_has_elapsed(&c->socket_error_timer, c->socket_error_timeout))
         {
             return OSAL_PENDING;
         }
@@ -228,7 +228,7 @@ osalStatus ioc_run_lighthouse_client(
      */
 /*     if (c->lighthouse_really_needed)
     {
-        if (os_elapsed(&c->multicast_received, 30000))
+        if (os_has_elapsed(&c->multicast_received, 30000))
         {
             osal_debug_error("No multicasts for 30s");
             osal_stream_close(c->udp_socket, OSAL_STREAM_DEFAULT);
@@ -312,7 +312,7 @@ static void ioc_add_lighthouse_net(
         selected_i = 0;
         for (i = 1; i < LIGHTHOUSE_NRO_NETS; i++)
         {
-            if (!os_elapsed2(&c->net[selected_i].received_timer,
+            if (!os_has_elapsed_since(&c->net[selected_i].received_timer,
                 &c->net[i].received_timer, 1))
             {
                 selected_i = i;
@@ -330,7 +330,7 @@ static void ioc_add_lighthouse_net(
          os_strcmp(ip_addr, "127.0.0.1") &&
          os_strcmp(ip_addr, "::1"))
     {
-        if (!os_elapsed2(&n->received_timer, received_timer, 10000))
+        if (!os_has_elapsed_since(&n->received_timer, received_timer, 10000))
         {
             return;
         }
@@ -379,7 +379,7 @@ static void ioc_delete_expired_lighthouse_nets(
         if (!c->net[i].transport) continue;
 
         /* 60s, shoud be linger than loopback expiration */
-        if (os_elapsed2(&c->net[i].received_timer, &ti, 60000))
+        if (os_has_elapsed_since(&c->net[i].received_timer, &ti, 60000))
         {
             c->net[i].transport = 0;
         }
@@ -461,7 +461,7 @@ osalStatus ioc_get_lighthouse_connectstr(
         /* If this is older than some previous match, skip
          */
         if (selected_i >= 0) {
-            if (!os_elapsed2(&c->net[selected_i].received_timer, &c->net[i].received_timer, 1)) {
+            if (!os_has_elapsed_since(&c->net[selected_i].received_timer, &c->net[i].received_timer, 1)) {
                 continue;
             }
         }

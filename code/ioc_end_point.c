@@ -400,7 +400,7 @@ static osalStatus ioc_try_to_open_endpoint(
      */
     if (!osal_int64_is_zero(&epoint->socket_open_fail_timer))
     {
-        if (!os_elapsed(&epoint->socket_open_fail_timer, 2000)) return OSAL_PENDING;
+        if (!os_has_elapsed(&epoint->socket_open_fail_timer, 2000)) return OSAL_PENDING;
     }
 
     /* Try to open listening socket port.
@@ -457,12 +457,12 @@ static osalStatus ioc_try_accept_new_sockets(
     if (!epoint->worker_thread_running)
     {
         if (!osal_int64_is_zero(&epoint->try_accept_timer) &&
-            !os_elapsed(&epoint->try_accept_timer, 50)) return OSAL_SUCCESS;
+            !os_has_elapsed(&epoint->try_accept_timer, 50)) return OSAL_SUCCESS;
         os_get_timer(&epoint->try_accept_timer);
     }
 #else
     if (!osal_int64_is_zero(&epoint->try_accept_timer) &&
-        !os_elapsed(&epoint->try_accept_timer, 50)) return OSAL_SUCCESS;
+        !os_has_elapsed(&epoint->try_accept_timer, 50)) return OSAL_SUCCESS;
     os_get_timer(&epoint->try_accept_timer);
 #endif
 

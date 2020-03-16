@@ -213,7 +213,7 @@ static osalStatus ioc_run_lighthouse_server_one(
     {
         /* If not enough time has passed since last try.
          */
-        if (!os_elapsed(&c->socket_error_timer, c->socket_error_timeout))
+        if (!os_has_elapsed(&c->socket_error_timer, c->socket_error_timeout))
         {
             return OSAL_PENDING;
         }
@@ -236,7 +236,7 @@ static osalStatus ioc_run_lighthouse_server_one(
 
     /* If not enough time has passed to send next UDP multicast.
      */
-    if (!os_elapsed(&c->multicast_timer, c->multicast_interval))
+    if (!os_has_elapsed(&c->multicast_timer, c->multicast_interval))
     {
         return OSAL_SUCCESS;
     }

@@ -82,7 +82,7 @@ void BlinkLedSequence::run()
 
     while (!m_stop_thread && osal_go())
     {
-        if (os_elapsed(&start_t, 50))
+        if (os_has_elapsed(&start_t, 50))
         {
             touch_sensor = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits, IOC_SIGNAL_DEFAULT);
             //osal_trace_int("touch = ", touch_sensor);
@@ -108,7 +108,7 @@ void BlinkLedSequence::run()
         ioc_sets_int(&gina2->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
         do {
             os_timeslice();
-            if (os_elapsed(&start_t, 1000)) break;
+            if (os_has_elapsed(&start_t, 1000)) break;
             dip = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits);
         } while (dip != led_on);
 
