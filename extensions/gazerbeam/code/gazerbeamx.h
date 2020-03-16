@@ -90,7 +90,10 @@ typedef struct Gazerbeam
 {
     /* Mimumum and maximum signal level filtering buffers.
      */
-    GazerbeamBuffer xmin_buf, xmax_buf;
+    // GazerbeamBuffer xmin_buf, xmax_buf;
+
+    os_long x_sum;
+    os_long x_count;
 
     /* Mimumum and maximum pulse length filtering buffers.
      */

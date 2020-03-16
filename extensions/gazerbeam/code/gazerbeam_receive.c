@@ -48,32 +48,25 @@ GazerbeamBit gazerbeam_decode_modulation(
     GAZERBEAM_VALUE x,
     os_timer *ti)
 {
-    GAZERBEAM_VALUE xmin, xmax, half, low_limit, high_limit;
+    GAZERBEAM_VALUE half, low_limit, high_limit;
     GAZERBEAM_VALUE pulse_ms, tmin, tmax;
     GazerbeamSignalLevel signal;
     GazerbeamBit bit;
 
-    if (!os_has_elapsed_since(&gb->prev_ti, ti, 2))
+    if (os_has_elapsed_since(&gb->prev_ti, ti, 60 * 1000) || gb->x_count >= 0x100000000000L)
     {
-        return GAZERBEAM_NONE;
-    }
-    gb->prev_ti = *ti;
+        gb->x_sum /= 2;
+        gb->x_count /= 2;
 
-    /* Add new value to minimum and maximum filters and get current minimum and maximum value.
-     */
-    xmin = gazerbeam_minmax(&gb->xmin_buf, x);
-    xmax = gazerbeam_minmax(&gb->xmax_buf, x);
-    if (xmin + GAZERBEAM_AD_NOICE_LEVEL >= xmax)
-    {
-        gb->receive_pos = -1;
-        return GAZERBEAM_NONE;
+        gb->prev_ti = *ti;
     }
 
-    /* Limits for high, low and stopped in middle levels.
-     */
-    half = (xmax - xmin) / 2;
-    low_limit = xmin + half;
-    high_limit = xmax - half;
+    gb->x_sum += x;
+    gb->x_count++;
+
+    half = (os_int)(gb->x_sum / gb->x_count);
+    low_limit = half - GAZERBEAM_AD_NOICE_LEVEL;
+    high_limit = half + GAZERBEAM_AD_NOICE_LEVEL;
 
     /* Decide digital signal level, low, high or center.
      */
@@ -150,6 +143,7 @@ osalStatus gazerbeam_decode_message(
 {
     GazerbeamBit bit;
     os_int n_bytes;
+    os_ushort crc, crc2;
 
     bit = gazerbeam_decode_modulation(gb, x, ti);
     if (bit == GAZERBEAM_NONE) return OSAL_PENDING;
@@ -164,20 +158,32 @@ osalStatus gazerbeam_decode_message(
         {
             /* If we received complete message before this one */
             n_bytes = gb->receive_pos;
-            if (gb->receive_bit > 1) n_bytes++;
             gb->receive_pos = -1;
-            if (n_bytes > 0)
+            if (n_bytes > 3)
             {
                 gb->n_bytes = n_bytes;
+                crc = (os_uchar)gb->msgbuf[1];
+                crc <<= 8;
+                crc |= (os_uchar)gb->msgbuf[0];
+                gb->msgbuf[0] = 0;
+                gb->msgbuf[1] = 0;
+                crc2 = os_checksum(gb->msgbuf, n_bytes, OS_NULL);
+                if (crc != crc2)
+                {
+                    osal_trace3("gazerbeam checksum error");
+osal_debug_error_int("gazerbeam checksum error ", n_bytes);
+                    return OSAL_STATUS_CHECKSUM_ERROR;
+                }
+                else
+                {
 
-if (n_bytes > 5)
-{
-    gb->msgbuf[n_bytes] = '\0';
-    osal_console_write(gb->msgbuf + 3);
-    osal_debug_error_int("HERE ok received ", n_bytes);
-}
+                    gb->msgbuf[n_bytes] = '*';
+                    gb->msgbuf[n_bytes+1] = '\0';
+                    osal_console_write(gb->msgbuf + 3);
+                    osal_debug_error_int("HERE ok received ", n_bytes);
 
-                return OSAL_COMPLETED;
+                    return OSAL_COMPLETED;
+                }
             }
         }
     }
@@ -249,7 +255,9 @@ osal_debug_error_int("HERE failed 2 ", bit);
   to get the received message.
 
   @param   gb Pointer to the Gazerbeam structure.
-  @param   buf Pointer to buffer where to copy the message.
+  @param   buf Pointer to buffer where to copy the message. Buffer is '\0' terminated if
+           '\0' char fits in buffer. If you need to make sure about '\0' character,
+           allocate buffer size GAZERBEAM_MAX_MSG_SZ.
   @param   buf_sz Buffer size in bytes.
   @return  Message length in bytes.
 
@@ -260,8 +268,12 @@ os_memsz gazerbeam_get_message(
     os_char *buf,
     os_memsz buf_sz)
 {
-    if (buf_sz > gb->n_bytes) buf_sz = gb->n_bytes;
-    os_memcpy(buf, gb->msgbuf, buf_sz);
-    return buf_sz;
+    os_int n;
+
+    n = buf_sz;
+    if (n + 2 > gb->n_bytes) n = gb->n_bytes - 2;
+    os_memcpy(buf, gb->msgbuf + 2, n);
+    if (n < buf_sz) buf[n] = '\0';
+    return n;
 }
 

@@ -39,12 +39,12 @@ void initialize_gazerbeam(
 {
     os_memclear(gb, sizeof(Gazerbeam));
 
-    gb->xmin_buf.nro_layers = 7;
+    /* gb->xmin_buf.nro_layers = 7;
     gb->xmax_buf.nro_layers = 7;
-    gb->xmax_buf.find_max = OS_TRUE;
+    gb->xmax_buf.find_max = OS_TRUE; */
 
-    gb->tmin_buf.nro_layers = 5;
-    gb->tmax_buf.nro_layers = 5;
+    gb->tmin_buf.nro_layers = 4;
+    gb->tmax_buf.nro_layers = 4;
     gb->tmax_buf.find_max = OS_TRUE;
 
     // gb->prev_x = -1;
