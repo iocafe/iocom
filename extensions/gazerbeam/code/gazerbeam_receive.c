@@ -48,8 +48,7 @@ GazerbeamBit gazerbeam_decode_modulation(
     GAZERBEAM_VALUE x,
     os_timer *ti)
 {
-    GAZERBEAM_VALUE xmin, xmax, one_third, low_limit, high_limit;
-    // os_int dx;
+    GAZERBEAM_VALUE xmin, xmax, less_than_half, low_limit, high_limit;
     GazerbeamSignalLevel signal;
     GazerbeamBit bit;
 
@@ -65,27 +64,15 @@ GazerbeamBit gazerbeam_decode_modulation(
     xmax = gazerbeam_minmax(&gb->xmax_buf, x);
     if (xmin + GAZERBEAM_AD_NOICE_LEVEL >= xmax)
     {
-        // gb->prev_x = -1;
         gb->receive_pos = -1;
         return GAZERBEAM_NONE;
     }
 
-    /* If this is different than previous value, we are in transition, ignore.
-     */
-    /* dx = (os_int)x - (os_int)gb->prev_x;
-    gb->prev_x = x;
-    if (dx < 0) dx = -dx;
-    if (dx > (xmax - xmin) / 10)
-    {
-        return GAZERBEAM_NONE;
-    }
-    */
-
     /* Limits for high, low and stopped in middle levels.
      */
-    one_third = 2 * (xmax - xmin) / 5;
-    low_limit = xmin + one_third;
-    high_limit = xmax - one_third;
+    less_than_half = 2 * (xmax - xmin) / 5;
+    low_limit = xmin + less_than_half;
+    high_limit = xmax - less_than_half;
 
     /* Decide digital signal level, low, high or center.
      */
@@ -116,8 +103,8 @@ GazerbeamBit gazerbeam_decode_modulation(
     {
         osal_debug_error_int("HERE low_detected ", x);
     }
-    osal_debug_error_int("HERE lo lim ", low_limit);
-    osal_debug_error_int("HERE hi lim ", high_limit);
+    osal_debug_error_int("HERE lo lim ", xmin);
+    osal_debug_error_int("HERE hi lim ", xmax);
 
 
 bit = GAZERBEAM_NONE; // GAZERBEAM_ONE; GAZERBEAM_ZERO;

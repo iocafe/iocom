@@ -80,6 +80,9 @@ public class MainActivity extends AppCompatActivity
     protected Timer
             m_timer;
 
+    protected Helper
+            m_task;
+
     int[] m_crc_table = {
             0X0000, 0XC0C1, 0XC181, 0X0140, 0XC301, 0X03C0, 0X0280, 0XC241,
             0XC601, 0X06C0, 0X0780, 0XC741, 0X0500, 0XC5C1, 0XC481, 0X0440,
@@ -411,18 +414,21 @@ public class MainActivity extends AppCompatActivity
     protected void startFlashing(int data[])
     {
         m_timer = new Timer();
-        Helper task = new Helper();
+        m_task = new Helper();
 
         byte recipe[] = makeRecipe(data);
 
-        task.setup((CameraManager) getSystemService(Context.CAMERA_SERVICE), recipe);
-        m_timer.schedule(task, 100, 10);
+        m_task.setup((CameraManager) getSystemService(Context.CAMERA_SERVICE), recipe);
+        m_timer.schedule(m_task, 100, 10);
     }
 
     protected void stopFlashing()
     {
         m_timer.cancel();
         m_timer.purge();
+        m_timer = null;
+        m_task.light_off();
+        m_task = null;
     }
 }
 
@@ -465,6 +471,17 @@ class Helper extends TimerTask
 
         if (++m_pos >= m_recipe.length) {
             m_pos = 0;
+        }
+    }
+
+    public void light_off() {
+        if (m_led_on) {
+            try {
+                m_camera_manager.setTorchMode(m_camera_id, false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            m_led_on = false;
         }
     }
 }

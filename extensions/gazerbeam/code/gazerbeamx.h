@@ -53,7 +53,7 @@ GazerbeamSignalLevel;
 /* Minimum and maximum AD signal must be at least this much apart
    that we even try to get the signal.
  */
-#define GAZERBEAM_AD_NOICE_LEVEL 80
+#define GAZERBEAM_AD_NOICE_LEVEL 100
 
 /* Maximum size of message in bytes.
  */
