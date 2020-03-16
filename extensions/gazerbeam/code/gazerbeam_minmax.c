@@ -35,12 +35,12 @@
   enough to run easy in interrupt handler, like on small microcontroller on 20kHz.
 
     #define MAX_GAZERBEAM_LAYERS 10
-    #define GAZERBEAM_VALUE_TYPE os_int
+    #define GAZERBEAM_VALUE os_int
 
     typedef struct GazerbeamBuffer
     {
-        GAZERBEAM_VALUE_TYPE x[MAX_GAZERBEAM_LAYERS];
-        GAZERBEAM_VALUE_TYPE z[MAX_GAZERBEAM_LAYERS];
+        GAZERBEAM_VALUE x[MAX_GAZERBEAM_LAYERS];
+        GAZERBEAM_VALUE z[MAX_GAZERBEAM_LAYERS];
         os_int run_count;
         os_int nro_layers;
         os_boolean find_max;
@@ -53,24 +53,22 @@
 
 ****************************************************************************************************
 */
-GAZERBEAM_VALUE_TYPE gazerbeam_minmax(
+GAZERBEAM_VALUE gazerbeam_minmax(
     GazerbeamBuffer *gbb,
-    GAZERBEAM_VALUE_TYPE x)
+    GAZERBEAM_VALUE x)
 {
-    GAZERBEAM_VALUE_TYPE *X, *Z;
+    GAZERBEAM_VALUE *X, *Z;
     os_int max_layer, i, n;
 
     #define GB_MIN(a,b) (a < b ? a : b)
     #define GB_MAX(a,b) (a > b ? a : b)
-
-    static int run_count = 0;
 
     X = gbb->x;
     Z = gbb->z;
     max_layer = gbb->nro_layers - 1;
 
     for (n = 0; n < max_layer; n++)
-        if ((run_count & (1 << n)) == 0) break;
+        if ((gbb->run_count & (1 << n)) == 0) break;
 
     if (gbb->find_max)
     {
@@ -92,7 +90,7 @@ GAZERBEAM_VALUE_TYPE gazerbeam_minmax(
     Z[0] = X[0];
     X[0] = x;
 
-    if (++run_count >= (1 << max_layer)) run_count = 0;
+    if (++(gbb->run_count) >= (1 << max_layer)) gbb->run_count = 0;
 
     if (gbb->find_max)
     {

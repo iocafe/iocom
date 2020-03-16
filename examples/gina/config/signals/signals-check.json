@@ -25,7 +25,7 @@
 				"name": "analog inputs",
 				"signals": [
 					{
-						"name": "potentiometer",
+						"name": "gazerbeam",
 						"type": "ushort"
 					}
 				]

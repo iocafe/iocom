@@ -34,11 +34,20 @@
  */
 #include "devicedir.h"
 
-/* Enable wifi selection by blue tooth (0 or 1) ?.
+/* Enable wifi configuration using blue tooth (0 or 1) ?.
  */
 #define GINA_USE_SELECTWIFI 0
 #if GINA_USE_SELECTWIFI
 #include "selectwifi.h"
+#endif
+
+/* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and phototransistor
+   connected to microcontroller (0 or 1) ?.
+ */
+#define GINA_USE_GAZERBEAM 1
+#if GINA_USE_GAZERBEAM
+#include "gazerbeam.h"
+static Gazerbeam gazerbeam;
 #endif
 
 /* Get controller IP address from UDP multicast (0 or 1) ?.
@@ -48,6 +57,7 @@
 #include "lighthouse.h"
 static LighthouseClient lighthouse;
 #endif
+
 
 /* IO device configuration.
  */
@@ -206,6 +216,12 @@ osalStatus osal_main(
     ioc_initialize_lighthouse_client(&lighthouse, prm.socket_con_str[0] == '[', OS_NULL);
 #endif
 
+    /* Initialize library to receive wifi configuration by phototransostor.
+     */
+#if GINA_USE_GAZERBEAM
+    initialize_gazerbeam(&gazerbeam, 0);
+#endif
+
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
      */
     morse_code_setup(&morse, &pins.outputs.led_builtin,
@@ -251,6 +267,12 @@ osalStatus osal_loop(
      */
 #if GINA_USE_LIGHTHOUSE
     ioc_run_lighthouse_client(&lighthouse);
+#endif
+
+    /* Initialize library to receive wifi configuration by phototransostor.
+     */
+#if GINA_USE_GAZERBEAM
+    gazerbeam_decode_modulation(&gazerbeam, pin_get(&pins.analog_inputs.gazerbeam), &ti);
 #endif
 
     /* Keep the morse code LED alive. The LED indicates boot issues.

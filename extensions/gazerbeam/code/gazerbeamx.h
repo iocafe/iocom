@@ -38,8 +38,7 @@ GazerbeamBit;
 typedef enum
 {
     GAZERBEAM_LOW,
-    GAZERBEAM_HIGH,
-    GAZERBEAM_CENTER
+    GAZERBEAM_HIGH
 }
 GazerbeamSignalLevel;
 
@@ -49,12 +48,12 @@ GazerbeamSignalLevel;
 
 /* Type of AD conveted value in software.
  */
-#define GAZERBEAM_VALUE_TYPE os_int
+#define GAZERBEAM_VALUE os_int
 
 /* Minimum and maximum AD signal must be at least this much apart
    that we even try to get the signal.
  */
-#define GAZERBEAM_AD_NOICE_LEVEL 40
+#define GAZERBEAM_AD_NOICE_LEVEL 80
 
 /* Maximum size of message in bytes.
  */
@@ -66,8 +65,8 @@ typedef struct GazerbeamBuffer
 {
     /* Buffers for tracking minimum or maximum signal value.
      */
-    GAZERBEAM_VALUE_TYPE x[MAX_GAZERBEAM_LAYERS];
-    GAZERBEAM_VALUE_TYPE z[MAX_GAZERBEAM_LAYERS];
+    GAZERBEAM_VALUE x[MAX_GAZERBEAM_LAYERS];
+    GAZERBEAM_VALUE z[MAX_GAZERBEAM_LAYERS];
 
     /* Just internal counter for filling the x and z buffers.
      */
@@ -95,7 +94,8 @@ typedef struct Gazerbeam
 
     /* Previous signal value and digital level.
      */
-    GAZERBEAM_VALUE_TYPE prev_x;
+    // GAZERBEAM_VALUE prev_x;
+    os_timer prev_ti;
     GazerbeamSignalLevel prev_signal;
 
     os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 1];
@@ -117,13 +117,15 @@ void initialize_gazerbeam(
  */
 GazerbeamBit gazerbeam_decode_modulation(
     Gazerbeam *gb,
-    GAZERBEAM_VALUE_TYPE x);
+    GAZERBEAM_VALUE x,
+    os_timer *ti);
 
 /* Generate a message based on received data.
  */
 osalStatus gazerbeam_decode_message(
     Gazerbeam *gb,
-    GAZERBEAM_VALUE_TYPE x);
+    GAZERBEAM_VALUE x,
+    os_timer *ti);
 
 /* Get the received message into buffer.
  */
@@ -134,6 +136,6 @@ os_memsz gazerbeam_get_message(
 
 /* Find out minimum or maximum value of the last N samples.
  */
-GAZERBEAM_VALUE_TYPE gazerbeam_minmax(
+GAZERBEAM_VALUE gazerbeam_minmax(
     GazerbeamBuffer *gbb,
-    GAZERBEAM_VALUE_TYPE x);
+    GAZERBEAM_VALUE x);

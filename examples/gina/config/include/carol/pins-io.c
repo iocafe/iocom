@@ -18,7 +18,7 @@ static os_short pins_outputs_G_prm[]= {PIN_RV, PIN_RV};
 static os_short pins_outputs_H_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for analog_inputs */
-static os_short pins_analog_inputs_potentiometer_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 3, PIN_DELAY, 11};
+static os_short pins_analog_inputs_gazerbeam_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 3, PIN_DELAY, 11};
 
 /* Parameters for pwm */
 static os_short pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 50, PIN_RESOLUTION, 12, PIN_INIT, 2048};
@@ -45,8 +45,8 @@ const pins_t pins =
     {PIN_OUTPUT, 0, 2, pins_outputs_H_prm, sizeof(pins_outputs_H_prm)/sizeof(os_short), &pins.outputs.G, &gina.exp.H} /* H */
   },
 
-  {{1, &pins.analog_inputs.potentiometer}, /* analog_inputs */
-    {PIN_ANALOG_INPUT, 0, 36, pins_analog_inputs_potentiometer_prm, sizeof(pins_analog_inputs_potentiometer_prm)/sizeof(os_short), OS_NULL, &gina.exp.potentiometer} /* potentiometer */
+  {{1, &pins.analog_inputs.gazerbeam}, /* analog_inputs */
+    {PIN_ANALOG_INPUT, 0, 36, pins_analog_inputs_gazerbeam_prm, sizeof(pins_analog_inputs_gazerbeam_prm)/sizeof(os_short), OS_NULL, &gina.exp.gazerbeam} /* gazerbeam */
   },
 
   {{2, &pins.pwm.servo}, /* pwm */

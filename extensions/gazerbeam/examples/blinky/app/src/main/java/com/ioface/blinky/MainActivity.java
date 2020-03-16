@@ -416,7 +416,7 @@ public class MainActivity extends AppCompatActivity
         byte recipe[] = makeRecipe(data);
 
         task.setup((CameraManager) getSystemService(Context.CAMERA_SERVICE), recipe);
-        m_timer.schedule(task, 2000, 10);
+        m_timer.schedule(task, 100, 10);
     }
 
     protected void stopFlashing()

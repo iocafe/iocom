@@ -31,7 +31,7 @@ typedef struct
   struct
   {
     PinGroupHdr hdr;
-    Pin potentiometer;
+    Pin gazerbeam;
   }
   analog_inputs;
 
@@ -68,7 +68,7 @@ extern const Pin *pins_segment7_group;
 #define PINS_OUTPUTS_F "F"
 #define PINS_OUTPUTS_G "G"
 #define PINS_OUTPUTS_H "H"
-#define PINS_ANALOG_INPUTS_POTENTIOMETER "potentiometer"
+#define PINS_ANALOG_INPUTS_GAZERBEAM "gazerbeam"
 #define PINS_PWM_SERVO "servo"
 #define PINS_PWM_DIMMER_LED "dimmer_led"
 

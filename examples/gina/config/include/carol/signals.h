@@ -9,7 +9,7 @@ typedef struct gina_t
     iocSignal dip_switch_3;
     iocSignal dip_switch_4;
     iocSignal touch_sensor;
-    iocSignal potentiometer;
+    iocSignal gazerbeam;
     iocSignal testfloat;
     iocSignal teststr;
     iocSignal A;

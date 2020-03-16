@@ -37,6 +37,7 @@
 
   @param   gb Pointer to the Gazerbeam structure.
   @param   x New signal value.
+  @param   ti Timer value for signal
   @return  GAZERBEAM_ZERO if bit "0" is received, GAZERBEAM_ONE if bit "1" is received, or
            GAZERBEAM_NONE if no data bit is received.
 
@@ -44,12 +45,19 @@
 */
 GazerbeamBit gazerbeam_decode_modulation(
     Gazerbeam *gb,
-    GAZERBEAM_VALUE_TYPE x)
+    GAZERBEAM_VALUE x,
+    os_timer *ti)
 {
-    GAZERBEAM_VALUE_TYPE xmin, xmax, one_third, low_limit, high_limit;
-    os_int dx;
+    GAZERBEAM_VALUE xmin, xmax, one_third, low_limit, high_limit;
+    // os_int dx;
     GazerbeamSignalLevel signal;
     GazerbeamBit bit;
+
+    if (!os_elapsed2(&gb->prev_ti, ti, 2))
+    {
+        return GAZERBEAM_NONE;
+    }
+    gb->prev_ti = *ti;
 
     /* Add new value to minimum and maximum filters and get current minimum and maximum value.
      */
@@ -57,24 +65,25 @@ GazerbeamBit gazerbeam_decode_modulation(
     xmax = gazerbeam_minmax(&gb->xmax_buf, x);
     if (xmin + GAZERBEAM_AD_NOICE_LEVEL >= xmax)
     {
-        gb->prev_x = -1;
+        // gb->prev_x = -1;
         gb->receive_pos = -1;
         return GAZERBEAM_NONE;
     }
 
     /* If this is different than previous value, we are in transition, ignore.
      */
-    dx = (os_int)x - (os_int)gb->prev_x;
+    /* dx = (os_int)x - (os_int)gb->prev_x;
     gb->prev_x = x;
     if (dx < 0) dx = -dx;
     if (dx > (xmax - xmin) / 10)
     {
         return GAZERBEAM_NONE;
     }
+    */
 
     /* Limits for high, low and stopped in middle levels.
      */
-    one_third = (xmax - xmin) / 3;
+    one_third = 2 * (xmax - xmin) / 5;
     low_limit = xmin + one_third;
     high_limit = xmax - one_third;
 
@@ -90,30 +99,29 @@ GazerbeamBit gazerbeam_decode_modulation(
     }
     else
     {
-        signal = GAZERBEAM_CENTER;
+        return GAZERBEAM_NONE;
     }
 
     /* If this is same signal as previous, we have no new data.
      */
     if (signal == gb->prev_signal) return GAZERBEAM_NONE;
+    gb->prev_signal = signal;
 
     /* If we got one value (half transistion to center)
      */
-    if (signal == GAZERBEAM_CENTER) {
-        bit = GAZERBEAM_ONE;
-    }
-
-    /* If we got zero value (full transistion)
-     */
-    else if (gb->prev_signal != GAZERBEAM_CENTER) {
-        bit = GAZERBEAM_ZERO;
+    if (signal == GAZERBEAM_HIGH) {
+        osal_debug_error_int("HERE high_detected ", x);
     }
     else
     {
-        bit = GAZERBEAM_NONE;
+        osal_debug_error_int("HERE low_detected ", x);
     }
+    osal_debug_error_int("HERE lo lim ", low_limit);
+    osal_debug_error_int("HERE hi lim ", high_limit);
 
-    gb->prev_signal = signal;
+
+bit = GAZERBEAM_NONE; // GAZERBEAM_ONE; GAZERBEAM_ZERO;
+
     return bit;
 }
 
@@ -130,6 +138,7 @@ GazerbeamBit gazerbeam_decode_modulation(
 
   @param   gb Pointer to the Gazerbeam structure.
   @param   x New signal value.
+  @param   ti Timer value for signal
   @return  OSAL_COMPLETED when a complete message has been received, OSAL_SUCCESS when data
            was received and added to buffer. OSAL_PENDING indicates that noting useful was done,
            other values indicate that we are receiving garbage.
@@ -138,12 +147,13 @@ GazerbeamBit gazerbeam_decode_modulation(
 */
 osalStatus gazerbeam_decode_message(
     Gazerbeam *gb,
-    GAZERBEAM_VALUE_TYPE x)
+    GAZERBEAM_VALUE x,
+    os_timer *ti)
 {
     GazerbeamBit bit;
     os_int n_bytes;
 
-    bit = gazerbeam_decode_modulation(gb, x);
+    bit = gazerbeam_decode_modulation(gb, x, ti);
     if (bit == GAZERBEAM_NONE) return OSAL_PENDING;
 
     /* Track if we got at least nine zeroes in row followed by one, which marks a beginning of

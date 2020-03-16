@@ -6,7 +6,7 @@ const struct gina_t gina =
     {40, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_3}, /* dip_switch_3 */
     {41, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_4}, /* dip_switch_4 */
     {42, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.touch_sensor}, /* touch_sensor */
-    {43, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
+    {43, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.gazerbeam}, /* gazerbeam */
     {0, 5, OS_FLOAT, &ioboard_exp, OS_NULL}, /* testfloat */
     {21, 10, OS_STR, &ioboard_exp, OS_NULL}, /* teststr */
     {32, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.A}, /* A */
