@@ -23,6 +23,8 @@
 ****************************************************************************************************
 */
 
+struct Pin;
+
 /* Logical states of a received bit, one, zero or no bit received.
  */
 typedef enum GazerbeamBit
@@ -118,6 +120,7 @@ Gazerbeam;
  */
 void initialize_gazerbeam(
     Gazerbeam *gb,
+    const struct Pin *pin,
     os_short flags);
 
 /* Decode analog input reading to logical ones and zeroes.

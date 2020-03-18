@@ -219,12 +219,12 @@ osalStatus osal_main(
     /* Initialize library to receive wifi configuration by phototransostor.
      */
 #if GINA_USE_GAZERBEAM
-    initialize_gazerbeam(&gazerbeam, 0);
+    initialize_gazerbeam(&gazerbeam, &pins.outputs.led_builtin, 0);
 #endif
 
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
      */
-    morse_code_setup(&morse, &pins.outputs.led_builtin,
+    initialize_morse_code(&morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on

@@ -24,6 +24,11 @@
  */
 #include "iocom.h"
 
+/* Do we want to include code for pins library support (GPIO input for
+   phototransistor and pin state change interrupt handling.
+ */
+#define GAZERBEAM_PINS_SUPPORT 1
+
 /* If C++ compilation, all functions, etc. from this point on in included headers are
    plain C and must be left undecorated.
  */

@@ -28,7 +28,7 @@
       {
         "name": "analog_inputs",
         "pins": [
-          {"name": "gazerbeam", "addr": 36, "speed": 3, "delay": 11, "max": 4095}
+          {"name": "gazerbeam", "addr": 36, "interrupt": 1, "max": 4095}
         ]
       },
       {

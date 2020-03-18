@@ -19,6 +19,10 @@
 */
 #include "gazerbeam.h"
 
+#if GAZERBEAM_PINS_SUPPORT
+#include "pins.h"
+#endif
+
 
 /**
 ****************************************************************************************************
@@ -35,6 +39,7 @@
 */
 void initialize_gazerbeam(
     Gazerbeam *gb,
+    const struct Pin *pin,
     os_short flags)
 {
     os_memclear(gb, sizeof(Gazerbeam));
@@ -50,5 +55,17 @@ void initialize_gazerbeam(
     // gb->prev_x = -1;
     os_get_timer(&gb->prev_ti);
     gb->receive_pos = -1;
+
+#if GAZERBEAM_PINS_SUPPORT
+    /* If we have pin, attach interrupt handler.
+     */
+    if (pin)
+    {
+        pinInterruptParams prm;
+        os_memclear(&prm, sizeof(prm));
+        prm.flags = PINS_INT_CHANGE;
+        pin_attach_interrupt(pin, &prm);
+    }
+#endif
 }
 
