@@ -34,7 +34,12 @@
  */
 OSAL_C_HEADER_BEGINS
 
-#include "code/gazerbeamx.h"
+/* Type of AD conveted value in software.
+ */
+#define GAZERBEAM_VALUE os_int
+
+#include "code/gazerbeam_minmax.h"
+#include "code/gazerbeam_receive.h"
 
 /* If C++ compilation, end the undecorated code.
  */

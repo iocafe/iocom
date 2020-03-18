@@ -47,7 +47,7 @@
 #define GINA_USE_GAZERBEAM 1
 #if GINA_USE_GAZERBEAM
 #include "gazerbeam.h"
-static Gazerbeam gazerbeam;
+static GazerbeamReceiver gazerbeam;
 #endif
 
 /* Get controller IP address from UDP multicast (0 or 1) ?.
@@ -219,7 +219,7 @@ osalStatus osal_main(
     /* Initialize library to receive wifi configuration by phototransostor.
      */
 #if GINA_USE_GAZERBEAM
-    initialize_gazerbeam(&gazerbeam, &pins.inputs.gazerbeam, 0);
+    initialize_gazerbeam(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
@@ -272,7 +272,28 @@ osalStatus osal_loop(
     /* Initialize library to receive wifi configuration by phototransostor.
      */
 #if GINA_USE_GAZERBEAM
-    gazerbeam_decode_message(&gazerbeam, pin_get(&pins.inputs.gazerbeam), &ti);
+    os_char buf[GAZERBEAM_MAX_MSG_SZ];
+
+    /* Not needed whe pin interrupt is used gazerbeam_decode_message(&gazerbeam, pin_get(&pins.inputs.gazerbeam), &ti); */
+
+extern os_timer pekka_testaa;
+extern os_int abba[10];
+    if (os_has_elapsed(&pekka_testaa, 500))
+    {
+        os_get_timer(&pekka_testaa);
+
+        osal_debug_error_int("HERE abba[0] ", abba[0]);
+        osal_debug_error_int("HERE abba[1] ", abba[1]);
+        osal_debug_error_int("HERE abba[2] ", abba[2]);
+
+    }
+
+
+
+    if (gazerbeam_get_message(&gazerbeam, buf, sizeof(buf), GAZERBEAM_DEFAULT))
+    {
+        osal_debug_error_str("HERE received ", buf);
+    }
 #endif
 
     /* Keep the morse code LED alive. The LED indicates boot issues.

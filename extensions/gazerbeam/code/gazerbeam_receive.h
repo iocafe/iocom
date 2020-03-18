@@ -13,7 +13,7 @@
   - Band pass filter is used to get right frequency range.
   - Simple modulation schema.
 
-  Blue tooth based WiFi configuration in selectwifi library is alternative for the Gazerbeam.
+  Blue tooth based WiFi configuration in selectwifi library is alternative for the GazerbeamReceiver.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eosal and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -44,58 +44,25 @@ typedef enum
 }
 GazerbeamSignalLevel;
 
-/* Maximum limit for nro_layers setting.
- */
-#define MAX_GAZERBEAM_LAYERS 10
-
-/* Type of AD conveted value in software.
- */
-#define GAZERBEAM_VALUE os_int
-
 /* Minimum and maximum AD signal must be at least this much apart
    that we even try to get the signal.
  */
 #define GAZERBEAM_AD_NOICE_LEVEL 100
 
-/* Maximum size of message in bytes.
+/* Maximum size of message in bytes excluding check sum but including terminating '\0' character.
  */
-#define GAZERBEAM_MAX_MSG_SZ 199
+#define GAZERBEAM_MAX_MSG_SZ 128
 
-/* Gazerbeam state structure. Typically allocated as global flat structure.
+/* GazerbeamReceiver state structure.
  */
-typedef struct GazerbeamBuffer
+typedef struct GazerbeamReceiver
 {
-    /* Buffers for tracking minimum or maximum signal value.
+    /* Input PIN if connected to pin interrupt. OS_NULL otherwise.
      */
-    GAZERBEAM_VALUE x[MAX_GAZERBEAM_LAYERS];
-    GAZERBEAM_VALUE z[MAX_GAZERBEAM_LAYERS];
+    const struct Pin *pin;
 
-    /* Just internal counter for filling the x and z buffers.
-     */
-    os_int run_count;
-
-    /* How many AD values are used to keep track maximum and minimum
-     * signal levels. N = 2^nro_layers.
-     */
-    os_int nro_layers;
-
-    /* Looking for maximum or minimum signal value?
-     */
-    os_boolean find_max;
-}
-GazerbeamBuffer;
-
-
-/* Gazerbeam state structure.
- */
-typedef struct Gazerbeam
-{
-    /* Mimumum and maximum signal level filtering buffers.
-     */
-    // GazerbeamBuffer xmin_buf, xmax_buf;
-
-    os_long x_sum;
-    os_long x_count;
+  //  os_long x_sum;
+//    os_long x_count;
 
     /* Mimumum and maximum pulse length filtering buffers.
      */
@@ -103,49 +70,51 @@ typedef struct Gazerbeam
 
     /* Previous signal value and digital level.
      */
-    GazerbeamSignalLevel prev_signal;
-    os_timer prev_ti;
+  //   GazerbeamSignalLevel prev_signal;
+//    os_timer prev_ti;
     os_timer pulse_timer;
 
-    os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 1];
-    os_int n_bytes;
-    os_int n_zeros;
-    os_int receive_pos;
+    os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 2]; /* +2 for check sum */
+    os_short n_zeros;
+    os_short receive_pos;
     os_char receive_bit;
+
+    /* Finished message without leading checksum, changed only when
+       finshed_message_sz is zero and finshed_message_sz reset after reading.
+     */
+    volatile os_char finshed_message[GAZERBEAM_MAX_MSG_SZ];
+    volatile os_short finshed_message_sz;
 }
-Gazerbeam;
+GazerbeamReceiver;
 
+/* Flags for functions.
+ */
+#define GAZERBEAM_DEFAULT 0
+#define GAZERBEAM_NO_NULL_TERMNATION 1
 
-/* Initialize the Gazerbeam structure.
+/* Initialize the GazerbeamReceiver structure.
  */
 void initialize_gazerbeam(
-    Gazerbeam *gb,
+    GazerbeamReceiver *gb,
     const struct Pin *pin,
     os_short flags);
 
 /* Decode analog input reading to logical ones and zeroes.
  */
 GazerbeamBit gazerbeam_decode_modulation(
-    Gazerbeam *gb,
-    GAZERBEAM_VALUE x,
+    GazerbeamReceiver *gb,
     os_timer *ti);
 
 /* Generate a message based on received data.
  */
 osalStatus gazerbeam_decode_message(
-    Gazerbeam *gb,
-    GAZERBEAM_VALUE x,
+    GazerbeamReceiver *gb,
     os_timer *ti);
 
 /* Get the received message into buffer.
  */
 os_memsz gazerbeam_get_message(
-    Gazerbeam *gb,
+    GazerbeamReceiver *gb,
     os_char *buf,
-    os_memsz buf_sz);
-
-/* Find out minimum or maximum value of the last N samples.
- */
-GAZERBEAM_VALUE gazerbeam_minmax(
-    GazerbeamBuffer *gbb,
-    GAZERBEAM_VALUE x);
+    os_memsz buf_sz,
+    os_short flags);

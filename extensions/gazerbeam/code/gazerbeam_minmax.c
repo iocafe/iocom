@@ -6,7 +6,7 @@
   @version 1.0
   @date    8.3.2020
 
-  Configure microcontroller WiFi, etc, using Android phone.
+  Keep sliding minimum of N last values.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -47,7 +47,7 @@
     }
     GazerbeamBuffer;
 
-  @param   db Pointer to the Gazerbeam structure.
+  @param   db Pointer to the GazerbeamReceiver structure.
   @param   x New signal value.
   @return  Minimum value among the memorized values.
 
