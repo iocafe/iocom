@@ -20,10 +20,11 @@
 #include "gazerbeam.h"
 
 #if GAZERBEAM_PINS_SUPPORT
+#define PINS_OS_INT_HANDLER_HDRS 1
 #include "pins.h"
 #endif
 
-int pekka_testaa;
+extern int pekka_testaa;
 
 
 BEGIN_PIN_INTERRUPT_HANDLER(gazerbeam_led_int_handler)

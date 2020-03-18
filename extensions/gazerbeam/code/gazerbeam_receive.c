@@ -26,6 +26,7 @@
 */
 #include "gazerbeam.h"
 
+int pekka_testaa;
 
 /**
 ****************************************************************************************************
@@ -52,6 +53,14 @@ GazerbeamBit gazerbeam_decode_modulation(
     GAZERBEAM_VALUE pulse_ms, tmin, tmax;
     GazerbeamSignalLevel signal;
     GazerbeamBit bit;
+
+    if (os_has_elapsed_since(&gb->prev_ti, ti, 500))
+    {
+        gb->prev_ti = *ti;
+        osal_debug_error_int("HERE XX ", pekka_testaa);
+        return GAZERBEAM_NONE;
+    }
+
 
     if (os_has_elapsed_since(&gb->prev_ti, ti, 60 * 1000) || gb->x_count >= 0x100000000000L)
     {
