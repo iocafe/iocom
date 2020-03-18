@@ -61,17 +61,9 @@ typedef struct GazerbeamReceiver
      */
     const struct Pin *pin;
 
-  //  os_long x_sum;
-//    os_long x_count;
-
     /* Mimumum and maximum pulse length filtering buffers.
      */
     GazerbeamBuffer tmin_buf, tmax_buf;
-
-    /* Previous signal value and digital level.
-     */
-  //   GazerbeamSignalLevel prev_signal;
-//    os_timer prev_ti;
     os_timer pulse_timer;
 
     os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 2]; /* +2 for check sum */
@@ -98,12 +90,6 @@ void initialize_gazerbeam(
     GazerbeamReceiver *gb,
     const struct Pin *pin,
     os_short flags);
-
-/* Decode analog input reading to logical ones and zeroes.
- */
-GazerbeamBit gazerbeam_decode_modulation(
-    GazerbeamReceiver *gb,
-    os_timer *ti);
 
 /* Generate a message based on received data.
  */

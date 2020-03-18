@@ -274,22 +274,8 @@ osalStatus osal_loop(
 #if GINA_USE_GAZERBEAM
     os_char buf[GAZERBEAM_MAX_MSG_SZ];
 
-    /* Not needed whe pin interrupt is used gazerbeam_decode_message(&gazerbeam, pin_get(&pins.inputs.gazerbeam), &ti); */
-
-extern os_timer pekka_testaa;
-extern os_int abba[10];
-    if (os_has_elapsed(&pekka_testaa, 500))
-    {
-        os_get_timer(&pekka_testaa);
-
-        osal_debug_error_int("HERE abba[0] ", abba[0]);
-        osal_debug_error_int("HERE abba[1] ", abba[1]);
-        osal_debug_error_int("HERE abba[2] ", abba[2]);
-
-    }
-
-
-
+    /* Get Wifi configuration messages from Android phone flash light -> phototransistor.
+     */
     if (gazerbeam_get_message(&gazerbeam, buf, sizeof(buf), GAZERBEAM_DEFAULT))
     {
         osal_debug_error_str("HERE received ", buf);

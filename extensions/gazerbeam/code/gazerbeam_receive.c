@@ -33,8 +33,6 @@
 #include "pins.h"
 #endif
 
-os_timer pekka_testaa;
-os_int abba[10];
 
 /* Pointer to gazerbeam receiver structure, is connected to pin interrupt. OS_NULL otherwise.
  */
@@ -80,7 +78,6 @@ void initialize_gazerbeam(
     gb->tmax_buf.nro_layers = 4;
     gb->tmax_buf.find_max = OS_TRUE;
 
-    // os_get_timer(&gb->prev_ti);
     gb->receive_pos = -1;
 
 #if GAZERBEAM_PINS_SUPPORT
@@ -97,108 +94,6 @@ void initialize_gazerbeam(
         pin_attach_interrupt(pin, &prm);
     }
 #endif
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Decode to logical ones and zeroes.
-
-  Decode signal modulation into bits. This function needs to be called every time signal chanegs.
-
-  This function can be called from interrupt handler, so no debug prints, etc.
-
-  @param   gb Pointer to the GazerbeamReceiver structure.
-  @param   ti Timer value for signal
-  @return  GAZERBEAM_ZERO if bit "0" is received, GAZERBEAM_ONE if bit "1" is received, or
-           GAZERBEAM_NONE if no data bit is received.
-
-****************************************************************************************************
-*/
-GazerbeamBit gazerbeam_decode_modulation(
-    GazerbeamReceiver *gb,
-    os_timer *ti)
-{
-    // GAZERBEAM_VALUE half, low_limit, high_limit;
-    GAZERBEAM_VALUE pulse_ms, tmin, tmax;
-    //GazerbeamSignalLevel signal;
-    GazerbeamBit bit;
-    os_timer til;
-
-    /* if (os_has_elapsed_since(&gb->prev_ti, ti, 500))
-    {
-        gb->prev_ti = *ti;
-        osal_debug_error_int("HERE XX ", pekka_testaa);
-        return GAZERBEAM_NONE;
-    } */
-
-    if (ti == OS_NULL)
-    {
-        os_get_timer(&til);
-        ti = &til;
-        // ti = &pekka_testaa;
-    }
-
-#if 0
-    /* If we have pin, we are using interrupt pin (digital 0/1 signal)
-     */
-
-    /* Otherwise assume analog x signal
-    else
-    {
-        if (os_has_elapsed_since(&gb->prev_ti, ti, 60 * 1000) || gb->x_count >= 0x100000000000L)
-        {
-            gb->x_sum /= 2;
-            gb->x_count /= 2;
-
-            gb->prev_ti = *ti;
-        }
-
-        gb->x_sum += x;
-        gb->x_count++;
-
-        half = (os_int)(gb->x_sum / gb->x_count);
-        low_limit = half - GAZERBEAM_AD_NOICE_LEVEL;
-        high_limit = half + GAZERBEAM_AD_NOICE_LEVEL;
-
-        /* Decide digital signal level, low, high or center.
-         */
-        if (x < low_limit)
-        {
-            signal = GAZERBEAM_LOW;
-        }
-        else if (x > high_limit)
-        {
-            signal = GAZERBEAM_HIGH;
-        }
-        else
-        {
-            return GAZERBEAM_NONE;
-        }
-
-        /* If this is same signal as previous, we have no new data.
-         */
-        if (signal == gb->prev_signal) return GAZERBEAM_NONE;
-        gb->prev_signal = signal;
-    }
-#endif
-
-    /* Get minimum and maximum pulse length
-     */
-    pulse_ms = (GAZERBEAM_VALUE)os_get_ms_elapsed(&gb->pulse_timer, ti);
-    gb->pulse_timer = *ti;
-    tmin = gazerbeam_minmax(&gb->tmin_buf, pulse_ms);
-    tmax = gazerbeam_minmax(&gb->tmax_buf, pulse_ms);
-
-abba[0] = tmin;
-abba[1] = tmax;
-abba[2] = pulse_ms;
-
-    if (tmin < 2 || tmax > 60) return GAZERBEAM_NONE;
-
-    bit = pulse_ms > (tmax + tmin)/2 ? GAZERBEAM_ONE : GAZERBEAM_ZERO;
-    return bit;
 }
 
 
@@ -228,9 +123,26 @@ osalStatus gazerbeam_decode_message(
     GazerbeamBit bit;
     os_int n_bytes;
     os_ushort crc, crc2;
+    GAZERBEAM_VALUE pulse_ms, tmin, tmax;
+    os_timer til;
 
-    bit = gazerbeam_decode_modulation(gb, ti);
-    if (bit == GAZERBEAM_NONE) return OSAL_PENDING;
+    if (ti == OS_NULL)
+    {
+        os_get_timer(&til);
+        ti = &til;
+    }
+
+    /* Get minimum and maximum pulse length
+     */
+    pulse_ms = (GAZERBEAM_VALUE)os_get_ms_elapsed(&gb->pulse_timer, ti);
+    gb->pulse_timer = *ti;
+    tmin = gazerbeam_minmax(&gb->tmin_buf, pulse_ms);
+    tmax = gazerbeam_minmax(&gb->tmax_buf, pulse_ms);
+    if (tmin < 2 || tmax > 60) return OSAL_PENDING;
+
+    /* Decice from pulse length if this is one or zero.
+     */
+    bit = pulse_ms > (tmax + tmin)/2 ? GAZERBEAM_ONE : GAZERBEAM_ZERO;
 
     /* Track if we got at least nine zeroes in row followed by one, which marks a beginning of
        a message. Return if we are not receiving the message.
@@ -251,7 +163,7 @@ osalStatus gazerbeam_decode_message(
                 gb->msgbuf[0] = 0;
                 gb->msgbuf[1] = 0;
                 crc2 = os_checksum(gb->msgbuf, n_bytes, OS_NULL);
-                if (0) // if (crc != crc2)
+                if (crc != crc2)
                 {
                     return OSAL_STATUS_CHECKSUM_ERROR;
                 }
