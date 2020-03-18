@@ -278,11 +278,9 @@ public class MainActivity extends AppCompatActivity
         int dn[] = convertString(m_device_number, 4);
         int ip[] = convertString(m_connect_ip, 5);
 
-        int n = wn.length + wp.length;
-        int data[] = new int [n + 2];
-        data[0] = 0;
-        data[1] = 0;
-        int pos = 2;
+        int n = wn.length + wp.length + nn.length + dn.length + ip.length;
+        int data[] = new int [n];
+        int pos = 0;
         int item[];
 
         item = wn;
@@ -315,11 +313,19 @@ public class MainActivity extends AppCompatActivity
             pos += item.length;
         }
 
-        int crc = os_checksum(data);
-        data[0] = crc & 255;
-        data[1] = (crc >> 8) & 255;
+        int data2[] = new int [pos + 2];
+        data2[0] = 0;
+        data2[1] = 0;
+        for (int i = 0; i<pos; i++)
+        {
+            data2[i + 2] = data[i];
+        }
 
-        return data;
+        int crc = os_checksum(data2);
+        data2[0] = crc & 255;
+        data2[1] = (crc >> 8) & 255;
+
+        return data2;
     }
 
     // Maximum value x length 31 characters
