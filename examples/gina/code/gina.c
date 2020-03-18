@@ -219,7 +219,7 @@ osalStatus osal_main(
     /* Initialize library to receive wifi configuration by phototransostor.
      */
 #if GINA_USE_GAZERBEAM
-    initialize_gazerbeam(&gazerbeam, &pins.outputs.led_builtin, 0);
+    initialize_gazerbeam(&gazerbeam, &pins.inputs.gazerbeam, 0);
 #endif
 
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
@@ -272,7 +272,7 @@ osalStatus osal_loop(
     /* Initialize library to receive wifi configuration by phototransostor.
      */
 #if GINA_USE_GAZERBEAM
-    gazerbeam_decode_message(&gazerbeam, pin_get(&pins.analog_inputs.gazerbeam), &ti);
+    gazerbeam_decode_message(&gazerbeam, pin_get(&pins.inputs.gazerbeam), &ti);
 #endif
 
     /* Keep the morse code LED alive. The LED indicates boot issues.

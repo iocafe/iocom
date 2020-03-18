@@ -23,6 +23,13 @@
 #include "pins.h"
 #endif
 
+int pekka_testaa;
+
+
+BEGIN_PIN_INTERRUPT_HANDLER(gazerbeam_led_int_handler)
+    pekka_testaa++;
+END_PIN_INTERRUPT_HANDLER
+
 
 /**
 ****************************************************************************************************
@@ -63,9 +70,9 @@ void initialize_gazerbeam(
     {
         pinInterruptParams prm;
         os_memclear(&prm, sizeof(prm));
+        prm.int_handler_func = gazerbeam_led_int_handler;
         prm.flags = PINS_INT_CHANGE;
         pin_attach_interrupt(pin, &prm);
     }
 #endif
 }
-
