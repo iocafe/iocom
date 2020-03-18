@@ -9,6 +9,7 @@ typedef struct
     PinGroupHdr hdr;
     Pin dip_switch_3;
     Pin dip_switch_4;
+    Pin gazerbeam;
     Pin touch_sensor;
   }
   inputs;
@@ -31,7 +32,7 @@ typedef struct
   struct
   {
     PinGroupHdr hdr;
-    Pin gazerbeam;
+    Pin potentiometer;
   }
   analog_inputs;
 
@@ -57,6 +58,7 @@ extern const Pin *pins_segment7_group;
 /* Name defines for pins and application pin groups (use ifdef to check if HW has pin) */
 #define PINS_INPUTS_DIP_SWITCH_3 "dip_switch_3"
 #define PINS_INPUTS_DIP_SWITCH_4 "dip_switch_4"
+#define PINS_INPUTS_GAZERBEAM "gazerbeam"
 #define PINS_INPUTS_TOUCH_SENSOR "touch_sensor"
 #define PINS_OUTPUTS_LED_BUILTIN "led_builtin"
 #define PINS_OUTPUTS_A "A"
@@ -68,7 +70,7 @@ extern const Pin *pins_segment7_group;
 #define PINS_OUTPUTS_F "F"
 #define PINS_OUTPUTS_G "G"
 #define PINS_OUTPUTS_H "H"
-#define PINS_ANALOG_INPUTS_GAZERBEAM "gazerbeam"
+#define PINS_ANALOG_INPUTS_POTENTIOMETER "potentiometer"
 #define PINS_PWM_SERVO "servo"
 #define PINS_PWM_DIMMER_LED "dimmer_led"
 
