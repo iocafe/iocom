@@ -72,6 +72,10 @@ typedef struct GazerbeamReceiver
     os_char receive_bit;
     os_boolean receive_complete;
 
+    /* Beam connected flag ans previous state. Used to display beam connected indicator
+     */
+    volatile os_char beam_connected;
+
     /* Finished message without leading checksum, changed only when
        finshed_message_sz is zero and finshed_message_sz reset after reading.
      */

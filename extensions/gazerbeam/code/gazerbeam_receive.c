@@ -137,6 +137,10 @@ osalStatus gazerbeam_decode_message(
     tmax = gazerbeam_minmax(&gb->tmax_buf, pulse_ms);
     if (tmin < 2 || tmax > 60) return OSAL_PENDING;
 
+    /* Set flag to indicate that the beam is connected.
+     */
+    gb->beam_connected = 30;
+
     /* Decice from pulse length if this is one or zero.
      */
     bit = pulse_ms > (tmax + tmin)/2 ? GAZERBEAM_ONE : GAZERBEAM_ZERO;
@@ -266,11 +270,23 @@ os_memsz gazerbeam_get_message(
 {
     os_int n;
 
+    /* Maintain gazerbeam connected in network state.
+     */
+    if (gb->beam_connected > 0)
+    {
+        osal_set_network_state_int(OSAL_NS_GAZERBEAM_CONNECTED, 0,
+            --(gb->beam_connected) ? OS_TRUE : OS_FALSE);
+    }
+
+    /* Return the message, if any. Set finshed_message_sz to zero so interrup handler
+       can place next message into buffer.
+     */
     n = gb->finshed_message_sz;
     if ((flags & GAZERBEAM_NO_NULL_TERMNATION) == 0) buf_sz--;
     if (n > buf_sz) n = buf_sz;
     if (n) os_memcpy(buf, (void*)gb->finshed_message, n);
     if ((flags & GAZERBEAM_NO_NULL_TERMNATION) == 0) buf[n] = '\0';
     gb->finshed_message_sz = 0;
+
     return n;
 }
