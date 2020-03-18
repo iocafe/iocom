@@ -392,21 +392,20 @@ public class MainActivity extends AppCompatActivity
         recipe[pos++] = 1;
         recipe[pos++] = 0;
 
-        // Send actual data bytes, if all 8 bits of byte are zeros, add extra 1 bit
+        // Send actual data bytes, add extra 1 bit except for last byte add 0 bit
         for (int i = 0; i < len; i++) {
             int v = data[i];
-            boolean has_one = false;
             for (int j = 0; j < 8; j++) {
                 recipe[pos++] = 1;
                 if ((v & 1) == 1)
                 {
-                    has_one = true;
                     recipe[pos++] = 0;
                 }
                 v >>= 1;
             }
-            if (!has_one) {
-                recipe[pos++] = 1;
+
+            recipe[pos++] = 1;
+            if (i < len - 1) {
                 recipe[pos++] = 0;
             }
         }

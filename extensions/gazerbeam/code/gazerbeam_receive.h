@@ -70,6 +70,7 @@ typedef struct GazerbeamReceiver
     os_short n_zeros;
     os_short receive_pos;
     os_char receive_bit;
+    os_boolean receive_complete;
 
     /* Finished message without leading checksum, changed only when
        finshed_message_sz is zero and finshed_message_sz reset after reading.
@@ -86,7 +87,7 @@ GazerbeamReceiver;
 
 /* Initialize the GazerbeamReceiver structure.
  */
-void initialize_gazerbeam(
+void initialize_gazerbeam_receiver(
     GazerbeamReceiver *gb,
     const struct Pin *pin,
     os_short flags);

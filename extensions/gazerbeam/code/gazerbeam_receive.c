@@ -58,7 +58,7 @@ END_PIN_INTERRUPT_HANDLER
 
   @brief Initialize the GazerbeamReceiver structure.
 
-  The initialize_gazerbeam() function clears the structure and sets initial state.
+  The initialize_gazerbeam_receiver() function clears the structure and sets initial state.
 
   @param   gb Pointer to the GazerbeamReceiver structure to initialize.
   @param   pin Input GPIO pin if connected to pin interrupt. OS_NULL otherwise.
@@ -67,7 +67,7 @@ END_PIN_INTERRUPT_HANDLER
 
 ****************************************************************************************************
 */
-void initialize_gazerbeam(
+void initialize_gazerbeam_receiver(
     GazerbeamReceiver *gb,
     const struct Pin *pin,
     os_short flags)
@@ -102,11 +102,8 @@ void initialize_gazerbeam(
 
   @brief Generate a message based on received data.
 
-  Form messages from bits. If calls gazerbeam_decode_modulation to get received "0" and "1" bits, and generates
-  messages of these. This function needs to be called on analog input values
-  on suitable frequency, perhaps from interrupt handler.
-
-  This function can be called from interrupt handler, so no debug prints, etc.
+  Form messages from bits. This function can be called from interrupt handler, so no debug
+  prints, etc.
 
   @param   gb Pointer to the GazerbeamReceiver structure.
   @param   ti Timer value for signal
@@ -155,6 +152,7 @@ osalStatus gazerbeam_decode_message(
             /* If we received complete message before this one */
             n_bytes = gb->receive_pos;
             gb->receive_pos = -1;
+            gb->receive_complete = OS_TRUE;
             if (n_bytes >= 3 && gb->finshed_message_sz == 0)
             {
                 crc = (os_uchar)gb->msgbuf[1];
@@ -186,11 +184,12 @@ osalStatus gazerbeam_decode_message(
             gb->receive_pos = 0;
             gb->receive_bit = 0;
             gb->msgbuf[0] = 0;
+            gb->receive_complete = OS_FALSE;
         }
 
         gb->n_zeros = 0;
     }
-    if (gb->receive_pos < 0) return OSAL_PENDING;
+    if (gb->receive_pos < 0 || gb->receive_complete) return OSAL_PENDING;
 
     /* If expecting "1" bit starting a character.
      */
@@ -198,10 +197,10 @@ osalStatus gazerbeam_decode_message(
     {
         /* We must have 1 here, otherwise message is corrupted.
          */
-        if (bit != GAZERBEAM_ONE)
+        if (bit == GAZERBEAM_ZERO)
         {
-            gb->receive_pos = -1;
-            return OSAL_STATUS_FAILED;
+            gb->receive_complete = OS_TRUE;
+            return OSAL_SUCCESS;
         }
 
         gb->receive_bit = 1;
@@ -214,11 +213,12 @@ osalStatus gazerbeam_decode_message(
         }
         if (gb->receive_bit & 0x80)
         {
-            gb->receive_bit = (gb->msgbuf[gb->receive_pos] ? 1 : 0);
+            gb->receive_bit = 0;
 
             if (++(gb->receive_pos) >= GAZERBEAM_MAX_MSG_SZ + 2)
             {
                 gb->receive_pos = -1;
+                gb->receive_complete = OS_TRUE;
                 return OSAL_STATUS_FAILED;
             }
             gb->msgbuf[gb->receive_pos] = 0;

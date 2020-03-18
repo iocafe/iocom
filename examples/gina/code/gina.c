@@ -219,7 +219,7 @@ osalStatus osal_main(
     /* Initialize library to receive wifi configuration by phototransostor.
      */
 #if GINA_USE_GAZERBEAM
-    initialize_gazerbeam(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
+    initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
