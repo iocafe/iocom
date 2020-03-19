@@ -259,10 +259,6 @@ osalStatus gazerbeam_decode_message(
   to get the received message. It can also be called periodically, if there is no received
   message the function sets buf to "\0" and returns 0.
 
-  Notice that message doesn't have to be a string. If message is binary structure, etc.
-  Use GAZERBEAM_NO_NULL_TERMNATION flag to stop settring terminatinf character.
-  null termination just means that there is 0 byte after the data content
-
   @param   gb Pointer to the GazerbeamReceiver structure.
   @param   buf Pointer to buffer where to copy the message. Buffer is '\0' terminated,
            recommended minimum size GAZERBEAM_MAX_MSG_SZ.
