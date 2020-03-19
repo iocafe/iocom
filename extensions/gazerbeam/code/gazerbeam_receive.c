@@ -33,6 +33,9 @@
 #include "pins.h"
 #endif
 
+#define MIN_PULSE_MS 5
+#define MAX_PULSE_MS 30
+
 
 /* Pointer to gazerbeam receiver structure, is connected to pin interrupt. OS_NULL otherwise.
  */
@@ -78,6 +81,11 @@ void initialize_gazerbeam_receiver(
     gb->tmax_buf.nro_layers = 4;
     gb->tmax_buf.find_max = OS_TRUE;
 
+    /* Fill minimum buffer with maximum pulse length and vice versa.
+     */
+    gazerbeam_fill_minmax(&gb->tmin_buf, MAX_PULSE_MS);
+    gazerbeam_fill_minmax(&gb->tmax_buf, MIN_PULSE_MS);
+
     gb->receive_pos = -1;
 
 #if GAZERBEAM_PINS_SUPPORT
@@ -122,6 +130,7 @@ osalStatus gazerbeam_decode_message(
     os_ushort crc, crc2;
     GAZERBEAM_VALUE pulse_ms, tmin, tmax;
     os_timer til;
+    #define LEADING_ZEROES 14
 
     if (ti == OS_NULL)
     {
@@ -133,9 +142,10 @@ osalStatus gazerbeam_decode_message(
      */
     pulse_ms = (GAZERBEAM_VALUE)os_get_ms_elapsed(&gb->pulse_timer, ti);
     gb->pulse_timer = *ti;
+    if (pulse_ms < MIN_PULSE_MS || pulse_ms > MAX_PULSE_MS) return OSAL_PENDING;
     tmin = gazerbeam_minmax(&gb->tmin_buf, pulse_ms);
     tmax = gazerbeam_minmax(&gb->tmax_buf, pulse_ms);
-    if (tmin < 2 || tmax > 60) return OSAL_PENDING;
+    if (tmin >= tmax) return OSAL_PENDING;
 
     /* Set flag to indicate that the beam is connected.
      */
@@ -150,31 +160,37 @@ osalStatus gazerbeam_decode_message(
      */
     if (bit == GAZERBEAM_ZERO)
     {
-        if (gb->n_zeros < 9) gb->n_zeros++;
-        if (gb->n_zeros == 9)
+        if (gb->n_zeros < LEADING_ZEROES) gb->n_zeros++;
+        if (gb->n_zeros == LEADING_ZEROES)
         {
             /* If we received complete message before this one */
-            n_bytes = gb->receive_pos;
-            gb->receive_pos = -1;
-            gb->receive_complete = OS_TRUE;
-            if (n_bytes >= 3 && gb->finshed_message_sz == 0)
+            if (gb->receive_pos >= 0)
             {
-                crc = (os_uchar)gb->msgbuf[1];
-                crc <<= 8;
-                crc |= (os_uchar)gb->msgbuf[0];
-                gb->msgbuf[0] = 0;
-                gb->msgbuf[1] = 0;
-                crc2 = os_checksum(gb->msgbuf, n_bytes, OS_NULL);
-                if (crc != crc2)
-                {
-                    return OSAL_STATUS_CHECKSUM_ERROR;
+                n_bytes = gb->receive_pos;
+                gb->receive_pos = -1;
+                while (n_bytes >= 4) {
+                    if (gb->msgbuf[n_bytes - 1]) break;
+                    n_bytes--;
                 }
-                else
+                if (n_bytes >= 4 && gb->finshed_message_sz == 0)
                 {
-                    n_bytes -= 2; /* No checksum any more */
-                    os_memcpy((void*)gb->finshed_message, gb->msgbuf + 2, n_bytes);
-                    gb->finshed_message_sz = n_bytes;
-                    return OSAL_COMPLETED;
+                    crc = (os_uchar)gb->msgbuf[1];
+                    crc <<= 8;
+                    crc |= (os_uchar)gb->msgbuf[0];
+                    gb->msgbuf[0] = 0;
+                    gb->msgbuf[1] = 0;
+                    crc2 = os_checksum(gb->msgbuf, n_bytes, OS_NULL) & 0x7F7f;
+                    if (crc != crc2)
+                    {
+                        return OSAL_STATUS_CHECKSUM_ERROR;
+                    }
+                    else
+                    {
+                        n_bytes -= 2; /* No checksum any more */
+                        os_memcpy((void*)gb->finshed_message, gb->msgbuf + 2, n_bytes);
+                        gb->finshed_message_sz = n_bytes;
+                        return OSAL_COMPLETED;
+                    }
                 }
             }
         }
@@ -183,17 +199,16 @@ osalStatus gazerbeam_decode_message(
     {
         /* If beginning of message.
          */
-        if (gb->n_zeros == 9)
+        if (gb->n_zeros == LEADING_ZEROES)
         {
             gb->receive_pos = 0;
             gb->receive_bit = 0;
             gb->msgbuf[0] = 0;
-            gb->receive_complete = OS_FALSE;
         }
 
         gb->n_zeros = 0;
     }
-    if (gb->receive_pos < 0 || gb->receive_complete) return OSAL_PENDING;
+    if (gb->receive_pos < 0) return OSAL_PENDING;
 
     /* If expecting "1" bit starting a character.
      */
@@ -203,7 +218,6 @@ osalStatus gazerbeam_decode_message(
          */
         if (bit == GAZERBEAM_ZERO)
         {
-            gb->receive_complete = OS_TRUE;
             return OSAL_SUCCESS;
         }
 
@@ -215,14 +229,13 @@ osalStatus gazerbeam_decode_message(
         {
             gb->msgbuf[gb->receive_pos] |= gb->receive_bit;
         }
-        if (gb->receive_bit & 0x80)
+        if (gb->receive_bit & 0x40)
         {
-            gb->receive_bit = 0;
+            gb->receive_bit = 1;
 
             if (++(gb->receive_pos) >= GAZERBEAM_MAX_MSG_SZ + 2)
             {
                 gb->receive_pos = -1;
-                gb->receive_complete = OS_TRUE;
                 return OSAL_STATUS_FAILED;
             }
             gb->msgbuf[gb->receive_pos] = 0;

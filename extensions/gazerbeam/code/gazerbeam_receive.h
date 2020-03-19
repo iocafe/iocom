@@ -55,7 +55,6 @@ typedef struct GazerbeamReceiver
     os_short n_zeros;
     os_short receive_pos;
     os_char receive_bit;
-    os_boolean receive_complete;
 
     /* Beam connected flag ans previous state. Used to display beam connected indicator
      */

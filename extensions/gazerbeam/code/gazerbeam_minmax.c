@@ -47,8 +47,8 @@
     }
     GazerbeamBuffer;
 
-  @param   db Pointer to the GazerbeamReceiver structure.
-  @param   x New signal value.
+  @param   gbb Pointer to the GazerbeamBuffer structure.
+  @param   x New value.
   @return  Minimum value among the memorized values.
 
 ****************************************************************************************************
@@ -103,3 +103,32 @@ GAZERBEAM_VALUE gazerbeam_minmax(
 }
 
 
+
+/**
+****************************************************************************************************
+
+  @brief Initialize whole buffer with specific value.
+
+  The gazerbeam_fill_minmax function...
+
+  @param   gbb Pointer to the GazerbeamBuffer structure.
+  @param   x Value used to fill the buffer.
+  @return  None.
+
+****************************************************************************************************
+*/
+void gazerbeam_fill_minmax(
+    GazerbeamBuffer *gbb,
+    GAZERBEAM_VALUE x)
+{
+    GAZERBEAM_VALUE *X, *Z;
+    os_int i;
+    X = gbb->x;
+    Z = gbb->z;
+
+    for (i = 0; i<MAX_GAZERBEAM_LAYERS; i++)
+    {
+        X[i] = x;
+        Z[i] = x;
+    }
+}

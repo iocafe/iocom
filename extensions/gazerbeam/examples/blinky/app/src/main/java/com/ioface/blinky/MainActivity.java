@@ -34,6 +34,9 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import android.graphics.Color;
+import android.content.res.ColorStateList;
+
 import android.hardware.camera2.*;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -62,6 +65,14 @@ public class MainActivity extends AppCompatActivity
 
     protected ToggleButton
             m_blink_button;
+
+    protected Toolbar
+            m_toolbar;
+
+    protected ColorStateList
+            m_toolbar_color_lst,
+            m_button_color_lst,
+            m_button_pressed_color_lst;
 
     protected String
             m_wifi_network,
@@ -140,12 +151,23 @@ public class MainActivity extends AppCompatActivity
         m_device_number_edit = findViewById(R.id.device_number_edit);
         m_connect_ip_edit = findViewById(R.id.connect_ip_edit);
 
+        m_button_color_lst = ColorStateList.valueOf(Color.parseColor("#FFE2E6EF"));
+        m_button_pressed_color_lst = ColorStateList.valueOf(Color.parseColor("#FFFFBF00"));
+        m_toolbar_color_lst = ColorStateList.valueOf(Color.parseColor("#FF3D26C1"));
+
         m_blink_button = findViewById(R.id.blink_button);
         m_blink_button.setChecked(false);
+        m_blink_button.setBackgroundTintList(m_button_color_lst);
+
+        m_toolbar = findViewById(R.id.toolbar);
+        m_toolbar.setBackgroundTintList(m_toolbar_color_lst);
+
         m_blink_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     if (m_started) {
+                        m_blink_button.setBackgroundTintList(m_button_pressed_color_lst);  // Depressed: #FFBFC6D5, happy: #FFFFBF00
+                        m_toolbar.setBackgroundTintList(m_button_pressed_color_lst);
                         startLED();
                     }
                     else {
@@ -153,6 +175,8 @@ public class MainActivity extends AppCompatActivity
                     }
                 } else {
                     stopLED();
+                    m_blink_button.setBackgroundTintList(m_button_color_lst);
+                    m_toolbar.setBackgroundTintList(m_toolbar_color_lst);
                 }
             }
         });
@@ -217,7 +241,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_info) {
+            setContentView(R.layout.mighty_info);
+
             return true;
         }
 
@@ -381,33 +407,28 @@ public class MainActivity extends AppCompatActivity
     protected byte[] makeRecipe(int data[])
     {
         int len = data.length;
-        int max_n = 11 + len * (16 + 2);
+        int max_n = 14 + len * 14;
         byte recipe[] = new byte[max_n];
         int pos;
 
-        // Send 9 zeroes followed by 1
+        // Send 14 zeroes followed by 1
         pos = 0;
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 14; i++) {
             recipe[pos++] = 1;
         }
         recipe[pos++] = 1;
         recipe[pos++] = 0;
 
-        // Send actual data bytes, add extra 1 bit except for last byte add 0 bit
+        // Send actual data bytes, 7 bits per byte
         for (int i = 0; i < len; i++) {
             int v = data[i];
-            for (int j = 0; j < 8; j++) {
+            for (int j = 0; j < 7; j++) {
                 recipe[pos++] = 1;
                 if ((v & 1) == 1)
                 {
                     recipe[pos++] = 0;
                 }
                 v >>= 1;
-            }
-
-            recipe[pos++] = 1;
-            if (i < len - 1) {
-                recipe[pos++] = 0;
             }
         }
 

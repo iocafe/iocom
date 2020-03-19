@@ -8,7 +8,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:backgroundTint="#FFFFFF">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -20,6 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
+                android:backgroundTint="#3D26C1"
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -99,11 +101,15 @@
                 android:id="@+id/blink_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFFFFF"
+
+                android:backgroundTint="#FFBF00"
+                android:state_pressed="true"
                 android:text="ToggleButton"
                 android:textAllCaps="false"
                 android:textOff="blink"
-                android:textOn="blink" />
+                android:textOn="stop blinking" />
+            <!--android:backgroundTint="#FFFFFF" -->
+
 
         </LinearLayout>
     </ScrollView>

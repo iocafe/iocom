@@ -50,3 +50,9 @@ GazerbeamBuffer;
 GAZERBEAM_VALUE gazerbeam_minmax(
     GazerbeamBuffer *gbb,
     GAZERBEAM_VALUE x);
+
+/* Initialize whole buffer with specific value.
+*/
+void gazerbeam_fill_minmax(
+    GazerbeamBuffer *gbb,
+    GAZERBEAM_VALUE x);
