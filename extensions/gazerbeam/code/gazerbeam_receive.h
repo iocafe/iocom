@@ -30,24 +30,9 @@ struct Pin;
 typedef enum GazerbeamBit
 {
     GAZERBEAM_ZERO,
-    GAZERBEAM_ONE,
-    GAZERBEAM_NONE
+    GAZERBEAM_ONE
 }
 GazerbeamBit;
-
-/* Logical AD signal level.
- */
-typedef enum
-{
-    GAZERBEAM_LOW,
-    GAZERBEAM_HIGH
-}
-GazerbeamSignalLevel;
-
-/* Minimum and maximum AD signal must be at least this much apart
-   that we even try to get the signal.
- */
-#define GAZERBEAM_AD_NOICE_LEVEL 100
 
 /* Maximum size of message in bytes excluding check sum but including terminating '\0' character.
  */
