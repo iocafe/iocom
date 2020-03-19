@@ -51,7 +51,7 @@ typedef struct GazerbeamReceiver
     GazerbeamBuffer tmin_buf, tmax_buf;
     os_timer pulse_timer;
 
-    os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 2]; /* +2 for check sum */
+    os_char msgbuf[GAZERBEAM_MAX_MSG_SZ + 3]; /* +3 for check sum */
     os_short n_zeros;
     os_short receive_pos;
     os_char receive_bit;

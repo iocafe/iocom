@@ -174,20 +174,23 @@ osalStatus gazerbeam_decode_message(
                 }
                 if (n_bytes >= 4 && gb->finshed_message_sz == 0)
                 {
-                    crc = (os_uchar)gb->msgbuf[1];
-                    crc <<= 8;
-                    crc |= (os_uchar)gb->msgbuf[0];
+                    crc = (os_uchar)gb->msgbuf[2] - 1;
+                    crc <<= 6;
+                    crc |= (os_uchar)gb->msgbuf[1] - 1;
+                    crc <<= 6;
+                    crc |= (os_uchar)gb->msgbuf[0] - 1;
                     gb->msgbuf[0] = 0;
                     gb->msgbuf[1] = 0;
-                    crc2 = os_checksum(gb->msgbuf, n_bytes, OS_NULL) & 0x7F7f;
+                    gb->msgbuf[2] = 0;
+                    crc2 = os_checksum(gb->msgbuf, n_bytes, OS_NULL);
                     if (crc != crc2)
                     {
                         return OSAL_STATUS_CHECKSUM_ERROR;
                     }
                     else
                     {
-                        n_bytes -= 2; /* No checksum any more */
-                        os_memcpy((void*)gb->finshed_message, gb->msgbuf + 2, n_bytes);
+                        n_bytes -= 3; /* No checksum any more */
+                        os_memcpy((void*)gb->finshed_message, gb->msgbuf + 3, n_bytes);
                         gb->finshed_message_sz = n_bytes;
                         return OSAL_COMPLETED;
                     }

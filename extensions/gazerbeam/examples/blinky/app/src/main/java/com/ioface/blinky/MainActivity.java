@@ -339,17 +339,18 @@ public class MainActivity extends AppCompatActivity
             pos += item.length;
         }
 
-        int data2[] = new int [pos + 2];
+        int data2[] = new int [pos + 3];
         data2[0] = 0;
         data2[1] = 0;
         for (int i = 0; i<pos; i++)
         {
-            data2[i + 2] = data[i];
+            data2[i + 3] = data[i];
         }
 
         int crc = os_checksum(data2);
-        data2[0] = crc & 255;
-        data2[1] = (crc >> 8) & 255;
+        data2[0] = (crc & 0x3F) + 1;
+        data2[1] = ((crc >> 6) & 0x3F) + 1;
+        data2[2] = ((crc >> 12) & 0x0F) + 1;
 
         return data2;
     }
