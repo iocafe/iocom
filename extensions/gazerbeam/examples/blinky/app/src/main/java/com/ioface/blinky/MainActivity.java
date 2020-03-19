@@ -284,31 +284,31 @@ public class MainActivity extends AppCompatActivity
         int item[];
 
         item = wn;
-        if (item.length > 1) {
+        if (item.length > 2) {
             appendItem(data, pos, item);
             pos += item.length;
         }
 
         item = wp;
-        if (item.length > 1) {
+        if (item.length > 2) {
             appendItem(data, pos, item);
             pos += item.length;
         }
 
         item = nn;
-        if (item.length > 1) {
+        if (item.length > 2) {
             appendItem(data, pos, item);
             pos += item.length;
         }
 
         item = dn;
-        if (item.length > 1) {
+        if (item.length > 2) {
             appendItem(data, pos, item);
             pos += item.length;
         }
 
         item = ip;
-        if (item.length > 1) {
+        if (item.length > 2) {
             appendItem(data, pos, item);
             pos += item.length;
         }
@@ -333,13 +333,14 @@ public class MainActivity extends AppCompatActivity
     {
         byte[] b = x.getBytes();
 
-        int n = b.length + 1;
+        int n = b.length + 2;
         int item[] = new int[n];
 
-        item[0] = (id << 5) | b.length;
+        item[0] = id;
+        item[1] = b.length;
         for (int i = 0; i < b.length; i++)
         {
-            item[i+1] = converUnsignedValue(b[i]);
+            item[i+2] = converUnsignedValue(b[i]);
         }
 
         return item;
