@@ -269,17 +269,10 @@ osalStatus osal_loop(
     ioc_run_lighthouse_client(&lighthouse);
 #endif
 
-    /* Initialize library to receive wifi configuration by phototransostor.
-     */
-#if GINA_USE_GAZERBEAM
-    os_char buf[GAZERBEAM_MAX_MSG_SZ];
-
     /* Get Wifi configuration messages from Android phone flash light -> phototransistor.
      */
-    if (gazerbeam_get_message(&gazerbeam, buf, sizeof(buf), GAZERBEAM_DEFAULT))
-    {
-        osal_debug_error_str("HERE received ", buf);
-    }
+#if GINA_USE_GAZERBEAM
+    gazerbeam_run_configurator(&gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
     /* Keep the morse code LED alive. The LED indicates boot issues.

@@ -40,6 +40,7 @@ OSAL_C_HEADER_BEGINS
 
 #include "code/gazerbeam_minmax.h"
 #include "code/gazerbeam_receive.h"
+#include "code/gazerbeam_save_config.h"
 
 /* If C++ compilation, end the undecorated code.
  */
