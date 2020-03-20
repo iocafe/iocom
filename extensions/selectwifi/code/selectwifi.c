@@ -237,7 +237,7 @@ static void ioc_selectfiwi_load(
 {
     osalWifiPersistent block;
 
-    ioc_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
+    os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
 
     ioc_sets_str(&selectwifi.exp.net_1, block.wifi[0].wifi_net_name);
 
@@ -271,7 +271,7 @@ static void ioc_selectfiwi_save(
     osalWifiPersistent block;
     os_char str[OSAL_WIFI_PRM_SZ];
 
-    ioc_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
+    os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
 
     ioc_gets_str(&selectwifi.imp.set_net_1, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[0].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
@@ -299,7 +299,7 @@ static void ioc_selectfiwi_save(
     if (str[0]) os_strncpy(block.wifi[3].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
 #endif
 
-    ioc_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
+    os_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
 
     /* Load to show change to user immediately.
      */

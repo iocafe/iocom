@@ -236,7 +236,7 @@ class ProgramPanel(GridLayout):
         self.popup.dismiss()
 
     def my_select_block_dialog(self, instance):
-        button_list = ["1. program", "2. config", "3. defaults", "5. server key", "6. server cert", "7. root cert", "8. cert chain", "9. publish chain", "12. cust", "21. accounts"]
+        button_list = ["1. program", "2. config", "3. defaults", "5. server key", "6. server cert", "7. root cert", "8. cert chain", "9. publish chain", "10. wifi select", "12. cust", "21. accounts"]
 
         grid = GridLayout()
         grid.cols = 2;

@@ -118,10 +118,10 @@ osalStatus osal_get_persistent_block_or_file(
     block_nr = (osPersistentBlockNr)osal_str_to_int(file_name, OS_NULL);
     if (block_nr == 0) block_nr = default_block_nr;
 
-    s = ioc_load_persistent_malloc(block_nr, &block, n_read);
+    s = os_load_persistent_malloc(block_nr, &block, n_read);
     if (s != OSAL_SUCCESS && s != OSAL_MEMORY_ALLOCATED)
     {
-        osal_debug_error_int("ioc_load_persistent_malloc failed ", block_nr);
+        osal_debug_error_int("os_load_persistent_malloc failed ", block_nr);
         return OSAL_STATUS_FAILED;
     }
     *buf = block;

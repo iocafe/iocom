@@ -160,7 +160,7 @@ gotit:
      */
     if (flags & IOC_LOAD_PBNR_WIFI)
     {
-        ioc_load_persistent(OS_PBNR_WIFI, (os_char*)&node->wifi_pbnr_wifi, sizeof(osalWifiPersistent));
+        os_load_persistent(OS_PBNR_WIFI, (os_char*)&node->wifi_pbnr_wifi, sizeof(osalWifiPersistent));
         for (i = 0; i < OSAL_MAX_NRO_WIFI_NETWORKS; i++)
         {
             wifibuf = &node->wifi_pbnr_wifi.wifi[i];
