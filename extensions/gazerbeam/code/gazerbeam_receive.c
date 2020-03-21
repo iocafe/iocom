@@ -96,6 +96,7 @@ void initialize_gazerbeam_receiver(
         global_gazerbeam = gb;
         pinInterruptParams prm;
         gb->pin = pin;
+        gb->int_handler_func = gazerbeam_led_int_handler;
         os_memclear(&prm, sizeof(prm));
         prm.int_handler_func = gazerbeam_led_int_handler;
         prm.flags = PINS_INT_CHANGE;

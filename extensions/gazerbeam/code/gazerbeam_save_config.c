@@ -17,6 +17,12 @@
 */
 #include "gazerbeam.h"
 
+#if GAZERBEAM_PINS_SUPPORT
+#define PINS_OS_INT_HANDLER_HDRS 1
+#include "pins.h"
+#endif
+
+
 /**
 ****************************************************************************************************
 
@@ -43,13 +49,36 @@ void gazerbeam_run_configurator(
     buf_sz = gazerbeam_get_message(gb, buf, sizeof(buf), GAZERBEAM_DEFAULT);
     if (buf_sz > 0)
     {
-        pin_detach_interrupt(gb->pin);
+#if GAZERBEAM_PINS_SUPPORT
+        /* If we are using pin interrupt, disable it.
+         */
+        if (gb->pin)
+        {
+            pin_detach_interrupt(gb->pin);
+        }
+#endif
+
+        /* Save stuff
+         */
         if (gazerbeam_save_config(buf, buf_sz) == OSAL_SUCCESS)
         {
             /* Here we reboot only if something changed.
              */
             osal_reboot(0);
         }
+
+#if GAZERBEAM_PINS_SUPPORT
+        /* If we wew using pin interrupt, enable it back.
+         */
+        if (gb->pin)
+        {
+            pinInterruptParams prm;
+            os_memclear(&prm, sizeof(prm));
+            prm.int_handler_func = gb->int_handler_func;
+            prm.flags = PINS_INT_CHANGE;
+            pin_attach_interrupt(gb->pin, &prm);
+        }
+#endif
     }
 }
 
