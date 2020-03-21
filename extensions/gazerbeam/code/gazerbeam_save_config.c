@@ -43,6 +43,7 @@ void gazerbeam_run_configurator(
     buf_sz = gazerbeam_get_message(gb, buf, sizeof(buf), GAZERBEAM_DEFAULT);
     if (buf_sz > 0)
     {
+        pin_detach_interrupt(gb->pin);
         if (gazerbeam_save_config(buf, buf_sz) == OSAL_SUCCESS)
         {
             /* Here we reboot only if something changed.
