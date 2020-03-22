@@ -33,19 +33,19 @@ const pins_t pins =
     {PIN_INPUT, 0, 34, pins_inputs_dip_switch_3_prm, sizeof(pins_inputs_dip_switch_3_prm)/sizeof(os_short), OS_NULL, &gina.exp.dip_switch_3 PINS_INTCONF_NULL}, /* dip_switch_3 */
     {PIN_INPUT, 0, 35, pins_inputs_dip_switch_4_prm, sizeof(pins_inputs_dip_switch_4_prm)/sizeof(os_short), OS_NULL, &gina.exp.dip_switch_4 PINS_INTCONF_NULL}, /* dip_switch_4 */
     {PIN_INPUT, 0, 36, pins_inputs_gazerbeam_prm, sizeof(pins_inputs_gazerbeam_prm)/sizeof(os_short), OS_NULL, &gina.exp.gazerbeam PINS_INTCONF_PTR(pin_gazerbeam_intconf)}, /* gazerbeam */
-    {PIN_INPUT, 0, 4, pins_inputs_touch_sensor_prm, sizeof(pins_inputs_touch_sensor_prm)/sizeof(os_short), OS_NULL, &gina.exp.touch_sensor PINS_INTCONF_NULL} /* touch_sensor */
+    {PIN_INPUT, 0, 32, pins_inputs_touch_sensor_prm, sizeof(pins_inputs_touch_sensor_prm)/sizeof(os_short), OS_NULL, &gina.exp.touch_sensor PINS_INTCONF_NULL} /* touch_sensor */
   },
 
   {{9, &pins.outputs.led_builtin}, /* outputs */
-    {PIN_OUTPUT, 0, 2, pins_outputs_led_builtin_prm, sizeof(pins_outputs_led_builtin_prm)/sizeof(os_short), OS_NULL, OS_NULL PINS_INTCONF_NULL}, /* led_builtin */
-    {PIN_OUTPUT, 0, 2, pins_outputs_A_prm, sizeof(pins_outputs_A_prm)/sizeof(os_short), OS_NULL, &gina.exp.A PINS_INTCONF_NULL}, /* A */
-    {PIN_OUTPUT, 0, 2, pins_outputs_B_prm, sizeof(pins_outputs_B_prm)/sizeof(os_short), &pins.outputs.A, &gina.exp.B PINS_INTCONF_NULL}, /* B */
-    {PIN_OUTPUT, 0, 2, pins_outputs_C_prm, sizeof(pins_outputs_C_prm)/sizeof(os_short), &pins.outputs.B, &gina.exp.C PINS_INTCONF_NULL}, /* C */
-    {PIN_OUTPUT, 0, 2, pins_outputs_D_prm, sizeof(pins_outputs_D_prm)/sizeof(os_short), &pins.outputs.C, &gina.exp.D PINS_INTCONF_NULL}, /* D */
-    {PIN_OUTPUT, 0, 2, pins_outputs_E_prm, sizeof(pins_outputs_E_prm)/sizeof(os_short), &pins.outputs.D, &gina.exp.E PINS_INTCONF_NULL}, /* E */
-    {PIN_OUTPUT, 0, 2, pins_outputs_F_prm, sizeof(pins_outputs_F_prm)/sizeof(os_short), &pins.outputs.E, &gina.exp.F PINS_INTCONF_NULL}, /* F */
-    {PIN_OUTPUT, 0, 2, pins_outputs_G_prm, sizeof(pins_outputs_G_prm)/sizeof(os_short), &pins.outputs.F, &gina.exp.G PINS_INTCONF_NULL}, /* G */
-    {PIN_OUTPUT, 0, 2, pins_outputs_H_prm, sizeof(pins_outputs_H_prm)/sizeof(os_short), &pins.outputs.G, &gina.exp.H PINS_INTCONF_NULL} /* H */
+    {PIN_OUTPUT, 0, 15, pins_outputs_led_builtin_prm, sizeof(pins_outputs_led_builtin_prm)/sizeof(os_short), OS_NULL, OS_NULL PINS_INTCONF_NULL}, /* led_builtin */
+    {PIN_OUTPUT, 0, 15, pins_outputs_A_prm, sizeof(pins_outputs_A_prm)/sizeof(os_short), OS_NULL, &gina.exp.A PINS_INTCONF_NULL}, /* A */
+    {PIN_OUTPUT, 0, 15, pins_outputs_B_prm, sizeof(pins_outputs_B_prm)/sizeof(os_short), &pins.outputs.A, &gina.exp.B PINS_INTCONF_NULL}, /* B */
+    {PIN_OUTPUT, 0, 15, pins_outputs_C_prm, sizeof(pins_outputs_C_prm)/sizeof(os_short), &pins.outputs.B, &gina.exp.C PINS_INTCONF_NULL}, /* C */
+    {PIN_OUTPUT, 0, 15, pins_outputs_D_prm, sizeof(pins_outputs_D_prm)/sizeof(os_short), &pins.outputs.C, &gina.exp.D PINS_INTCONF_NULL}, /* D */
+    {PIN_OUTPUT, 0, 15, pins_outputs_E_prm, sizeof(pins_outputs_E_prm)/sizeof(os_short), &pins.outputs.D, &gina.exp.E PINS_INTCONF_NULL}, /* E */
+    {PIN_OUTPUT, 0, 15, pins_outputs_F_prm, sizeof(pins_outputs_F_prm)/sizeof(os_short), &pins.outputs.E, &gina.exp.F PINS_INTCONF_NULL}, /* F */
+    {PIN_OUTPUT, 0, 15, pins_outputs_G_prm, sizeof(pins_outputs_G_prm)/sizeof(os_short), &pins.outputs.F, &gina.exp.G PINS_INTCONF_NULL}, /* G */
+    {PIN_OUTPUT, 0, 15, pins_outputs_H_prm, sizeof(pins_outputs_H_prm)/sizeof(os_short), &pins.outputs.G, &gina.exp.H PINS_INTCONF_NULL} /* H */
   },
 
   {{1, &pins.analog_inputs.potentiometer}, /* analog_inputs */
@@ -53,7 +53,7 @@ const pins_t pins =
   },
 
   {{2, &pins.pwm.servo}, /* pwm */
-    {PIN_PWM, 0, 32, pins_pwm_servo_prm, sizeof(pins_pwm_servo_prm)/sizeof(os_short), OS_NULL, &gina.imp.servo PINS_INTCONF_NULL}, /* servo */
+    {PIN_PWM, 0, 26, pins_pwm_servo_prm, sizeof(pins_pwm_servo_prm)/sizeof(os_short), OS_NULL, &gina.imp.servo PINS_INTCONF_NULL}, /* servo */
     {PIN_PWM, 1, 33, pins_pwm_dimmer_led_prm, sizeof(pins_pwm_dimmer_led_prm)/sizeof(os_short), OS_NULL, &gina.imp.dimmer_led PINS_INTCONF_NULL} /* dimmer_led */
   }
 };

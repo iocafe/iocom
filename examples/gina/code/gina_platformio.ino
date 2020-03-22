@@ -5,6 +5,7 @@
 #include <pins.h>
 #include <FreeRTOS.h>
 
+
 /*
   gina_platformio.ino
   To build it within Visual Studio Code and PlatformIO. 
@@ -19,7 +20,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial) {}
     Serial.println("Gina IO board starting...");
-
+  
    /* Initialize the eosal library.
     */
     osal_initialize(OSAL_INIT_DEFAULT);

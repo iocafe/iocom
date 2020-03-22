@@ -63,9 +63,13 @@ static LighthouseClient lighthouse;
  */
 iocNodeConf ioapp_device_conf;
 
-/* Blinking LED by morse code to indicate boot error.
+/* Either blink LED by morse code to indicate boot error or use display if we have one.
  */
-static MorseCode morse;
+#if PINS_DISPLAY
+    static PinsDisplay pins_display;
+#else
+    static MorseCode morse;
+#endif
 
 /* Maximum number of sockets, etc.
  */
@@ -224,14 +228,19 @@ osalStatus osal_main(
 
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
      */
+#if PINS_DISPLAY
+    initialize_display(&pins_display, OS_NULL);
+#else
     initialize_morse_code(&morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
+#endif
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
     osal_simulated_loop(OS_NULL);
     os_get_timer(&send_timer);
+   
     return OSAL_SUCCESS;
 }
 
@@ -275,9 +284,13 @@ osalStatus osal_loop(
     gazerbeam_run_configurator(&gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
-    /* Keep the morse code LED alive. The LED indicates boot issues.
+    /* Keep the display or morse code LED alive. These indicates boot issues, etc, to user.
      */
+#if PINS_DISPLAY
+    run_display(&pins_display, &ti);
+#else
     blink_morse_code(&morse, &ti);
+#endif
 
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
