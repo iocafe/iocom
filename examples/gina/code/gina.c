@@ -18,7 +18,7 @@
   Notes:
   - ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
 
-  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
   it fully.
@@ -229,7 +229,7 @@ osalStatus osal_main(
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
      */
 #if PINS_DISPLAY
-    initialize_display(&pins_display, OS_NULL);
+    initialize_display(&pins_display, &ioboard_communication, OS_NULL);
 #else
     initialize_morse_code(&morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
@@ -240,7 +240,7 @@ osalStatus osal_main(
      */
     osal_simulated_loop(OS_NULL);
     os_get_timer(&send_timer);
-   
+
     return OSAL_SUCCESS;
 }
 
