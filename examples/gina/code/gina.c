@@ -276,7 +276,9 @@ osalStatus osal_loop(
 static os_boolean ulletest_started = OS_FALSE;
 if (!ulletest_started)
 {
-    ulletest();
+    // ulletest();
+    set_1MHz_clock_on_GPIO2();
+
     ulletest_started = OS_TRUE;
 }
 return OSAL_SUCCESS;
