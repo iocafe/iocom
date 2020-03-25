@@ -1,5 +1,11 @@
+#if 0
+// Credit Ivan Voras
+
 #include "gina.h"
 #include "driver/gpio.h"
+
+#include <soc/sens_reg.h>
+#include <soc/sens_struct.h>
 
 #define GPIO_OUTPUT_IO_0    18
 #define GPIO_OUTPUT_PIN_SEL  (1ULL << GPIO_OUTPUT_IO_0)
@@ -62,6 +68,94 @@ void ulletest(void)
 }
 
 
+
+/* Local version of reading analog output, adopted from ESP OS (by Ivan Voras)
+Digging through IDF Source Code
+Sampling data from an ADC is usually a simple task, so the next strategy is to see how the IDF does it, and replicate it in our code directly, without calling the provided API. The adc1_get_raw() function is implemented in the rtc_module.c file of the IDF, and of the eight or so things it does, only one is actually sampling the ADC, which is done by a call to adc_convert(). Luckily, adc_convert() is a simple function which samples the ADC by manipulating peripheral hardware registers via a global structure named SENS.
+
+Adapting this code so it works in our program (and to mimic the behavior of adc1_get_raw()) is easy. It looks like this:
+
+Finally, since adc1_get_raw() performs some configuration steps before sampling the ADC, it should be called directly, just after the ADC is set up. That way the relevant configuration can be performed before the timer is started.
+
+The downside of this approach is that it doesn’t play nice with other IDF functions. As soon as some other peripheral, driver, or a random piece of code is called which resets the ADC configuration, our custom function will no longer work correctly. At least WiFi, PWM, I2C, and SPI do not influence the ADC configuration. In case something does influence it, a call to adc1_get_raw() will configure ADC appropriately again.
+
+ */
+int IRAM_ATTR local_adc1_read(int channel) {
+    uint16_t adc_value;
+    SENS.sar_meas_start1.sar1_en_pad = (1 << channel); // only one channel is selected
+    while (SENS.sar_slave_addr1.meas_status != 0);
+    SENS.sar_meas_start1.meas1_start_sar = 0;
+    SENS.sar_meas_start1.meas1_start_sar = 1;
+    while (SENS.sar_meas_start1.meas1_done_sar == 0);
+    adc_value = SENS.sar_meas_start1.meas1_data_sar;
+    return adc_value;
+}
+
+
+/* Interrupt handler, kicks high priority task to run.
+ */
+#define ADC_SAMPLES_COUNT 1000
+int16_t abuf[ADC_SAMPLES_COUNT];
+int16_t abufPos = 0;
+
+void IRAM_ATTR onTimer() {
+  portENTER_CRITICAL_ISR(&timerMux);
+
+  abuf[abufPos++] = local_adc1_read(ADC1_CHANNEL_0);
+
+  if (abufPos >= ADC_SAMPLES_COUNT) {
+    abufPos = 0;
+
+    // Notify adcTask that the buffer is full.
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(adcTaskHandle, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken) {
+      portYIELD_FROM_ISR();
+    }
+  }
+  portEXIT_CRITICAL_ISR(&timerMux);
+}
+
+
+
+portMUX_TYPE DRAM_ATTR timerMux = portMUX_INITIALIZER_UNLOCKED;
+TaskHandle_t complexHandlerTask;
+hw_timer_t * adcTimer = NULL; // our timer
+
+void complexHandler(void *param) {
+  while (true) {
+    // Sleep until the ISR gives us something to do, or for 1 second
+    uint32_t tcount = ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(1000));
+    if (check_for_work) {
+      // Do something complex and CPU-intensive
+    }
+  }
+}
+
+void IRAM_ATTR onTimer() {
+  // A mutex protects the handler from reentry (which shouldn't happen, but just in case)
+  portENTER_CRITICAL_ISR(&timerMux);
+
+  // Do something, e.g. read a pin.
+
+  if (some_condition) {
+    // Notify complexHandlerTask that the buffer is full.
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(complexHandlerTask, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken) {
+      portYIELD_FROM_ISR();
+    }
+  }
+  portEXIT_CRITICAL_ISR(&timerMux);
+}
+
+void setup() {
+  xTaskCreate(complexHandler, "Handler Task", 8192, NULL, 1, &complexHandlerTask);
+  adcTimer = timerBegin(3, 80, true); // 80 MHz / 80 = 1 MHz hardware clock for easy figuring
+  timerAttachInterrupt(adcTimer, &onTimer, true); // Attaches the handler function to the timer
+  timerAlarmWrite(adcTimer, 45, true); // Interrupts when counter == 45, i.e. 22.222 times a second
+  timerAlarmEnable(adcTimer);
+}
 
 
 #if 0
@@ -143,5 +237,9 @@ void loop() {
 #endif 
 
 */
+
+#endif
+
+
 
 #endif
