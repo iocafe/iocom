@@ -15,7 +15,7 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_builtin", "addr": 2},
+          {"name": "led_builtin", "addr": 15},
           {"name": "A", "addr": 15, "group" : "segment7"},
           {"name": "B", "addr": 15, "group" : "segment7"},
           {"name": "C", "addr": 15, "group" : "segment7"},

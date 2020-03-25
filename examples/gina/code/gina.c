@@ -44,7 +44,7 @@
 /* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and phototransistor
    connected to microcontroller (0 or 1) ?.
  */
-#define GINA_USE_GAZERBEAM 1
+#define GINA_USE_GAZERBEAM 0
 #if GINA_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
@@ -271,6 +271,13 @@ osalStatus osal_loop(
     static os_char *test_str;
 
     os_get_timer(&ti);
+
+static os_boolean ulletest_started = OS_FALSE;
+if (!ulletest_started)
+{
+    ulletest();
+    ulletest_started = OS_TRUE;
+}
 
     /* Run light house.
      */
