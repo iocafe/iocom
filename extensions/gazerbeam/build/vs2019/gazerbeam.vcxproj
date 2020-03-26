@@ -19,12 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\ioc_selectwifi.h" />
-    <ClInclude Include="..\..\selectwifi.h" />
+    <ClInclude Include="..\..\code\gazerbeam_minmax.h" />
+    <ClInclude Include="..\..\code\gazerbeam_receive.h" />
+    <ClInclude Include="..\..\code\gazerbeam_save_config.h" />
+    <ClInclude Include="..\..\gazerbeam.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\ioc_selectwifi.c" />
-    <ClCompile Include="..\..\code\ioc_selectwifi_config.c" />
+    <ClCompile Include="..\..\code\gazerbeam_minmax.c" />
+    <ClCompile Include="..\..\code\gazerbeam_receive.c" />
+    <ClCompile Include="..\..\code\gazerbeam_save_config.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

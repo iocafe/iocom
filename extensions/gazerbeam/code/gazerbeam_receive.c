@@ -296,7 +296,7 @@ os_memsz gazerbeam_get_message(
      */
     n = gb->finshed_message_sz;
     if ((flags & GAZERBEAM_NO_NULL_TERMNATION) == 0) buf_sz--;
-    if (n > buf_sz) n = buf_sz;
+    if (n > buf_sz) n = (os_int)buf_sz;
     if (n) os_memcpy(buf, (void*)gb->finshed_message, n);
     if ((flags & GAZERBEAM_NO_NULL_TERMNATION) == 0) buf[n] = '\0';
     gb->finshed_message_sz = 0;

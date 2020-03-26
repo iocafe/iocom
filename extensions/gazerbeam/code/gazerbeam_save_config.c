@@ -169,10 +169,7 @@ osalStatus gazerbeam_get_config_item(
         sz = p[1];
         if (p[0] == id && sz)
         {
-            if (sz >= field_sz) sz = field_sz - 1;
-
-osal_debug_error_int("D ", id);
-
+            if (sz >= field_sz) sz = (os_uint)field_sz - 1;
 
             /* If unchanged?
              */
