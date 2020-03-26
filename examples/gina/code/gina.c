@@ -472,14 +472,14 @@ void ioboard_communication_callback(
             }
         }
 
-        /* Call pins library extension to forward communication signal changed to IO pins.
+        /* Call pins library extension to forward communication signal changes to IO pins.
          */
         forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
     }
 #else
     if (flags & IOC_MBLK_CALLBACK_RECEIVE)
     {
-        /* Call pins library extension to forward communication signal changed to IO pins.
+        /* Call pins library extension to forward communication signal changes to IO pins.
          */
         forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
     }
