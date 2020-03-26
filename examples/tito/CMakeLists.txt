@@ -7,7 +7,7 @@ set(E_HW "pc")
 project(${E_PROJECT})
 
 # include build information common to all projects.
-include(../../../eosal/build/cmakedefs/eosal-defs.txt)
+include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")

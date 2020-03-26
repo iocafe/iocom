@@ -6,7 +6,7 @@ set(E_PROJECT "iocompython")
 project(${E_PROJECT})
 
 # include build environment setting common to all projects.
-include(../../../eosal/build/cmakedefs/eosal-defs.txt)
+include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
 find_package(PythonInterp 3.5 REQUIRED)
 find_package(PythonLibs 3.5 REQUIRED)
