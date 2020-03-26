@@ -1,6 +1,6 @@
 /**
 
-  @file    gina.c
+  @file    gina.h
   @brief   Gina IO board example featuring  IoT device.
   @author  Pekka Lehtikoski
   @version 1.0
