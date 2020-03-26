@@ -102,11 +102,7 @@ osalStatus gazerbeam_save_config(
     osalWifiPersistent block;
     osalStatus s, rval = OSAL_NOTHING_TO_DO;
 
-osal_debug_error_int("HERE B1 ", message_sz);
-
     os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
-
-osal_debug_error("HERE B1B");
 
     s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_NETWORK,
         block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ,
@@ -119,11 +115,8 @@ osal_debug_error("HERE B1B");
     if (s == OSAL_SUCCESS) rval = s;
 
     if (rval == OSAL_SUCCESS) {
-        osal_debug_error("HERE B2");
         os_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
     }
-
-osal_debug_error("HERE C");
 
     return rval;
 }
