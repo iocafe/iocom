@@ -137,7 +137,7 @@ return OSAL_SUCCESS;     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
 
     /* Setup IO pins.
      */
-    pins_setup(&pins_hdr, 0);
+    pins_setup(&pins_hdr, PINS_DEFAULT);
 
     /* Load device configuration from peristant storage, or if not available use
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
