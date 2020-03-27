@@ -123,7 +123,6 @@ osalStatus osal_main(
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
 
-return OSAL_SUCCESS;     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().
      */
@@ -272,16 +271,6 @@ osalStatus osal_loop(
     static os_char *test_str;
 
     os_get_timer(&ti);
-
-static os_boolean ulletest_started = OS_FALSE;
-if (!ulletest_started)
-{
-    // ulletest();
-    set_1MHz_clock_on_GPIO2();
-
-    ulletest_started = OS_TRUE;
-}
-return OSAL_SUCCESS;
 
 
     /* Run light house.
