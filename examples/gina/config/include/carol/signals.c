@@ -6,7 +6,7 @@ const struct gina_t gina =
     {40, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_3}, /* dip_switch_3 */
     {41, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_4}, /* dip_switch_4 */
     {42, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.touch_sensor}, /* touch_sensor */
-    {43, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.gazerbeam}, /* gazerbeam */
+    {43, 1, OS_USHORT, &ioboard_exp, OS_NULL}, /* myanalog */
     {0, 5, OS_FLOAT, &ioboard_exp, OS_NULL}, /* testfloat */
     {21, 10, OS_STR, &ioboard_exp, OS_NULL}, /* teststr */
     {32, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.A}, /* A */
@@ -25,7 +25,7 @@ const struct gina_t gina =
     {17, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
     {19, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.servo}, /* servo */
     {22, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
-    {25, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL} /* led_builtin_x */
+    {25, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL} /* myoutput */
   },
 
   {

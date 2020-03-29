@@ -25,7 +25,7 @@
 				"name": "analog inputs",
 				"signals": [
 					{
-						"name": "gazerbeam",
+						"name": "myanalog",
 						"type": "ushort"
 					}
 				]
@@ -110,7 +110,7 @@
 				"name": "outputs",
 				"signals": [
 					{
-						"name": "led_builtin_x",
+						"name": "myoutput",
 						"type": "boolean"
 					}
 				]

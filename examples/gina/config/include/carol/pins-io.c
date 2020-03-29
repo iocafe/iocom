@@ -23,20 +23,20 @@ static os_short pins_outputs_H_prm[]= {PIN_RV, PIN_RV};
 static os_short pins_analog_inputs_potentiometer_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 3, PIN_MAX, 4095};
 
 /* Parameters for pwm */
-static os_short pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 50, PIN_MAX, 4095, PIN_INIT, 2048, PIN_RESOLUTION, 12};
-static os_short pins_pwm_dimmer_led_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_MAX, 4095, PIN_INIT, 0, PIN_RESOLUTION, 12};
+static os_short pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095, PIN_RESOLUTION, 12, PIN_INIT, 2048, PIN_FREQENCY, 50};
+static os_short pins_pwm_dimmer_led_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095, PIN_RESOLUTION, 12, PIN_INIT, 0, PIN_FREQENCY, 5000};
 
 /* Parameters for spi */
-static os_short pins_spi_tft_spi_prm[]= {PIN_RV, PIN_RV, PIN_MOSI, 23, PIN_MISO, 19, PIN_SCLK, 18, PIN_DC, 2};
+static os_short pins_spi_tft_spi_prm[]= {PIN_RV, PIN_RV, PIN_MOSI, 23, PIN_SCLK, 18, PIN_DC, 2, PIN_MISO, 19};
 
 /* Parameters for uart */
-static os_short pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_RX, 16, PIN_SPEED, 96, PIN_TX, 17};
+static os_short pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 96, PIN_TX, 17, PIN_RX, 16};
 
 /* GINA IO configuration structure */
 const pins_t pins =
 {
   {{4, &pins.inputs.gazerbeam}, /* inputs */
-    {PIN_INPUT, 0, 39, pins_inputs_gazerbeam_prm, sizeof(pins_inputs_gazerbeam_prm)/sizeof(os_short), OS_NULL, &gina.exp.gazerbeam PINS_INTCONF_PTR(pin_gazerbeam_intconf)}, /* gazerbeam */
+    {PIN_INPUT, 0, 39, pins_inputs_gazerbeam_prm, sizeof(pins_inputs_gazerbeam_prm)/sizeof(os_short), OS_NULL, OS_NULL PINS_INTCONF_PTR(pin_gazerbeam_intconf)}, /* gazerbeam */
     {PIN_INPUT, 0, 34, pins_inputs_dip_switch_3_prm, sizeof(pins_inputs_dip_switch_3_prm)/sizeof(os_short), OS_NULL, &gina.exp.dip_switch_3 PINS_INTCONF_NULL}, /* dip_switch_3 */
     {PIN_INPUT, 0, 35, pins_inputs_dip_switch_4_prm, sizeof(pins_inputs_dip_switch_4_prm)/sizeof(os_short), OS_NULL, &gina.exp.dip_switch_4 PINS_INTCONF_NULL}, /* dip_switch_4 */
     {PIN_INPUT, 0, 36, pins_inputs_touch_sensor_prm, sizeof(pins_inputs_touch_sensor_prm)/sizeof(os_short), OS_NULL, &gina.exp.touch_sensor PINS_INTCONF_NULL} /* touch_sensor */

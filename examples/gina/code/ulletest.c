@@ -159,7 +159,6 @@ void setup() {
 
 
 #if 0
-/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
 /* Blink Example

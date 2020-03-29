@@ -9,7 +9,7 @@ typedef struct gina_t
     iocSignal dip_switch_3;
     iocSignal dip_switch_4;
     iocSignal touch_sensor;
-    iocSignal gazerbeam;
+    iocSignal myanalog;
     iocSignal testfloat;
     iocSignal teststr;
     iocSignal A;
@@ -30,7 +30,7 @@ typedef struct gina_t
     iocSignal seven_segment;
     iocSignal servo;
     iocSignal dimmer_led;
-    iocSignal led_builtin_x;
+    iocSignal myoutput;
   }
   imp;
 
