@@ -39,7 +39,7 @@
 
 /* Pointer to gazerbeam receiver structure, is connected to pin interrupt. OS_NULL otherwise.
  */
-GazerbeamReceiver *global_gazerbeam = OS_NULL;
+GazerbeamReceiver * OS_ISR_DATA_ATTR global_gazerbeam = OS_NULL;
 
 
 /**
@@ -53,7 +53,7 @@ GazerbeamReceiver *global_gazerbeam = OS_NULL;
 */
 BEGIN_PIN_INTERRUPT_HANDLER(gazerbeam_led_int_handler)
      gazerbeam_decode_message(global_gazerbeam, OS_NULL);
-END_PIN_INTERRUPT_HANDLER
+END_PIN_INTERRUPT_HANDLER(gazerbeam_led_int_handler)
 
 
 /**
@@ -122,7 +122,7 @@ void initialize_gazerbeam_receiver(
 
 ****************************************************************************************************
 */
-osalStatus gazerbeam_decode_message(
+osalStatus OS_ISR_FUNC_ATTR gazerbeam_decode_message(
     GazerbeamReceiver *gb,
     os_timer *ti)
 {

@@ -53,7 +53,7 @@
 
 ****************************************************************************************************
 */
-GAZERBEAM_VALUE gazerbeam_minmax(
+GAZERBEAM_VALUE OS_ISR_FUNC_ATTR gazerbeam_minmax(
     GazerbeamBuffer *gbb,
     GAZERBEAM_VALUE x)
 {
