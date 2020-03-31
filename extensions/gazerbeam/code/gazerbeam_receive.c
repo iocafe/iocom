@@ -39,7 +39,7 @@
 
 /* Pointer to gazerbeam receiver structure, is connected to pin interrupt. OS_NULL otherwise.
  */
-GazerbeamReceiver * OS_ISR_DATA_ATTR global_gazerbeam = OS_NULL;
+GazerbeamReceiver * global_gazerbeam = OS_NULL;
 
 
 /**

@@ -42,13 +42,12 @@
 #endif
 
 /* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and
-   phototransistor connected to microcontroller (0 or 1). Notice that gazerbeam may use
-   interrupts, thus global data needs OS_ISR_DATA_ATTR attribute (at least for ESP32).
+   phototransistor connected to microcontroller (0 or 1).
  */
 #define GINA_USE_GAZERBEAM 0
 #if GINA_USE_GAZERBEAM
 #include "gazerbeam.h"
-static OS_ISR_DATA_ATTR GazerbeamReceiver gazerbeam;
+static GazerbeamReceiver gazerbeam;
 #endif
 
 /* Get controller IP address from UDP multicast (0 or 1) ?.
