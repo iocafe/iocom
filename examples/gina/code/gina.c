@@ -229,7 +229,11 @@ osalStatus osal_main(
     /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
      */
 #if PINS_DISPLAY
-    initialize_display(&pins_display, &ioboard_communication, OS_NULL);
+    pinsDisplayParams display_prm;
+    os_memclear(&display_prm, sizeof(display_prm));
+    display_prm.spi_pin = &pins.spi.tft_spi;
+    initialize_display(&pins_display, &display_prm, &ioboard_communication);
+#endif
 #else
     initialize_morse_code(&morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
