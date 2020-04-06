@@ -68,7 +68,7 @@ void gazerbeam_run_configurator(
         }
 
 #if GAZERBEAM_PINS_SUPPORT
-        /* If we wew using pin interrupt, enable it back.
+        /* If we were using pin interrupt, enable it back.
          */
         if (gb->pin)
         {
