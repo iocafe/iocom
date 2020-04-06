@@ -233,7 +233,6 @@ osalStatus osal_main(
     os_memclear(&display_prm, sizeof(display_prm));
     display_prm.spi_pin = &pins.spi.tft_spi;
     initialize_display(&pins_display, &display_prm, &ioboard_communication);
-#endif
 #else
     initialize_morse_code(&morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
