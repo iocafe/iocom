@@ -11,7 +11,7 @@
 			"flags": "listen,down"
 		},
 		{
-			"transport": "tls",
+			"transport": "none",
 			"parameters": "[*]:6369",
 			"flags": "listen,down"
 		},
