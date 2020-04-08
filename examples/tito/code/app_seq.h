@@ -39,7 +39,7 @@ public:
     gina_t *gina2;
 
     osalEvent m_event;
-    osalThreadHandle *m_thread;
+    osalThread *m_thread;
     os_boolean m_stop_thread;
     os_boolean m_started;
 };
