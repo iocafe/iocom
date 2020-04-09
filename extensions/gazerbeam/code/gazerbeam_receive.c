@@ -96,7 +96,7 @@ void initialize_gazerbeam_receiver(
         global_gazerbeam = gb;
         pinInterruptParams prm;
         gb->pin = pin;
-        gb->int_handler_func = gazerbeam_led_int_handler;
+        // gb->int_handler_func = gazerbeam_led_int_handler;
         os_memclear(&prm, sizeof(prm));
         prm.int_handler_func = gazerbeam_led_int_handler;
         prm.flags = PINS_INT_CHANGE;
@@ -126,8 +126,10 @@ osalStatus OS_ISR_FUNC_ATTR gazerbeam_decode_message(
     GazerbeamReceiver *gb,
     os_timer *ti)
 {
+    volatile os_char *dd;
+    const os_char *ss;
     GazerbeamBit bit;
-    os_int n_bytes;
+    os_int n_bytes, count;
     os_ushort crc, crc2;
     GAZERBEAM_VALUE pulse_ms, tmin, tmax;
     os_timer til;
@@ -141,7 +143,7 @@ osalStatus OS_ISR_FUNC_ATTR gazerbeam_decode_message(
 
     /* Get minimum and maximum pulse length
      */
-    pulse_ms = (GAZERBEAM_VALUE)os_get_ms_elapsed(&gb->pulse_timer, ti);
+    pulse_ms = (GAZERBEAM_VALUE)os_get_ms_elapsed(&gb->pulse_timer, ti); // ??????????????????????????????????????
     gb->pulse_timer = *ti;
     if (pulse_ms < MIN_PULSE_MS || pulse_ms > MAX_PULSE_MS) return OSAL_PENDING;
     tmin = gazerbeam_minmax(&gb->tmin_buf, pulse_ms);
@@ -191,7 +193,10 @@ osalStatus OS_ISR_FUNC_ATTR gazerbeam_decode_message(
                     else
                     {
                         n_bytes -= 3; /* No checksum any more */
-                        os_memcpy((void*)gb->finshed_message, gb->msgbuf + 3, n_bytes);
+                        ss = gb->msgbuf + 3;
+                        dd = gb->finshed_message;
+                        count = n_bytes;
+                        while (count--) *(dd++) = *(ss++);
                         gb->finshed_message_sz = n_bytes;
                         return OSAL_COMPLETED;
                     }

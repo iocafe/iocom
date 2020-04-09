@@ -45,7 +45,7 @@ typedef struct GazerbeamReceiver
     /* Input PIN if connected to pin interrupt. OS_NULL otherwise.
      */
     const struct Pin *pin;
-    void *int_handler_func;
+    // void *int_handler_func;
 
     /* Mimumum and maximum pulse length filtering buffers.
      */
