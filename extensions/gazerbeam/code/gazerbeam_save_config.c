@@ -52,10 +52,10 @@ void gazerbeam_run_configurator(
 #if GAZERBEAM_PINS_SUPPORT
         /* If we are using pin interrupt, disable it.
          */
-        if (gb->pin)
+        /* if (gb->pin)
         {
-            pin_detach_interrupt(gb->pin);
-        }
+            pin_gpio_detach_interrupt(gb->pin);
+        } */
 #endif
 
         /* Save stuff
@@ -70,14 +70,14 @@ void gazerbeam_run_configurator(
 #if GAZERBEAM_PINS_SUPPORT
         /* If we were using pin interrupt, enable it back.
          */
-        if (gb->pin)
+        /* if (gb->pin)
         {
             pinInterruptParams prm;
             os_memclear(&prm, sizeof(prm));
             prm.int_handler_func = gb->int_handler_func;
             prm.flags = PINS_INT_CHANGE;
-            pin_attach_interrupt(gb->pin, &prm);
-        }
+            pin_gpio_attach_interrupt(gb->pin, &prm);
+        } */
 #endif
     }
 }

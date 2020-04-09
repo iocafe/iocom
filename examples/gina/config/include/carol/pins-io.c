@@ -2,7 +2,7 @@
 #include "pins.h"
 
 /* Parameters for inputs */
-static os_ushort pins_inputs_gazerbeam_prm[]= {PIN_RV, PIN_RV, PIN_INTERRUPT, 1};
+static os_ushort pins_inputs_gazerbeam_prm[]= {PIN_RV, PIN_RV, PIN_INTERRUPT_ENABLED, 1};
 PINS_INTCONF_STRUCT(pin_gazerbeam_intconf)
 static os_ushort pins_inputs_dip_switch_3_prm[]= {PIN_RV, PIN_RV, PIN_PULL_UP, 1};
 static os_ushort pins_inputs_dip_switch_4_prm[]= {PIN_RV, PIN_RV};
@@ -20,17 +20,17 @@ static os_ushort pins_outputs_G_prm[]= {PIN_RV, PIN_RV};
 static os_ushort pins_outputs_H_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for analog_inputs */
-static os_ushort pins_analog_inputs_potentiometer_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095, PIN_SPEED, 3};
+static os_ushort pins_analog_inputs_potentiometer_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 3, PIN_MAX, 4095};
 
 /* Parameters for pwm */
-static os_ushort pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_RESOLUTION, 12, PIN_FREQENCY, 50, PIN_MAX, 4095, PIN_INIT, 2048};
-static os_ushort pins_pwm_dimmer_led_prm[]= {PIN_RV, PIN_RV, PIN_RESOLUTION, 12, PIN_FREQENCY, 5000, PIN_MAX, 4095, PIN_INIT, 0};
+static os_ushort pins_pwm_servo_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 50, PIN_RESOLUTION, 12, PIN_INIT, 2048, PIN_MAX, 4095};
+static os_ushort pins_pwm_dimmer_led_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_RESOLUTION, 12, PIN_INIT, 0, PIN_MAX, 4095};
 
 /* Parameters for spi */
-static os_ushort pins_spi_tft_spi_prm[]= {PIN_RV, PIN_RV, PIN_SCLK, 18, PIN_DC, 2, PIN_MOSI, 23, PIN_MISO, 19};
+static os_ushort pins_spi_tft_spi_prm[]= {PIN_RV, PIN_RV, PIN_MISO, 19, PIN_MOSI, 23, PIN_SCLK, 18, PIN_DC, 2};
 
 /* Parameters for uart */
-static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_TX, 17, PIN_RX, 16, PIN_SPEED, 96};
+static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_RX, 16, PIN_TX, 17, PIN_SPEED, 96};
 
 /* GINA IO configuration structure */
 const pins_t pins =

@@ -100,7 +100,7 @@ void initialize_gazerbeam_receiver(
         os_memclear(&prm, sizeof(prm));
         prm.int_handler_func = gazerbeam_led_int_handler;
         prm.flags = PINS_INT_CHANGE;
-        pin_attach_interrupt(pin, &prm);
+        pin_gpio_attach_interrupt(pin, &prm);
     }
 #endif
 }

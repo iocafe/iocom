@@ -44,7 +44,7 @@
 /* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and
    phototransistor connected to microcontroller (0 or 1).
  */
-#define GINA_USE_GAZERBEAM 0
+#define GINA_USE_GAZERBEAM 1
 #if GINA_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
@@ -63,13 +63,15 @@ static LighthouseClient lighthouse;
  */
 iocNodeConf ioapp_device_conf;
 
-/* Either blink LED by morse code to indicate boot error or use display if we have one.
+/* Use display if we have one.
  */
 #if PINS_DISPLAY
     static PinsDisplay pins_display;
-#else
-    static MorseCode morse;
 #endif
+
+/* Either blink LED by morse code to indicate boot error.
+ */
+static MorseCode morse;
 
 /* Maximum number of sockets, etc.
  */
@@ -226,17 +228,19 @@ osalStatus osal_main(
     initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
-    /* Setup to blink LED bat boot errors, etc. Handle network state notifications.
+    /* Setup display to indicate boot errors, etc. Handle network state notifications.
      */
 #if PINS_DISPLAY
     pinsDisplayParams display_prm;
     os_memclear(&display_prm, sizeof(display_prm));
     display_prm.spi_pin = &pins.spi.tft_spi;
     initialize_display(&pins_display, &display_prm, &ioboard_communication);
-#else
+#endif
+
+    /* Setup to blink LED to indicate boot errors, etc.
+     */
     initialize_morse_code(&morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
-#endif
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -275,7 +279,6 @@ osalStatus osal_loop(
 
     os_get_timer(&ti);
 
-
     /* Run light house.
      */
 #if GINA_USE_LIGHTHOUSE
@@ -288,13 +291,15 @@ osalStatus osal_loop(
     gazerbeam_run_configurator(&gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
-    /* Keep the display or morse code LED alive. These indicates boot issues, etc, to user.
+    /* Keep the display alive. These indicates boot issues, etc, to user.
      */
 #if PINS_DISPLAY
     run_display(&pins_display, &ti);
-#else
-    blink_morse_code(&morse, &ti);
 #endif
+
+    /* Keep the morse code LED alive. These indicates boot issues, etc, to user.
+     */
+    blink_morse_code(&morse, &ti);
 
     /* Keep the communication alive. If data is received from communication, the
        ioboard_communication_callback() will be called. Move data data synchronously
