@@ -152,7 +152,8 @@ osalStatus OS_ISR_FUNC_ATTR gazerbeam_decode_message(
 
     /* Set flag to indicate that the beam is connected.
      */
-    gb->beam_connected = 30;
+    gb->beam_connected_timer = *ti;
+    gb->beam_connected = OS_TRUE;
 
     /* Decice from pulse length if this is one or zero.
      */
@@ -287,13 +288,26 @@ os_memsz gazerbeam_get_message(
     os_short flags)
 {
     os_int n;
+    osalGazerbeamConnectionState c;
 
     /* Maintain gazerbeam connected in network state.
      */
     if (gb->beam_connected > 0)
     {
+        if (os_has_elapsed(&gb->beam_connected_timer, 300))
+        {
+            gb->beam_connected = OS_FALSE;
+        }
+
+        c = OSAL_NS_GAZERBEAM_CONFIGURING;
+        if (gb->configuration_match) {
+            if (!os_has_elapsed(&gb->configuration_match_timer, 15000)) {
+                c = OSAL_NS_GAZERBEAM_CONFIGURATION_MATCH;
+            }
+        }
+
         osal_set_network_state_int(OSAL_NS_GAZERBEAM_CONNECTED, 0,
-            --(gb->beam_connected) ? OS_TRUE : OS_FALSE);
+            gb->beam_connected ? c : OSAL_NS_GAZERBEAM_NOT_CONNECTED);
     }
 
     /* Return the message, if any. Set finshed_message_sz to zero so interrup handler

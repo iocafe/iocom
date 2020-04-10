@@ -43,42 +43,27 @@ void gazerbeam_run_configurator(
 {
     os_char buf[GAZERBEAM_MAX_MSG_SZ];
     os_memsz buf_sz;
+    osalStatus s;
 
     /* Get Wifi configuration messages from Android phone flash light -> phototransistor.
      */
     buf_sz = gazerbeam_get_message(gb, buf, sizeof(buf), GAZERBEAM_DEFAULT);
     if (buf_sz > 0)
     {
-#if GAZERBEAM_PINS_SUPPORT
-        /* If we are using pin interrupt, disable it.
+        /* Save stuff and perhaps reboot.
          */
-        /* if (gb->pin)
+        s = gazerbeam_save_config(buf, buf_sz);
+        if (s == OSAL_SUCCESS || s == OSAL_NOTHING_TO_DO)
         {
-            pin_gpio_detach_interrupt(gb->pin);
-        } */
-#endif
+            os_get_timer(&gb->configuration_match_timer);
+            gb->configuration_match = OS_TRUE;
 
-        /* Save stuff
-         */
-        if (gazerbeam_save_config(buf, buf_sz) == OSAL_SUCCESS)
-        {
             /* Here we reboot only if something changed.
              */
-            osal_reboot(0);
+            if (s == OSAL_SUCCESS) {
+                osal_reboot(0);
+            }
         }
-
-#if GAZERBEAM_PINS_SUPPORT
-        /* If we were using pin interrupt, enable it back.
-         */
-        /* if (gb->pin)
-        {
-            pinInterruptParams prm;
-            os_memclear(&prm, sizeof(prm));
-            prm.int_handler_func = gb->int_handler_func;
-            prm.flags = PINS_INT_CHANGE;
-            pin_gpio_attach_interrupt(gb->pin, &prm);
-        } */
-#endif
     }
 }
 
@@ -92,6 +77,7 @@ void gazerbeam_run_configurator(
   @param   message_sz Message size in bytes.
   @return  OSAL_SUCCESS if field was succesfully set.
            OSAL_NOTHING_TO_DO if field was unchanged.
+           OSAL_STATUS_FAILED if field was not set in message.
 
 ****************************************************************************************************
 */
@@ -107,12 +93,12 @@ osalStatus gazerbeam_save_config(
     s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_NETWORK,
         block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ,
         message, message_sz, GAZERBEAM_DEFAULT);
-    if (s == OSAL_SUCCESS) rval = s;
+    if (s != OSAL_NOTHING_TO_DO) rval = s;
 
     s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_PASSWORD,
         block.wifi[0].wifi_net_password, OSAL_WIFI_PRM_SZ,
         message, message_sz, GAZERBEAM_DEFAULT);
-    if (s == OSAL_SUCCESS) rval = s;
+    if (s != OSAL_NOTHING_TO_DO) rval = s;
 
     if (rval == OSAL_SUCCESS) {
         os_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
