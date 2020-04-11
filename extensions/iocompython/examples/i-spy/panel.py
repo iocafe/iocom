@@ -7,6 +7,7 @@ from item_configuration import ConfigurationItem
 from item_user_account import UserAccountItem
 from item_button import ButtonItem
 from item_heading import HeadingItem
+from item_linear_cam import LinearCameraItem
 
 from iocompython import Signal
 
@@ -58,6 +59,14 @@ class Panel(GridLayout):
         b = ButtonItem()
         b.setup_button(text, signal_me)
         self.add_my_widget(b)
+        return b
+
+    def add_assembly(self, ioc_root, assembly_name, assembly_type, assembly_params, device_path):
+        # if assembly_type is linear camera
+        cam = LinearCameraItem()
+        cam.set_device(ioc_root, device_path, assembly_name, assembly_params)
+        self.add_my_widget(cam)
+        return cam
 
     def add_heading(self, label1, label2, level):
         widgets_on_row = self.my_nro_widgets % self.cols

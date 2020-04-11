@@ -13,3 +13,5 @@ class ButtonItem(Item):
         if signal_me != None:
             self.my_button.bind(on_release = signal_me.my_button_pressed)
 
+    def get_kivy_button(self):
+        return self.my_button

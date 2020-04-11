@@ -35,6 +35,7 @@ class IoDevice(ConfigParser):
     def create_signal_display(self):
         p = Panel()
         self.my_signal_panel = p;
+        self.my_assemblied_panel = None;
 
         info = MemoryBlock(self.ioc_root, mblk_name='info.' + self.device_path)
         json_bin = info.read();
@@ -63,12 +64,18 @@ class IoDevice(ConfigParser):
 
         data = json.loads(json_text)
 
+        self.my_signal_panel.add_heading("signals - ", self.device_path, 1)
+
         mblks = data.get("mblk", None)
         if mblks == None:
             print("'mblk' not found")
             return
 
-        self.my_signal_panel.add_heading("signals - ", self.device_path, 1)
+        assemblies = data.get("assembly", None)
+        if assemblies != None:
+            self.my_signal_panel.add_heading("assemblies", "", 2)
+            for assembly in assemblies:
+                self.process_assembly(assembly)
             
         for mblk in mblks:
             self.process_mblk(mblk)
@@ -122,3 +129,9 @@ class IoDevice(ConfigParser):
         else:
             type_sz = osal_typeinfo[self.signal_type]
             self.signal_addr += 1 + type_sz * n
+
+    def process_assembly(self, data):
+        name = data.get("name", "no_name")
+        type = data.get("type", "no_type")
+        params = data.get("params", None)
+        self.my_signal_panel.add_assembly(self.ioc_root, name, type, params, self.device_path)
