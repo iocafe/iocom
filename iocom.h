@@ -118,6 +118,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
 #include "code/ioc_streamer.h"
+#include "code/ioc_out_stream.h"
 #include "code/ioc_ioboard.h"
 
 /* If C++ compilation, end the undecorated code.
