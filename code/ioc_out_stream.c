@@ -20,7 +20,8 @@
 #define OSAL_TRACE 3
 
 #include "iocom.h"
-#if IOC_STREAMER_SUPPORT
+#if 0
+//#if IOC_STREAMER_SUPPORT
 
 
 #if IOC_DEVICE_STREAMER
