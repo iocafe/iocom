@@ -75,7 +75,7 @@ void ioc_release_output_stream(
  */
 osalStatus ioc_write_item_to_output_stream(
     iocOutputStream *o,
-    os_char *data,
+    const os_char *data,
     os_memsz data_sz);
 
 #endif
