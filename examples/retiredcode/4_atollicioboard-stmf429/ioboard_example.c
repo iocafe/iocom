@@ -174,7 +174,7 @@ osalStatus osal_main(
         /* Keep the communication alive. The IO board uses one thread model, thus
            we need to call this function repeatedly.
          */
-        ioc_run(&ioboard_communication);
+        ioc_run(&ioboard_root);
 
         /* If we receive a "command" as 16 bit value in address 2. The command could start 
            some operation of IO board. The command is eached back in address 2 to allow 

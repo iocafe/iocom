@@ -22,7 +22,7 @@
 /* Communication root structure.
  */
 extern iocRoot
-    ioboard_communication;
+    ioboard_root;
 
 /* To and from controller memory blocks amd handles.
  */

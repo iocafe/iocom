@@ -234,7 +234,7 @@ osalStatus osal_main(
     pinsDisplayParams display_prm;
     os_memclear(&display_prm, sizeof(display_prm));
     display_prm.spi_pin = &pins.spi.tft_spi;
-    initialize_display(&pins_display, &display_prm, &ioboard_communication);
+    initialize_display(&pins_display, &display_prm, &ioboard_root);
 #endif
 
     /* Setup to blink LED to indicate boot errors, etc.
@@ -305,7 +305,7 @@ osalStatus osal_loop(
        ioboard_communication_callback() will be called. Move data data synchronously
        to incomong memory block.
      */
-    ioc_run(&ioboard_communication);
+    ioc_run(&ioboard_root);
     ioc_receive(&ioboard_imp);
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
@@ -342,7 +342,7 @@ osalStatus osal_loop(
 
     /* The call is here for testing only, take away.
      */
-    s = io_device_console(&ioboard_communication);
+    s = io_device_console(&ioboard_root);
 
 // osal_debug_error_int("HERE P ", pin_get(&pins.analog_inputs.potentiometer));
 
@@ -362,7 +362,7 @@ osalStatus osal_loop(
     {
         ioc_send(&ioboard_exp);
         ioc_send(&ioboard_conf_exp);
-        ioc_run(&ioboard_communication);
+        ioc_run(&ioboard_root);
     }
 
     return s;

@@ -19,9 +19,11 @@
 /* Initialize bitmap buffer (does not allocate any memory yet)
  */
 void ioc_initialize_bitmap_buffer(
-    iocBitmapBuffer *b)
+    iocBitmapBuffer *b,
+    iocRoot *root)
 {
     os_memclear(b, sizeof(iocBitmapBuffer));
+    b->root = root;
 }
 
 /* Allocate buffer
@@ -30,23 +32,29 @@ void ioc_allocate_bitmap_buffer(
     iocBitmapBuffer *b,
     os_memsz buf_sz)
 {
+    ioc_lock(b->root);
     b->buf_n = 0;
-    if (b->buf_sz == buf_sz) return;
-
-    ioc_free_bitmap_buffer(b);
-    b->buf = (os_uchar*)os_malloc(buf_sz, OS_NULL);
-    b->buf_sz = buf_sz;
+    b->pos = 0;
+    if (b->buf_sz != buf_sz)
+    {
+        ioc_free_bitmap_buffer(b);
+        b->buf = (os_uchar*)os_malloc(buf_sz, OS_NULL);
+        b->buf_sz = buf_sz;
+    }
+    ioc_unlock(b->root);
 }
 
 void ioc_free_bitmap_buffer(
     iocBitmapBuffer *b)
 {
+    ioc_lock(b->root);
     if (b->buf)
     {
         os_free(b->buf, b->buf_sz);
         b->buf = OS_NULL;
         b->buf_sz = 0;
     }
+    ioc_unlock(b->root);
 }
 
 
@@ -134,9 +142,19 @@ void ioc_send_bitmap_data(
 {
     os_memsz n;
 
+    ioc_lock(b->root);
+
     if (b->pos < b->buf_n)
     {
         n = b->buf_n - b->pos;
         b->pos += ioc_write_item_to_output_stream(video_output, (const os_char*)b->buf + b->pos, n);
     }
+
+    /* If whole bitmap has been sent, mark buffer empty.
+     */
+    if (b->pos >= b->buf_n) {
+        b->buf_n = 0;
+    }
+
+    ioc_unlock(b->root);
 }

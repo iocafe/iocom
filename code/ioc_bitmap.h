@@ -51,6 +51,7 @@ iocBitmapHdr;
 
 typedef struct iocBitmapBuffer
 {
+    iocRoot *root;
     os_uchar *buf;
     os_memsz buf_sz;
     os_memsz buf_n;
@@ -61,7 +62,8 @@ iocBitmapBuffer;
 /* Initialize bitmap buffer (does not allocate any memory yet)
  */
 void ioc_initialize_bitmap_buffer(
-    iocBitmapBuffer *b);
+    iocBitmapBuffer *b,
+    iocRoot *root);
 
 void ioc_allocate_bitmap_buffer(
     iocBitmapBuffer *b,

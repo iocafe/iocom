@@ -23,7 +23,7 @@
 #include "iocom.h"
 
 iocRoot
-    ioboard_communication;
+    ioboard_root;
 
 iocMemoryBlock
     ioboard_import_mblk,
@@ -68,13 +68,13 @@ void ioboard_start_communication(
     }
 
     ioc_streamer_initialize();
-    ioc_initialize_root(&ioboard_communication);
-    ioc_set_iodevice_id(&ioboard_communication, prm->device_name, prm->device_nr, prm->password, prm->network_name);
-    ioboard_communication.device_signal_hdr = prm->device_signal_hdr;
+    ioc_initialize_root(&ioboard_root);
+    ioc_set_iodevice_id(&ioboard_root, prm->device_name, prm->device_nr, prm->password, prm->network_name);
+    ioboard_root.device_signal_hdr = prm->device_signal_hdr;
 
     if (prm->pool)
     {
-        ioc_set_memory_pool(&ioboard_communication, prm->pool, prm->pool_sz);
+        ioc_set_memory_pool(&ioboard_root, prm->pool, prm->pool_sz);
     }
 
     os_memclear(&blockprm, sizeof(blockprm));
@@ -85,19 +85,19 @@ void ioboard_start_communication(
     blockprm.mblk_name = "exp";
     blockprm.nbytes = prm->send_block_sz;
     blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
-    ioc_initialize_memory_block(&ioboard_exp, &ioboard_export_mblk, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_exp, &ioboard_export_mblk, &ioboard_root, &blockprm);
  
     blockprm.mblk_name = "imp";
     blockprm.nbytes = prm->receive_block_sz;
     blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
-    ioc_initialize_memory_block(&ioboard_imp, &ioboard_import_mblk, &ioboard_communication, &blockprm);
+    ioc_initialize_memory_block(&ioboard_imp, &ioboard_import_mblk, &ioboard_root, &blockprm);
 
     if (prm->conf_send_block_sz)
     {
         blockprm.mblk_name = "conf_exp";
         blockprm.nbytes = prm->conf_send_block_sz;
         blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
-        ioc_initialize_memory_block(&ioboard_conf_exp, OS_NULL, &ioboard_communication, &blockprm);
+        ioc_initialize_memory_block(&ioboard_conf_exp, OS_NULL, &ioboard_root, &blockprm);
     }
 
     if (prm->conf_receive_block_sz)
@@ -105,7 +105,7 @@ void ioboard_start_communication(
         blockprm.mblk_name = "conf_imp";
         blockprm.nbytes = prm->conf_receive_block_sz;
         blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
-        ioc_initialize_memory_block(&ioboard_conf_imp, OS_NULL, &ioboard_communication, &blockprm);
+        ioc_initialize_memory_block(&ioboard_conf_imp, OS_NULL, &ioboard_root, &blockprm);
     }
 
     /* Do we publish device information?
@@ -116,7 +116,7 @@ void ioboard_start_communication(
         blockprm.buf = (char*)prm->device_info;
         blockprm.nbytes = prm->device_info_sz;
         blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
-        ioc_initialize_memory_block(&ioboard_dinfo, OS_NULL, &ioboard_communication, &blockprm);
+        ioc_initialize_memory_block(&ioboard_dinfo, OS_NULL, &ioboard_root, &blockprm);
     }
 
 #if OSAL_MULTITHREAD_SUPPORT
@@ -136,7 +136,7 @@ void ioboard_start_communication(
 	{
 		default:
 		case IOBOARD_CTRL_LISTEN_SOCKET:
-			ioboard_epoint = ioc_initialize_end_point(OS_NULL, &ioboard_communication);
+            ioboard_epoint = ioc_initialize_end_point(OS_NULL, &ioboard_root);
 
             os_memclear(&epprm, sizeof(epprm));
             epprm.iface = prm->iface;
@@ -163,7 +163,7 @@ void ioboard_start_communication(
     conprm.lighthouse_func = prm->lighthouse_func;
     conprm.lighthouse = prm->lighthouse;
 
-    ioboard_connection = ioc_initialize_connection(OS_NULL, &ioboard_communication);
+    ioboard_connection = ioc_initialize_connection(OS_NULL, &ioboard_root);
     ioc_connect(ioboard_connection, &conprm);
 }
 
@@ -181,5 +181,5 @@ void ioboard_start_communication(
 */
 void ioboard_end_communication(void)
 {
-    ioc_release_root(&ioboard_communication);
+    ioc_release_root(&ioboard_root);
 }

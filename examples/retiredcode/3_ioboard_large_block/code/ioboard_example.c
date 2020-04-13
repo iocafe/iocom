@@ -149,7 +149,7 @@ osalStatus osal_loop(
     /* Keep the communication alive. The IO board uses one thread model, thus
        we need to call this function repeatedly.
      */
-    ioc_run(&ioboard_communication);
+    ioc_run(&ioboard_root);
 
     /* Received data fame up to date.
      */
