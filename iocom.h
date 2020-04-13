@@ -117,7 +117,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_target_buffer.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
-#include "code/ioc_bitmap.h"
+#include "code/ioc_brick.h"
 #include "code/ioc_streamer.h"
 #include "code/ioc_out_stream.h"
 #include "code/ioc_ioboard.h"

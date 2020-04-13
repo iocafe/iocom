@@ -43,7 +43,6 @@ void ioc_initialize_output_stream(
     osalStatus *status,
     os_int flags);
     */
-
 }
 
 /* Release output stream.
@@ -56,6 +55,11 @@ void ioc_release_output_stream(
     os_int flags); */
 }
 
+os_boolean ioc_output_stream_is_open(
+    iocOutputStream *o)
+{
+    return OS_FALSE;
+}
 
 /* Release memory block object.
  */

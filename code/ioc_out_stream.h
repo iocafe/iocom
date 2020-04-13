@@ -71,6 +71,11 @@ void ioc_initialize_output_stream(
 void ioc_release_output_stream(
     iocOutputStream *o);
 
+/* Check if output stream is open?
+ */
+os_boolean ioc_output_stream_is_open(
+    iocOutputStream *o);
+
 /* Release memory block object.
  */
 osalStatus ioc_write_item_to_output_stream(
