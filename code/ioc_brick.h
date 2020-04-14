@@ -14,8 +14,6 @@
 ****************************************************************************************************
 */
 
-struct iocOutputStream;
-
 typedef enum iocBrickFormat
 {
     IOC_BYTE_BRICK = 50           /* 8 bits per pixel, one channel */
@@ -56,6 +54,10 @@ typedef struct iocBrickBuffer
     os_memsz buf_sz;
     volatile os_memsz buf_n;
     volatile os_memsz pos;
+
+    iocStreamerParams prm;
+    iocStreamerSignals *signals;
+    osalStream stream;
 }
 iocBrickBuffer;
 
@@ -63,6 +65,7 @@ iocBrickBuffer;
  */
 void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
+    iocStreamerSignals *signals,
     iocRoot *root);
 
 void ioc_allocate_brick_buffer(
@@ -96,10 +99,13 @@ void ioc_set_brick_checksum(
 
 /* Send all or part of brick data to output stream.
  */
-void ioc_send_brick_data(
-    iocBrickBuffer *b,
-    struct iocOutputStream *output_stream);
+// void ioc_send_brick_data(
+//     iocBrickBuffer *b);
 
 void ioc_run_brick_transfer(
-    iocBrickBuffer *b,
-    struct iocOutputStream *output_stream);
+    iocBrickBuffer *b);
+
+
+#define ioc_is_brick_empty(b) ((b)->buf_n == 0)
+#define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)
+

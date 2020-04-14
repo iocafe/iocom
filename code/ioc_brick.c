@@ -20,11 +20,26 @@
  */
 void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
+    iocStreamerSignals *signals,
     iocRoot *root)
 {
     os_memclear(b, sizeof(iocBrickBuffer));
     b->root = root;
+
+    if (signals) {
+        if (signals->to_device)
+        {
+            b->signals = &b->prm.tod;
+        }
+        else
+        {
+            b->signals = &b->prm.frd;
+        }
+        os_memcpy(b->signals, signals, sizeof(iocStreamerSignals));
+    }
+    b->prm.is_device = OS_TRUE;
 }
+
 
 /* Allocate buffer
  */
@@ -137,17 +152,23 @@ void ioc_set_brick_checksum(
 /* Send all or part of brick data to output stream.
  */
 void ioc_send_brick_data(
-    iocBrickBuffer *b,
-    struct iocOutputStream *output_stream)
+    iocBrickBuffer *b)
 {
-    os_memsz n;
+    os_memsz n, n_written;
+    osalStatus s;
 
     ioc_lock(b->root);
 
     if (b->pos < b->buf_n)
     {
         n = b->buf_n - b->pos;
-        b->pos += ioc_write_item_to_output_stream(output_stream, (const os_char*)b->buf + b->pos, n);
+        s = ioc_streamer_write(b->stream, (const os_char*)b->buf + b->pos, n, &n_written, OSAL_STREAM_DEFAULT);
+        if (s)
+        {
+            return;
+        }
+
+        b->pos += n_written;
     }
 
     /* If whole brick has been sent, mark buffer empty.
@@ -166,29 +187,6 @@ void ioc_send_brick_data(
   @brief Keep control stream for transferring IO device configuration and flash program alive.
   @anchor ioc_run_control_stream
 
-  This is IO device end function, which handles transfer of configuration and flash software,
-  etc. The device configuration included device identification, network configuration and
-  security configuration, like certificates, etc.
-
-  The streamer is used  to transfer a stream using buffer within memory block. This static
-  params structure selects which signals are used for straming.
-
-  The function is called repeatedly to run data this data transfer between the  controller and
-  the IO device. The function reads data from the stream buffer in memory block (as much as
-  there is) and writes it to persistent storage.
-
-  If the function detects IOC_STREAM_COMPLETED or IOC_STREAM_INTERRUPTED command, or if
-  connection has broken, it closes the persistent storage and memory block streamer.
-  Closing persistent object is flagged with success OSAL_STREAM_DEFAULT only on
-  IOC_STREAM_COMPLETED command, otherwise persistent object is closed with OSAL_STREAM_INTERRUPT
-  flag (in this case persient object may not want to use newly received data, especially if
-  it is flash program for micro-controller.
-
-  This function must be called from one thread at a time.
-
-  @param   ctrl IO device control stream transfer state structure.
-  @param   params Parameters for the streamer.
-
   @return  If working in something, the function returns OSAL_SUCCESS. Return value
            OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
            idle mode as far as the control stream knows.
@@ -196,30 +194,25 @@ void ioc_send_brick_data(
 ****************************************************************************************************
 */
 void ioc_run_brick_transfer(
-    iocBrickBuffer *b,
-    struct iocOutputStream *output_stream)
+    iocBrickBuffer *b)
 {
     iocStreamerState cmd;
-    osPersistentBlockNr select;
     os_char state_bits;
-    osalStatus s = OSAL_NOTHING_TO_DO;
+    // osalStatus s = OSAL_NOTHING_TO_DO;
 
-    /* No status yet
-     */
-    if (no oputout stream open)
-    {
-        try open output stream
-        return
+    if (b->stream == OS_NULL) {
+        cmd = (iocStreamerState)ioc_gets_int(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
+        if (cmd != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) return;
+
+        osal_trace("BRICK: IOC_STREAM_RUNNING command");
+        b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
+        if (b->stream == OS_NULL) return;
     }
 
-    /* If we got data check try to send it.
+    /* If we got data, then try to sending it.
      */
-    if (bitmap_buffer.buf_n)
-    {
-        ioc_send_brick_data(&bitmap_buffer, &video_output);
+    if (b->pos < b->buf_n) {
+        ioc_send_brick_data(b);
     }
-
-    /* Check if other end wants to close the stream
-     */
-    if (?) ??
 }
+
