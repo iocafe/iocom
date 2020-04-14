@@ -1,0 +1,82 @@
+{
+  "name": "tito",
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Exported by the IO controller",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "state",
+        "signals": [
+          {"name": "nro_devices", "type": "int"},
+          {"name": "test", "type": "boolean"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "Imported by the IO controller",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "control",
+        "signals": [
+           {"name": "restart", "type": "boolean"}
+         ]
+      }
+    ]
+  },
+
+  {
+    "name": "conf_exp",
+    "title": "Configuration signals exported by the IO node",
+    "flags": "up,conf",
+    "groups": [
+      {
+        "name": "transfer to the IO node",
+        "signals": [
+          {"name": "tod_state", "type": "char"},
+          {"name": "tod_tail", "type": "int"}
+        ]
+      },
+      {
+        "name": "transfer from IO node",
+        "signals": [
+          {"name": "frd_state", "type": "char"},
+          {"name": "frd_buf", "type": "uchar", "array": 257},
+          {"name": "frd_head", "type": "int"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "conf_imp",
+    "title": "Configuration signals imported by the IO node",
+    "flags": "down,conf",
+    "groups": [
+      {
+        "name": "transfer to IO node",
+        "signals": [
+          {"name": "tod_cmd", "type": "char"},
+          {"name": "tod_select", "type": "char"},
+          {"name": "tod_buf", "type": "uchar", "array": 257},
+          {"name": "tod_head", "type": "int"}
+        ]
+      },
+      {
+        "name": "transfer from IO node",
+        "signals": [
+          {"name": "frd_cmd", "type": "char"},
+          {"name": "frd_select", "type": "uchar"},
+          {"name": "frd_tail", "type": "int"}
+        ]
+      }
+    ]
+  }
+  ]
+}
+

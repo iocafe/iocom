@@ -14,20 +14,26 @@
         "name": "outputs",
         "pins": [
           {"name": "led_builtin", "addr": 33},
-          {"name": "tft_light", "addr": 5}
+          {"name": "A", "addr": 32, "group" : "segment7"},
+          {"name": "B", "addr": 32, "group" : "segment7"},
+          {"name": "C", "addr": 32, "group" : "segment7"},
+          {"name": "D", "addr": 32, "group" : "segment7"},
+          {"name": "E", "addr": 32, "group" : "segment7"},
+          {"name": "F", "addr": 32, "group" : "segment7"},
+          {"name": "G", "addr": 32, "group" : "segment7"},
+          {"name": "H", "addr": 32, "group" : "segment7"}
         ]
       },
       {
         "name": "analog_inputs",
         "pins": [
-          {"name": "ccd_signal", "addr": 36, "max": 4095},
           {"name": "potentiometer", "addr": 26, "speed": 3, "max": 4095}
         ]
       },
       {
         "name": "pwm",
         "pins": [
-          {"name": "ccd_clock",  "bank": 0, "addr": 22, "timer": 0, "frequency-kHz": 800, "resolution": 1, "init": 1, "hpoint": 0},
+          {"name": "servo", "bank": 0, "addr": 22, "frequency": 50, "resolution": 12, "init": 2048, "max": 4095},
           {"name": "dimmer_led", "bank": 1, "addr": 27, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
         ]
       },
@@ -35,18 +41,6 @@
         "name": "spi",
         "pins": [
           {"name": "tft_spi", "addr": 0, "miso": 19, "mosi": 23, "sclk": 18, "dc": 2}
-        ]
-      },
-      {
-        "name": "timers",
-        "pins": [
-          {"name": "ccd_data",  "tgroup" : 0, "timer": 0, "frequency-kHz": 100}
-        ]
-      },
-      {
-        "name": "cameras",
-        "pins": [
-          {"name": "ccd", "pin-a": 36, "pin-b": 21, "bank-b": 1, "pin-c": 32, "bank-c": 2, "pin-d": 35, "timer": 1}
         ]
       },
       {

@@ -8,9 +8,7 @@ typedef struct
   {
     PinGroupHdr hdr;
     Pin gazerbeam;
-    Pin dip_switch_3;
-    Pin dip_switch_4;
-    Pin touch_sensor;
+    Pin in_x;
   }
   inputs;
 
@@ -18,20 +16,14 @@ typedef struct
   {
     PinGroupHdr hdr;
     Pin led_builtin;
-    Pin A;
-    Pin B;
-    Pin C;
-    Pin D;
-    Pin E;
-    Pin F;
-    Pin G;
-    Pin H;
+    Pin tft_light;
   }
   outputs;
 
   struct
   {
     PinGroupHdr hdr;
+    Pin ccd_signal;
     Pin potentiometer;
   }
   analog_inputs;
@@ -39,7 +31,7 @@ typedef struct
   struct
   {
     PinGroupHdr hdr;
-    Pin servo;
+    Pin ccd_clock;
     Pin dimmer_led;
   }
   pwm;
@@ -50,6 +42,20 @@ typedef struct
     Pin tft_spi;
   }
   spi;
+
+  struct
+  {
+    PinGroupHdr hdr;
+    Pin ccd_data;
+  }
+  timers;
+
+  struct
+  {
+    PinGroupHdr hdr;
+    Pin ccd;
+  }
+  cameras;
 
   struct
   {
@@ -66,28 +72,18 @@ extern const IoPinsHdr pins_hdr;
 /* Global GINA IO configuration structure */
 extern const pins_t pins;
 
-/* Application's pin groups (linked list heads) */
-extern const Pin *pins_segment7_group;
-
 /* Name defines for pins and application pin groups (use ifdef to check if HW has pin) */
 #define PINS_INPUTS_GAZERBEAM "gazerbeam"
-#define PINS_INPUTS_DIP_SWITCH_3 "dip_switch_3"
-#define PINS_INPUTS_DIP_SWITCH_4 "dip_switch_4"
-#define PINS_INPUTS_TOUCH_SENSOR "touch_sensor"
+#define PINS_INPUTS_IN_X "in_x"
 #define PINS_OUTPUTS_LED_BUILTIN "led_builtin"
-#define PINS_OUTPUTS_A "A"
-#define PINS_SEGMENT7_GROUP "segment7"
-#define PINS_OUTPUTS_B "B"
-#define PINS_OUTPUTS_C "C"
-#define PINS_OUTPUTS_D "D"
-#define PINS_OUTPUTS_E "E"
-#define PINS_OUTPUTS_F "F"
-#define PINS_OUTPUTS_G "G"
-#define PINS_OUTPUTS_H "H"
+#define PINS_OUTPUTS_TFT_LIGHT "tft_light"
+#define PINS_ANALOG_INPUTS_CCD_SIGNAL "ccd_signal"
 #define PINS_ANALOG_INPUTS_POTENTIOMETER "potentiometer"
-#define PINS_PWM_SERVO "servo"
+#define PINS_PWM_CCD_CLOCK "ccd_clock"
 #define PINS_PWM_DIMMER_LED "dimmer_led"
 #define PINS_SPI_TFT_SPI "tft_spi"
+#define PINS_TIMERS_CCD_DATA "ccd_data"
+#define PINS_CAMERAS_CCD "ccd"
 #define PINS_UART_UART2 "uart2"
 
 OSAL_C_HEADER_ENDS

@@ -6,20 +6,15 @@ typedef struct gina_t
   struct 
   {
     iocMblkSignalHdr hdr;
-    iocSignal dip_switch_3;
-    iocSignal dip_switch_4;
-    iocSignal touch_sensor;
-    iocSignal myanalog;
+    iocSignal frame_rate;
     iocSignal testfloat;
     iocSignal teststr;
-    iocSignal A;
-    iocSignal B;
-    iocSignal C;
-    iocSignal D;
-    iocSignal E;
-    iocSignal F;
-    iocSignal G;
-    iocSignal H;
+    iocSignal testbool;
+    iocSignal in_x;
+    iocSignal potentiometer;
+    iocSignal rec_state;
+    iocSignal rec_buf;
+    iocSignal rec_head;
   }
   exp;
 
@@ -28,9 +23,11 @@ typedef struct gina_t
     iocMblkSignalHdr hdr;
     iocSignal strtodevice;
     iocSignal seven_segment;
-    iocSignal servo;
     iocSignal dimmer_led;
     iocSignal myoutput;
+    iocSignal rec_cmd;
+    iocSignal rec_select;
+    iocSignal rec_tail;
   }
   imp;
 
@@ -60,7 +57,7 @@ typedef struct gina_t
 }
 gina_t;
 
-#define GINA_EXP_MBLK_SZ 46
+#define GINA_EXP_MBLK_SZ 16052
 #define GINA_IMP_MBLK_SZ 32
 #define GINA_CONF_EXP_MBLK_SZ 272
 #define GINA_CONF_IMP_MBLK_SZ 276
@@ -70,6 +67,7 @@ extern const iocDeviceHdr gina_hdr;
 
 #define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
 #define GINA_EXP_TESTSTR_ARRAY_SZ 10
+#define GINA_EXP_REC_BUF_ARRAY_SZ 16000
 #define GINA_IMP_STRTODEVICE_ARRAY_SZ 16
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 #define GINA_CONF_EXP_FRD_BUF_ARRAY_SZ 257

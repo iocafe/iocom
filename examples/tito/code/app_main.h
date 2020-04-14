@@ -19,7 +19,9 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#include "nodeconf.h"
 #include "ioserver.h"
+#include "lighthouse.h"
 #include "gina-for-tito.h"
 #include "app_root.h"
 #include "app_iodevice.h"
@@ -27,6 +29,14 @@
 #include "app_seq.h"
 #include "app_seq_blink_led.h"
 #include "app_instance.h"
+
+/* Include headers generated from JSON configuration.
+ */
+OSAL_C_HEADER_BEGINS
+#include "network-defaults.h"
+#include "signals.h"
+#include "info-mblk-binary.h"
+OSAL_C_HEADER_ENDS
 
 /* IOCOM root object for this application
  */

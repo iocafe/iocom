@@ -2,30 +2,27 @@
 const struct gina_t gina = 
 {
   {
-    {"exp", &ioboard_exp, 14, GINA_EXP_MBLK_SZ, (iocSignal*)&gina.exp.dip_switch_3},
-    {40, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_3}, /* dip_switch_3 */
-    {41, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.dip_switch_4}, /* dip_switch_4 */
-    {42, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.touch_sensor}, /* touch_sensor */
-    {43, 1, OS_USHORT, &ioboard_exp, OS_NULL}, /* myanalog */
-    {0, 5, OS_FLOAT, &ioboard_exp, OS_NULL}, /* testfloat */
-    {21, 10, OS_STR, &ioboard_exp, OS_NULL}, /* teststr */
-    {32, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.A}, /* A */
-    {33, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.B}, /* B */
-    {34, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.C}, /* C */
-    {35, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.D}, /* D */
-    {36, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.E}, /* E */
-    {37, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.F}, /* F */
-    {38, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.G}, /* G */
-    {39, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.outputs.H} /* H */
+    {"exp", &ioboard_exp, 9, GINA_EXP_MBLK_SZ, (iocSignal*)&gina.exp.frame_rate},
+    {0, 1, OS_FLOAT, &ioboard_exp, OS_NULL}, /* frame_rate */
+    {5, 5, OS_FLOAT, &ioboard_exp, OS_NULL}, /* testfloat */
+    {26, 10, OS_STR, &ioboard_exp, OS_NULL}, /* teststr */
+    {37, 1, OS_BOOLEAN, &ioboard_exp, OS_NULL}, /* testbool */
+    {38, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.in_x}, /* in_x */
+    {39, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
+    {44, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
+    {46, 16000, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
+    {16047, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
   },
 
   {
-    {"imp", &ioboard_imp, 5, GINA_IMP_MBLK_SZ, (iocSignal*)&gina.imp.strtodevice},
+    {"imp", &ioboard_imp, 7, GINA_IMP_MBLK_SZ, (iocSignal*)&gina.imp.strtodevice},
     {0, 16, OS_STR, &ioboard_imp, OS_NULL}, /* strtodevice */
     {17, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
-    {19, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.servo}, /* servo */
-    {22, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
-    {25, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL} /* myoutput */
+    {19, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
+    {22, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* myoutput */
+    {23, 1, OS_CHAR, &ioboard_imp, OS_NULL}, /* rec_cmd */
+    {25, 1, OS_UCHAR, &ioboard_imp, OS_NULL}, /* rec_select */
+    {27, 1, OS_INT, &ioboard_imp, OS_NULL} /* rec_tail */
   },
 
   {

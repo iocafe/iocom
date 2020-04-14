@@ -20,7 +20,7 @@
 ****************************************************************************************************
 */
 
-/* Structures defined later in headers.
+/* Structures which are defined later in headers.
  */
 struct iocRoot;
 struct iocMemoryBlock;

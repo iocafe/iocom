@@ -20,7 +20,17 @@
 #include "devicedir.h"
 
 iocRoot app_iocom;
-static AppRoot *tito_main;
+static AppRoot *app_root_obj;
+
+/* IO device/network configuration.
+ */
+static iocNodeConf app_device_conf;
+
+/* Light house state structure. The lighthouse sends periodic UDP broadcards
+   to so that this service can be detected in network.
+ */
+static LighthouseServer lighthouse;
+
 
 
 /**
@@ -37,32 +47,64 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    osalSecurityConfig security_prm;
+    const os_char *device_name = "tito";
+    osPersistentParams persistentprm;
+    iocConnectionConfig *connconf;
+    osalSecurityConfig *security;
+    iocNetworkInterfaces *nics;
+    osalWifiNetworks *wifis;
+    iocDeviceId *device_id;
+    iocLighthouseInfo lighthouse_info;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().
      */
     osal_initialize_net_state();
 
-    os_memclear(&security_prm, sizeof(security_prm));
-    security_prm.server_cert_file = "myhome.crt";
-    security_prm.server_key_file = "secret/myhome.key";
-    security_prm.root_cert_file = security_prm.server_cert_file;
+    /* Initialize persistent storage
+     */
+    os_memclear(&persistentprm, sizeof(persistentprm));
+    persistentprm.device_name = device_name;
+    os_persistent_initialze(&persistentprm);
 
     /* Initialize communication root object.
      */
     ioc_initialize_root(&app_iocom);
-    ioc_set_iodevice_id(&app_iocom, "tito", IOC_AUTO_DEVICE_NR, "pass", "iocafenet");
 
-    /* Initialize the transport, socket, TLS, serial, etc..
+    /* Load device/network configuration and device/user account congiguration
+       (persistent storage is typically either file system or micro-controller's flash).
+       Defaults are set in network-defaults.json and in account-defaults.json.
      */
-    osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &security_prm);
+    ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
+        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
+    device_id = ioc_get_device_id(&app_device_conf);
+    ioc_set_iodevice_id(&app_iocom, device_name, device_id->device_nr,
+        device_id->password, device_id->network_name);
+
+    /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
+     */
+    connconf = ioc_get_connection_conf(&app_device_conf);
+    ioc_get_lighthouse_info(connconf, &lighthouse_info);
+
+    /* Setup network interface configuration and initialize transport library. This is
+       partyly ignored if network interfaces are managed by operating system
+       (Linux/Windows,etc),
+     */
+    nics = ioc_get_nics(&app_device_conf);
+    wifis = ioc_get_wifis(&app_device_conf);
+    security = ioc_get_security_conf(&app_device_conf);
+    osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
     osal_serial_initialize();
+
+    /* Initialize light house. Sends periodic UDP broadcards to so that this service
+       can be detected in network.
+     */
+    ioc_initialize_lighthouse_server(&lighthouse, device_id->publish, &lighthouse_info, OS_NULL);
 
     /* Create tito main object and start listening for clients.
      */
-    tito_main = new AppRoot;
-    tito_main->listen_for_clients();
+    app_root_obj = new AppRoot;
+    app_root_obj->listen_for_clients();
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -96,7 +138,11 @@ osalStatus osal_loop(
     s = io_device_console(&app_iocom);
     if (s) return s;
 
-    return tito_main->loop();
+    /* Run light house (send periodic UDP broadcasts so that this service can be detected)
+     */
+    ioc_run_lighthouse_server(&lighthouse);
+
+    return app_root_obj->loop();
 }
 
 
@@ -119,7 +165,7 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    delete tito_main;
+    delete app_root_obj;
 
     ioc_release_root(&app_iocom);
     osal_tls_shutdown();

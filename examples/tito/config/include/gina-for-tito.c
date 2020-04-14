@@ -3,100 +3,95 @@ void gina_init_signal_struct(gina_t *s)
 {
   os_memclear(s, sizeof(gina_t));
   s->exp.hdr.mblk_name = "exp";
-  s->exp.hdr.n_signals = 13;
+  s->exp.hdr.n_signals = 9;
   s->exp.hdr.mblk_sz = GINA_EXP_MBLK_SZ;
-  s->exp.hdr.first_signal = &s->exp.dip_switch_3;
+  s->exp.hdr.first_signal = &s->exp.frame_rate;
 
- /* dip_switch_3 */
-  s->exp.dip_switch_3.addr = 30;
-  s->exp.dip_switch_3.n = 1;
-  s->exp.dip_switch_3.flags = OS_BOOLEAN;
-
- /* dip_switch_4 */
-  s->exp.dip_switch_4.addr = 31;
-  s->exp.dip_switch_4.n = 1;
-  s->exp.dip_switch_4.flags = OS_BOOLEAN;
-
- /* touch_sensor */
-  s->exp.touch_sensor.addr = 32;
-  s->exp.touch_sensor.n = 1;
-  s->exp.touch_sensor.flags = OS_BOOLEAN;
-
- /* potentiometer */
-  s->exp.potentiometer.addr = 33;
-  s->exp.potentiometer.n = 1;
-  s->exp.potentiometer.flags = OS_USHORT;
+ /* frame_rate */
+  s->exp.frame_rate.addr = 0;
+  s->exp.frame_rate.n = 1;
+  s->exp.frame_rate.flags = OS_FLOAT;
 
  /* testfloat */
-  s->exp.testfloat.addr = 0;
+  s->exp.testfloat.addr = 5;
   s->exp.testfloat.n = 5;
   s->exp.testfloat.flags = OS_FLOAT;
 
- /* A */
-  s->exp.A.addr = 21;
-  s->exp.A.n = 1;
-  s->exp.A.flags = OS_BOOLEAN;
+ /* teststr */
+  s->exp.teststr.addr = 26;
+  s->exp.teststr.n = 10;
+  s->exp.teststr.flags = OS_STR;
 
- /* B */
-  s->exp.B.addr = 22;
-  s->exp.B.n = 1;
-  s->exp.B.flags = OS_BOOLEAN;
+ /* testbool */
+  s->exp.testbool.addr = 37;
+  s->exp.testbool.n = 1;
+  s->exp.testbool.flags = OS_BOOLEAN;
 
- /* C */
-  s->exp.C.addr = 23;
-  s->exp.C.n = 1;
-  s->exp.C.flags = OS_BOOLEAN;
+ /* in_x */
+  s->exp.in_x.addr = 38;
+  s->exp.in_x.n = 1;
+  s->exp.in_x.flags = OS_BOOLEAN;
 
- /* D */
-  s->exp.D.addr = 24;
-  s->exp.D.n = 1;
-  s->exp.D.flags = OS_BOOLEAN;
+ /* potentiometer */
+  s->exp.potentiometer.addr = 39;
+  s->exp.potentiometer.n = 1;
+  s->exp.potentiometer.flags = OS_FLOAT;
 
- /* E */
-  s->exp.E.addr = 25;
-  s->exp.E.n = 1;
-  s->exp.E.flags = OS_BOOLEAN;
+ /* rec_state */
+  s->exp.rec_state.addr = 44;
+  s->exp.rec_state.n = 1;
+  s->exp.rec_state.flags = OS_CHAR;
 
- /* F */
-  s->exp.F.addr = 26;
-  s->exp.F.n = 1;
-  s->exp.F.flags = OS_BOOLEAN;
+ /* rec_buf */
+  s->exp.rec_buf.addr = 46;
+  s->exp.rec_buf.n = 16000;
+  s->exp.rec_buf.flags = OS_UCHAR;
 
- /* G */
-  s->exp.G.addr = 27;
-  s->exp.G.n = 1;
-  s->exp.G.flags = OS_BOOLEAN;
-
- /* H */
-  s->exp.H.addr = 28;
-  s->exp.H.n = 1;
-  s->exp.H.flags = OS_BOOLEAN;
+ /* rec_head */
+  s->exp.rec_head.addr = 16047;
+  s->exp.rec_head.n = 1;
+  s->exp.rec_head.flags = OS_INT;
   s->mblk_list[0] = &s->exp.hdr;
 
   s->imp.hdr.mblk_name = "imp";
-  s->imp.hdr.n_signals = 4;
+  s->imp.hdr.n_signals = 7;
   s->imp.hdr.mblk_sz = GINA_IMP_MBLK_SZ;
-  s->imp.hdr.first_signal = &s->imp.seven_segment;
+  s->imp.hdr.first_signal = &s->imp.strtodevice;
+
+ /* strtodevice */
+  s->imp.strtodevice.addr = 0;
+  s->imp.strtodevice.n = 16;
+  s->imp.strtodevice.flags = OS_STR;
 
  /* seven_segment */
-  s->imp.seven_segment.addr = 0;
+  s->imp.seven_segment.addr = 17;
   s->imp.seven_segment.n = 8;
   s->imp.seven_segment.flags = OS_BOOLEAN;
 
- /* servo */
-  s->imp.servo.addr = 2;
-  s->imp.servo.n = 1;
-  s->imp.servo.flags = OS_SHORT;
-
  /* dimmer_led */
-  s->imp.dimmer_led.addr = 5;
+  s->imp.dimmer_led.addr = 19;
   s->imp.dimmer_led.n = 1;
-  s->imp.dimmer_led.flags = OS_SHORT;
+  s->imp.dimmer_led.flags = OS_USHORT;
 
- /* led_builtin */
-  s->imp.led_builtin.addr = 8;
-  s->imp.led_builtin.n = 1;
-  s->imp.led_builtin.flags = OS_BOOLEAN;
+ /* myoutput */
+  s->imp.myoutput.addr = 22;
+  s->imp.myoutput.n = 1;
+  s->imp.myoutput.flags = OS_BOOLEAN;
+
+ /* rec_cmd */
+  s->imp.rec_cmd.addr = 23;
+  s->imp.rec_cmd.n = 1;
+  s->imp.rec_cmd.flags = OS_CHAR;
+
+ /* rec_select */
+  s->imp.rec_select.addr = 25;
+  s->imp.rec_select.n = 1;
+  s->imp.rec_select.flags = OS_UCHAR;
+
+ /* rec_tail */
+  s->imp.rec_tail.addr = 27;
+  s->imp.rec_tail.n = 1;
+  s->imp.rec_tail.flags = OS_INT;
   s->mblk_list[1] = &s->imp.hdr;
 
   s->conf_exp.hdr.mblk_name = "conf_exp";

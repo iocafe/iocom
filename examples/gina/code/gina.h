@@ -30,3 +30,7 @@ void ioboard_communication_callback(
     os_int end_addr,
     os_ushort flags,
     void *context);
+
+void ioboard_camera_callback(
+    struct pinsPhoto *photo,
+    void *context);

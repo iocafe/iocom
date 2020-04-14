@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import platform
 
@@ -28,7 +29,7 @@ runcmd(JSONTOOL + ' --b2t ' + MYSIGNALS + '.binjson ' + MYSIGNALS + '-check.json
 runcmd(SIGNALSTOC + ' -a controller-static ' + MYSIGNALS + '.json -o ' + MYCONFIG + '/include/signals.c')
 runcmd(BINTOC + ' -v ioapp_signal_config ' + MYSIGNALS + '.binjson -o ' + MYINCLUDE + '/info-mblk-binary.c')
 
-python3 ${MYSCRIPTS}/signals-to-c.py -a controller-static ${MYCODEROOT}/iocom/examples/gina/config/signals/gina-signals.json -o ${MYCONFIG}/include/gina-for-${MYAPP}.c
+runcmd(SIGNALSTOC + ' -a controller-static ' + MYCODEROOT + '/iocom/examples/gina/config/signals/signals.json -o ' + MYCONFIG + '/include/gina-for-' + MYAPP + '.c')
 
 runcmd(JSONTOOL + ' --t2b -title ' + MYNETDEFAULTS + '.json ' + MYNETDEFAULTS + '.binjson')
 runcmd(JSONTOOL + ' --b2t ' + MYNETDEFAULTS + '.binjson ' + MYNETDEFAULTS + '-check.json')

@@ -69,6 +69,13 @@ iocNodeConf ioapp_device_conf;
     static PinsDisplay pins_display;
 #endif
 
+/* Camera state and camera output.
+ */
+#if PINS_CAMERA
+    static pinsCamera pins_camera;
+    static iocBrickBuffer video_output;
+#endif
+
 /* Either blink LED by morse code to indicate boot error.
  */
 static MorseCode morse;
@@ -237,6 +244,30 @@ osalStatus osal_main(
     initialize_display(&pins_display, &display_prm, &ioboard_root);
 #endif
 
+    /* Set up video output stream and the camera
+     */
+#if PINS_CAMERA
+    iocStreamerSignals vsignals;
+    os_memclear(&vsignals, sizeof(iocStreamerSignals));
+    vsignals.cmd = &gina.imp.rec_cmd;
+    vsignals.select = &gina.imp.rec_select;
+    vsignals.buf = &gina.exp.rec_buf;
+    vsignals.head = &gina.exp.rec_head;
+    vsignals.tail = &gina.imp.rec_tail;
+    vsignals.state = &gina.exp.rec_state;
+    vsignals.to_device = OS_FALSE;
+    ioc_initialize_brick_buffer(&video_output, &vsignals, &ioboard_root);
+
+    pinsCameraParams camera_prm;
+    PINS_CAMERA_IFACE.initialize();
+    os_memclear(&camera_prm, sizeof(camera_prm));
+    camera_prm.camera_pin = &pins.cameras.ccd;
+    camera_prm.timer_pin = &pins.timers.ccd_data;
+    camera_prm.callback_func = ioboard_camera_callback;
+    PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
+    PINS_CAMERA_IFACE.start(&pins_camera);
+#endif
+
     /* Setup to blink LED to indicate boot errors, etc.
      */
     initialize_morse_code(&morse, &pins.outputs.led_builtin,
@@ -310,6 +341,10 @@ osalStatus osal_loop(
     ioc_receive(&ioboard_conf_imp);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
+#if PINS_CAMERA
+    ioc_run_brick_transfer(&video_output);
+#endif
+
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
@@ -343,8 +378,6 @@ osalStatus osal_loop(
     /* The call is here for testing only, take away.
      */
     s = io_device_console(&ioboard_root);
-
-// osal_debug_error_int("HERE P ", pin_get(&pins.analog_inputs.potentiometer));
 
     /* Send changed data synchronously from outgoing memory blocks every 50 ms. If we need
        very low latency IO in local network we can have interval like 1 ms, or just call send
@@ -482,3 +515,31 @@ void ioboard_communication_callback(
     }
 #endif
 }
+
+
+#if PINS_CAMERA
+/**
+****************************************************************************************************
+
+  @brief "New frame from camera" callback.
+
+  The ioboard_camera_callback function is called when a camera frame is captured.
+  If video transfer buffer is empty and vido output stream is open, the camera data is  moved
+  to video outout buffer. Othervise camera data is dropped.
+
+  @param   photo Pointer to a frame captured by camera.
+  @param   context Application context, not used (NULL).
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioboard_camera_callback(
+    struct pinsPhoto *photo,
+    void *context)
+{
+    if (ioc_is_brick_empty(&video_output) && ioc_is_brick_connected(&video_output))
+    {
+        pins_store_photo_to_brick(photo, &video_output, IOC_UNCOMPRESSED_BRICK);
+    }
+}
+#endif

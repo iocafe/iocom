@@ -103,9 +103,9 @@ osalStatus osal_main(
     ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
         sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
     device_id = ioc_get_device_id(&app_device_conf);
-
     ioc_set_iodevice_id(&app_iocom, device_name, device_id->device_nr,
         device_id->password, device_id->network_name);
+
     ioc_initialize_dynamic_root(&app_iocom);
 
     /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).

@@ -1,41 +1,35 @@
 {
 "name": "gina",
+"assembly": [
+	{
+		"name": "ccd",
+		"type": "linecam",
+		"params": [
+			{
+				"name": "exp",
+				"signal": "rec_*.exp"
+			},
+			{
+				"name": "imp",
+				"signal": "rec_*.imp"
+			}
+		]
+	}
+],
 "mblk": [
 	{
 		"name": "exp",
 		"flags": "up",
 		"groups": [
 			{
-				"name": "inputs",
+				"name": "state",
 				"signals": [
 					{
-						"name": "dip_switch_3",
-						"addr": 40,
-						"type": "boolean"
+						"name": "frame_rate",
+						"type": "float"
 					},
-					{
-						"name": "dip_switch_4"
-					},
-					{
-						"name": "touch_sensor"
-					}
-				]
-			},
-			{
-				"name": "analog inputs",
-				"signals": [
-					{
-						"name": "myanalog",
-						"type": "ushort"
-					}
-				]
-			},
-			{
-				"name": "device state",
-				"signals": [
 					{
 						"name": "testfloat",
-						"addr": 0,
 						"type": "float",
 						"array": 5
 					},
@@ -45,29 +39,39 @@
 						"array": 10
 					},
 					{
-						"name": "A",
+						"name": "testbool",
+						"type": "boolean"
+					}
+				]
+			},
+			{
+				"name": "inputs",
+				"signals": [
+					{
+						"name": "in_x",
 						"type": "boolean"
 					},
 					{
-						"name": "B"
+						"name": "potentiometer",
+						"type": "float"
+					}
+				]
+			},
+			{
+				"name": "camera up",
+				"signals": [
+					{
+						"name": "rec_state",
+						"type": "char"
 					},
 					{
-						"name": "C"
+						"name": "rec_buf",
+						"type": "uchar",
+						"array": 16000
 					},
 					{
-						"name": "D"
-					},
-					{
-						"name": "E"
-					},
-					{
-						"name": "F"
-					},
-					{
-						"name": "G"
-					},
-					{
-						"name": "H"
+						"name": "rec_head",
+						"type": "int"
 					}
 				]
 			}
@@ -96,10 +100,6 @@
 				"name": "pwm",
 				"signals": [
 					{
-						"name": "servo",
-						"type": "ushort"
-					},
-					{
 						"name": "dimmer_led",
 						"type": "ushort",
 						"max": 100
@@ -112,6 +112,23 @@
 					{
 						"name": "myoutput",
 						"type": "boolean"
+					}
+				]
+			},
+			{
+				"name": "camera down",
+				"signals": [
+					{
+						"name": "rec_cmd",
+						"type": "char"
+					},
+					{
+						"name": "rec_select",
+						"type": "uchar"
+					},
+					{
+						"name": "rec_tail",
+						"type": "int"
 					}
 				]
 			}

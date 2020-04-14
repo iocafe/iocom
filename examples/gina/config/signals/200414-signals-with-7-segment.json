@@ -16,7 +16,6 @@
       ]
     }
   ],
-
   "mblk": [
   {
     "name": "exp",
@@ -24,27 +23,32 @@
     "flags": "up",
     "groups": [
       {
-        "name": "state",
-        "signals": [
-          {"name": "frame_rate", "type": "float"},
-          {"name": "testfloat", "type": "float", "array": 5},
-          {"name": "teststr", "type": "str", "array": 10},
-          {"name": "testbool", "type": "boolean"}
-        ]
-      },
-      {
         "name": "inputs",
         "signals": [
-          {"name": "in_x", "type": "boolean"},
-          {"name": "potentiometer", "type": "float"}
+          {"name": "dip_switch_3", "addr": 40, "type": "boolean"},
+          {"name": "dip_switch_4"},
+          {"name": "touch_sensor"}
         ]
       },
       {
-        "name": "camera up",
+        "name": "analog inputs",
         "signals": [
-          {"name": "rec_state", "type": "char"},
-          {"name": "rec_buf", "type": "uchar", "array": 16000},
-          {"name": "rec_head", "type": "int"}
+          {"name": "myanalog", "type": "ushort"}
+        ]
+      },
+      {
+        "name": "device state",
+        "signals": [
+          {"name": "testfloat", "addr": 0, "type": "float", "array": 5},
+          {"name": "teststr", "type": "str", "array": 10},
+          {"name": "A", "type": "boolean"},
+          {"name": "B"},
+          {"name": "C"},
+          {"name": "D"},
+          {"name": "E"},
+          {"name": "F"},
+          {"name": "G"},
+          {"name": "H"}
         ]
       }
     ]
@@ -65,6 +69,7 @@
       {
         "name": "pwm",
         "signals": [
+          {"name": "servo", "type": "ushort"},
           {"name": "dimmer_led", "type": "ushort", "max": 100}
         ]
       },
@@ -72,14 +77,6 @@
         "name": "outputs",
         "signals": [
           {"name": "myoutput", "type": "boolean"}
-        ]
-      },
-      {
-        "name": "camera down",
-        "signals": [
-          {"name": "rec_cmd", "type": "char"},
-          {"name": "rec_select", "type": "uchar"},
-          {"name": "rec_tail", "type": "int"}
         ]
       }
     ]

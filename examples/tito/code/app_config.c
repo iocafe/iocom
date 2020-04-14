@@ -15,7 +15,14 @@
 
 ****************************************************************************************************
 */
-#include "app_main.h"
+#include "iocom.h"
+#include "signals.h"
+#include "info-mblk-binary.h"
+#include "network-defaults.h"
+#include "gina-for-tito.h"
 
+#include "signals.c"
+#include "info-mblk-binary.c"
+#include "network-defaults.c"
 #include "gina-for-tito.c"
 

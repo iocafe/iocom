@@ -73,15 +73,17 @@ void BlinkLedSequence::stop()
 */
 void BlinkLedSequence::run()
 {
+/*
     os_boolean led_on = OS_TRUE;
     os_char state_bits;
     os_int dip, elap, touch_sensor, brig = 1, up = 1;
     os_timer end_t, start_t;
 
     os_get_timer(&start_t);
-
+*/
     while (!m_stop_thread && osal_go())
     {
+#if 0
         if (os_has_elapsed(&start_t, 50))
         {
             touch_sensor = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits, IOC_SIGNAL_DEFAULT);
@@ -123,6 +125,7 @@ void BlinkLedSequence::run()
         os_sleep(500);
         led_on = !led_on;
         */
+#endif
         os_timeslice();
     }
 }
