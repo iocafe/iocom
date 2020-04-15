@@ -38,6 +38,5 @@ public:
     os_int m_nro_apps;
     class AppInstance *m_app[MAX_APPS];
 
-    osalStatus listen_for_clients();
     osalStatus loop();
 };

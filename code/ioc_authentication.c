@@ -269,9 +269,18 @@ osalStatus ioc_process_received_authentication_frame(
     if (s) return s;
 #endif
 
+    root = con->link.root;
+
+    /** If we are automatically setting for a device (root network name is "*" or ""
+     */
+    if (!os_strcmp(root->network_name, "*") || root->network_name[0] == '\0')
+    {
+        os_strncpy(root->network_name, user.network_name, IOC_NETWORK_NAME_SZ);
+        ioc_set_network_name(root);
+    }
+
     /* Check user autorization.
      */
-    root = con->link.root;
     if (root->authorization_func &&
         (con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
          == (IOC_LISTENER|IOC_SECURE_CONNECTION))

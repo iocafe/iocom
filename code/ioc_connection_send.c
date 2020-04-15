@@ -100,7 +100,13 @@ osalStatus ioc_connection_send(
     }
 
     /* We must send and receive authentication before sending anything else.
+       Controller needs to send athentication before device to allow
+     * network name "*" to connect to automatically select the network.
      */
+    if ((con->flags & IOC_CONNECT_UP) && !con->authentication_received)
+    {
+        goto just_move_data;
+    }
     if (!con->authentication_sent)
     {
         ioc_make_authentication_frame(con);

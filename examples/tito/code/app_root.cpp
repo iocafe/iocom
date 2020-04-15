@@ -77,29 +77,14 @@ AppRoot::~AppRoot()
     }
 }
 
-
-osalStatus AppRoot::listen_for_clients()
-{
-    iocEndPoint *ep = OS_NULL;
-    iocEndPointParams epprm;
-
-    const osalStreamInterface *iface = OSAL_TLS_IFACE;
-
-    ep = ioc_initialize_end_point(OS_NULL, &app_iocom_root);
-    os_memclear(&epprm, sizeof(epprm));
-    epprm.iface = iface;
-    epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD;
-    ioc_listen(ep, &epprm);
-
-    os_sleep(100);
-    return OSAL_SUCCESS;
-}
-
-
 osalStatus AppRoot::loop()
 {
-    os_sleep(100);
+    os_int i;
+
+    os_sleep(5);
+    for (i = 0; i<m_nro_apps; i++) {
+        m_app[i]->run();
+    }
+
     return OSAL_SUCCESS;
 }
-
-
