@@ -247,7 +247,7 @@ osalStatus osal_main(
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
-    iocStreamerSignals vsignals;
+    /* iocStreamerSignals vsignals;
     os_memclear(&vsignals, sizeof(iocStreamerSignals));
     vsignals.cmd = &gina.imp.rec_cmd;
     vsignals.select = &gina.imp.rec_select;
@@ -255,8 +255,8 @@ osalStatus osal_main(
     vsignals.head = &gina.exp.rec_head;
     vsignals.tail = &gina.imp.rec_tail;
     vsignals.state = &gina.exp.rec_state;
-    vsignals.to_device = OS_FALSE;
-    ioc_initialize_brick_buffer(&video_output, &vsignals, &ioboard_root);
+    vsignals.to_device = OS_FALSE; */
+    ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root);
 
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();

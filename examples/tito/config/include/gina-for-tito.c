@@ -166,6 +166,14 @@ void gina_init_signal_struct(gina_t *s)
   s->conf_imp.frd_tail.flags = OS_INT;
   s->mblk_list[3] = &s->conf_imp.hdr;
 
+  /* linecam 'ccd' */
+  s->ccd.cmd =  &s->imp.rec_cmd;
+  s->ccd.select =  &s->imp.rec_select;
+  s->ccd.buf =  &s->exp.rec_buf;
+  s->ccd.head =  &s->exp.rec_head;
+  s->ccd.tail =  &s->imp.rec_tail;
+  s->ccd.state =  &s->exp.rec_state;
+
   s->hdr.n_mblk_hdrs = 4;
   s->hdr.mblk_hdr = s->mblk_list;
 }

@@ -76,12 +76,12 @@ gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr
     blockprm.mblk_name = m_gina_def.exp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.exp.hdr.mblk_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_gina_export, OS_NULL, &app_iocom, &blockprm);
+    ioc_initialize_memory_block(&m_gina_export, OS_NULL, &app_iocom_root, &blockprm);
 
     blockprm.mblk_name = m_gina_def.imp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.imp.hdr.mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC /* |IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_gina_import, OS_NULL, &app_iocom, &blockprm);
+    ioc_initialize_memory_block(&m_gina_import, OS_NULL, &app_iocom_root, &blockprm);
 
     ioc_set_handle_to_signals(&m_gina_def.imp.hdr, &m_gina_import);
     ioc_set_handle_to_signals(&m_gina_def.exp.hdr, &m_gina_export);

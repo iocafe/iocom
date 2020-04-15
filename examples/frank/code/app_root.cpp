@@ -32,8 +32,7 @@ AppRoot::AppRoot(
     const os_char *device_name,
     os_int device_nr,
     const os_char *network_name,
-    const os_char *publish,
-    iocLighthouseInfo *lighthouse_info)
+    const os_char *publish)
 {
     iocBServerParams prm;
     os_int i;
@@ -59,7 +58,7 @@ AppRoot::AppRoot(
     prm.signal_config_sz = sizeof(ioapp_signal_config);
     prm.network_defaults = ioapp_network_defaults;
     prm.network_defaults_sz = sizeof(ioapp_network_defaults);
-    ioc_initialize_bserver(&m_bmain, &app_iocom, &prm);
+    ioc_initialize_bserver(&m_bmain, &app_iocom_root, &prm);
 
     /* Call basic server implementation macro to set up control stream.
      */
@@ -73,12 +72,7 @@ AppRoot::AppRoot(
      * is needed to pass notifications (like "new device", or "wrong password") to server
      * status signals.
      */
-    ioc_enable_user_authentication(&app_iocom, ioc_authorize, &m_bmain);
-
-    /* Initialize light house. Sends periodic UDP broadcards to so that this service
-       can be detected in network.
-     */
-    ioc_initialize_lighthouse_server(&m_lighthouse, publish, lighthouse_info, OS_NULL);
+    ioc_enable_user_authentication(&app_iocom_root, ioc_authorize, &m_bmain);
 }
 
 
@@ -98,9 +92,8 @@ AppRoot::~AppRoot()
         delete m_app[i];
     }
 
-    /* Finished with lighthouse and basic server.
+    /* Finished with basic server.
      */
-    ioc_release_lighthouse_server(&m_lighthouse);
     ioc_release_bserver(&m_bmain);
 }
 
@@ -133,10 +126,6 @@ osalStatus AppRoot::run()
                 s = OSAL_SUCCESS;
         }
     }
-
-    /* Run light house (send periodic UDP broadcasts so that this service can be detected)
-     */
-    ioc_run_lighthouse_server(&m_lighthouse);
 
     return s;
 }

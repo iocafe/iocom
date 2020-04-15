@@ -85,7 +85,7 @@ osalStatus AppRoot::listen_for_clients()
 
     const osalStreamInterface *iface = OSAL_TLS_IFACE;
 
-    ep = ioc_initialize_end_point(OS_NULL, &app_iocom);
+    ep = ioc_initialize_end_point(OS_NULL, &app_iocom_root);
     os_memclear(&epprm, sizeof(epprm));
     epprm.iface = iface;
     epprm.flags = IOC_SOCKET|IOC_CREATE_THREAD;

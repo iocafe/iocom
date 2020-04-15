@@ -65,7 +65,7 @@ iocBrickBuffer;
  */
 void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
-    iocStreamerSignals *signals,
+    const iocStreamerSignals *signals,
     iocRoot *root);
 
 void ioc_allocate_brick_buffer(

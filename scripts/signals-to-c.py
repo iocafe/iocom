@@ -31,6 +31,10 @@ osal_typeinfo = {
     "pointer" : 0}
 
 def check_valid_name(label, name, sz, allow_numbers):
+    if name == None:
+        print(label + " name is not defined.")
+        exit()
+
     if len(name) >= sz:
         print(label + " name '" + name + "' is too long. Maximum is " + str(sz - 1) + "characters.")
         exit()
@@ -73,7 +77,7 @@ def calc_signal_memory_sz(type, array_n):
     return array_n * type_sz + 1
 
 def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
-    global cfile, hfile, array_list, reserved_addrs
+    global cfile, hfile, array_list, signal_list, reserved_addrs
     global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
@@ -88,9 +92,11 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
     if array_n < 1:
         array_n = 1
 
+    sname = device_name + '_' + block_name + '_' + signal_name
+    signal_list.append('#define ' + sname.upper())
     if array_n > 1:
-        arr_name = device_name + '_' + block_name + '_' + signal_name + '_ARRAY_SZ'
-        array_list.append('#define ' + arr_name.upper() + ' ' + str(array_n))
+        arr_name = sname.upper() + '_ARRAY_SZ'
+        array_list.append('#define ' + arr_name + ' ' + str(array_n))
 
     mem_sz_bytes = calc_signal_memory_sz(type, array_n);
     reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
@@ -131,7 +137,7 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
     cfile.write(' /* ' + signal_name + ' */\n')
 
 def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
-    global cfile, hfile, array_list, reserved_addrs
+    global cfile, hfile, array_list, signal_list, reserved_addrs
     global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
@@ -149,9 +155,11 @@ def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
     mem_sz_bytes = calc_signal_memory_sz(type, array_n);
     reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
 
+    sname = device_name + '_' + block_name + '_' + signal_name
+    signal_list.append('#define ' + sname.upper())
     if array_n > 1  and not is_dynamic:
-        arr_name = device_name + '_' + block_name + '_' + signal_name + '_ARRAY_SZ'
-        array_list.append('#define ' + arr_name.upper() + ' ' + str(array_n))
+        arr_name = sname.upper() + '_ARRAY_SZ'
+        array_list.append('#define ' + arr_name + ' ' + str(array_n))
 
     current_addr += mem_sz_bytes
     if current_addr > max_addr:
@@ -268,20 +276,73 @@ def process_mblk(mblk):
     if not is_controller:
         cfile.write('  }')
         if mblk_nr < nro_mblks:
-            cfile.write(',')
+            cfile.write(',\n')
     else:
-        cfile.write('  s->mblk_list[' + str(mblk_nr - 1) + '] = &s->' + block_name + '.hdr;\n')
-
-    cfile.write('\n')
+        cfile.write('  s->mblk_list[' + str(mblk_nr - 1) + '] = &s->' + block_name + '.hdr;\n\n')
 
     if check_if_duplicates(reserved_addrs):
         write_my_error('ERROR: Duplicated signal addressess found in JSON!')
 
     mblk_nr = mblk_nr + 1
 
+def write_assembly_item(prefix, ending, assembly_name):
+    global cfile, is_controller, device_name
+    if is_controller:
+        cfile.write('  s->' + assembly_name + '.' + ending + ' =  &s->' + prefix + ending + ';\n')
+    else:       
+        cfile.write('&' + device_name + '.' + prefix + ending + ',\n   ')
+
+def process_assembly(assembly):
+    global cfile, hfile, is_controller
+    assembly_name = assembly.get("name", None)
+    check_valid_name("Assembly", assembly_name, IOC_NAME_SZ, True)
+    assembly_type = assembly.get("type", None)
+    check_valid_name("Assembly type", assembly_type, IOC_NAME_SZ, True)
+
+    if assembly_type == 'linecam' or assembly_type == 'camera' or assembly_type == 'microphone' or assembly_type == 'userinput':
+        imp = assembly.get("imp", "imp.undefined_*")
+        exp = assembly.get("exp", "exp.undefined_*")
+
+        hfile.write('\n  iocStreamerSignals ' + assembly_name + ';\n')
+
+        if is_controller:
+            cfile.write('  /* ' + assembly_type + " '" + assembly_name + "' */\n")
+        else:       
+            cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
+        write_assembly_item(imp, "cmd", assembly_name)
+        write_assembly_item(imp, "select", assembly_name)
+        write_assembly_item(exp, "buf", assembly_name)
+        write_assembly_item(exp, "head", assembly_name)
+        write_assembly_item(imp, "tail", assembly_name)
+        write_assembly_item(exp, "state", assembly_name)
+        if not is_controller:
+            cfile.write('OS_FALSE}')
+
+    elif assembly_type == 'display' or assembly_type == 'speaker':
+        imp = assembly.get("imp", "imp.undefined_*")
+        exp = assembly.get("exp", "exp.undefined_*")
+
+        hfile.write('\n  iocStreamerSignals ' + assembly_name + ';\n')
+
+        if is_controller:
+            cfile.write(' /* ' + assembly_type + " '" + assembly_name + "' */\n")
+        else:       
+            cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
+        write_assembly_item(imp, "cmd", assembly_name)
+        write_assembly_item(imp, "select", assembly_name)
+        write_assembly_item(imp, "buf", assembly_name)
+        write_assembly_item(imp, "head", assembly_name)
+        write_assembly_item(exp, "tail", assembly_name)
+        write_assembly_item(exp, "state", assembly_name)
+        if not is_controller:
+            cfile.write('OS_TRUE}')
+
+    else:
+        print("Assembly '" + assembly_name + "' type '" + assembly_type + "' is uknown")
+        exit()
 
 def process_source_file(path):
-    global cfile, hfile, array_list
+    global cfile, hfile, array_list, signal_list
     global device_name, define_list, mblk_nr, nro_mblks, mblk_list
     read_file = open(path, "r")
     if read_file:
@@ -317,9 +378,17 @@ def process_source_file(path):
 
         mblk_list = []
         array_list = []
+        signal_list = []
 
         for mblk in mblks:
             process_mblk(mblk)
+
+        assemblies = data.get("assembly", None)
+        if assemblies != None:
+            for assembly in assemblies:
+                process_assembly(assembly)
+
+        cfile.write('\n')
 
         if is_controller:
             cfile.write('  s->hdr.n_mblk_hdrs = ' + str(nro_mblks) + ';\n')
@@ -351,8 +420,15 @@ def process_source_file(path):
         else:
             hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s);\n')
 
-        for p in array_list:
-            hfile.write(p + '\n')
+        if len(array_list) > 0:
+            hfile.write('\n/* Array length defines. */\n')
+            for p in array_list:
+                hfile.write(p + '\n')
+
+        if len(signal_list) > 0:
+            hfile.write('\n/* Defines to check in code with #ifdef to know if signal is configured in JSON. */\n')
+            for p in signal_list:
+                hfile.write(p + '\n')
 
     else:
         printf ("Opening file " + path + " failed")
@@ -430,8 +506,8 @@ def mymain():
         print("No source files")
         exit()
 
-#    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/gina-signals.json')
-#    outpath = '/coderoot/iocom/examples/gina/config/include/carol/gina-signals.c'
+#    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/signals.json')
+#    outpath = '/coderoot/iocom/examples/gina/config/include/carol/signals.c'
 #    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
 #    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 #    application_type = "controller-static"

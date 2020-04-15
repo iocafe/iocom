@@ -20,7 +20,7 @@
  */
 void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
-    iocStreamerSignals *signals,
+    const iocStreamerSignals *signals,
     iocRoot *root)
 {
     os_memclear(b, sizeof(iocBrickBuffer));

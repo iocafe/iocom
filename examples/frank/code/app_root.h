@@ -24,8 +24,7 @@ public:
         const os_char *device_name,
         os_int device_nr,
         const os_char *network_name,
-        const os_char *publish,
-        iocLighthouseInfo *lighthouse_info);
+        const os_char *publish);
 
     ~AppRoot();
 
@@ -41,11 +40,6 @@ private:
     /* Basic server (ioserver extension) structure.
      */
     iocBServer m_bmain;
-
-    /* Light house state structure. The lighthouse sends periodic UDP broadcards
-       to so that this service can be detected in network.
-     */
-    LighthouseServer m_lighthouse;
 
     /* Structure holding signals for the IO node.
      */

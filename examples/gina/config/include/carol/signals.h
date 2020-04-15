@@ -54,6 +54,8 @@ typedef struct gina_t
     iocSignal frd_tail;
   }
   conf_imp;
+
+  iocStreamerSignals ccd;
 }
 gina_t;
 
@@ -65,6 +67,8 @@ gina_t;
 extern const gina_t gina;
 extern const iocDeviceHdr gina_hdr;
 
+
+/* Array length defines. */
 #define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
 #define GINA_EXP_TESTSTR_ARRAY_SZ 10
 #define GINA_EXP_REC_BUF_ARRAY_SZ 16000
@@ -72,6 +76,36 @@ extern const iocDeviceHdr gina_hdr;
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 #define GINA_CONF_EXP_FRD_BUF_ARRAY_SZ 257
 #define GINA_CONF_IMP_TOD_BUF_ARRAY_SZ 257
+
+/* Defines to check in code with #ifdef to know if signal is configured in JSON. */
+#define GINA_EXP_FRAME_RATE
+#define GINA_EXP_TESTFLOAT
+#define GINA_EXP_TESTSTR
+#define GINA_EXP_TESTBOOL
+#define GINA_EXP_IN_X
+#define GINA_EXP_POTENTIOMETER
+#define GINA_EXP_REC_STATE
+#define GINA_EXP_REC_BUF
+#define GINA_EXP_REC_HEAD
+#define GINA_IMP_STRTODEVICE
+#define GINA_IMP_SEVEN_SEGMENT
+#define GINA_IMP_DIMMER_LED
+#define GINA_IMP_MYOUTPUT
+#define GINA_IMP_REC_CMD
+#define GINA_IMP_REC_SELECT
+#define GINA_IMP_REC_TAIL
+#define GINA_CONF_EXP_TOD_STATE
+#define GINA_CONF_EXP_TOD_TAIL
+#define GINA_CONF_EXP_FRD_STATE
+#define GINA_CONF_EXP_FRD_BUF
+#define GINA_CONF_EXP_FRD_HEAD
+#define GINA_CONF_IMP_TOD_CMD
+#define GINA_CONF_IMP_TOD_SELECT
+#define GINA_CONF_IMP_TOD_BUF
+#define GINA_CONF_IMP_TOD_HEAD
+#define GINA_CONF_IMP_FRD_CMD
+#define GINA_CONF_IMP_FRD_SELECT
+#define GINA_CONF_IMP_FRD_TAIL
 
 #ifndef IOBOARD_DEVICE_NAME
 #define IOBOARD_DEVICE_NAME "gina"

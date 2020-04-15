@@ -26,7 +26,7 @@
 
 /* IOCOM root object for this application
  */
-iocRoot app_iocom;
+iocRoot app_iocom_root;
 
 /* Pointer to IO application's root object.
  */
@@ -36,6 +36,10 @@ static AppRoot *app_root_obj;
  */
 static iocNodeConf app_device_conf;
 
+/* Light house state structure. The lighthouse sends periodic UDP broadcards
+   to so that this service can be detected in network.
+ */
+static LighthouseServer lighthouse;
 
 /* We may enter idle mode when nothing to do.
  */
@@ -94,7 +98,7 @@ osalStatus osal_main(
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
      */
-    ioc_initialize_root(&app_iocom);
+    ioc_initialize_root(&app_iocom_root);
 
     /* Load device/network configuration and device/user account congiguration
        (persistent storage is typically either file system or micro-controller's flash).
@@ -103,10 +107,10 @@ osalStatus osal_main(
     ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
         sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
     device_id = ioc_get_device_id(&app_device_conf);
-    ioc_set_iodevice_id(&app_iocom, device_name, device_id->device_nr,
+    ioc_set_iodevice_id(&app_iocom_root, device_name, device_id->device_nr,
         device_id->password, device_id->network_name);
 
-    ioc_initialize_dynamic_root(&app_iocom);
+    ioc_initialize_dynamic_root(&app_iocom_root);
 
     /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
      */
@@ -116,11 +120,11 @@ osalStatus osal_main(
     /* Create frank main object
      */
     app_root_obj = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
-        device_id->publish, &lighthouse_info);
+        device_id->publish);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
-    ioc_set_root_callback(&app_iocom, app_root_callback, OS_NULL);
+    ioc_set_root_callback(&app_iocom_root, app_root_callback, OS_NULL);
 
     /* Setup network interface configuration and initialize transport library. This is
        partyly ignored if network interfaces are managed by operating system
@@ -134,7 +138,12 @@ osalStatus osal_main(
 
     /* Connect to network.
      */
-    ioc_connect_node(&app_iocom, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
+    ioc_connect_node(&app_iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
+
+    /* Initialize light house. Sends periodic UDP broadcards to so that this service
+       can be detected in network.
+     */
+    ioc_initialize_lighthouse_server(&lighthouse, device_id->publish, &lighthouse_info, OS_NULL);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -182,7 +191,12 @@ osalStatus osal_loop(
     }
 #endif
 
-    s = io_device_console(&app_iocom);
+    s = io_device_console(&app_iocom_root);
+
+    /* Run light house (send periodic UDP broadcasts so that this service can be detected)
+     */
+    ioc_run_lighthouse_server(&lighthouse);
+
     return s;
 }
 
@@ -206,10 +220,14 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    ioc_set_root_callback(&app_iocom, OS_NULL, OS_NULL);
+    /* Finished with lighthouse.
+     */
+    ioc_release_lighthouse_server(&lighthouse);
+
+    ioc_set_root_callback(&app_iocom_root, OS_NULL, OS_NULL);
     delete app_root_obj;
 
-    ioc_release_root(&app_iocom);
+    ioc_release_root(&app_iocom_root);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }

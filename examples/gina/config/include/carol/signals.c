@@ -7,8 +7,8 @@ const struct gina_t gina =
     {5, 5, OS_FLOAT, &ioboard_exp, OS_NULL}, /* testfloat */
     {26, 10, OS_STR, &ioboard_exp, OS_NULL}, /* teststr */
     {37, 1, OS_BOOLEAN, &ioboard_exp, OS_NULL}, /* testbool */
-    {38, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.in_x}, /* in_x */
-    {39, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
+    {38, 1, OS_BOOLEAN, &ioboard_exp, OS_NULL}, /* in_x */
+    {39, 1, OS_FLOAT, &ioboard_exp, OS_NULL}, /* potentiometer */
     {44, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
     {46, 16000, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
     {16047, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
@@ -18,7 +18,7 @@ const struct gina_t gina =
     {"imp", &ioboard_imp, 7, GINA_IMP_MBLK_SZ, (iocSignal*)&gina.imp.strtodevice},
     {0, 16, OS_STR, &ioboard_imp, OS_NULL}, /* strtodevice */
     {17, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
-    {19, 1, OS_USHORT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.dimmer_led}, /* dimmer_led */
+    {19, 1, OS_USHORT, &ioboard_imp, OS_NULL}, /* dimmer_led */
     {22, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* myoutput */
     {23, 1, OS_CHAR, &ioboard_imp, OS_NULL}, /* rec_cmd */
     {25, 1, OS_UCHAR, &ioboard_imp, OS_NULL}, /* rec_select */
@@ -43,7 +43,16 @@ const struct gina_t gina =
     {267, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* frd_cmd */
     {269, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
     {271, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
-  }
+  },
+
+  /* Signals for linecam 'ccd' */
+  {&gina.imp.rec_cmd,
+   &gina.imp.rec_select,
+   &gina.exp.rec_buf,
+   &gina.exp.rec_head,
+   &gina.imp.rec_tail,
+   &gina.exp.rec_state,
+   OS_FALSE}
 };
 
 static const iocMblkSignalHdr *gina_mblk_list[] =

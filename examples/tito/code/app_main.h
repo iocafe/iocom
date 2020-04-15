@@ -40,4 +40,4 @@ OSAL_C_HEADER_ENDS
 
 /* IOCOM root object for this application
  */
-extern iocRoot app_iocom;
+extern iocRoot app_iocom_root;

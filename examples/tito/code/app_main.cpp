@@ -19,7 +19,7 @@
  */
 #include "devicedir.h"
 
-iocRoot app_iocom;
+iocRoot app_iocom_root;
 static AppRoot *app_root_obj;
 
 /* IO device/network configuration.
@@ -69,7 +69,7 @@ osalStatus osal_main(
 
     /* Initialize communication root object.
      */
-    ioc_initialize_root(&app_iocom);
+    ioc_initialize_root(&app_iocom_root);
 
     /* Load device/network configuration and device/user account congiguration
        (persistent storage is typically either file system or micro-controller's flash).
@@ -78,7 +78,7 @@ osalStatus osal_main(
     ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
         sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
     device_id = ioc_get_device_id(&app_device_conf);
-    ioc_set_iodevice_id(&app_iocom, device_name, device_id->device_nr,
+    ioc_set_iodevice_id(&app_iocom_root, device_name, device_id->device_nr,
         device_id->password, device_id->network_name);
 
     /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
@@ -96,6 +96,10 @@ osalStatus osal_main(
     osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
     osal_serial_initialize();
 
+     /* Connect to network.
+     */
+    ioc_connect_node(&app_iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
+
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
      */
@@ -104,7 +108,7 @@ osalStatus osal_main(
     /* Create tito main object and start listening for clients.
      */
     app_root_obj = new AppRoot;
-    app_root_obj->listen_for_clients();
+    // app_root_obj->listen_for_clients();
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -135,7 +139,7 @@ osalStatus osal_loop(
 
     /* The devicedir call is here for testing only, take away.
      */
-    s = io_device_console(&app_iocom);
+    s = io_device_console(&app_iocom_root);
     if (s) return s;
 
     /* Run light house (send periodic UDP broadcasts so that this service can be detected)
@@ -165,9 +169,13 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
+    /* Finished with lighthouse.
+     */
+    ioc_release_lighthouse_server(&lighthouse);
+
     delete app_root_obj;
 
-    ioc_release_root(&app_iocom);
+    ioc_release_root(&app_iocom_root);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }
