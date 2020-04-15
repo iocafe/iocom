@@ -586,10 +586,11 @@ osalStatus ioc_run_connection(
                 con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
                 connectstr, sizeof(connectstr));
             if (OSAL_IS_ERROR(status)) return OSAL_SUCCESS;
+    /* THIS SHOULD NO LONGER BE NEEDED, MOVED TO IOC_AUTHENTICATION
             if (status == OSAL_IO_NETWORK_NAME_SET)
             {
                 ioc_set_network_name(con->link.root);
-            }
+            } */
             parameters = connectstr;
         }
 
@@ -991,10 +992,12 @@ static void ioc_connection_thread(
                     con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
                     connectstr, sizeof(connectstr));
                 if (OSAL_IS_ERROR(status)) goto failed;
+    /* THIS SHOULD NO LONGER BE NEEDED, MOVED TO IOC_AUTHENTICATION
                 if (status == OSAL_IO_NETWORK_NAME_SET)
                 {
                     ioc_set_network_name(con->link.root);
-                }
+                } */
+
                 parameters = connectstr;
             }
 

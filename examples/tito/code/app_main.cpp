@@ -141,11 +141,17 @@ osalStatus osal_loop(
     s = io_device_console(&app_iocom_root);
     if (s) return s;
 
+    os_sleep(5);
+
     /* Run light house (send periodic UDP broadcasts so that this service can be detected)
      */
     ioc_run_lighthouse_server(&lighthouse);
 
-    return app_root_obj->loop();
+    ioc_run(&app_iocom_root);
+    s = app_root_obj->loop();
+    ioc_run(&app_iocom_root);
+
+    return s;
 }
 
 

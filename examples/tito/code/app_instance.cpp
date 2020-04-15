@@ -73,7 +73,6 @@ void AppInstance::stop()
 
 void AppInstance::run()
 {
-    os_sleep(5);
     ioc_send(&m_gina1.m_gina_import);
     ioc_send(&m_gina2.m_gina_import);
     ioc_receive(&m_gina1.m_gina_export);

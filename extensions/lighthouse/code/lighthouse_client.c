@@ -493,10 +493,11 @@ osalStatus ioc_get_lighthouse_connectstr(
 
     /* If we do not have network name, set it
      */
-    if (*compare_name == '\0') {
+    /* THIS SHOULD NO LONGER BE NEEDED, MOVED TO IOC_AUTHENTICATION
+     * if (*compare_name == '\0') {
         os_strncpy(network_name, c->net[selected_i].network_name, network_name_sz);
         return OSAL_IO_NETWORK_NAME_SET;
-    }
+    } */
 
     osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, OSAL_LIGHTHOUSE_OK);
     return OSAL_SUCCESS;
