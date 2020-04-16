@@ -1,10 +1,10 @@
 /**
 
-  @file    iopy_signal.h
+  @file    iopy_brick_buffer.h
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    16.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -17,7 +17,7 @@
 struct Root;
 
 
-/** Python signal class.
+/** Python brick_buffer class.
  */
 typedef struct
 {
@@ -27,31 +27,38 @@ typedef struct
      */
     Root *pyroot;
 
-    /** IOCOM signal object.
+    /** IOCOM brick_buffer object.
      */
-    iocSignal signal;
+    iocBrickBuffer brick_buffer;
+
+    iocSignal sig_cmd;
+    iocSignal sig_select;
+    iocSignal sig_buf;
+    iocSignal sig_head;
+    iocSignal sig_tail;
+    iocSignal sig_state;
 
     /** Memory block handle.
      */
     iocHandle handle;
 
-    /** Identifiers for the signal.
+    /** Identifiers for the brick_buffer.
      */
     iocIdentifiers identifiers;
 
-    /** If signal is matrix formulated as array, number of columns. For one
+    /** If brick_buffer is matrix formulated as array, number of columns. For one
         dimensional arrays and single variables ncolumns is 1.
      */
-    os_int ncolumns;
+//     os_int ncolumns;
 
     /** Connection initialization status: 0 = all good, other values are errors.
         Set by the constructor function.
      */
     int status;
 }
-Signal;
+BrickBuffer;
 
 /* For setting up the class within Python module.
  */
-extern PyTypeObject SignalType;
+extern PyTypeObject BrickBufferType;
 

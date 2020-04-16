@@ -9,7 +9,7 @@ running_apps = {}
 def main():
     global root, callback_queue
 
-    root = Root('asteroid', security='certfile=bob.crt,keyfile=bob.key')
+    root = Root('asteroid',security='certfile=myhome.crt,keyfile=secret/myhome.key')
     root.queue_events()
     ioterminal.start(root)
     epoint = EndPoint(root, flags='tls,dynamic')

@@ -29,7 +29,7 @@ class AsteroidApp(object):
         self.mytimer = timer_now
 
         if self.queue.qsize() > 0:
-            myevent = self.queue.get_ext().split()
+            myevent = self.queue.get().split()
             print (myevent)
             if myevent[0] == 'new_player':
                 print ("new player " + myevent[1])

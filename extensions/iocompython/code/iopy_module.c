@@ -81,6 +81,9 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
     if (PyType_Ready(&StreamType) < 0)
         return NULL;
 
+    if (PyType_Ready(&BrickBufferType) < 0)
+        return NULL;
+
     Py_INCREF(&RootType);
     PyModule_AddObject(m, "Root", (PyObject *)&RootType);
     Py_INCREF(&MemoryBlockType);
@@ -93,6 +96,8 @@ PyMODINIT_FUNC IOCOMPYTHON_INIT_FUNC (void)
     PyModule_AddObject(m, "Signal", (PyObject *)&SignalType);
     Py_INCREF(&StreamType);
     PyModule_AddObject(m, "Stream", (PyObject *)&StreamType);
+    Py_INCREF(&BrickBufferType);
+    PyModule_AddObject(m, "BrickBuffer", (PyObject *)&BrickBufferType);
 
     module_init_count = 0;
 

@@ -114,7 +114,7 @@ def update(dt):
         if nro_objects > max_objects:
             nro_objects = max_objects
     
-        data = imp_object_data.get0(nro_values = nro_objects * data_vector_n)
+        data = imp_object_data.get(nro_values = nro_objects * data_vector_n)
 
         for ix in range(len(game_objects), nro_objects):
             o = physicalobject.PhysicalObject(batch=main_batch)

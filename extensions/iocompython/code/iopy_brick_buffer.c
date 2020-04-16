@@ -1,10 +1,10 @@
 /**
 
-  @file    iopy_signal.c
+  @file    iopy_brick_buffer.c
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    16.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -15,50 +15,24 @@
 */
 #include "iocompython.h"
 
-/* Working state structure used to store data parsed from arguments.
- */
-#define IOPY_FIXBUF_SZ 64
-typedef struct
-{
-    iocSignal *signal;
-
-    osalTypeId type_id;
-    os_boolean is_array;
-    os_boolean is_string;
-    os_char state_bits;
-
-    os_int n_values;
-    os_int max_values;
-
-    os_char *buf;
-
-    union
-    {
-        os_char fixbuf[IOPY_FIXBUF_SZ];
-        iocValue vv;
-    }
-    storage;
-}
-SignalSetParseState;
-
-
 /* Working state structure used to read data.
  */
 typedef struct
 {
-    iocSignal *signal;
+    iocBrickBuffer *brick_buffer;
     osalTypeId type_id;
     os_int max_values, nro_values;
     os_boolean no_state_bits;
 }
-SignalGetState;
+BrickBufferGetState;
 
 
 /* Forward referred static functions.
  */
-static osalStatus Signal_try_setup(
-    Signal *self,
+/* static osalStatus BrickBuffer_try_setup(
+    BrickBuffer *self,
     iocRoot *iocroot);
+   */
 
 
 /**
@@ -66,28 +40,28 @@ static osalStatus Signal_try_setup(
 
   @brief Constructor.
 
-  The Signal_new function starts running the signal. Running signal will keep
-  on running until the signal is deleted. It will attempt repeatedly to connect socket,
+  The BrickBuffer_new function starts running the brick_buffer. Running brick_buffer will keep
+  on running until the brick_buffer is deleted. It will attempt repeatedly to connect socket,
   etc transport to other IOCOM device and will move the data when transport is there.
 
-  Note: Application must not delete and create new signal to reestablish the transport.
-  This is handled by the running signal object.
+  Note: Application must not delete and create new brick_buffer to reestablish the transport.
+  This is handled by the running brick_buffer object.
 
   @return  Pointer to the new Python object.
 
 ****************************************************************************************************
 */
-static PyObject *Signal_new(
+static PyObject *BrickBuffer_new(
     PyTypeObject *type,
     PyObject *args,
     PyObject *kwds)
 {
-    Signal *self;
+    BrickBuffer *self;
     PyObject *pyroot = NULL;
     Root *root;
 
     iocRoot *iocroot;
-    iocSignal *signal;
+    iocBrickBuffer *bb;
     iocHandle *handle;
     iocIdentifiers *identifiers;
 
@@ -100,19 +74,19 @@ static PyObject *Signal_new(
         NULL
     };
 
-    self = (Signal *)type->tp_alloc(type, 0);
+    self = (BrickBuffer *)type->tp_alloc(type, 0);
     if (self == NULL)
     {
         return PyErr_NoMemory();
     }
-    signal = &self->signal;
+    bb = &self->brick_buffer;
     handle = &self->handle;
     identifiers = &self->identifiers;
 
-    os_memclear(signal, sizeof(iocSignal));
+    os_memclear(bb, sizeof(iocBrickBuffer));
     os_memclear(handle, sizeof(iocHandle));
-    signal->handle = handle;
-    self->ncolumns = 1;
+    // bb->handle = handle;
+  //  self->ncolumns = 1;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os",
          kwlist, &pyroot, &io_path))
@@ -140,7 +114,7 @@ static PyObject *Signal_new(
     self->status = OSAL_SUCCESS;
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Signal.new(%s)\n", io_path);
+    PySys_WriteStdout("BrickBuffer.new(%s)\n", io_path);
 #endif
 
     /* Save root pointer and increment reference count.
@@ -161,15 +135,15 @@ failed:
 
   @brief Destructor.
 
-  The Signal_dealloc function releases the associated Python object and IOCOM signal.
+  The BrickBuffer_dealloc function releases the associated Python object and IOCOM brick_buffer.
 
   @param   self Pointer to the python object.
   @return  None.
 
 ****************************************************************************************************
 */
-static void Signal_dealloc(
-    Signal *self)
+static void BrickBuffer_dealloc(
+    BrickBuffer *self)
 {
     if (self->pyroot)
     {
@@ -184,7 +158,7 @@ static void Signal_dealloc(
     Py_TYPE(self)->tp_free((PyObject *)self);
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Signal.dealloc()\n");
+    PySys_WriteStdout("BrickBuffer.dealloc()\n");
 #endif
 }
 
@@ -192,10 +166,10 @@ static void Signal_dealloc(
 /**
 ****************************************************************************************************
 
-  @brief Delete an IOCOM signal.
+  @brief Delete an IOCOM brick_buffer.
 
-  The Signal_delete function closes the signal and releases any ressources for it.
-  The signal must be explisitly closed by calling .delete() function, or by calling
+  The BrickBuffer_delete function closes the brick_buffer and releases any ressources for it.
+  The brick_buffer must be explisitly closed by calling .delete() function, or by calling
   .delete() on the root object. But not both.
 
   @param   self Pointer to the python object.
@@ -203,8 +177,8 @@ static void Signal_dealloc(
 
 ****************************************************************************************************
 */
-static PyObject *Signal_delete(
-    Signal *self)
+static PyObject *BrickBuffer_delete(
+    BrickBuffer *self)
 {
     if (self->pyroot)
     {
@@ -217,7 +191,7 @@ static PyObject *Signal_delete(
     }
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Signal.delete()\n");
+    PySys_WriteStdout("BrickBuffer.delete()\n");
 #endif
     /* Return "None".
      */
@@ -225,20 +199,20 @@ static PyObject *Signal_delete(
     return Py_None;
 }
 
-
+#if 0
 /**
 ****************************************************************************************************
 
-  @brief Store long integer parsed from Python arguments in format expected for the signal.
-  @anchor Signal_store_double
+  @brief Store long integer parsed from Python arguments in format expected for the brick_buffer.
+  @anchor BrickBuffer_store_double
 
   @return  None.
 
 ****************************************************************************************************
 */
-static void Signal_store_long(
+static void BrickBuffer_store_long(
     os_long x,
-    SignalSetParseState *state)
+    BrickBufferSetParseState *state)
 {
     os_char *p;
     os_int i;
@@ -320,16 +294,16 @@ static void Signal_store_long(
 /**
 ****************************************************************************************************
 
-  @brief Store double parsed from Python arguments in format expected for the signal.
-  @anchor Signal_store_double
+  @brief Store double parsed from Python arguments in format expected for the brick_buffer.
+  @anchor BrickBuffer_store_double
 
   @return  None.
 
 ****************************************************************************************************
 */
-static void Signal_store_double(
+static void BrickBuffer_store_double(
     os_double x,
-    SignalSetParseState *state)
+    BrickBufferSetParseState *state)
 {
     os_char *p;
     os_int i;
@@ -412,12 +386,12 @@ static void Signal_store_double(
 ****************************************************************************************************
 
   @brief Parse python arguments.
-  @anchor Signal_set_sequence
+  @anchor BrickBuffer_set_sequence
 
   Idea here is to parse python arguments, how ever structured in python call, to format needed
   for storing value(s) into register map.
 
-  - String signal, as one string argument.
+  - String brick_buffer, as one string argument.
   - Array, as array of numbers
   - Single value
 
@@ -425,9 +399,9 @@ static void Signal_store_double(
 
 ****************************************************************************************************
 */
-static void Signal_set_sequence(
+static void BrickBuffer_set_sequence(
     PyObject *args,
-    SignalSetParseState *state)
+    BrickBufferSetParseState *state)
 {
     PyObject *a, *py_repr, *py_str;
 
@@ -450,7 +424,7 @@ static void Signal_set_sequence(
             if (str == NULL) str = "";
             if (*str == '\'') str++;
             d = osal_str_to_double(str, OS_NULL);
-            Signal_store_double(d, state);
+            BrickBuffer_store_double(d, state);
 
             Py_XDECREF(py_repr);
             Py_XDECREF(py_str);
@@ -458,17 +432,17 @@ static void Signal_set_sequence(
 
         else if (PyLong_Check(a)) {
             l = PyLong_AsLong(a);
-            Signal_store_long(l, state);
+            BrickBuffer_store_long(l, state);
         }
 
         else if (PyFloat_Check(a)) {
             d = PyFloat_AsDouble(a);
-            Signal_store_double(d, state);
+            BrickBuffer_store_double(d, state);
         }
 
         else if (PySequence_Check(a))
         {
-            Signal_set_sequence(a, state);
+            BrickBuffer_set_sequence(a, state);
         }
 
         Py_DECREF(a);
@@ -479,27 +453,27 @@ static void Signal_set_sequence(
 /**
 ****************************************************************************************************
 
-  @brief Set simple signal containing one numeric value.
-  @anchor Signal_set_one_value
+  @brief Set simple brick_buffer containing one numeric value.
+  @anchor BrickBuffer_set_one_value
 
   @return  None.
 
 ****************************************************************************************************
 */
-static void Signal_set_one_value(
+static void BrickBuffer_set_one_value(
     PyObject *args,
-    SignalSetParseState *state)
+    BrickBufferSetParseState *state)
 {
     state->max_values = 1;
 
     /* Process the Python arguments into format we need.
      */
-    Signal_set_sequence(args, state);
+    BrickBuffer_set_sequence(args, state);
 
     if (state->n_values)
     {
         state->storage.vv.state_bits = state->state_bits;
-        ioc_movex_signals(state->signal, &state->storage.vv, 1,
+        ioc_movex_brick_buffers(state->brick_buffer, &state->storage.vv, 1,
             IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
     }
 }
@@ -508,16 +482,16 @@ static void Signal_set_one_value(
 /**
 ****************************************************************************************************
 
-  @brief Set string signal.
-  @anchor Signal_set_string_value
+  @brief Set string brick_buffer.
+  @anchor BrickBuffer_set_string_value
 
   @return  None.
 
 ****************************************************************************************************
 */
-static void Signal_set_string_value(
+static void BrickBuffer_set_string_value(
     PyObject *args,
-    SignalSetParseState *state)
+    BrickBufferSetParseState *state)
 {
     os_char *str_value = NULL;
 
@@ -527,23 +501,23 @@ static void Signal_set_string_value(
         return;
     }
 
-    ioc_moves_str(state->signal, str_value, -1, state->state_bits, IOC_SIGNAL_WRITE|OS_STR);
+    ioc_moves_str(state->brick_buffer, str_value, -1, state->state_bits, IOC_SIGNAL_WRITE|OS_STR);
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Set signal containing array of values.
-  @anchor Signal_set_array
+  @brief Set brick_buffer containing array of values.
+  @anchor BrickBuffer_set_array
 
   @return  None.
 
 ****************************************************************************************************
 */
-static void Signal_set_array(
+static void BrickBuffer_set_array(
     PyObject *args,
-    SignalSetParseState *state)
+    BrickBufferSetParseState *state)
 {
     os_memsz buf_sz, type_sz;
     os_int offset = 0;
@@ -561,11 +535,11 @@ static void Signal_set_array(
 
     /* Process the Python arguments into format we need.
      */
-    Signal_set_sequence(args, state);
+    BrickBuffer_set_sequence(args, state);
 
     /* Write always all values in array, even if caller would provides fewer. Rest will be zeros.
      */
-    ioc_moves_array(state->signal, offset, state->buf, state->max_values,
+    ioc_moves_array(state->brick_buffer, offset, state->buf, state->max_values,
         state->state_bits, IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
 
     /* If we allocated extra buffer space, free it.
@@ -575,26 +549,27 @@ static void Signal_set_array(
         os_free(state->buf, buf_sz);
     }
 }
+#endif
 
-
+#if 0
 /**
 ****************************************************************************************************
 
-  @brief Store signal value into memory block.
-  @anchor Signal_set
+  @brief Store brick_buffer value into memory block.
+  @anchor BrickBuffer_set
 
-  The Signal.set() function finds mathing dynamic information for this signal, and according
-  to the information stores signal value: string, array or one numerical value into the memory
-  block containing the signal.
+  The BrickBuffer.set() function finds mathing dynamic information for this brick_buffer, and according
+  to the information stores brick_buffer value: string, array or one numerical value into the memory
+  block containing the brick_buffer.
 
 ****************************************************************************************************
 */
-static PyObject *Signal_set(
-    Signal *self,
+static PyObject *BrickBuffer_set(
+    BrickBuffer *self,
     PyObject *args)
 {
     iocRoot *iocroot;
-    SignalSetParseState state;
+    BrickBufferSetParseState state;
 
     /* Get IOC root pointer. Check not to crash on exceptional situations.
      */
@@ -603,40 +578,40 @@ static PyObject *Signal_set(
     if (iocroot == OS_NULL) goto getout;
     ioc_lock(iocroot);
 
-    /* Find dynamic information for this signal.
+    /* Find dynamic information for this brick_buffer.
      */
     os_memclear(&state, sizeof(state));
-    state.signal = &self->signal;
-    if (Signal_try_setup(self, iocroot))
+    state.brick_buffer = &self->brick_buffer;
+    if (BrickBuffer_try_setup(self, iocroot))
     {
         ioc_unlock(iocroot);
         goto getout;
     }
 
-    /* If the signal is string.
+    /* If the brick_buffer is string.
      */
-    state.type_id = (state.signal->flags & OSAL_TYPEID_MASK);
-    state.max_values = state.signal->n;
+    state.type_id = (state.brick_buffer->flags & OSAL_TYPEID_MASK);
+    state.max_values = state.brick_buffer->n;
     state.state_bits = OSAL_STATE_CONNECTED;
     if (state.type_id == OS_STR)
     {
         state.is_string = OS_TRUE;
-        Signal_set_string_value(args, &state);
+        BrickBuffer_set_string_value(args, &state);
     }
 
-    /* If this signal is an array
+    /* If this brick_buffer is an array
      */
     else if (state.max_values > 1)
     {
         state.is_array = OS_TRUE;
-        Signal_set_array(args, &state);
+        BrickBuffer_set_array(args, &state);
     }
 
-    /* Otherwise this is single value signal.
+    /* Otherwise this is single value brick_buffer.
      */
     else
     {
-        Signal_set_one_value(args, &state);
+        BrickBuffer_set_one_value(args, &state);
     }
 
     ioc_unlock(iocroot);
@@ -649,21 +624,21 @@ getout:
 /**
 ****************************************************************************************************
 
-  @brief Store signal value with state bits into memory block.
-  @anchor Signal_set_ext
+  @brief Store brick_buffer value with state bits into memory block.
+  @anchor BrickBuffer_set_ext
 
-  The Signal.set_ext() sets signal value and state bits. For example
-  mysignal.set_ext(value=(1), state_bits=3).
+  The BrickBuffer.set_ext() sets brick_buffer value and state bits. For example
+  mybrick_buffer.set_ext(value=(1), state_bits=3).
 
 ****************************************************************************************************
 */
-static PyObject *Signal_set_ext(
-    Signal *self,
+static PyObject *BrickBuffer_set_ext(
+    BrickBuffer *self,
     PyObject *args,
     PyObject *kwds)
 {
     iocRoot *iocroot;
-    SignalSetParseState state;
+    BrickBufferSetParseState state;
     PyObject *value = NULL;
     int state_bits = OSAL_STATE_CONNECTED;
 
@@ -687,12 +662,12 @@ static PyObject *Signal_set_ext(
     if (iocroot == OS_NULL) goto getout;
     ioc_lock(iocroot);
 
-    /* Find dynamic information for this signal.
+    /* Find dynamic information for this brick_buffer.
      */
     os_memclear(&state, sizeof(state));
-    state.signal = &self->signal;
+    state.brick_buffer = &self->brick_buffer;
     state.state_bits = (os_char)state_bits;
-    if (Signal_try_setup(self, iocroot))
+    if (BrickBuffer_try_setup(self, iocroot))
     {
         ioc_unlock(iocroot);
         goto getout;
@@ -700,12 +675,12 @@ static PyObject *Signal_set_ext(
 
     /* If string?
      */
-    state.type_id = (state.signal->flags & OSAL_TYPEID_MASK);
-    state.max_values = state.signal->n;
+    state.type_id = (state.brick_buffer->flags & OSAL_TYPEID_MASK);
+    state.max_values = state.brick_buffer->n;
     if (state.type_id == OS_STR)
     {
         state.is_string = OS_TRUE;
-        Signal_set_string_value(args, &state);
+        BrickBuffer_set_string_value(args, &state);
     }
 
     /* If array?
@@ -713,14 +688,14 @@ static PyObject *Signal_set_ext(
     else if (state.max_values > 1)
     {
         state.is_array = OS_TRUE;
-        Signal_set_array(value, &state);
+        BrickBuffer_set_array(value, &state);
     }
 
     /* Otherwise single value
      */
     else
     {
-        Signal_set_one_value(args, &state);
+        BrickBuffer_set_one_value(args, &state);
     }
 
     ioc_unlock(iocroot);
@@ -731,39 +706,43 @@ getout:
 
 /* Lock must be on
  * */
-static osalStatus Signal_try_setup(
-    Signal *self,
+static osalStatus BrickBuffer_try_setup(
+    BrickBuffer *self,
     iocRoot *iocroot)
 {
-    iocDynamicSignal *dsignal;
+    iocDynamicBrickBuffer *dbrick_buffer;
 
     /* If setup is already good.
      */
-    if (self->signal.handle->mblk)
+    if (self->brick_buffer.handle->mblk)
     {
         return OSAL_SUCCESS;
     }
 
-    dsignal = ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, &self->signal);
-    if (self->signal.handle->mblk == OS_NULL)
+    dbrick_buffer = ioc_setup_brick_buffer_by_identifiers(iocroot, &self->identifiers, &self->brick_buffer);
+    if (self->brick_buffer.handle->mblk == OS_NULL)
     {
         return OSAL_STATUS_FAILED;
     }
 
-    if (dsignal)
+    if (dbrick_buffer)
     {
-        self->ncolumns = dsignal->ncolumns;
+        self->ncolumns = dbrick_buffer->ncolumns;
     }
 
     return OSAL_SUCCESS;
 }
 
+#endif
+
+
+#if 0
 
 /**
 ****************************************************************************************************
 
-  @brief Get simple signal value.
-  @anchor Signal_get_one_value
+  @brief Get simple brick_buffer value.
+  @anchor BrickBuffer_get_one_value
 
   @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
            checking if target buffer is connected to this memory block.
@@ -771,14 +750,14 @@ static osalStatus Signal_try_setup(
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get_one_value(
-    SignalGetState *state,
+static PyObject *BrickBuffer_get_one_value(
+    BrickBufferGetState *state,
     os_short flags)
 {
     iocValue vv;
     PyObject *rval, *value;
 
-    ioc_movex_signals(state->signal, &vv, 1, IOC_SIGNAL_NO_THREAD_SYNC|flags);
+    ioc_movex_brick_buffers(state->brick_buffer, &vv, 1, IOC_SIGNAL_NO_THREAD_SYNC|flags);
 
     if ((vv.state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
     {
@@ -828,8 +807,8 @@ static PyObject *Signal_get_one_value(
 /**
 ****************************************************************************************************
 
-  @brief Get string signal value.
-  @anchor Signal_get_str_value
+  @brief Get string brick_buffer value.
+  @anchor BrickBuffer_get_str_value
 
   @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
            checking if target buffer is connected to this memory block.
@@ -837,8 +816,8 @@ static PyObject *Signal_get_one_value(
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get_str_value(
-    SignalGetState *state,
+static PyObject *BrickBuffer_get_str_value(
+    BrickBufferGetState *state,
     os_short flags)
 {
     PyObject *rval, *value;
@@ -846,14 +825,14 @@ static PyObject *Signal_get_str_value(
 
     os_char fixed_buf[64], *p, state_bits;
 
-    n = state->signal->n;
+    n = state->brick_buffer->n;
     p = fixed_buf;
     if (n > sizeof(fixed_buf))
     {
         p = os_malloc(n, OS_NULL);
     }
 
-    state_bits = ioc_moves_str(state->signal, p, n,
+    state_bits = ioc_moves_str(state->brick_buffer, p, n,
         OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC|flags);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
     {
@@ -882,8 +861,8 @@ static PyObject *Signal_get_str_value(
 /**
 ****************************************************************************************************
 
-  @brief Get signal containing array of values.
-  @anchor Signal_get_array
+  @brief Get brick_buffer containing array of values.
+  @anchor BrickBuffer_get_array
 
   @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
            checking if target buffer is connected to this memory block.
@@ -891,8 +870,8 @@ static PyObject *Signal_get_str_value(
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get_array(
-    SignalGetState *state,
+static PyObject *BrickBuffer_get_array(
+    BrickBufferGetState *state,
     os_short flags)
 {
     os_memsz buf_sz, type_sz;
@@ -915,7 +894,7 @@ static PyObject *Signal_get_array(
 
     /* Read values.
      */
-    state_bits = ioc_moves_array(state->signal, offset, buf, state->max_values,
+    state_bits = ioc_moves_array(state->brick_buffer, offset, buf, state->max_values,
         OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC|flags);
 
     if (!state->nro_values)
@@ -1009,17 +988,17 @@ static PyObject *Signal_get_array(
 /**
 ****************************************************************************************************
 
-  @brief Get signal value from memory block.
-  @anchor Signal_get_internal
+  @brief Get brick_buffer value from memory block.
+  @anchor BrickBuffer_get_internal
 
   @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_TBUF_CHECK disables
            checking if target buffer is connected to this memory block.
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get_internal(
-    Signal *self,
-    SignalGetState *state,
+static PyObject *BrickBuffer_get_internal(
+    BrickBuffer *self,
+    BrickBufferGetState *state,
     os_short flags)
 {
     iocRoot *iocroot;
@@ -1032,40 +1011,40 @@ static PyObject *Signal_get_internal(
     if (iocroot == OS_NULL) goto getout;
     ioc_lock(iocroot);
 
-    /* Find dynamic information for this signal.
+    /* Find dynamic information for this brick_buffer.
      */
-    state->signal = &self->signal;
-    if (Signal_try_setup(self, iocroot))
+    state->brick_buffer = &self->brick_buffer;
+    if (BrickBuffer_try_setup(self, iocroot))
     {
         ioc_unlock(iocroot);
         goto getout;
     }
 
-    state->type_id = (state->signal->flags & OSAL_TYPEID_MASK);
-    if (!state->max_values || state->signal->n < state->max_values)
+    state->type_id = (state->brick_buffer->flags & OSAL_TYPEID_MASK);
+    if (!state->max_values || state->brick_buffer->n < state->max_values)
     {
-        state->max_values = state->signal->n;
+        state->max_values = state->brick_buffer->n;
     }
 
-    /* If the signal is string.
+    /* If the brick_buffer is string.
      */
     if (state->type_id == OS_STR)
     {
-        rval = Signal_get_str_value(state, flags);
+        rval = BrickBuffer_get_str_value(state, flags);
     }
 
-    /* If this signal is an array
+    /* If this brick_buffer is an array
      */
-    else if (state->signal->n > 1)
+    else if (state->brick_buffer->n > 1)
     {
-        rval = Signal_get_array(state, flags);
+        rval = BrickBuffer_get_array(state, flags);
     }
 
-    /* Otherwise this is single value signal.
+    /* Otherwise this is single value brick_buffer.
      */
     else
     {
-        rval = Signal_get_one_value(state, flags);
+        rval = BrickBuffer_get_one_value(state, flags);
     }
 
     ioc_unlock(iocroot);
@@ -1087,16 +1066,16 @@ getout:
 /**
 ****************************************************************************************************
 
-  @brief Get signal value from memory block.
+  @brief Get brick_buffer value from memory block.
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get_ext(
-    Signal *self,
+static PyObject *BrickBuffer_get_ext(
+    BrickBuffer *self,
     PyObject *args,
     PyObject *kwds)
 {
-    SignalGetState state;
+    BrickBufferGetState state;
     int nro_values = 0, max_values = 0, check_tbuf = 1;
 
     static char *kwlist[] = {
@@ -1117,7 +1096,7 @@ static PyObject *Signal_get_ext(
     state.max_values = max_values;
     state.nro_values = nro_values;
 
-    return Signal_get_internal(self, &state,
+    return BrickBuffer_get_internal(self, &state,
         check_tbuf ? IOC_SIGNAL_DEFAULT : IOC_SIGNAL_NO_TBUF_CHECK);
 }
 
@@ -1125,16 +1104,16 @@ static PyObject *Signal_get_ext(
 /**
 ****************************************************************************************************
 
-  @brief Get signal value from memory block without state bits.
+  @brief Get brick_buffer value from memory block without state bits.
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get(
-    Signal *self,
+static PyObject *BrickBuffer_get(
+    BrickBuffer *self,
     PyObject *args,
     PyObject *kwds)
 {
-    SignalGetState state;
+    BrickBufferGetState state;
     int nro_values = 0, max_values = 0;
 
     static char *kwlist[] = {
@@ -1155,19 +1134,19 @@ static PyObject *Signal_get(
     state.nro_values = nro_values;
     state.no_state_bits = OS_TRUE;
 
-    return Signal_get_internal(self, &state, IOC_SIGNAL_NO_TBUF_CHECK);
+    return BrickBuffer_get_internal(self, &state, IOC_SIGNAL_NO_TBUF_CHECK);
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Get signal value from memory block without state bits.
+  @brief Get brick_buffer value from memory block without state bits.
 
 ****************************************************************************************************
 */
-static PyObject *Signal_get_attribute(
-    Signal *self,
+static PyObject *BrickBuffer_get_attribute(
+    BrickBuffer *self,
     PyObject *args,
     PyObject *kwds)
 {
@@ -1195,9 +1174,9 @@ static PyObject *Signal_get_attribute(
     if (iocroot == OS_NULL) goto getout;
     ioc_lock(iocroot);
 
-    /* Find dynamic information for this signal.
+    /* Find dynamic information for this brick_buffer.
      */
-    if (Signal_try_setup(self, iocroot))
+    if (BrickBuffer_try_setup(self, iocroot))
     {
         ioc_unlock(iocroot);
         goto getout;
@@ -1205,7 +1184,7 @@ static PyObject *Signal_get_attribute(
 
     if (!os_strcmp(attrib_name, "n"))
     {
-        rval = Py_BuildValue("i", (int)self->signal.n);
+        rval = Py_BuildValue("i", (int)self->brick_buffer.n);
     }
     else if (!os_strcmp(attrib_name, "ncolumns"))
     {
@@ -1214,7 +1193,7 @@ static PyObject *Signal_get_attribute(
     }
     else if (!os_strcmp(attrib_name, "type"))
     {
-        rval = Py_BuildValue("s", osal_typeid_to_name(self->signal.flags & OSAL_TYPEID_MASK));
+        rval = Py_BuildValue("s", osal_typeid_to_name(self->brick_buffer.flags & OSAL_TYPEID_MASK));
     }
     else
     {
@@ -1229,14 +1208,15 @@ getout:
     Py_RETURN_NONE;
 }
 
+#endif
 
 /**
 ****************************************************************************************************
   Member variables.
 ****************************************************************************************************
 */
-static PyMemberDef Signal_members[] = {
-    {(char*)"status", T_INT, offsetof(Signal, status), 0, (char*)"constructor status"},
+static PyMemberDef BrickBuffer_members[] = {
+    {(char*)"status", T_INT, offsetof(BrickBuffer, status), 0, (char*)"constructor status"},
     {NULL} /* Sentinel */
 };
 
@@ -1246,13 +1226,13 @@ static PyMemberDef Signal_members[] = {
   Member functions.
 ****************************************************************************************************
 */
-static PyMethodDef Signal_methods[] = {
-    {"delete", (PyCFunction)Signal_delete, METH_NOARGS, "Deletes IOCOM signal"},
-    {"set", (PyCFunction)Signal_set, METH_VARARGS, "Store signal data"},
-    {"set_ext", (PyCFunction)Signal_set_ext, METH_VARARGS|METH_KEYWORDS, "Set data and state bits"},
-    {"get", (PyCFunction)Signal_get, METH_VARARGS|METH_KEYWORDS, "Get signal data without state bits"},
-    {"get_ext", (PyCFunction)Signal_get_ext, METH_VARARGS|METH_KEYWORDS, "Get signal data and state bits"},
-    {"get_attribute", (PyCFunction)Signal_get_attribute, METH_VARARGS|METH_KEYWORDS, "Get signal attribute"},
+static PyMethodDef BrickBuffer_methods[] = {
+    {"delete", (PyCFunction)BrickBuffer_delete, METH_NOARGS, "Deletes IOCOM brick_buffer"},
+//    {"set", (PyCFunction)BrickBuffer_set, METH_VARARGS, "Store brick_buffer data"},
+//    {"set_ext", (PyCFunction)BrickBuffer_set_ext, METH_VARARGS|METH_KEYWORDS, "Set data and state bits"},
+//    {"get", (PyCFunction)BrickBuffer_get, METH_VARARGS|METH_KEYWORDS, "Get brick_buffer data without state bits"},
+//    {"get_ext", (PyCFunction)BrickBuffer_get_ext, METH_VARARGS|METH_KEYWORDS, "Get brick_buffer data and state bits"},
+//    {"get_attribute", (PyCFunction)BrickBuffer_get_attribute, METH_VARARGS|METH_KEYWORDS, "Get brick_buffer attribute"},
     {NULL} /* Sentinel */
 };
 
@@ -1262,11 +1242,11 @@ static PyMethodDef Signal_methods[] = {
   Class type setup.
 ****************************************************************************************************
 */
-PyTypeObject SignalType = {
-    PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".Signal",  /* tp_name */
-    sizeof(Signal),                           /* tp_basicsize */
+PyTypeObject BrickBufferType = {
+    PyVarObject_HEAD_INIT(NULL, 0) IOCOMPYTHON_NAME ".BrickBuffer",  /* tp_name */
+    sizeof(BrickBuffer),                           /* tp_basicsize */
     0,                                        /* tp_itemsize */
-    (destructor)Signal_dealloc,               /* tp_dealloc */
+    (destructor)BrickBuffer_dealloc,               /* tp_dealloc */
     0,                                        /* tp_print */
     0,                                        /* tp_getattr */
     0,                                        /* tp_setattr */
@@ -1282,15 +1262,15 @@ PyTypeObject SignalType = {
     0,                                        /* tp_setattro */
     0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    "Signal objects",                         /* tp_doc */
+    "BrickBuffer objects",                         /* tp_doc */
     0,                                        /* tp_traverse */
     0,                                        /* tp_clear */
     0,                                        /* tp_richcompare */
     0,                                        /* tp_weaklistoffset */
     0,                                        /* tp_iter */
     0,                                        /* tp_iternext */
-    Signal_methods,                           /* tp_methods */
-    Signal_members,                           /* tp_members */
+    BrickBuffer_methods,                           /* tp_methods */
+    BrickBuffer_members,                           /* tp_members */
     0,                                        /* tp_getset */
     0,                                        /* tp_base */
     0,                                        /* tp_dict */
@@ -1299,5 +1279,5 @@ PyTypeObject SignalType = {
     0,                                        /* tp_dictoffset */
     0,                                        /* tp_init */
     0,                                        /* tp_alloc */
-    Signal_new,                               /* tp_new */
+    BrickBuffer_new,                               /* tp_new */
 };
