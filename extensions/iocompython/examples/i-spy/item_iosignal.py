@@ -52,7 +52,13 @@ class IoSignalItem(Item):
                 self.my_checkbox.active = checked
 
         if self.my_text != None:
-            self.my_text.text = str(v[1])
+            if type(v[1]) is list:
+                if len(v[1]) <= 12:
+                    self.my_text.text = str(v[1])
+                else:
+                    self.my_text.text = 'long array...'
+            else:
+                self.my_text.text = str(v[1])
 
     def my_user_input(self, instance):
         try:

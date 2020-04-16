@@ -142,6 +142,8 @@ osalStream ioc_streamer_open(
     os_memclear(streamer, sizeof(iocStreamer));
     streamer->prm = (iocStreamerParams*)option;
     streamer->hdr.iface = &ioc_streamer_iface;
+    streamer->hdr.read_timeout_ms = IOC_STREAMER_TIMEOUT;
+    streamer->hdr.write_timeout_ms = IOC_STREAMER_TIMEOUT;
     streamer->flags = flags;
     streamer->used = OS_TRUE;
     streamer->step = IOC_SSTEP_INITIALIZED;
@@ -440,7 +442,7 @@ static osalStatus ioc_streamer_device_write(
 {
     iocStreamerState cmd;
     os_char cmd_state_bits, state_bits;
-    os_int buf_sz, tail, nbytes;
+    os_int buf_sz, tail, nbytes, timeout_ms;
     osalStatus s;
 
     nbytes = 0;
@@ -511,11 +513,15 @@ static osalStatus ioc_streamer_device_write(
                     streamer->step = IOC_SSTEP_TRANSFER_DONE;
                     osal_trace3("IOC_SSTEP_TRANSFER_DONE");
                 }
-                else if (os_has_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT))
+                else
                 {
-                    osal_trace3("Streamer timeout");
-                    streamer->step = IOC_SSTEP_FAILED;
-                    goto getout;
+                    timeout_ms = streamer->hdr.write_timeout_ms;
+                    if (timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
+                    {
+                        osal_trace3("Streamer timeout");
+                        streamer->step = IOC_SSTEP_FAILED;
+                        goto getout;
+                    }
                 }
             }
             break;
@@ -615,7 +621,7 @@ static osalStatus ioc_streamer_device_read(
 {
     iocStreamerState cmd;
     os_char cmd_state_bits, state_bits;
-    os_int buf_sz, head, nbytes;
+    os_int buf_sz, head, nbytes, timeout_ms;
     osalStatus s;
 
     nbytes = 0;
@@ -683,11 +689,12 @@ static osalStatus ioc_streamer_device_read(
                 os_get_timer(&streamer->mytimer);
             }
 
-            /* If more data to come, break.
+            /* If more data to come, NOTICE break.
              */
             if (cmd == IOC_STREAM_RUNNING)
             {
-                if (!nbytes && os_has_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT))
+                timeout_ms = streamer->hdr.read_timeout_ms;
+                if (!nbytes && timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
                 {
                     osal_trace3("IOC_SSTEP_FAILED, receiving data timed out");
                     streamer->step = IOC_SSTEP_FAILED;
@@ -784,7 +791,7 @@ static osalStatus ioc_streamer_controller_write(
 {
     iocStreamerState state;
     os_char state_bits;
-    os_int buf_sz, tail, nbytes;
+    os_int buf_sz, tail, nbytes, timeout_ms;
     osalStatus s;
 
     nbytes = 0;
@@ -862,7 +869,8 @@ static osalStatus ioc_streamer_controller_write(
             }
             if (n == 0)
             {
-                if (os_has_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT))
+                timeout_ms = streamer->hdr.write_timeout_ms;
+                if (timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
                 {
                     osal_trace3("Streamer timeout");
                     streamer->step = IOC_SSTEP_FAILED;
@@ -963,7 +971,7 @@ static osalStatus ioc_streamer_controller_read(
 {
     iocStreamerState state;
     os_char state_bits;
-    os_int buf_sz, head, nbytes;
+    os_int buf_sz, head, nbytes, timeout_ms;
     osalStatus s;
 
     nbytes = 0;
@@ -1042,7 +1050,8 @@ static osalStatus ioc_streamer_controller_read(
              */
             if (state == IOC_STREAM_RUNNING)
             {
-                if (!nbytes && os_has_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT))
+                timeout_ms = streamer->hdr.read_timeout_ms;
+                if (!nbytes && timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
                 {
                     osal_trace3("Streamer timeout");
                     streamer->step = IOC_SSTEP_FAILED;

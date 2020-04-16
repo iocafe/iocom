@@ -81,7 +81,6 @@ osalStatus AppRoot::loop()
 {
     os_int i;
 
-    os_sleep(5);
     for (i = 0; i<m_nro_apps; i++) {
         m_app[i]->run();
     }

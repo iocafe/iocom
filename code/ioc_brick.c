@@ -6,6 +6,9 @@
   @version 1.0
   @date    10.4.2020
 
+  A brick is name for a block of data, like a video frame, to be streamed as one piece over
+  ring buffer.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the eosal and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -28,19 +31,24 @@
         vsignals.tail = &gina.imp.rec_tail;
         vsignals.state = &gina.exp.rec_state;
         vsignals.to_device = OS_FALSE;
-        ioc_initialize_brick_buffer(&video_output, &vsignals, &ioboard_root, IOC_BRICK_DEVICE);
+        ioc_initialize_brick_buffer(&video_output, &vsignals, &ioboard_root, 0, IOC_BRICK_DEVICE);
 
     Initializing brick buffer from assembly defined in signals.json
-        ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root, IOC_BRICK_DEVICE);
+        ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root, 0, IOC_BRICK_DEVICE);
+
+
+   @param timeout_ms -1 = Infinite, 0 = use default, other values are timeout in ms
  */
 void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
     const iocStreamerSignals *signals,
     iocRoot *root,
+    os_int timeout_ms,
     os_int flags)
 {
     os_memclear(b, sizeof(iocBrickBuffer));
     b->root = root;
+    b->timeout_ms = timeout_ms;
 
     if (signals) {
         if (signals->to_device)
@@ -183,7 +191,7 @@ void ioc_set_brick_checksum(
 
 /* Send all or part of brick data to output stream.
  */
-static void ioc_send_brick_data(
+static osalStatus ioc_send_brick_data(
     iocBrickBuffer *b)
 {
     os_memsz n, n_written;
@@ -197,7 +205,7 @@ static void ioc_send_brick_data(
         s = ioc_streamer_write(b->stream, (const os_char*)b->buf + b->pos, n, &n_written, OSAL_STREAM_DEFAULT);
         if (s)
         {
-            return;
+            return s;
         }
 
         b->pos += n_written;
@@ -210,6 +218,7 @@ static void ioc_send_brick_data(
     }
 
     ioc_unlock(b->root);
+    return OSAL_SUCCESS;
 }
 
 
@@ -230,21 +239,34 @@ void ioc_run_brick_send(
 {
     iocStreamerState cmd;
     os_char state_bits;
-    // osalStatus s = OSAL_NOTHING_TO_DO;
 
     if (b->stream == OS_NULL) {
+        if (b->prm.frd.state && !b->state_initialized)
+        {
+            ioc_sets0_int(b->prm.frd.state, 0);
+            b->state_initialized = OS_TRUE;
+        }
+
         cmd = (iocStreamerState)ioc_gets_int(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
         if (cmd != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) return;
 
         osal_trace("BRICK: IOC_STREAM_RUNNING command");
         b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
         if (b->stream == OS_NULL) return;
+
+        if (b->timeout_ms) {
+            osal_stream_set_parameter(b->stream, OSAL_STREAM_WRITE_TIMEOUT_MS, b->timeout_ms);
+        }
     }
 
     /* If we got data, then try to sending it.
      */
     if (b->pos < b->buf_n) {
-        ioc_send_brick_data(b);
+        if (ioc_send_brick_data(b))
+        {
+            ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
+            b->stream = OS_NULL;
+        }
     }
 }
 
@@ -257,17 +279,55 @@ void ioc_brick_set_receive(
 }
 
 
-os_uint ioc_brick_int(
+os_ulong ioc_brick_int(
     os_uchar *data,
     os_int nro_bytes)
 {
-    os_uint x = 0;
+    os_ulong x = 0;
     while (nro_bytes--) {
         x <<= 8;
         x |= data[nro_bytes];
     }
     return x;
 }
+
+/* osal_validate_brick_header Send all or part of brick data to output stream.
+ */
+static osalStatus osal_validate_brick_header(
+    iocBrickHdr *bhdr)
+{
+    os_uint w, h, buf_sz, alloc_sz, bytes_per_pix, max_brick_sz, max_brick_alloc;
+
+    if (bhdr->format < IOC_MIN_BRICK_FORMAT ||
+        bhdr->format > IOC_MAX_BRICK_FORMAT ||
+        bhdr->compression < IOC_MIN_BRICK_COMPRESSION ||
+        bhdr->compression > IOC_MAX_BRICK_COMPRESSION)
+    {
+        return OSAL_STATUS_FAILED;
+    }
+
+    w = ioc_brick_int(bhdr->width, IOC_BRICK_DIM_SZ);
+    h = ioc_brick_int(bhdr->height, IOC_BRICK_DIM_SZ);
+    if (w < 1 || w > IOC_MAX_BRICK_WIDTH ||
+        h < 1 || h > IOC_MAX_BRICK_HEIGHT)
+    {
+        return OSAL_STATUS_FAILED;
+    }
+
+    bytes_per_pix = 1;
+    max_brick_sz = w * h * bytes_per_pix + sizeof(iocBrickHdr);
+    max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT * bytes_per_pix)/2) + sizeof(iocBrickHdr);
+
+    buf_sz = ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
+    alloc_sz = ioc_brick_int(bhdr->alloc_sz, IOC_BRICK_BYTES_SZ);
+    if (buf_sz < 1 || buf_sz > max_brick_sz ||
+        alloc_sz < 1 || alloc_sz > max_brick_alloc)
+    {
+        return OSAL_STATUS_FAILED;
+    }
+    return OSAL_SUCCESS;
+}
+
 
 /* Send all or part of brick data to output stream.
  */
@@ -298,7 +358,9 @@ static osalStatus ioc_receive_brick_data(
             return OSAL_SUCCESS;
         }
 
-        // if (validate header) ??;
+        if (osal_validate_brick_header(&first.hdr)) {
+            return OSAL_STATUS_FAILED;
+        }
 
         alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
         b->buf = (os_uchar*)os_malloc(alloc_sz, &b->buf_alloc_sz);
@@ -332,11 +394,17 @@ static osalStatus ioc_receive_brick_data(
 
     if (b->pos == sizeof(iocBrickHdr))
     {
-        // if (validate header) ??;
+        if (osal_validate_brick_header(bhdr)) {
+            return OSAL_STATUS_FAILED;
+        }
 
         b->buf_sz = (os_memsz)ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
-        n = b->buf_sz - b->pos;
+        if (b->buf_sz > b->buf_alloc_sz)
+        {
+            return OSAL_STATUS_FAILED;
+        }
 
+        n = b->buf_sz - b->pos;
         s = ioc_streamer_read(b->stream, (os_char*)b->buf + b->pos, n, &n_read, OSAL_STREAM_DEFAULT);
         if (s) {
             return s;
@@ -349,7 +417,7 @@ static osalStatus ioc_receive_brick_data(
     }
 
     /* verify checksum */
-    checksum = ioc_brick_int(bhdr->checksum,IOC_BRICK_CHECKSUM_SZ);
+    checksum = ioc_brick_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     os_memclear(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, b->buf_sz, OS_NULL) != checksum)
     {
@@ -371,6 +439,9 @@ static osalStatus ioc_receive_brick_data(
 void ioc_run_brick_receive(
     iocBrickBuffer *b)
 {
+    iocStreamerState state;
+    os_char state_bits;
+
     if (!b->enable_receive)
     {
         if (b->stream != OS_NULL) {
@@ -381,8 +452,24 @@ void ioc_run_brick_receive(
     }
 
     if (b->stream == OS_NULL) {
+        if (b->prm.tod.state && !b->state_initialized)
+        {
+            ioc_sets0_int(b->prm.tod.state, 0);
+            b->state_initialized = OS_TRUE;
+        }
+
+        if (b->prm.frd.state)
+        {
+            state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
+            if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) return;
+        }
+
         b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_READ);
         if (b->stream == OS_NULL) return;
+        if (b->timeout_ms) {
+            osal_stream_set_parameter(b->stream, OSAL_STREAM_READ_TIMEOUT_MS, b->timeout_ms);
+        }
+
         b->pos = 0;
     }
 

@@ -18,15 +18,26 @@ struct iocBrickBuffer;
 
 typedef enum iocBrickFormat
 {
-    IOC_BYTE_BRICK = 50           /* 8 bits per pixel, one channel */
+    IOC_BYTE_BRICK = 50,           /* 8 bits per pixel, one channel */
+
+    IOC_MIN_BRICK_FORMAT = 50,
+    IOC_MAX_BRICK_FORMAT = 50
 }
 iocBrickFormat;
 
 typedef enum iocBrickCompression
 {
-    IOC_UNCOMPRESSED_BRICK = 0     /* Uncompresssed brick */
+    IOC_UNCOMPRESSED_BRICK = 1,     /* Uncompresssed brick */
+
+    IOC_MIN_BRICK_COMPRESSION = 1,
+    IOC_MAX_BRICK_COMPRESSION = 1
 }
 iocBrickCompression;
+
+#define IOC_MAX_BRICK_WIDTH 50000
+#define IOC_MAX_BRICK_HEIGHT 3000
+#define IOC_MAX_BRICK_ALLOC (IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT * 3)
+
 
 /* Flags for ioc_initialize_brick_buffer(), bit fields. The same numeric values
    as IOC_IS_CONTROLLER and IOC_IS_DEVICE in ioc_dyn_stream.h.
@@ -75,6 +86,8 @@ typedef struct iocBrickBuffer
     iocStreamerParams prm;
     iocStreamerSignals *signals;
     osalStream stream;
+    os_int timeout_ms; /* timeout for streamer continuous data transfer, -1 = no timeout */
+    os_boolean state_initialized;
 
     /* callback */
     volatile os_boolean enable_receive;
@@ -89,6 +102,7 @@ void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
     const iocStreamerSignals *signals,
     iocRoot *root,
+    os_int timeout_ms,
     os_int flags);
 
 /* Set function to call when brick is received.
@@ -143,7 +157,7 @@ void ioc_brick_set_receive(
 void ioc_run_brick_receive(
     iocBrickBuffer *b);
 
-os_uint ioc_brick_int(
+os_ulong ioc_brick_int(
     os_uchar *data,
     os_int nro_bytes);
 

@@ -53,7 +53,26 @@ tito_t;
 #define TITO_CONF_IMP_MBLK_SZ 276
 
 void tito_init_signal_struct(tito_t *s);
+
+/* Array length defines. */
 #define TITO_CONF_EXP_FRD_BUF_ARRAY_SZ 257
 #define TITO_CONF_IMP_TOD_BUF_ARRAY_SZ 257
+
+/* Defines to check in code with #ifdef to know if signal is configured in JSON. */
+#define TITO_EXP_NRO_DEVICES
+#define TITO_EXP_TEST
+#define TITO_IMP_RESTART
+#define TITO_CONF_EXP_TOD_STATE
+#define TITO_CONF_EXP_TOD_TAIL
+#define TITO_CONF_EXP_FRD_STATE
+#define TITO_CONF_EXP_FRD_BUF
+#define TITO_CONF_EXP_FRD_HEAD
+#define TITO_CONF_IMP_TOD_CMD
+#define TITO_CONF_IMP_TOD_SELECT
+#define TITO_CONF_IMP_TOD_BUF
+#define TITO_CONF_IMP_TOD_HEAD
+#define TITO_CONF_IMP_FRD_CMD
+#define TITO_CONF_IMP_FRD_SELECT
+#define TITO_CONF_IMP_FRD_TAIL
 
 OSAL_C_HEADER_ENDS

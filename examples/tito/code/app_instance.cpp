@@ -85,6 +85,8 @@ void AppInstance::run()
     ioc_receive(&m_gina1.m_gina_export);
     ioc_receive(&m_gina2.m_gina_export);
     ioc_run_brick_receive(&m_gina1.m_camera_buffer);
+    ioc_send(&m_gina1.m_gina_export);
+    ioc_send(&m_gina2.m_gina_export);
     ioc_send(&m_gina1.m_gina_import);
     ioc_send(&m_gina2.m_gina_import);
 }

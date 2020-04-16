@@ -62,7 +62,7 @@ typedef struct gina_t
 }
 gina_t;
 
-#define GINA_EXP_MBLK_SZ 16052
+#define GINA_EXP_MBLK_SZ 6052
 #define GINA_IMP_MBLK_SZ 32
 #define GINA_CONF_EXP_MBLK_SZ 272
 #define GINA_CONF_IMP_MBLK_SZ 276
@@ -72,7 +72,7 @@ void gina_init_signal_struct(gina_t *s);
 /* Array length defines. */
 #define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
 #define GINA_EXP_TESTSTR_ARRAY_SZ 10
-#define GINA_EXP_REC_BUF_ARRAY_SZ 16000
+#define GINA_EXP_REC_BUF_ARRAY_SZ 6000
 #define GINA_IMP_STRTODEVICE_ARRAY_SZ 16
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 #define GINA_CONF_EXP_FRD_BUF_ARRAY_SZ 257

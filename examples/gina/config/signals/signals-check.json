@@ -4,16 +4,8 @@
 	{
 		"name": "ccd",
 		"type": "linecam",
-		"params": [
-			{
-				"name": "exp",
-				"signal": "rec_*.exp"
-			},
-			{
-				"name": "imp",
-				"signal": "rec_*.imp"
-			}
-		]
+		"exp": "exp.rec_",
+		"imp": "imp.rec_"
 	}
 ],
 "mblk": [
@@ -67,7 +59,7 @@
 					{
 						"name": "rec_buf",
 						"type": "uchar",
-						"array": 16000
+						"array": 6000
 					},
 					{
 						"name": "rec_head",
