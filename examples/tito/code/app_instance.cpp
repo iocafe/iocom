@@ -15,6 +15,12 @@
 */
 #include "app_main.h"
 
+/* Forward referred static functions.
+ */
+static void app_gina1_photo_received(
+    struct iocBrickBuffer *b,
+    void *context);
+
 
 /**
 ****************************************************************************************************
@@ -63,6 +69,9 @@ void AppInstance::start(const os_char *network_name, os_uint device_nr)
     m_gina1_def = m_gina1.inititalize(m_network_name, 1);
     m_gina2_def = m_gina2.inititalize(m_network_name, 2);
 
+    ioc_set_brick_received_callback(&m_gina1.m_camera_buffer, app_gina1_photo_received, this);
+    ioc_brick_set_receive(&m_gina1.m_camera_buffer, OS_TRUE);
+
     m_test_seq1.start(this);
 }
 
@@ -73,10 +82,18 @@ void AppInstance::stop()
 
 void AppInstance::run()
 {
-    ioc_send(&m_gina1.m_gina_import);
-    ioc_send(&m_gina2.m_gina_import);
     ioc_receive(&m_gina1.m_gina_export);
     ioc_receive(&m_gina2.m_gina_export);
+    ioc_run_brick_receive(&m_gina1.m_camera_buffer);
+    ioc_send(&m_gina1.m_gina_import);
+    ioc_send(&m_gina2.m_gina_import);
 }
 
 
+
+static void app_gina1_photo_received(
+    struct iocBrickBuffer *b,
+    void *context)
+{
+
+}

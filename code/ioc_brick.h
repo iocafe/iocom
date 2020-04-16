@@ -14,6 +14,8 @@
 ****************************************************************************************************
 */
 
+struct iocBrickBuffer;
+
 typedef enum iocBrickFormat
 {
     IOC_BYTE_BRICK = 50           /* 8 bits per pixel, one channel */
@@ -26,38 +28,58 @@ typedef enum iocBrickCompression
 }
 iocBrickCompression;
 
+/* Flags for ioc_initialize_brick_buffer(), bit fields. The same numeric values
+   as IOC_IS_CONTROLLER and IOC_IS_DEVICE in ioc_dyn_stream.h.
+ */
+#define IOC_BRICK_CONTROLLER 2
+#define IOC_BRICK_DEVICE 4
+
 
 /** Camera image as received by camera callback function.
     This must be flat.
     format Stream data format
  */
-#define IOC_BITMAP_TSTAMP_SZ 8
+#define IOC_BRICK_TSTAMP_SZ 8
+#define IOC_BRICK_CHECKSUM_SZ 2
+#define IOC_BRICK_DIM_SZ 2
+#define IOC_BRICK_BYTES_SZ 4
+
 typedef struct iocBrickHdr
 {
     os_uchar format;
     os_uchar compression;
-    os_uchar checksum_low;
-    os_uchar checksum_high;
-    os_uchar width_low;
-    os_uchar width_high;
-    os_uchar height_low;
-    os_uchar height_high;
-    os_uchar tstamp[IOC_BITMAP_TSTAMP_SZ];
+    os_uchar checksum[IOC_BRICK_CHECKSUM_SZ];
+    os_uchar width[IOC_BRICK_DIM_SZ];    /* Width in pixels, etc. */
+    os_uchar height[IOC_BRICK_DIM_SZ];   /* Height in pixels, etc. */
+    os_uchar buf_sz[IOC_BRICK_BYTES_SZ];   /* Number of actual bytes including this header for reading right number of bytes in frame */
+    os_uchar alloc_sz[IOC_BRICK_BYTES_SZ]; /* Maximum bytes needed including this header for memory allocation by receiver */
+    os_uchar tstamp[IOC_BRICK_TSTAMP_SZ];
 }
 iocBrickHdr;
 
+/* Brick received callback function.
+ */
+typedef void ioc_brick_received(
+    struct iocBrickBuffer *b,
+    void *context);
 
 typedef struct iocBrickBuffer
 {
     iocRoot *root;
     os_uchar *buf;
     os_memsz buf_sz;
+    os_memsz buf_alloc_sz;
     volatile os_memsz buf_n;
     volatile os_memsz pos;
 
     iocStreamerParams prm;
     iocStreamerSignals *signals;
     osalStream stream;
+
+    /* callback */
+    volatile os_boolean enable_receive;
+    ioc_brick_received *receive_callback;
+    void *receive_context;
 }
 iocBrickBuffer;
 
@@ -66,9 +88,17 @@ iocBrickBuffer;
 void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
     const iocStreamerSignals *signals,
-    iocRoot *root);
+    iocRoot *root,
+    os_int flags);
 
-void ioc_allocate_brick_buffer(
+/* Set function to call when brick is received.
+ */
+void ioc_set_brick_received_callback(
+    iocBrickBuffer *b,
+    ioc_brick_received *func,
+    void *context);
+
+osalStatus ioc_allocate_brick_buffer(
     iocBrickBuffer *b,
     os_memsz buf_sz);
 
@@ -97,14 +127,25 @@ void ioc_set_brick_checksum(
     os_uchar *buf,
     os_memsz buf_n);
 
-/* Send all or part of brick data to output stream.
+/* Run brick data transfer
  */
-// void ioc_send_brick_data(
-//     iocBrickBuffer *b);
-
-void ioc_run_brick_transfer(
+void ioc_run_brick_send(
     iocBrickBuffer *b);
 
+/* Turn receiving on or off
+ */
+void ioc_brick_set_receive(
+    iocBrickBuffer *b,
+    os_boolean enable);
+
+/* Run brick data transfer
+ */
+void ioc_run_brick_receive(
+    iocBrickBuffer *b);
+
+os_uint ioc_brick_int(
+    os_uchar *data,
+    os_int nro_bytes);
 
 #define ioc_is_brick_empty(b) ((b)->buf_n == 0)
 #define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)

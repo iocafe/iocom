@@ -63,9 +63,6 @@ gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr
      */
     gina_init_signal_struct(&m_gina_def);
 
-    /* Dynamic conf: put data from json in
-     */
-
     /* Generate memory blocks.
      */
     os_memclear(&blockprm, sizeof(blockprm));
@@ -85,6 +82,11 @@ gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr
 
     ioc_set_handle_to_signals(&m_gina_def.imp.hdr, &m_gina_import);
     ioc_set_handle_to_signals(&m_gina_def.exp.hdr, &m_gina_export);
+
+    /* Set up buffer for incoming camera photo
+     */
+    ioc_initialize_brick_buffer(&m_camera_buffer, &m_gina_def.ccd,
+        &app_iocom_root, IOC_BRICK_CONTROLLER);
 
     /* Set callback to detect received data and connection status changes.
      */

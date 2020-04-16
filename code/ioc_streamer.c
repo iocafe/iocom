@@ -173,6 +173,7 @@ getout:
 
   @param   stream Stream handle. After this call stream
            pointer will point to invalid memory location.
+  @param   flags Ignored, set OSAL_STREAM_DEFAULT (0).
   @return  None.
 
 ****************************************************************************************************

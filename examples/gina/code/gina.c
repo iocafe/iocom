@@ -34,25 +34,15 @@
  */
 #include "devicedir.h"
 
-/* Enable wifi configuration using blue tooth (0 or 1) ?.
- */
-#define GINA_USE_SELECTWIFI 0
 #if GINA_USE_SELECTWIFI
 #include "selectwifi.h"
 #endif
 
-/* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and
-   phototransistor connected to microcontroller (0 or 1).
- */
-#define GINA_USE_GAZERBEAM 1
 #if GINA_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
 #endif
 
-/* Get controller IP address from UDP multicast (0 or 1) ?.
- */
-#define GINA_USE_LIGHTHOUSE 1
 #if GINA_USE_LIGHTHOUSE
 #include "lighthouse.h"
 static LighthouseClient lighthouse;
@@ -247,16 +237,7 @@ osalStatus osal_main(
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
-    /* iocStreamerSignals vsignals;
-    os_memclear(&vsignals, sizeof(iocStreamerSignals));
-    vsignals.cmd = &gina.imp.rec_cmd;
-    vsignals.select = &gina.imp.rec_select;
-    vsignals.buf = &gina.exp.rec_buf;
-    vsignals.head = &gina.exp.rec_head;
-    vsignals.tail = &gina.imp.rec_tail;
-    vsignals.state = &gina.exp.rec_state;
-    vsignals.to_device = OS_FALSE; */
-    ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root);
+    ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root, IOC_BRICK_DEVICE);
 
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
@@ -342,7 +323,7 @@ osalStatus osal_loop(
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
 #if PINS_CAMERA
-    ioc_run_brick_transfer(&video_output);
+    ioc_run_brick_send(&video_output);
 #endif
 
     /* Read all input pins from hardware into global pins structures. Reading will forward

@@ -43,4 +43,9 @@ public:
      */
     gina_t
         m_gina_def;
+
+    /* Buffer for incoming camera photo.
+     */
+    iocBrickBuffer
+        m_camera_buffer;
 };

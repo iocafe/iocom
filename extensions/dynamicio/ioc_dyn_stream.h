@@ -47,7 +47,8 @@ typedef struct
 }
 iocStreamSignals;
 
-/* Flags for functions.
+/* Flags for functions, bit fields. The same numeric values are used IOC_IS_CONTROLLER and
+ * IOC_IS_DEVICE as for IOC_BRICK_CONTROLLER  and IOC_BRICK_DEVICE ioc_brick.h.
  */
 #define IOC_CALL_SYNC 1
 #define IOC_IS_CONTROLLER 2
