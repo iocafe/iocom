@@ -16,6 +16,7 @@
 
 struct Root;
 
+#define IOPY_BB_PREFIX_SZ IOC_SIGNAL_NAME_SZ
 
 /** Python brick_buffer class.
  */
@@ -31,6 +32,8 @@ typedef struct
      */
     iocBrickBuffer brick_buffer;
 
+    /* Signal structures.
+     */
     iocSignal sig_cmd;
     iocSignal sig_select;
     iocSignal sig_buf;
@@ -38,18 +41,24 @@ typedef struct
     iocSignal sig_tail;
     iocSignal sig_state;
 
-    /** Memory block handle.
+    /** Memory block handles.
      */
-    iocHandle handle;
+    iocHandle h_exp;
+    iocHandle h_imp;
 
     /** Identifiers for the brick_buffer.
      */
-    iocIdentifiers identifiers;
+    iocIdentifiers exp_ids;
+    iocIdentifiers imp_ids;
 
-    /** If brick_buffer is matrix formulated as array, number of columns. For one
-        dimensional arrays and single variables ncolumns is 1.
+    os_char prefix[IOPY_BB_PREFIX_SZ];
+
+    /** Flags. The is_device indicates that this python code is acting as device and
+        of brick data transfer. The from_device flag indicates that the device is the
+        data source and controller is target.
      */
-//     os_int ncolumns;
+    os_boolean is_device;
+    os_boolean from_device;
 
     /** Connection initialization status: 0 = all good, other values are errors.
         Set by the constructor function.

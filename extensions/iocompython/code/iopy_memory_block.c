@@ -45,7 +45,7 @@ static PyObject *MemoryBlock_new(
         *flags = NULL;
 
     int
-        nbytes = 0,
+        nbytes = IOC_MIN_MBLK_SZ,
         device_nr = 0;
 
     static char *kwlist[] = {
@@ -135,6 +135,7 @@ static PyObject *MemoryBlock_new(
         prm.network_name = network_name;
     }
 
+    if (nbytes < IOC_MIN_MBLK_SZ) nbytes = IOC_MIN_MBLK_SZ;
     prm.nbytes = nbytes;
 
     /* Try to find memory block.

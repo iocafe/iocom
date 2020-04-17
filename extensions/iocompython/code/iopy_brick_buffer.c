@@ -6,6 +6,44 @@
   @version 1.0
   @date    16.4.2020
 
+
+  Example to get video data from remote camera:
+
+    # Module: recive-camera-data.py
+    # Pull data from IO device's (gina1) camera trough a server (frank, etc)
+    # This example logs into "iocafenet" device network run by server in local computer.
+    # User name "ispy" and password "pass" identify the client to server.
+    # The camtest must be accepted as valid at server (this can be done with i-spy)
+    # Client verifies validity of the server by acceptable certificate bundle 'myhome-bundle.crt'.
+
+    from iocompython import Root, Connection, MemoryBlock, BrickBuffer
+    import ioterminal
+    import time
+
+    # 9000 = select device number automatically
+    my_device_nr = 9000
+
+    def main():
+        root = Root('camtest', device_nr=my_device_nr, security='certchainfile=myhome-bundle.crt')
+        ioterminal.start(root)
+
+        Connection(root, "127.0.0.1", "tls,down,dynamic", user='ispy.iocafenet', password='pass')
+        camera_buffer = BrickBuffer(root, "exp.gina1.iocafenet", "imp.gina1.iocafenet", "rec_",timeout=-1)
+        camera_buffer.set_recive(True);
+
+        while (ioterminal.run(root)):
+            data = camera_buffer.get()
+            if data != None:
+                print(data)
+
+            time.sleep(0.01)
+
+        root.delete()
+
+    if (__name__ == '__main__'):
+        main()
+
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -29,10 +67,9 @@ BrickBufferGetState;
 
 /* Forward referred static functions.
  */
-/* static osalStatus BrickBuffer_try_setup(
-    BrickBuffer *self,
-    iocRoot *iocroot);
-   */
+static void bb_init_signal(
+    iocSignal *sig,
+    iocHandle *handle);
 
 
 /**
@@ -61,16 +98,24 @@ static PyObject *BrickBuffer_new(
     Root *root;
 
     iocRoot *iocroot;
-    iocBrickBuffer *bb;
-    iocHandle *handle;
-    iocIdentifiers *identifiers;
+    iocStreamerSignals sig;
 
     const char
-        *io_path = NULL;
+        *exp = NULL,
+        *imp = NULL,
+        *prefix = "rec_",
+        *flags = "";
+
+    int
+        timeout_ms = 0; /* 0 = use default timeout */
 
     static char *kwlist[] = {
         "root",
-        "io_path",
+        "exp",
+        "imp",
+        "prefix",
+        "timeout",
+        "flags",
         NULL
     };
 
@@ -79,17 +124,13 @@ static PyObject *BrickBuffer_new(
     {
         return PyErr_NoMemory();
     }
-    bb = &self->brick_buffer;
-    handle = &self->handle;
-    identifiers = &self->identifiers;
 
-    os_memclear(bb, sizeof(iocBrickBuffer));
-    os_memclear(handle, sizeof(iocHandle));
-    // bb->handle = handle;
-  //  self->ncolumns = 1;
+    os_memclear(&self->brick_buffer, sizeof(iocBrickBuffer));
+    os_memclear(&self->h_exp, sizeof(iocHandle));
+    os_memclear(&self->h_imp, sizeof(iocHandle));
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os",
-         kwlist, &pyroot, &io_path))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Oss|sis",
+         kwlist, &pyroot, &exp, &imp, &prefix, &timeout_ms, &flags))
     {
         PyErr_SetString(iocomError, "Errornous function arguments");
         goto failed;
@@ -109,19 +150,60 @@ static PyObject *BrickBuffer_new(
         goto failed;
     }
 
-    ioc_iopath_to_identifiers(iocroot, identifiers, io_path, IOC_EXPECT_SIGNAL);
+    self->is_device = OS_FALSE;
+    if (os_strstr(flags, "device", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        self->is_device = OS_TRUE;
+    }
+    self->from_device = OS_TRUE;
+    if (os_strstr(flags, "tod", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        self->from_device = OS_FALSE;
+    }
+
+    bb_init_signal(&self->sig_cmd, &self->h_imp);
+    bb_init_signal(&self->sig_select, &self->h_imp);
+    bb_init_signal(&self->sig_state, &self->h_exp);
+
+    if (self->from_device) {
+        bb_init_signal(&self->sig_buf, &self->h_exp);
+        bb_init_signal(&self->sig_head, &self->h_exp);
+        bb_init_signal(&self->sig_tail, &self->h_imp);
+    }
+    else {
+        bb_init_signal(&self->sig_buf, &self->h_imp);
+        bb_init_signal(&self->sig_head, &self->h_imp);
+        bb_init_signal(&self->sig_tail, &self->h_exp);
+    }
+
+    ioc_iopath_to_identifiers(iocroot, &self->exp_ids, exp, IOC_EXPECT_MEMORY_BLOCK);
+    ioc_iopath_to_identifiers(iocroot, &self->imp_ids, imp, IOC_EXPECT_MEMORY_BLOCK);
+
+    os_strncpy(self->prefix, prefix, IOPY_BB_PREFIX_SZ);
+
+    /* Initialize brick buffer (does not allocate any memory yet)
+    */
+    os_memclear(&sig, sizeof(iocStreamerSignals));
+    sig.to_device = !self->from_device;
+    sig.cmd = &self->sig_cmd;
+    sig.select = &self->sig_select;
+    sig.state = &self->sig_state;
+    sig.buf = &self->sig_buf;
+    sig.head = &self->sig_head;
+    sig.tail = &self->sig_tail;
+    ioc_initialize_brick_buffer(&self->brick_buffer, &sig, iocroot, timeout_ms,
+        self->is_device ? IOC_BRICK_DEVICE : IOC_BRICK_CONTROLLER);
 
     self->status = OSAL_SUCCESS;
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("BrickBuffer.new(%s)\n", io_path);
+    PySys_WriteStdout("BrickBuffer.new(%s,%s)\n", exp, imp);
 #endif
 
     /* Save root pointer and increment reference count.
      */
     self->pyroot = root;
     Py_INCREF(root);
-
     return (PyObject *)self;
 
 failed:
@@ -147,9 +229,12 @@ static void BrickBuffer_dealloc(
 {
     if (self->pyroot)
     {
-        if (self->handle.mblk)
-        {
-            ioc_release_handle(&self->handle);
+        if (self->h_exp.mblk) {
+            ioc_release_handle(&self->h_exp);
+        }
+
+        if (self->h_imp.mblk) {
+            ioc_release_handle(&self->h_imp);
         }
         Py_DECREF(self->pyroot);
         self->pyroot = OS_NULL;
@@ -182,9 +267,12 @@ static PyObject *BrickBuffer_delete(
 {
     if (self->pyroot)
     {
-        if (self->handle.mblk)
-        {
-            ioc_release_handle(&self->handle);
+        if (self->h_exp.mblk) {
+            ioc_release_handle(&self->h_exp);
+        }
+
+        if (self->h_imp.mblk) {
+            ioc_release_handle(&self->h_imp);
         }
         Py_DECREF(self->pyroot);
         self->pyroot = OS_NULL;
@@ -198,6 +286,212 @@ static PyObject *BrickBuffer_delete(
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+
+/**
+****************************************************************************************************
+
+  Initialize unused signal structure.
+
+  @param   sig Pointer to signal structure to initialize.
+  @param   handle Pointer to memory block handle structure. Handle doesn't have to be initialized,
+           just pointer is saved within the signal structure.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void bb_init_signal(
+    iocSignal *sig,
+    iocHandle *handle)
+{
+    os_memclear(sig, sizeof(iocSignal));
+    sig->handle = handle;
+}
+
+
+/**
+****************************************************************************************************
+
+  Set memory block handle for a signal.
+
+  Lock must be on
+
+  @param   sig Pointer to signal structure to set up.
+  @param   handle Pointer to memory block handle structure. Handle doesn't have to be initialized,
+           just pointer is saved within the signal structure.
+  @return  None.
+
+****************************************************************************************************
+*/
+static osalStatus bb_try_signal_setup(
+    iocSignal *sig,
+    os_char *name,
+    os_char *prefix,
+    iocIdentifiers *mblk_identifiers,
+    iocRoot *iocroot)
+{
+    iocIdentifiers identifiers;
+
+    /* If setup is already good.
+     */
+    if (sig->handle->mblk) {
+        return OSAL_SUCCESS;
+    }
+
+    os_memcpy(&identifiers, mblk_identifiers, sizeof(iocIdentifiers));
+    os_strncpy(identifiers.signal_name, prefix, IOC_SIGNAL_NAME_SZ);
+    os_strncat(identifiers.signal_name, name, IOC_SIGNAL_NAME_SZ);
+
+    ioc_setup_signal_by_identifiers(iocroot, &identifiers, sig);
+    return sig->handle->mblk ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
+}
+
+
+/**
+****************************************************************************************************
+
+  Initialize all signal structires needed.
+
+  Lock must be on
+
+  @param   sig Pointer to signal structure to initialize.
+  @param   sig Pointer to memory block handle structure. Handle doesn't have to be initialized,
+           just pointer is saved within the signal structure.
+  @return  None.
+
+****************************************************************************************************
+*/
+static osalStatus bb_try_setup(
+    BrickBuffer *self,
+    iocRoot *iocroot)
+{
+     /* If setup is already good. We check head and tail because they are in different
+       memory blocks and last to be set up.
+     */
+    if (self->sig_head.handle->mblk && self->sig_tail.handle->mblk) {
+        return OSAL_SUCCESS;
+    }
+
+    if (bb_try_signal_setup(&self->sig_cmd, "cmd", self->prefix, &self->imp_ids, iocroot)) goto getout;
+    if (bb_try_signal_setup(&self->sig_select, "select", self->prefix, &self->imp_ids, iocroot)) goto getout;
+    if (bb_try_signal_setup(&self->sig_state, "state", self->prefix, &self->exp_ids, iocroot)) goto getout;
+
+    if (self->from_device) {
+        if (bb_try_signal_setup(&self->sig_buf, "buf", self->prefix, &self->exp_ids, iocroot)) goto getout;
+        if (bb_try_signal_setup(&self->sig_head, "head", self->prefix, &self->exp_ids, iocroot)) goto getout;
+        if (bb_try_signal_setup(&self->sig_tail, "tail", self->prefix, &self->imp_ids, iocroot)) goto getout;
+    }
+    else {
+        if (bb_try_signal_setup(&self->sig_buf, "buf", self->prefix, &self->imp_ids, iocroot)) goto getout;
+        if (bb_try_signal_setup(&self->sig_head, "head", self->prefix, &self->imp_ids, iocroot)) goto getout;
+        if (bb_try_signal_setup(&self->sig_tail, "tail", self->prefix, &self->exp_ids, iocroot)) goto getout;
+    }
+
+    return OSAL_COMPLETED;
+
+getout:
+    return OSAL_STATUS_FAILED;
+}
+
+
+
+/**
+****************************************************************************************************
+
+  @brief Enable/disable reciving data.
+
+****************************************************************************************************
+*/
+static PyObject *BrickBuffer_set_recive(
+    BrickBuffer *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    int enable = OS_TRUE;
+    static char *kwlist[] = {
+        "enable",
+        NULL
+    };
+
+    /* Get iocom root object pointer.
+     */
+    if (self->pyroot == OS_NULL) {
+        PyErr_SetString(iocomError, "Root has been deleted");
+        return NULL;
+    }
+
+    /* Parse Python argumenrs.
+     */
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &enable)) {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    ioc_brick_set_receive(&self->brick_buffer, enable);
+    Py_RETURN_NONE;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Get brick from this buffer.
+
+****************************************************************************************************
+*/
+static PyObject *BrickBuffer_get(
+    BrickBuffer *self,
+    PyObject *args,
+    PyObject *kwds)
+{
+    iocRoot *iocroot;
+    int reserved = 0;
+    osalStatus s;
+    static char *kwlist[] = {
+        "reserved",
+        NULL
+    };
+
+    /* Get iocom root object pointer.
+     */
+    if (self->pyroot == OS_NULL) {
+        PyErr_SetString(iocomError, "Root has been deleted");
+        return NULL;
+    }
+    iocroot = self->pyroot->root;
+
+    /* Parse Python argumenrs.
+     */
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &reserved)) {
+        PyErr_SetString(iocomError, "Errornous function arguments");
+        return NULL;
+    }
+
+    /* Synchronize and setup all signals, if we have not done that already.
+     */
+    ioc_lock(iocroot);
+    s = bb_try_setup(self, iocroot);
+    if (OSAL_IS_ERROR(s))
+    {
+        ioc_unlock(iocroot);
+        Py_RETURN_NONE;
+    }
+
+    /* Receive data, return data if we got it.
+     */
+    ioc_run_brick_receive(&self->brick_buffer);
+
+    /* End synchronization.
+     */
+    ioc_unlock(iocroot);
+    // return BrickBuffer_get_internal(self, &state,
+//        check_tbuf ? IOC_SIGNAL_DEFAULT : IOC_SIGNAL_NO_TBUF_CHECK);
+
+    Py_RETURN_NONE;
+}
+
+
+
 
 #if 0
 /**
@@ -1228,9 +1522,10 @@ static PyMemberDef BrickBuffer_members[] = {
 */
 static PyMethodDef BrickBuffer_methods[] = {
     {"delete", (PyCFunction)BrickBuffer_delete, METH_NOARGS, "Deletes IOCOM brick_buffer"},
+    {"set_recive", (PyCFunction)BrickBuffer_set_recive, METH_VARARGS|METH_KEYWORDS, "Enable/disable reciving data"},
+    {"get", (PyCFunction)BrickBuffer_get, METH_VARARGS|METH_KEYWORDS, "Get buffered data brick"},
 //    {"set", (PyCFunction)BrickBuffer_set, METH_VARARGS, "Store brick_buffer data"},
 //    {"set_ext", (PyCFunction)BrickBuffer_set_ext, METH_VARARGS|METH_KEYWORDS, "Set data and state bits"},
-//    {"get", (PyCFunction)BrickBuffer_get, METH_VARARGS|METH_KEYWORDS, "Get brick_buffer data without state bits"},
 //    {"get_ext", (PyCFunction)BrickBuffer_get_ext, METH_VARARGS|METH_KEYWORDS, "Get brick_buffer data and state bits"},
 //    {"get_attribute", (PyCFunction)BrickBuffer_get_attribute, METH_VARARGS|METH_KEYWORDS, "Get brick_buffer attribute"},
     {NULL} /* Sentinel */
