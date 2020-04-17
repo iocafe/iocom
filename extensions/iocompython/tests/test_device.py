@@ -16,7 +16,7 @@ def main():
     conf_exp = MemoryBlock(root, 'up', 'conf_exp')
     conf_imp = MemoryBlock(root, 'down', 'conf_imp')
 
-    with open('test-device.json', 'r') as file:
+    with open('test_device.json', 'r') as file:
         signal_conf = file.read()
     data = json2bin(signal_conf)
 

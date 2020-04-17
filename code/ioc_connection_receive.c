@@ -539,7 +539,7 @@ static osalStatus ioc_store_data_frame(
     max_newdata = tbuf->syncbuf.nbytes - addr;
     if (max_newdata < 0)
     {
-        osal_debug_error("negative max_newdata");
+        osal_debug_error("Negative max_newdata (memory block size mismatch?)");
         return OSAL_STATUS_FAILED;
     }
 

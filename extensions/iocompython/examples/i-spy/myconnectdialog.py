@@ -197,7 +197,7 @@ class MyConnectDialog(SettingsWithNoMenu):
 
     def on_connect(self, *args):
         self.myconfig.write();
-        print("on connect dispatched")
+        # print("on connect dispatched")
         pass
 
     def on_config_change(self, config, section, key, value):

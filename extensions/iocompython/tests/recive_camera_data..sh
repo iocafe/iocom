@@ -1,2 +1,2 @@
 export PYTHONPATH=/coderoot/bin/linux
-python3 test-network-conf.py
+python3 recive_camera_data.py

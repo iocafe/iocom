@@ -400,6 +400,22 @@ osalStatus ioc_connect(
     }
 #endif
 
+#if OSAL_PC_DEBUG
+    /* Report IOC_DYNAMIC_MBLKS is given but cannot be followed.
+     */
+    if (prm->flags & IOC_DYNAMIC_MBLKS) {
+#if IOC_DYNAMIC_MBLK_CODE
+        if (root->droot == OS_NULL) {
+            osal_debug_error("ioc_connect(): IOC_DYNAMIC_MBLKS flag set but "
+                "ioc_initialize_dynamic_root() has not been called");
+        }
+#else
+        osal_debug_error("ioc_connect(): IOC_DYNAMIC_MBLKS flag set but "
+            "disabled by define IOC_DYNAMIC_MBLK_CODE=0");
+#endif
+    }
+#endif
+
     flags = prm->flags;
     if (prm->iface) if (prm->iface->iflags & OSAL_STREAM_IFLAG_SECURE)
     {

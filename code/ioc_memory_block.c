@@ -99,12 +99,23 @@ osalStatus ioc_initialize_memory_block(
         os_memclear(mblk, sizeof(iocMemoryBlock));
     }
 
+    /* Save flags, can be modified if memory block size is zero.
+     */
+    mblk->flags = prm->flags;
+
     /* Allocate buffer for memory block content, unless allocated by application.
      */
     buf = prm->buf;
     nbytes = prm->nbytes;
-    if (buf == OS_NULL && nbytes > 0)
+    if (buf == OS_NULL)
     {
+        if (nbytes < IOC_MIN_MBLK_SZ)
+        {
+#if IOC_RESIZE_MBLK_CODE
+            if (nbytes <= 0) mblk->flags |= IOC_ALLOW_RESIZE;
+#endif
+            nbytes = IOC_MIN_MBLK_SZ;
+        }
         buf = ioc_malloc(root, nbytes, OS_NULL);
         mblk->buf_allocated = OS_TRUE;
     }
@@ -113,8 +124,7 @@ osalStatus ioc_initialize_memory_block(
      */
     mblk->buf = buf;
     mblk->nbytes = nbytes;
-    mblk->flags = prm->flags;
-    if ((prm->flags & IOC_STATIC) == 0)
+    if ((mblk->flags & IOC_STATIC) == 0)
     {
 #if IOC_BIDIRECTIONAL_MBLK_CODE
         mblk->flags |= IOC_BIDIRECTIONAL;
