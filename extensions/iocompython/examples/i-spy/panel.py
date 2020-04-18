@@ -61,10 +61,12 @@ class Panel(GridLayout):
         self.add_my_widget(b)
         return b
 
-    def add_assembly(self, ioc_root, assembly_name, assembly_type, assembly_params, device_path):
+    def add_assembly(self, ioc_root, assembly_data, device_path):
+        # assembly_type= assembly_data.get("type", "no_type")
         # if assembly_type is linear camera
+
         cam = LinearCameraItem()
-        cam.set_device(ioc_root, device_path, assembly_name, assembly_params)
+        cam.set_device(ioc_root, device_path, assembly_data)
         self.add_my_widget(cam)
         return cam
 

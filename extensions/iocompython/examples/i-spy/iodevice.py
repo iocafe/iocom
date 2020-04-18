@@ -131,7 +131,4 @@ class IoDevice(ConfigParser):
             self.signal_addr += 1 + type_sz * n
 
     def process_assembly(self, data):
-        name = data.get("name", "no_name")
-        type = data.get("type", "no_type")
-        params = data.get("params", None)
-        self.my_signal_panel.add_assembly(self.ioc_root, name, type, params, self.device_path)
+        self.my_signal_panel.add_assembly(self.ioc_root, data, self.device_path)

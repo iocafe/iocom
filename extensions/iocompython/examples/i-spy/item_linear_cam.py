@@ -18,7 +18,7 @@ from item_heading import HeadingItem
 from item_button import ButtonItem
 from item import make_my_text_input
 from item import Item
-from iocompython import Root,bin2json, json2bin
+from iocompython import Root,BrickBuffer,bin2json, json2bin
 
 
 import itertools
@@ -122,9 +122,9 @@ class LinearCameraItem(GridLayout):
         graph = Graph(
             xlabel='Cheese',
             ylabel='Apples',
-            x_ticks_minor=5,
-            x_ticks_major=25,
-            y_ticks_major=1,
+            x_ticks_minor=25,
+            x_ticks_major=100,
+            y_ticks_major=10,
             y_grid_label=True,
             x_grid_label=True,
             padding=5,
@@ -138,27 +138,31 @@ class LinearCameraItem(GridLayout):
             ymax=1,
             **graph_theme)
 
-        plot = SmoothLinePlot(color=next(colors))
-        plot.points = [(x / 10., sin(x / 50.)) for x in range(-500, 501)]
+        self.graph = graph
+
+        # plot = SmoothLinePlot(color=next(colors))
+        # plot.points = [(x / 10., sin(x / 50.)) for x in range(-500, 501)]
         # for efficiency, the x range matches xmin, xmax
-        graph.add_plot(plot)
+        #graph.add_plot(plot)
 
         plot = MeshLinePlot(color=next(colors))
         plot.points = [(x / 10., cos(x / 50.)) for x in range(-500, 501)]
         graph.add_plot(plot)
         self.plot = plot  # this is the moving graph, so keep a reference
 
-        plot = MeshStemPlot(color=next(colors))
-        graph.add_plot(plot)
-        plot.points = [(x, x / 50.) for x in range(-50, 51)]
+        # plot = MeshStemPlot(color=next(colors))
+        # graph.add_plot(plot)
+        # plot.points = [(x, x / 50.) for x in range(-50, 51)]
 
-        plot = BarPlot(color=next(colors), bar_spacing=.72)
-        graph.add_plot(plot)
-        plot.bind_to_graph(graph)
-        plot.points = [(x, .1 + randrange(10) / 10.) for x in range(-50, 1)]
+        # plot = BarPlot(color=next(colors), bar_spacing=.72)
+        # graph.add_plot(plot)
+        # plot.bind_to_graph(graph)
+        # plot.points = [(x, .1 + randrange(10) / 10.) for x in range(-50, 1)]
 
         Clock.schedule_interval(self.update_points, 1 / 60.)
+        b.add_widget(graph)
 
+        """
         graph2 = Graph(
             xlabel='Position (m)',
             ylabel='Time (s)',
@@ -173,7 +177,6 @@ class LinearCameraItem(GridLayout):
             xmin=0,
             ymin=0,
             **graph_theme)
-        b.add_widget(graph)
 
         if np is not None:
             (xbounds, ybounds, data) = self.make_contour_data()
@@ -192,6 +195,7 @@ class LinearCameraItem(GridLayout):
             self.contourplot = plot
 
             Clock.schedule_interval(self.update_contour, 1 / 60.)
+        """            
 
         return b
 
@@ -212,7 +216,8 @@ class LinearCameraItem(GridLayout):
         return ((0, max(position)), (0, max(time)), data)
 
     def update_points(self, *args):
-        self.plot.points = [(x / 10., cos(Clock.get_time() + x / 50.)) for x in range(-500, 501)]
+        self.run()
+#        self.plot.points = [(x / 10., cos(Clock.get_time() + x / 50.)) for x in range(-500, 501)]
 
     def update_contour(self, *args):
         _, _, self.contourplot.data[:] = self.make_contour_data(Clock.get_time())
@@ -224,6 +229,39 @@ class LinearCameraItem(GridLayout):
         # (you have to use np.all).  Ideally, property should be patched
         # for this.
         self.contourplot.ask_draw()
+
+    def set_device(self, ioc_root, device_path, assembly_data):
+        self.ioc_root = ioc_root
+        self.device_path = device_path
+        self.my_title.set_group_label("program", self.device_path, 1)
+        # assembly_name = assembly_data.get("name", "no_name")
+        exp = assembly_data.get("exp", "exp.brick_").split('.')
+        imp = assembly_data.get("imp", "imp.brick_").split('.')
+        exp_path = exp[0] + '.' + device_path
+        imp_path = imp[0] + '.' + device_path
+        prefix = exp[1]
+        self.camera_buffer = BrickBuffer(ioc_root, exp_path, imp_path, prefix, timeout=-1)
+        self.camera_buffer.set_recive(True);
+
+    def delete(self):
+        pass
+
+    def run(self):
+        data = self.camera_buffer.get()
+        if data != None:
+            print(data)
+            self.update_plot(data)
+
+    def update_plot(self, data):
+        d = data[0]
+        n = len(d)
+
+        self.plot.points = [(1.1*x, 1.1*d[x]) for x in range(0, n)]
+
+        self.graph.xmin = 0
+        self.graph.xmax = n
+        self.graph.ymin = min(d)
+        self.graph.ymax = max(d)
 
 # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     def my_set_select(self):
@@ -253,16 +291,6 @@ class LinearCameraItem(GridLayout):
         self.my_path.text = self.current_path
         self.my_fname.text = ''
 
-    def set_device(self, ioc_root, device_path, assembly_name, assembly_params):
-        self.ioc_root = ioc_root
-        self.device_path = device_path
-        self.my_title.set_group_label("program", self.device_path, 1)
-
-    def delete(self):
-        pass
-
-    def run(self):
-        pass
 
     def my_read_block_dialog(self, instance):
         grid = GridLayout()
@@ -409,7 +437,7 @@ class LinearCameraItem(GridLayout):
 class MainApp(App):
     def build(self):
         self.root = LinearCameraItem()
-        self.root.set_device(Root('testwidget'), "gina2.iocafenet", "kamera", "parametrit")
+        self.root.set_device(Root('testwidget'), "gina2.iocafenet", "parametrit")
     
         return self.root
 
