@@ -15,9 +15,6 @@
 */
 #include "iocom.h"
 
-
-
-
 /* Forward referred static functions.
  */
 static void ioc_make_data_frame(

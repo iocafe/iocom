@@ -36,8 +36,6 @@ struct iocConnection;
 #define IOC_AUTH_DEVICE_NR_4_BYTES 64
 #define IOC_AUTH_BIDIRECTIONAL_COM 128
 
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-
 /**
 ****************************************************************************************************
   User account.
@@ -99,8 +97,6 @@ typedef struct iocAllowedNetworkConf
 }
 iocAllowedNetworkConf;
 
-
-#endif
 
 /**
 ****************************************************************************************************
