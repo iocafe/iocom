@@ -44,11 +44,11 @@ void gina_init_signal_struct(gina_t *s)
 
  /* rec_buf */
   s->exp.rec_buf.addr = 46;
-  s->exp.rec_buf.n = 6000;
+  s->exp.rec_buf.n = 2800;
   s->exp.rec_buf.flags = OS_UCHAR;
 
  /* rec_head */
-  s->exp.rec_head.addr = 6047;
+  s->exp.rec_head.addr = 2847;
   s->exp.rec_head.n = 1;
   s->exp.rec_head.flags = OS_INT;
   s->mblk_list[0] = &s->exp.hdr;

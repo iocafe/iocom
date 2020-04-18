@@ -35,7 +35,7 @@
         "name": "camera up",
         "signals": [
           {"name": "rec_state", "type": "char"},
-          {"name": "rec_buf", "type": "uchar", "array": 6000},
+          {"name": "rec_buf", "type": "uchar", "array": 2800},
           {"name": "rec_head", "type": "int"}
         ]
       }

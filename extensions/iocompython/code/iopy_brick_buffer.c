@@ -332,18 +332,12 @@ static osalStatus bb_try_signal_setup(
 {
     iocIdentifiers identifiers;
 
-    /* If setup is already good.
-     */
-    if (sig->handle->mblk && sig->flags) {
-        return OSAL_SUCCESS;
-    }
-
     os_memcpy(&identifiers, mblk_identifiers, sizeof(iocIdentifiers));
     os_strncpy(identifiers.signal_name, prefix, IOC_SIGNAL_NAME_SZ);
     os_strncat(identifiers.signal_name, name, IOC_SIGNAL_NAME_SZ);
 
-    ioc_setup_signal_by_identifiers(iocroot, &identifiers, sig);
-    return (sig->flags && sig->handle->mblk) ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
+    return ioc_setup_signal_by_identifiers(iocroot, &identifiers, sig)
+        ? OSAL_SUCCESS : OSAL_STATUS_FAILED;
 }
 
 
@@ -365,7 +359,7 @@ static osalStatus bb_try_setup(
     BrickBuffer *self,
     iocRoot *iocroot)
 {
-     /* If setup is already good. We check head and tail because they are in different
+    /* If setup is already good. We check head and tail because they are in different
        memory blocks and last to be set up.
      */
     if (self->sig_head.handle->mblk && self->sig_head.flags &&
@@ -373,6 +367,8 @@ static osalStatus bb_try_setup(
     {
         return OSAL_SUCCESS;
     }
+    self->sig_head.flags = 0;
+    self->sig_tail.flags = 0;
 
     if (bb_try_signal_setup(&self->sig_cmd, "cmd", self->prefix, &self->imp_ids, iocroot)) goto getout;
     if (bb_try_signal_setup(&self->sig_select, "select", self->prefix, &self->imp_ids, iocroot)) goto getout;
@@ -429,6 +425,7 @@ static PyObject *BrickBuffer_set_recive(
     }
 
     ioc_brick_set_receive(&self->brick_buffer, enable);
+    self->status = OSAL_SUCCESS;
     Py_RETURN_NONE;
 }
 
@@ -524,7 +521,6 @@ static PyObject *BrickBuffer_get(
     self->status = OSAL_SUCCESS;
     return rval;
 }
-
 
 
 /**

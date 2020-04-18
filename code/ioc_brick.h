@@ -34,6 +34,9 @@ typedef enum iocBrickCompression
 }
 iocBrickCompression;
 
+
+#if IOC_STREAMER_SUPPORT
+
 #define IOC_MAX_BRICK_WIDTH 50000
 #define IOC_MAX_BRICK_HEIGHT 3000
 #define IOC_MAX_BRICK_ALLOC (IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT * 3)
@@ -164,3 +167,5 @@ os_ulong ioc_brick_int(
 #define ioc_is_brick_empty(b) ((b)->buf_n == 0)
 #define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)
 #define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)
+
+#endif

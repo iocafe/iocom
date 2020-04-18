@@ -59,7 +59,7 @@
 					{
 						"name": "rec_buf",
 						"type": "uchar",
-						"array": 6000
+						"array": 2800
 					},
 					{
 						"name": "rec_head",
