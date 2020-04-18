@@ -332,8 +332,6 @@ static osalStatus bb_try_signal_setup(
 {
     iocIdentifiers identifiers;
 
-osal_debug_error_str("\nHERE name ", name);
-
     /* If setup is already good.
      */
     if (sig->handle->mblk && sig->flags) {

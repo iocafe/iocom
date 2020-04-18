@@ -18,8 +18,13 @@
 */
 #include "iocom.h"
 
+/**
+****************************************************************************************************
 
-/* Initialize brick buffer (does not allocate any memory yet)
+  @brief Initialize brick buffer (does not allocate any memory yet)
+  @anchor ioc_initialize_brick_buffer
+
+  Examples:
 
     Initializing brick buffer from code
         iocStreamerSignals vsignals;
@@ -36,9 +41,16 @@
     Initializing brick buffer from assembly defined in signals.json
         ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root, 0, IOC_BRICK_DEVICE);
 
+  @param   b Pointer to brick buffer structure to initialize.
+  @param   signals Pointer to structure with pointers to every signal used for brick data
+           transfer. The function copied data in the signals structure, so it can be allocated
+           form stack. Actual individual structure for each signal must exist as long as
+           the brick buffer is used.
+  @param   timeout_ms -1 = Infinite, 0 = use default, other values are timeout in ms
+  @return  None.
 
-   @param timeout_ms -1 = Infinite, 0 = use default, other values are timeout in ms
- */
+****************************************************************************************************
+*/
 void ioc_initialize_brick_buffer(
     iocBrickBuffer *b,
     const iocStreamerSignals *signals,
@@ -65,8 +77,21 @@ void ioc_initialize_brick_buffer(
 }
 
 
-/* Set function to call when brick is received.
- */
+/**
+****************************************************************************************************
+
+  @brief Set function to call when brick is received.
+  @anchor ioc_set_brick_received_callback
+
+  Stores callback and context pointers within brick buffer.
+
+  @param   b Pointer to brick buffer
+  @param   func Pointer to function to call once whole brick has been received.
+  @param   context Application specific pointer to pass to callback function.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_set_brick_received_callback(
     iocBrickBuffer *b,
     ioc_brick_received *func,
@@ -77,8 +102,21 @@ void ioc_set_brick_received_callback(
 }
 
 
-/* Allocate buffer
- */
+/**
+****************************************************************************************************
+
+  @brief Allocate internal buffer for the brick buffer.
+  @anchor ioc_allocate_brick_buffer
+
+  This function should be called when brick buffer is used to send data. It allocates buffer
+  large enough to hold any brick to send. Do not call if bit buffer is used to receive data.
+
+  @param   b Pointer to brick buffer
+  @param   buf_sz Maximum size of outgoing brick (including brick header).
+  @return  OSAL_SUCCESS if all is fine, other values indicate an error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_allocate_brick_buffer(
     iocBrickBuffer *b,
     os_memsz buf_sz)
@@ -98,6 +136,18 @@ osalStatus ioc_allocate_brick_buffer(
     return OSAL_SUCCESS;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Release brick buffer's internal buffer.
+  @anchor ioc_free_brick_buffer
+
+  @param   b Pointer to brick buffer
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_free_brick_buffer(
     iocBrickBuffer *b)
 {
@@ -113,11 +163,23 @@ void ioc_free_brick_buffer(
 }
 
 
-/* Compress brick into buffer.
- * @param buf Buffer where to store brick header and compressed data.
- * @param src Source data, brick header + uncompressed brick data.
- * @return number of final bytes in buf (includes brick header).
- */
+/**
+****************************************************************************************************
+
+  @brief Store or compress and store data to send into brick buffer.
+  @anchor ioc_compress_brick
+
+  @param  buf Pointer to char buffer where to store brick header and compressed data.
+  @param  buf_sz Size of buffer buf.
+  @param  src Source data, brick header + uncompressed brick data.
+  @param  src_format Source data format, set IOC_BYTE_BRICK.
+  @param  src_w Source image, etc, width in pixels, etc.
+  @param  src_h Source image, etc, height in pixels, etc.
+  @param  compression How to compress data, set IOC_UNCOMPRESSED_BRICK.
+  @return Number of final bytes in buf (includes brick header).
+
+****************************************************************************************************
+*/
 os_memsz ioc_compress_brick(
     os_uchar *buf,
     os_memsz buf_sz,
@@ -143,8 +205,17 @@ os_memsz ioc_compress_brick(
 }
 
 
-/* Store time stamp into the brick header (must be called before ioc_set_brick_checksum)
- */
+/**
+****************************************************************************************************
+
+  @brief Set timestamp (timer) in brick header.
+  @anchor ioc_set_brick_timestamp
+
+  @param   buf Pointer to brick header (in buffer).
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_set_brick_timestamp(
     os_uchar *buf)
 {
@@ -171,8 +242,18 @@ void ioc_set_brick_timestamp(
 }
 
 
-/* Store check sum within brick header
- */
+/**
+****************************************************************************************************
+
+  @brief Store check sum within brick header
+  @anchor ioc_set_brick_checksum
+
+  @param   buf Pointer to buffer (starts with brick header).
+  @param   buf_n Number of data bytes in buffer.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_set_brick_checksum(
     os_uchar *buf,
     os_memsz buf_n)
@@ -189,8 +270,19 @@ void ioc_set_brick_checksum(
 }
 
 
-/* Send all or part of brick data to output stream.
- */
+/**
+****************************************************************************************************
+
+  @brief Send all or part of brick data to output stream (internal).
+  @anchor ioc_send_brick_data
+
+  Helper function for ioc_run_brick_send().
+
+  @param   bhdr Pointer to the brick header
+  @return  OSAL_SUCCESS if all is fine. Other values indicate an error.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_send_brick_data(
     iocBrickBuffer *b)
 {
@@ -225,12 +317,13 @@ static osalStatus ioc_send_brick_data(
 /**
 ****************************************************************************************************
 
-  @brief Keep control stream for transferring IO device configuration and flash program alive.
-  @anchor ioc_run_control_stream
+  @brief Keep on sending data from brick buffer.
+  @anchor ioc_run_brick_send
 
-  @return  If working in something, the function returns OSAL_SUCCESS. Return value
-           OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
-           idle mode as far as the control stream knows.
+  This function can be called repeatedly from loop.
+
+  @param   b Pointer to brick buffer
+  @return  None.
 
 ****************************************************************************************************
 */
@@ -271,6 +364,18 @@ void ioc_run_brick_send(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Enable or disable receiving data to brick buffer.
+  @anchor ioc_brick_set_receive
+
+  @param   b Pointer to brick buffer
+  @param   enable OS_TRUE to enable reciving, OS_FALSE to disable it.
+  @return  None.
+
+****************************************************************************************************
+*/
 void ioc_brick_set_receive(
     iocBrickBuffer *b,
     os_boolean enable)
@@ -279,6 +384,22 @@ void ioc_brick_set_receive(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Get integer from brick header.
+  @anchor ioc_brick_int
+
+  Get integer value from brick header. Integers byte order in brick header are always least
+  significant first, and they are not necessarily aligned by type size. This function gets
+  integer right way, regardless of processor architechture.
+
+  @param   data Pointer to first byte of integer in brick header
+  @param   nro_bytes Number of bytes reserved for this integer.
+  @return  Integer value.
+
+****************************************************************************************************
+*/
 os_ulong ioc_brick_int(
     os_uchar *data,
     os_int nro_bytes)
@@ -291,8 +412,22 @@ os_ulong ioc_brick_int(
     return x;
 }
 
-/* osal_validate_brick_header Send all or part of brick data to output stream.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Check that bhdr is legimate brick header.
+  @anchor osal_validate_brick_header
+
+  Check that brick is valid. This is used enforce interoperbility of different implementations,
+  so that bugs are detected and fixed.
+
+  @param   bhdr Pointer to the brick header
+  @return  OSAL_SUCCESS if brick header is ok and valid. Other values indicate corrupted or
+           unknown brick header.
+
+****************************************************************************************************
+*/
 static osalStatus osal_validate_brick_header(
     iocBrickHdr *bhdr)
 {
@@ -329,9 +464,20 @@ static osalStatus osal_validate_brick_header(
 }
 
 
-/* Receive data for brick.
- * @return OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick received. Other values errors.
- */
+/**
+****************************************************************************************************
+
+  @brief Receive data into brick buffer. (internal).
+  @anchor ioc_receive_brick_data
+
+  Helper function for ioc_run_brick_receive().
+
+  @param   b Pointer to brick buffer structure.
+  @return  OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick
+           received. Other values indicate an error.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_receive_brick_data(
     iocBrickBuffer *b)
 {
@@ -417,7 +563,8 @@ static osalStatus ioc_receive_brick_data(
         return OSAL_SUCCESS;
     }
 
-    /* verify checksum */
+    /* Verify the checksum.
+     */
     checksum = ioc_brick_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     os_memclear(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, b->buf_sz, OS_NULL) != checksum)
@@ -438,9 +585,20 @@ static osalStatus ioc_receive_brick_data(
 }
 
 
-/* Run brick data transfer
- * @return OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick received. Other values errors.
- */
+/**
+****************************************************************************************************
+
+  @brief Receive data into brick buffer.
+  @anchor ioc_run_brick_receive
+
+  This function can be called repeatedly from loop to keep on receiveng data.
+
+  @param   b Pointer to brick buffer structure.
+  @return  OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick
+           received. Other values indicate an error.
+
+****************************************************************************************************
+*/
 osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b)
 {
