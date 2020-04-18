@@ -70,7 +70,7 @@ iocBrickHdr;
 
 /* Brick received callback function.
  */
-typedef void ioc_brick_received(
+typedef osalStatus ioc_brick_received(
     struct iocBrickBuffer *b,
     void *context);
 
@@ -154,7 +154,7 @@ void ioc_brick_set_receive(
 
 /* Run brick data transfer
  */
-void ioc_run_brick_receive(
+osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b);
 
 os_ulong ioc_brick_int(
@@ -163,4 +163,4 @@ os_ulong ioc_brick_int(
 
 #define ioc_is_brick_empty(b) ((b)->buf_n == 0)
 #define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)
-
+#define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)

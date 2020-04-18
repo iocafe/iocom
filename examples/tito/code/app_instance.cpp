@@ -17,7 +17,7 @@
 
 /* Forward referred static functions.
  */
-static void app_gina1_photo_received(
+static osalStatus app_gina1_photo_received(
     struct iocBrickBuffer *b,
     void *context);
 
@@ -93,9 +93,10 @@ void AppInstance::run()
 
 
 
-static void app_gina1_photo_received(
+static osalStatus app_gina1_photo_received(
     struct iocBrickBuffer *b,
     void *context)
 {
 
+    return OSAL_SUCCESS;
 }

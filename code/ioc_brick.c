@@ -329,7 +329,8 @@ static osalStatus osal_validate_brick_header(
 }
 
 
-/* Send all or part of brick data to output stream.
+/* Receive data for brick.
+ * @return OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick received. Other values errors.
  */
 static osalStatus ioc_receive_brick_data(
     iocBrickBuffer *b)
@@ -372,7 +373,7 @@ static osalStatus ioc_receive_brick_data(
     }
 
     bhdr = (iocBrickHdr*)b->buf;
-    if (n_read + n < sizeof(iocBrickHdr))
+    if (b->pos < sizeof(iocBrickHdr))
     {
         n = sizeof(iocBrickHdr) - b->pos;
     }
@@ -424,23 +425,28 @@ static osalStatus ioc_receive_brick_data(
         return OSAL_STATUS_CHECKSUM_ERROR;
     }
 
+    /* Callback function.
+     */
     if (b->receive_callback)
     {
-        b->receive_callback(b, b->receive_context);
+        s = b->receive_callback(b, b->receive_context);
+        if (OSAL_IS_ERROR(s)) return s;
     }
 
     b->pos = 0;
-    return OSAL_SUCCESS;
+    return OSAL_COMPLETED;
 }
 
 
 /* Run brick data transfer
+ * @return OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick received. Other values errors.
  */
-void ioc_run_brick_receive(
+osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b)
 {
     iocStreamerState state;
     os_char state_bits;
+    osalStatus s;
 
     if (!b->enable_receive)
     {
@@ -448,7 +454,7 @@ void ioc_run_brick_receive(
             ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
             b->stream = OS_NULL;
         }
-        return;
+        return OSAL_SUCCESS;
     }
 
     if (b->stream == OS_NULL) {
@@ -461,11 +467,15 @@ void ioc_run_brick_receive(
         if (b->prm.frd.state)
         {
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
-            if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) return;
+            if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) {
+                return (state_bits & OSAL_STATE_CONNECTED) ? OSAL_STATUS_NOT_CONNECTED : OSAL_SUCCESS;
+            }
         }
 
         b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_READ);
-        if (b->stream == OS_NULL) return;
+        if (b->stream == OS_NULL) {
+            return OSAL_STATUS_FAILED;
+        }
         if (b->timeout_ms) {
             osal_stream_set_parameter(b->stream, OSAL_STREAM_READ_TIMEOUT_MS, b->timeout_ms);
         }
@@ -473,9 +483,12 @@ void ioc_run_brick_receive(
         b->pos = 0;
     }
 
-    if (ioc_receive_brick_data(b))
+    s = ioc_receive_brick_data(b);
+    if (OSAL_IS_ERROR(s))
     {
         ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
         b->stream = OS_NULL;
     }
+
+    return s;
 }

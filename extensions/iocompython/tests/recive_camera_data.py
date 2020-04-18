@@ -17,7 +17,7 @@ def main():
     ioterminal.start(root)
 
     Connection(root, "127.0.0.1", "tls,down,dynamic", user='ispy.iocafenet', password='pass')
-    camera_buffer = BrickBuffer(root, "exp.gina1.iocafenet", "imp.gina1.iocafenet", "rec_",timeout=-1)
+    camera_buffer = BrickBuffer(root, "exp.gina1.iocafenet", "imp.gina1.iocafenet", "rec_", timeout=-1)
     camera_buffer.set_recive(True);
 
     while (ioterminal.run(root)):

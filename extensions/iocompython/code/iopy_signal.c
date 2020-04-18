@@ -745,7 +745,7 @@ static osalStatus Signal_try_setup(
     }
 
     dsignal = ioc_setup_signal_by_identifiers(iocroot, &self->identifiers, &self->signal);
-    if (self->signal.handle->mblk == OS_NULL)
+    if (self->signal.handle->mblk == OS_NULL || self->signal.flags == 0)
     {
         return OSAL_STATUS_FAILED;
     }
