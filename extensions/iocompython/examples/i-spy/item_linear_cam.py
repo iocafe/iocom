@@ -249,7 +249,7 @@ class LinearCameraItem(GridLayout):
     def run(self):
         data = self.camera_buffer.get()
         if data != None:
-            print(data)
+            # print(data)
             self.update_plot(data)
 
     def update_plot(self, data):
