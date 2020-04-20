@@ -42,7 +42,6 @@ class LinearCameraItem(GridLayout):
 
     def make_graph_display(self):
         b = BoxLayout(orientation='vertical')
-        # example of a custom theme
         colors = itertools.cycle([
             rgb('7dac9f'), rgb('dc7062'), rgb('66a8d4'), rgb('e5b060')])
         graph_theme = {
@@ -162,10 +161,6 @@ class LinearCameraItem(GridLayout):
         self.contourplot.ask_draw()
     '''
 
-    def update_points(self, *args):
-        self.run()
-#        self.plot.points = [(x / 10., cos(Clock.get_time() + x / 50.)) for x in range(-500, 501)]
-
     def set_device(self, ioc_root, device_path, assembly_data):
         self.ioc_root = ioc_root
         self.device_path = device_path
@@ -181,6 +176,10 @@ class LinearCameraItem(GridLayout):
 
     def delete(self):
         pass
+
+    def update_points(self, *args):
+        self.run()
+#        self.plot.points = [(x / 10., cos(Clock.get_time() + x / 50.)) for x in range(-500, 501)]
 
     def run(self):
         data = self.camera_buffer.get()
@@ -201,8 +200,9 @@ class LinearCameraItem(GridLayout):
 
 class MainApp(App):
     def build(self):
+        assembly_data = {}
         self.root = LinearCameraItem()
-        self.root.set_device(Root('testwidget'), "gina2.iocafenet", "parametrit")
+        self.root.set_device(Root('testwidget'), "gina2.iocafenet", assembly_data)
     
         return self.root
 
