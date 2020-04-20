@@ -195,7 +195,7 @@ os_memsz ioc_compress_brick(
     /* Very dummy and limited uncompressed implementation.
      */
     os_memsz sz;
-    sz = src_w * src_h + sizeof(iocBrickHdr);
+    sz = src_w * (os_memsz)src_h + sizeof(iocBrickHdr);
     if (sz > buf_sz) sz = buf_sz;
     os_memcpy(buf, src, sz);
 
@@ -442,8 +442,8 @@ static osalStatus osal_validate_brick_header(
         return OSAL_STATUS_FAILED;
     }
 
-    w = ioc_brick_int(bhdr->width, IOC_BRICK_DIM_SZ);
-    h = ioc_brick_int(bhdr->height, IOC_BRICK_DIM_SZ);
+    w = (os_uint)ioc_brick_int(bhdr->width, IOC_BRICK_DIM_SZ);
+    h = (os_uint)ioc_brick_int(bhdr->height, IOC_BRICK_DIM_SZ);
     if (w < 1 || w > IOC_MAX_BRICK_WIDTH ||
         h < 1 || h > IOC_MAX_BRICK_HEIGHT)
     {
@@ -454,8 +454,8 @@ static osalStatus osal_validate_brick_header(
     max_brick_sz = w * h * bytes_per_pix + sizeof(iocBrickHdr);
     max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT * bytes_per_pix)/2) + sizeof(iocBrickHdr);
 
-    buf_sz = ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
-    alloc_sz = ioc_brick_int(bhdr->alloc_sz, IOC_BRICK_BYTES_SZ);
+    buf_sz = (os_uint)ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
+    alloc_sz = (os_uint)ioc_brick_int(bhdr->alloc_sz, IOC_BRICK_BYTES_SZ);
     if (buf_sz < 1 || buf_sz > max_brick_sz ||
         alloc_sz < 1 || alloc_sz > max_brick_alloc)
     {
@@ -566,7 +566,7 @@ static osalStatus ioc_receive_brick_data(
 
     /* Verify the checksum.
      */
-    checksum = ioc_brick_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
+    checksum = (os_uint)ioc_brick_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     os_memclear(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, b->buf_sz, OS_NULL) != checksum)
     {
