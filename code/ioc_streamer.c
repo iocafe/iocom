@@ -68,7 +68,8 @@ static os_int ioc_streamer_read_internal(
     os_int buf_sz,
     os_int n,
     os_int head,
-    os_int *tail);
+    os_int *tail,
+    os_int flags);
 
 static os_int ioc_streamer_write_internal(
     iocStreamerSignals *signals,
@@ -676,7 +677,7 @@ static osalStatus ioc_streamer_device_read(
             }
 
             nbytes = ioc_streamer_read_internal(signals, buf, buf_sz,
-                (os_int)n, head, &streamer->tail);
+                (os_int)n, head, &streamer->tail, flags);
             if (nbytes < 0)
             {
                 osal_trace3("IOC_SSTEP_FAILED, buffer read failed");
@@ -1033,7 +1034,7 @@ static osalStatus ioc_streamer_controller_read(
             }
 
             nbytes = ioc_streamer_read_internal(signals, buf, buf_sz,
-                (os_int)n, head, &streamer->tail);
+                (os_int)n, head, &streamer->tail, flags);
             if (nbytes < 0)
             {
                 osal_trace3("IOC_SSTEP_FAILED, buffer read failed");
@@ -1144,25 +1145,27 @@ static os_int ioc_streamer_read_internal(
     os_int buf_sz,
     os_int n,
     os_int head,
-    os_int *tail)
+    os_int *tail,
+    os_int flags)
 {
-    os_int nbytes, rdnow;
+    os_int nbytes, rdnow, ltail;
     os_char state_bits;
 
     nbytes = 0;
+    ltail = *tail;
 
-    if (*tail > head)
+    if (ltail > head)
     {
-        rdnow = buf_sz - *tail;
+        rdnow = buf_sz - ltail;
         if (rdnow > n) rdnow = n;
         if (rdnow > 0)
         {
-            state_bits = ioc_moves_array(signals->buf, *tail, buf, rdnow,
+            state_bits = ioc_moves_array(signals->buf, ltail, buf, rdnow,
                 OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
             if ((state_bits & OSAL_STATE_CONNECTED) == 0) return -1;
 
-            *tail += rdnow;
-            if (*tail >= buf_sz) *tail = 0;
+            ltail += rdnow;
+            if (ltail >= buf_sz) ltail = 0;
 
             buf += rdnow;
             n -= rdnow;
@@ -1171,26 +1174,27 @@ static os_int ioc_streamer_read_internal(
         }
     }
 
-    if (*tail < head)
+    if (ltail < head)
     {
-        rdnow = head - *tail;
+        rdnow = head - ltail;
         if (rdnow > n) rdnow = n;
 
         if (rdnow > 0)
         {
-            state_bits = ioc_moves_array(signals->buf, *tail, buf, rdnow,
+            state_bits = ioc_moves_array(signals->buf, ltail, buf, rdnow,
                 OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
             if ((state_bits & OSAL_STATE_CONNECTED) == 0) return -1;
 
-            *tail += rdnow;
+            ltail += rdnow;
             nbytes += rdnow;
             osal_trace3_int("DATA MOVED 2, bytes = ", rdnow);
         }
     }
 
-    if (nbytes)
+    if (nbytes && (flags & OSAL_STREAM_PEEK) == 0)
     {
-        ioc_sets0_int(signals->tail, *tail);
+        ioc_sets0_int(signals->tail, ltail);
+        *tail = ltail;
     }
 
     return nbytes;
@@ -1277,6 +1281,12 @@ static os_int ioc_streamer_write_internal(
   @param   parameter_ix Index of parameter to get. OSAL_STREAM_TX_AVAILABLE to get
            how much empty space there is in write buffer.
            See @ref osalStreamParameterIx "stream parameter enumeration" for the list.
+
+           - OSAL_STREAM_TX_AVAILABLE: Get how many bytes can fit into outgoing buffer. -1 If no
+             connection or other error.
+           - OSAL_STREAM_RX_AVAILABLE: Get how many bytes there are in incomingbuffer. -1 If
+             no connection or other error.
+
   @return  Parameter value.
 
 ****************************************************************************************************
@@ -1295,9 +1305,7 @@ os_long ioc_streamer_get_parameter(
     {
         if (stream == OS_NULL) return 0;
         streamer = (iocStreamer*)stream;
-
         is_device = streamer->prm->is_device;
-
         signals = is_device ? &streamer->prm->frd : &streamer->prm->tod;
 
         buf_sz = signals->buf->n;
@@ -1305,18 +1313,33 @@ os_long ioc_streamer_get_parameter(
 
         if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
         {
-            return 0;
+            return -1;
         }
-        else
-        {
-            head = streamer->head;
 
-            buffered_bytes = head - tail;
-            if (buffered_bytes < 0) buffered_bytes += buf_sz;
-
-            space_available = buf_sz - buffered_bytes - 1;
-        }
+        buffered_bytes = streamer->head - tail;
+        if (buffered_bytes < 0) buffered_bytes += buf_sz;
+        space_available = buf_sz - buffered_bytes - 1;
         return space_available;
+    }
+
+    if (parameter_ix == OSAL_STREAM_RX_AVAILABLE)
+    {
+        if (stream == OS_NULL) return 0;
+        streamer = (iocStreamer*)stream;
+        is_device = streamer->prm->is_device;
+        signals = is_device ? &streamer->prm->tod : &streamer->prm->frd;
+
+        buf_sz = signals->buf->n;
+        head = (os_int)ioc_gets_int(signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
+
+        if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
+        {
+            return -1;
+        }
+
+        buffered_bytes = head - streamer->tail;
+        if (buffered_bytes < 0) buffered_bytes += buf_sz;
+        return buffered_bytes;
     }
 
     return osal_stream_default_get_parameter(stream, parameter_ix);

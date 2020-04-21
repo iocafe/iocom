@@ -85,8 +85,6 @@ void AppInstance::run()
     ioc_send(&m_gina2.m_gina_import);
 }
 
-
-
 static osalStatus app_gina1_photo_received(
     struct iocBrickBuffer *b,
     void *context)

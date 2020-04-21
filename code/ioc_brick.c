@@ -527,15 +527,24 @@ static osalStatus ioc_receive_brick_data(
     }
     first;
 
-    if (b->buf == OS_NULL)
+
+    if (b->pos < sizeof(iocBrickHdr))
     {
-        n = sizeof(iocBrickHdr) - b->pos;
-        s = ioc_streamer_read(b->stream, (os_char*)first.bytes + b->pos, n, &n_read, OSAL_STREAM_DEFAULT);
+        n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
+        if (n < sizeof(iocBrickHdr))
+        {
+            // Check for timeout HERE!
+
+          // return OSAL_SUCCESS;
+        }
+
+        s = ioc_streamer_read(b->stream, (os_char*)first.bytes,
+            sizeof(iocBrickHdr), &n_read, OSAL_STREAM_PEEK);
         if (s) {
             return s;
         }
-        b->pos += n_read;
-        if (b->pos < sizeof(iocBrickHdr)) {
+
+        if (n_read < sizeof(iocBrickHdr)) {
             return OSAL_SUCCESS;
         }
 
@@ -543,55 +552,25 @@ static osalStatus ioc_receive_brick_data(
             return OSAL_STATUS_FAILED;
         }
 
-        alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
-        b->buf = (os_uchar*)os_malloc(alloc_sz, &b->buf_alloc_sz);
-        if (b->buf == OS_NULL) {
-            return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+        if (b->buf == OS_NULL)
+        {
+            alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
+            b->buf = (os_uchar*)os_malloc(alloc_sz, &b->buf_alloc_sz);
+            if (b->buf == OS_NULL) {
+                return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+            }
+            os_memclear(b->buf, b->buf_alloc_sz);
         }
-        os_memclear(b->buf, b->buf_alloc_sz);
-        os_memcpy(b->buf, first.bytes, sizeof(iocBrickHdr));
+
+        b->buf_sz = (os_memsz)ioc_brick_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
     }
 
-    bhdr = (iocBrickHdr*)b->buf;
-    if (b->pos < sizeof(iocBrickHdr))
-    {
-        n = sizeof(iocBrickHdr) - b->pos;
-    }
-    else
-    {
-        b->buf_sz = (os_memsz)ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
-        n = b->buf_sz - b->pos;
-    }
-
+    n = b->buf_sz - b->pos;
     s = ioc_streamer_read(b->stream, (os_char*)b->buf + b->pos, n, &n_read, OSAL_STREAM_DEFAULT);
     if (s) {
         return s;
     }
     b->pos += n_read;
-
-    if (b->pos < sizeof(iocBrickHdr)) {
-        return OSAL_SUCCESS;
-    }
-
-    if (b->pos == sizeof(iocBrickHdr))
-    {
-        if (osal_validate_brick_header(bhdr)) {
-            return OSAL_STATUS_FAILED;
-        }
-
-        b->buf_sz = (os_memsz)ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
-        if (b->buf_sz > b->buf_alloc_sz)
-        {
-            return OSAL_STATUS_FAILED;
-        }
-
-        n = b->buf_sz - b->pos;
-        s = ioc_streamer_read(b->stream, (os_char*)b->buf + b->pos, n, &n_read, OSAL_STREAM_DEFAULT);
-        if (s) {
-            return s;
-        }
-        b->pos += n_read;
-    }
 
     if (b->pos < b->buf_sz) {
         return OSAL_SUCCESS;
@@ -599,6 +578,7 @@ static osalStatus ioc_receive_brick_data(
 
     /* Verify the checksum.
      */
+    bhdr = (iocBrickHdr*)b->buf;
     checksum = (os_uint)ioc_brick_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     os_memclear(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, b->buf_sz, OS_NULL) != checksum)
@@ -650,27 +630,36 @@ osalStatus ioc_run_brick_receive(
     }
 
     if (b->stream == OS_NULL) {
-        if (b->prm.tod.state && !b->state_initialized)
+        if (!b->state_initialized)
         {
-            ioc_sets0_int(b->prm.tod.state, 0);
+            if (b->prm.tod.state)
+            {
+                ioc_sets0_int(b->prm.tod.state, 0);
+            }
+            if (b->prm.frd.cmd)
+            {
+                ioc_sets0_int(b->prm.frd.cmd, 0);
+                ioc_sets0_int(b->prm.frd.tail, 0);
+                ioc_sets0_int(b->prm.frd.select, 0);
+            }
             b->state_initialized = OS_TRUE;
         }
 
-        /* if (b->err_timer_set)
+         if (b->err_timer_set)
         {
             if (!os_has_elapsed(&b->err_timer, IOC_STREAMER_TIMEOUT)) {
                 return OSAL_SUCCESS;
             }
             b->err_timer_set = OS_FALSE;
         }
- */
+
         if (b->prm.frd.state)
         {
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) {
                 // ioc_sets_int(b->prm.frd.cmd, IOC_STREAM_IDLE, OSAL_STATE_CONNECTED);
-                //os_get_timer(&b->err_timer);
-                // b->err_timer_set = OS_TRUE;
+                os_get_timer(&b->err_timer);
+                b->err_timer_set = OS_TRUE;
                 return (state_bits & OSAL_STATE_CONNECTED) ? OSAL_STATUS_NOT_CONNECTED : OSAL_SUCCESS;
             }
         }

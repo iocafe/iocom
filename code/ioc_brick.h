@@ -93,8 +93,8 @@ typedef struct iocBrickBuffer
     os_boolean state_initialized;
 
     /* error retry timer. */
-//    os_boolean err_timer_set;
- //   os_timer err_timer;
+    os_boolean err_timer_set;
+    os_timer err_timer;
 
     /* callback */
     volatile os_boolean enable_receive;
@@ -124,10 +124,14 @@ void ioc_set_brick_received_callback(
     ioc_brick_received *func,
     void *context);
 
+/* Allocate brick buffer's internal data buffer.
+ */
 osalStatus ioc_allocate_brick_buffer(
     iocBrickBuffer *b,
     os_memsz buf_sz);
 
+/* Release brick buffer's internal data buffer.
+ */
 void ioc_free_brick_buffer(
     iocBrickBuffer *b);
 
