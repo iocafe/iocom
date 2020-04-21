@@ -78,6 +78,23 @@ void ioc_initialize_brick_buffer(
 }
 
 
+/* Release brick buffer which has been initialized by ioc_initialize_brick_buffer
+ */
+void ioc_release_brick_buffer(
+    iocBrickBuffer *b)
+{
+    ioc_lock(b->root);
+    ioc_free_brick_buffer(b);
+
+    if (b->stream) {
+        ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
+        b->stream = OS_NULL;
+    }
+
+    ioc_unlock(b->root);
+}
+
+
 /**
 ****************************************************************************************************
 
@@ -333,6 +350,8 @@ void ioc_run_brick_send(
 {
     iocStreamerState cmd;
     os_char state_bits;
+    os_memsz n_written;
+    osalStatus s;
 
     if (b->stream == OS_NULL) {
         if (b->prm.frd.state && !b->state_initialized)
@@ -354,13 +373,27 @@ void ioc_run_brick_send(
     }
 
     /* If we got data, then try to sending it.
-     */
     if (b->pos < b->buf_n) {
         if (ioc_send_brick_data(b))
         {
             ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
             b->stream = OS_NULL;
         }
+    }
+     */
+
+    /* If we got data, then try to sending it. Even without data, keep streamer alive.
+     */
+    if (b->pos < b->buf_n) {
+        s = ioc_send_brick_data(b);
+    }
+    else {
+        s = ioc_streamer_write(b->stream, "", 0, &n_written, OSAL_STREAM_DEFAULT);
+    }
+
+    if (s) {
+        ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
+        b->stream = OS_NULL;
     }
 }
 
@@ -623,10 +656,21 @@ osalStatus ioc_run_brick_receive(
             b->state_initialized = OS_TRUE;
         }
 
+        /* if (b->err_timer_set)
+        {
+            if (!os_has_elapsed(&b->err_timer, IOC_STREAMER_TIMEOUT)) {
+                return OSAL_SUCCESS;
+            }
+            b->err_timer_set = OS_FALSE;
+        }
+ */
         if (b->prm.frd.state)
         {
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) {
+                // ioc_sets_int(b->prm.frd.cmd, IOC_STREAM_IDLE, OSAL_STATE_CONNECTED);
+                //os_get_timer(&b->err_timer);
+                // b->err_timer_set = OS_TRUE;
                 return (state_bits & OSAL_STATE_CONNECTED) ? OSAL_STATUS_NOT_CONNECTED : OSAL_SUCCESS;
             }
         }

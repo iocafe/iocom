@@ -28,8 +28,6 @@ public:
     AppInstance();
     ~AppInstance();
 
-    void initialize(const os_char *network_name, os_uint device_nr);
-
     /* Functions to start, stop and thread function to run the application.
      */
     void start(const os_char *network_name, os_uint device_nr);

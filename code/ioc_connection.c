@@ -325,6 +325,11 @@ static void ioc_free_source_and_target_bufs(
     while ((tbuf = con->tbuf.first))
     {
         mblk = tbuf->mlink.mblk;
+
+        if (!mblk->to_be_deleted) {
+            ioc_tbuf_disconnect_signals(tbuf);
+        }
+
         ioc_release_target_buffer(tbuf);
         ioc_release_dynamic_mblk_if_not_attached(mblk, con, OS_TRUE);
     }

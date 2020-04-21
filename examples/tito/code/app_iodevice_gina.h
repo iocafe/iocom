@@ -37,7 +37,9 @@ public:
      */
     iocHandle
         m_gina_export,
-        m_gina_import;
+        m_gina_import,
+        m_gina_conf_export,
+        m_gina_conf_import;
 
     /* Gina IO definition structure.
      */

@@ -11,7 +11,7 @@ from math import sin, cos, pi
 from random import randrange
 from kivy.utils import get_color_from_hex as rgb
 from kivy.uix.boxlayout import BoxLayout
-from kivy.clock import Clock
+# from kivy.clock import Clock
 
 try:
     import numpy as np
@@ -92,7 +92,7 @@ class LinearCameraItem(GridLayout):
         # plot.bind_to_graph(graph)
         # plot.points = [(x, .1 + randrange(10) / 10.) for x in range(-50, 1)]
 
-        Clock.schedule_interval(self.update_points, 1 / 60.)
+        # Clock.schedule_interval(self.update_points, 1 / 60.)
         b.add_widget(graph)
 
         """
@@ -177,14 +177,15 @@ class LinearCameraItem(GridLayout):
     def delete(self):
         pass
 
-    def update_points(self, *args):
+ #   def update_points(self, *args):
+ #       self.run()
+
+    def update_signal(self):
         self.run()
-#        self.plot.points = [(x / 10., cos(Clock.get_time() + x / 50.)) for x in range(-500, 501)]
 
     def run(self):
         data = self.camera_buffer.get()
         if data != None:
-            # print(data)
             self.update_plot(data)
 
     def update_plot(self, data):

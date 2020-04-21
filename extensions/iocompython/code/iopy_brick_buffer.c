@@ -230,6 +230,8 @@ static void BrickBuffer_dealloc(
 {
     if (self->pyroot)
     {
+        ioc_release_brick_buffer(&self->brick_buffer);
+
         if (self->h_exp.mblk) {
             ioc_release_handle(&self->h_exp);
         }
@@ -268,6 +270,8 @@ static PyObject *BrickBuffer_delete(
 {
     if (self->pyroot)
     {
+        ioc_release_brick_buffer(&self->brick_buffer);
+
         if (self->h_exp.mblk) {
             ioc_release_handle(&self->h_exp);
         }

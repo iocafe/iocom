@@ -87,6 +87,8 @@
 #define IOC_MIN_UNIQUE_ID 8
 
 struct iocConnection;
+struct iocMblkSignalHdr;
+struct iocSourceBuffer;
 
 /**
 ****************************************************************************************************
@@ -342,6 +344,10 @@ typedef struct iocMemoryBlock
         and ioc_generate_del_mblk_request() functions.
      */
     os_boolean to_be_deleted;
+
+    /** Pointer to fixed signal header for the memory block. OS_NULL if none.
+     */
+    struct iocMblkSignalHdr *signal_hdr;
 #endif
 }
 iocMemoryBlock;
@@ -388,6 +394,12 @@ void ioc_release_dynamic_mblk_if_not_attached(
 void ioc_generate_del_mblk_request(
     iocMemoryBlock *mblk,
     struct iocConnection *deleting_con);
+
+/* Save pointer to signal header "remove memory block" requests.
+ */
+void mblk_set_signal_header(
+    iocHandle *handle,
+    struct iocMblkSignalHdr *hdr);
 #endif
 
 /* Set memory block parameter.
@@ -466,6 +478,11 @@ osalStatus ioc_resize_mblk(
     iocMemoryBlock *mblk,
     os_int nbytes,
     os_short flags);
+
+/* Trigger sending changes immediately.
+ */
+void ioc_mblk_auto_sync(
+    struct iocSourceBuffer *sbuf);
 
 /* Copy data and swap byte order on big endian processors.
  */

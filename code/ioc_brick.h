@@ -92,6 +92,10 @@ typedef struct iocBrickBuffer
     os_int timeout_ms; /* timeout for streamer continuous data transfer, -1 = no timeout */
     os_boolean state_initialized;
 
+    /* error retry timer. */
+//    os_boolean err_timer_set;
+ //   os_timer err_timer;
+
     /* callback */
     volatile os_boolean enable_receive;
     ioc_brick_received *receive_callback;
@@ -107,6 +111,11 @@ void ioc_initialize_brick_buffer(
     iocRoot *root,
     os_int timeout_ms,
     os_int flags);
+
+/* Release brick buffer which has been initialized by ioc_initialize_brick_buffer
+ */
+void ioc_release_brick_buffer(
+    iocBrickBuffer *b);
 
 /* Set function to call when brick is received.
  */

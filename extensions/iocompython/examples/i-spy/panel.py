@@ -68,6 +68,7 @@ class Panel(GridLayout):
         cam = LinearCameraItem()
         cam.set_device(ioc_root, device_path, assembly_data)
         self.add_my_widget(cam)
+        self.run_list.append(cam)
         return cam
 
     def add_heading(self, label1, label2, level):

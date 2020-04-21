@@ -80,8 +80,24 @@ gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr
     blockprm.flags = IOC_MBLK_DOWN /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
     ioc_initialize_memory_block(&m_gina_import, OS_NULL, &app_iocom_root, &blockprm);
 
+    /* These do store memory block handle for signals. Without this signals will
+       not work from this program.
+     */
     ioc_set_handle_to_signals(&m_gina_def.imp.hdr, &m_gina_import);
     ioc_set_handle_to_signals(&m_gina_def.exp.hdr, &m_gina_export);
+    ioc_set_handle_to_signals(&m_gina_def.conf_imp.hdr, &m_gina_conf_import);
+    ioc_set_handle_to_signals(&m_gina_def.conf_exp.hdr, &m_gina_conf_export);
+
+#if IOC_DYNAMIC_MBLK_CODE
+    /* These will store signal header pointer in memory block. This is necessary
+       to clear OSAL_STATE_CONNECTED status bit when upper level, like I spy disconnects.
+       See ioc_tbuf_disconnect_signals() function.
+     */
+    mblk_set_signal_header(&m_gina_import, &m_gina_def.imp.hdr);
+    mblk_set_signal_header(&m_gina_export, &m_gina_def.exp.hdr);
+    mblk_set_signal_header(&m_gina_conf_import, &m_gina_def.conf_imp.hdr);
+    mblk_set_signal_header(&m_gina_conf_export, &m_gina_def.conf_exp.hdr);
+#endif
 
     /* Set up buffer for incoming camera photo
      */

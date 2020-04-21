@@ -93,7 +93,8 @@ class MainApp(App):
                     self.set_displayed_page(None, None)
 
     def mytimer_tick(self, interval): 
-        self.timer_ms  += .1
+        # self.timer_ms  += .1
+        # self.timer_ms = 0.001 * Clock.get_time()
         self.check_iocom_events()
         for d in self.ioc_devices:
             self.ioc_devices[d].run()
@@ -101,8 +102,8 @@ class MainApp(App):
             self.my_view.run()            
  
     def start_mytimer(self): 
-        self.timer_ms = 0;
-        Clock.schedule_interval(self.mytimer_tick, .1) 
+        # self.timer_ms = 0;
+        Clock.schedule_interval(self.mytimer_tick, 1.0 / 30) 
   
     def stop_mytimer(self): 
         Clock.unschedule(self.mytimer_tick) 

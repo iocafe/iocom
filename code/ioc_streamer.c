@@ -505,7 +505,7 @@ static osalStatus ioc_streamer_device_write(
             {
                 os_get_timer(&streamer->mytimer);
             }
-            else
+            else if (n)
             {
                 if (n == -1)
                 {

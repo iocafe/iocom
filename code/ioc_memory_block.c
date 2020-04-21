@@ -25,9 +25,6 @@
 static os_uint ioc_get_unique_mblk_id(
     iocRoot *root);
 
-static void ioc_mblk_auto_sync(
-    iocSourceBuffer *sbuf);
-
 
 /**
 ****************************************************************************************************
@@ -407,6 +404,38 @@ void ioc_generate_del_mblk_request(
     }
 }
 
+#endif
+
+
+#if IOC_DYNAMIC_MBLK_CODE
+/**
+****************************************************************************************************
+
+  @brief Save pointer to signal header "remove memory block" requests.
+  @anchor ioc_generate_del_mblk_request
+
+  Store will store signal header pointer in memory block. This is necessary to clear
+  OSAL_STATE_CONNECTED status bit when upper level, like I spy disconnects.
+  See ioc_tbuf_disconnect_signals() function.
+
+  @param   handle Memory block handle.
+  @param   hdr Pointer to fixed memory block header structure. OS_NULL to remove pointer.
+  @return  None.
+
+****************************************************************************************************
+*/
+void mblk_set_signal_header(
+    iocHandle *handle,
+    struct iocMblkSignalHdr *hdr)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
+    mblk->signal_hdr = hdr;
+    ioc_unlock(root);
+}
 #endif
 
 
@@ -1206,8 +1235,8 @@ osalStatus ioc_resize_mblk(
 
 ****************************************************************************************************
 */
-static void ioc_mblk_auto_sync(
-    iocSourceBuffer *sbuf)
+void ioc_mblk_auto_sync(
+    struct iocSourceBuffer *sbuf)
 {
     if (ioc_sbuf_synchronize(sbuf))
     {

@@ -18,7 +18,6 @@
 */
 #include "iocom.h"
 
-
 /**
 ****************************************************************************************************
 
@@ -200,7 +199,7 @@ void ioc_release_target_buffer(
     root = tbuf->clink.con->link.root;
     ioc_lock(root);
 
-    /* If this source buffer is in turn for mbinfo
+    /* If this target buffer is in turn for mbinfo
        reply, move mbinfo reply to next one.
      */
     con = tbuf->clink.con;
@@ -428,3 +427,69 @@ void ioc_tbuf_synchronize(
         ioc_receive(&tbuf->mlink.mblk->handle);
     }
 }
+
+
+#if IOC_DYNAMIC_MBLK_CODE
+/**
+****************************************************************************************************
+
+  @Clear OSAL_STATE_CONNECTED status bit of signals no longer connected.
+  @anchor ioc_tbuf_synchronize
+
+  The ioc_tbuf_disconnect_signals() function is called when a target buffer is beging deleted
+  because connection has been lost.
+  -  it checks
+  if there are
+
+  Clear OSAL_STATE_CONNECTED status bit for signals.
+
+  This function must not be called for "const" signal structure.
+  ioc_lock() must be on before calling this function.
+
+  @param   tbuf Pointer to the target buffer object.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_tbuf_disconnect_signals(
+    iocTargetBuffer *tbuf)
+{
+    iocMemoryBlock *mblk;
+    iocMblkSignalHdr *hdr;
+    iocSourceBuffer *sbuf;
+    iocSignal *sig;
+    os_char *buf;
+    os_int count, nbytes, addr;
+    os_boolean changed;
+
+    mblk = tbuf->mlink.mblk;
+    if (mblk == OS_NULL) return;
+
+    buf = mblk->buf;
+    nbytes = mblk->nbytes;
+    hdr = mblk->signal_hdr;
+    if (hdr == OS_NULL) return;
+
+    changed = OS_FALSE;
+    count = hdr->n_signals;
+    for (sig = hdr->first_signal; count--; sig++)
+    {
+        addr = sig->addr;
+        if (addr >= 0 && addr < nbytes) {
+            buf[addr] &= ~OSAL_STATE_CONNECTED;
+            for (sbuf = mblk->sbuf.first;
+                 sbuf;
+                 sbuf = sbuf->mlink.next)
+            {
+                ioc_sbuf_invalidate(sbuf, addr, addr);
+                changed = OS_TRUE;
+            }
+        }
+    }
+
+    if (changed && (mblk->flags & IOC_AUTO_SYNC))
+    {
+        ioc_mblk_auto_sync(sbuf);
+    }
+}
+#endif

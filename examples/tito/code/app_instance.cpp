@@ -55,16 +55,10 @@ AppInstance::~AppInstance()
 }
 
 
-void AppInstance::initialize(const os_char *network_name, os_uint device_nr)
-{
-
-    os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
-}
-
-
 void AppInstance::start(const os_char *network_name, os_uint device_nr)
 {
-    initialize(network_name, device_nr);
+    // initialize(network_name, device_nr);
+    os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
 
     m_gina1_def = m_gina1.inititalize(m_network_name, 1);
     m_gina2_def = m_gina2.inititalize(m_network_name, 2);

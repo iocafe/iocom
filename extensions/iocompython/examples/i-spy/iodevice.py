@@ -35,7 +35,6 @@ class IoDevice(ConfigParser):
     def create_signal_display(self):
         p = Panel()
         self.my_signal_panel = p;
-        self.my_assemblied_panel = None;
 
         info = MemoryBlock(self.ioc_root, mblk_name='info.' + self.device_path)
         json_bin = info.read();

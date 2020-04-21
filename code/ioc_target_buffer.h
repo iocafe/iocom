@@ -195,4 +195,9 @@ void ioc_tbuf_invalidate(
 void ioc_tbuf_synchronize(
     iocTargetBuffer *tbuf);
 
+/* Clear OSAL_STATE_CONNECTED status bit of signals no longer connected.
+ */
+void ioc_tbuf_disconnect_signals(
+    iocTargetBuffer *tbuf);
+
 /*@}*/
