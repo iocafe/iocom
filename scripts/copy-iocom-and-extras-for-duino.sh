@@ -1,4 +1,4 @@
-# copy-iocom-and-extras-for-platformio.py 8.1.2020/pekka
+# copy-iocom-and-extras-for-duino.py 8.1.2020/pekka
 # Copies iocom and other libraries files needed for PlatformIO Arduino builds
 # into /coderoot/lib/arduino-platformio/* directories. 
 
@@ -26,6 +26,6 @@ python3 ./copy-selectwifi-for-platformio.py
 cd /coderoot/iocom/extensions/gazerbeam/osbuild/arduino-platformio
 python3 ./copy-gazerbeam-for-platformio.py
 
-cd /coderoot/pins/osbuild/arduino-platformio
-python3 ./copy-pins-for-platformio.py
+cd /coderoot/pins/scripts
+python3 ./copy-pins-for-duino.py esp32 -o /coderoot/lib/arduino-platformio/pins
 
