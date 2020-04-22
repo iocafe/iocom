@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # copy-nodeconf-for-duino.py 21.4.2020/pekka
 # Copies nodeconf library files needed for PlatformIO Arduino build
 # into /coderoot/lib/arduino-platformio/nodeconf directory. 

@@ -110,9 +110,7 @@ OSAL_C_HEADER_BEGINS
   #include "extensions/dynamicio/ioc_remove_mblk_list.h"
 #endif
 #include "code/ioc_connection.h"
-#if OSAL_SOCKET_SUPPORT
-  #include "code/ioc_end_point.h"
-#endif
+#include "code/ioc_end_point.h"
 #include "code/ioc_source_buffer.h"
 #include "code/ioc_target_buffer.h"
 #include "code/ioc_compress.h"

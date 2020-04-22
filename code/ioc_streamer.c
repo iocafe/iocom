@@ -79,6 +79,7 @@ static os_int ioc_streamer_write_internal(
     os_int *head,
     os_int tail);
 
+#if IOC_DEVICE_STREAMER
 static void ioc_ctrl_stream_from_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
@@ -86,6 +87,7 @@ static void ioc_ctrl_stream_from_device(
 static void ioc_ctrl_stream_to_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
+#endif
 
 
 /**

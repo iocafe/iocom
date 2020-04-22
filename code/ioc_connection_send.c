@@ -524,10 +524,12 @@ osalStatus ioc_send_timed_keepalive(
     /* In serial communication, we do not send keep alives until connection is established.
      */
     is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
+#if OSAL_SERIAL_SUPPORT
     if (is_serial && con->sercon_state != OSAL_SERCON_STATE_CONNECTED_5)
     {
         return OSAL_SUCCESS;
     }
+#endif
 
     timed_keepalive = os_has_elapsed_since(&con->last_send, tnow,
         is_serial ? IOC_SERIAL_KEEPALIVE_MS : IOC_SOCKET_KEEPALIVE_MS);

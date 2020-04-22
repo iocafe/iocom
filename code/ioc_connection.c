@@ -387,7 +387,10 @@ osalStatus ioc_connect(
     iocRoot *root;
     os_char *frame_in_buf, *frame_out_buf;
     os_int flags;
+
+#if OSAL_MULTITHREAD_SUPPORT
     osalThreadOptParams opt;
+#endif
 
     osal_debug_assert(con->debug_id == 'C');
 
@@ -579,8 +582,6 @@ osalStatus ioc_run_connection(
     osalStatus status;
     os_timer tnow;
     os_int silence_ms, count;
-    os_boolean is_serial;
-
 
     osal_debug_assert(con->debug_id == 'C');
 
@@ -630,8 +631,7 @@ osalStatus ioc_run_connection(
     /* Select timing for socket or serial port.
      */
 #if OSAL_SERIAL_SUPPORT
-    is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
-    if (is_serial)
+    if ((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL)
     {
         /* Check if we need to initiate the serial connection.
          */
@@ -646,7 +646,6 @@ osalStatus ioc_run_connection(
         silence_ms = IOC_SOCKET_SILENCE_MS;
     }
 #else
-    is_serial = OS_FALSE;
     silence_ms = IOC_SOCKET_SILENCE_MS;
 #endif
 
@@ -717,7 +716,7 @@ failed:
         ioc_reset_connection_state(con);
         ioc_lock(root);
         con->connected = OS_FALSE;
-        ioc_free_source_and_target_bufs(root, con);
+        ioc_free_source_and_target_bufs(con->link.root, con);
         /* ioc_count_connected_streams(con->link.root, OS_TRUE); */
         ioc_mbinfo_con_is_closed(con);
         ioc_unlock(root);

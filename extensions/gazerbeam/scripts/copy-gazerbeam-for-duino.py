@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # copy-gazerbeam-for-duino.py 21.4.2020/pekka
 # Copies gazerbeam library files needed for PlatformIO Arduino build
 # into /coderoot/lib/arduino-platformio/gazerbeam directory. 
