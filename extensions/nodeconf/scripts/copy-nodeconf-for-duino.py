@@ -1,4 +1,4 @@
-# copy-nodeconf-for-platformio.py 8.1.2020/pekka
+# copy-nodeconf-for-duino.py 21.4.2020/pekka
 # Copies nodeconf library files needed for PlatformIO Arduino build
 # into /coderoot/lib/arduino-platformio/nodeconf directory. 
 # To make this look like Arduino library all .c and .cpp
@@ -7,7 +7,7 @@
 from os import listdir, makedirs
 from os.path import isfile, isdir, join, splitext, exists
 from shutil import copyfile
-
+import sys
 
 def mymakedir(targetdir):
     if not exists(targetdir):
@@ -30,7 +30,7 @@ def copy_level_2(sourcedir,roottargetdir,targetdir):
                 copyfile(p, t)
 
 def copy_info(f,sourcedir,targetdir):
-    infodir = sourcedir + '/build/arduino-library'
+    infodir = sourcedir + '/osbuild/arduino-library'
     p = join(infodir, f)
     t = join(targetdir, f)
     if exists(p):
@@ -56,5 +56,23 @@ def copy_level_1(sourcedir,targetdir):
     copy_info('library.json', sourcedir, targetdir)
     copy_info('library.properties', sourcedir, targetdir)
 
+def mymain():
+    outdir = "/coderoot/lib/arduino-platformio/nodeconf"
+    expectplatform = True
+    n = len(sys.argv)
+    for i in range(1, n):
+        if sys.argv[i][0] == "-":
+            if sys.argv[i][1] == "o":
+                expectplatform = False
 
-copy_level_1("/coderoot/iocom/extensions/nodeconf", "/coderoot/lib/arduino-platformio/nodeconf")
+        else:
+            if not expectplatform:
+                outdir = sys.argv[i];
+
+            expectplatform = True    
+
+    copy_level_1("/coderoot/iocom/extensions/nodeconf", outdir)
+
+# Usage copy-nodeconf-for-duino.py -o /coderoot/lib/esp32/nodeconf
+mymain()
+
