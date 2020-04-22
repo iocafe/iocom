@@ -1,13 +1,13 @@
-# copy-devicedir-for-platformio.py 8.1.2020/pekka
-# Copies devicedir library files needed for PlatformIO Arduino build
-# into /coderoot/lib/arduino-platformio/devicedir directory. 
+# copy-iocom-for-duino.py 21.4.2020/pekka
+# Copies iocom library files needed for PlatformIO Arduino build
+# into /coderoot/lib/arduino-platformio/iocom directory. 
 # To make this look like Arduino library all .c and .cpp
 # files are copied to target root folder, and all header
 # files info subfolders.
 from os import listdir, makedirs
 from os.path import isfile, isdir, join, splitext, exists
 from shutil import copyfile
-
+import sys
 
 def mymakedir(targetdir):
     if not exists(targetdir):
@@ -58,4 +58,24 @@ def copy_level_1(sourcedir,targetdir):
     copy_info('library.properties', sourcedir, targetdir)
 
 
-copy_level_1("/coderoot/iocom/extensions/devicedir", "/coderoot/lib/arduino-platformio/devicedir")
+def mymain():
+    outdir = "/coderoot/lib/arduino-platformio/iocom"
+    expectplatform = True
+    n = len(sys.argv)
+    for i in range(1, n):
+        if sys.argv[i][0] == "-":
+            if sys.argv[i][1] == "o":
+                expectplatform = False
+
+        else:
+            if not expectplatform:
+                outdir = sys.argv[i];
+
+            expectplatform = True    
+
+    copy_level_1("/coderoot/iocom", outdir)
+
+# Usage copy-iocom-for-duino.py -o /coderoot/lib/esp32/iocom
+mymain()
+
+
