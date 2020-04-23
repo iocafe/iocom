@@ -1,0 +1,212 @@
+{
+"name": "candy",
+"assembly": [
+	{
+		"name": "ccd",
+		"type": "linecam",
+		"exp": "exp.rec_",
+		"imp": "imp.rec_"
+	}
+],
+"mblk": [
+	{
+		"name": "exp",
+		"flags": "up",
+		"groups": [
+			{
+				"name": "state",
+				"signals": [
+					{
+						"name": "frame_rate",
+						"type": "float"
+					},
+					{
+						"name": "testfloat",
+						"type": "float",
+						"array": 5
+					},
+					{
+						"name": "teststr",
+						"type": "str",
+						"array": 10
+					},
+					{
+						"name": "testbool",
+						"type": "boolean"
+					}
+				]
+			},
+			{
+				"name": "inputs",
+				"signals": [
+					{
+						"name": "in_x",
+						"type": "boolean"
+					},
+					{
+						"name": "potentiometer",
+						"type": "float"
+					}
+				]
+			},
+			{
+				"name": "camera up",
+				"signals": [
+					{
+						"name": "rec_state",
+						"type": "char"
+					},
+					{
+						"name": "rec_buf",
+						"type": "uchar",
+						"array": 2800
+					},
+					{
+						"name": "rec_head",
+						"type": "int"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "imp",
+		"flags": "down",
+		"groups": [
+			{
+				"name": "controls",
+				"signals": [
+					{
+						"name": "strtodevice",
+						"type": "str",
+						"array": 16
+					},
+					{
+						"name": "seven_segment",
+						"type": "boolean",
+						"array": 8
+					}
+				]
+			},
+			{
+				"name": "pwm",
+				"signals": [
+					{
+						"name": "dimmer_led",
+						"type": "ushort",
+						"max": 100
+					}
+				]
+			},
+			{
+				"name": "outputs",
+				"signals": [
+					{
+						"name": "myoutput",
+						"type": "boolean"
+					}
+				]
+			},
+			{
+				"name": "camera down",
+				"signals": [
+					{
+						"name": "rec_cmd",
+						"type": "char"
+					},
+					{
+						"name": "rec_select",
+						"type": "uchar"
+					},
+					{
+						"name": "rec_tail",
+						"type": "int"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "conf_exp",
+		"flags": "up,conf",
+		"groups": [
+			{
+				"name": "transfer to device",
+				"signals": [
+					{
+						"name": "tod_state",
+						"type": "char"
+					},
+					{
+						"name": "tod_tail",
+						"type": "int"
+					}
+				]
+			},
+			{
+				"name": "transfer from device",
+				"signals": [
+					{
+						"name": "frd_state",
+						"type": "char"
+					},
+					{
+						"name": "frd_buf",
+						"type": "uchar",
+						"array": 257
+					},
+					{
+						"name": "frd_head",
+						"type": "int"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "conf_imp",
+		"flags": "down,conf",
+		"groups": [
+			{
+				"name": "transfer to device",
+				"signals": [
+					{
+						"name": "tod_cmd",
+						"type": "char"
+					},
+					{
+						"name": "tod_select",
+						"type": "char"
+					},
+					{
+						"name": "tod_buf",
+						"type": "uchar",
+						"array": 257
+					},
+					{
+						"name": "tod_head",
+						"type": "int"
+					}
+				]
+			},
+			{
+				"name": "transfer from device",
+				"signals": [
+					{
+						"name": "frd_cmd",
+						"type": "char"
+					},
+					{
+						"name": "frd_select",
+						"type": "uchar"
+					},
+					{
+						"name": "frd_tail",
+						"type": "int"
+					}
+				]
+			}
+		]
+	}
+]
+}

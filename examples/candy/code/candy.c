@@ -1,10 +1,10 @@
 /**
 
-  @file    gina.c
-  @brief   Gina IO board example featuring  IoT device.
+  @file    candy.c
+  @brief   Candy camera IO example.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.3.2020
+  @date    22.4.2020
 
   IOBOARD_CTRL_CON define selects how this IO device connects to control computer. One of
   IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
@@ -25,29 +25,28 @@
 
 ****************************************************************************************************
 */
-/* Select socket, TLS or serial communication before including gina.h.
+/* Select socket, TLS or serial communication before including candy.h.
  */
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
-#include "gina.h"
+#include "candy.h"
 
 /* The devicedir is here for testing only, take away.
  */
 #include "devicedir.h"
 
-#if GINA_USE_SELECTWIFI
+#if CANDY_USE_SELECTWIFI
 #include "selectwifi.h"
 #endif
 
-#if GINA_USE_GAZERBEAM
+#if CANDY_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
 #endif
 
-#if GINA_USE_LIGHTHOUSE
+#if CANDY_USE_LIGHTHOUSE
 #include "lighthouse.h"
 static LighthouseClient lighthouse;
 #endif
-
 
 /* IO device configuration.
  */
@@ -82,16 +81,16 @@ static os_timer send_timer;
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
-        GINA_EXP_MBLK_SZ, GINA_IMP_MBLK_SZ)
+        CANDY_EXP_MBLK_SZ, CANDY_IMP_MBLK_SZ)
         + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)
         + IOBOARD_POOL_IMP_EXP_CONF(IOBOARD_MAX_CONNECTIONS,
-            GINA_CONF_EXP_MBLK_SZ, GINA_CONF_IMP_MBLK_SZ)];
+            CANDY_CONF_EXP_MBLK_SZ, CANDY_CONF_IMP_MBLK_SZ)];
 
 /* Streamer for transferring IO device configuration and flash program. The streamer is used
    to transfer a stream using buffer within memory block. This static structure selects which
    signals are used for straming data between the controller and IO device.
  */
-static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM(gina,
+static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM(candy,
     ioapp_network_defaults, sizeof(ioapp_network_defaults));
 
 static iocControlStreamState ioc_ctrl_state;
@@ -157,7 +156,6 @@ osalStatus osal_main(
 #else
     osal_socket_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi);
 #endif
-    osal_serial_initialize();
 
     /* Get stream interface by IOBOARD_CTRL_CON define.
      */
@@ -175,17 +173,17 @@ osalStatus osal_main(
     prm.socket_con_str = connconf->connection[0].parameters;
     prm.serial_con_str = connconf->connection[0].parameters;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = GINA_EXP_MBLK_SZ;
-    prm.receive_block_sz = GINA_IMP_MBLK_SZ;
+    prm.send_block_sz = CANDY_EXP_MBLK_SZ;
+    prm.receive_block_sz = CANDY_IMP_MBLK_SZ;
     prm.auto_synchronization = OS_FALSE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
-    prm.device_signal_hdr = &gina_hdr;
+    prm.device_signal_hdr = &candy_hdr;
     prm.device_info = ioapp_signal_config;
     prm.device_info_sz = sizeof(ioapp_signal_config);
-    prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
-    prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
-#if GINA_USE_LIGHTHOUSE
+    prm.conf_send_block_sz = CANDY_CONF_EXP_MBLK_SZ;
+    prm.conf_receive_block_sz = CANDY_CONF_IMP_MBLK_SZ;
+#if CANDY_USE_LIGHTHOUSE
     prm.lighthouse = &lighthouse;
     prm.lighthouse_func = ioc_get_lighthouse_connectstr;
 #endif
@@ -194,9 +192,9 @@ osalStatus osal_main(
      */
     ioboard_start_communication(&prm);
 
-    /* Set callback to detect received data and connection status changes.
+    /* Set callback to pass communcation to pins.
      */
-    ioc_add_callback(&ioboard_imp, ioboard_communication_callback, OS_NULL);
+    ioc_add_callback(&ioboard_imp, pins_default_iocom_callback, OS_NULL);
 
     /* Connect PINS library to IOCOM library
      */
@@ -208,20 +206,20 @@ osalStatus osal_main(
 
     /* Enable wifi selection by blue tooth.
      */
-#if GINA_USE_SELECTWIFI
+#if CANDY_USE_SELECTWIFI
     ioc_initialize_selectwifi(OS_NULL);
 #endif
 
     /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection
        string starts with '[' (indicates IPv6 address).
      */
-#if GINA_USE_LIGHTHOUSE
+#if CANDY_USE_LIGHTHOUSE
     ioc_initialize_lighthouse_client(&lighthouse, prm.socket_con_str[0] == '[', OS_NULL);
 #endif
 
     /* Initialize library to receive wifi configuration by phototransostor.
      */
-#if GINA_USE_GAZERBEAM
+#if CANDY_USE_GAZERBEAM
     initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
@@ -237,13 +235,12 @@ osalStatus osal_main(
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
-    ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root, 0, IOC_BRICK_DEVICE);
+    ioc_initialize_brick_buffer(&video_output, &candy.ccd, &ioboard_root, 0, IOC_BRICK_DEVICE);
 
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
     os_memclear(&camera_prm, sizeof(camera_prm));
-    camera_prm.camera_pin = &pins.cameras.ccd;
-    camera_prm.timer_pin = &pins.timers.ccd_data;
+    camera_prm.camera_pin = &pins.cameras.camera;
     camera_prm.callback_func = ioboard_camera_callback;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
     PINS_CAMERA_IFACE.start(&pins_camera);
@@ -293,13 +290,13 @@ osalStatus osal_loop(
 
     /* Run light house.
      */
-#if GINA_USE_LIGHTHOUSE
+#if CANDY_USE_LIGHTHOUSE
     ioc_run_lighthouse_client(&lighthouse);
 #endif
 
     /* Get Wifi configuration messages from Android phone flash light -> phototransistor.
      */
-#if GINA_USE_GAZERBEAM
+#if CANDY_USE_GAZERBEAM
     gazerbeam_run_configurator(&gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
@@ -313,9 +310,8 @@ osalStatus osal_loop(
      */
     blink_morse_code(&morse, &ti);
 
-    /* Keep the communication alive. If data is received from communication, the
-       ioboard_communication_callback() will be called. Move data data synchronously
-       to incoming memory block.
+    /* Keep the communication alive. Move data data synchronously
+       to incoming memory block and keep control stream alive.
      */
     ioc_run(&ioboard_root);
     ioc_receive_all(&ioboard_root);
@@ -343,15 +339,15 @@ osalStatus osal_loop(
         os_get_timer(&sti);
 
         f[2] = i++;
-        ioc_sets_array(&gina.exp.testfloat, f, 5);
+        ioc_sets_array(&candy.exp.testfloat, f, 5);
     }
 
-    command = ioc_gets0_int(&gina.imp.myoutput);
+    command = ioc_gets0_int(&candy.imp.myoutput);
     if (command != prev_command)
     {
         f[0] = f[0] + 1.0F;
         test_str = (int)f[0] % 2 ? "dance" : "gabriel";
-        ioc_sets_str(&gina.exp.teststr, test_str);
+        ioc_sets_str(&candy.exp.teststr, test_str);
         prev_command = command;
     }
 
@@ -359,7 +355,7 @@ osalStatus osal_loop(
      */
     s = io_device_console(&ioboard_root);
 
-    /* Send changed data synchronously from outgoing memory blocks every 50 ms. If we need
+    /* Send changed data synchronously from outgoing memory blocks every 100 ms. If we need
        very low latency IO in local network we can have interval like 1 ms, or just call send
        unconditionally.
        If we are not in such hurry, we can save network resources by merging multiple changes.
@@ -400,11 +396,11 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-#if GINA_USE_LIGHTHOUSE
+#if CANDY_USE_LIGHTHOUSE
     ioc_release_lighthouse_client(&lighthouse);
 #endif
 
-#if GINA_USE_SELECTWIFI
+#if CANDY_USE_SELECTWIFI
     ioc_release_selectwifi();
 #endif
 
@@ -414,85 +410,8 @@ void osal_main_cleanup(
 #else
     osal_socket_shutdown();
 #endif
-    osal_serial_shutdown();
 
     ioc_release_node_config(&ioapp_device_conf);
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Callback function when data has been received from communication.
-
-  The ioboard_communication_callback function reacts to data from communication. Here we treat
-  memory block as set of communication signals, and mostly just forward these to IO.
-
-  @param   handle Memory block handle.
-  @param   start_addr First changed memory block address.
-  @param   end_addr Last changed memory block address.
-  @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
-           IOC_MBLK_CALLBACK_RECEIVE change by data received.
-  @param   context Callback context, not used by "gina" example.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioboard_communication_callback(
-    struct iocHandle *handle,
-    os_int start_addr,
-    os_int end_addr,
-    os_ushort flags,
-    void *context)
-{
-#undef PINS_SEGMENT7_GROUP
-
-    /* '#ifdef' is used to compile code in only if 7-segment display is configured
-       for the hardware.
-     */
-#ifdef PINS_SEGMENT7_GROUP
-    os_char buf[GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ];
-    const Pin *pin;
-    os_short i;
-
-    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
-    {
-        /* Process 7 segment display. Since this is transferred as boolean array, the
-           forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
-           boolean array from communication signal, and write it to IO pins.
-         */
-        if (ioc_is_my_address(&gina.imp.seven_segment, start_addr, end_addr))
-        {
-            sb = ioc_gets_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
-            if (sb & OSAL_STATE_CONNECTED)
-            {
-                osal_console_write("7 segment data received\n");
-                for (i = GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
-                     i >= 0 && pin;
-                     i--, pin = pin->next) /* For now we need to loop backwards, fix this */
-                {
-                    pin_set(pin, buf[i]);
-                }
-            }
-            else
-            {
-                // WE DO NOT COME HERE. SHOULD WE INVALIDATE WHOLE MAP ON DISCONNECT?
-                osal_console_write("7 segment data DISCONNECTED\n");
-            }
-        }
-
-        /* Call pins library extension to forward communication signal changes to IO pins.
-         */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
-    }
-#else
-    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
-    {
-        /* Call pins library extension to forward communication signal changes to IO pins.
-         */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
-    }
-#endif
 }
 
 
