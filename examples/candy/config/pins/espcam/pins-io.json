@@ -12,7 +12,7 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_builtin", "addr": 4}
+          {"name": "led_morse", "addr": 15}
         ]
       },
       {
@@ -25,7 +25,7 @@
       {
         "name": "pwm",
         "pins": [
-          {"name": "illumination", "bank": 1, "addr": 15, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
+          {"name": "illumination", "bank": 1, "addr": 4, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
         ]
       },
       {

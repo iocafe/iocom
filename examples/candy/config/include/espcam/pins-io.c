@@ -6,7 +6,7 @@ static os_ushort pins_inputs_gazerbeam_prm[]= {PIN_RV, PIN_RV, PIN_INTERRUPT_ENA
 PINS_INTCONF_STRUCT(pin_gazerbeam_intconf)
 
 /* Parameters for outputs */
-static os_ushort pins_outputs_led_builtin_prm[]= {PIN_RV, PIN_RV};
+static os_ushort pins_outputs_led_morse_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for analog_inputs */
 static os_ushort pins_analog_inputs_ambient_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
@@ -28,8 +28,8 @@ const pins_t pins =
     {PIN_INPUT, 0, 12, pins_inputs_gazerbeam_prm, sizeof(pins_inputs_gazerbeam_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_PTR(pin_gazerbeam_intconf)} /* gazerbeam */
   },
 
-  {{1, &pins.outputs.led_builtin}, /* outputs */
-    {PIN_OUTPUT, 0, 4, pins_outputs_led_builtin_prm, sizeof(pins_outputs_led_builtin_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_NULL} /* led_builtin */
+  {{1, &pins.outputs.led_morse}, /* outputs */
+    {PIN_OUTPUT, 0, 15, pins_outputs_led_morse_prm, sizeof(pins_outputs_led_morse_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_NULL} /* led_morse */
   },
 
   {{2, &pins.analog_inputs.ambient}, /* analog_inputs */
@@ -38,7 +38,7 @@ const pins_t pins =
   },
 
   {{1, &pins.pwm.illumination}, /* pwm */
-    {PIN_PWM, 1, 15, pins_pwm_illumination_prm, sizeof(pins_pwm_illumination_prm)/sizeof(os_ushort), OS_NULL, &candy.imp.illumination PINS_INTCONF_NULL} /* illumination */
+    {PIN_PWM, 1, 4, pins_pwm_illumination_prm, sizeof(pins_pwm_illumination_prm)/sizeof(os_ushort), OS_NULL, &candy.imp.illumination PINS_INTCONF_NULL} /* illumination */
   },
 
   {{1, &pins.cameras.camera}, /* cameras */

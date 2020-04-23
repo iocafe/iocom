@@ -14,7 +14,7 @@ typedef struct
   struct
   {
     PinGroupHdr hdr;
-    Pin led_builtin;
+    Pin led_morse;
   }
   outputs;
 
@@ -57,7 +57,7 @@ extern const pins_t pins;
 
 /* Name defines for pins and application pin groups (use ifdef to check if HW has pin) */
 #define PINS_INPUTS_GAZERBEAM "gazerbeam"
-#define PINS_OUTPUTS_LED_BUILTIN "led_builtin"
+#define PINS_OUTPUTS_LED_MORSE "led_morse"
 #define PINS_ANALOG_INPUTS_AMBIENT "ambient"
 #define PINS_ANALOG_INPUTS_UNUSED_PIN "unused_pin"
 #define PINS_PWM_ILLUMINATION "illumination"

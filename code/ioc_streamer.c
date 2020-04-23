@@ -1683,6 +1683,15 @@ static void ioc_ctrl_stream_to_device(
 
     ioc_streamer_close(ctrl->tod, stream_flags);
     ctrl->tod = OS_NULL;
+
+    if (s == OSAL_COMPLETED)
+    {
+        if (ctrl->transferred_block_nr == OS_PBNR_CLIENT_CERT_CHAIN ||
+            ctrl->transferred_block_nr == OS_PBNR_FLASH_PROGRAM)
+        {
+            osal_reboot(0);
+        }
+    }
 }
 #endif
 
