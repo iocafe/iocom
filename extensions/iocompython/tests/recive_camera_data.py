@@ -1,4 +1,4 @@
-# Module: recive-camera-data.py
+# Module: receive-camera-data.py
 # Pull data from IO device's (gina1) camera trough a server (frank, etc) 
 # This example logs into "iocafenet" device network run by server in local computer. 
 # User name "ispy" and password "pass" identify the client to server.
@@ -18,7 +18,7 @@ def main():
 
     Connection(root, "127.0.0.1", "tls,down,dynamic", user='ispy.iocafenet', password='pass')
     camera_buffer = BrickBuffer(root, "exp.gina1.iocafenet", "imp.gina1.iocafenet", "rec_", timeout=-1)
-    camera_buffer.set_recive(True);
+    camera_buffer.set_receive(True);
 
     while (ioterminal.run(root)):
         data = camera_buffer.get()

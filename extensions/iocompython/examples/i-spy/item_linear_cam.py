@@ -172,7 +172,7 @@ class LinearCameraItem(GridLayout):
         imp_path = imp[0] + '.' + device_path
         prefix = exp[1]
         self.camera_buffer = BrickBuffer(ioc_root, exp_path, imp_path, prefix, timeout=-1)
-        self.camera_buffer.set_recive(True);
+        self.camera_buffer.set_receive(True);
 
     def delete(self):
         pass

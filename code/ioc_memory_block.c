@@ -880,7 +880,7 @@ void ioc_send(
   @brief Receive data synchronously.
   @anchor ioc_receive
 
-  The ioc_receive() function moves received data as snapshot to be abailable for reads. This
+  The ioc_receive() function moves received data as snapshot to be available for reads. This
   function must be called by application if IOC_AUTO_SYNC flag is off.
   This receives all data matching to one ioc_send() call at other end.
 
@@ -894,6 +894,37 @@ void ioc_receive(
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
+
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
+
+    ioc_receive_nolock(mblk);
+    ioc_unlock(root);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Receive data synchronously (without mutex locks).
+  @anchor ioc_receive_nolock
+
+  The ioc_receive_nolock() function moves received data as snapshot to be available for reads. This
+  function must be called by application if IOC_AUTO_SYNC flag is off.
+  This receives all data matching to one ioc_send() call at other end.
+
+  LOCK must be on when calling this function.
+
+  @param   handle Memory block handle.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_receive_nolock(
+    iocMemoryBlock *mblk)
+{
     iocTargetBuffer *tbuf;
     os_int start_addr, end_addr, i;
 #if IOC_BIDIRECTIONAL_MBLK_CODE
@@ -903,10 +934,6 @@ void ioc_receive(
     os_int bitsi;
 #endif
 
-    /* Get memory block pointer and start synchronization.
-     */
-    mblk = ioc_handle_lock_to_mblk(handle, &root);
-    if (mblk == OS_NULL) return;
 
     /* We usually have only one target buffer. Multiple target buffers relate to special
      * options like bidirectional transfers and perhaps redundancy in future.
@@ -1025,8 +1052,6 @@ void ioc_receive(
             }
         }
     }
-
-    ioc_unlock(root);
 }
 
 
@@ -1038,7 +1063,7 @@ void ioc_receive(
 
   The ioc_add_callback() function adds a callback function to memory block. The callback function
   gets called when data is received from connection, etc. This allows application to react to
-  recived data without polling it (faster and uses less processor time).
+  received data without polling it (faster and uses less processor time).
 
   @param   handle Memory block handle.
   @param   func Pointer to a callback function.

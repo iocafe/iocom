@@ -402,14 +402,14 @@ void ioc_set_root_callback(
 
   The TOCOM library can inform application about new/deleted memory blocks, connected IO networks
   and devices. This is much more efficient than polling for changes, especially in large IO
-  device networks (IoT applications). 
+  device networks (IoT applications).
 
   This function generates the event, using method selected for the application:
 
   Application can be informed either by callback qunction, or queueing the event information
   and setting operating system event to trigger the application. These methods are alternatives:
-  Callbacks are generally better suited for signle thread model, while queues are typically 
-  better choice in complex multithread environments. Event queues are exclusively used with 
+  Callbacks are generally better suited for signle thread model, while queues are typically
+  better choice in complex multithread environments. Event queues are exclusively used with
   Python API.
 
   ioc_lock must be on when calling this function.
@@ -427,7 +427,7 @@ void ioc_new_root_event(
     iocRoot *root,
     iocEvent event,
     struct iocDynamicNetwork *dnetwork,
-    struct iocMemoryBlock *mblk,    
+    struct iocMemoryBlock *mblk,
     void *context)
 {
 #if IOC_DYNAMIC_MBLK_CODE
@@ -555,5 +555,80 @@ void ioc_set_network_name(
         }
     }
 
+    ioc_unlock(root);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Send data from all memory blocks synchronously.
+  @anchor ioc_send_all
+
+  The ioc_send_all() function pushes all writes to all memory blocks. This or ioc_send() function
+  must be called from application IOC_AUTO_SYNC is not enabled.
+
+  Call ioc_send_all() function repeatedly, for example in mictorontroller's main loop.
+  Synchronous  sending causes all changes done in same main loop round to be transmitted together.
+
+  It is possible to reduce data transmitted from noicy analog inputs by calling ioc_send()
+  at low frequency. This assumes that analog inputs with same desired maximum update frequency
+  are grouped into same memory block.
+
+  @param   root Pointer to IOCOM root object.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_send_all(
+    iocRoot *root)
+{
+    iocMemoryBlock *mblk;
+    iocSourceBuffer *sbuf;
+    if (root == OS_NULL) return;
+
+    ioc_lock(root);
+    for (mblk = root->mblk.first;
+         mblk;
+         mblk = mblk->link.next)
+    {
+        for (sbuf = mblk->sbuf.first;
+             sbuf;
+             sbuf = sbuf->mlink.next)
+        {
+            ioc_sbuf_synchronize(sbuf);
+        }
+    }
+    ioc_unlock(root);
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Receive data synchronously for all memory blocks.
+  @anchor ioc_receive_all
+
+  The ioc_receive_all() function moves received data as snapshot to be available for reads for all
+  memory blocks. This or ioc_receive() function must be called from application IOC_AUTO_SYNC
+  is not enabled.
+
+  @param   root Pointer to IOCOM root object.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_receive_all(
+    iocRoot *root)
+{
+    iocMemoryBlock *mblk;
+
+    ioc_lock(root);
+    for (mblk = root->mblk.first;
+         mblk;
+         mblk = mblk->link.next)
+    {
+        ioc_receive_nolock(mblk);
+    }
     ioc_unlock(root);
 }

@@ -14,7 +14,7 @@
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -138,7 +138,7 @@ typedef void ioc_root_callback(
     struct iocRoot *root,
     iocEvent event,
     struct iocDynamicNetwork *dnetwork,
-    struct iocMemoryBlock *mblk,    
+    struct iocMemoryBlock *mblk,
     void *context);
 
 
@@ -237,7 +237,7 @@ typedef struct iocRoot
     struct iocDynamicRoot *droot;
 
     /** Pointer to communication event queue. The application processess
-        these events to know about connected/disconnected device IO 
+        these events to know about connected/disconnected device IO
         networks, devices, etc.
      */
     struct iocEventQueue *event_queue;
@@ -256,7 +256,7 @@ typedef struct iocRoot
 iocRoot;
 
 
-/** 
+/**
 ****************************************************************************************************
 
   @name Functions related to iocom root object
@@ -306,7 +306,7 @@ void ioc_new_root_event(
     iocRoot *root,
     iocEvent event,
     struct iocDynamicNetwork *dnetwork,
-    struct iocMemoryBlock *mblk,    
+    struct iocMemoryBlock *mblk,
     void *context);
 
 /* Create unique identifier for device.
@@ -317,6 +317,16 @@ os_uint ioc_get_unique_device_id(
 /* Copy root's network name to memory blocks without name.
  */
 void ioc_set_network_name(
+    iocRoot *root);
+
+/* Send data from all memory blocks synchronously.
+ */
+void ioc_send_all(
+    iocRoot *root);
+
+/* Receive data synchronously for all memory blocks.
+ */
+void ioc_receive_all(
     iocRoot *root);
 
 /*@}*/

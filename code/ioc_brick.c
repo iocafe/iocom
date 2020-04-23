@@ -507,7 +507,7 @@ static osalStatus osal_validate_brick_header(
   Helper function for ioc_run_brick_receive().
 
   @param   b Pointer to brick buffer structure.
-  @return  OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick
+  @return  OSAL_SUCCESS all fine, but no complete brick received. OSAL_COMPLETED new brick
            received. Other values indicate an error.
 
 ****************************************************************************************************
@@ -608,7 +608,7 @@ static osalStatus ioc_receive_brick_data(
   This function can be called repeatedly from loop to keep on receiveng data.
 
   @param   b Pointer to brick buffer structure.
-  @return  OSAL_SUCCESS all fine, but no complete brick recived. OSAL_COMPLETED new brick
+  @return  OSAL_SUCCESS all fine, but no complete brick received. OSAL_COMPLETED new brick
            received. Other values indicate an error.
 
 ****************************************************************************************************

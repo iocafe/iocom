@@ -318,8 +318,7 @@ osalStatus osal_loop(
        to incomong memory block.
      */
     ioc_run(&ioboard_root);
-    ioc_receive(&ioboard_imp);
-    ioc_receive(&ioboard_conf_imp);
+    ioc_receive_all(&ioboard_root);
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
 #if PINS_CAMERA
@@ -374,8 +373,7 @@ osalStatus osal_loop(
      */
     if (os_timer_hit(&send_timer, &ti, 10))
     {
-        ioc_send(&ioboard_exp);
-        ioc_send(&ioboard_conf_exp);
+        ioc_send_all(&ioboard_root);
         ioc_run(&ioboard_root);
     }
 

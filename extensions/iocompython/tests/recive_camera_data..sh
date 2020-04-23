@@ -1,2 +1,2 @@
 export PYTHONPATH=/coderoot/bin/linux
-python3 recive_camera_data.py
+python3 receive_camera_data.py

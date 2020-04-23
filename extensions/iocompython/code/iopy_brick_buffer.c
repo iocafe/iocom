@@ -9,7 +9,7 @@
 
   Example to get video data from remote camera:
 
-    # Module: recive-camera-data.py
+    # Module: receive-camera-data.py
     # Pull data from IO device's (gina1) camera trough a server (frank, etc)
     # This example logs into "iocafenet" device network run by server in local computer.
     # User name "ispy" and password "pass" identify the client to server.
@@ -29,7 +29,7 @@
 
         Connection(root, "127.0.0.1", "tls,down,dynamic", user='ispy.iocafenet', password='pass')
         camera_buffer = BrickBuffer(root, "exp.gina1.iocafenet", "imp.gina1.iocafenet", "rec_",timeout=-1)
-        camera_buffer.set_recive(True);
+        camera_buffer.set_receive(True);
 
         while (ioterminal.run(root)):
             data = camera_buffer.get()
@@ -404,7 +404,7 @@ getout:
 
 ****************************************************************************************************
 */
-static PyObject *BrickBuffer_set_recive(
+static PyObject *BrickBuffer_set_receive(
     BrickBuffer *self,
     PyObject *args,
     PyObject *kwds)
@@ -546,7 +546,7 @@ static PyMemberDef BrickBuffer_members[] = {
 */
 static PyMethodDef BrickBuffer_methods[] = {
     {"delete", (PyCFunction)BrickBuffer_delete, METH_NOARGS, "Deletes IOCOM brick_buffer"},
-    {"set_recive", (PyCFunction)BrickBuffer_set_recive, METH_VARARGS|METH_KEYWORDS, "Enable/disable reciving data"},
+    {"set_receive", (PyCFunction)BrickBuffer_set_receive, METH_VARARGS|METH_KEYWORDS, "Enable/disable reciving data"},
     {"get", (PyCFunction)BrickBuffer_get, METH_VARARGS|METH_KEYWORDS, "Get buffered data brick"},
 //    {"set", (PyCFunction)BrickBuffer_set, METH_VARARGS|METH_KEYWORDS, "Store brick_buffer data"},
     {NULL} /* Sentinel */
