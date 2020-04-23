@@ -2,27 +2,21 @@
 const struct candy_t candy = 
 {
   {
-    {"exp", &ioboard_exp, 9, CANDY_EXP_MBLK_SZ, (iocSignal*)&candy.exp.frame_rate},
-    {0, 1, OS_FLOAT, &ioboard_exp, OS_NULL}, /* frame_rate */
-    {5, 5, OS_FLOAT, &ioboard_exp, OS_NULL}, /* testfloat */
-    {26, 10, OS_STR, &ioboard_exp, OS_NULL}, /* teststr */
-    {37, 1, OS_BOOLEAN, &ioboard_exp, OS_NULL}, /* testbool */
-    {38, 1, OS_BOOLEAN, &ioboard_exp, OS_NULL}, /* in_x */
-    {39, 1, OS_FLOAT, &ioboard_exp, OS_NULL}, /* potentiometer */
-    {44, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
-    {46, 2800, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
-    {2847, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
+    {"exp", &ioboard_exp, 5, CANDY_EXP_MBLK_SZ, (iocSignal*)&candy.exp.ambient},
+    {0, 1, OS_UINT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.ambient}, /* ambient */
+    {5, 1, OS_UINT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.unused_pin}, /* unused_pin */
+    {10, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
+    {12, 10000, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
+    {10013, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
   },
 
   {
-    {"imp", &ioboard_imp, 7, CANDY_IMP_MBLK_SZ, (iocSignal*)&candy.imp.strtodevice},
-    {0, 16, OS_STR, &ioboard_imp, OS_NULL}, /* strtodevice */
-    {17, 8, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* seven_segment */
-    {19, 1, OS_USHORT, &ioboard_imp, OS_NULL}, /* dimmer_led */
-    {22, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* myoutput */
-    {23, 1, OS_CHAR, &ioboard_imp, OS_NULL}, /* rec_cmd */
-    {25, 1, OS_UCHAR, &ioboard_imp, OS_NULL}, /* rec_select */
-    {27, 1, OS_INT, &ioboard_imp, OS_NULL} /* rec_tail */
+    {"imp", &ioboard_imp, 5, CANDY_IMP_MBLK_SZ, (iocSignal*)&candy.imp.on},
+    {0, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* on */
+    {1, 1, OS_UINT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.illumination}, /* illumination */
+    {6, 1, OS_CHAR, &ioboard_imp, OS_NULL}, /* rec_cmd */
+    {8, 1, OS_UCHAR, &ioboard_imp, OS_NULL}, /* rec_select */
+    {10, 1, OS_INT, &ioboard_imp, OS_NULL} /* rec_tail */
   },
 
   {
@@ -45,7 +39,7 @@ const struct candy_t candy =
     {271, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
   },
 
-  /* Signals for linecam 'ccd' */
+  /* Signals for camera 'camera' */
   {&candy.imp.rec_cmd,
    &candy.imp.rec_select,
    &candy.exp.rec_buf,

@@ -19,7 +19,7 @@
         "name": "analog_inputs",
         "pins": [
           {"name": "ambient", "addr": 13, "max": 4095},
-          {"name": "unused", "addr": 14, "max": 4095}
+          {"name": "unused_pin", "addr": 14, "max": 4095}
         ]
       },
       {

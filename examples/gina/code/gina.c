@@ -335,10 +335,7 @@ osalStatus osal_loop(
     os_boolean command;
     static os_boolean prev_command = -1;
 
-    if (i++ == 0) os_get_timer(&ti);
-
     if (os_timer_hit(&sti, &ti, 10))
-    if (os_has_elapsed(&sti, 1))
     {
         os_get_timer(&sti);
 

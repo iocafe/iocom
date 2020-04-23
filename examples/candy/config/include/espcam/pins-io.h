@@ -22,7 +22,7 @@ typedef struct
   {
     PinGroupHdr hdr;
     Pin ambient;
-    Pin unused;
+    Pin unused_pin;
   }
   analog_inputs;
 
@@ -59,7 +59,7 @@ extern const pins_t pins;
 #define PINS_INPUTS_GAZERBEAM "gazerbeam"
 #define PINS_OUTPUTS_LED_BUILTIN "led_builtin"
 #define PINS_ANALOG_INPUTS_AMBIENT "ambient"
-#define PINS_ANALOG_INPUTS_UNUSED "unused"
+#define PINS_ANALOG_INPUTS_UNUSED_PIN "unused_pin"
 #define PINS_PWM_ILLUMINATION "illumination"
 #define PINS_CAMERAS_CAMERA "camera"
 #define PINS_UART_UART2 "uart2"

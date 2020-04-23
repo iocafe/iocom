@@ -18,12 +18,6 @@
 #include "pinsx.h"
 #include "nodeconf.h"
 
-/* Enable wifi configuration using blue tooth (0 or 1) ?.
- */
-#ifndef CANDY_USE_SELECTWIFI
-#define CANDY_USE_SELECTWIFI 0
-#endif
-
 /* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and
    phototransistor connected to microcontroller (0 or 1).
  */
@@ -37,12 +31,10 @@
 #define CANDY_USE_LIGHTHOUSE 1
 #endif
 
-
 #include "pins-io.h"
 #include "signals.h"
 #include "info-mblk.h"
 #include "network-defaults.h"
-
 
 void ioboard_camera_callback(
     struct pinsPhoto *photo,

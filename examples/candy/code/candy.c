@@ -13,11 +13,6 @@
   to hardware/operating system in device specific manner. On Linux port names like
   "ttyS30,baud=115200" or "ttyUSB0" can be also used.
 
-  IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
-
-  Notes:
-  - ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
-
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -34,10 +29,6 @@
  */
 #include "devicedir.h"
 
-#if CANDY_USE_SELECTWIFI
-#include "selectwifi.h"
-#endif
-
 #if CANDY_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
@@ -52,12 +43,6 @@ static LighthouseClient lighthouse;
  */
 iocNodeConf ioapp_device_conf;
 
-/* Use display if we have one.
- */
-#if PINS_DISPLAY
-    static PinsDisplay pins_display;
-#endif
-
 /* Camera state and camera output.
  */
 #if PINS_CAMERA
@@ -65,7 +50,7 @@ iocNodeConf ioapp_device_conf;
     static iocBrickBuffer video_output;
 #endif
 
-/* Either blink LED by morse code to indicate boot error.
+/* Blink LED morse code to indicate boot errors.
  */
 static MorseCode morse;
 
@@ -204,12 +189,6 @@ osalStatus osal_main(
      */
     ioc_init_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
-    /* Enable wifi selection by blue tooth.
-     */
-#if CANDY_USE_SELECTWIFI
-    ioc_initialize_selectwifi(OS_NULL);
-#endif
-
     /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection
        string starts with '[' (indicates IPv6 address).
      */
@@ -223,19 +202,10 @@ osalStatus osal_main(
     initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
-    /* Setup display to indicate boot errors, etc. Handle network state notifications.
-     */
-#if PINS_DISPLAY
-    pinsDisplayParams display_prm;
-    os_memclear(&display_prm, sizeof(display_prm));
-    display_prm.spi_pin = &pins.spi.tft_spi;
-    initialize_display(&pins_display, &display_prm, &ioboard_root);
-#endif
-
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
-    ioc_initialize_brick_buffer(&video_output, &candy.ccd, &ioboard_root, 0, IOC_BRICK_DEVICE);
+    ioc_initialize_brick_buffer(&video_output, &candy.camera, &ioboard_root, 0, IOC_BRICK_DEVICE);
 
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
@@ -281,11 +251,6 @@ osalStatus osal_loop(
     os_timer ti;
     osalStatus s;
 
-    static os_timer sti;
-    static os_float f[5] = {1, 2, 3, 4, 5};
-    static os_int i = 0;
-    static os_char *test_str;
-
     os_get_timer(&ti);
 
     /* Run light house.
@@ -298,12 +263,6 @@ osalStatus osal_loop(
      */
 #if CANDY_USE_GAZERBEAM
     gazerbeam_run_configurator(&gazerbeam, GAZERBEAM_DEFAULT);
-#endif
-
-    /* Keep the display alive. These indicates boot issues, etc, to user.
-     */
-#if PINS_DISPLAY
-    run_display(&pins_display, &ti);
 #endif
 
     /* Keep the morse code LED alive. These indicates boot issues, etc, to user.
@@ -325,31 +284,6 @@ osalStatus osal_loop(
        input states to communication.
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
-
-    /* Run the IO device functionality.
-     */
-    os_boolean command;
-    static os_boolean prev_command = -1;
-
-    if (i++ == 0) os_get_timer(&ti);
-
-    if (os_timer_hit(&sti, &ti, 10))
-    if (os_has_elapsed(&sti, 1))
-    {
-        os_get_timer(&sti);
-
-        f[2] = i++;
-        ioc_sets_array(&candy.exp.testfloat, f, 5);
-    }
-
-    command = ioc_gets0_int(&candy.imp.myoutput);
-    if (command != prev_command)
-    {
-        f[0] = f[0] + 1.0F;
-        test_str = (int)f[0] % 2 ? "dance" : "gabriel";
-        ioc_sets_str(&candy.exp.teststr, test_str);
-        prev_command = command;
-    }
 
     /* The call is here for testing only, take away.
      */

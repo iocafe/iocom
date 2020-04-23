@@ -10,7 +10,7 @@ static os_ushort pins_outputs_led_builtin_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for analog_inputs */
 static os_ushort pins_analog_inputs_ambient_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
-static os_ushort pins_analog_inputs_unused_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
+static os_ushort pins_analog_inputs_unused_pin_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
 
 /* Parameters for pwm */
 static os_ushort pins_pwm_illumination_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_RESOLUTION, 12, PIN_INIT, 0, PIN_MAX, 4095};
@@ -33,12 +33,12 @@ const pins_t pins =
   },
 
   {{2, &pins.analog_inputs.ambient}, /* analog_inputs */
-    {PIN_ANALOG_INPUT, 0, 13, pins_analog_inputs_ambient_prm, sizeof(pins_analog_inputs_ambient_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_NULL}, /* ambient */
-    {PIN_ANALOG_INPUT, 0, 14, pins_analog_inputs_unused_prm, sizeof(pins_analog_inputs_unused_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_NULL} /* unused */
+    {PIN_ANALOG_INPUT, 0, 13, pins_analog_inputs_ambient_prm, sizeof(pins_analog_inputs_ambient_prm)/sizeof(os_ushort), OS_NULL, &candy.exp.ambient PINS_INTCONF_NULL}, /* ambient */
+    {PIN_ANALOG_INPUT, 0, 14, pins_analog_inputs_unused_pin_prm, sizeof(pins_analog_inputs_unused_pin_prm)/sizeof(os_ushort), OS_NULL, &candy.exp.unused_pin PINS_INTCONF_NULL} /* unused_pin */
   },
 
   {{1, &pins.pwm.illumination}, /* pwm */
-    {PIN_PWM, 1, 15, pins_pwm_illumination_prm, sizeof(pins_pwm_illumination_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_NULL} /* illumination */
+    {PIN_PWM, 1, 15, pins_pwm_illumination_prm, sizeof(pins_pwm_illumination_prm)/sizeof(os_ushort), OS_NULL, &candy.imp.illumination PINS_INTCONF_NULL} /* illumination */
   },
 
   {{1, &pins.cameras.camera}, /* cameras */
