@@ -101,6 +101,7 @@ void frank_init_signal_struct(frank_t *s)
   s->conf_imp.frd_tail.flags = OS_INT;
   s->mblk_list[3] = &s->conf_imp.hdr;
 
+
   s->hdr.n_mblk_hdrs = 4;
   s->hdr.mblk_hdr = s->mblk_list;
 }

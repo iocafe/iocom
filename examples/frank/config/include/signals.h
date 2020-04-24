@@ -53,7 +53,26 @@ frank_t;
 #define FRANK_CONF_IMP_MBLK_SZ 276
 
 void frank_init_signal_struct(frank_t *s);
+
+/* Array length defines. */
 #define FRANK_CONF_EXP_FRD_BUF_ARRAY_SZ 257
 #define FRANK_CONF_IMP_TOD_BUF_ARRAY_SZ 257
+
+/* Defines to check in code with #ifdef to know if signal is configured in JSON. */
+#define FRANK_EXP_NRO_DEVICES
+#define FRANK_EXP_TEST
+#define FRANK_IMP_RESTART
+#define FRANK_CONF_EXP_TOD_STATE
+#define FRANK_CONF_EXP_TOD_TAIL
+#define FRANK_CONF_EXP_FRD_STATE
+#define FRANK_CONF_EXP_FRD_BUF
+#define FRANK_CONF_EXP_FRD_HEAD
+#define FRANK_CONF_IMP_TOD_CMD
+#define FRANK_CONF_IMP_TOD_SELECT
+#define FRANK_CONF_IMP_TOD_BUF
+#define FRANK_CONF_IMP_TOD_HEAD
+#define FRANK_CONF_IMP_FRD_CMD
+#define FRANK_CONF_IMP_FRD_SELECT
+#define FRANK_CONF_IMP_FRD_TAIL
 
 OSAL_C_HEADER_ENDS
