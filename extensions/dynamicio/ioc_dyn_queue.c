@@ -7,7 +7,7 @@
   @date    8.1.2020
 
   Queue network and device connect/disconnects and other events for application. Once
-  application calls ioc_initialize_event_queue to start processing queued data, it must 
+  application calls ioc_initialize_event_queue to start processing queued data, it must
   process queued events periodically by calling ioc_get_event()/ioc_pop_event() functions.
 
   Queue + event is used (instead of callbacks) to pass information to calling application
@@ -16,7 +16,7 @@
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -58,7 +58,7 @@ osalStatus ioc_initialize_event_queue(
     ioc_release_event_queue(root);
 
     queue = (iocEventQueue*)os_malloc(sizeof(iocEventQueue), OS_NULL);
-    if (queue == OS_NULL) 
+    if (queue == OS_NULL)
     {
         ioc_unlock(root);
         return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
@@ -96,7 +96,7 @@ void ioc_release_event_queue(
 
     ioc_lock(root);
     queue = root->event_queue;
-    if (queue == OS_NULL) 
+    if (queue == OS_NULL)
     {
         ioc_unlock(root);
         return;
@@ -131,7 +131,7 @@ void ioc_release_event_queue(
   @param   device_nr Device number.
   @param   mblk_name Memory block name.
   @return  OSAL_SUCCESS if successfull. Other values indicate an error (out of memory or
-           queue overflow). 
+           queue overflow).
 
 ****************************************************************************************************
 */
@@ -185,7 +185,7 @@ osalStatus ioc_queue_event(
     /* Allocate new event structure and fill it.
      */
     e = (iocQueuedEvent*)os_malloc(sizeof(iocQueuedEvent), OS_NULL);
-    if (e == OS_NULL) 
+    if (e == OS_NULL)
     {
         ioc_unlock(root);
         return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
@@ -221,7 +221,7 @@ osalStatus ioc_queue_event(
 
   @brief Get oldest communication event in queue.
 
-  The ioc_release_event_queue() function returns pointer to next event to be processed but 
+  The ioc_release_event_queue() function returns pointer to next event to be processed but
   does not remove it from the queue.
 
   @param   root Pointer to IOCOM root object.
@@ -238,7 +238,7 @@ iocQueuedEvent *ioc_get_event(
     ioc_lock(root);
     queue = root->event_queue;
 
-    if (queue == OS_NULL) 
+    if (queue == OS_NULL)
     {
         ioc_unlock(root);
         return OS_NULL;
@@ -265,7 +265,7 @@ iocQueuedEvent *ioc_get_event(
 os_boolean ioc_pop_event(
     iocRoot *root)
 {
-    iocEventQueue *queue;    
+    iocEventQueue *queue;
     iocQueuedEvent *e;
     os_boolean is_empty;
 
@@ -273,7 +273,7 @@ os_boolean ioc_pop_event(
     queue = root->event_queue;
 
     e = queue->first;
-    osal_debug_assert(e);
+    osal_debug_assert(e != OS_NULL);
     queue->first = e->next;
     if (e->next == OS_NULL)
     {
@@ -285,7 +285,7 @@ os_boolean ioc_pop_event(
         is_empty = OS_FALSE;
     }
 
-    os_free(e, sizeof(iocQueuedEvent)); 
+    os_free(e, sizeof(iocQueuedEvent));
     queue->event_count--;
 
     if (queue->event)

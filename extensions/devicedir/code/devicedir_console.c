@@ -83,8 +83,6 @@ osalStatus io_device_console(
         case OSAL_CONSOLE_ESC:
         case 'x':
         case 'X':
-        case 'q':
-        case 'Q':
             osal_global->exit_process = OS_TRUE;
             return OSAL_END_OF_FILE;
 
@@ -92,7 +90,7 @@ osalStatus io_device_console(
         case '?':
         case 'h':
         case 'H':
-            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic\n");
+            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative\n");
             break;
 
         case 'c':
@@ -118,6 +116,14 @@ osalStatus io_device_console(
         case 'i':
         case 'I':
             iocom_state_list(root, 'i');
+            break;
+
+        case 'q': /* Disable debug prints */
+            osal_quiet(OS_TRUE);
+            break;
+
+        case 't': /* Allow debug prints */
+            osal_quiet(OS_FALSE);
             break;
 
         case 'g':
