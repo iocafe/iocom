@@ -48,6 +48,10 @@ static void iocom_state_list(
             devicedir_memory_blocks(root, stream, OS_NULL, IOC_DEVDIR_BUFFERS|IOC_DEVDIR_DATA);
             break;
 
+        case 'i':
+            devicedir_info(root, stream, 0);
+            break;
+
         case 'd':
 #if IOC_DYNAMIC_MBLK_CODE
             osal_console_write("\n*** dynamic signal info ***\n");
@@ -88,7 +92,7 @@ osalStatus io_device_console(
         case '?':
         case 'h':
         case 'H':
-            osal_console_write("\nc=connections, e=end points, m=memory blocks\n");
+            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic\n");
             break;
 
         case 'c':
@@ -109,6 +113,11 @@ osalStatus io_device_console(
         case 'd':
         case 'D':
             iocom_state_list(root, 'd');
+            break;
+
+        case 'i':
+        case 'I':
+            iocom_state_list(root, 'i');
             break;
 
         case 'g':

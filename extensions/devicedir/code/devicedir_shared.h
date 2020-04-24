@@ -68,20 +68,30 @@ void devicedir_append_flag(
     const os_char *flag_name,
     os_boolean *is_first);
 
+#define DEVICEDIR_FIRST 1
+#define DEVICEDIR_CONTINUES 0
+#define DEVICEDIR_NEW_LINE 2
+#define DEVICEDIR_TAB 4
+
 void devicedir_append_str_param(
     osalStream list,
     const os_char *param_name,
     const os_char *str,
-    os_boolean is_first);
+    os_short flags);
 
 void devicedir_append_int_param(
     osalStream list,
     const os_char *param_name,
     os_int x,
-    os_boolean is_first);
+    os_short flags);
 
 void devicedir_dynamic_signals(
     iocRoot *root,
     osalStream list,
     const os_char *iopath,
+    os_short flags);
+
+void devicedir_info(
+    iocRoot *root,
+    osalStream list,
     os_short flags);

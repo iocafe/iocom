@@ -31,13 +31,29 @@ void devicedir_append_flag(
 }
 
 
+static void devicedir_append_organize(
+    osalStream list,
+    os_short flags)
+{
+    if ((flags & DEVICEDIR_FIRST) == 0) {
+        osal_stream_print_str(list, ", ", 0);
+    }
+    if (flags & DEVICEDIR_NEW_LINE)  {
+        osal_stream_print_str(list, "\n", 0);
+    }
+    if (flags & DEVICEDIR_TAB) {
+        osal_stream_print_str(list, "  ", 0);
+    }
+    osal_stream_print_str(list, "\"", 0);
+}
+
 void devicedir_append_str_param(
     osalStream list,
     const os_char *param_name,
     const os_char *str,
-    os_boolean is_first)
+    os_short flags)
 {
-    osal_stream_print_str(list, is_first ? "\"" : ", \"", 0);
+    devicedir_append_organize(list, flags);
     osal_stream_print_str(list, param_name, 0);
     osal_stream_print_str(list, "\":\"", 0);
     osal_stream_print_str(list, str, 0);
@@ -48,12 +64,12 @@ void devicedir_append_int_param(
     osalStream list,
     const os_char *param_name,
     os_int x,
-    os_boolean is_first)
+    os_short flags)
 {
     os_char nbuf[OSAL_NBUF_SZ];
 
-    osal_int_to_str(nbuf, sizeof(nbuf), x);
-    osal_stream_print_str(list, is_first ? "\"" :  ", \"", 0);
+    devicedir_append_organize(list, flags);
+    osal_stream_print_str(list, "\"", 0);
     osal_stream_print_str(list, param_name, 0);
     osal_stream_print_str(list, "\":", 0);
     osal_stream_print_str(list, nbuf, 0);
