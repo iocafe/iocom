@@ -6,9 +6,9 @@
   @version 1.0
   @date    8.1.2020
 
-  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -26,11 +26,14 @@ static AppRoot *app_root_obj;
  */
 static iocNodeConf app_device_conf;
 
+/* IO console state (for development/testing)
+ */
+IO_DEVICE_CONSOLE(ioconsole);
+
 /* Light house state structure. The lighthouse sends periodic UDP broadcards
    to so that this service can be detected in network.
  */
 static LighthouseServer lighthouse;
-
 
 
 /**
@@ -70,6 +73,10 @@ osalStatus osal_main(
     /* Initialize communication root object.
      */
     ioc_initialize_root(&app_iocom_root);
+
+    /* If we are using devicedir for development testing, initialize.
+     */
+    io_initialize_device_console(&ioconsole, &app_iocom_root);
 
     /* Load device/network configuration and device/user account congiguration
        (persistent storage is typically either file system or micro-controller's flash).
@@ -136,9 +143,9 @@ osalStatus osal_loop(
 {
     osalStatus s;
 
-    /* The devicedir call is here for testing only, take away.
+    /* The call is here for development/testing.
      */
-    s = io_device_console(&app_iocom_root);
+    s = io_run_device_console(&ioconsole);
     if (s) return s;
 
     /* Run light house (send periodic UDP broadcasts so that this service can be detected)

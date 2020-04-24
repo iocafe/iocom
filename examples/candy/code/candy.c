@@ -50,6 +50,10 @@ iocNodeConf ioapp_device_conf;
     static iocBrickBuffer video_output;
 #endif
 
+/* IO console state (for development/testing)
+ */
+IO_DEVICE_CONSOLE(ioconsole);
+
 /* Blink LED morse code to indicate boot errors.
  */
 static MorseCode morse;
@@ -110,6 +114,10 @@ osalStatus osal_main(
        set application specific error handler callback by calling osal_set_error_handler().
      */
     osal_initialize_net_state();
+
+    /* If we are using devicedir for development testing, initialize.
+     */
+    io_initialize_device_console(&ioconsole, &ioboard_root);
 
     /* Initialize persistent storage (typically flash is running in micro-controller)
      */
@@ -285,9 +293,9 @@ osalStatus osal_loop(
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
-    /* The call is here for testing only, take away.
+    /* The call is here for development testing.
      */
-    s = io_device_console(&ioboard_root);
+    s = io_run_device_console(&ioconsole);
 
     /* Send changed data synchronously from outgoing memory blocks every 100 ms. If we need
        very low latency IO in local network we can have interval like 1 ms, or just call send

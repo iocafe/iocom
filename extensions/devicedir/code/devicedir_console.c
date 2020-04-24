@@ -17,13 +17,95 @@
 #if OS_CONTROL_CONSOLE_SUPPORT
 
 static void iocom_state_list(
-    iocRoot *root,
+    ioDeviceConsole *console,
+    os_char select);
+
+
+void io_initialize_device_console(
+    ioDeviceConsole *console,
+    iocRoot *root)
+{
+    os_memclear(console, sizeof(ioDeviceConsole));
+    console->root = root;
+}
+
+osalStatus io_run_device_console(
+    ioDeviceConsole *console)
+{
+    os_ulong c;
+
+    c = osal_console_read();
+
+    switch (c)
+    {
+        // case OSAL_CONSOLE_ESC:
+        case 'x':
+        case 'X':
+            osal_global->exit_process = OS_TRUE;
+            return OSAL_END_OF_FILE;
+
+        case OSAL_CONSOLE_ENTER:
+        case '?':
+        case 'h':
+        case 'H':
+            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative, x=exit\n");
+            break;
+
+        case 'c':
+        case 'C':
+            iocom_state_list(console, 'c');
+            break;
+
+        case 'e':
+        case 'E':
+            iocom_state_list(console, 'e');
+            break;
+
+        case 'm':
+        case 'M':
+            iocom_state_list(console, (os_char)c);
+            break;
+
+        case 'd':
+        case 'D':
+            iocom_state_list(console, 'd');
+            break;
+
+        case 'i':
+        case 'I':
+            iocom_state_list(console, 'i');
+            break;
+
+        case 'q': /* Disable debug prints */
+            osal_quiet(OS_TRUE);
+            break;
+
+        case 't': /* Allow debug prints */
+            osal_quiet(OS_FALSE);
+            break;
+
+        case 'g':
+        case 'G':
+            return OSAL_COMPLETED;
+            break;
+
+        default:
+            break;
+    }
+
+    return OSAL_SUCCESS;
+}
+
+static void iocom_state_list(
+    ioDeviceConsole *console,
     os_char select)
 {
+    iocRoot *root;
     osalStream stream;
     os_char *p;
     os_memsz n;
 
+    root = console->root;
     stream = osal_stream_buffer_open(OS_NULL, 0, OS_NULL, 0);
 
     switch (select)
@@ -70,72 +152,5 @@ static void iocom_state_list(
     osal_stream_close(stream, OSAL_STREAM_DEFAULT);
 }
 
-
-osalStatus io_device_console(
-    iocRoot *root)
-{
-    os_ulong c;
-
-    c = osal_console_read();
-
-    switch (c)
-    {
-        case OSAL_CONSOLE_ESC:
-        case 'x':
-        case 'X':
-            osal_global->exit_process = OS_TRUE;
-            return OSAL_END_OF_FILE;
-
-        case OSAL_CONSOLE_ENTER:
-        case '?':
-        case 'h':
-        case 'H':
-            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative\n");
-            break;
-
-        case 'c':
-        case 'C':
-            iocom_state_list(root, 'c');
-            break;
-
-        case 'e':
-        case 'E':
-            iocom_state_list(root, 'e');
-            break;
-
-        case 'm':
-        case 'M':
-            iocom_state_list(root, (os_char)c);
-            break;
-
-        case 'd':
-        case 'D':
-            iocom_state_list(root, 'd');
-            break;
-
-        case 'i':
-        case 'I':
-            iocom_state_list(root, 'i');
-            break;
-
-        case 'q': /* Disable debug prints */
-            osal_quiet(OS_TRUE);
-            break;
-
-        case 't': /* Allow debug prints */
-            osal_quiet(OS_FALSE);
-            break;
-
-        case 'g':
-        case 'G':
-            return OSAL_COMPLETED;
-            break;
-
-        default:
-            break;
-    }
-
-    return OSAL_SUCCESS;
-}
-
 #endif
+

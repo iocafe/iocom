@@ -11,9 +11,9 @@
   entry point osal_main(). If you use iocom library from an existing program, just call library
   iocom functions from C or C++ code and ignore "framework style" code here.
 
-  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -36,6 +36,9 @@ static AppRoot *app_root_obj;
  */
 static iocNodeConf app_device_conf;
 
+/* IO console state (for development/testing)
+ */
+IO_DEVICE_CONSOLE(ioconsole);
 
 /* We may enter idle mode when nothing to do.
  */
@@ -94,6 +97,10 @@ osalStatus osal_main(
      * This demo uses dynamic signal configuration.
      */
     ioc_initialize_root(&app_iocom_root);
+
+    /* If we are using devicedir for development testing, initialize.
+     */
+    io_initialize_device_console(&ioconsole, &app_iocom_root);
 
     /* Load device/network configuration and device/user account congiguration (persistent
        storage is typically either file system or micro-controller's flash). Defaults are
@@ -177,7 +184,9 @@ osalStatus osal_loop(
     }
 #endif
 
-    s = io_device_console(&app_iocom_root);
+    /* The call is here for development/testing.
+     */
+    s = io_run_device_console(&ioconsole);
     return s;
 }
 
