@@ -16,10 +16,17 @@
 
 #if OS_CONTROL_CONSOLE_SUPPORT
 
+#define OS_CONSOLE_LINE_BUF_SZ 256
+
 typedef struct ioDeviceConsole
 {
     iocRoot *root;
 
+    os_char line_buf[OS_CONSOLE_LINE_BUF_SZ];
+    os_int pos;
+
+    os_boolean line_edit;
+    os_boolean saved_quied;
 }
 ioDeviceConsole;
 

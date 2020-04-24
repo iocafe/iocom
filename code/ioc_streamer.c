@@ -1478,8 +1478,8 @@ osalStatus ioc_run_control_stream(
                     {
                         osal_debug_error_int("Reading persistent block failed", select);
                     }
-                }
 #endif
+                }
 
                 /* If we are getting certificate chain, mark that we have it.
                  */

@@ -16,6 +16,10 @@
 #include "devicedir.h"
 #if OS_CONTROL_CONSOLE_SUPPORT
 
+static osalStatus io_console_line_edit(
+    ioDeviceConsole *console,
+    os_uint c);
+
 static void iocom_state_list(
     ioDeviceConsole *console,
     os_char select);
@@ -29,16 +33,27 @@ void io_initialize_device_console(
     console->root = root;
 }
 
+// @return OSAL_NOTHING_TO_DO if nothing was done OSAL_SUCCESS if keypress was processed.
 osalStatus io_run_device_console(
     ioDeviceConsole *console)
 {
-    os_ulong c;
+    os_uint c;
+    osalStatus s;
 
     c = osal_console_read();
+    if (c == 0) return OSAL_SUCCESS; // OSAL_NOTHING_TO_DO;
 
-    switch (c)
+    if (console->line_edit)
     {
-        // case OSAL_CONSOLE_ESC:
+        s = io_console_line_edit(console, c);
+        if (s) {
+            console->line_edit = OS_FALSE;
+            osal_quiet(console->saved_quied);
+            osal_console_write("\n");
+        }
+    }
+    else switch (c)
+    {
         case 'x':
         case 'X':
             osal_global->exit_process = OS_TRUE;
@@ -48,7 +63,7 @@ osalStatus io_run_device_console(
         case '?':
         case 'h':
         case 'H':
-            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative, x=exit\n");
+            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative, s=set, x=exit\n");
             break;
 
         case 'c':
@@ -78,10 +93,20 @@ osalStatus io_run_device_console(
 
         case 'q': /* Disable debug prints */
             osal_quiet(OS_TRUE);
+            osal_console_write("\nquiet mode...\n");
             break;
 
         case 't': /* Allow debug prints */
+            osal_console_write("\ntalkative...\n");
             osal_quiet(OS_FALSE);
+            break;
+
+        case 's': /* Start line edit (settings) */
+            console->line_edit = OS_TRUE;
+            os_memclear(console->line_buf, OS_CONSOLE_LINE_BUF_SZ);
+            console->pos = 0;
+            console->saved_quied = osal_quiet(OS_TRUE);
+            osal_console_write("\n>");
             break;
 
         case 'g':
@@ -95,6 +120,62 @@ osalStatus io_run_device_console(
 
     return OSAL_SUCCESS;
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief User input line editor.
+  @anchor io_console_line_edit
+
+  The io_console_line_edit function processess user key presses when console is in line edit mode.
+
+  @param   console Pointer to console structure.
+  @param   ch Character forresponding to key press.
+  @return  OSAL_SUCCESS to continue editing or OSAL_COMPLETED to dinish with line editing.
+
+****************************************************************************************************
+*/
+static osalStatus io_console_line_edit(
+    ioDeviceConsole *console,
+    os_uint c)
+{
+    os_char echobuf[2];
+
+    switch (c)
+    {
+        case OSAL_CONSOLE_ESC:
+            return OSAL_COMPLETED;
+
+        case OSAL_CONSOLE_ENTER:
+            osal_console_write("\n*** ");
+            osal_console_write(console->line_buf);
+            osal_console_write(" ***\n");
+
+            return OSAL_COMPLETED;
+
+        case OSAL_CONSOLE_BACKSPACE:
+            if (console->pos > 0)
+            {
+                console->line_buf[--(console->pos)] = '\0';
+                osal_console_write("\b");
+            }
+            break;
+
+        default:
+            if (console->pos < OS_CONSOLE_LINE_BUF_SZ-1)
+            {
+                console->line_buf[console->pos++] = (os_char)c;
+                echobuf[0] = (os_char)c;
+                echobuf[1] = '\0';
+                osal_console_write(echobuf);
+            }
+            break;
+    }
+
+    return OSAL_SUCCESS;
+}
+
 
 static void iocom_state_list(
     ioDeviceConsole *console,
