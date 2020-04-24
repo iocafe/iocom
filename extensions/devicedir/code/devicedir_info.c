@@ -15,10 +15,16 @@
 */
 #include "devicedir.h"
 
+/* Forward referred static functions.
+ */
+static const os_char *os_devicedir_get_network_state_string(
+    void);
+
+
 /**
 ****************************************************************************************************
 
-  @brief Shor define and network information.
+  @brief Show define and network information.
 
   The devicedir_info() function..
 
@@ -74,9 +80,84 @@ void devicedir_info(
         devicedir_append_str_param(list, "wifi", buf, DEVICEDIR_NEW_LINE|DEVICEDIR_TAB);
     }
 
+    devicedir_append_str_param(list, "state", os_devicedir_get_network_state_string(),
+        DEVICEDIR_NEW_LINE|DEVICEDIR_TAB);
+
     /* End synchronization.
      */
     ioc_unlock(root);
     osal_stream_print_str(list, "\n}\n", 0);
 }
 
+/**
+****************************************************************************************************
+
+  @brief Get string description of network state.
+  @anchor devicedir_get_network_state_string
+
+  The devicedir_get_network_state_string() function examines network state structure and and
+  returns string which best describes it.
+
+  @return  String describing network state.
+
+****************************************************************************************************
+*/
+static const os_char *os_devicedir_get_network_state_string(
+    void)
+{
+    const os_char *state_str = "network ok";
+    osaLightHouseClientState lighthouse_state;
+    osalGazerbeamConnectionState gbs;
+
+    /* If Gazerbeam configuration (WiFi with Android phone) is on?
+     */
+    gbs = osal_get_network_state_int(OSAL_NS_GAZERBEAM_CONNECTED, 0);
+    if (gbs)
+    {
+        state_str = (gbs == OSAL_NS_GAZERBEAM_CONFIGURATION_MATCH)
+                   ? "configuration matches" : "configuring";
+        goto setit;
+    }
+
+    /* If WiFi is not connected?
+     */
+    if (osal_get_network_state_int(OSAL_NS_NETWORK_USED, 0) &&
+        !osal_get_network_state_int(OSAL_NS_NETWORK_CONNECTED, 0))
+    {
+        state_str = "network not connected";
+        goto setit;
+    }
+
+    /* Check for light house.
+     */
+    lighthouse_state
+        = (osaLightHouseClientState)osal_get_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0);
+    if (lighthouse_state != OSAL_LIGHTHOUSE_NOT_USED &&
+        lighthouse_state != OSAL_LIGHTHOUSE_OK)
+    {
+        state_str = (lighthouse_state == OSAL_LIGHTHOUSE_NOT_VISIBLE)
+            ? "server multicast not received"
+            : "no server multicast for requested network";
+        goto setit;
+    }
+
+    /* Certificates/keys not loaded.
+     */
+    if (/* osal_get_network_state_int(OSAL_NS_SECURITY_CONF_ERROR, 0) || */
+        osal_get_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0))
+    {
+        state_str = "security configuration error";
+        goto setit;
+    }
+
+    /* If no connected sockets?
+     */
+    if (osal_get_network_state_int(OSAL_NRO_CONNECTED_SOCKETS, 0) == 0)
+    {
+        state_str =  "no connection to server";
+        goto setit;
+    }
+
+setit:
+    return state_str;
+}

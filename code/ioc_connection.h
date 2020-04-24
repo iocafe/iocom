@@ -32,7 +32,7 @@
 #define IOC_ACK_SIZE 3
 
 /** Maximum number of bytes in transit. Serial receive buffer must be at least 256 bytes
-    (holds 255 bytes of data). 
+    (holds 255 bytes of data).
  */
 /*@{*/
 
@@ -53,11 +53,11 @@
 #define IOC_SERIAL_RX_BUF_MIN_SZ 256
 
 /* Maximum data frame bytes that can be written.
- */ 
+ */
 #define IOC_SERIAL_MAX_IN_AIR (IOC_SERIAL_RX_BUF_MIN_SZ - 1 - IOC_SERIAL_UNACKNOGLEDGED_LIMIT - IOC_SERIAL_NRO_ACKS_TO_RESEVE * IOC_ACK_SIZE)
 
 /* Maximum acknowledge bytes that can be written.
- */ 
+ */
 #define IOC_SERIAL_MAX_ACK_IN_AIR (IOC_SERIAL_RX_BUF_MIN_SZ - 1)
 /*@}*/
 
@@ -66,7 +66,7 @@
  */
 /*@{*/
 
-/* We can receive this many bytes from socket without sending acknowledgement. 
+/* We can receive this many bytes from socket without sending acknowledgement.
  */
 #define IOC_SOCKET_UNACKNOGLEDGED_LIMIT 500
 
@@ -75,11 +75,11 @@
 #define IOC_SOCKET_NRO_ACKS_TO_RESEVE 5
 
 /* Maximum data frame bytes that can be written.
- */ 
+ */
 #define IOC_SOCKET_MAX_IN_AIR (3 * IOC_SOCKET_FRAME_SZ)
 
 /* Maximum acknowledge bytes that can be written.
- */ 
+ */
 #define IOC_SOCKET_MAX_ACK_IN_AIR (IOC_SOCKET_MAX_IN_AIR + IOC_SOCKET_UNACKNOGLEDGED_LIMIT + IOC_SOCKET_NRO_ACKS_TO_RESEVE * IOC_ACK_SIZE)
 /*@}*/
 
@@ -242,7 +242,7 @@ typedef struct iocConnectionParams
     /** Password to overide device default password. Leave to OS_NULL for normal IO devices.
      */
     const os_char *password_override;
-  
+
     /** If socket connection is accepted by listening end point, this is
         the socket handle. Otherwise this argument needs to be OS_NULL.
      */
@@ -251,7 +251,7 @@ typedef struct iocConnectionParams
     /** Pointer to static frame buffer. OS_NULL to allocate the frame buffer.
      */
     os_char *frame_out_buf;
-    
+
     /** Size of static frame buffer, either IOC_SOCKET_FRAME_SZ or IOC_SERIAL_FRAME_SZ.
         Zero for dynamically or pool allocated buffer.
      */
@@ -265,7 +265,7 @@ typedef struct iocConnectionParams
         Zero for dynamically or pool allocated buffer.
      */
     os_int frame_in_buf_sz;
-    
+
     /** Flags Bit fields:
         - IOC_SOCKET Connect with TCP socket.
         - IOC_CREATE_THREAD Create thread to run connection (multithread support needed).
@@ -509,7 +509,7 @@ typedef struct iocConnection
      */
     os_int max_in_air;
 
-    /** Flow control: Maximum number of bytes in transit without being 
+    /** Flow control: Maximum number of bytes in transit without being
         acknowledged (for ack messages).
      */
     os_ushort max_ack_in_air;
@@ -625,6 +625,8 @@ typedef struct iocConnection
      */
     os_boolean allocated;
 
+#if OSAL_SOCKET_SUPPORT
+
     /** Light house "run" function, used to get IP address to connect to by UDP multicast.
      */
     ioc_lighthouse_func *lighthouse_func;
@@ -632,6 +634,12 @@ typedef struct iocConnection
     /** Pointer to initialized light house state structure for the light house function.
      */
     struct LighthouseClient *lighthouse;
+
+    /** IP address and port resolved by lighthouse.
+     */
+    os_char ip_from_lighthouse[OSAL_IPADDR_AND_PORT_SZ];
+
+#endif
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     /** The allowed_networks is structure set up by user authentication to hold list of networks

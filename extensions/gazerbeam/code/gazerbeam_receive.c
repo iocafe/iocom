@@ -88,6 +88,11 @@ void initialize_gazerbeam_receiver(
 
     gb->receive_pos = -1;
 
+    /* We normally do not want interrupts when running as simulation, this gives
+       "configuring" to network state. Comment "#if PINS_SIMULATION == 0" to test
+       gazerbeam as simulation.
+     */
+#if PINS_SIMULATION == 0
 #if GAZERBEAM_PINS_SUPPORT
     /* If we have pin, attach interrupt handler.
      */
@@ -96,12 +101,12 @@ void initialize_gazerbeam_receiver(
         global_gazerbeam = gb;
         pinInterruptParams prm;
         gb->pin = pin;
-        // gb->int_handler_func = gazerbeam_led_int_handler;
         os_memclear(&prm, sizeof(prm));
         prm.int_handler_func = gazerbeam_led_int_handler;
         prm.flags = PINS_INT_CHANGE;
         pin_gpio_attach_interrupt(pin, &prm);
     }
+#endif
 #endif
 }
 

@@ -479,8 +479,11 @@ osalStatus ioc_connect(
     os_strncpy(con->user_override, prm->user_override, IOC_NAME_SZ);
     os_strncpy(con->password_override, prm->password_override, IOC_PASSWORD_SZ);
 #endif
+
+#if OSAL_SOCKET_SUPPORT
     con->lighthouse_func = prm->lighthouse_func;
     con->lighthouse = prm->lighthouse;
+#endif
 
     /* Release any previously allocated buffers.
      */
@@ -597,6 +600,7 @@ osalStatus ioc_run_connection(
             return OSAL_SUCCESS;
         }
 
+#if OSAL_SOCKET_SUPPORT
         /* If we have no connect to address or it is "*": If we have the lighthouse
            functionality check if we have received the information by UDP broadcast.
            If we got it, try it. Otherwise we can do nothing.
@@ -607,14 +611,11 @@ osalStatus ioc_run_connection(
             status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
                 con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
                 connectstr, sizeof(connectstr));
+            os_strncpy(con->ip_from_lighthouse, connectstr, OSAL_IPADDR_AND_PORT_SZ);
             if (OSAL_IS_ERROR(status)) return OSAL_SUCCESS;
-    /* THIS SHOULD NO LONGER BE NEEDED, MOVED TO IOC_AUTHENTICATION
-            if (status == OSAL_IO_NETWORK_NAME_SET)
-            {
-                ioc_set_network_name(con->link.root);
-            } */
             parameters = connectstr;
         }
+#endif
 
         /* Try connecting the transport.
          */
@@ -954,7 +955,7 @@ static void ioc_connection_thread(
     iocRoot *root;
     iocConnection *con;
     const os_char *parameters;
-    os_char connectstr[OSAL_HOST_BUF_SZ];
+    os_char connectstr[OSAL_IPADDR_AND_PORT_SZ];
     osalStatus status;
     osalSelectData selectdata;
     os_timer tnow;
@@ -1000,6 +1001,7 @@ static void ioc_connection_thread(
         {
             parameters = con->parameters;
 
+#if OSAL_SOCKET_SUPPORT
             /* If we have no connect to address or it is "*": If we have the lighthouse
                functionality check if we have received the information by UDP broadcast.
                If we got it, try it. Otherwise we can do nothing.
@@ -1010,15 +1012,12 @@ static void ioc_connection_thread(
                 status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
                     con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
                     connectstr, sizeof(connectstr));
-                if (OSAL_IS_ERROR(status)) goto failed;
-    /* THIS SHOULD NO LONGER BE NEEDED, MOVED TO IOC_AUTHENTICATION
-                if (status == OSAL_IO_NETWORK_NAME_SET)
-                {
-                    ioc_set_network_name(con->link.root);
-                } */
 
+                os_strncpy(con->ip_from_lighthouse, connectstr, OSAL_IPADDR_AND_PORT_SZ);
+                if (OSAL_IS_ERROR(status)) goto failed;
                 parameters = connectstr;
             }
+#endif
 
             /* Try connecting the transport.
              */

@@ -88,6 +88,12 @@ void devicedir_connections(
         devicedir_append_str_param(list, "iface", iface_name, OS_FALSE);
         devicedir_append_str_param(list, "param", con->parameters, OS_FALSE);
 
+#if OSAL_SOCKET_SUPPORT
+        if (con->ip_from_lighthouse[0] != '\0') {
+            devicedir_append_str_param(list, "lighthouse", con->ip_from_lighthouse, OS_FALSE);
+        }
+#endif
+
         osal_stream_print_str(list, ", \"flags\":\"", 0);
         isfirst = OS_TRUE;
         devicedir_append_flag(list, (cflags & IOC_CONNECT_UP) ? "up" : "down", &isfirst);
