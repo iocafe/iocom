@@ -93,12 +93,27 @@ osalStatus gazerbeam_save_config(
     s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_NETWORK,
         block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ,
         message, message_sz, GAZERBEAM_DEFAULT);
-    if (s != OSAL_NOTHING_TO_DO) rval = s;
+    if (s == OSAL_SUCCESS) rval = s;
 
     s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_PASSWORD,
         block.wifi[0].wifi_net_password, OSAL_WIFI_PRM_SZ,
         message, message_sz, GAZERBEAM_DEFAULT);
-    if (s != OSAL_NOTHING_TO_DO) rval = s;
+    if (s == OSAL_SUCCESS) rval = s;
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_NETWORK_NAME_OVERRIDE,
+        block.network_name_overdrive, OSAL_NETWORK_NAME_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_DEVICE_NR_OVERRIDE,
+        block.device_nr_overdrive, OSAL_DEVICE_NR_STR_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_CONNECT_IP_OVERRIDE,
+        block.connect_to_overdrive, OSAL_HOST_BUF_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
 
     if (rval == OSAL_SUCCESS) {
         os_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
@@ -146,17 +161,24 @@ osalStatus gazerbeam_get_config_item(
     while (p + 2 < e)
     {
         sz = p[1];
-        if (p[0] == id && sz)
+        if (p[0] == id)
         {
             if (sz >= field_sz) sz = (os_uint)field_sz - 1;
 
             /* If unchanged?
              */
-            if (!os_memcmp(field, p + 2, sz) && field[sz] == '\0') {
+            if (sz)
+            {
+                if (!os_memcmp(field, p + 2, sz) && field[sz] == '\0') {
+                    return OSAL_NOTHING_TO_DO;
+                }
+
+                os_memcpy(field, p + 2, sz);
+            }
+            else if (field[sz] == '\0') {
                 return OSAL_NOTHING_TO_DO;
             }
 
-            os_memcpy(field, p + 2, sz);
             field[sz] = '\0';
             return OSAL_SUCCESS;
         }

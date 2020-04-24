@@ -27,9 +27,9 @@
     define. Set connection parameters according to used environment in prm.socket_con_str or
     in prm.serial_con_str. See code below.
 
-  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -105,9 +105,9 @@ osalStatus osal_main(
      */
     os_memclear(&nic, sizeof(osalNetworkInterface));
     os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_1, "mysecret", OSAL_WIFI_PRM_SZ);
     os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_2 ,"mysecret", OSAL_WIFI_PRM_SZ);
 
     /* Initialize the socket library.
      */
@@ -125,7 +125,7 @@ osalStatus osal_main(
     //prm.device_name = "MYDEV";
     //prm.device_nr = 1;
     //prm.network_name = "iocafenet";
-	prm.ctrl_type = IOBOARD_CTRL_CON;
+    prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = "127.0.0.1";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = IOBOARD_EXPORT_MBLK_SZ;

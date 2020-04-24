@@ -22,9 +22,9 @@
     define. Set connection parameters according to used environment in prm.socket_con_str or
     in prm.serial_con_str. See code below.
 
-  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -74,8 +74,8 @@
    software in PC computer.
  */
 static os_char
-    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
-		IOBOARD_EXPORT_MBLK_SZ, IOBOARD_IMPORT_MBLK_SZ)];
+    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
+        IOBOARD_EXPORT_MBLK_SZ, IOBOARD_IMPORT_MBLK_SZ)];
 
 typedef struct
 {
@@ -140,9 +140,9 @@ osalStatus osal_main(
      */
     os_memclear(&wifi, sizeof(osalWifiNetwork));
     wifi[0].wifi_net_name = "julian";
-    wifi[0].wifi_net_password = "talvi333";
+    wifi[0].wifi_net_password = "mysecret";
     wifi[1].wifi_net_name = "bean24";
-    wifi[1].wifi_net_password = "talvi333";
+    wifi[1].wifi_net_password = "mysecret";
 
     /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
        and osal_tls_initialize(). These use the same underlying library.

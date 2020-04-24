@@ -63,7 +63,8 @@ osalStatus io_run_device_console(
         case '?':
         case 'h':
         case 'H':
-            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative, s=set, x=exit\n");
+            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative, s=set, o=show overdrives, x=exit/reboot\n");
+            osal_console_write("set: wifi=bean24,pass=mysecret,net=iocafenet,connect=192.1681.227,nr=4\n");
             break;
 
         case 'c':
@@ -152,6 +153,7 @@ static osalStatus io_console_line_edit(
             osal_console_write(console->line_buf);
             osal_console_write(" ***\n");
 
+            devicedir_save_config(console->line_buf);
             return OSAL_COMPLETED;
 
         case OSAL_CONSOLE_BACKSPACE:

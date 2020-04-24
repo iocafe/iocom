@@ -177,9 +177,9 @@ osalStatus osal_main(
      */
     os_memclear(&nic, sizeof(osalNetworkInterface));
     os_strncpy(nic.wifi_net_name_1, "julian", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_1, "talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_1, "mysecret", OSAL_WIFI_PRM_SZ);
     os_strncpy(nic.wifi_net_name_2, "bean24", OSAL_WIFI_PRM_SZ);
-    os_strncpy(nic.wifi_net_password_2 ,"talvi333", OSAL_WIFI_PRM_SZ);
+    os_strncpy(nic.wifi_net_password_2 ,"mysecret", OSAL_WIFI_PRM_SZ);
 
     /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
        and osal_tls_initialize(). These use the same underlying library.

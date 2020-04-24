@@ -19,9 +19,13 @@
 typedef enum gazerbeamFieldId
 {
     GAZERBEAM_ID_WIFI_NETWORK = 1,
-    GAZERBEAM_ID_WIFI_PASSWORD = 2
+    GAZERBEAM_ID_WIFI_PASSWORD = 2,
+    GAZERBEAM_ID_NETWORK_NAME_OVERRIDE = 3,
+    GAZERBEAM_ID_DEVICE_NR_OVERRIDE = 4,
+    GAZERBEAM_ID_CONNECT_IP_OVERRIDE = 5
 }
 gazerbeamFieldId;
+
 
 /* Receive and process gazerbeam WiFi configuration.
  */

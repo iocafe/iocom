@@ -18,6 +18,8 @@
 
 #define OS_CONSOLE_LINE_BUF_SZ 256
 
+/* Flat device console state structure.
+ */
 typedef struct ioDeviceConsole
 {
     iocRoot *root;
@@ -30,15 +32,25 @@ typedef struct ioDeviceConsole
 }
 ioDeviceConsole;
 
-
+/* Initialize device console.
+ */
 void io_initialize_device_console(
     ioDeviceConsole *console,
     iocRoot *root);
 
+/* Keep the device console alive, call from loop repeatedly.
+ */
 osalStatus io_run_device_console(
     ioDeviceConsole *console);
 
+/* Macro to declare static ioDevice console structure.
+ */
 #define IO_DEVICE_CONSOLE(name) ioDeviceConsole name
+
+/* Save wifi configuration from console to persistent storage.
+ */
+osalStatus devicedir_save_config(
+  os_char *line_buf);
 
 #else
 
