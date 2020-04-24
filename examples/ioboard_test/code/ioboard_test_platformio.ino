@@ -5,19 +5,13 @@
 
 /*
   4_ioboard_test.ino
-  Include a IO board test app to build it within Arduino IDE. 
+  Include a IO board test app to build it within Arduino IDE.
  */
- 
+
 /* The setup routine runs once when you press reset.
  */
-void setup() 
+void setup()
 {
-    /* Set up serial port for trace output.
-     */
-    Serial.begin(115200);
-    while (!Serial) {}
-    Serial.println("Arduino/PlatformIO board starting...");
-
    /* Initialize the eosal library.
     */
     osal_initialize(OSAL_INIT_DEFAULT);
@@ -26,7 +20,7 @@ void setup()
 
 /* The loop routine runs over and over again forever.
  */
-void loop() 
+void loop()
 {
     /* Forward loop call to osal_loop(). Reboot if osal_loop returns "no success".
      */

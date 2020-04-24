@@ -49,8 +49,13 @@ static void iocom_state_list(
             break;
 
         case 'd':
+#if IOC_DYNAMIC_MBLK_CODE
             osal_console_write("\n*** dynamic signal info ***\n");
             devicedir_dynamic_signals(root, stream, OS_NULL, 0);
+#else
+            osal_console_write("\nDynamic signal support not included in build\n");
+#endif
+            break;
     }
 
     osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);

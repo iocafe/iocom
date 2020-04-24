@@ -14,6 +14,11 @@ Testing without gazerbeam
 - This needs to be converted to C code by script iocom/examples/candy/scripts/config-to-c-code.py.
 - The "factory reset" must be done by erasing the flash with development tool (Platform IO).
 
+Loading program to flash
+- Use USB to TTL 3.3V converter (google "ESP32-cam pins", TX, RX, GND (and optionally 3.3V, if ESP32 is not powered from elsewhere))
+- Before loading software connect GPIO pin 0 to GND
+- Press reset button. Now board should be ready to receive program. After loading you need to disconnect GPIO 0 from ground and press reboot.
+
 Files and folders
 - build_opt.h - Extra defines for Arduino IDE. Needed to set serial port Rx and Tx buffer sizes to 256.
 - platformio.ini - Settings for Visual Studio Code + Platform IO.
