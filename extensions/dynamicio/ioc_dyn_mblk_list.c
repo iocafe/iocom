@@ -13,7 +13,7 @@
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -209,7 +209,7 @@ osalStatus ioc_find_mblk(
     dnetwork = ioc_find_dynamic_network(droot, network_name);
     if (dnetwork == OS_NULL) goto failed;
     dhandle = ioc_find_mblk_shortcut(dnetwork, mblk_name, device_name, device_nr);
-    if (dnetwork == OS_NULL) goto failed;
+    if (dhandle == OS_NULL) goto failed;
     ioc_setup_handle(handle, root, dhandle->mblk);
     ioc_unlock(root);
     return OSAL_SUCCESS;
