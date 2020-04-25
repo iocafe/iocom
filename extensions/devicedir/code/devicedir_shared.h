@@ -26,12 +26,21 @@
 #define IOC_DEVDIR_DATA 1
 #define IOC_DEVDIR_BUFFERS 2
 
+/* Flags for devicedir_overdrives
+*/
+#define IOC_HELP_MODE 4
+
 void devicedir_connections(
     iocRoot *root,
     osalStream list,
     os_short flags);
 
 void devicedir_end_points(
+    iocRoot *root,
+    osalStream list,
+    os_short flags);
+
+osalStatus devicedir_overdrives(
     iocRoot *root,
     osalStream list,
     os_short flags);

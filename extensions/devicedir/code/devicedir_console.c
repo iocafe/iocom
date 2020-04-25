@@ -64,7 +64,10 @@ osalStatus io_run_device_console(
         case 'h':
         case 'H':
             osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative, s=set, o=show overdrives, x=exit/reboot\n");
-            osal_console_write("set: wifi=bean24,pass=mysecret,net=iocafenet,connect=192.1681.227,nr=4\n");
+            // osal_console_write("set: wifi=bean24,pass=mysecret,net=iocafenet,connect=192.1681.227,nr=4\n");
+            osal_console_write("set: ");
+            iocom_state_list(console, '?');
+            osal_console_write("\n");
             break;
 
         case 'c':
@@ -90,6 +93,10 @@ osalStatus io_run_device_console(
         case 'i':
         case 'I':
             iocom_state_list(console, 'i');
+            break;
+
+        case 'o':
+            iocom_state_list(console, 'o');
             break;
 
         case 'q': /* Disable debug prints */
@@ -211,6 +218,15 @@ static void iocom_state_list(
         case 'M':
             osal_console_write("\n*** memory blocks ***\n");
             devicedir_memory_blocks(root, stream, OS_NULL, IOC_DEVDIR_BUFFERS|IOC_DEVDIR_DATA);
+            break;
+
+        case 'o':
+            osal_console_write("\n*** overrides ***\n");
+            devicedir_overdrives(root, stream, 0);
+            break;
+
+        case '?':
+            devicedir_overdrives(root, stream, IOC_HELP_MODE);
             break;
 
         case 'i':
