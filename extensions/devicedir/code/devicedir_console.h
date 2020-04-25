@@ -54,7 +54,7 @@ osalStatus devicedir_save_config(
 
 #else
 
-#define IO_DEVICE_CONSOLE(name) ioDeviceConsole name
+#define IO_DEVICE_CONSOLE(name)
 #define io_initialize_device_console(c, r)
 #define io_run_device_console(r) (OSAL_SUCCESS)
 
