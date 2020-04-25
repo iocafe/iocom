@@ -160,7 +160,7 @@ static osalStatus io_console_line_edit(
             if (console->pos > 0)
             {
                 console->line_buf[--(console->pos)] = '\0';
-                osal_console_write("\b");
+                osal_console_write("\b \b");
             }
             break;
 
