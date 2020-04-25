@@ -185,7 +185,7 @@ gotit:
         if (node->wifi_pbnr_wifi.device_nr_overdrive[0])
         {
             i = osal_str_to_int(node->wifi_pbnr_wifi.device_nr_overdrive, OS_NULL);
-            if (i > 0) node->device_id.device_nr = 0;
+            if (i > 0) node->device_id.device_nr = i;
         }
 
         /* Connect to IP address, etc.
@@ -383,7 +383,7 @@ static osalStatus ioc_nconf_process_block(
                     }
                     else if (!os_strcmp(state->tag, "device_nr"))
                     {
-                        if (!os_strcmp(item.value.s, "*") || !os_strcmp(item.value.s, ""))
+                        if (!os_strcmp(item.value.s, "*") || !os_strcmp(item.value.s, "auto")) // AUTO CAN BE REMOVED LATER, IT IS HERE NOW BECAUSE I STILL GOT OLD CONF FILES AROUND
                         {
                             node->device_id.device_nr = IOC_AUTO_DEVICE_NR;
                         }

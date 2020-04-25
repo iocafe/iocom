@@ -97,7 +97,6 @@ void ioc_make_authentication_frame(
     ioc_msg_set_uint(device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0,
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
     ioc_msg_setstr(network_name, &p);
-//osal_debug_error_str("HERE NET NAME SENT ", network_name);
 
     password = "";
     if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION)) == IOC_SECURE_CONNECTION)
@@ -148,7 +147,6 @@ void ioc_make_authentication_frame(
         return;
 
     con->authentication_sent = OS_TRUE;
-//osal_debug_error("HERE AUTH SENT");
 }
 
 
@@ -294,15 +292,12 @@ osalStatus ioc_process_received_authentication_frame(
 
     /** If we are automatically setting for a device (root network name is "*" or ""
      */
-//osal_debug_error_str("OLD NET NAME  ", root->network_name);
     if (!os_strcmp(root->network_name, "*") || root->network_name[0] == '\0')
     {
         os_strncpy(root->network_name, user.network_name, IOC_NETWORK_NAME_SZ);
         ioc_set_network_name(root);
-//osal_debug_error_str("HERE NET NAME RECEIVED ", user.network_name);
     }
 
-//    osal_debug_error("HERE AUTH RECEIVED");
     con->authentication_received = OS_TRUE;
     return OSAL_SUCCESS;
 }
