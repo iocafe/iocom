@@ -17,27 +17,27 @@
 
 
 static void devicedir_overdrive_prm(
-    os_char *param_name,
-    os_char *overdrive_value,
+    const os_char *param_name,
+    const os_char *overdrive_value,
     osalStream list,
     os_short flags,
     os_boolean is_first)
 {
-    os_char *v;
 
-    v = overdrive_value;
-    if (v[0] == '\0') v = "*";
+    if (overdrive_value[0] == '\0') {
+        overdrive_value = "*";
+    }
 
     if (flags & IOC_HELP_MODE)
     {
         if (!is_first) osal_stream_print_str(list, ",", 0);
         osal_stream_print_str(list, param_name, 0);
         osal_stream_print_str(list, "=", 0);
-        osal_stream_print_str(list, v, 0);
+        osal_stream_print_str(list, overdrive_value, 0);
     }
     else
     {
-        devicedir_append_str_param(list, param_name, v,
+        devicedir_append_str_param(list, param_name, overdrive_value,
             is_first
             ? DEVICEDIR_FIRST|DEVICEDIR_NEW_LINE|DEVICEDIR_TAB
             : DEVICEDIR_NEW_LINE|DEVICEDIR_TAB );
@@ -58,6 +58,7 @@ osalStatus devicedir_overdrives(
     os_short flags)
 {
     osalWifiPersistent block;
+    const os_char hidden_password[] = "<hidden>";
 
     os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
 
@@ -65,8 +66,31 @@ osalStatus devicedir_overdrives(
         osal_stream_print_str(list, "{", 0);
     }
 
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 0
     devicedir_overdrive_prm("wifi", block.wifi[0].wifi_net_name, list, flags, OS_TRUE);
-    devicedir_overdrive_prm("pass", block.wifi[0].wifi_net_password, list, flags, OS_FALSE);
+    devicedir_overdrive_prm("pass", block.wifi[0].wifi_net_password[0]
+        ? hidden_password : "", list, flags, OS_FALSE);
+
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 1
+    os_char buf[32], nbuf[OSAL_NBUF_SZ];
+    os_int i;
+    if ((flags & IOC_HELP_MODE) == 0) {
+        for (i = 1; i<OSAL_MAX_NRO_WIFI_NETWORKS; i++)
+        {
+            osal_int_to_str(nbuf, sizeof(nbuf), i+1);
+            os_strncpy(buf, "wifi", sizeof(buf));
+            os_strncat(buf, nbuf, sizeof(buf));
+            devicedir_overdrive_prm(buf, block.wifi[i].wifi_net_name, list, flags, OS_TRUE);
+            os_strncpy(buf, "pass", sizeof(buf));
+            os_strncat(buf, nbuf, sizeof(buf));
+            devicedir_overdrive_prm(buf, block.wifi[i].wifi_net_password[0]
+                ? hidden_password : "", list, flags, OS_FALSE);
+        }
+    }
+#endif
+
+#endif
+
     devicedir_overdrive_prm("net", block.network_name_overdrive, list, flags, OS_FALSE);
     devicedir_overdrive_prm("connect", block.connect_to_overdrive, list, flags, OS_FALSE);
     devicedir_overdrive_prm("nr", block.device_nr_overdrive, list, flags, OS_FALSE);

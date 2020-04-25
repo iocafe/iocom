@@ -46,13 +46,26 @@ osalStatus devicedir_save_config(
 
     os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
 
-    s = devicedir_get_config_item("wifi",
-        block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ, line_buf);
-    if (s == OSAL_SUCCESS) rval = s;
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 0
+    os_char buf[32], nbuf[OSAL_NBUF_SZ];
+    os_int i;
+    for (i = 0; i<OSAL_MAX_NRO_WIFI_NETWORKS; i++)
+    {
+        osal_int_to_str(nbuf, sizeof(nbuf), i+1);
 
-    s = devicedir_get_config_item("pass",
-        block.wifi[0].wifi_net_password, OSAL_WIFI_PRM_SZ, line_buf);
-    if (s == OSAL_SUCCESS) rval = s;
+        os_strncpy(buf, "wifi", sizeof(buf));
+        if (i) os_strncat(buf, nbuf, sizeof(buf));
+        s = devicedir_get_config_item(buf,
+            block.wifi[i].wifi_net_name, OSAL_WIFI_PRM_SZ, line_buf);
+        if (s == OSAL_SUCCESS) rval = s;
+
+        os_strncpy(buf, "pass", sizeof(buf));
+        if (i) os_strncat(buf, nbuf, sizeof(buf));
+        s = devicedir_get_config_item(buf,
+            block.wifi[i].wifi_net_password, OSAL_WIFI_PRM_SZ, line_buf);
+        if (s == OSAL_SUCCESS) rval = s;
+    }
+#endif
 
     s = devicedir_get_config_item("net",
         block.network_name_overdrive, OSAL_NETWORK_NAME_SZ, line_buf);
@@ -117,7 +130,7 @@ static osalStatus devicedir_get_config_item(
 
     /* "*" can be used to clear the overdrive
      */
-    if (line_buf[0] == '*' && n_chars == 1) {
+    if (*value_ptr == '*' && n_chars == 1) {
         n_chars = 0;
     }
 
