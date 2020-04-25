@@ -1,20 +1,19 @@
 {
 "network" : {
-	"device_nr": "auto",
+	"device_nr": "*",
 	"network_name": "cloudnet",
 	"publish": "cloudnet",
 	"password": "",
 	"connect": [
 		{
-			"transport": "tls",
-			"parameters": ":6367",
-			"listen": 1,
-			"flags": "listen,down"
+			"transport": "none",
+			"parameters": ":6366",
+			"flags": "listen,up"
 		},
 		{
-			"transport": "none",
-			"parameters": ":6369",
-			"flags": "connect,down"
+			"transport": "tls",
+			"parameters": ":6367",
+			"flags": "listen,down"
 		}
 	],
 	"security": [

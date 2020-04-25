@@ -170,6 +170,7 @@ void account_signals_init_signal_struct(account_signals_t *s)
   s->conf_exp.frd_head.flags = OS_INT;
   s->mblk_list[2] = &s->conf_exp.hdr;
 
+
   s->hdr.n_mblk_hdrs = 3;
   s->hdr.mblk_hdr = s->mblk_list;
 }

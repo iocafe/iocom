@@ -220,7 +220,7 @@ void ioc_set_iodevice_id(
     root->device_nr = device_nr;
 #if IOC_AUTHENTICATION_CODE
   #if OSAL_SECRET_SUPPORT
-    if (os_strcmp(password, "") && os_strcmp(password, "auto"))
+    if (os_strcmp(password, "") && os_strcmp(password, "*"))
     {
         os_strncpy(root->password, password, IOC_PASSWORD_SZ);
     }

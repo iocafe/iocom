@@ -132,6 +132,7 @@ osalStatus gazerbeam_save_config(
   received through gazerbeam.
 
   If the message doesn't contain requested field, field is left unmodified.
+  Value "*" can be used to clear the field.
 
   @param   id Identifier of the field to get.
   @param   field Pointer to buffer where to store '\0' terminated field value.
@@ -153,7 +154,7 @@ osalStatus gazerbeam_get_config_item(
     os_memsz message_sz,
     os_short flags)
 {
-    os_uchar *p, *e;
+    os_uchar *p, *next_p, *e;
     os_uint sz;
 
     p = (os_uchar*)message;
@@ -161,9 +162,16 @@ osalStatus gazerbeam_get_config_item(
     while (p + 2 < e)
     {
         sz = p[1];
+        next_p = p + sz + 2;
         if (p[0] == id)
         {
-            if (sz >= field_sz) sz = (os_uint)field_sz - 1;
+            if (sz >= field_sz) {
+                sz = (os_uint)field_sz - 1;
+            }
+
+            if (p[2] == '*' && sz == 1) {
+                sz = 0;
+            }
 
             /* If unchanged?
              */
@@ -182,7 +190,7 @@ osalStatus gazerbeam_get_config_item(
             field[sz] = '\0';
             return OSAL_SUCCESS;
         }
-        p += 2 + sz;
+        p = next_p;
     }
 
     return OSAL_STATUS_FAILED;

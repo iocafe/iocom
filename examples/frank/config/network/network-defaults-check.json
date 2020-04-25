@@ -1,10 +1,15 @@
 {
 "network" : {
-	"device_nr": "auto",
+	"device_nr": "*",
 	"network_name": "iocafenet",
 	"publish": "iocafenet,asteroidnet",
 	"password": "",
 	"connect": [
+		{
+			"transport": "none",
+			"parameters": "127.0.0.1:6367",
+			"flags": "connect,down,cloud"
+		},
 		{
 			"transport": "tls",
 			"parameters": "*:6369",
@@ -14,11 +19,6 @@
 			"transport": "none",
 			"parameters": "[*]:6369",
 			"flags": "listen,down"
-		},
-		{
-			"transport": "none",
-			"parameters": "127.0.0.1:6367",
-			"flags": "connect,down,cloud"
 		}
 	],
 	"nic": [

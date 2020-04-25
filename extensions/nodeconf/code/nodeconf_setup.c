@@ -155,8 +155,9 @@ gotit:
         ioc_nconf_setup_structure(node, default_config, default_config_sz);
     }
 
-    /* If we can have wifi configuration as separate persistent block, try to load it and
-       use it if it was set up (used with selectwifi library).
+    /* Process configuration overdrives.
+       If we can have wifi, etc additional configuration as separate persistent block, try
+       to load it and use it if it was set up.
      */
     if (flags & IOC_LOAD_PBNR_WIFI)
     {
@@ -164,12 +165,34 @@ gotit:
         for (i = 0; i < OSAL_MAX_NRO_WIFI_NETWORKS; i++)
         {
             wifibuf = &node->wifi_pbnr_wifi.wifi[i];
-            if (wifibuf->wifi_net_name[0] && wifibuf->wifi_net_password[0])
+            if (wifibuf->wifi_net_name[0] /* && wifibuf->wifi_net_password[0] */)
             {
                 node->wifi[i].wifi_net_name = wifibuf->wifi_net_name;
                 node->wifi[i].wifi_net_password = wifibuf->wifi_net_password;
                 node->wifis.n_wifi = i + 1;
             }
+        }
+
+        /* Network name.
+         */
+        if (node->wifi_pbnr_wifi.network_name_overdrive[0])
+        {
+            node->device_id.network_name = node->wifi_pbnr_wifi.network_name_overdrive;
+        }
+
+        /* Device number.
+         */
+        if (node->wifi_pbnr_wifi.device_nr_overdrive[0])
+        {
+            i = osal_str_to_int(node->wifi_pbnr_wifi.device_nr_overdrive, OS_NULL);
+            if (i > 0) node->device_id.device_nr = 0;
+        }
+
+        /* Connect to IP address, etc.
+         */
+        if (node->wifi_pbnr_wifi.connect_to_overdrive[0])
+        {
+            node->connections.connection[0].parameters = node->wifi_pbnr_wifi.connect_to_overdrive;
         }
     }
 }
@@ -360,7 +383,7 @@ static osalStatus ioc_nconf_process_block(
                     }
                     else if (!os_strcmp(state->tag, "device_nr"))
                     {
-                        if (!os_strcmp(item.value.s, "auto"))
+                        if (!os_strcmp(item.value.s, "*") || !os_strcmp(item.value.s, ""))
                         {
                             node->device_id.device_nr = IOC_AUTO_DEVICE_NR;
                         }

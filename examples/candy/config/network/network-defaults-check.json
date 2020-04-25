@@ -1,6 +1,6 @@
 {
 "network" : {
-	"device_nr": "auto",
+	"device_nr": "*",
 	"network_name": "*",
 	"connect": [
 		{

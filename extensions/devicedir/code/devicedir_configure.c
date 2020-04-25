@@ -77,11 +77,11 @@ osalStatus devicedir_save_config(
 /**
 ****************************************************************************************************
 
-  @brief Get one field from line edit.
+  @brief Get one parameter value from line edit buffer.
 
-  The devicedir_get_config_item function parameter value from line edit string.
+  The devicedir_get_config_item function gets a parameter value from line edit strings.
   If the line edit doesn't contain requested field, field is left unmodified and
-  the function returns OSAL_NOTHING_TO_DO.
+  the function returns OSAL_NOTHING_TO_DO. Value "*" can be used to clear the field.
 
   @param   param_name Parameter name, like "wifi" or "pass".
   @param   field Pointer to buffer where to store '\0' terminated field value.
@@ -102,15 +102,28 @@ static osalStatus devicedir_get_config_item(
     const os_char *value_ptr;
     os_memsz n_chars;
 
-    value_ptr = osal_str_get_item_value(line_buf, param_name, &n_chars, OSAL_STRING_DEFAULT);
-    if (value_ptr == OS_NULL) return OSAL_NOTHING_TO_DO;
-
-    if (n_chars >= field_sz) n_chars = field_sz - 1;
-
-    /* If unchanged?
+    /* Get pointer to value within line buffer by parameter name.
      */
-    if (n_chars)
-    {
+    value_ptr = osal_str_get_item_value(line_buf, param_name, &n_chars, OSAL_STRING_DEFAULT);
+    if (value_ptr == OS_NULL) {
+        return OSAL_NOTHING_TO_DO;
+    }
+
+    /* Do not crash on too long values.
+     */
+    if (n_chars >= field_sz) {
+        n_chars = field_sz - 1;
+    }
+
+    /* "*" can be used to clear the overdrive
+     */
+    if (line_buf[0] == '*' && n_chars == 1) {
+        n_chars = 0;
+    }
+
+    /* If unchanged, return OSAL_NOTHING_TO_DO
+     */
+    if (n_chars) {
         if (!os_memcmp(field, value_ptr, n_chars) && field[n_chars] == '\0') {
             return OSAL_NOTHING_TO_DO;
         }
@@ -121,6 +134,8 @@ static osalStatus devicedir_get_config_item(
         return OSAL_NOTHING_TO_DO;
     }
 
+    /* Value changed, terminate with NULL charater and return OSAL_SUCCESS.
+     */
     field[n_chars] = '\0';
     return OSAL_SUCCESS;
 }

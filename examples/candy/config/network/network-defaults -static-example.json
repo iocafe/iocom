@@ -1,7 +1,7 @@
 {
     "network": {
         "title": "Network configuration for 'candy' IO device",
-        "device_nr": "auto",
+        "device_nr": "*",
         "network_name": "iocafenet",
 
         "connect": [{

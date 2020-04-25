@@ -7,14 +7,15 @@
     "password": "",
 
     "connect": [{
-        "transport": "none",
-        "parameters": ":6366",
-        "flags": "listen,up"
-      },
-      {
         "transport": "tls",
         "parameters": ":6367",
+        "listen": 1,
         "flags": "listen,down"
+      },
+      {
+        "transport": "none",
+        "parameters": ":6369",
+        "flags": "connect,down"
       }
     ],
 
