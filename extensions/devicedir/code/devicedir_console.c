@@ -198,11 +198,24 @@ static osalStatus io_console_line_edit(
             return OSAL_COMPLETED;
 
         case OSAL_CONSOLE_ENTER:
-            if (devicedir_save_config(console->line_buf) == OSAL_SUCCESS) {
-                osal_console_write("\noverride setting(s) saved.\n");
+            /* If factory reset?
+             */
+            if (os_strnicmp(console->line_buf, "reset", -1))
+            {
+                os_persistent_delete(OSAL_PERSISTENT_DELETE_ALL);
+                osal_console_write("\nFactory reset done. Reboot the device with 'x'.\n");
             }
-            else {
-                osal_console_write("\nNO CHANGES TO KNOWN PARAMETERS.\n");
+
+            /* Otherwise save configuration changes.
+             */
+            else
+                {
+                if (devicedir_save_config(console->line_buf) == OSAL_SUCCESS) {
+                    osal_console_write("\noverride setting(s) saved.\n");
+                }
+                else {
+                    osal_console_write("\nNO CHANGES TO KNOWN PARAMETERS.\n");
+                }
             }
             return OSAL_COMPLETED;
 
