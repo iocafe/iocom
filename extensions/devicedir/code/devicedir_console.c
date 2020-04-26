@@ -200,7 +200,7 @@ static osalStatus io_console_line_edit(
         case OSAL_CONSOLE_ENTER:
             /* If factory reset?
              */
-            if (os_strnicmp(console->line_buf, "reset", -1))
+            if (!os_strnicmp(console->line_buf, "reset", -1))
             {
                 os_persistent_delete(OSAL_PERSISTENT_DELETE_ALL);
                 osal_console_write("\nFactory reset done. Reboot the device with 'x'.\n");
