@@ -155,7 +155,7 @@ gotit:
         ioc_nconf_setup_structure(node, default_config, default_config_sz);
     }
 
-    /* Process configuration overdrives.
+    /* Process configuration overrides.
        If we can have wifi, etc additional configuration as separate persistent block, try
        to load it and use it if it was set up.
      */
@@ -175,24 +175,24 @@ gotit:
 
         /* Network name.
          */
-        if (node->wifi_pbnr_wifi.network_name_overdrive[0])
+        if (node->wifi_pbnr_wifi.network_name_override[0])
         {
-            node->device_id.network_name = node->wifi_pbnr_wifi.network_name_overdrive;
+            node->device_id.network_name = node->wifi_pbnr_wifi.network_name_override;
         }
 
         /* Device number.
          */
-        if (node->wifi_pbnr_wifi.device_nr_overdrive[0])
+        if (node->wifi_pbnr_wifi.device_nr_override[0])
         {
-            i = osal_str_to_int(node->wifi_pbnr_wifi.device_nr_overdrive, OS_NULL);
+            i = osal_str_to_int(node->wifi_pbnr_wifi.device_nr_override, OS_NULL);
             if (i > 0) node->device_id.device_nr = i;
         }
 
         /* Connect to IP address, etc.
          */
-        if (node->wifi_pbnr_wifi.connect_to_overdrive[0])
+        if (node->wifi_pbnr_wifi.connect_to_override[0])
         {
-            node->connections.connection[0].parameters = node->wifi_pbnr_wifi.connect_to_overdrive;
+            node->connections.connection[0].parameters = node->wifi_pbnr_wifi.connect_to_override;
         }
     }
 }

@@ -34,7 +34,6 @@ static osalStatus devicedir_get_config_item(
   @param   message_sz Message size in bytes.
   @return  OSAL_SUCCESS if field was succesfully set.
            OSAL_NOTHING_TO_DO if field was unchanged.
-           OSAL_STATUS_FAILED if field was not set in message.
 
 ****************************************************************************************************
 */
@@ -68,15 +67,15 @@ osalStatus devicedir_save_config(
 #endif
 
     s = devicedir_get_config_item("net",
-        block.network_name_overdrive, OSAL_NETWORK_NAME_SZ, line_buf);
+        block.network_name_override, OSAL_NETWORK_NAME_SZ, line_buf);
     if (s == OSAL_SUCCESS) rval = s;
 
     s = devicedir_get_config_item("nr",
-        block.device_nr_overdrive, OSAL_DEVICE_NR_STR_SZ, line_buf);
+        block.device_nr_override, OSAL_DEVICE_NR_STR_SZ, line_buf);
     if (s == OSAL_SUCCESS) rval = s;
 
     s = devicedir_get_config_item("connect",
-        block.connect_to_overdrive, OSAL_HOST_BUF_SZ, line_buf);
+        block.connect_to_override, OSAL_HOST_BUF_SZ, line_buf);
     if (s == OSAL_SUCCESS) rval = s;
 
     if (rval == OSAL_SUCCESS) {
@@ -128,7 +127,7 @@ static osalStatus devicedir_get_config_item(
         n_chars = field_sz - 1;
     }
 
-    /* "*" can be used to clear the overdrive
+    /* "*" can be used to clear the override
      */
     if (*value_ptr == '*' && n_chars == 1) {
         n_chars = 0;

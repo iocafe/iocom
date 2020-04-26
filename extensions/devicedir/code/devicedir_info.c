@@ -1,10 +1,10 @@
 /**
 
-  @file    devicedir_dynamic.c
-  @brief   List dynamic signals.
+  @file    devicedir_info.c
+  @brief   Get information about the IO device.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    25.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,

@@ -1,7 +1,7 @@
 /**
 
-  @file    devicedir_overdrives.c
-  @brief   Get configuration overdrives for wifi, network name, etc.
+  @file    devicedir_overrides.c
+  @brief   Get configuration overrides for wifi, network name, etc.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    25.4.2020
@@ -16,16 +16,16 @@
 #include "devicedir.h"
 
 
-static void devicedir_overdrive_prm(
+static void devicedir_override_prm(
     const os_char *param_name,
-    const os_char *overdrive_value,
+    const os_char *override_value,
     osalStream list,
     os_short flags,
     os_boolean is_first)
 {
 
-    if (overdrive_value[0] == '\0') {
-        overdrive_value = "*";
+    if (override_value[0] == '\0') {
+        override_value = "*";
     }
 
     if (flags & IOC_HELP_MODE)
@@ -33,11 +33,11 @@ static void devicedir_overdrive_prm(
         if (!is_first) osal_stream_print_str(list, ",", 0);
         osal_stream_print_str(list, param_name, 0);
         osal_stream_print_str(list, "=", 0);
-        osal_stream_print_str(list, overdrive_value, 0);
+        osal_stream_print_str(list, override_value, 0);
     }
     else
     {
-        devicedir_append_str_param(list, param_name, overdrive_value,
+        devicedir_append_str_param(list, param_name, override_value,
             is_first
             ? DEVICEDIR_FIRST|DEVICEDIR_NEW_LINE|DEVICEDIR_TAB
             : DEVICEDIR_NEW_LINE|DEVICEDIR_TAB );
@@ -48,11 +48,11 @@ static void devicedir_overdrive_prm(
 /**
 ****************************************************************************************************
 
-  @brief Get configuration overdrives for wifi, network name, etc.
+  @brief Get configuration overrides for wifi, network name, etc.
 
 ****************************************************************************************************
 */
-osalStatus devicedir_overdrives(
+osalStatus devicedir_overrides(
     iocRoot *root,
     osalStream list,
     os_short flags)
@@ -67,8 +67,8 @@ osalStatus devicedir_overdrives(
     }
 
 #if OSAL_MAX_NRO_WIFI_NETWORKS > 0
-    devicedir_overdrive_prm("wifi", block.wifi[0].wifi_net_name, list, flags, OS_TRUE);
-    devicedir_overdrive_prm("pass", block.wifi[0].wifi_net_password[0]
+    devicedir_override_prm("wifi", block.wifi[0].wifi_net_name, list, flags, OS_TRUE);
+    devicedir_override_prm("pass", block.wifi[0].wifi_net_password[0]
         ? hidden_password : "", list, flags, OS_FALSE);
 
 #if OSAL_MAX_NRO_WIFI_NETWORKS > 1
@@ -80,20 +80,22 @@ osalStatus devicedir_overdrives(
             osal_int_to_str(nbuf, sizeof(nbuf), i+1);
             os_strncpy(buf, "wifi", sizeof(buf));
             os_strncat(buf, nbuf, sizeof(buf));
-            devicedir_overdrive_prm(buf, block.wifi[i].wifi_net_name, list, flags, OS_TRUE);
+            devicedir_override_prm(buf, block.wifi[i].wifi_net_name, list, flags, OS_FALSE);
             os_strncpy(buf, "pass", sizeof(buf));
             os_strncat(buf, nbuf, sizeof(buf));
-            devicedir_overdrive_prm(buf, block.wifi[i].wifi_net_password[0]
+            devicedir_override_prm(buf, block.wifi[i].wifi_net_password[0]
                 ? hidden_password : "", list, flags, OS_FALSE);
         }
     }
 #endif
+    devicedir_override_prm("net", block.network_name_override, list, flags, OS_FALSE);
 
+#else
+    devicedir_override_prm("net", block.network_name_override, list, flags, OS_TRUE);
 #endif
 
-    devicedir_overdrive_prm("net", block.network_name_overdrive, list, flags, OS_FALSE);
-    devicedir_overdrive_prm("connect", block.connect_to_overdrive, list, flags, OS_FALSE);
-    devicedir_overdrive_prm("nr", block.device_nr_overdrive, list, flags, OS_FALSE);
+    devicedir_override_prm("connect", block.connect_to_override, list, flags, OS_FALSE);
+    devicedir_override_prm("nr", block.device_nr_override, list, flags, OS_FALSE);
 
     if ((flags & IOC_HELP_MODE) == 0) {
         osal_stream_print_str(list, "\n}\n", 0);

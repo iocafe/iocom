@@ -63,7 +63,7 @@ void devicedir_dynamic_signals(
     droot = root->droot;
     if (droot == OS_NULL)
     {
-        osal_stream_print_str(list, "Dynamic signal information not used by the application", 0);
+        osal_stream_print_str(list, "{\"error\":\"Dynamic signal information not used by the application\"}\n", 0);
         ioc_unlock(root);
         return;
     }

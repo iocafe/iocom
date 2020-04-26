@@ -298,11 +298,11 @@ public class MainActivity extends AppCompatActivity
 
     protected int[] makeMessageData()
     {
-        int wn[] = convertString(m_wifi_network, 1);
-        int wp[] = convertString(m_wifi_password, 2);
-        int nn[] = convertString(io_network_name, 3);
-        int dn[] = convertString(m_device_number, 4);
-        int ip[] = convertString(m_connect_ip, 5);
+        int wn[] = convertString(m_wifi_network, 1);   // GAZERBEAM_ID_WIFI_NETWORK
+        int wp[] = convertString(m_wifi_password, 2);  // GAZERBEAM_ID_WIFI_PASSWORD
+        int nn[] = convertString(io_network_name, 10); // GAZERBEAM_ID_NETWORK_NAME_OVERRIDE
+        int dn[] = convertString(m_device_number, 11); // GAZERBEAM_ID_DEVICE_NR_OVERRIDE
+        int ip[] = convertString(m_connect_ip, 12);    // GAZERBEAM_ID_CONNECT_IP_OVERRIDE
 
         int n = wn.length + wp.length + nn.length + dn.length + ip.length;
         int data[] = new int [n];

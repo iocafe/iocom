@@ -32,6 +32,7 @@ OSAL_C_HEADER_BEGINS
  */
 #include "code/devicedir_shared.h"
 #include "code/devicedir_console.h"
+#include "code/devicedir_get_json.h"
 
 /* If C++ compilation, end the undecorated code.
  */

@@ -25,6 +25,7 @@
 
   @param   root Pointer to the root structure.
   @param   list Steam handle into which to write the list as JSON
+  @param   iopath IO path to select memory block.
   @param   flags Information to display, bit fields: IOC_DEVDIR_DEFAULT, IOC_DEVDIR_DATA,
            IOC_DEVDIR_BUFFERS.
 

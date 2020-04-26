@@ -1,10 +1,10 @@
 /**
 
   @file    devicedir_console.c
-  @brief   Console window for CLI to give software test commands and see the output.
+  @brief   CLI to give software test commands and see the output.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    25.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -16,15 +16,33 @@
 #include "devicedir.h"
 #if OS_CONTROL_CONSOLE_SUPPORT
 
+/* Forward referred static functions.
+ */
 static osalStatus io_console_line_edit(
     ioDeviceConsole *console,
-    os_uint c);
+    os_uint ch);
 
-static void iocom_state_list(
+static void io_console_print_json(
     ioDeviceConsole *console,
-    os_char select);
+    ddSelectJSON select,
+    const os_char *iopath,
+    os_short flags);
 
 
+/**
+****************************************************************************************************
+
+  @brief Initialize console structure.
+  @anchor io_initialize_device_console
+
+  The io_initialize_device_console function sets up console structure given as argument for use.
+
+  @param   console Pointer to console structure to initialize.
+  @param   root Pointer to the IOCOM root object.
+  @return  None.
+
+****************************************************************************************************
+*/
 void io_initialize_device_console(
     ioDeviceConsole *console,
     iocRoot *root)
@@ -33,7 +51,24 @@ void io_initialize_device_console(
     console->root = root;
 }
 
-// @return OSAL_NOTHING_TO_DO if nothing was done OSAL_SUCCESS if keypress was processed.
+
+/**
+****************************************************************************************************
+
+  @brief Run console.
+  @anchor io_run_device_console
+
+  The io_run_device_console function should be called repeatedly from IO device's main loop, etc.
+  The function reads user key pressed (from serial port, etc), processes these and prints
+  replies to user commands.
+
+  @param   console Pointer to console structure to initialize.
+  @param   root Pointer to the IOCOM root object.
+  @return  OSAL_SUCCESS to proceed with operation, OSAL_END_OF_FILE to exit/reboot the application
+           or OSAL_COMPLETED to give "go ahead" for application specific function by pressing "g".
+
+****************************************************************************************************
+*/
 osalStatus io_run_device_console(
     ioDeviceConsole *console)
 {
@@ -41,7 +76,7 @@ osalStatus io_run_device_console(
     osalStatus s;
 
     c = osal_console_read();
-    if (c == 0) return OSAL_SUCCESS; // OSAL_NOTHING_TO_DO;
+    if (c == 0) return OSAL_SUCCESS;
 
     if (console->line_edit)
     {
@@ -63,40 +98,44 @@ osalStatus io_run_device_console(
         case '?':
         case 'h':
         case 'H':
-            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, d=dynamic, q=quiet, t=talkative, s=set, o=show overdrives, x=exit/reboot\n");
-            // osal_console_write("set: wifi=bean24,pass=mysecret,net=iocafenet,connect=192.1681.227,nr=4\n");
+            osal_console_write("\nc=connections, e=end points, m=memory blocks, i=info, "
+                "d=dynamic, q=quiet, t=talkative, s=set, o=show overrides, x=exit/reboot\n");
             osal_console_write("set: ");
-            iocom_state_list(console, '?');
+            io_console_print_json(console, IO_DD_OVERRIDES, OS_NULL, IOC_HELP_MODE);
             osal_console_write("\n");
             break;
 
         case 'c':
         case 'C':
-            iocom_state_list(console, 'c');
+            io_console_print_json(console, IO_DD_CONNECTIONS, OS_NULL, 0);
             break;
 
         case 'e':
         case 'E':
-            iocom_state_list(console, 'e');
+            io_console_print_json(console, IO_DD_END_POINTS, OS_NULL, 0);
             break;
 
         case 'm':
+            io_console_print_json(console, IO_DD_MEMORY_BLOCKS, OS_NULL, 0);
+            break;
+
         case 'M':
-            iocom_state_list(console, (os_char)c);
+            io_console_print_json(console, IO_DD_MEMORY_BLOCKS, OS_NULL,
+                IOC_DEVDIR_BUFFERS|IOC_DEVDIR_DATA);
             break;
 
         case 'd':
         case 'D':
-            iocom_state_list(console, 'd');
+            io_console_print_json(console, IO_DD_DYNAMIC_SIGNALS, OS_NULL, 0);
             break;
 
         case 'i':
         case 'I':
-            iocom_state_list(console, 'i');
+            io_console_print_json(console, IO_DD_INFO, OS_NULL, 0);
             break;
 
         case 'o':
-            iocom_state_list(console, 'o');
+            io_console_print_json(console, IO_DD_OVERRIDES, OS_NULL, 0);
             break;
 
         case 'q': /* Disable debug prints */
@@ -137,45 +176,47 @@ osalStatus io_run_device_console(
   @anchor io_console_line_edit
 
   The io_console_line_edit function processess user key presses when console is in line edit mode.
+  This is very simple editor, it holds only one line buffer. Character keys pressed are appended
+  to buffer, and back space removes last character from buffer. ESC key terminates editing,
+  ENTER saves the values.
 
   @param   console Pointer to console structure.
-  @param   ch Character forresponding to key press.
-  @return  OSAL_SUCCESS to continue editing or OSAL_COMPLETED to dinish with line editing.
+  @param   ch A character corresponding to the key press.
+  @return  OSAL_SUCCESS to continue editing or OSAL_COMPLETED to finish with line editing.
 
 ****************************************************************************************************
 */
 static osalStatus io_console_line_edit(
     ioDeviceConsole *console,
-    os_uint c)
+    os_uint ch)
 {
     os_char echobuf[2];
 
-    switch (c)
+    switch (ch)
     {
         case OSAL_CONSOLE_ESC:
             return OSAL_COMPLETED;
 
         case OSAL_CONSOLE_ENTER:
-            osal_console_write("\n*** ");
-            osal_console_write(console->line_buf);
-            osal_console_write(" ***\n");
-
-            devicedir_save_config(console->line_buf);
+            if (devicedir_save_config(console->line_buf) == OSAL_SUCCESS) {
+                osal_console_write("\noverride setting(s) saved.\n");
+            }
+            else {
+                osal_console_write("\nNO CHANGES TO KNOWN PARAMETERS.\n");
+            }
             return OSAL_COMPLETED;
 
         case OSAL_CONSOLE_BACKSPACE:
-            if (console->pos > 0)
-            {
+            if (console->pos > 0) {
                 console->line_buf[--(console->pos)] = '\0';
                 osal_console_write("\b \b");
             }
             break;
 
         default:
-            if (console->pos < OS_CONSOLE_LINE_BUF_SZ-1)
-            {
-                console->line_buf[console->pos++] = (os_char)c;
-                echobuf[0] = (os_char)c;
+            if (console->pos < OS_CONSOLE_LINE_BUF_SZ-1) {
+                console->line_buf[console->pos++] = (os_char)ch;
+                echobuf[0] = (os_char)ch;
                 echobuf[1] = '\0';
                 osal_console_write(echobuf);
             }
@@ -186,66 +227,40 @@ static osalStatus io_console_line_edit(
 }
 
 
-static void iocom_state_list(
+/**
+****************************************************************************************************
+
+  @brief Print selected information to console as JSON text.
+  @anchor io_console_print_json
+
+  The io_console_print_json function....
+
+  @param   console Pointer to console structure.
+  @param   select Selects which JSON to print.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void io_console_print_json(
     ioDeviceConsole *console,
-    os_char select)
+    ddSelectJSON select,
+    const os_char *iopath,
+    os_short flags)
 {
-    iocRoot *root;
+    os_char *label;
     osalStream stream;
     os_char *p;
     os_memsz n;
 
-    root = console->root;
     stream = osal_stream_buffer_open(OS_NULL, 0, OS_NULL, 0);
 
-    switch (select)
-    {
-        case 'c':
-            osal_console_write("\n*** connections ***\n");
-            devicedir_connections(root, stream, 0);
-            break;
+    devicedir_get_json(console->root, stream, select, iopath, flags, &label);
 
-        case 'e':
-            osal_console_write("\n*** end points ***\n");
-            devicedir_end_points(root, stream, 0);
-            break;
+    osal_console_write("\n*** ");
+    osal_console_write(label);
+    osal_console_write(" ***\n");
 
-        case 'm':
-            osal_console_write("\n*** memory blocks ***\n");
-            devicedir_memory_blocks(root, stream, OS_NULL, 0);
-            break;
-
-        case 'M':
-            osal_console_write("\n*** memory blocks ***\n");
-            devicedir_memory_blocks(root, stream, OS_NULL, IOC_DEVDIR_BUFFERS|IOC_DEVDIR_DATA);
-            break;
-
-        case 'o':
-            osal_console_write("\n*** overrides ***\n");
-            devicedir_overdrives(root, stream, 0);
-            break;
-
-        case '?':
-            devicedir_overdrives(root, stream, IOC_HELP_MODE);
-            break;
-
-        case 'i':
-            devicedir_info(root, stream, 0);
-            break;
-
-        case 'd':
-#if IOC_DYNAMIC_MBLK_CODE
-            osal_console_write("\n*** dynamic signal info ***\n");
-            devicedir_dynamic_signals(root, stream, OS_NULL, 0);
-#else
-            osal_console_write("\nDynamic signal support not included in build\n");
-#endif
-            break;
-    }
-
-    osal_stream_write(stream, "\0", 1, &n, OSAL_STREAM_DEFAULT);
     p = osal_stream_buffer_content(stream, &n);
-
     osal_console_write(p);
 
     osal_stream_close(stream, OSAL_STREAM_DEFAULT);
