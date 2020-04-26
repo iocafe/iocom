@@ -21,12 +21,12 @@
         }],
 
         "wifi": [{
-                "network": "bean24",
-                "password": "mysecret"
+                "network": "*",
+                "password": "*"
             },
             {
-                "network": "julian",
-                "password": "mysecret"
+                "network": "*",
+                "password": "*"
             }
         ]
     }
