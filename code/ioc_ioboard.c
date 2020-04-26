@@ -67,7 +67,9 @@ void ioboard_start_communication(
         prm = &defaultprm;
     }
 
+#if IOC_DEVICE_STREAMER
     ioc_streamer_initialize();
+#endif
     ioc_initialize_root(&ioboard_root);
     ioc_set_iodevice_id(&ioboard_root, prm->device_name, prm->device_nr, prm->password, prm->network_name);
     ioboard_root.device_signal_hdr = prm->device_signal_hdr;
@@ -135,6 +137,7 @@ void ioboard_start_communication(
     switch (prm->ctrl_type & IOBOARD_CTRL_BASIC_MASK)
 	{
 		default:
+#if OSAL_SOCKET_SUPPORT
 		case IOBOARD_CTRL_LISTEN_SOCKET:
             ioboard_epoint = ioc_initialize_end_point(OS_NULL, &ioboard_root);
 
@@ -148,7 +151,9 @@ void ioboard_start_communication(
             conprm.parameters = prm->socket_con_str;
             conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
 			break;
+#endif
 
+#if OSAL_SERIAL_SUPPORT
         case IOBOARD_CTRL_CONNECT_SERIAL:
             conprm.parameters = prm->serial_con_str;
             conprm.flags = IOC_SERIAL | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
@@ -159,7 +164,8 @@ void ioboard_start_communication(
             conprm.flags = IOC_LISTENER | IOC_SERIAL
                 | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
             break;
-	}
+#endif
+    }
     conprm.lighthouse_func = prm->lighthouse_func;
     conprm.lighthouse = prm->lighthouse;
 
