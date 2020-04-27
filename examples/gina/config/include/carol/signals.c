@@ -1,5 +1,5 @@
 /* This file is gerated by signals-to-c.py script, do not modify. */
-const struct gina_t gina = 
+OS_FLASH_MEM struct gina_t gina = 
 {
   {
     {"exp", &ioboard_exp, 9, GINA_EXP_MBLK_SZ, (iocSignal*)&gina.exp.frame_rate},
@@ -55,7 +55,7 @@ const struct gina_t gina =
    OS_FALSE}
 };
 
-static const iocMblkSignalHdr *gina_mblk_list[] =
+static OS_FLASH_MEM iocMblkSignalHdr * OS_FLASH_MEM gina_mblk_list[] =
 {
   &gina.exp.hdr,
   &gina.imp.hdr,
@@ -63,4 +63,4 @@ static const iocMblkSignalHdr *gina_mblk_list[] =
   &gina.conf_imp.hdr
 };
 
-const iocDeviceHdr gina_hdr = {(iocMblkSignalHdr**)gina_mblk_list, sizeof(gina_mblk_list)/sizeof(iocMblkSignalHdr*)};
+OS_FLASH_MEM iocDeviceHdr gina_hdr = {(iocMblkSignalHdr**)gina_mblk_list, sizeof(gina_mblk_list)/sizeof(iocMblkSignalHdr*)};

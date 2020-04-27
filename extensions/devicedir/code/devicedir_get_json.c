@@ -40,9 +40,9 @@ osalStatus devicedir_get_json(
     ddSelectJSON select,
     const os_char *iopath,
     os_short flags,
-    os_char **plabel)
+    const os_char **plabel)
 {
-    os_char *label = OS_NULL;
+    const os_char *label = OS_NULL;
     os_memsz n;
     osalStatus s = OSAL_STATUS_FAILED;
 
@@ -58,7 +58,9 @@ osalStatus devicedir_get_json(
 
         case IO_DD_END_POINTS:
             label = "end points";
+#ifdef OSAL_SOCKET_SUPPORT
             devicedir_end_points(root, list, flags);
+#endif
             s = OSAL_SUCCESS;
             break;
 

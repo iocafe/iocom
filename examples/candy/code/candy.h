@@ -18,6 +18,8 @@
 #include "pinsx.h"
 #include "nodeconf.h"
 
+struct pinsPhoto;
+
 /* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and
    phototransistor connected to microcontroller (0 or 1).
  */

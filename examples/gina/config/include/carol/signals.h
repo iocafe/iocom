@@ -64,8 +64,8 @@ gina_t;
 #define GINA_CONF_EXP_MBLK_SZ 272
 #define GINA_CONF_IMP_MBLK_SZ 276
 
-extern const gina_t gina;
-extern const iocDeviceHdr gina_hdr;
+extern OS_FLASH_MEM_H gina_t gina;
+extern OS_FLASH_MEM_H iocDeviceHdr gina_hdr;
 
 
 /* Array length defines. */

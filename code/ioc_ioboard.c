@@ -36,8 +36,10 @@ iocHandle
     ioboard_conf_imp,
     ioboard_conf_exp;
 
+#if OSAL_SOCKET_SUPPORT
 static iocEndPoint
     *ioboard_epoint;
+#endif
 
 static iocConnection
     *ioboard_connection;
@@ -48,7 +50,7 @@ static iocConnection
   @brief Initialize IO board communication.
 
   The ioboard_start_communication() function sets up an IO board with connects two memory blocks,
-  "to controller" and "from controller". 
+  "to controller" and "from controller".
 
   @return  None.
 
@@ -60,7 +62,6 @@ void ioboard_start_communication(
     ioboardParams defaultprm;
     iocMemoryBlockParams blockprm;
     iocConnectionParams conprm;
-    iocEndPointParams epprm;
 
     if (prm == OS_NULL)
     {
@@ -88,7 +89,7 @@ void ioboard_start_communication(
     blockprm.nbytes = prm->send_block_sz;
     blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
     ioc_initialize_memory_block(&ioboard_exp, &ioboard_export_mblk, &ioboard_root, &blockprm);
- 
+
     blockprm.mblk_name = "imp";
     blockprm.nbytes = prm->receive_block_sz;
     blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
@@ -128,29 +129,30 @@ void ioboard_start_communication(
   #define IOC_CT_FLAG 0
 #endif
 
-	/* Control computer connection type: IOBOARD_CTRL_LISTEN_SOCKET,
+    /* Control computer connection type: IOBOARD_CTRL_LISTEN_SOCKET,
        IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_SERIAL,
        IOBOARD_CTRL_LISTEN_SERIAL.
-	 */
+     */
     os_memclear(&conprm, sizeof(conprm));
     conprm.iface = prm->iface;
     switch (prm->ctrl_type & IOBOARD_CTRL_BASIC_MASK)
-	{
-		default:
+    {
+        default:
 #if OSAL_SOCKET_SUPPORT
-		case IOBOARD_CTRL_LISTEN_SOCKET:
+        case IOBOARD_CTRL_LISTEN_SOCKET:
             ioboard_epoint = ioc_initialize_end_point(OS_NULL, &ioboard_root);
 
+            iocEndPointParams epprm;
             os_memclear(&epprm, sizeof(epprm));
             epprm.iface = prm->iface;
             epprm.flags = IOC_SOCKET | IOC_CONNECT_UP | IOC_CT_FLAG;
-			ioc_listen(ioboard_epoint, &epprm);
-			return;
+            ioc_listen(ioboard_epoint, &epprm);
+            return;
 
-		case IOBOARD_CTRL_CONNECT_SOCKET:
+        case IOBOARD_CTRL_CONNECT_SOCKET:
             conprm.parameters = prm->socket_con_str;
             conprm.flags = IOC_SOCKET | IOC_DISABLE_SELECT | IOC_CONNECT_UP | IOC_CT_FLAG;
-			break;
+            break;
 #endif
 
 #if OSAL_SERIAL_SUPPORT
@@ -166,8 +168,10 @@ void ioboard_start_communication(
             break;
 #endif
     }
+#if OSAL_SOCKET_SUPPORT
     conprm.lighthouse_func = prm->lighthouse_func;
     conprm.lighthouse = prm->lighthouse;
+#endif
 
     ioboard_connection = ioc_initialize_connection(OS_NULL, &ioboard_root);
     ioc_connect(ioboard_connection, &conprm);

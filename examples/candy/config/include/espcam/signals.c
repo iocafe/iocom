@@ -1,5 +1,5 @@
 /* This file is gerated by signals-to-c.py script, do not modify. */
-const struct candy_t candy = 
+OS_FLASH_MEM struct candy_t candy = 
 {
   {
     {"exp", &ioboard_exp, 5, CANDY_EXP_MBLK_SZ, (iocSignal*)&candy.exp.ambient},
@@ -49,7 +49,7 @@ const struct candy_t candy =
    OS_FALSE}
 };
 
-static const iocMblkSignalHdr *candy_mblk_list[] =
+static OS_FLASH_MEM iocMblkSignalHdr * OS_FLASH_MEM candy_mblk_list[] =
 {
   &candy.exp.hdr,
   &candy.imp.hdr,
@@ -57,4 +57,4 @@ static const iocMblkSignalHdr *candy_mblk_list[] =
   &candy.conf_imp.hdr
 };
 
-const iocDeviceHdr candy_hdr = {(iocMblkSignalHdr**)candy_mblk_list, sizeof(candy_mblk_list)/sizeof(iocMblkSignalHdr*)};
+OS_FLASH_MEM iocDeviceHdr candy_hdr = {(iocMblkSignalHdr**)candy_mblk_list, sizeof(candy_mblk_list)/sizeof(iocMblkSignalHdr*)};

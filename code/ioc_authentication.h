@@ -18,7 +18,6 @@
 
 ****************************************************************************************************
 */
-#if IOC_AUTHENTICATION_CODE
 
 struct iocRoot;
 struct iocConnection;
@@ -97,7 +96,6 @@ typedef struct iocAllowedNetworkConf
 }
 iocAllowedNetworkConf;
 
-
 /**
 ****************************************************************************************************
   Authentication functions
@@ -159,7 +157,7 @@ os_boolean ioc_is_network_authorized(
     os_char *network_name,
     os_ushort flags);
 
+#endif
+
 /*@}*/
 
-#endif
-#endif

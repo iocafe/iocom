@@ -58,8 +58,8 @@ candy_t;
 #define CANDY_CONF_EXP_MBLK_SZ 272
 #define CANDY_CONF_IMP_MBLK_SZ 276
 
-extern const candy_t candy;
-extern const iocDeviceHdr candy_hdr;
+extern OS_FLASH_MEM_H candy_t candy;
+extern OS_FLASH_MEM_H iocDeviceHdr candy_hdr;
 
 
 /* Array length defines. */

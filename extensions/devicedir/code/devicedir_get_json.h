@@ -36,4 +36,4 @@ osalStatus devicedir_get_json(
     ddSelectJSON select,
     const os_char *iopath,
     os_short flags,
-    os_char **plabel);
+    const os_char **plabel);

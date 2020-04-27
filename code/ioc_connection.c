@@ -581,7 +581,6 @@ osalStatus ioc_run_connection(
     IOC_MT_ROOT_PTR;
 
     const os_char *parameters;
-    os_char connectstr[OSAL_HOST_BUF_SZ];
     osalStatus status;
     os_timer tnow;
     os_int silence_ms, count;
@@ -607,6 +606,7 @@ osalStatus ioc_run_connection(
          */
         if (parameters[0] == '\0' || !os_strcmp(parameters, "*"))
         {
+            os_char connectstr[OSAL_HOST_BUF_SZ];
             if (con->lighthouse_func == OS_NULL) return OSAL_SUCCESS;
             status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
                 con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
@@ -955,7 +955,6 @@ static void ioc_connection_thread(
     iocRoot *root;
     iocConnection *con;
     const os_char *parameters;
-    os_char connectstr[OSAL_IPADDR_AND_PORT_SZ];
     osalStatus status;
     osalSelectData selectdata;
     os_timer tnow;
@@ -1009,6 +1008,7 @@ static void ioc_connection_thread(
             if (parameters[0] == '\0' || !os_strcmp(parameters, "*"))
             {
                 if (con->lighthouse_func == OS_NULL) goto failed;
+                os_char connectstr[OSAL_IPADDR_AND_PORT_SZ];
                 status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
                     con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
                     connectstr, sizeof(connectstr));

@@ -19,8 +19,6 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
-#if IOC_AUTHENTICATION_CODE
-
 
 /**
 ****************************************************************************************************
@@ -54,9 +52,7 @@ void ioc_make_authentication_frame(
     os_char
         *network_name,
         *user_name,
-        user_name_buf[IOC_NAME_SZ],
-        *password,
-        *q;
+        *password;
 
     os_int
         device_nr;
@@ -80,11 +76,13 @@ void ioc_make_authentication_frame(
     user_name = root->device_name;
     device_nr = root->device_nr;
 
+#if IOC_AUTHENTICATION_CODE
     /* If we have user name, we use it instead of device name. User name
        may have also network name, like ispy.iocafenet.
      */
     if (con->user_override[0] != '\0')
     {
+        os_char user_name_buf[IOC_NAME_SZ], *q;
         os_strncpy(user_name_buf, con->user_override, sizeof(user_name_buf));
         q = os_strchr(user_name_buf, '.');
         if (q) *q = '\0';
@@ -92,6 +90,7 @@ void ioc_make_authentication_frame(
         q = os_strchr(con->user_override, '.');
         if (q) network_name = q + 1;
     }
+#endif
 
     ioc_msg_setstr(user_name, &p);
     ioc_msg_set_uint(device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0,
@@ -99,6 +98,7 @@ void ioc_make_authentication_frame(
     ioc_msg_setstr(network_name, &p);
 
     password = "";
+#if IOC_AUTHENTICATION_CODE
     if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION)) == IOC_SECURE_CONNECTION)
     {
         /* If we have password given by user
@@ -111,7 +111,6 @@ void ioc_make_authentication_frame(
         {
             password = root->password;
         }
-
         /* If we do not have client certificate chain, set flag to indicate it.
          */
         if (osal_get_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0))
@@ -119,6 +118,7 @@ void ioc_make_authentication_frame(
             flags |= IOC_AUTH_NO_CERT_CHAIN;
         }
     }
+#endif
     ioc_msg_setstr(password, &p);
 
     /* Set connect up and bidirectional flags.
@@ -474,4 +474,3 @@ os_boolean ioc_is_network_authorized(
 
 #endif
 
-#endif

@@ -261,7 +261,7 @@ static void io_console_print_json(
     const os_char *iopath,
     os_short flags)
 {
-    os_char *label;
+    const os_char *label;
     osalStream stream;
     os_char *p;
     os_memsz n;

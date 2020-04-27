@@ -253,9 +253,6 @@ void ioc_set_iodevice_id(
 void ioc_run(
     iocRoot *root)
 {
-    iocEndPoint
-        *epoint;
-
     iocConnection
         *con,
         *next_con;
@@ -274,6 +271,7 @@ void ioc_run(
 #if OSAL_SOCKET_SUPPORT
     /* Run the end points.
      */
+    iocEndPoint *epoint;
     for (epoint = root->epoint.first;
          epoint;
          epoint = epoint->link.next)

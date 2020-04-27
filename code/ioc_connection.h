@@ -235,6 +235,7 @@ typedef struct iocConnectionParams
      */
     const os_char *parameters;
 
+#if IOC_AUTHENTICATION_CODE
     /** User name to overide device name. Leave to OS_NULL for normal IO devices.
      */
     const os_char *user_override;
@@ -242,6 +243,7 @@ typedef struct iocConnectionParams
     /** Password to overide device default password. Leave to OS_NULL for normal IO devices.
      */
     const os_char *password_override;
+#endif
 
     /** If socket connection is accepted by listening end point, this is
         the socket handle. Otherwise this argument needs to be OS_NULL.
@@ -272,6 +274,7 @@ typedef struct iocConnectionParams
      */
     os_short flags;
 
+#if OSAL_SOCKET_SUPPORT
     /** Light house "run" function, used to get IP address to connect to by UDP multicast.
      */
     ioc_lighthouse_func *lighthouse_func;
@@ -279,6 +282,7 @@ typedef struct iocConnectionParams
     /** Pointer to initialized light house state structure for the light house function.
      */
     struct LighthouseClient *lighthouse;
+#endif
 }
 iocConnectionParams;
 

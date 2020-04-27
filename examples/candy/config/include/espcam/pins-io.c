@@ -13,16 +13,16 @@ static os_ushort pins_analog_inputs_ambient_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 409
 static os_ushort pins_analog_inputs_unused_pin_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
 
 /* Parameters for pwm */
-static os_ushort pins_pwm_illumination_prm[]= {PIN_RV, PIN_RV, PIN_INIT, 0, PIN_RESOLUTION, 12, PIN_FREQENCY, 5000, PIN_MAX, 4095};
+static os_ushort pins_pwm_illumination_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_RESOLUTION, 12, PIN_INIT, 0, PIN_MAX, 4095};
 
 /* Parameters for cameras */
 static os_ushort pins_cameras_camera_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for uart */
-static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_TX, 2, PIN_SPEED, 1152, PIN_RX, 16};
+static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_RX, 16, PIN_TX, 2, PIN_SPEED, 1152};
 
 /* CANDY IO configuration structure */
-const pins_t pins =
+OS_FLASH_MEM pins_t pins =
 {
   {{1, &pins.inputs.gazerbeam}, /* inputs */
     {PIN_INPUT, 0, 12, pins_inputs_gazerbeam_prm, sizeof(pins_inputs_gazerbeam_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_PTR(pin_gazerbeam_intconf)} /* gazerbeam */
@@ -51,7 +51,7 @@ const pins_t pins =
 };
 
 /* List of pin type groups */
-static const PinGroupHdr *pins_group_list[] =
+static OS_FLASH_MEM PinGroupHdr * OS_FLASH_MEM pins_group_list[] =
 {
   &pins.inputs.hdr,
   &pins.outputs.hdr,
@@ -62,4 +62,4 @@ static const PinGroupHdr *pins_group_list[] =
 };
 
 /* CANDY IO configuration top header structure */
-const IoPinsHdr pins_hdr = {pins_group_list, sizeof(pins_group_list)/sizeof(PinGroupHdr*)};
+OS_FLASH_MEM IoPinsHdr pins_hdr = {pins_group_list, sizeof(pins_group_list)/sizeof(PinGroupHdr*)};

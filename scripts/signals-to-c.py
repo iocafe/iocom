@@ -1,5 +1,5 @@
 # signals-to-c.py 8.1.2020/pekka
-# Converts communication signal map written in JSON to C source and header files. 
+# Converts communication signal map written in JSON to C source and header files.
 import json
 import os
 import sys
@@ -10,7 +10,7 @@ IOC_NAME_SZ = 16
 IOC_PIN_NAME_SZ = 64
 IOC_PIN_GROUP_NAME_SZ = 64
 
-# Size excludes signal state byte. 
+# Size excludes signal state byte.
 osal_typeinfo = {
     "undef" : 0,
     "boolean" : 1,
@@ -18,7 +18,7 @@ osal_typeinfo = {
     "uchar" : 1,
     "short" : 2,
     "ushort" : 2,
-    "int" : 4, 
+    "int" : 4,
     "uint" : 4,
     "int64" : 8,
     "long" : 8,
@@ -26,7 +26,7 @@ osal_typeinfo = {
     "double" : 8,
     "dec01" : 2,
     "dec001" : 2,
-    "str" : 1, 
+    "str" : 1,
     "object" : 0,
     "pointer" : 0}
 
@@ -132,7 +132,7 @@ def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
 
     if signal_nr < nro_signals:
         cfile.write(',')
-        
+
     signal_nr = signal_nr + 1
     cfile.write(' /* ' + signal_name + ' */\n')
 
@@ -183,7 +183,7 @@ def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
 
     if is_dynamic:
         cfile.write(my_name + '.ptr = \"' + signal_name + '\";\n')
-       
+
     signal_nr = signal_nr + 1
 
 def process_signal(group_name, signal):
@@ -238,7 +238,7 @@ def process_mblk(mblk):
     handle = mblk.get("handle", "OS_NULL")
     if handle == "OS_NULL":
         handle = "&ioboard_" + block_name
-            
+
     groups = mblk.get("groups", None)
     if groups == None:
         print("'groups' not found for " + block_name)
@@ -289,7 +289,7 @@ def write_assembly_item(prefix, ending, assembly_name):
     global cfile, is_controller, device_name
     if is_controller:
         cfile.write('  s->' + assembly_name + '.' + ending + ' =  &s->' + prefix + ending + ';\n')
-    else:       
+    else:
         cfile.write('&' + device_name + '.' + prefix + ending + ',\n   ')
 
 def process_assembly(assembly):
@@ -307,7 +307,7 @@ def process_assembly(assembly):
 
         if is_controller:
             cfile.write('  /* ' + assembly_type + " '" + assembly_name + "' */\n")
-        else:       
+        else:
             cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
         write_assembly_item(imp, "cmd", assembly_name)
         write_assembly_item(imp, "select", assembly_name)
@@ -326,7 +326,7 @@ def process_assembly(assembly):
 
         if is_controller:
             cfile.write(' /* ' + assembly_type + " '" + assembly_name + "' */\n")
-        else:       
+        else:
             cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
         write_assembly_item(imp, "cmd", assembly_name)
         write_assembly_item(imp, "select", assembly_name)
@@ -374,7 +374,7 @@ def process_source_file(path):
             cfile.write('  os_memclear(s, sizeof(' + struct_name + '));\n')
 
         else:
-            cfile.write('const struct ' + struct_name + ' ' + device_name + ' = \n{')
+            cfile.write('OS_FLASH_MEM struct ' + struct_name + ' ' + device_name + ' = \n{')
 
         mblk_list = []
         array_list = []
@@ -394,7 +394,7 @@ def process_source_file(path):
             cfile.write('  s->hdr.n_mblk_hdrs = ' + str(nro_mblks) + ';\n')
             cfile.write('  s->hdr.mblk_hdr = s->mblk_list;\n')
             cfile.write('}\n')
-        else:            
+        else:
             cfile.write('};\n')
 
         hfile.write('}\n' + struct_name + ';\n\n')
@@ -403,10 +403,10 @@ def process_source_file(path):
             hfile.write(d)
 
         if not is_controller:
-            hfile.write('\nextern const ' + struct_name + ' ' + device_name + ';\n')
+            hfile.write('\nextern OS_FLASH_MEM_H ' + struct_name + ' ' + device_name + ';\n')
 
             list_name = device_name + "_mblk_list"
-            cfile.write('\nstatic const iocMblkSignalHdr *' + list_name + '[] =\n{\n  ')
+            cfile.write('\nstatic OS_FLASH_MEM iocMblkSignalHdr * OS_FLASH_MEM ' + list_name + '[] =\n{\n  ')
             isfirst = True
             for p in mblk_list:
                 if not isfirst:
@@ -414,8 +414,8 @@ def process_source_file(path):
                 isfirst = False
                 cfile.write('&' + p + '.hdr')
             cfile.write('\n};\n\n')
-            cfile.write('const iocDeviceHdr ' + device_name + '_hdr = {(iocMblkSignalHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
-            hfile.write('extern const iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
+            cfile.write('OS_FLASH_MEM iocDeviceHdr ' + device_name + '_hdr = {(iocMblkSignalHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
+            hfile.write('extern OS_FLASH_MEM_H iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
 
         else:
             hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s);\n')
@@ -463,9 +463,9 @@ def list_pins_in_pinsfile(path):
 
     else:
         printf ("Opening file " + path + " failed")
-            
+
 def mymain():
-    global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic, const_mark
+    global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic
 
     # Get command line arguments
     n = len(sys.argv)
@@ -490,17 +490,17 @@ def mymain():
                 expectpath = False
 
             if sys.argv[i][1] == "a":
-                # application_type: 
+                # application_type:
                 #   "iodevice" - IO board, etc
                 #   "controller-static" Controller using static addressess and types to match data with IO device
-                #   "controller-dynamic" Controller using signal names to match types and 
+                #   "controller-dynamic" Controller using signal names to match types and
                 application_type = sys.argv[i+1]
                 expectpath = False
 
         else:
             if expectpath:
                 sourcefiles.append(sys.argv[i])
-            expectpath = True    
+            expectpath = True
 
     if len(sourcefiles) < 1:
         print("No source files")
@@ -515,15 +515,12 @@ def mymain():
 
     is_controller = False
     is_dynamic = False
-    const_mark = 'const '
     if application_type == "controller-static":
         is_controller = True
-        const_mark = ''
 
     if application_type == "controller-dynamic":
         is_controller = True
         is_dynamic = True
-        const_mark = ''
 
     if outpath is None:
         outpath = sourcefiles[0]
