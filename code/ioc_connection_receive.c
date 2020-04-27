@@ -55,9 +55,6 @@ static osalStatus ioc_store_data_frame(
 osalStatus ioc_connection_receive(
     iocConnection *con)
 {
-    iocRoot
-        *root;
-
     os_uchar
         flags = 0,
         extra_flags = 0,
@@ -94,8 +91,11 @@ osalStatus ioc_connection_receive(
     os_int i;
 #endif
 
+#if OSAL_MULTITHREAD_SUPPORT
+    iocRoot *root;
     root = con->link.root;
     ioc_lock(root);
+#endif
 
     is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
 
@@ -263,7 +263,7 @@ osalStatus ioc_connection_receive(
                    before whole package is received. This speeds up
                    detecting many errors.
                  */
-                if (buf[0] != IOC_ACKNOWLEDGE && 
+                if (buf[0] != IOC_ACKNOWLEDGE &&
                     buf[0] != con->frame_in.frame_nr)
                 {
                     ioc_unlock(root);
@@ -376,7 +376,7 @@ alldone:
   @brief Process complete frame received from socket or serial port.
   @anchor ioc_process_received_data_frame
 
-  The ioc_process_received_data_frame() function is called once a complete data frame 
+  The ioc_process_received_data_frame() function is called once a complete data frame
   is received.
 
   ioc_lock() must be on before calling this function.
@@ -476,7 +476,7 @@ static osalStatus ioc_process_received_system_frame(
 {
     switch (data[0])
     {
-        /* Memory block information received. 
+        /* Memory block information received.
          */
         case IOC_SYSRAME_MBLK_INFO:
             return ioc_process_received_mbinfo_frame(con, mblk_id, data);
@@ -601,7 +601,7 @@ osalStatus ioc_msg_getstr(
     os_int len;
 
     len = *((*p)++);
-    if (len < 0 || len >= str_sz) 
+    if (len < 0 || len >= str_sz)
     {
         return OSAL_STATUS_FAILED;
     }
