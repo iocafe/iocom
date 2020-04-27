@@ -19,14 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\devicedir_configure.c" />
     <ClCompile Include="..\..\code\devicedir_connections.c" />
     <ClCompile Include="..\..\code\devicedir_console.c" />
     <ClCompile Include="..\..\code\devicedir_dynamic.c" />
     <ClCompile Include="..\..\code\devicedir_end_points.c" />
+    <ClCompile Include="..\..\code\devicedir_get_json.c" />
     <ClCompile Include="..\..\code\devicedir_helper.c" />
+    <ClCompile Include="..\..\code\devicedir_info.c" />
     <ClCompile Include="..\..\code\devicedir_memory_blocks.c" />
+    <ClCompile Include="..\..\code\devicedir_overdrives.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\devicedir_console.h" />
+    <ClInclude Include="..\..\code\devicedir_get_json.h" />
     <ClInclude Include="..\..\code\devicedir_shared.h" />
     <ClInclude Include="..\..\devicedir.h" />
   </ItemGroup>

@@ -184,7 +184,7 @@ gotit:
          */
         if (node->wifi_pbnr_wifi.device_nr_override[0])
         {
-            i = osal_str_to_int(node->wifi_pbnr_wifi.device_nr_override, OS_NULL);
+            i = (os_int)osal_str_to_int(node->wifi_pbnr_wifi.device_nr_override, OS_NULL);
             if (i > 0) node->device_id.device_nr = i;
         }
 

@@ -87,7 +87,7 @@ iocTargetBuffer *ioc_initialize_target_buffer(
     }
 #endif
 
-    tbuf->syncbuf.buf = ioc_malloc(root, 2 * tbuf->syncbuf.nbytes, OS_NULL);
+    tbuf->syncbuf.buf = ioc_malloc(root, 2 * (os_memsz)tbuf->syncbuf.nbytes, OS_NULL);
     if (tbuf->syncbuf.buf == OS_NULL)
     {
         ioc_free(root, tbuf, sizeof(iocSourceBuffer));
@@ -244,7 +244,7 @@ void ioc_release_target_buffer(
         tbuf->mlink.mblk->tbuf.last = tbuf->mlink.prev;
     }
 
-    ioc_free(root, tbuf->syncbuf.buf, 2 * tbuf->syncbuf.nbytes);
+    ioc_free(root, tbuf->syncbuf.buf, 2 * (os_memsz)tbuf->syncbuf.nbytes);
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging).
      */
@@ -489,7 +489,12 @@ void ioc_tbuf_disconnect_signals(
 
     if (changed && (mblk->flags & IOC_AUTO_SYNC))
     {
-        ioc_mblk_auto_sync(sbuf);
+        for (sbuf = mblk->sbuf.first;
+             sbuf;
+             sbuf = sbuf->mlink.next)
+        {
+            ioc_mblk_auto_sync(sbuf);
+        }
     }
 }
 #endif
