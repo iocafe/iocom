@@ -1,0 +1,30 @@
+Installation
+Download the tty0tty package from one of these sources:
+
+http://sourceforge.net/projects/tty0tty/files/
+clone the repo https://github.com/freemed/tty0tty
+git clone https://github.com/freemed/tty0tty
+Extract it
+
+tar xf tty0tty-1.2.tgz
+Build the kernel module from provided source
+cd tty0tty-1.2/module
+make
+Copy the new kernel module into the kernel modules directory
+sudo cp tty0tty.ko /lib/modules/$(uname -r)/kernel/drivers/misc/
+Load the module
+sudo depmod
+sudo modprobe tty0tty
+You should see new serial ports in /dev/ (ls /dev/tnt*)
+Give appropriate permissions to the new serial ports
+sudo chmod 666 /dev/tnt*
+You can now access the serial ports as /dev/tnt0 (1,2,3,4 etc) Note that the consecutive ports are interconnected. For example, /dev/tnt0 and /dev/tnt1 are connected as if using a direct cable.
+
+Persisting across boot
+edit the file /etc/modules (Debian) or /etc/modules.conf
+
+nano /etc/modules
+
+and add the following line:
+
+tty0tty
