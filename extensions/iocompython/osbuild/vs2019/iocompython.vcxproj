@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\iopy_brick_buffer.c" />
     <ClCompile Include="..\..\code\iopy_connection.c" />
     <ClCompile Include="..\..\code\iopy_end_point.c" />
     <ClCompile Include="..\..\code\iopy_memory_block.c" />
@@ -29,6 +30,7 @@
     <ClCompile Include="..\..\code\iopy_util.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\iopy_brick_buffer.h" />
     <ClInclude Include="..\..\code\iopy_connection.h" />
     <ClInclude Include="..\..\code\iopy_end_point.h" />
     <ClInclude Include="..\..\code\iopy_memory_block.h" />
