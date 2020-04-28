@@ -19,12 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\ioc_selectwifi.h" />
+    <ClInclude Include="..\..\code\selectwifix.h" />
     <ClInclude Include="..\..\selectwifi.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\ioc_selectwifi.c" />
-    <ClCompile Include="..\..\code\ioc_selectwifi_config.c" />
+    <ClCompile Include="..\..\code\selectwifi.c" />
+    <ClCompile Include="..\..\code\selectwifi_config.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

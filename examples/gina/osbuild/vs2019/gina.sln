@@ -10,6 +10,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gina", "gina.vcxproj", "{723B258A-51C6-4B40-9CB9-B1D122AE157E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{19FB0104-F92B-4FF2-BD45-577449621E88} = {19FB0104-F92B-4FF2-BD45-577449621E88}
+		{4D9D8540-00E2-4012-8094-482846ECB556} = {4D9D8540-00E2-4012-8094-482846ECB556}
 		{35825D48-F2F0-4A44-BB17-170DE8D691FA} = {35825D48-F2F0-4A44-BB17-170DE8D691FA}
 		{B30A5557-566E-4062-A585-80466FBA7A56} = {B30A5557-566E-4062-A585-80466FBA7A56}
 		{FE76EF7A-7822-4EC5-A7CE-05E5FA1AD2E7} = {FE76EF7A-7822-4EC5-A7CE-05E5FA1AD2E7}
@@ -27,6 +28,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "selectwifi", "..\..\..\..\extensions\selectwifi\osbuild\vs2019\selectwifi.vcxproj", "{35825D48-F2F0-4A44-BB17-170DE8D691FA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lighthouse", "..\..\..\..\extensions\lighthouse\osbuild\vs2019\lighthouse.vcxproj", "{B30A5557-566E-4062-A585-80466FBA7A56}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gazerbeam", "..\..\..\..\extensions\gazerbeam\osbuild\vs2019\gazerbeam.vcxproj", "{4D9D8540-00E2-4012-8094-482846ECB556}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,6 +103,14 @@ Global
 		{B30A5557-566E-4062-A585-80466FBA7A56}.Release|x64.Build.0 = Release|x64
 		{B30A5557-566E-4062-A585-80466FBA7A56}.Release|x86.ActiveCfg = Release|Win32
 		{B30A5557-566E-4062-A585-80466FBA7A56}.Release|x86.Build.0 = Release|Win32
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Debug|x64.ActiveCfg = Debug|x64
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Debug|x64.Build.0 = Debug|x64
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Debug|x86.ActiveCfg = Debug|Win32
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Debug|x86.Build.0 = Debug|Win32
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Release|x64.ActiveCfg = Release|x64
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Release|x64.Build.0 = Release|x64
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Release|x86.ActiveCfg = Release|Win32
+		{4D9D8540-00E2-4012-8094-482846ECB556}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

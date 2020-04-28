@@ -290,6 +290,8 @@ osalStatus osal_loop(
 {
     os_timer ti;
     osalStatus s;
+    os_int command;
+    static os_int prev_command = -1;
 
     static os_timer sti;
     static os_float f[5] = {1, 2, 3, 4, 5};
@@ -339,18 +341,15 @@ osalStatus osal_loop(
 
     /* Run the IO device functionality.
      */
-    os_boolean command;
-    static os_boolean prev_command = -1;
-
     if (os_timer_hit(&sti, &ti, 10))
     {
         os_get_timer(&sti);
 
-        f[2] = i++;
+        f[2] = (os_float)i++;
         ioc_sets_array(&gina.exp.testfloat, f, 5);
     }
 
-    command = ioc_gets0_int(&gina.imp.myoutput);
+    command = (os_int)ioc_gets0_int(&gina.imp.myoutput);
     if (command != prev_command)
     {
         f[0] = f[0] + 1.0F;
