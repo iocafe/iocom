@@ -19,9 +19,10 @@ struct iocBrickBuffer;
 typedef enum iocBrickFormat
 {
     IOC_BYTE_BRICK = 50,           /* 8 bits per pixel, one channel */
+    IOC_RGB24_BRICK = 51,          /* RGB 24 color image */ 
 
     IOC_MIN_BRICK_FORMAT = 50,
-    IOC_MAX_BRICK_FORMAT = 50
+    IOC_MAX_BRICK_FORMAT = 51
 }
 iocBrickFormat;
 

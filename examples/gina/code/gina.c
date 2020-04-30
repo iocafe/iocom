@@ -249,6 +249,7 @@ osalStatus osal_main(
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
     os_memclear(&camera_prm, sizeof(camera_prm));
+    camera_prm.camera_nr = 0;
     camera_prm.camera_pin = &pins.cameras.ccd;
     camera_prm.timer_pin = &pins.timers.ccd_data;
     camera_prm.callback_func = ioboard_camera_callback;

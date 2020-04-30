@@ -218,6 +218,7 @@ osalStatus osal_main(
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
     os_memclear(&camera_prm, sizeof(camera_prm));
+    camera_prm.camera_nr = 0;
     camera_prm.camera_pin = &pins.cameras.camera;
     camera_prm.callback_func = ioboard_camera_callback;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
@@ -379,7 +380,7 @@ void ioboard_camera_callback(
 {
     if (ioc_is_brick_empty(&video_output) && ioc_is_brick_connected(&video_output))
     {
-        pins_store_photo_to_brick(photo, &video_output, IOC_UNCOMPRESSED_BRICK);
+        pins_store_photo_as_brick(photo, &video_output, IOC_UNCOMPRESSED_BRICK);
     }
 }
 #endif
