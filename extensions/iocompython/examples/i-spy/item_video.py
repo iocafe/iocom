@@ -9,16 +9,8 @@ from array import array
 from item_heading import HeadingItem
 from iocompython import Root,BrickBuffer
 
-#import itertools
-#from math import sin, cos, pi
-#from random import randrange
 from kivy.utils import get_color_from_hex as rgb
 from kivy.uix.boxlayout import BoxLayout
-
-# try:
-#    import numpy as np
-#except ImportError as e:
-#    np = None
 
 
 class VideoItem(GridLayout):
