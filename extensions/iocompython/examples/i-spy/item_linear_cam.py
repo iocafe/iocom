@@ -5,13 +5,11 @@ from kivy.uix.label import Label
 from item_heading import HeadingItem
 from iocompython import Root,BrickBuffer
 
-
 import itertools
 from math import sin, cos, pi
 from random import randrange
 from kivy.utils import get_color_from_hex as rgb
 from kivy.uix.boxlayout import BoxLayout
-# from kivy.clock import Clock
 
 try:
     import numpy as np
@@ -176,9 +174,6 @@ class LinearCameraItem(GridLayout):
 
     def delete(self):
         pass
-
- #   def update_points(self, *args):
- #       self.run()
 
     def update_signal(self):
         self.run()
