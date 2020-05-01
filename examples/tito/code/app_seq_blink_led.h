@@ -29,10 +29,14 @@ public:
     BlinkLedSequence();
     virtual ~BlinkLedSequence();
 
+    os_timer m_timer;
+    os_boolean m_led_on;
+
     gina_t *gina1;
     gina_t *gina2;
 
-    virtual void start(AppInstance *app);
+    virtual void start(ApplicationRoot *app);
     virtual void stop();
     virtual void run();
+    virtual void task();
 };

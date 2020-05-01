@@ -29,7 +29,7 @@
 #include "devicedir.h"
 
 iocRoot iocom_root;
-static ControllerRoot *app_root;
+static ApplicationRoot *app_root;
 
 /* IO device/network configuration.
  */
@@ -142,7 +142,7 @@ osalStatus osal_main(
 
     /* Create tito main object and start listening for clients.
      */
-    app_root = new ControllerRoot(device_name, device_id->device_nr, device_id->network_name,
+    app_root = new ApplicationRoot(device_name, device_id->device_nr, device_id->network_name,
         device_id->publish);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
@@ -182,7 +182,7 @@ osalStatus osal_loop(
     ioc_run_lighthouse_server(&lighthouse);
 
     ioc_run(&iocom_root);
-    s = app_root->loop();
+    s = app_root->run();
     ioc_run(&iocom_root);
 
     return s;

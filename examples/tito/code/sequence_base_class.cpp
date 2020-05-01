@@ -15,8 +15,9 @@
 */
 #include "controller_main.h"
 
+#if OSAL_MULTITHREAD_SUPPORT
 static void tito_test_sequence_thread_func(void *prm, osalEvent done);
-
+#endif
 
 /**
 ****************************************************************************************************
@@ -31,7 +32,9 @@ static void tito_test_sequence_thread_func(void *prm, osalEvent done);
 */
 AppSequence::AppSequence()
 {
+#if OSAL_MULTITHREAD_SUPPORT
     m_event = osal_event_create();
+#endif
     m_started = OS_FALSE;
 }
 
@@ -54,16 +57,17 @@ AppSequence::~AppSequence()
 }
 
 
-void AppSequence::start(AppInstance *app)
+void AppSequence::start(ApplicationRoot *app)
 {
     if (m_started) return;
 
     /* Start running test_sequence for this IO device network in own thread.
      */
     m_stop_thread = OS_FALSE;
+#if OSAL_MULTITHREAD_SUPPORT
     m_thread = osal_thread_create(tito_test_sequence_thread_func, this,
         OS_NULL, OSAL_THREAD_ATTACHED);
-
+#endif
     m_started = OS_TRUE;
 }
 
@@ -75,15 +79,19 @@ void AppSequence::stop()
     if (!m_started) return;
 
     m_stop_thread = OS_TRUE;
+#if OSAL_MULTITHREAD_SUPPORT
     osal_event_set(m_event);
     osal_thread_join(m_thread);
+#endif
     m_started = OS_FALSE;
 }
 
 
+#if OSAL_MULTITHREAD_SUPPORT
 static void tito_test_sequence_thread_func(void *prm, osalEvent done)
 {
     AppSequence *seq = (AppSequence*)prm;
     osal_event_set(done);
-    seq->run();
+    seq->task();
 }
+#endif

@@ -14,7 +14,7 @@
 ****************************************************************************************************
 */
 
-class AppInstance;
+class ApplicationRoot;
 
 /**
 ****************************************************************************************************
@@ -31,12 +31,16 @@ public:
     AppSequence();
     virtual ~AppSequence();
 
-    virtual void start(AppInstance *app);
+    virtual void start(ApplicationRoot *app);
     virtual void stop();
     virtual void run() {};
+    virtual void task() {};
 
+#if OSAL_MULTITHREAD_SUPPORT
     osalEvent m_event;
     osalThread *m_thread;
+#endif
+
     os_boolean m_stop_thread;
     os_boolean m_started;
 };

@@ -18,6 +18,11 @@
 #include "controller_main.h"
 
 
+static osalStatus app_gina1_photo_received(
+    struct iocBrickBuffer *b,
+    void *context);
+
+
 /**
 ****************************************************************************************************
 
@@ -29,31 +34,13 @@
 
 ****************************************************************************************************
 */
-ControllerRoot::ControllerRoot(
+ApplicationRoot::ApplicationRoot(
     const os_char *device_name,
     os_int device_nr,
     const os_char *network_name,
     const os_char *publish)
 {
-    AppInstance *app;
     iocBServerParams prm;
-
-    /* Lauch tour 'tito' applications, one for iocafenet, two for asteroidnet.
-     */
-    m_nro_apps = 0;
-    app = new AppInstance();
-    app->start("iocafenet", 1);
-    m_app[m_nro_apps++] = app;
-
-    /* app = new AppInstance();
-    app->start("asteroidnet", 1);
-    m_app[m_nro_apps++] = app;
-
-    app = new AppInstance();
-    app->start("asteroidnet", 2);
-    m_app[m_nro_apps++] = app; */
-
-    osal_debug_assert(m_nro_apps <= MAX_APPS);
 
     /* Initialize signal structure for this device.
      */
@@ -86,6 +73,8 @@ ControllerRoot::ControllerRoot(
      * status signals.
      */
     ioc_enable_user_authentication(&iocom_root, ioc_authorize, &m_bmain);
+
+    start(network_name, device_nr);
 }
 
 
@@ -100,29 +89,52 @@ ControllerRoot::ControllerRoot(
 
 ****************************************************************************************************
 */
-ControllerRoot::~ControllerRoot()
+ApplicationRoot::~ApplicationRoot()
 {
-    os_int i;
-
-    /* Finish with 'tito' applications.
-     */
-    for (i = 0; i < m_nro_apps; i++)
-    {
-        delete m_app[i];
-    }
+    stop();
 }
 
-osalStatus ControllerRoot::loop()
+
+void ApplicationRoot::start(const os_char *network_name, os_uint device_nr)
 {
-    os_int i;
+    os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
+
+    m_gina1_def = m_gina1.inititalize(m_network_name, 1);
+    m_gina2_def = m_gina2.inititalize(m_network_name, 2);
+
+    ioc_set_brick_received_callback(&m_gina1.m_camera_buffer, app_gina1_photo_received, this);
+    ioc_brick_set_receive(&m_gina1.m_camera_buffer, OS_TRUE);
+
+    m_test_seq1.start(this);
+}
+
+void ApplicationRoot::stop()
+{
+    m_test_seq1.stop();
+}
+
+osalStatus ApplicationRoot::run()
+{
+    ioc_single_thread_run(&iocom_root);
+    ioc_receive_all(&iocom_root);
+    ioc_run_brick_receive(&m_gina1.m_camera_buffer);
 
     /* Call basic server implementation to maintain control streams.
      */
     ioc_run_bserver(&m_bmain);
 
-    for (i = 0; i<m_nro_apps; i++) {
-        m_app[i]->run();
-    }
+#if OSAL_MULTITHREAD_SUPPORT == 0
+    ?.run();
+#endif
 
+    ioc_send_all(&iocom_root);
+    ioc_single_thread_run(&iocom_root);
+    return OSAL_SUCCESS;
+}
+
+static osalStatus app_gina1_photo_received(
+    struct iocBrickBuffer *b,
+    void *context)
+{
     return OSAL_SUCCESS;
 }

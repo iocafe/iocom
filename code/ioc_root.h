@@ -293,6 +293,15 @@ void ioc_set_iodevice_id(
 void ioc_run(
     iocRoot *root);
 
+/* Run the communication in single tread build only.
+   Define evaluates to empty in multithread mode.
+ */
+#if OSAL_MULTITHREAD_SUPPORT
+    #define ioc_single_thread_run(r)
+#else
+    #define ioc_single_thread_run(r) ioc_run(r)
+#endif
+
 /* Set callback function for iocRoot object.
  */
 void ioc_set_root_callback(
