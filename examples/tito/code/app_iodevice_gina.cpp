@@ -82,6 +82,16 @@ gina_t *GinaIoDevice::inititalize(
     blockprm.flags = IOC_MBLK_DOWN /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
     ioc_initialize_memory_block(&m_gina_import, OS_NULL, &iocom_root, &blockprm);
 
+    blockprm.mblk_name = m_gina_def.conf_exp.hdr.mblk_name;
+    blockprm.nbytes = m_gina_def.conf_exp.hdr.mblk_sz;
+    blockprm.flags = IOC_MBLK_UP /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
+    ioc_initialize_memory_block(&m_gina_conf_export, OS_NULL, &iocom_root, &blockprm);
+
+    blockprm.mblk_name = m_gina_def.conf_imp.hdr.mblk_name;
+    blockprm.nbytes = m_gina_def.conf_imp.hdr.mblk_sz;
+    blockprm.flags = IOC_MBLK_DOWN /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
+    ioc_initialize_memory_block(&m_gina_conf_import, OS_NULL, &iocom_root, &blockprm);
+
     /* These do store memory block handle for signals. Without this signals will
        not work from this program.
      */
