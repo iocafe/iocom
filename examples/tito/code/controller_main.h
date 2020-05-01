@@ -22,13 +22,6 @@
 #include "nodeconf.h"
 #include "ioserver.h"
 #include "lighthouse.h"
-#include "gina-for-tito.h"
-#include "controller_root.h"
-#include "iodevice_base_class.h"
-#include "app_iodevice_gina.h"
-#include "sequence_base_class.h"
-#include "app_seq_blink_led.h"
-#include "app_instance.h"
 
 /* Include headers generated from JSON configuration.
  */
@@ -43,6 +36,15 @@ OSAL_C_HEADER_BEGINS
 #include "info-mblk-binary.h"
 OSAL_C_HEADER_ENDS
 
+/* Include header files of this module
+ */
+#include "gina-for-tito.h"
+#include "controller_root.h"
+#include "iodevice_base_class.h"
+#include "app_iodevice_gina.h"
+#include "sequence_base_class.h"
+#include "app_seq_blink_led.h"
+#include "app_instance.h"
 
 /* IOCOM root object for this program.
  */

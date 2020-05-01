@@ -28,11 +28,23 @@ class ControllerRoot
 public:
     /* Constructor.
      */
-    ControllerRoot();
+    ControllerRoot(
+        const os_char *device_name,
+        os_int device_nr,
+        const os_char *network_name,
+        const os_char *publish);
 
     /* Virtual destructor.
      */
     virtual ~ControllerRoot();
+
+    /* Basic server (ioserver extension) structure.
+     */
+    iocBServer m_bmain;
+
+    /* Structure holding signals for the IO node.
+     */
+    tito_t m_signals;
 
     static const os_int MAX_APPS = 20;
     os_int m_nro_apps;

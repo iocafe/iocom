@@ -142,7 +142,8 @@ osalStatus osal_main(
 
     /* Create tito main object and start listening for clients.
      */
-    app_root = new ControllerRoot;
+    app_root = new ControllerRoot(device_name, device_id->device_nr, device_id->network_name,
+        device_id->publish);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
