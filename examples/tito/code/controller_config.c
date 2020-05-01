@@ -16,11 +16,14 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#include "pinsx.h"
+#include "pins-io.h"
 #include "signals.h"
 #include "info-mblk-binary.h"
 #include "network-defaults.h"
 #include "gina-for-tito.h"
 
+#include "pins-io.c"
 #include "signals.c"
 #include "info-mblk-binary.c"
 #include "network-defaults.c"

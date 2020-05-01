@@ -88,6 +88,5 @@ static osalStatus app_gina1_photo_received(
     struct iocBrickBuffer *b,
     void *context)
 {
-
     return OSAL_SUCCESS;
 }

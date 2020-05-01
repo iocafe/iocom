@@ -81,7 +81,6 @@ void AppSequence::stop()
 }
 
 
-
 static void tito_test_sequence_thread_func(void *prm, osalEvent done)
 {
     AppSequence *seq = (AppSequence*)prm;
