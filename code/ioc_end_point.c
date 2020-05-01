@@ -209,10 +209,10 @@ void ioc_release_end_point(
   @anchor ioc_listen
 
   The ioc_listen() function sets up listening socket end point. If IOC_CREATE_THREAD flag is
-  given, the function created a new thread to run the end point. 
+  given, the function created a new thread to run the end point.
 
   @param   epoint Pointer to the end_point object.
-  @param   prm Parameter structure. Clear parameter structure using os_memclear() and 
+  @param   prm Parameter structure. Clear parameter structure using os_memclear() and
            set the members needed. Members:
            - parameters For example ":8817" or "127.0.0.1:8817" for TCP socket.
            - flags Bit fields: IOC_SOCKET Connect with TCP socket (set always).
@@ -229,7 +229,6 @@ osalStatus ioc_listen(
 {
     IOC_MT_ROOT_PTR;
     os_short flags;
-    osalThreadOptParams opt;
 
     osal_debug_assert(epoint->debug_id == 'E');
 
@@ -282,6 +281,7 @@ osalStatus ioc_listen(
         epoint->worker_thread_running = OS_TRUE;
         epoint->stop_worker_thread = OS_FALSE;
 
+        osalThreadOptParams opt;
         os_memclear(&opt, sizeof(osalThreadOptParams));
         opt.thread_name = "endpoint";
         opt.stack_size = 4000;
@@ -535,7 +535,7 @@ static osalStatus ioc_establish_connection(
     os_memclear(&conprm, sizeof(conprm));
     conprm.iface = newsocket->iface;
     conprm.parameters = remote_ip_addr;
-    conprm.newsocket = newsocket; 
+    conprm.newsocket = newsocket;
     conprm.flags = epoint->flags;
     return ioc_connect(con, &conprm);
 }

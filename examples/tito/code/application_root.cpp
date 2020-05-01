@@ -124,7 +124,7 @@ osalStatus ApplicationRoot::run()
     ioc_run_bserver(&m_bmain);
 
 #if OSAL_MULTITHREAD_SUPPORT == 0
-    ?.run();
+    m_test_seq1.run();
 #endif
 
     ioc_send_all(&iocom_root);
