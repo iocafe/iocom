@@ -42,7 +42,7 @@ public:
      */
     void start(const os_char *network_name, os_uint device_nr);
     void stop();
-    osalStatus run();
+    osalStatus run(os_timer *ti);
 
     /* Basic server (ioserver extension) structure.
      */

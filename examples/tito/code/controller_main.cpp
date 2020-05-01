@@ -122,10 +122,6 @@ osalStatus osal_main(
     osal_serial_initialize();
 
 #if PINS_LIBRARY
-    /* Set callback to detect received data and connection status changes.
-     */
-    // ioc_add_callback(&ioboard_imp, ioboard_communication_callback, OS_NULL);
-
     /* Connect PINS library to IOCOM library
      */
     pins_connect_iocom_library(&pins_hdr);
@@ -171,6 +167,9 @@ osalStatus osal_loop(
     void *app_context)
 {
     osalStatus s;
+    os_timer ti;
+
+    os_get_timer(&ti);
 
     /* The call is here for development/testing.
      */
@@ -179,10 +178,10 @@ osalStatus osal_loop(
 
     /* Run light house (send periodic UDP broadcasts so that this service can be detected)
      */
-    ioc_run_lighthouse_server(&lighthouse);
+    ioc_run_lighthouse_server(&lighthouse, &ti);
 
     ioc_run(&iocom_root);
-    s = app_root->run();
+    s = app_root->run(&ti);
     ioc_run(&iocom_root);
 
     return s;
@@ -218,36 +217,3 @@ void osal_main_cleanup(
     osal_tls_shutdown();
     osal_serial_shutdown();
 }
-
-
-/**
-****************************************************************************************************
-
-  @brief Callback function when data has been received from communication.
-
-  The ioboard_communication_callback function reacts to data from communication. Here we treat
-  memory block as set of communication signals, and mostly just forward these to IO.
-
-  @param   handle Memory block handle.
-  @param   start_addr First changed memory block address.
-  @param   end_addr Last changed memory block address.
-  @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
-           IOC_MBLK_CALLBACK_RECEIVE change by data received.
-  @param   context Callback context, not used by "tito" example.
-  @return  None.
-
-****************************************************************************************************
-*/
-#if 0
-void ioboard_communication_callback(
-    struct iocHandle *handle,
-    os_int start_addr,
-    os_int end_addr,
-    os_ushort flags,
-    void *context)
-{
-    /* Call pins library extension to forward communication signal changes to IO pins.
-     */
-    forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
-}
-#endif

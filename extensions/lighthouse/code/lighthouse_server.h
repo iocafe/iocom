@@ -98,4 +98,5 @@ void ioc_release_lighthouse_server(
 /* Keep lighthouse server functionality alive.
  */
 osalStatus ioc_run_lighthouse_server(
-    LighthouseServer *c);
+    LighthouseServer *c,
+    os_timer *ti);

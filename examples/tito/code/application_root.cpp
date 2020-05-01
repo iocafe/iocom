@@ -68,6 +68,10 @@ ApplicationRoot::ApplicationRoot(
      */
     ioc_publish_bserver_networks(&m_bmain, publish);
 
+    /* Set callback to detect received data and connection status changes.
+     */
+    ioc_add_callback(&m_bmain.imp, pins_default_iocom_callback, OS_NULL);
+
     /* Enable user authentication. Basic server pointer (m_bmain) is set as context, this
      * is needed to pass notifications (like "new device", or "wrong password") to server
      * status signals.
@@ -113,7 +117,7 @@ void ApplicationRoot::stop()
     m_test_seq1.stop();
 }
 
-osalStatus ApplicationRoot::run()
+osalStatus ApplicationRoot::run(os_timer *ti)
 {
     ioc_single_thread_run(&iocom_root);
     ioc_receive_all(&iocom_root);
@@ -124,7 +128,7 @@ osalStatus ApplicationRoot::run()
     ioc_run_bserver(&m_bmain);
 
 #if OSAL_MULTITHREAD_SUPPORT == 0
-    m_test_seq1.run();
+    m_test_seq1.run(ti);
 #endif
 
     ioc_send_all(&iocom_root);

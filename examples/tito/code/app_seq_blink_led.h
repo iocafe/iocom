@@ -37,6 +37,6 @@ public:
 
     virtual void start(ApplicationRoot *app);
     virtual void stop();
-    virtual void run();
+    virtual void run(os_timer *ti);
     virtual void task();
 };

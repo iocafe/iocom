@@ -182,19 +182,21 @@ osalStatus osal_loop(
     void *app_context)
 {
     osalStatus s;
+    os_timer ti;
 
+    os_get_timer(&ti);
     s = app_root_obj->run();
 #if OSAL_MULTITHREAD_SUPPORT
     switch (s)
     {
         default:
         case OSAL_SUCCESS:
-            os_get_timer(&idle_timer);
+            idle_timer = *ti;
             break;
 
         case OSAL_NOTHING_TO_DO:
             if (idle_mode) os_sleep(50);
-            else idle_mode = os_has_elapsed(&idle_timer, 2000);
+            else idle_mode = os_has_elapsed_since(&idle_timer, &ti, 2000);
             break;
     }
 #endif
@@ -205,7 +207,7 @@ osalStatus osal_loop(
 
     /* Run light house (send periodic UDP broadcasts so that this service can be detected)
      */
-    ioc_run_lighthouse_server(&lighthouse);
+    ioc_run_lighthouse_server(&lighthouse, &ti);
 
     return s;
 }

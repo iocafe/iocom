@@ -80,11 +80,11 @@ void BlinkLedSequence::stop()
 
 ****************************************************************************************************
 */
-void BlinkLedSequence::run()
+void BlinkLedSequence::run(os_timer *ti)
 {
-    if (os_has_elapsed(&m_timer, 2000))
+    if (os_has_elapsed_since(&m_timer, ti, 2000))
     {
-        os_get_timer(&m_timer);
+        m_timer = *ti;
         m_led_on = !m_led_on;
 
         /* Blink IO ping on gina1 and gina2 boards.
@@ -110,9 +110,11 @@ void BlinkLedSequence::run()
 */
 void BlinkLedSequence::task()
 {
+    os_timer ti;
     while (!m_stop_thread && osal_go())
     {
-        run();
+        os_get_timer(&ti);
+        run(&ti);
         os_timeslice();
     }
 }

@@ -31,7 +31,8 @@ static void ioc_release_lighthouse_server_one(
     LighthouseServerOne *c);
 
 static osalStatus ioc_run_lighthouse_server_one(
-    LighthouseServerOne *c);
+    LighthouseServerOne *c,
+    os_timer *ti);
 
 
 /**
@@ -88,11 +89,11 @@ void ioc_initialize_lighthouse_server(
     }
 
     if (ipv4_port) {
-        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4], 
+        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4],
             publish, ipv4_transport, ipv4_port, OS_FALSE);
     }
     if (ipv6_port) {
-        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6], 
+        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6],
             publish, ipv6_transport, ipv6_port, OS_TRUE);
     }
 }
@@ -115,7 +116,7 @@ static void ioc_initialize_lighthouse_server_one(
     c->msg.hdr.hdr_sz = (os_uchar)sizeof(LighthouseMessageHdr);
     c->msg.hdr.port_nr_low = (os_uchar)port;
     c->msg.hdr.port_nr_high = (os_uchar)(port >> 8);
-    c->msg.hdr.transport = (os_uchar)transport; 
+    c->msg.hdr.transport = (os_uchar)transport;
     os_strncpy(c->msg.publish, publish, LIGHTHOUSE_PUBLISH_SZ);
     c->msg.hdr.publish_sz = (os_uchar)os_strlen(c->msg.publish); /* Use this, may be cut */
 
@@ -170,30 +171,41 @@ static void ioc_release_lighthouse_server_one(
   once per four seconds. This informs IO devices (clients) that the service is here.
 
   @param   c Pointer to the light house client object structure.
+  @param   ti Pointer to current timer value. If OS_NULL, timer is read with os_get_timer().
   @return  OSAL_SUCCESS or OSAL_PENDING if all is fine. Latter indicates that we are waiting
            for next time to try to open a socket. Other values indicate a network error.
 
 ****************************************************************************************************
 */
 osalStatus ioc_run_lighthouse_server(
-    LighthouseServer *c)
+    LighthouseServer *c,
+    os_timer *ti)
 {
+    os_timer tval;
     osalStatus s4 = OSAL_SUCCESS, s6 = OSAL_SUCCESS;
+
+    if (ti == OS_NULL)
+    {
+        os_get_timer(&tval);
+        ti = &tval;
+    }
+
     if (c->f[LIGHTHOUSE_IPV4].msg.hdr.msg_id)
     {
-        s4 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4]);
+        s4 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4], ti);
     }
 
     if (c->f[LIGHTHOUSE_IPV6].msg.hdr.msg_id)
     {
-        s6 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6]);
+        s6 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6], ti);
     }
 
     return s4 ? s4 : s6;
 }
 
 static osalStatus ioc_run_lighthouse_server_one(
-    LighthouseServerOne *c)
+    LighthouseServerOne *c,
+    os_timer *ti)
 {
     osalStatus s;
     os_memsz bytes;
@@ -236,11 +248,11 @@ static osalStatus ioc_run_lighthouse_server_one(
 
     /* If not enough time has passed to send next UDP multicast.
      */
-    if (!os_has_elapsed(&c->multicast_timer, c->multicast_interval))
+    if (!os_has_elapsed_since(&c->multicast_timer, ti, c->multicast_interval))
     {
         return OSAL_SUCCESS;
     }
-    os_get_timer(&c->multicast_timer);
+    c->multicast_timer = *ti;
     c->multicast_interval = 4000;
 
     random_nr = (os_ushort)osal_rand(0, 65535);
