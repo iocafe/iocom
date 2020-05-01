@@ -4,7 +4,7 @@
   @brief   Some example sequence as own thread.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    30.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -76,14 +76,15 @@ void BlinkLedSequence::stop()
 */
 void BlinkLedSequence::run()
 {
-/*
+#if 0
     os_boolean led_on = OS_TRUE;
     os_char state_bits;
     os_int dip, elap, touch_sensor, brig = 1, up = 1;
     os_timer end_t, start_t;
 
     os_get_timer(&start_t);
-*/
+#endif
+
     while (!m_stop_thread && osal_go())
     {
 #if 0
@@ -107,28 +108,8 @@ void BlinkLedSequence::run()
             ioc_sets_int(&gina2->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
             ioc_sets_int(&gina1->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
         }
-
-
-        /* os_get_timer(&start_t);
-        ioc_sets_int(&gina2->imp.led_builtin, led_on, OSAL_STATE_CONNECTED);
-        do {
-            os_timeslice();
-            if (os_has_elapsed(&start_t, 1000)) break;
-            dip = ioc_gets_int(&gina2->exp.dip_switch_3, &state_bits);
-        } while (dip != led_on);
-
-        os_get_timer(&end_t);
-        elap = (end_t - start_t);
-
-
-
-        osal_trace_int("elap = ", elap);
-        osal_trace_int("led = ", led_on);
-        osal_trace_int("dip = ", dip);
-        os_sleep(500);
-        led_on = !led_on;
-        */
 #endif
+
         os_timeslice();
     }
 }

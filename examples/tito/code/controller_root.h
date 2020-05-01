@@ -23,16 +23,16 @@
 
 ****************************************************************************************************
 */
-class AppRoot
+class ControllerRoot
 {
 public:
     /* Constructor.
      */
-    AppRoot();
+    ControllerRoot();
 
     /* Virtual destructor.
      */
-    virtual ~AppRoot();
+    virtual ~ControllerRoot();
 
     static const os_int MAX_APPS = 20;
     os_int m_nro_apps;

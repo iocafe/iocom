@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "tito")
-set(E_HW "pc")
+set(E_HW "esphw")
 project(${E_PROJECT})
 
 # include build information common to all projects.
@@ -27,7 +27,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
 # Include IO pin and communication signal configuration for this hardware.
-include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include")
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
 
 # Add iocom, nodeconf, ioserver, lighthouse and devicedir to include path.

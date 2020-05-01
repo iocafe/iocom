@@ -64,15 +64,15 @@ osalStatus AppInstance::run()
     if (os_has_elapsed(&m_timer, 2000))
     {
         os_get_timer(&m_timer);
-        ioc_maintain_signal(&app_iocom_root, "teststr", m_network_name, &m_str_test);
+        ioc_maintain_signal(&iocom_root, "teststr", m_network_name, &m_str_test);
         ioc_gets_str(m_str_test, buf, sizeof(buf));
         os_strncat(buf, "Mighty", sizeof(buf));
         buf[3] = '0' + (os_char)m_count;
         if (++m_count > 9) m_count = 0;
-        ioc_maintain_signal(&app_iocom_root, "strtodevice", m_network_name, &m_str_to_device);
+        ioc_maintain_signal(&iocom_root, "strtodevice", m_network_name, &m_str_to_device);
         ioc_sets_str(m_str_to_device, buf);
 
-        ioc_maintain_signal(&app_iocom_root, "testfloat", m_network_name, &m_float_test);
+        ioc_maintain_signal(&iocom_root, "testfloat", m_network_name, &m_float_test);
         ioc_gets_array(m_float_test, floats, sizeof(floats)/sizeof(os_float));
     }
 

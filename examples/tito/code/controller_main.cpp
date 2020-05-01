@@ -28,8 +28,8 @@
  */
 #include "devicedir.h"
 
-iocRoot app_iocom_root;
-static AppRoot *app_root;
+iocRoot iocom_root;
+static ControllerRoot *app_root;
 
 /* IO device/network configuration.
  */
@@ -48,9 +48,12 @@ static LighthouseServer lighthouse;
 /**
 ****************************************************************************************************
 
-  @brief Set up the communication.
+  @brief The controller program entry point.
 
-  Initialize transport stream and set interface
+  Initialize IOCOM and start the IO controller application.
+
+  @oaran   argc Number of command line arguments (PC only)
+  @oaran   argv Array of command line argument pointers (PC only)
   @return  OSAL_SUCCESS if all fine, other values indicate an error.
 
 ****************************************************************************************************
@@ -81,11 +84,17 @@ osalStatus osal_main(
 
     /* Initialize communication root object.
      */
-    ioc_initialize_root(&app_iocom_root);
+    ioc_initialize_root(&iocom_root);
 
     /* If we are using devicedir for development testing, initialize.
      */
-    io_initialize_device_console(&ioconsole, &app_iocom_root);
+    io_initialize_device_console(&ioconsole, &iocom_root);
+
+    /* Setup IO pins.
+     */
+#if PINS_LIBRARY
+    pins_setup(&pins_hdr, PINS_DEFAULT);
+#endif
 
     /* Load device/network configuration and device/user account congiguration
        (persistent storage is typically either file system or micro-controller's flash).
@@ -94,7 +103,7 @@ osalStatus osal_main(
     ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
         sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
     device_id = ioc_get_device_id(&app_device_conf);
-    ioc_set_iodevice_id(&app_iocom_root, device_name, device_id->device_nr,
+    ioc_set_iodevice_id(&iocom_root, device_name, device_id->device_nr,
         device_id->password, device_id->network_name);
 
     /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
@@ -112,9 +121,19 @@ osalStatus osal_main(
     osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
     osal_serial_initialize();
 
+#if PINS_LIBRARY
+    /* Set callback to detect received data and connection status changes.
+     */
+    // ioc_add_callback(&ioboard_imp, ioboard_communication_callback, OS_NULL);
+
+    /* Connect PINS library to IOCOM library
+     */
+    pins_connect_iocom_library(&pins_hdr);
+#endif
+
      /* Connect to network.
      */
-    ioc_connect_node(&app_iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
+    ioc_connect_node(&iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
 
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
@@ -123,7 +142,7 @@ osalStatus osal_main(
 
     /* Create tito main object and start listening for clients.
      */
-    app_root = new AppRoot;
+    app_root = new ControllerRoot;
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -161,9 +180,9 @@ osalStatus osal_loop(
      */
     ioc_run_lighthouse_server(&lighthouse);
 
-    ioc_run(&app_iocom_root);
+    ioc_run(&iocom_root);
     s = app_root->loop();
-    ioc_run(&app_iocom_root);
+    ioc_run(&iocom_root);
 
     return s;
 }
@@ -194,7 +213,7 @@ void osal_main_cleanup(
 
     delete app_root;
 
-    ioc_release_root(&app_iocom_root);
+    ioc_release_root(&iocom_root);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }
@@ -226,39 +245,6 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
-    /* '#ifdef' is used to compile code in only if 7-segment display is configured
-       for the hardware.
-     */
-#ifdef PINS_SEGMENT7_GROUP
-    os_char buf[TITO_DOWN_SEVEN_SEGMENT_ARRAY_SZ];
-    const Pin *pin;
-    os_short i;
-
-    /* Process 7 segment display. Since this is transferred as boolean array, the
-       forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
-       boolean array from communication signal, and write it to IO pins.
-     */
-    if (ioc_is_my_address(&tito.down.seven_segment, start_addr, end_addr))
-    {
-        ioc_gets_array(&tito.down.seven_segment, buf, TITO_DOWN_SEVEN_SEGMENT_ARRAY_SZ);
-        if (ioc_is_value_connected(tito.down.seven_segment))
-        {
-            osal_console_write("7 segment data received\n");
-            for (i = TITO_DOWN_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
-                 i >= 0 && pin;
-                 i--, pin = pin->next) /* For now we need to loop backwards, fix this */
-            {
-                pin_set(pin, buf[i]);
-            }
-        }
-        else
-        {
-            // WE DO NOT COME HERE. SHOULD WE INVALIDATE WHOLE MAP ON DISCONNECT?
-            osal_console_write("7 segment data DISCONNECTED\n");
-        }
-    }
-#endif
-
     /* Call pins library extension to forward communication signal changes to IO pins.
      */
     forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);

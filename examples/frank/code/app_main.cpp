@@ -26,7 +26,7 @@
 
 /* IOCOM root object for this application
  */
-iocRoot app_iocom_root;
+iocRoot iocom_root;
 
 /* Pointer to IO application's root object.
  */
@@ -102,11 +102,11 @@ osalStatus osal_main(
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
      */
-    ioc_initialize_root(&app_iocom_root);
+    ioc_initialize_root(&iocom_root);
 
     /* If we are using devicedir for development testing, initialize.
      */
-    io_initialize_device_console(&ioconsole, &app_iocom_root);
+    io_initialize_device_console(&ioconsole, &iocom_root);
 
     /* Load device/network configuration and device/user account congiguration
        (persistent storage is typically either file system or micro-controller's flash).
@@ -115,10 +115,10 @@ osalStatus osal_main(
     ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
         sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
     device_id = ioc_get_device_id(&app_device_conf);
-    ioc_set_iodevice_id(&app_iocom_root, device_name, device_id->device_nr,
+    ioc_set_iodevice_id(&iocom_root, device_name, device_id->device_nr,
         device_id->password, device_id->network_name);
 
-    ioc_initialize_dynamic_root(&app_iocom_root);
+    ioc_initialize_dynamic_root(&iocom_root);
 
     /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
      */
@@ -132,7 +132,7 @@ osalStatus osal_main(
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */
-    ioc_set_root_callback(&app_iocom_root, app_root_callback, OS_NULL);
+    ioc_set_root_callback(&iocom_root, app_root_callback, OS_NULL);
 
     /* Setup network interface configuration and initialize transport library. This is
        partyly ignored if network interfaces are managed by operating system
@@ -146,7 +146,7 @@ osalStatus osal_main(
 
     /* Connect to network.
      */
-    ioc_connect_node(&app_iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
+    ioc_connect_node(&iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
 
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
@@ -234,10 +234,10 @@ void osal_main_cleanup(
      */
     ioc_release_lighthouse_server(&lighthouse);
 
-    ioc_set_root_callback(&app_iocom_root, OS_NULL, OS_NULL);
+    ioc_set_root_callback(&iocom_root, OS_NULL, OS_NULL);
     delete app_root_obj;
 
-    ioc_release_root(&app_iocom_root);
+    ioc_release_root(&iocom_root);
     osal_tls_shutdown();
     osal_serial_shutdown();
 }

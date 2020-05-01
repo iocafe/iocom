@@ -4,7 +4,7 @@
   @brief   Wrapper representing Gina IO device interface.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    30.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -51,7 +51,9 @@ GinaIoDevice::~GinaIoDevice()
 }
 
 
-gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr)
+gina_t *GinaIoDevice::inititalize(
+    const os_char *network_name,
+    os_uint device_nr)
 {
     iocMemoryBlockParams blockprm;
 
@@ -73,12 +75,12 @@ gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr
     blockprm.mblk_name = m_gina_def.exp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.exp.hdr.mblk_sz;
     blockprm.flags = IOC_MBLK_UP /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_gina_export, OS_NULL, &app_iocom_root, &blockprm);
+    ioc_initialize_memory_block(&m_gina_export, OS_NULL, &iocom_root, &blockprm);
 
     blockprm.mblk_name = m_gina_def.imp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.imp.hdr.mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
-    ioc_initialize_memory_block(&m_gina_import, OS_NULL, &app_iocom_root, &blockprm);
+    ioc_initialize_memory_block(&m_gina_import, OS_NULL, &iocom_root, &blockprm);
 
     /* These do store memory block handle for signals. Without this signals will
        not work from this program.
@@ -102,7 +104,7 @@ gina_t *GinaIoDevice::inititalize(const os_char *network_name, os_uint device_nr
     /* Set up buffer for incoming camera photo
      */
     ioc_initialize_brick_buffer(&m_camera_buffer, &m_gina_def.ccd,
-        &app_iocom_root, -1, IOC_BRICK_CONTROLLER);
+        &iocom_root, -1, IOC_BRICK_CONTROLLER);
 
     /* Set callback to detect received data and connection status changes.
      */

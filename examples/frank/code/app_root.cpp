@@ -58,7 +58,7 @@ AppRoot::AppRoot(
     prm.signal_config_sz = sizeof(ioapp_signal_config);
     prm.network_defaults = ioapp_network_defaults;
     prm.network_defaults_sz = sizeof(ioapp_network_defaults);
-    ioc_initialize_ioserver(&m_bmain, &app_iocom_root, &prm);
+    ioc_initialize_ioserver(&m_bmain, &iocom_root, &prm);
 
     /* Call basic server implementation macro to set up control stream.
      */
@@ -72,7 +72,7 @@ AppRoot::AppRoot(
      * is needed to pass notifications (like "new device", or "wrong password") to server
      * status signals.
      */
-    ioc_enable_user_authentication(&app_iocom_root, ioc_authorize, &m_bmain);
+    ioc_enable_user_authentication(&iocom_root, ioc_authorize, &m_bmain);
 }
 
 

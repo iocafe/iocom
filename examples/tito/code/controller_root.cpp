@@ -29,7 +29,7 @@
 
 ****************************************************************************************************
 */
-AppRoot::AppRoot()
+ControllerRoot::ControllerRoot()
 {
     AppInstance *app;
 
@@ -63,7 +63,7 @@ AppRoot::AppRoot()
 
 ****************************************************************************************************
 */
-AppRoot::~AppRoot()
+ControllerRoot::~ControllerRoot()
 {
     os_int i;
 
@@ -75,7 +75,7 @@ AppRoot::~AppRoot()
     }
 }
 
-osalStatus AppRoot::loop()
+osalStatus ControllerRoot::loop()
 {
     os_int i;
 
