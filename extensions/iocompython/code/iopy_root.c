@@ -792,7 +792,7 @@ static PyObject *Root_print(
 
         if (flags & (IOC_DEVDIR_DATA|IOC_DEVDIR_BUFFERS))
         {
-            param2 = "";
+            param2 = osal_str_empty;
         }
         if (os_strstr(param3, "data", OSAL_STRING_SEARCH_ITEM_NAME))
             flags |= IOC_DEVDIR_DATA;

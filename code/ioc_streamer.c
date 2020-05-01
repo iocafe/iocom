@@ -260,7 +260,7 @@ osalStatus ioc_streamer_flush(
 
     if (flags & OSAL_STREAM_FINAL_HANDSHAKE)
     {
-        s = ioc_streamer_write(stream, "", -1, &n_written, flags);
+        s = ioc_streamer_write(stream, osal_str_empty, -1, &n_written, flags);
         switch (s)
         {
             case OSAL_SUCCESS: return OSAL_PENDING;

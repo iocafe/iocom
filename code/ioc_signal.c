@@ -723,7 +723,7 @@ os_char ioc_moves_str(
     /* Handle null string pointer and if reading set returned string to empty in case of errors.
      */
     if (flags & IOC_SIGNAL_WRITE) {
-        if (str == OS_NULL) str = "";
+        if (str == OS_NULL) str = (os_char*)osal_str_empty;
     }
     else {
         if (str == OS_NULL) return 0;

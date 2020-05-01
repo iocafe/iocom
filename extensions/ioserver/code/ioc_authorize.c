@@ -315,7 +315,7 @@ static osalStatus ioc_authorize_process_block(
                  */
                 if (match)
                 {
-                    if (os_strcmp(state->password, "*")) {
+                    if (os_strcmp(state->password, osal_str_asterisk)) {
                         match = !os_strcmp(state->user->password, state->password);
                         state->ncode = IOC_NOTE_WRONG_IO_DEVICE_PASSWORD;
                     }
@@ -518,7 +518,7 @@ static void ioc_authorize_parse_accounts(
     }
     else
     {
-        s = ioc_authorize_process_block(&state, "", &jindex);
+        s = ioc_authorize_process_block(&state, osal_str_empty, &jindex);
         if (s)
         {
             osal_debug_error_int("User account data is corrupted (B):", s);

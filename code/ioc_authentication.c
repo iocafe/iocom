@@ -51,7 +51,9 @@ void ioc_make_authentication_frame(
 
     os_char
         *network_name,
-        *user_name,
+        *user_name;
+
+    const os_char
         *password;
 
     os_int
@@ -97,7 +99,7 @@ void ioc_make_authentication_frame(
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
     ioc_msg_setstr(network_name, &p);
 
-    password = "";
+    password = osal_str_empty;
 #if IOC_AUTHENTICATION_CODE
     if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION)) == IOC_SECURE_CONNECTION)
     {
@@ -292,7 +294,7 @@ osalStatus ioc_process_received_authentication_frame(
 
     /** If we are automatically setting for a device (root network name is "*" or ""
      */
-    if (!os_strcmp(root->network_name, "*") || root->network_name[0] == '\0')
+    if (!os_strcmp(root->network_name, osal_str_asterisk) || root->network_name[0] == '\0')
     {
         os_strncpy(root->network_name, user.network_name, IOC_NETWORK_NAME_SZ);
         ioc_set_network_name(root);

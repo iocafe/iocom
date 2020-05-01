@@ -70,7 +70,7 @@ ApplicationRoot::ApplicationRoot(
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&m_bmain.imp, pins_default_iocom_callback, OS_NULL);
+    ioc_add_callback(&m_bmain.imp, pins_default_iocom_callback, &m_signals.hdr);
 
     /* Enable user authentication. Basic server pointer (m_bmain) is set as context, this
      * is needed to pass notifications (like "new device", or "wrong password") to server

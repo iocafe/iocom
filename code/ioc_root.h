@@ -221,7 +221,7 @@ typedef struct iocRoot
 
     /** Pointer to static structure defining signals (for pins library).
      */
-    const struct iocDeviceHdr *device_signal_hdr;
+    // const struct iocDeviceHdr *device_signal_hdr;
 
     /** Automatic device number, used if device number is 0
      */

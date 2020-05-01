@@ -88,6 +88,47 @@ void ioc_release_lighthouse_client(
 /**
 ****************************************************************************************************
 
+  @brief Check if lighthouse is to be used with this host name.
+
+  The ioc_is_lighthouse_used() function checks if host name is asterisk or otherwise
+  unspecified. If so lighthouse can be used and the function returns OS_TRUE. It also
+  checks if wildcard specifies IPv6 address, like "[*]".
+
+  @param   hostname Pointer to host name to check.
+  @param   is_ipv6_wildcard Pointer to boolean to set to indicate if this is IPv6 wildcard.
+           Can be OS_NULL if not needed.
+  @return  OS_TRUE if light house should be used, OS_FALSE if not.
+
+****************************************************************************************************
+*/
+os_boolean ioc_is_lighthouse_used(
+    const os_char *hostname,
+    os_boolean *is_ipv6_wildcard)
+{
+    os_boolean lighthouse_on, ipv6;
+
+    lighthouse_on = OS_FALSE;
+    ipv6 = OS_FALSE;
+
+    if (!os_strcmp(hostname, osal_str_asterisk) ||
+        !os_strcmp(hostname, osal_str_empty))
+    {
+        lighthouse_on = OS_TRUE;
+    }
+    else if (!os_strcmp(hostname, "[*]"))
+    {
+        lighthouse_on = OS_TRUE;
+        ipv6 = OS_TRUE;
+    }
+
+    if (is_ipv6_wildcard) *is_ipv6_wildcard = ipv6;
+    return lighthouse_on;
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Keep lighthouse client functionality alive, poll for UDP multicasts.
 
   The ioc_run_lighthouse_client() function is called repeatedly to poll for received
@@ -427,7 +468,8 @@ osalStatus ioc_get_lighthouse_connectstr(
     os_memsz connectstr_sz)
 {
     os_int i, selected_i;
-    os_char nbuf[OSAL_NBUF_SZ], *compare_name;
+    os_char nbuf[OSAL_NBUF_SZ];
+    const os_char *compare_name;
     iocTransportEnum transport;
     os_boolean lighthouse_visible;
 
@@ -442,7 +484,9 @@ osalStatus ioc_get_lighthouse_connectstr(
     c->lighthouse_really_needed = OS_TRUE;
 
     compare_name = network_name;
-    if (!os_strcmp(compare_name, "*")) compare_name = "";
+    if (!os_strcmp(compare_name, osal_str_asterisk)) {
+        compare_name = osal_str_empty;
+    }
 
     selected_i = -1;
     lighthouse_visible = OS_FALSE;

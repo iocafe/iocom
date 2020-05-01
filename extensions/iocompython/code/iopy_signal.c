@@ -447,7 +447,7 @@ static void Signal_set_sequence(
             py_repr = PyObject_Repr(a);
             py_str = PyUnicode_AsEncodedString(py_repr, "utf-8", "ignore"); // "~E~");
             str = PyBytes_AS_STRING(py_str);
-            if (str == NULL) str = "";
+            if (str == NULL) str = osal_str_empty;
             if (*str == '\'') str++;
             d = osal_str_to_double(str, OS_NULL);
             Signal_store_double(d, state);
@@ -857,7 +857,7 @@ static PyObject *Signal_get_str_value(
         OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC|flags);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
     {
-        return Py_BuildValue("s", (char *)"");
+        return Py_BuildValue("s", (char *)osal_str_empty);
     }
 
     value = Py_BuildValue("s", p);

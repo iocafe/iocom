@@ -33,6 +33,13 @@ struct pinsPhoto;
 #define CANDY_USE_LIGHTHOUSE 1
 #endif
 
+/* Sensibility check: Allow lighthouse only for socket clients.
+ */
+#if (IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SOCKET)==0 || (IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_SERVER)
+#undef CANDY_USE_LIGHTHOUSE
+#define CANDY_USE_LIGHTHOUSE 0
+#endif
+
 #include "pins-io.h"
 #include "signals.h"
 #include "info-mblk.h"

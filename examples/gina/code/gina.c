@@ -46,6 +46,8 @@ static GazerbeamReceiver gazerbeam;
 
 #if GINA_USE_LIGHTHOUSE
 #include "lighthouse.h"
+static os_boolean lighthouse_on;
+static os_boolean is_ipv6_wildcard;
 static LighthouseClient lighthouse;
 #endif
 
@@ -181,21 +183,24 @@ osalStatus osal_main(
     prm.network_name = device_id->network_name;
     prm.ctrl_type = IOBOARD_CTRL_CON;
     prm.socket_con_str = connconf->connection[0].parameters;
-    prm.serial_con_str = connconf->connection[0].parameters;
+    prm.serial_con_str = prm.socket_con_str;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = GINA_EXP_MBLK_SZ;
     prm.receive_block_sz = GINA_IMP_MBLK_SZ;
     prm.auto_synchronization = OS_FALSE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
-    prm.device_signal_hdr = &gina_hdr;
+    // prm.device_signal_hdr = &gina_hdr;
     prm.device_info = ioapp_signal_config;
     prm.device_info_sz = sizeof(ioapp_signal_config);
     prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
     prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
 #if GINA_USE_LIGHTHOUSE
-    prm.lighthouse = &lighthouse;
-    prm.lighthouse_func = ioc_get_lighthouse_connectstr;
+    lighthouse_on = ioc_is_lighthouse_used(prm.socket_con_str, &is_ipv6_wildcard);
+    if (lighthouse_on) {
+        prm.lighthouse = &lighthouse;
+        prm.lighthouse_func = ioc_get_lighthouse_connectstr;
+    }
 #endif
 
     /* Start communication.
@@ -224,7 +229,9 @@ osalStatus osal_main(
        string starts with '[' (indicates IPv6 address).
      */
 #if GINA_USE_LIGHTHOUSE
-    ioc_initialize_lighthouse_client(&lighthouse, prm.socket_con_str[0] == '[', OS_NULL);
+    if (lighthouse_on) {
+        ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_NULL);
+    }
 #endif
 
     /* Initialize library to receive wifi configuration by phototransostor.
@@ -305,7 +312,9 @@ osalStatus osal_loop(
     /* Run light house.
      */
 #if GINA_USE_LIGHTHOUSE
-    ioc_run_lighthouse_client(&lighthouse);
+    if (lighthouse_on) {
+        ioc_run_lighthouse_client(&lighthouse);
+    }
 #endif
 
     /* Get Wifi configuration messages from Android phone flash light -> phototransistor.
@@ -495,7 +504,7 @@ void ioboard_communication_callback(
     {
         /* Call pins library extension to forward communication signal changes to IO pins.
          */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
+        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &gina_hdr, flags);
     }
 #endif
 }

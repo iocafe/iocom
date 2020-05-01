@@ -220,7 +220,7 @@ void ioc_set_iodevice_id(
     root->device_nr = device_nr;
 #if IOC_AUTHENTICATION_CODE
   #if OSAL_SECRET_SUPPORT
-    if (os_strcmp(password, "") && os_strcmp(password, "*"))
+    if (os_strcmp(password, osal_str_empty) && os_strcmp(password, osal_str_asterisk))
     {
         os_strncpy(root->password, password, IOC_PASSWORD_SZ);
     }
@@ -547,7 +547,7 @@ void ioc_set_network_name(
 
     for (mblk = root->mblk.first; mblk; mblk = mblk->link.next)
     {
-        if (!os_strcmp(mblk->network_name, "*") || mblk->network_name[0] == '\0')
+        if (!os_strcmp(mblk->network_name, osal_str_asterisk) || mblk->network_name[0] == '\0')
         {
             os_strncpy(mblk->network_name, root->network_name, IOC_NETWORK_NAME_SZ);
         }

@@ -604,7 +604,7 @@ osalStatus ioc_run_connection(
            functionality check if we have received the information by UDP broadcast.
            If we got it, try it. Otherwise we can do nothing.
          */
-        if (parameters[0] == '\0' || !os_strcmp(parameters, "*"))
+        if (parameters[0] == '\0' || !os_strcmp(parameters, osal_str_asterisk))
         {
             os_char connectstr[OSAL_HOST_BUF_SZ];
             if (con->lighthouse_func == OS_NULL) return OSAL_SUCCESS;
@@ -1008,7 +1008,7 @@ static void ioc_connection_thread(
                functionality check if we have received the information by UDP broadcast.
                If we got it, try it. Otherwise we can do nothing.
              */
-            if (parameters[0] == '\0' || !os_strcmp(parameters, "*"))
+            if (parameters[0] == '\0' || !os_strcmp(parameters, osal_str_asterisk))
             {
                 if (con->lighthouse_func == OS_NULL) goto failed;
                 os_char connectstr[OSAL_IPADDR_AND_PORT_SZ];

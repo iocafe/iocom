@@ -56,7 +56,7 @@ void devicedir_info(
     os_strncpy(buf, root->device_name, sizeof(buf));
 
     if (root->device_nr == IOC_AUTO_DEVICE_NR) {
-        os_strncat(buf, "*", sizeof(buf));
+        os_strncat(buf, osal_str_asterisk, sizeof(buf));
     }
     else {
         osal_int_to_str(nbuf, sizeof(nbuf), root->device_nr);

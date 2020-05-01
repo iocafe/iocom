@@ -105,7 +105,7 @@ static PyObject *BrickBuffer_new(
         *exp = NULL,
         *imp = NULL,
         *prefix = "rec_",
-        *flags = "";
+        *flags = osal_str_empty;
 
     int
         timeout_ms = 0; /* 0 = use default timeout */

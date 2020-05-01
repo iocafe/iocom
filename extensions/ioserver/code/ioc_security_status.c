@@ -167,7 +167,7 @@ static osalStatus ioc_security_notify2(
 
             case IOC_NOTE_WRONG_IO_DEVICE_PASSWORD:
                 if (text == OS_NULL) {
-                    text = os_strcmp(note->password, "") ? "WRONG PASSWORD" : "NO PASSWORD";
+                    text = os_strcmp(note->password, osal_str_empty) ? "WRONG PASSWORD" : "NO PASSWORD";
                 }
                 ioc_set_notification(ss->new_device, ss->new_device_timer, ss->new_device_is_set,
                     ss->new_device_nrows, code, note, text);

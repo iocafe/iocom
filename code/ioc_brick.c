@@ -388,7 +388,7 @@ void ioc_run_brick_send(
         s = ioc_send_brick_data(b);
     }
     else {
-        s = ioc_streamer_write(b->stream, "", 0, &n_written, OSAL_STREAM_DEFAULT);
+        s = ioc_streamer_write(b->stream, osal_str_empty, 0, &n_written, OSAL_STREAM_DEFAULT);
     }
 
     if (s) {

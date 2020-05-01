@@ -149,12 +149,12 @@ typedef struct
     const osalStreamInterface *iface;
 
     /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
-        identifies IO device type, like "TEMPCTRL". 
+        identifies IO device type, like "TEMPCTRL".
      */
     const os_char *device_name;
 
     /** If there are multiple devices of same type (same device name),
-        this identifies the device. This number is often written in 
+        this identifies the device. This number is often written in
         context as device name, like "TEMPCTRL1".
      */
     os_uint device_nr;
@@ -168,7 +168,7 @@ typedef struct
      */
     const os_char *network_name;
 
-	/** Control computer connection type: IOBOARD_CTRL_LISTEN_SOCKET, 
+    /** Control computer connection type: IOBOARD_CTRL_LISTEN_SOCKET,
         IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_LISTEN_SERIAL,
         IOBOARD_CTRL_CONNECT_SERIAL, IOBOARD_CTRL_CONNECT_TLS,
         IOBOARD_CTRL_LISTEN_TLS.
@@ -176,15 +176,15 @@ typedef struct
      */
     os_int ctrl_type;
 
-	/** If IO board connects to control computer, IOBOARD_CTRL_CONNECT_SOCKET option:
-	    IP address and port as a string. For example "192.168.1.229:8369".
-	    If unused can be OS_NULL.
-	 */
+    /** If IO board connects to control computer, IOBOARD_CTRL_CONNECT_SOCKET option:
+        IP address and port as a string. For example "192.168.1.229:8369".
+        If unused can be OS_NULL.
+     */
     const os_char *socket_con_str;
 
-	/** If control computer and IO board communicate using serial communication,
-	    serial port and settings for it as a string. If unused can be OS_NULL.
-	 */
+    /** If control computer and IO board communicate using serial communication,
+        serial port and settings for it as a string. If unused can be OS_NULL.
+     */
     const os_char *serial_con_str;
 
     os_int max_connections;
@@ -210,7 +210,7 @@ typedef struct
 
     /** Pointer to static structure defining signals (for pins library).
      */
-    const struct iocDeviceHdr *device_signal_hdr;
+    // const struct iocDeviceHdr *device_signal_hdr;
 
     /** Enable configuration import and export memory blocks by setting
         nonzero block sizes.

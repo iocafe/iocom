@@ -25,7 +25,7 @@ static void devicedir_override_prm(
 {
 
     if (override_value[0] == '\0') {
-        override_value = "*";
+        override_value = osal_str_asterisk;
     }
 
     if (flags & IOC_HELP_MODE)
@@ -69,7 +69,7 @@ osalStatus devicedir_overrides(
 #if OSAL_MAX_NRO_WIFI_NETWORKS > 0
     devicedir_override_prm("wifi", block.wifi[0].wifi_net_name, list, flags, OS_TRUE);
     devicedir_override_prm("pass", block.wifi[0].wifi_net_password[0]
-        ? hidden_password : "", list, flags, OS_FALSE);
+        ? hidden_password : osal_str_empty, list, flags, OS_FALSE);
 
 #if OSAL_MAX_NRO_WIFI_NETWORKS > 1
     os_char buf[32], nbuf[OSAL_NBUF_SZ];
@@ -84,7 +84,7 @@ osalStatus devicedir_overrides(
             os_strncpy(buf, "pass", sizeof(buf));
             os_strncat(buf, nbuf, sizeof(buf));
             devicedir_override_prm(buf, block.wifi[i].wifi_net_password[0]
-                ? hidden_password : "", list, flags, OS_FALSE);
+                ? hidden_password : osal_str_empty, list, flags, OS_FALSE);
         }
     }
 #endif

@@ -73,7 +73,7 @@ void ioboard_start_communication(
 #endif
     ioc_initialize_root(&ioboard_root);
     ioc_set_iodevice_id(&ioboard_root, prm->device_name, prm->device_nr, prm->password, prm->network_name);
-    ioboard_root.device_signal_hdr = prm->device_signal_hdr;
+    // ioboard_root.device_signal_hdr = prm->device_signal_hdr;
 
     if (prm->pool)
     {

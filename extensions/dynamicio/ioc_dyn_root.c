@@ -84,7 +84,7 @@ iocAddDinfoState;
 static osalStatus ioc_dinfo_process_block(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
-    os_char *array_tag,
+    const os_char *array_tag,
     osalJsonIndex *jindex);
 
 
@@ -236,7 +236,7 @@ void ioc_remove_dynamic_network(
 
     /* If we application needs to be informed?
      */
-    ioc_new_root_event(droot->root, IOC_NETWORK_DISCONNECTED, dnetwork, 
+    ioc_new_root_event(droot->root, IOC_NETWORK_DISCONNECTED, dnetwork,
         OS_NULL, droot->root->callback_context);
 
     /* Fond out who has pointer to dnetwork in prev_dn.
@@ -541,7 +541,7 @@ static void ioc_resize_memory_block_by_info(
 static osalStatus ioc_dinfo_process_block(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
-    os_char *array_tag,
+    const os_char *array_tag,
     osalJsonIndex *jindex)
 {
     osalJsonItem item;
@@ -725,7 +725,7 @@ osalStatus ioc_add_dynamic_info(
         goto getout;
     }
 
-    s = ioc_dinfo_process_block(droot, &state, "", &jindex);
+    s = ioc_dinfo_process_block(droot, &state, osal_str_empty, &jindex);
     if (s) goto getout;
 
     /* Add info block to dynamic shortcuts (if not somehow already there)

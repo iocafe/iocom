@@ -98,7 +98,7 @@ static PyObject *Stream_new(
         *tod_buf_name = "tod_buf",
         *exp_mblk_path = NULL,
         *imp_mblk_path = NULL,
-        *flags = "";
+        *flags = osal_str_empty;
 
     int
         select = 0;
@@ -324,7 +324,7 @@ static PyObject *Stream_get_data(
     os_memsz sz;
 
     data = ioc_get_stream_data(self->stream, &sz, 0);
-    if (data == NULL) data = "";
+    if (data == NULL) data = osal_str_empty;
     return PyBytes_FromStringAndSize(data, sz);
 }
 
@@ -421,7 +421,7 @@ PyObject *iocom_stream_getconf(
         *frd_buf_name = "frd_buf",
         *tod_buf_name = "tod_buf",
         *device_path = OS_NULL,
-        *flags = "";
+        *flags = osal_str_empty;
 
     int
         select = OS_PBNR_CONFIG;
@@ -482,7 +482,7 @@ PyObject *iocom_stream_getconf(
     if (s == OSAL_COMPLETED)
     {
         data = ioc_get_stream_data(stream, &sz, 0);
-        if (data == NULL) data = "";
+        if (data == NULL) data = osal_str_empty;
         rval = PyBytes_FromStringAndSize(data, sz);
     }
     else
@@ -511,7 +511,7 @@ PyObject *iocom_stream_setconf(
         *frd_buf_name = "frd_buf",
         *tod_buf_name = "tod_buf",
         *device_path = OS_NULL,
-        *flags = "";
+        *flags = osal_str_empty;
 
     int
         select = OS_PBNR_CONFIG;
@@ -597,7 +597,7 @@ PyObject *iocom_initconf(
         *frd_buf_name = "frd_buf",
         *tod_buf_name = "tod_buf",
         *device_path = OS_NULL,
-        *flags = "";
+        *flags = osal_str_empty;
 
     os_char
         exp_mblk_path[IOC_MBLK_PATH_SZ],

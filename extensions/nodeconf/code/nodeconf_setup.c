@@ -55,7 +55,7 @@ static os_char nodeconf_static_buf[IOC_NODECONF_STATIC_BUF_SZ];
  */
 static osalStatus ioc_nconf_process_block(
     iocNconfParseState *state,
-    os_char *array_tag,
+    const os_char *array_tag,
     osalJsonIndex *jindex);
 
 static osalStatus ioc_nconf_setup_structure(
@@ -302,7 +302,7 @@ static osalStatus ioc_nconf_process_array(
 */
 static osalStatus ioc_nconf_process_block(
     iocNconfParseState *state,
-    os_char *array_tag,
+    const os_char *array_tag,
     osalJsonIndex *jindex)
 {
     osalJsonItem item;
@@ -383,7 +383,7 @@ static osalStatus ioc_nconf_process_block(
                     }
                     else if (!os_strcmp(state->tag, "device_nr"))
                     {
-                        if (!os_strcmp(item.value.s, "*") || !os_strcmp(item.value.s, "auto")) // AUTO CAN BE REMOVED LATER, IT IS HERE NOW BECAUSE I STILL GOT OLD CONF FILES AROUND
+                        if (!os_strcmp(item.value.s, osal_str_asterisk) || !os_strcmp(item.value.s, "auto")) // AUTO CAN BE REMOVED LATER, IT IS HERE NOW BECAUSE I STILL GOT OLD CONF FILES AROUND
                         {
                             node->device_id.device_nr = IOC_AUTO_DEVICE_NR;
                         }
@@ -601,7 +601,7 @@ static osalStatus ioc_nconf_setup_structure(
     osalJsonIndex jindex;
     iocNconfParseState state;
     osalStatus s;
-    os_int n_nics, n_wifis, n_connections;
+    os_int n_nics, n_wifis, n_connections, i;
 
     os_memclear(&state, sizeof(state));
     state.node = node;
@@ -609,7 +609,7 @@ static osalStatus ioc_nconf_setup_structure(
     s = osal_create_json_indexer(&jindex, config, config_sz, 0);
     if (!s)
     {
-        s = ioc_nconf_process_block(&state, "", &jindex);
+        s = ioc_nconf_process_block(&state, osal_str_empty, &jindex);
     }
 
     n_nics = state.nic_ix;
@@ -626,6 +626,17 @@ static osalStatus ioc_nconf_setup_structure(
     if (n_connections > IOC_MAX_NCONF_CONNECTIONS) n_connections = IOC_MAX_NCONF_CONNECTIONS;
     node->connections.connection = node->connection;
     node->connections.n_connections = n_connections;
+
+    for (i = 0; i < IOC_MAX_NCONF_CONNECTIONS; i++)
+    {
+         if (node->connection[i].parameters == OS_NULL) {
+             node->connection[i].parameters = osal_str_asterisk;
+         }
+    }
+
+    if (node->device_id.device_nr <= 0) {
+        node->device_id.device_nr = IOC_AUTO_DEVICE_NR;
+    }
 
     if (s)
     {

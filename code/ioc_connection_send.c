@@ -907,7 +907,7 @@ osalStatus ioc_finish_frame(
 ****************************************************************************************************
 */
 void ioc_msg_setstr(
-    os_char *str,
+    const os_char *str,
     os_uchar **p)
 {
     os_memsz

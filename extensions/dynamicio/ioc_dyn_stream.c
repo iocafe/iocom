@@ -554,7 +554,8 @@ osalStatus ioc_run_stream(
         }
         else
         {
-            s = ioc_streamer_write(stream->streamer, "", -1, &n_written, OSAL_STREAM_DEFAULT);
+            s = ioc_streamer_write(stream->streamer, osal_str_empty, -1,
+                &n_written, OSAL_STREAM_DEFAULT);
         }
     }
 

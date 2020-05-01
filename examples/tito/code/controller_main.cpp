@@ -129,7 +129,7 @@ osalStatus osal_main(
 
      /* Connect to network.
      */
-    ioc_connect_node(&iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD);
+    ioc_connect_node(&iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD_COND);
 
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.

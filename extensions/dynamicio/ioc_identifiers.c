@@ -119,7 +119,7 @@ os_boolean ioc_get_part_of_iopath(
     n = (e - b) + 1;
     if (n > buf_sz) n = buf_sz;
     os_strncpy(buf, b, n);
-    if (!os_strcmp(buf, "*")) buf[0] = '\0';
+    if (!os_strcmp(buf, osal_str_asterisk)) buf[0] = '\0';
 
     if (p)
     {

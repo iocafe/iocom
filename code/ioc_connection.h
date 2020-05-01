@@ -114,6 +114,13 @@
 #define IOC_NO_CERT_CHAIN 1024
 /*@}*/
 
+/** Create thread flag defined only if multithreading is supported.
+ */
+#if OSAL_MULTITHREAD_SUPPORT
+#define IOC_CREATE_THREAD_COND IOC_CREATE_THREAD
+#else
+#define IOC_CREATE_THREAD_COND 0
+#endif
 
 /** Flags for message frame. Bit fields.
  */
@@ -750,7 +757,7 @@ osalStatus ioc_finish_frame(
 /* Store string into message beging generated.
  */
 void ioc_msg_setstr(
-    os_char *str,
+    const os_char *str,
     os_uchar **p);
 
 /* Store 16 bit integer into message beging generated.

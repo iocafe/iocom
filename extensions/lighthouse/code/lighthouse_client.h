@@ -124,6 +124,12 @@ void ioc_initialize_lighthouse_client(
 void ioc_release_lighthouse_client(
     LighthouseClient *c);
 
+/* Check if lighthouse is to be used with this host name.
+ */
+os_boolean ioc_is_lighthouse_used(
+    const os_char *hostname,
+    os_boolean *is_ipv6_wildcard);
+
 /* Keep lighthouse client functionality alive.
  */
 osalStatus ioc_run_lighthouse_client(
