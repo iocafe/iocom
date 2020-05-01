@@ -45,7 +45,7 @@ static osalStatus ioc_run_bserver_network(
 
   @brief Initialize basic server components.
 
-  The ioc_initialize_bserver() function sets up basic server main structure. The structure holds
+  The ioc_initialize_ioserver() function sets up basic server main structure. The structure holds
   static information for transferring configuration, published networks, etc.
 
   Flat basic server structure is allocated by application, but this function allocates additional
@@ -62,7 +62,7 @@ static osalStatus ioc_run_bserver_network(
 
 ****************************************************************************************************
 */
-void ioc_initialize_bserver(
+void ioc_initialize_ioserver(
     iocBServer *m,
     iocRoot *root,
     iocBServerParams *prm)

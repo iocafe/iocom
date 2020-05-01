@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "app_main.h"
+#include "controller_main.h"
 
 
 /**
@@ -50,6 +50,9 @@ BlinkLedSequence::~BlinkLedSequence()
 void BlinkLedSequence::start(AppInstance *app)
 {
     if (m_started) return;
+
+    gina1 = app->m_gina1_def;
+    gina2 = app->m_gina2_def;
     AppSequence::start(app);
 }
 

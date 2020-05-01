@@ -58,7 +58,7 @@ AppRoot::AppRoot(
     prm.signal_config_sz = sizeof(ioapp_signal_config);
     prm.network_defaults = ioapp_network_defaults;
     prm.network_defaults_sz = sizeof(ioapp_network_defaults);
-    ioc_initialize_bserver(&m_bmain, &app_iocom_root, &prm);
+    ioc_initialize_ioserver(&m_bmain, &app_iocom_root, &prm);
 
     /* Call basic server implementation macro to set up control stream.
      */

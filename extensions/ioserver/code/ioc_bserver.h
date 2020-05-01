@@ -152,7 +152,7 @@ iocBServerNetwork;
  */
 /* Initialize basic server components.
  */
-void ioc_initialize_bserver(
+void ioc_initialize_ioserver(
     iocBServer *m,
     iocRoot *root,
     iocBServerParams *prm);
@@ -176,20 +176,20 @@ osalStatus ioc_run_bserver(
 /* Macro to set up a control stream by typical signal configuration.
  */
 #define IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(bmain, sig) \
-    bmain.ctrl_stream_params.is_device = OS_TRUE; \
-    bmain.ctrl_stream_params.frd.cmd = &sig.conf_imp.frd_cmd; \
-    bmain.ctrl_stream_params.frd.select = &sig.conf_imp.frd_select; \
-    bmain.ctrl_stream_params.frd.buf = &sig.conf_exp.frd_buf; \
-    bmain.ctrl_stream_params.frd.head = &sig.conf_exp.frd_head; \
-    bmain.ctrl_stream_params.frd.tail = &sig.conf_imp.frd_tail; \
-    bmain.ctrl_stream_params.frd.state = &sig.conf_exp.frd_state; \
-    bmain.ctrl_stream_params.frd.to_device = OS_FALSE; \
-    bmain.ctrl_stream_params.tod.cmd = &sig.conf_imp.tod_cmd; \
-    bmain.ctrl_stream_params.tod.select = &sig.conf_imp.tod_select; \
-    bmain.ctrl_stream_params.tod.buf = &sig.conf_imp.tod_buf; \
-    bmain.ctrl_stream_params.tod.head = &sig.conf_imp.tod_head; \
-    bmain.ctrl_stream_params.tod.tail = &sig.conf_exp.tod_tail; \
-    bmain.ctrl_stream_params.tod.state = &sig.conf_exp.tod_state; \
-    bmain.ctrl_stream_params.tod.to_device = OS_TRUE; \
-    ioc_init_control_stream(&bmain.ctrl_stream, &bmain.ctrl_stream_params);
+    (bmain).ctrl_stream_params.is_device = OS_TRUE; \
+    (bmain).ctrl_stream_params.frd.cmd = &sig.conf_imp.frd_cmd; \
+    (bmain).ctrl_stream_params.frd.select = &sig.conf_imp.frd_select; \
+    (bmain).ctrl_stream_params.frd.buf = &sig.conf_exp.frd_buf; \
+    (bmain).ctrl_stream_params.frd.head = &sig.conf_exp.frd_head; \
+    (bmain).ctrl_stream_params.frd.tail = &sig.conf_imp.frd_tail; \
+    (bmain).ctrl_stream_params.frd.state = &sig.conf_exp.frd_state; \
+    (bmain).ctrl_stream_params.frd.to_device = OS_FALSE; \
+    (bmain).ctrl_stream_params.tod.cmd = &sig.conf_imp.tod_cmd; \
+    (bmain).ctrl_stream_params.tod.select = &sig.conf_imp.tod_select; \
+    (bmain).ctrl_stream_params.tod.buf = &sig.conf_imp.tod_buf; \
+    (bmain).ctrl_stream_params.tod.head = &sig.conf_imp.tod_head; \
+    (bmain).ctrl_stream_params.tod.tail = &sig.conf_exp.tod_tail; \
+    (bmain).ctrl_stream_params.tod.state = &sig.conf_exp.tod_state; \
+    (bmain).ctrl_stream_params.tod.to_device = OS_TRUE; \
+    ioc_init_control_stream(&(bmain).ctrl_stream, &(bmain).ctrl_stream_params);
 

@@ -1,10 +1,12 @@
 /**
 
-  @file    app_root.cpp
-  @brief   Controller example with static IO defice configuration.
+  @file    controller_root.cpp
+  @brief   Root class for Tito application.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    30.4.2020
+
+  There can be only one instance of the root object.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +15,7 @@
 
 ****************************************************************************************************
 */
-#include "app_main.h"
+#include "controller_main.h"
 
 
 /**
@@ -30,24 +32,20 @@
 AppRoot::AppRoot()
 {
     AppInstance *app;
-    /* Lauch tour 'tito' applications, one for iocafenet, one for markkunet and two for surfnet.
+
+    /* Lauch tour 'tito' applications, one for iocafenet, two for asteroidnet.
      */
     m_nro_apps = 0;
-
     app = new AppInstance();
     app->start("iocafenet", 1);
     m_app[m_nro_apps++] = app;
 
     /* app = new AppInstance();
-    app->start("markkunet", 1);
+    app->start("asteroidnet", 1);
     m_app[m_nro_apps++] = app;
 
     app = new AppInstance();
-    app->start("surfnet", 1);
-    m_app[m_nro_apps++] = app;
-
-    app = new AppInstance();
-    app->start("surfnet", 2);
+    app->start("asteroidnet", 2);
     m_app[m_nro_apps++] = app; */
 
     osal_debug_assert(m_nro_apps <= MAX_APPS);

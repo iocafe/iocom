@@ -30,7 +30,7 @@ iocRoot app_iocom_root;
 
 /* Pointer to IO application's root object.
  */
-static AppRoot *app_root_obj;
+static AppRoot *app_root;
 
 /* IO device/network configuration.
  */
@@ -116,7 +116,7 @@ osalStatus osal_main(
 
     /* Create claudia main object
      */
-    app_root_obj = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
+    app_root = new AppRoot(device_name, device_id->device_nr, device_id->network_name,
         device_id->publish);
 
     /* Set callback function to receive information about new dynamic memory blocks.
@@ -168,7 +168,7 @@ osalStatus osal_loop(
 {
     osalStatus s;
 
-    s = app_root_obj->run();
+    s = app_root->run();
 #if OSAL_MULTITHREAD_SUPPORT
     switch (s)
     {
@@ -211,7 +211,7 @@ void osal_main_cleanup(
     void *app_context)
 {
     ioc_set_root_callback(&app_iocom_root, OS_NULL, OS_NULL);
-    delete app_root_obj;
+    delete app_root;
 
     ioc_release_root(&app_iocom_root);
     osal_tls_shutdown();
@@ -263,7 +263,7 @@ static void app_root_callback(
 
         case IOC_NEW_NETWORK:
             osal_trace2_str("IOC_NEW_NETWORK ", dnetwork->network_name);
-            // app_root_obj->launch_app(dnetwork->network_name);     XXXXXXXXXXXXXXXXXXXXXXXXXX
+            // app_root->launch_app(dnetwork->network_name);     XXXXXXXXXXXXXXXXXXXXXXXXXX
             break;
 
         default:

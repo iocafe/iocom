@@ -62,7 +62,7 @@ AppRoot::AppRoot(
     prm.account_defaults = ioapp_account_defaults;
     prm.account_defaults_sz = sizeof(ioapp_account_defaults);
 
-    ioc_initialize_bserver(&m_bmain, &app_iocom_root, &prm);
+    ioc_initialize_ioserver(&m_bmain, &app_iocom_root, &prm);
 
     /* Call basic server implementation macro to set up control stream.
      */

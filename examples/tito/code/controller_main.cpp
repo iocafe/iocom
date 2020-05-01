@@ -1,10 +1,19 @@
 /**
 
-  @file    app_main.c
-  @brief   Tito controller using static IO device configuration.
+  @file    controller_main.c
+  @brief   Program entry point, Tito IO controller set up.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    30.4.2020
+
+  Code here is general program setup code. It initializes iocom library to be used as automation
+  device controller. This example code uses eosal functions everywhere, including the program
+  entry point osal_main(). If you use iocom library from an existing program, just call library
+  iocom functions from C or C++ code and ignore "framework style" code here.
+
+  The Tito conroller example here uses static IO device configuration. This means that
+  communication signal map from IO board JSON files, etc, is compiled into Tito's code ->
+  run time matching IO signal at IO device and in Tito is by address and type, not by signal name.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,14 +22,14 @@
 
 ****************************************************************************************************
 */
-#include "app_main.h"
+#include "controller_main.h"
 
 /* The devicedir is here for testing only, take away.
  */
 #include "devicedir.h"
 
 iocRoot app_iocom_root;
-static AppRoot *app_root_obj;
+static AppRoot *app_root;
 
 /* IO device/network configuration.
  */
@@ -114,7 +123,7 @@ osalStatus osal_main(
 
     /* Create tito main object and start listening for clients.
      */
-    app_root_obj = new AppRoot;
+    app_root = new AppRoot;
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -153,7 +162,7 @@ osalStatus osal_loop(
     ioc_run_lighthouse_server(&lighthouse);
 
     ioc_run(&app_iocom_root);
-    s = app_root_obj->loop();
+    s = app_root->loop();
     ioc_run(&app_iocom_root);
 
     return s;
@@ -183,7 +192,7 @@ void osal_main_cleanup(
      */
     ioc_release_lighthouse_server(&lighthouse);
 
-    delete app_root_obj;
+    delete app_root;
 
     ioc_release_root(&app_iocom_root);
     osal_tls_shutdown();

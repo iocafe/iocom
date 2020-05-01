@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "app_main.h"
+#include "controller_main.h"
 
 /* Forward referred static functions.
  */
@@ -57,7 +57,6 @@ AppInstance::~AppInstance()
 
 void AppInstance::start(const os_char *network_name, os_uint device_nr)
 {
-    // initialize(network_name, device_nr);
     os_strncpy(m_network_name, network_name, IOC_NETWORK_NAME_SZ);
 
     m_gina1_def = m_gina1.inititalize(m_network_name, 1);

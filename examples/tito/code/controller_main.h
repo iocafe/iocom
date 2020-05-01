@@ -1,15 +1,10 @@
 /**
 
-  @file    app_main.h
-  @brief   Entry point and IO controller program set up.
+  @file    controller_main.h
+  @brief   Program entry point, Tito IO controller set up.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    15.1.2020
-
-  Code here is general program setup code. It initializes iocom library to be used as automation
-  device controller. This example code uses eosal functions everywhere, including the program
-  entry point osal_main(). If you use iocom library from an existing program, just call library
-  iocom functions from C or C++ code and ignore "framework style" code here.
+  @date    30.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -23,10 +18,10 @@
 #include "ioserver.h"
 #include "lighthouse.h"
 #include "gina-for-tito.h"
-#include "app_root.h"
-#include "app_iodevice.h"
+#include "controller_root.h"
+#include "iodevice_base_class.h"
 #include "app_iodevice_gina.h"
-#include "app_seq.h"
+#include "sequence_base_class.h"
 #include "app_seq_blink_led.h"
 #include "app_instance.h"
 

@@ -1,6 +1,6 @@
 /**
 
-  @file    app_seq.cpp
+  @file    sequence_base_class.cpp
   @brief   Sequence base class.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "app_main.h"
+#include "controller_main.h"
 
 static void tito_test_sequence_thread_func(void *prm, osalEvent done);
 
@@ -57,9 +57,6 @@ AppSequence::~AppSequence()
 void AppSequence::start(AppInstance *app)
 {
     if (m_started) return;
-
-    gina1 = app->m_gina1_def;
-    gina2 = app->m_gina2_def;
 
     /* Start running test_sequence for this IO device network in own thread.
      */

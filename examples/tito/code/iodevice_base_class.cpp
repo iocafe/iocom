@@ -1,10 +1,10 @@
 /**
 
-  @file    app_iodevice.cpp
-  @brief   Wrapper representing IO device interface.
+  @file    iodevice_base_class.cpp
+  @brief   Base class for a IO device class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    30.4.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "app_main.h"
+#include "controller_main.h"
 
 
 /**
