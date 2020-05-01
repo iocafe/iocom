@@ -611,8 +611,11 @@ osalStatus ioc_run_connection(
             status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
                 con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
                 connectstr, sizeof(connectstr));
+            if (OSAL_IS_ERROR(status)) {
+                con->ip_from_lighthouse[0] = '\0';
+                return OSAL_SUCCESS;
+            }
             os_strncpy(con->ip_from_lighthouse, connectstr, OSAL_IPADDR_AND_PORT_SZ);
-            if (OSAL_IS_ERROR(status)) return OSAL_SUCCESS;
             parameters = connectstr;
         }
 #endif

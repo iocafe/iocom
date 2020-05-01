@@ -27,8 +27,8 @@
 */
 /* Select socket, TLS or serial communication before including gina.h.
  */
-// #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
-#define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SERIAL
+#define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
+// #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SERIAL
 #include "gina.h"
 
 /* The devicedir is here for testing only, take away.
