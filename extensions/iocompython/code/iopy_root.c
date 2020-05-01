@@ -24,6 +24,10 @@ typedef enum
 iocSendReceiveOp;
 
 
+#if OSAL_MULTITHREAD_SUPPORT==0
+#error iocompython requires multithread support, but OSAL_MULTITHREAD_SUPPORT define is 0
+#endif
+
 /**
 ****************************************************************************************************
 

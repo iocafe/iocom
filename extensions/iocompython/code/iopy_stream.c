@@ -320,7 +320,7 @@ static PyObject *Stream_run(
 static PyObject *Stream_get_data(
     Stream *self)
 {
-    os_char *data;
+    const os_char *data;
     os_memsz sz;
 
     data = ioc_get_stream_data(self->stream, &sz, 0);
@@ -428,7 +428,9 @@ PyObject *iocom_stream_getconf(
 
     os_char
         exp_mblk_path[IOC_MBLK_PATH_SZ],
-        imp_mblk_path[IOC_MBLK_PATH_SZ],
+        imp_mblk_path[IOC_MBLK_PATH_SZ];
+
+    const os_char
         *data;
 
     os_memsz sz;
