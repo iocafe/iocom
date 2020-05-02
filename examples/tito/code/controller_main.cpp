@@ -180,10 +180,7 @@ osalStatus osal_loop(
      */
     ioc_run_lighthouse_server(&lighthouse, &ti);
 
-    ioc_run(&iocom_root);
     s = app_root->run(&ti);
-    ioc_run(&iocom_root);
-
     return s;
 }
 
