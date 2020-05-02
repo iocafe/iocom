@@ -19,21 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\app_instance.cpp" />
+    <ClCompile Include="..\..\code\application_root.cpp" />
     <ClCompile Include="..\..\code\app_iodevice_gina.cpp" />
     <ClCompile Include="..\..\code\app_seq_blink_led.cpp" />
     <ClCompile Include="..\..\code\controller_config.c" />
     <ClCompile Include="..\..\code\controller_main.cpp" />
-    <ClCompile Include="..\..\code\controller_root.cpp" />
     <ClCompile Include="..\..\code\iodevice_base_class.cpp" />
     <ClCompile Include="..\..\code\sequence_base_class.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\app_instance.h" />
+    <ClInclude Include="..\..\code\application_root.h" />
     <ClInclude Include="..\..\code\app_iodevice_gina.h" />
     <ClInclude Include="..\..\code\app_seq_blink_led.h" />
     <ClInclude Include="..\..\code\controller_main.h" />
-    <ClInclude Include="..\..\code\controller_root.h" />
     <ClInclude Include="..\..\code\iodevice_base_class.h" />
     <ClInclude Include="..\..\code\sequence_base_class.h" />
   </ItemGroup>
