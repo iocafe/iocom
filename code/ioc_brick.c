@@ -208,11 +208,17 @@ os_memsz ioc_compress_brick(
     iocBrickCompression compression)
 {
     iocBrickHdr *hdr;
+    os_int bytes_per_pix;
+    os_memsz sz;
 
     /* Very dummy and limited uncompressed implementation.
      */
-    os_memsz sz;
-    sz = src_w * (os_memsz)src_h + sizeof(iocBrickHdr);
+    switch (src_format)
+    {
+        case IOC_RGB24_BRICK: bytes_per_pix = 3; break;
+        default: bytes_per_pix = 1; break;
+    }
+    sz = src_w * (os_memsz)src_h * bytes_per_pix + sizeof(iocBrickHdr);
     if (sz > buf_sz) sz = buf_sz;
     os_memcpy(buf, src, sz);
 
