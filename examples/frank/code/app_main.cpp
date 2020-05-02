@@ -191,7 +191,7 @@ osalStatus osal_loop(
     {
         default:
         case OSAL_SUCCESS:
-            idle_timer = *ti;
+            idle_timer = ti;
             break;
 
         case OSAL_NOTHING_TO_DO:

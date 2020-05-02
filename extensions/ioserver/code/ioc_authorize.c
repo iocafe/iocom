@@ -67,7 +67,7 @@ const os_char ioc_accounts_data_mblk_name[] = "data";
  */
 static osalStatus ioc_authorize_process_block(
     iocAccountsParserState *state,
-    os_char *array_tag,
+    const os_char *array_tag,
     osalJsonIndex *jindex);
 
 static os_boolean ioc_check_whitelist(
@@ -281,7 +281,7 @@ static osalStatus ioc_authorize_process_array(
 */
 static osalStatus ioc_authorize_process_block(
     iocAccountsParserState *state,
-    os_char *array_tag,
+    const os_char *array_tag,
     osalJsonIndex *jindex)
 {
     osalJsonItem item;
