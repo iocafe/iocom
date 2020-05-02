@@ -139,6 +139,12 @@ osalStatus ioc_allocate_brick_buffer(
     iocBrickBuffer *b,
     os_memsz buf_sz)
 {
+    if (buf_sz <= sizeof(iocBrickHdr) || buf_sz > IOC_MAX_BRICK_ALLOC)
+    {
+        osal_debug_error("ioc_allocate_brick_buffer: Illegal size");
+        return OSAL_STATUS_FAILED;
+    }
+
     ioc_lock(b->root);
     b->buf_n = 0;
     b->pos = 0;
@@ -479,7 +485,12 @@ static osalStatus osal_validate_brick_header(
         return OSAL_STATUS_FAILED;
     }
 
-    bytes_per_pix = 1;
+    switch (bhdr->format)
+    {
+        default:
+        case IOC_BYTE_BRICK: bytes_per_pix = 1; break;
+        case IOC_RGB24_BRICK: bytes_per_pix = 3; break;
+    }
     max_brick_sz = w * h * bytes_per_pix + sizeof(iocBrickHdr);
     max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT * bytes_per_pix)/2) + sizeof(iocBrickHdr);
 
@@ -529,9 +540,7 @@ static osalStatus ioc_receive_brick_data(
         n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
         if (n < sizeof(iocBrickHdr))
         {
-            // Check for timeout HERE!
-
-          // return OSAL_SUCCESS;
+            return OSAL_SUCCESS;
         }
 
         s = ioc_streamer_read(b->stream, (os_char*)first.bytes,
