@@ -66,10 +66,6 @@ static PyObject *MemoryBlock_new(
     }
     self->mblk_created = OS_FALSE;
     os_memclear(&self->mblk_handle, sizeof(iocHandle));
-
-
-osal_debug_error("HERE X1")    ;
-
     os_memclear(&prm, sizeof(prm));
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|sssisi",
@@ -98,8 +94,6 @@ osal_debug_error("HERE X1")    ;
         PyErr_SetString(iocomError, "IOCOM root object has been deleted");
         goto failed;
     }
-
-osal_debug_error("HERE X2")    ;
 
     if (os_strstr(flags, "down", OSAL_STRING_SEARCH_ITEM_NAME))
     {
@@ -144,14 +138,11 @@ osal_debug_error("HERE X2")    ;
     if (nbytes < IOC_MIN_MBLK_SZ) nbytes = IOC_MIN_MBLK_SZ;
     prm.nbytes = nbytes;
 
-osal_debug_error("HERE X3")    ;
-
     /* Try to find memory block.
      */
     if (ioc_find_mblk(iocroot, &self->mblk_handle, prm.mblk_name,
         prm.device_name, prm.device_nr, prm.network_name) != OSAL_SUCCESS)
     {
-osal_debug_error("HERE X4")    ;
         /* If we have no up nor down flag, we searched for memory block which was
            not found.
          */
@@ -159,7 +150,6 @@ osal_debug_error("HERE X4")    ;
         {
             ioc_setup_handle(&self->mblk_handle, iocroot, OS_NULL);
             self->number = OSAL_STATUS_FAILED;
-osal_debug_error("HERE X5")    ;
             return (PyObject *)self;
         }
 
@@ -170,8 +160,6 @@ osal_debug_error("HERE X5")    ;
     }
 
     self->number = OSAL_SUCCESS;
-
-osal_debug_error("HERE X6")    ;
 
 #if IOPYTHON_TRACE
     PySys_WriteStdout("MemoryBlock.new(%s.%s%d.%s)\n",

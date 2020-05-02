@@ -378,16 +378,6 @@ void ioc_run_brick_send(
         }
     }
 
-    /* If we got data, then try to sending it.
-    if (b->pos < b->buf_n) {
-        if (ioc_send_brick_data(b))
-        {
-            ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
-            b->stream = OS_NULL;
-        }
-    }
-     */
-
     /* If we got data, then try to sending it. Even without data, keep streamer alive.
      */
     if (b->pos < b->buf_n) {

@@ -8,6 +8,7 @@ from item_user_account import UserAccountItem
 from item_button import ButtonItem
 from item_heading import HeadingItem
 from item_linear_cam import LinearCameraItem
+from item_video import VideoItem
 
 from iocompython import Signal
 
@@ -62,10 +63,17 @@ class Panel(GridLayout):
         return b
 
     def add_assembly(self, ioc_root, assembly_data, device_path):
-        # assembly_type= assembly_data.get("type", "no_type")
-        # if assembly_type is linear camera
+        assembly_type = assembly_data.get("type", "no_type")
 
-        cam = LinearCameraItem()
+        if assembly_type=="camera":
+            cam = VideoItem()
+
+        elif assembly_type=="linecam":
+            cam = LinearCameraItem()
+
+        else:
+            cam = LinearCameraItem()
+
         cam.set_device(ioc_root, device_path, assembly_data)
         self.add_my_widget(cam)
         self.run_list.append(cam)
