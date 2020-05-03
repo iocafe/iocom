@@ -10,8 +10,8 @@ OS_FLASH_MEM struct gina_t gina =
     {38, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.in_x}, /* in_x */
     {39, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
     {44, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
-    {46, 2800, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
-    {2847, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
+    {46, 20000, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
+    {20047, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
   },
 
   {
