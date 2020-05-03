@@ -91,7 +91,7 @@ typedef struct iocBrickBuffer
     iocStreamerSignals *signals;
     osalStream stream;
     os_int timeout_ms; /* timeout for streamer continuous data transfer, -1 = no timeout */
-    os_boolean state_initialized;
+    // os_boolean state_initialized;
 
     /* error retry timer. */
     os_boolean err_timer_set;

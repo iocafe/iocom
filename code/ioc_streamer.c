@@ -118,6 +118,7 @@ osalStream ioc_streamer_open(
     os_int flags)
 {
     iocStreamer *streamer;
+    iocStreamerParams *prm;
 
     /* Allocate streamer structure, either dynamic or static.
      */
@@ -142,6 +143,7 @@ osalStream ioc_streamer_open(
     /* Initialize streamer structure.
      */
     os_memclear(streamer, sizeof(iocStreamer));
+    prm = (iocStreamerParams*)option;
     streamer->prm = (iocStreamerParams*)option;
     streamer->hdr.iface = &ioc_streamer_iface;
     streamer->hdr.read_timeout_ms = IOC_STREAMER_TIMEOUT;
@@ -155,6 +157,30 @@ osalStream ioc_streamer_open(
     if (parameters)
     {
         streamer->select = (os_int)osal_str_to_int(parameters, OS_NULL);
+    }
+
+    if (flags & OSAL_STREAM_READ)
+    {
+        if (prm->is_device) {
+            ioc_sets0_int(prm->tod.state, IOC_STREAM_IDLE);
+            ioc_sets0_int(prm->tod.tail, 0);
+        }
+        else {
+            ioc_sets0_int(prm->frd.cmd, IOC_STREAM_IDLE);
+            ioc_sets0_int(prm->frd.tail, 0);
+        }
+    }
+
+    if (flags & OSAL_STREAM_WRITE) 
+    {
+        if (prm->is_device) {
+            ioc_sets0_int(prm->frd.state, IOC_STREAM_IDLE);
+            ioc_sets0_int(prm->frd.head, 0);
+        }
+        else {
+            ioc_sets0_int(prm->tod.cmd, IOC_STREAM_IDLE);
+            ioc_sets0_int(prm->tod.head, 0);
+        }
     }
 
     /* Set status code and return stream pointer.
@@ -187,6 +213,7 @@ void ioc_streamer_close(
     os_int flags)
 {
     iocStreamer *streamer;
+    iocStreamerParams *prm;
 
     /* If called with NULL argument, do nothing.
      */
@@ -200,26 +227,28 @@ void ioc_streamer_close(
 
     if (streamer->used)
     {
-        if (streamer->prm->is_device)
+        prm = streamer->prm;
+        if (streamer->flags & OSAL_STREAM_READ)
         {
-            if (streamer->flags & OSAL_STREAM_WRITE)
-            {
-                ioc_sets0_int(streamer->prm->frd.state, IOC_STREAM_IDLE);
+            if (streamer->prm->is_device) {
+                ioc_sets0_int(prm->tod.state, IOC_STREAM_IDLE);
+                ioc_sets0_int(prm->tod.tail, 0);
             }
-            else
-            {
-                ioc_sets0_int(streamer->prm->tod.state, IOC_STREAM_IDLE);
+            else {
+                ioc_sets0_int(prm->frd.cmd, IOC_STREAM_IDLE);
+                ioc_sets0_int(prm->frd.tail, 0);
             }
         }
-        else
+
+        if (flags & OSAL_STREAM_WRITE) 
         {
-            if (streamer->flags & OSAL_STREAM_WRITE)
-            {
-                ioc_sets0_int(streamer->prm->tod.cmd, IOC_STREAM_IDLE);
+            if (prm->is_device) {
+                ioc_sets0_int(prm->frd.state, IOC_STREAM_IDLE);
+                ioc_sets0_int(prm->frd.head, 0);
             }
-            else
-            {
-                ioc_sets0_int(streamer->prm->frd.cmd, IOC_STREAM_IDLE);
+            else {
+                ioc_sets0_int(prm->tod.cmd, IOC_STREAM_IDLE);
+                ioc_sets0_int(prm->tod.head, 0);
             }
         }
 
@@ -470,8 +499,6 @@ static osalStatus ioc_streamer_device_write(
                 goto getout;
             }
 
-            streamer->head = 0;
-            ioc_sets0_int(signals->head, 0);
             streamer->select = (os_int)ioc_gets0_int(signals->select);
             ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
             streamer->step = IOC_SSTEP_TRANSFER_DATA;
@@ -488,9 +515,9 @@ static osalStatus ioc_streamer_device_write(
             }
 
             buf_sz = signals->buf->n;
-            tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
+            tail = (os_int)ioc_gets0_int(signals->tail);
 
-            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+            if (tail < 0 || tail >= buf_sz)
             {
                 osal_trace3("IOC_SSTEP_FAILED, no tail");
                 streamer->step = IOC_SSTEP_FAILED;
@@ -532,7 +559,9 @@ static osalStatus ioc_streamer_device_write(
             if (cmd == IOC_STREAM_RUNNING &&
                 (cmd_state_bits & OSAL_STATE_CONNECTED))
             {
-                if (!os_has_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT)) break;
+                if (!os_has_elapsed(&streamer->mytimer, IOC_STREAMER_TIMEOUT)) {
+                    break;
+                }
             }
             ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
             ioc_sets0_int(signals->head, 0);
@@ -642,17 +671,14 @@ static osalStatus ioc_streamer_device_read(
     {
         case IOC_SSTEP_INITIALIZED:
             osal_trace3("IOC_SSTEP_INITIALIZED");
-            streamer->select = (os_int)ioc_gets_int(signals->select, &state_bits, IOC_SIGNAL_DEFAULT);
-            if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED) ||
-                (state_bits & OSAL_STATE_CONNECTED) == 0)
+            streamer->select = (os_int)ioc_gets0_int(signals->select);
+            if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED))
             {
                 osal_trace3("IOC_SSTEP_FAILED, cmd != RUNNING,COMPLETED or no select");
                 streamer->step = IOC_SSTEP_FAILED;
                 goto getout;
             }
 
-            streamer->tail = 0;
-            ioc_sets0_int(signals->tail, 0);
             ioc_sets0_int(signals->state, IOC_STREAM_RUNNING);
             streamer->step = IOC_SSTEP_TRANSFER_DATA;
             os_get_timer(&streamer->mytimer);
@@ -669,8 +695,8 @@ static osalStatus ioc_streamer_device_read(
             }
 
             buf_sz = signals->buf->n;
-            head = (os_int)ioc_gets_int(signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
-            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
+            head = (os_int)ioc_gets0_int(signals->head);
+            if (head < 0 || head >= buf_sz)
             {
                 osal_trace3("IOC_SSTEP_FAILED, no head");
                 streamer->step = IOC_SSTEP_FAILED;
@@ -811,8 +837,6 @@ static osalStatus ioc_streamer_controller_write(
     switch (streamer->step)
     {
         case IOC_SSTEP_INITIALIZED:
-            streamer->head = 0;
-            ioc_sets0_int(signals->head, 0);
             ioc_sets0_int(signals->select, streamer->select);
             ioc_sets0_int(signals->cmd, IOC_STREAM_RUNNING);
             streamer->step = IOC_SSTEP_INITIALIZED2;
@@ -853,8 +877,8 @@ static osalStatus ioc_streamer_controller_write(
             if (n > 0)
             {
                 buf_sz = signals->buf->n;
-                tail = (os_int)ioc_gets_int(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
-                if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+                tail = (os_int)ioc_gets0_int(signals->tail);
+                if (tail < 0 || tail >= buf_sz)
                 {
                     osal_trace3("IOC_SSTEP_FAILED, no tail");
                     streamer->step = IOC_SSTEP_FAILED;
@@ -991,8 +1015,6 @@ static osalStatus ioc_streamer_controller_read(
     switch (streamer->step)
     {
         case IOC_SSTEP_INITIALIZED:
-            streamer->tail = 0;
-            ioc_sets0_int(signals->tail, 0);
             ioc_sets0_int(signals->select, streamer->select);
             ioc_sets0_int(signals->cmd, IOC_STREAM_RUNNING);
             streamer->step = IOC_SSTEP_INITIALIZED2;
@@ -1026,8 +1048,8 @@ static osalStatus ioc_streamer_controller_read(
             }
 
             buf_sz = signals->buf->n;
-            head = (os_int)ioc_gets_int(signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
-            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
+            head = (os_int)ioc_gets0_int(signals->head);
+            if (head < 0 || head >= buf_sz)
             {
                 osal_trace3("IOC_SSTEP_FAILED, no head");
                 streamer->step = IOC_SSTEP_FAILED;

@@ -140,5 +140,6 @@ static osalStatus app_gina1_photo_received(
     struct iocBrickBuffer *b,
     void *context)
 {
+    osal_debug_error("NEW PHOTO");
     return OSAL_SUCCESS;
 }

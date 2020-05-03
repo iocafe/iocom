@@ -75,6 +75,11 @@ void ioc_initialize_brick_buffer(
         os_memcpy(b->signals, signals, sizeof(iocStreamerSignals));
     }
     b->prm.is_device = (os_boolean)((flags & IOC_BRICK_CONTROLLER) == 0);
+
+    /* In device end, we need to set IDLE status with connected state bit */
+    if (b->prm.is_device) { 
+        ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
+    }
 }
 
 
@@ -366,12 +371,6 @@ void ioc_run_brick_send(
     osalStatus s;
 
     if (b->stream == OS_NULL) {
-        if (b->prm.frd.state && !b->state_initialized)
-        {
-            ioc_sets0_int(b->prm.frd.state, 0);
-            b->state_initialized = OS_TRUE;
-        }
-
         cmd = (iocStreamerState)ioc_gets_int(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
         if (cmd != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) return;
 
@@ -526,6 +525,8 @@ static osalStatus ioc_receive_brick_data(
     os_memsz n, n_read, alloc_sz;
     osalStatus s;
     os_uint checksum;
+    iocStreamerState state;
+    os_char state_bits;
 
     union
     {
@@ -540,6 +541,12 @@ static osalStatus ioc_receive_brick_data(
         n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
         if (n < sizeof(iocBrickHdr))
         {
+            if (n < 0) return OSAL_STATUS_FAILED;
+
+            state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
+            if (state != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) {
+                return OSAL_STATUS_TIMEOUT;
+            }
             return OSAL_SUCCESS;
         }
 
@@ -622,8 +629,8 @@ osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b)
 {
     iocStreamerState state;
-    os_char state_bits;
     osalStatus s;
+    os_char state_bits;
 
     if (!b->enable_receive)
     {
@@ -634,24 +641,11 @@ osalStatus ioc_run_brick_receive(
         return OSAL_SUCCESS;
     }
 
-    if (b->stream == OS_NULL) {
-        if (!b->state_initialized)
-        {
-            if (b->prm.tod.state)
-            {
-                ioc_sets0_int(b->prm.tod.state, 0);
-            }
-            if (b->prm.frd.cmd)
-            {
-                ioc_sets0_int(b->prm.frd.cmd, 0);
-                ioc_sets0_int(b->prm.frd.tail, 0);
-                ioc_sets0_int(b->prm.frd.select, 0);
-            }
-            b->state_initialized = OS_TRUE;
-        }
-
-         if (b->err_timer_set)
-        {
+    if (b->stream == OS_NULL) 
+    {
+        /* Keep small pause between tries.
+         */
+        if (b->err_timer_set) {
             if (!os_has_elapsed(&b->err_timer, IOC_STREAMER_TIMEOUT)) {
                 return OSAL_SUCCESS;
             }
@@ -662,7 +656,6 @@ osalStatus ioc_run_brick_receive(
         {
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) {
-                // ioc_sets_int(b->prm.frd.cmd, IOC_STREAM_IDLE, OSAL_STATE_CONNECTED);
                 os_get_timer(&b->err_timer);
                 b->err_timer_set = OS_TRUE;
                 return (state_bits & OSAL_STATE_CONNECTED) ? OSAL_STATUS_NOT_CONNECTED : OSAL_SUCCESS;
