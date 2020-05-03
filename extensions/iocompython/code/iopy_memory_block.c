@@ -103,10 +103,6 @@ static PyObject *MemoryBlock_new(
     {
         prm.flags |= IOC_MBLK_UP;
     }
-    if (os_strstr(flags, "auto", OSAL_STRING_SEARCH_ITEM_NAME))
-    {
-        prm.flags |= IOC_AUTO_SYNC;
-    }
     if (os_strstr(flags, "allow_resize", OSAL_STRING_SEARCH_ITEM_NAME))
     {
         prm.flags |= IOC_ALLOW_RESIZE;
@@ -288,12 +284,7 @@ static PyObject *MemoryBlock_get_param(
         return NULL;
     }
 
-    if (!os_strcmp(param_name, "auto"))
-    {
-        param_ix = IOC_MBLK_AUTO_SYNC_FLAG;
-        is_int = OS_TRUE;
-    }
-    else if (!os_strcmp(param_name, "network_name"))
+    if (!os_strcmp(param_name, "network_name"))
     {
         param_ix = IOC_NETWORK_NAME;
     }
@@ -343,6 +334,8 @@ static PyObject *MemoryBlock_get_param(
 
   The MemoryBlock.set_param() function gets value of memory block's parameter.
 
+  THIS FUNCTION IS NOT NEEDED, WAS USED FOR AUTO SYNC
+
   param_name Currently only "auto" can be set. Controlles wether to use automatic (value 1)
   or synchronous sending/receiving (value 0).
 
@@ -362,15 +355,15 @@ static PyObject *MemoryBlock_set_param(
         return NULL;
     }
 
-    if (!os_strcmp(param_name, "auto"))
+    /* if (!os_strcmp(param_name, "auto"))
     {
         param_ix = IOC_MBLK_AUTO_SYNC_FLAG;
     }
     else
-    {
+    { */
         PyErr_SetString(iocomError, "Unknown parameter");
         return NULL;
-    }
+    /* } */
 
     ioc_memory_block_set_int_param(&self->mblk_handle, param_ix, param_value);
 

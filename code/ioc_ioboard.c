@@ -87,19 +87,19 @@ void ioboard_start_communication(
 
     blockprm.mblk_name = "exp";
     blockprm.nbytes = prm->send_block_sz;
-    blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
+    blockprm.flags = IOC_MBLK_UP;
     ioc_initialize_memory_block(&ioboard_exp, &ioboard_export_mblk, &ioboard_root, &blockprm);
 
     blockprm.mblk_name = "imp";
     blockprm.nbytes = prm->receive_block_sz;
-    blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
+    blockprm.flags = IOC_MBLK_DOWN;
     ioc_initialize_memory_block(&ioboard_imp, &ioboard_import_mblk, &ioboard_root, &blockprm);
 
     if (prm->conf_send_block_sz)
     {
         blockprm.mblk_name = "conf_exp";
         blockprm.nbytes = prm->conf_send_block_sz;
-        blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_UP|IOC_AUTO_SYNC) : IOC_MBLK_UP;
+        blockprm.flags = IOC_MBLK_UP;
         ioc_initialize_memory_block(&ioboard_conf_exp, OS_NULL, &ioboard_root, &blockprm);
     }
 
@@ -107,7 +107,7 @@ void ioboard_start_communication(
     {
         blockprm.mblk_name = "conf_imp";
         blockprm.nbytes = prm->conf_receive_block_sz;
-        blockprm.flags = prm->auto_synchronization ? (IOC_MBLK_DOWN|IOC_AUTO_SYNC) : IOC_MBLK_DOWN;
+        blockprm.flags = IOC_MBLK_DOWN;
         ioc_initialize_memory_block(&ioboard_conf_imp, OS_NULL, &ioboard_root, &blockprm);
     }
 

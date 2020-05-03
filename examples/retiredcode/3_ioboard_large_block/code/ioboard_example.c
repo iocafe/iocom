@@ -15,8 +15,6 @@
   - No dynamic memory allocation - static memory pool ioboard_pool used.
   - IO board connects to control computer through TCP socket - control computer listens for
     connections.
-  - Data transfer synchronized precisely by ioc_receive() and ioc_send() calls - no
-    "prm.auto_synchronization = OS_TRUE" -> IOC_AUTO_SYNC flags not set.
   - Relatively large 10k memory blocks and input memory block ioboard_imp is changed as quickly
     as computer can change it.
   - Unnanamed device, device name is empty string and device number is 0.

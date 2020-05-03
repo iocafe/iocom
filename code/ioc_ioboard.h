@@ -204,14 +204,6 @@ typedef struct
      */
     os_int device_info_sz;
 
-    /** Enable IOC_AUTO_SYNC
-     */
-    os_boolean auto_synchronization;
-
-    /** Pointer to static structure defining signals (for pins library).
-     */
-    // const struct iocDeviceHdr *device_signal_hdr;
-
     /** Enable configuration import and export memory blocks by setting
         nonzero block sizes.
      */

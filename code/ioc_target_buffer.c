@@ -31,7 +31,7 @@
   @param   mblk Pointer to memory block.
   @param   remote_mblk_id Memory block identifier on remote end of connection.
            Am IO board has typically multiple memory blocks and this identifies the memory block
-           within device (or more specifically under root object). 
+           within device (or more specifically under root object).
   @param   flags Set IOC_DEFAULT (0) for default operation, or set IOC_BIDIRECTIONAL bit to create
            source buffer with byte based invalidation (change marking). The bidirectional mode is
            used two directional memory block data transfers. Requires IOC_BIDIRECTIONAL_MBLK_CODE
@@ -419,13 +419,6 @@ void ioc_tbuf_synchronize(
         tbuf->syncbuf.buf_end_addr = end_addr;
         tbuf->syncbuf.buf_used = OS_TRUE;
     }
-
-    /* If auto receive selected.
-     */
-    if (tbuf->mlink.mblk->flags & IOC_AUTO_SYNC)
-    {
-        ioc_receive(&tbuf->mlink.mblk->handle);
-    }
 }
 
 
@@ -460,7 +453,6 @@ void ioc_tbuf_disconnect_signals(
     iocSignal *sig;
     os_char *buf;
     os_int count, nbytes, addr;
-    os_boolean changed;
 
     mblk = tbuf->mlink.mblk;
     if (mblk == OS_NULL) return;
@@ -470,7 +462,6 @@ void ioc_tbuf_disconnect_signals(
     hdr = mblk->signal_hdr;
     if (hdr == OS_NULL) return;
 
-    changed = OS_FALSE;
     count = hdr->n_signals;
     for (sig = hdr->first_signal; count--; sig++)
     {
@@ -482,18 +473,7 @@ void ioc_tbuf_disconnect_signals(
                  sbuf = sbuf->mlink.next)
             {
                 ioc_sbuf_invalidate(sbuf, addr, addr);
-                changed = OS_TRUE;
             }
-        }
-    }
-
-    if (changed && (mblk->flags & IOC_AUTO_SYNC))
-    {
-        for (sbuf = mblk->sbuf.first;
-             sbuf;
-             sbuf = sbuf->mlink.next)
-        {
-            ioc_mblk_auto_sync(sbuf);
         }
     }
 }

@@ -538,6 +538,8 @@ static PyObject *Root_wait_for_com_event(
 
   The MemoryBlock.set_param() function gets value of memory block's parameter.
 
+  THIS FUNCTION IS NOT NEEDED, WAS USED FOR AUTO SYNC
+
   param_name Currently only "auto" can be set. Controlles wether to use automatic (value 1)
   or synchronous sending/receiving (value 0).
 
@@ -582,15 +584,15 @@ static PyObject *Root_set_mblk_param(
         return NULL;
     }
 
-    if (!os_strcmp(param_name, "auto"))
+    /* if (!os_strcmp(param_name, "auto"))
     {
         param_ix = IOC_MBLK_AUTO_SYNC_FLAG;
     }
     else
-    {
+    { */
         PyErr_SetString(iocomError, "Unknown parameter");
         return NULL;
-    }
+    /* } */
 
     ioc_lock(iocroot);
 
@@ -618,6 +620,8 @@ static PyObject *Root_set_mblk_param(
 ****************************************************************************************************
 
   @brief Synchronized data transfers, sen and receive.
+
+  "*" as memory block path sends or receives all memory blocks.
 
 ****************************************************************************************************
 */
@@ -654,6 +658,21 @@ static PyObject *Root_send_receive(
     {
         PyErr_SetString(iocomError, "IOCOM root object has been deleted");
         return NULL;
+    }
+
+    /* If we want to receive all
+     */
+    if (!os_strcmp(mblk_path, osal_str_asterisk))
+    {
+        if (op == IOC_RECEIVE_MBLK)
+        {
+            ioc_receive_all(iocroot);
+        }
+        else
+        {
+            ioc_send_all(iocroot);
+        }
+        Py_RETURN_NONE;
     }
 
     ioc_lock(iocroot);

@@ -564,7 +564,7 @@ void ioc_set_network_name(
   @anchor ioc_send_all
 
   The ioc_send_all() function pushes all writes to all memory blocks. This or ioc_send() function
-  must be called from application IOC_AUTO_SYNC is not enabled.
+  must be called from application.
 
   Call ioc_send_all() function repeatedly, for example in mictorontroller's main loop.
   Synchronous  sending causes all changes done in same main loop round to be transmitted together.
@@ -608,8 +608,7 @@ void ioc_send_all(
   @anchor ioc_receive_all
 
   The ioc_receive_all() function moves received data as snapshot to be available for reads for all
-  memory blocks. This or ioc_receive() function must be called from application IOC_AUTO_SYNC
-  is not enabled.
+  memory blocks. This or ioc_receive() function must be called from application.
 
   @param   root Pointer to IOCOM root object.
   @return  None.

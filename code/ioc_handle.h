@@ -11,7 +11,7 @@
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -32,7 +32,7 @@ typedef struct iocHandle
      */
     IOC_DEBUG_ID
 
-    /** Memory block flags, like IOC_MBLK_DOWN, IOC_MBLK_UP, IOC_AUTO_SYNC, IOC_ALLOW_RESIZE
+    /** Memory block flags, like IOC_MBLK_DOWN, IOC_MBLK_UP, IOC_ALLOW_RESIZE
      *  or IOC_STATIC 32
      */
     os_short flags;
@@ -40,7 +40,7 @@ typedef struct iocHandle
     struct iocRoot *root;
     struct iocMemoryBlock *mblk;
     struct iocHandle *next, *prev;
-} 
+}
 iocHandle;
 
 

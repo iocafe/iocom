@@ -170,7 +170,6 @@ osalStatus osal_main(
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = CANDY_EXP_MBLK_SZ;
     prm.receive_block_sz = CANDY_IMP_MBLK_SZ;
-    prm.auto_synchronization = OS_FALSE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
     // prm.device_signal_hdr = &candy_hdr;

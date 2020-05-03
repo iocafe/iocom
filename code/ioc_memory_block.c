@@ -52,7 +52,7 @@ static os_uint ioc_get_unique_mblk_id(
              If buf argument is given, it must be pointer to buffer which can hold nro_bytes
              data.
            - nbytes. Memory block size in bytes (data size).
-           - flags IOC_MBLK_DOWN, IOC_MBLK_UP, IOC_AUTO_SYNC.
+           - flags IOC_MBLK_DOWN, IOC_MBLK_UP.
 
   @return  OSAL_SUCCESS to indicate success, other values indicate an error.
 
@@ -445,15 +445,12 @@ void mblk_set_signal_header(
   @brief Set memory block parameter at run time.
   @anchor ioc_memory_block_set_int_param
 
-  The ioc_memory_block_set_int_param() function modifies memory block parameter. At the moment,
-  the only supported parameter is IOC_MBLK_AUTO_SYNC_FLAG.
+  The ioc_memory_block_set_int_param() function modifies memory block parameter.
 
-  IOC_MBLK_AUTO_SYNC_FLAG: Set or clear memory block's IOC_AUTO_SYNC flag. The auto sync is
-  enabled, then either ioc_send() or ioc_receive() will be called when reading or writing data
-  and is called by this function.
+  THIS FUNCTION DOES NOTHING, KEPT IN CASE NEEDED IN FUTURE.
 
   @param   handle Memory block handle.
-  @param   param_ix Parameter index, for IOC_MBLK_AUTO_SYNC_FLAG.
+  @param   param_ix Parameter index.
   @param   value If flag, zero to disable or nonzero to enable.
   @return  None.
 
@@ -464,34 +461,19 @@ void ioc_memory_block_set_int_param(
     iocMemoryBlockParamIx param_ix,
     os_int value)
 {
+#if 0
     iocRoot *root;
     iocMemoryBlock *mblk;
-
-    /* If parameter cannot be set, do nothing
-     */
-    if (param_ix != IOC_MBLK_AUTO_SYNC_FLAG) return;
 
     /* Get memory block pointer and start synchronization.
      */
     mblk = ioc_handle_lock_to_mblk(handle, &root);
     if (mblk == OS_NULL) return;
 
-    /* Modify the flag.
-     */
-    if (value) mblk->flags |= IOC_AUTO_SYNC;
-    else mblk->flags &= ~IOC_AUTO_SYNC;
-
-    /* Synchronize once immediately
-     */
-    if (value)
-    {
-        ioc_receive(handle);
-        ioc_send(handle);
-    }
-
     /* End syncronization.
      */
     ioc_unlock(root);
+#endif
 }
 
 
@@ -505,7 +487,7 @@ void ioc_memory_block_set_int_param(
 
   @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
-           IOC_DEVICE_NR, IOC_MBLK_AUTO_SYNC_FLAG, or IOC_MBLK_SIZE.
+           IOC_DEVICE_NR, or IOC_MBLK_SIZE.
   @return  Parameter value as integer. -1 if cannot be converted to integer.
 
 ****************************************************************************************************
@@ -527,10 +509,6 @@ os_int ioc_memory_block_get_int_param(
     {
         case IOC_DEVICE_NR:
             value = mblk->device_nr;
-            break;
-
-        case IOC_MBLK_AUTO_SYNC_FLAG:
-            value = (mblk->flags & IOC_AUTO_SYNC) ? OS_TRUE : OS_FALSE;
             break;
 
         case IOC_MBLK_SZ:
@@ -560,8 +538,7 @@ os_int ioc_memory_block_get_int_param(
 
   @param   handle Memory block handle.
   @param   param_ix Parameter index. Selects which parameter to get, one of:
-           IOC_NETWORK_NAME, IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NAME or
-           IOC_MBLK_AUTO_SYNC_FLAG, or IOC_MBLK_SIZE.
+           IOC_NETWORK_NAME, IOC_DEVICE_NAME, IOC_DEVICE_NR, IOC_MBLK_NAME, or IOC_MBLK_SIZE.
   @param   buf Pointer to buffer where to store parameter value as string. Empty string if
            no value.
   @param   buf_sz Buffer size in bytes.
@@ -603,10 +580,6 @@ void ioc_memory_block_get_string_param(
 
         case IOC_DEVICE_NR:
             value = mblk->device_nr;
-            break;
-
-        case IOC_MBLK_AUTO_SYNC_FLAG:
-            value = (mblk->flags & IOC_AUTO_SYNC) ? OS_TRUE : OS_FALSE;
             break;
 
         case IOC_MBLK_SZ:
@@ -834,9 +807,7 @@ void ioc_clear(
   @brief Send data synchronously.
   @anchor ioc_send
 
-  The ioc_send() function pushes all writes to memory block to proceed as a snapshot. This
-  function must be called from application IOC_AUTO_SYNC is not enabled (flag given as argument
-  when memory block is initialized).
+  The ioc_send() function pushes all writes to memory block to proceed as a snapshot.
 
   Call ioc_send() function repeatedly, for example in mictorontroller's main loop. Synchronous
   sending causes all changes done in same main loop round to be transmitted together.
@@ -880,8 +851,7 @@ void ioc_send(
   @brief Receive data synchronously.
   @anchor ioc_receive
 
-  The ioc_receive() function moves received data as snapshot to be available for reads. This
-  function must be called by application if IOC_AUTO_SYNC flag is off.
+  The ioc_receive() function moves received data as snapshot to be available for reads.
   This receives all data matching to one ioc_send() call at other end.
 
   @param   handle Memory block handle.
@@ -911,8 +881,7 @@ void ioc_receive(
   @brief Receive data synchronously (without mutex locks).
   @anchor ioc_receive_nolock
 
-  The ioc_receive_nolock() function moves received data as snapshot to be available for reads. This
-  function must be called by application if IOC_AUTO_SYNC flag is off.
+  The ioc_receive_nolock() function moves received data as snapshot to be available for reads.
   This receives all data matching to one ioc_send() call at other end.
 
   LOCK must be on when calling this function.
@@ -933,7 +902,6 @@ void ioc_receive_nolock(
     os_uchar *bits;
     os_int bitsi;
 #endif
-
 
     /* We usually have only one target buffer. Multiple target buffers relate to special
      * options like bidirectional transfers and perhaps redundancy in future.
@@ -1030,10 +998,6 @@ void ioc_receive_nolock(
                         else
                         {
                             ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
-                        }
-                        if (mblk->flags & IOC_AUTO_SYNC)
-                        {
-                            ioc_mblk_auto_sync(sbuf);
                         }
                     }
 
@@ -1147,10 +1111,6 @@ void ioc_mblk_invalidate(
          sbuf = sbuf->mlink.next)
     {
         ioc_sbuf_invalidate(sbuf, start_addr, end_addr);
-        if (mblk->flags & IOC_AUTO_SYNC)
-        {
-            ioc_mblk_auto_sync(sbuf);
-        }
     }
 }
 

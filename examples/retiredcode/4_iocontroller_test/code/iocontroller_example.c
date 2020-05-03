@@ -232,11 +232,11 @@ osalStatus osal_main(
     os_memclear(&blockprm, sizeof(blockprm));
 
     blockprm.nbytes = input_block_sz;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
+    blockprm.flags = IOC_MBLK_UP|IOC_ALLOW_RESIZE;
     ioc_initialize_memory_block(&ctx.exp, OS_NULL, &root, &blockprm);
 
     blockprm.nbytes = output_block_sz;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_ALLOW_RESIZE;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_ALLOW_RESIZE;
     ioc_initialize_memory_block(&ctx.imp, OS_NULL, &root, &blockprm);
 
     /* Set callback to detect received data and connection status changes.

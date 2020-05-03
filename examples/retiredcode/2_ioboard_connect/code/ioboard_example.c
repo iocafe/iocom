@@ -14,8 +14,6 @@
   Example features:
   - No multithreading - single thread model used.
   - No dynamic memory allocation - static memory pool ioboard_pool used.
-  - Data transfer synchronized automatically "prm.auto_synchronization = OS_TRUE" when data
-    is read or written - ioc_receive() and ioc_send() calls not needed.
   - Demonstrates device name, "MYDEV", and device number 1.
   - IO board connects to control computer through TCP socket - control computer listens for
     connections.
@@ -114,7 +112,6 @@ osalStatus osal_main(
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = IOBOARD_EXPORT_MBLK_SZ;
     prm.receive_block_sz = IOBOARD_IMPORT_MBLK_SZ;
-    prm.auto_synchronization = OS_TRUE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
 

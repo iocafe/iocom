@@ -100,7 +100,6 @@ void devicedir_memory_blocks(
         mflags = mblk->flags;
         if (mflags & IOC_MBLK_UP) devicedir_append_flag(list, "up", &isfirst);
         if (mflags & IOC_MBLK_DOWN) devicedir_append_flag(list, "down", &isfirst);
-        if (mflags & IOC_AUTO_SYNC) devicedir_append_flag(list, "auto", &isfirst);
         if (mflags & IOC_ALLOW_RESIZE) devicedir_append_flag(list, "resize", &isfirst);
         if (mflags & IOC_STATIC) devicedir_append_flag(list, "static", &isfirst);
 #if IOC_DYNAMIC_MBLK_CODE

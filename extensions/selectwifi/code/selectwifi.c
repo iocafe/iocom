@@ -115,12 +115,12 @@ void ioc_initialize_selectwifi(
 
     blockprm.mblk_name = selectwifi.exp.hdr.mblk_name;
     blockprm.nbytes = SELECTWIFI_EXP_MBLK_SZ;
-    blockprm.flags = IOC_MBLK_UP|IOC_AUTO_SYNC|IOC_FLOOR;
+    blockprm.flags = IOC_MBLK_UP|IOC_FLOOR;
     ioc_initialize_memory_block(&swf.exp, &swf.exp_mblk, &swf.root, &blockprm);
 
     blockprm.mblk_name = selectwifi.imp.hdr.mblk_name;
     blockprm.nbytes = SELECTWIFI_IMP_MBLK_SZ;
-    blockprm.flags = IOC_MBLK_DOWN|IOC_AUTO_SYNC|IOC_FLOOR;
+    blockprm.flags = IOC_MBLK_DOWN|IOC_FLOOR;
     ioc_initialize_memory_block(&swf.imp, &swf.imp_mblk, &swf.root, &blockprm);
 
     blockprm.mblk_name = "info";

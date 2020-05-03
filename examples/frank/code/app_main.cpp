@@ -276,11 +276,8 @@ static void app_root_callback(
     switch (event)
     {
         case IOC_NEW_MEMORY_BLOCK:
-            if (os_strcmp(mblk->mblk_name, "info"))
-            {
-                ioc_memory_block_set_int_param(&mblk->handle,
-                    IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
-            }
+//            ioc_receive(&mblk->handle);
+//            ioc_send(&mblk->handle);
             break;
 
         case IOC_NEW_DEVICE:

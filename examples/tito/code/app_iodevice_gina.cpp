@@ -74,22 +74,22 @@ gina_t *GinaIoDevice::inititalize(
 
     blockprm.mblk_name = m_gina_def.exp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
+    blockprm.flags = IOC_MBLK_UP;
     ioc_initialize_memory_block(&m_gina_export, OS_NULL, &iocom_root, &blockprm);
 
     blockprm.mblk_name = m_gina_def.imp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.imp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
+    blockprm.flags = IOC_MBLK_DOWN;
     ioc_initialize_memory_block(&m_gina_import, OS_NULL, &iocom_root, &blockprm);
 
     blockprm.mblk_name = m_gina_def.conf_exp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.conf_exp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_UP /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
+    blockprm.flags = IOC_MBLK_UP;
     ioc_initialize_memory_block(&m_gina_conf_export, OS_NULL, &iocom_root, &blockprm);
 
     blockprm.mblk_name = m_gina_def.conf_imp.hdr.mblk_name;
     blockprm.nbytes = m_gina_def.conf_imp.hdr.mblk_sz;
-    blockprm.flags = IOC_MBLK_DOWN /* |IOC_AUTO_SYNC|IOC_ALLOW_RESIZE */;
+    blockprm.flags = IOC_MBLK_DOWN;
     ioc_initialize_memory_block(&m_gina_conf_import, OS_NULL, &iocom_root, &blockprm);
 
     /* These do store memory block handle for signals. Without this signals will

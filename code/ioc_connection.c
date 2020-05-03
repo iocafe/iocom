@@ -969,6 +969,7 @@ static void ioc_connection_thread(
     /* Parameters point to the connection object.
      */
     con = (iocConnection*)prm;
+    root = con->link.root;
 
     /* Let thread which created this one proceed.
      */
@@ -1040,6 +1041,9 @@ static void ioc_connection_thread(
              */
             ioc_reset_connection_state(con);
         }
+
+// ioc_send_all(root);
+// ioc_receive_all(root); TO BE TESTED
 
         if (con->flags & IOC_DISABLE_SELECT)
         {
@@ -1145,7 +1149,7 @@ failed:
         {
             con->connected = OS_FALSE;
 
-            root = con->link.root;
+  //          root = con->link.root;
             ioc_lock(root);
             ioc_free_source_and_target_bufs(root, con);
             ioc_unlock(root);
@@ -1161,7 +1165,7 @@ failed:
 
     /* Delete trigger event and mark that this thread is no longer running.
      */
-    root = con->link.root;
+//    root = con->link.root;
     ioc_lock(root);
     osal_event_delete(con->worker.trig);
     con->worker.trig = OS_NULL;

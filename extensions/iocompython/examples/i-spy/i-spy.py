@@ -95,11 +95,13 @@ class MainApp(App):
     def mytimer_tick(self, interval): 
         # self.timer_ms  += .1
         # self.timer_ms = 0.001 * Clock.get_time()
+        self.ioc_root.receive("*");
         self.check_iocom_events()
         for d in self.ioc_devices:
             self.ioc_devices[d].run()
         if self.my_view:
             self.my_view.run()            
+        self.ioc_root.send("*");
  
     def start_mytimer(self): 
         # self.timer_ms = 0;

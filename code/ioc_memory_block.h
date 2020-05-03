@@ -20,10 +20,6 @@
 */
 
 /** Flags for ioc_initialize_memory_block() function. Bit fields.
-    Note about IOC_AUTO_SYNC mode: If this flag is given to source memory buffer,
-    ioc_send() is called every time ioc_write() is called. Similarly IOC_AUTO_SYNC
-    causes ioc_receive() to be called every time ioc_read() is called. This is not
-    really unefficient, and can be recommended in many cases.
     - The IOC_ALLOW_RESIZE flag allows resizing memory block to match memory block
       information received from the other end (IO device, etc).
     - The IOC_STATIC tells that memory block contains static data and doesn't need
@@ -50,7 +46,7 @@
 #define IOC_DEFAULT 0
 #define IOC_MBLK_DOWN 1
 #define IOC_MBLK_UP 2
-#define IOC_AUTO_SYNC 4
+#define IOC_MBLK_RESERVED  4 /* was AUTO_SYNC */
 #if IOC_BIDIRECTIONAL_MBLK_CODE
   #define IOC_BIDIRECTIONAL 8
 #else
@@ -127,7 +123,7 @@ typedef struct
      */
     os_int nbytes;
 
-    /** Flags, bit fields: IOC_MBLK_DOWN, IOC_MBLK_UP, IOC_AUTO_SYNC.
+    /** Flags, bit fields: IOC_MBLK_DOWN, IOC_MBLK_UP.
      */
     os_short flags;
 
@@ -151,7 +147,6 @@ typedef enum
    IOC_DEVICE_NAME = 2,
    IOC_DEVICE_NR = 3,
    IOC_MBLK_NAME = 4,
-   IOC_MBLK_AUTO_SYNC_FLAG = 5,
    IOC_MBLK_SZ = 6
 }
 iocMemoryBlockParamIx;
@@ -221,8 +216,7 @@ iocMemoryBlockLink;
     Memory block callback function type.
 
     If multithreading is used: callbacks is called by the thread which calls ioc_receive().
-    This can be a a worker thread is IOC_AUTO_SYNC is given. ioc_lock() is on when callback
-    function is called.
+    ioc_lock() is on when callback function is called.
 
 ****************************************************************************************************
 */

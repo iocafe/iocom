@@ -136,7 +136,6 @@ static void root_callback(
             if (!os_strcmp(mblk_name, "info"))
             {
                 ioc_add_callback(mblk_handle, info_callback, OS_NULL);
-                ioc_memory_block_set_int_param(mblk_handle, IOC_MBLK_AUTO_SYNC_FLAG, OS_TRUE);
             }
             break;
 
