@@ -3,7 +3,7 @@
   "assembly": [
     {
       "name": "ccd",
-      "type": "linecam",
+      "type": "camera",
       "exp": "exp.rec_",
       "imp": "imp.rec_"
     }

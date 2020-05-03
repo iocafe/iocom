@@ -45,7 +45,7 @@ OS_FLASH_MEM struct gina_t gina =
     {271, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
   },
 
-  /* Signals for linecam 'ccd' */
+  /* Signals for camera 'ccd' */
   {&gina.imp.rec_cmd,
    &gina.imp.rec_select,
    &gina.exp.rec_buf,
