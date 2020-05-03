@@ -521,7 +521,8 @@ osalStatus ioc_run_stream(
 
         if (stream->streamer == OS_NULL)
         {
-            return OSAL_STATUS_FAILED;
+            s = OSAL_STATUS_FAILED;
+            goto getout;
         }
         stream->streamer_opened = OS_TRUE;
     }
@@ -559,6 +560,7 @@ osalStatus ioc_run_stream(
         }
     }
 
+getout:
     if (flags & IOC_CALL_SYNC)
     {
         ioc_send(stream->prm.is_device ? &stream->exp_handle : &stream->imp_handle);

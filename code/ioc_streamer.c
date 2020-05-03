@@ -1583,7 +1583,9 @@ static void ioc_ctrl_stream_from_device(
         {
             if (bytes <= 0)
             {
-                if (!os_has_elapsed(&ctrl->timer_ms, IOC_STREAMER_TIMEOUT)) return;
+                if (!os_has_elapsed(&ctrl->timer_ms, IOC_STREAMER_TIMEOUT)) {
+                    return;
+                }
                 break;
             }
             os_get_timer(&ctrl->timer_ms);
