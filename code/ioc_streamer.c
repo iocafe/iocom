@@ -171,7 +171,7 @@ osalStream ioc_streamer_open(
         }
     }
 
-    if (flags & OSAL_STREAM_WRITE) 
+    if (flags & OSAL_STREAM_WRITE)
     {
         if (prm->is_device) {
             ioc_sets0_int(prm->frd.state, IOC_STREAM_IDLE);
@@ -240,7 +240,7 @@ void ioc_streamer_close(
             }
         }
 
-        if (flags & OSAL_STREAM_WRITE) 
+        if (flags & OSAL_STREAM_WRITE)
         {
             if (prm->is_device) {
                 ioc_sets0_int(prm->frd.state, IOC_STREAM_IDLE);
@@ -472,7 +472,7 @@ static osalStatus ioc_streamer_device_write(
     os_int flags)
 {
     iocStreamerState cmd;
-    os_char cmd_state_bits, state_bits;
+    os_char cmd_state_bits;
     os_int buf_sz, tail, nbytes, timeout_ms;
     osalStatus s;
 
@@ -651,7 +651,7 @@ static osalStatus ioc_streamer_device_read(
     os_int flags)
 {
     iocStreamerState cmd;
-    os_char cmd_state_bits, state_bits;
+    os_char cmd_state_bits;
     os_int buf_sz, head, nbytes, timeout_ms;
     osalStatus s;
 
