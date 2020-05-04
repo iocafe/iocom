@@ -29,3 +29,6 @@ python3 ./copy-gazerbeam-for-duino.py -o /coderoot/lib/esp32/gazerbeam
 cd /coderoot/pins/scripts
 python3 ./copy-pins-for-duino.py esp32 -o /coderoot/lib/esp32/pins
 
+cd /coderoot/eosal/dependencies/eosal_jpeg/scripts
+python3 ./copy-eosal-jpeg-for-duino.py esp32 -o /coderoot/lib/esp32/eosal_jpeg
+
