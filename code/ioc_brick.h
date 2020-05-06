@@ -107,6 +107,7 @@ typedef struct iocBrickBuffer
     volatile os_boolean enable_receive;
     ioc_brick_received *receive_callback;
     void *receive_context;
+    // os_timer open_timer;
 }
 iocBrickBuffer;
 

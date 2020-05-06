@@ -278,13 +278,20 @@ no_compression:
         case IOC_LARGE_JPEG:
             quality = 75;
 compress_jpeg:
-            s = os_compress_JPEG(src, src_w, src_h, format, quality,
-                OS_NULL, buf, buf_sz, &sz, OSAL_JPEG_DEFAULT);
+            s = os_compress_JPEG(src + sizeof(iocBrickHdr), src_w, src_h, format, quality,
+                OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
             if (s) goto no_compression;
+            os_memcpy(buf, src, sizeof(iocBrickHdr));
             hdr->compression = IOC_NORMAL_JPEG; /* Flag always as IOC_NORMAL_JPEG regardless */
             break;
 #endif
     }
+
+    sz += sizeof(iocBrickHdr);
+    hdr->buf_sz[0] = (os_uchar)sz;
+    hdr->buf_sz[1] = (os_uchar)(sz >> 8);
+    hdr->buf_sz[2] = (os_uchar)(sz >> 16);
+    hdr->buf_sz[3] = (os_uchar)(sz >> 24);
 
     return sz;
 }
@@ -587,18 +594,19 @@ static osalStatus ioc_receive_brick_data(
 
     if (b->pos < sizeof(iocBrickHdr))
     {
-        n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
+        /* n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
         if (n < sizeof(iocBrickHdr))
         {
             if (n < 0) return OSAL_STATUS_FAILED;
 
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) {
-                if (os_haselapsed(receive_timer, IOC_STREAMER_TIMEOUT))
-                return OSAL_STATUS_TIMEOUT;
+                if (os_has_elapsed(&b->open_timer, IOC_STREAMER_TIMEOUT)) {
+                    return OSAL_STATUS_TIMEOUT;
+                }
             }
             return OSAL_SUCCESS;
-        }
+        } */
 
         s = ioc_streamer_read(b->stream, (os_char*)first.bytes,
             sizeof(iocBrickHdr), &n_read, OSAL_STREAM_PEEK);
@@ -696,18 +704,18 @@ osalStatus ioc_run_brick_receive(
         /* Keep small pause between tries.
          */
         if (b->err_timer_set) {
-            if (!os_has_elapsed(&b->err_timer, IOC_STREAMER_TIMEOUT)) {
+            if (!os_has_elapsed(&b->err_timer, 500)) {
                 return OSAL_SUCCESS;
             }
             b->err_timer_set = OS_FALSE;
         }
+        os_get_timer(&b->err_timer);
+        b->err_timer_set = OS_TRUE;
 
         if (b->prm.frd.state)
         {
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) {
-                os_get_timer(&b->err_timer);
-                b->err_timer_set = OS_TRUE;
                 return (state_bits & OSAL_STATE_CONNECTED) ? OSAL_STATUS_NOT_CONNECTED : OSAL_SUCCESS;
             }
         }
@@ -720,6 +728,7 @@ osalStatus ioc_run_brick_receive(
             osal_stream_set_parameter(b->stream, OSAL_STREAM_READ_TIMEOUT_MS, b->timeout_ms);
         }
 
+        // os_get_timer(&b->open_timer);
         b->pos = 0;
     }
 
