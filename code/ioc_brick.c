@@ -19,6 +19,11 @@
 #include "iocom.h"
 #if IOC_STREAMER_SUPPORT
 
+#if IOC_USE_JPEG_COMPRESSION
+#include "eosal_jpeg.h"
+#endif
+
+
 /**
 ****************************************************************************************************
 
@@ -77,7 +82,7 @@ void ioc_initialize_brick_buffer(
     b->prm.is_device = (os_boolean)((flags & IOC_BRICK_CONTROLLER) == 0);
 
     /* In device end, we need to set IDLE status with connected state bit */
-    if (b->prm.is_device) { 
+    if (b->prm.is_device) {
         ioc_sets0_int(signals->state, IOC_STREAM_IDLE);
     }
 }
@@ -219,22 +224,67 @@ os_memsz ioc_compress_brick(
     iocBrickCompression compression)
 {
     iocBrickHdr *hdr;
-    os_int bytes_per_pix;
     os_memsz sz;
+    osalBitmapFormat format;
 
-    /* Very dummy and limited uncompressed implementation.
+#if IOC_USE_JPEG_COMPRESSION
+    os_int quality;
+    osalStatus s;
+#endif
+
+    /* Data format.
      */
     switch (src_format)
     {
-        case IOC_RGB24_BRICK: bytes_per_pix = 3; break;
-        default: bytes_per_pix = 1; break;
-    }
-    sz = src_w * (os_memsz)src_h * bytes_per_pix + sizeof(iocBrickHdr);
-    if (sz > buf_sz) sz = buf_sz;
-    os_memcpy(buf, src, sz);
+        default:
+        case IOC_BYTE_BRICK:
+            compression = IOC_UNCOMPRESSED_BRICK;
+            format = OSAL_GRAYSCALE8;
+            break;
 
+        case IOC_GRAYSCALE8_BRICK:
+            format = OSAL_GRAYSCALE8;
+            break;
+
+        case IOC_RGB24_BRICK:
+            format = OSAL_RGB24;
+            break;
+
+    }
+
+    /* Copy or compress.
+     */
     hdr = (iocBrickHdr*)buf;
-    hdr->compression = compression;
+    switch (compression)
+    {
+        default:
+        case IOC_UNCOMPRESSED_BRICK:
+no_compression:
+            sz = src_w * (os_memsz)src_h * OSAL_BITMAP_BYTES_PER_PIX(format) + sizeof(iocBrickHdr);
+            if (sz > buf_sz) sz = buf_sz;
+            os_memcpy(buf, src, sz);
+            hdr->compression = IOC_UNCOMPRESSED_BRICK; /* set IOC_UNCOMPRESSED_BRICK as default */
+            break;
+
+#if IOC_USE_JPEG_COMPRESSION
+        case IOC_SMALL_JPEG:
+            quality = 25;
+            goto compress_jpeg;
+
+        case IOC_NORMAL_JPEG:
+            quality = 50;
+            goto compress_jpeg;
+
+        case IOC_LARGE_JPEG:
+            quality = 75;
+compress_jpeg:
+            s = os_compress_JPEG(src, src_w, src_h, format, quality,
+                OS_NULL, buf, buf_sz, &sz, OSAL_JPEG_DEFAULT);
+            if (s) goto no_compression;
+            hdr->compression = IOC_NORMAL_JPEG; /* Flag always as IOC_NORMAL_JPEG regardless */
+            break;
+#endif
+    }
 
     return sz;
 }
@@ -535,7 +585,6 @@ static osalStatus ioc_receive_brick_data(
     }
     first;
 
-
     if (b->pos < sizeof(iocBrickHdr))
     {
         n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
@@ -641,7 +690,7 @@ osalStatus ioc_run_brick_receive(
         return OSAL_SUCCESS;
     }
 
-    if (b->stream == OS_NULL) 
+    if (b->stream == OS_NULL)
     {
         /* Keep small pause between tries.
          */

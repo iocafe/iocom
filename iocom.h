@@ -49,6 +49,16 @@ OSAL_C_HEADER_BEGINS
 #define IOC_RESIZE_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
 #endif
 
+/* Do we want to enable JPEG compression for brick data transfers.
+ */
+#ifndef IOC_USE_JPEG_COMPRESSION
+  #if OSAL_MICROCONTROLLER
+    #define IOC_USE_JPEG_COMPRESSION 0
+  #else
+    #define IOC_USE_JPEG_COMPRESSION 1
+  #endif
+#endif
+
 /* Authentication support level defines.
  */
 #define IOC_NO_AUTHENTICATION 0
@@ -95,6 +105,7 @@ OSAL_C_HEADER_BEGINS
 #ifndef IOC_RELAX_SECURITY
 #define IOC_RELAX_SECURITY EOSAL_RELAX_SECURITY
 #endif
+
 
 /* Include all base iocom headers and some extension headers needed early.
  */

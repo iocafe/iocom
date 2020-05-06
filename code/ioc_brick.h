@@ -16,22 +16,30 @@
 
 struct iocBrickBuffer;
 
+/* Do not change enumeration values, breaks compatibility.
+ */
 typedef enum iocBrickFormat
 {
-    IOC_BYTE_BRICK = 50,           /* 8 bits per pixel, one channel */
-    IOC_RGB24_BRICK = 51,          /* RGB 24 color image */ 
+    IOC_BYTE_BRICK = 50,            /* 8 bits per pixel, one channel */
+    IOC_RGB24_BRICK = 51,           /* color image, RGB 24  */
+    IOC_GRAYSCALE8_BRICK = 52,      /* Grayscale image, 8 bit per pixel */
 
     IOC_MIN_BRICK_FORMAT = 50,
-    IOC_MAX_BRICK_FORMAT = 51
+    IOC_MAX_BRICK_FORMAT = 52
 }
 iocBrickFormat;
 
+/* Do not change enumeration values, breaks compatibility.
+ */
 typedef enum iocBrickCompression
 {
     IOC_UNCOMPRESSED_BRICK = 1,     /* Uncompresssed brick */
+    IOC_SMALL_JPEG = 2,             /* JPEG compression  */
+    IOC_NORMAL_JPEG = 3,
+    IOC_LARGE_JPEG = 4,
 
     IOC_MIN_BRICK_COMPRESSION = 1,
-    IOC_MAX_BRICK_COMPRESSION = 1
+    IOC_MAX_BRICK_COMPRESSION = 4
 }
 iocBrickCompression;
 
@@ -91,9 +99,7 @@ typedef struct iocBrickBuffer
     iocStreamerSignals *signals;
     osalStream stream;
     os_int timeout_ms; /* timeout for streamer continuous data transfer, -1 = no timeout */
-    // os_boolean state_initialized;
 
-    /* error retry timer. */
     os_boolean err_timer_set;
     os_timer err_timer;
 

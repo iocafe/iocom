@@ -54,6 +54,10 @@
 */
 #include "iocompython.h"
 
+#if IOC_USE_JPEG_COMPRESSION
+#include "eosal_jpeg.h"
+#endif
+
 /* Working state structure used to read data.
  */
 typedef struct
@@ -452,7 +456,15 @@ static PyObject *BrickBuffer_get(
     iocBrickHdr *hdr;
     os_uchar *buf, *data;
     os_memsz buf_sz, data_sz;
+    iocBrickFormat format;
+    iocBrickCompression compression;
+    os_int width, height;
     osalStatus s;
+
+#if IOC_USE_JPEG_COMPRESSION
+    osalJpegMallocContext alloc_context;
+    // osalBitmapFormat jpeg_format;
+#endif
 
     int reserved = 0;
     static char *kwlist[] = {
@@ -501,23 +513,53 @@ static PyObject *BrickBuffer_get(
     data_sz = buf_sz - sizeof(iocBrickHdr);
     hdr = (iocBrickHdr*)buf;
 
-    if (hdr->compression == IOC_UNCOMPRESSED_BRICK)
+    format = (iocBrickFormat)hdr->format;
+    compression = (iocBrickCompression) hdr->compression;
+    width = ioc_brick_int(hdr->width, IOC_BRICK_DIM_SZ);
+    height = ioc_brick_int(hdr->height, IOC_BRICK_DIM_SZ);
+
+    switch (compression)
     {
-        brick_data = PyBytes_FromStringAndSize((const char*)data, data_sz);
-    }
-    else
-    {
-        /* No support for compressed formats yet */
-        ioc_unlock(iocroot);
-        self->status = OSAL_STATUS_NOT_SUPPORTED;
-        Py_RETURN_NONE;
+        case IOC_UNCOMPRESSED_BRICK:
+            brick_data = PyBytes_FromStringAndSize((const char*)data, data_sz);
+            break;
+
+#if IOC_USE_JPEG_COMPRESSION
+        case IOC_NORMAL_JPEG:
+            // jpeg_format = (format == IOC_RGB24_BRICK) ? OSAL_RGB24 : OSAL_GRAYSCALE8;
+            os_memclear(&alloc_context, sizeof(alloc_context));
+
+            s = os_uncompress_JPEG(data, data_sz, OS_NULL, &alloc_context, OSAL_JPEG_DEFAULT);
+            if (s) {
+                osal_debug_error_int("os_uncompress_JPEG() failed s=", s);
+                os_free(alloc_context.buf, alloc_context.buf_sz);
+                ioc_unlock(iocroot);
+                self->status = OSAL_STATUS_FAILED;
+                Py_RETURN_NONE;
+            }
+            else {
+                osal_debug_error_int("uncompressed bytes ", alloc_context.nbytes);
+
+                brick_data = PyBytes_FromStringAndSize((const char*)alloc_context.buf, alloc_context.nbytes);
+            }
+
+            os_free(alloc_context.buf, alloc_context.buf_sz);
+
+            break;
+#endif
+
+        default:
+            /* No support for compressed formats yet */
+            ioc_unlock(iocroot);
+            self->status = OSAL_STATUS_NOT_SUPPORTED;
+            Py_RETURN_NONE;
     }
 
     rval = PyList_New(5);
     PyList_SetItem(rval, 0, brick_data);
-    PyList_SetItem(rval, 1, Py_BuildValue("i", (int)hdr->format));
-    PyList_SetItem(rval, 2, Py_BuildValue("i", (int)ioc_brick_int(hdr->width, IOC_BRICK_DIM_SZ)));
-    PyList_SetItem(rval, 3, Py_BuildValue("i", (int)ioc_brick_int(hdr->height, IOC_BRICK_DIM_SZ)));
+    PyList_SetItem(rval, 1, Py_BuildValue("i", (int)format));
+    PyList_SetItem(rval, 2, Py_BuildValue("i", (int)width));
+    PyList_SetItem(rval, 3, Py_BuildValue("i", (int)height));
     PyList_SetItem(rval, 4, Py_BuildValue("L", (long long)ioc_brick_int(hdr->tstamp, IOC_BRICK_TSTAMP_SZ)));
 
     /* End synchronization and return data.
