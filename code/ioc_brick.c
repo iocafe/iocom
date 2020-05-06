@@ -585,8 +585,6 @@ static osalStatus ioc_receive_brick_data(
     }
     first;
 
-osal_debug_error("HERE 1")    ;
-
     if (b->pos < sizeof(iocBrickHdr))
     {
         n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
@@ -706,8 +704,6 @@ osalStatus ioc_run_brick_receive(
 
         if (b->prm.frd.state)
         {
-osal_debug_error("HERE 2")    ;
-
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) {
                 os_get_timer(&b->err_timer);
