@@ -582,8 +582,8 @@ static osalStatus ioc_receive_brick_data(
     os_memsz n, n_read, alloc_sz;
     osalStatus s;
     os_uint checksum;
-    iocStreamerState state;
-    os_char state_bits;
+    /* iocStreamerState state;
+    os_char state_bits; */
 
     union
     {

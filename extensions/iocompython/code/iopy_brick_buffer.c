@@ -463,7 +463,6 @@ static PyObject *BrickBuffer_get(
 
 #if IOC_USE_JPEG_COMPRESSION
     osalJpegMallocContext alloc_context;
-    // osalBitmapFormat jpeg_format;
 #endif
 
     int reserved = 0;
@@ -508,6 +507,7 @@ static PyObject *BrickBuffer_get(
         self->status = s;
         Py_RETURN_NONE;
     }
+
     buf = self->brick_buffer.buf;
     data = buf + sizeof(iocBrickHdr);
     data_sz = buf_sz - sizeof(iocBrickHdr);
@@ -526,8 +526,9 @@ static PyObject *BrickBuffer_get(
 
 #if IOC_USE_JPEG_COMPRESSION
         case IOC_NORMAL_JPEG:
-            // jpeg_format = (format == IOC_RGB24_BRICK) ? OSAL_RGB24 : OSAL_GRAYSCALE8;
             os_memclear(&alloc_context, sizeof(alloc_context));
+
+osal_debug_error_int("HERE os_uncompress_JPEG CRASHES WITH SOME BUILD SETS = ", data_sz);
 
             s = os_uncompress_JPEG(data, data_sz, OS_NULL, &alloc_context, OSAL_JPEG_DEFAULT);
             if (s) {
@@ -549,7 +550,7 @@ static PyObject *BrickBuffer_get(
 #endif
 
         default:
-            /* No support for compressed formats yet */
+            osal_debug_error_int("unsupported brick compression = ", compression);
             ioc_unlock(iocroot);
             self->status = OSAL_STATUS_NOT_SUPPORTED;
             Py_RETURN_NONE;
