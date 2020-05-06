@@ -424,7 +424,7 @@ void ioc_generate_del_mblk_request(
 
 ****************************************************************************************************
 */
-void mblk_set_signal_header(
+/* void mblk_set_signal_header(
     iocHandle *handle,
     struct iocMblkSignalHdr *hdr)
 {
@@ -435,7 +435,7 @@ void mblk_set_signal_header(
     if (mblk == OS_NULL) return;
     mblk->signal_hdr = hdr;
     ioc_unlock(root);
-}
+} */
 #endif
 
 

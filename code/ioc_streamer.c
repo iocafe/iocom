@@ -674,7 +674,7 @@ static osalStatus ioc_streamer_device_read(
             streamer->select = (os_int)ioc_gets0_int(signals->select);
             if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED))
             {
-                osal_trace3("IOC_SSTEP_FAILED, cmd != RUNNING,COMPLETED or no select");
+                osal_trace3("IOC_SSTEP_FAILED, cmd != RUNNING");
                 streamer->step = IOC_SSTEP_FAILED;
                 goto getout;
             }

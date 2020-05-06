@@ -341,7 +341,7 @@ typedef struct iocMemoryBlock
 
     /** Pointer to fixed signal header for the memory block. OS_NULL if none.
      */
-    struct iocMblkSignalHdr *signal_hdr;
+    /* struct iocMblkSignalHdr *signal_hdr; */
 #endif
 }
 iocMemoryBlock;
@@ -391,9 +391,9 @@ void ioc_generate_del_mblk_request(
 
 /* Save pointer to signal header "remove memory block" requests.
  */
-void mblk_set_signal_header(
+/* void mblk_set_signal_header(
     iocHandle *handle,
-    struct iocMblkSignalHdr *hdr);
+    struct iocMblkSignalHdr *hdr); */
 #endif
 
 /* Set memory block parameter.

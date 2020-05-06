@@ -444,7 +444,7 @@ void ioc_tbuf_synchronize(
 
 ****************************************************************************************************
 */
-void ioc_tbuf_disconnect_signals(
+/* void ioc_tbuf_disconnect_signals(
     iocTargetBuffer *tbuf)
 {
     iocMemoryBlock *mblk;
@@ -476,5 +476,5 @@ void ioc_tbuf_disconnect_signals(
             }
         }
     }
-}
+} */
 #endif
