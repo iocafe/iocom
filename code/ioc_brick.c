@@ -596,6 +596,7 @@ osal_debug_error("HERE 1")    ;
 
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) {
+                if (os_haselapsed(receive_timer, IOC_STREAMER_TIMEOUT))
                 return OSAL_STATUS_TIMEOUT;
             }
             return OSAL_SUCCESS;
