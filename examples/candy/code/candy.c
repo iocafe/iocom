@@ -191,7 +191,7 @@ osalStatus osal_main(
 
     /* Set callback to pass communcation to pins.
      */
-    ioc_add_callback(&ioboard_imp, pins_default_iocom_callback, &candy_hdr);
+    ioc_add_callback(&ioboard_imp, pins_default_iocom_callback, (void*)&candy_hdr);
 
     /* Connect PINS library to IOCOM library
      */

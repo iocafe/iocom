@@ -259,7 +259,9 @@ os_memsz ioc_compress_brick(
     {
         default:
         case IOC_UNCOMPRESSED_BRICK:
+#if IOC_USE_JPEG_COMPRESSION
 no_compression:
+#endif
             sz = src_w * (os_memsz)src_h * OSAL_BITMAP_BYTES_PER_PIX(format) + sizeof(iocBrickHdr);
             if (sz > buf_sz) sz = buf_sz;
             os_memcpy(buf, src, sz);
