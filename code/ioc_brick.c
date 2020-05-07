@@ -200,16 +200,18 @@ void ioc_free_brick_buffer(
 /**
 ****************************************************************************************************
 
-  @brief Store or compress and store data to send into brick buffer.
+  @brief Store/compress data to send into brick buffer.
   @anchor ioc_compress_brick
 
   @param  buf Pointer to char buffer where to store brick header and compressed data.
-  @param  buf_sz Size of buffer buf.
-  @param  src Source data, brick header + uncompressed brick data.
-  @param  src_format Source data format, set IOC_BYTE_BRICK.
-  @param  src_w Source image, etc, width in pixels, etc.
-  @param  src_h Source image, etc, height in pixels, etc.
-  @param  compression How to compress data, set IOC_UNCOMPRESSED_BRICK.
+  @param  buf_sz Size of buffer buf. Must have space for data and brick header.
+  @paramm hdr Brick header to save.
+  @param  data Uncompressed source data.
+  @param  format Source data format, set IOC_BYTE_BRICK, IOC_RGB24_BRICK, IOC_GRAYSCALE8_BRICK...
+  @param  w Source image width in pixels, etc.
+  @param  h Source image height in pixels, etc.
+  @param  compression How to compress data, set IOC_UNCOMPRESSED_BRICK, IOC_SMALL_JPEG,
+          IOC_NORMAL_JPEG, IOC_LARGE_JPEG...
   @return Number of final bytes in buf (includes brick header).
 
 ****************************************************************************************************
@@ -217,57 +219,28 @@ void ioc_free_brick_buffer(
 os_memsz ioc_compress_brick(
     os_uchar *buf,
     os_memsz buf_sz,
-    os_uchar *src,
-    iocBrickFormat src_format,
-    os_int src_w,
-    os_int src_h,
+    iocBrickHdr *hdr,
+    os_uchar *data,
+    osalBitmapFormat format,
+    os_int w,
+    os_int h,
     iocBrickCompression compression)
 {
-    iocBrickHdr *hdr;
+    iocBrickHdr *dhdr;
     os_memsz sz;
-    osalBitmapFormat format;
 
 #if IOC_USE_JPEG_COMPRESSION
     os_int quality;
     osalStatus s;
 #endif
 
-    /* Data format.
-     */
-    switch (src_format)
-    {
-        default:
-        case IOC_BYTE_BRICK:
-            compression = IOC_UNCOMPRESSED_BRICK;
-            format = OSAL_GRAYSCALE8;
-            break;
-
-        case IOC_GRAYSCALE8_BRICK:
-            format = OSAL_GRAYSCALE8;
-            break;
-
-        case IOC_RGB24_BRICK:
-            format = OSAL_RGB24;
-            break;
-
-    }
-
     /* Copy or compress.
      */
-    hdr = (iocBrickHdr*)buf;
+    dhdr = (iocBrickHdr*)buf;
+    os_memcpy(buf, hdr, sizeof(iocBrickHdr));
+
     switch (compression)
     {
-        default:
-        case IOC_UNCOMPRESSED_BRICK:
-#if IOC_USE_JPEG_COMPRESSION
-no_compression:
-#endif
-            sz = src_w * (os_memsz)src_h * OSAL_BITMAP_BYTES_PER_PIX(format) + sizeof(iocBrickHdr);
-            if (sz > buf_sz) sz = buf_sz;
-            os_memcpy(buf, src, sz);
-            hdr->compression = IOC_UNCOMPRESSED_BRICK; /* set IOC_UNCOMPRESSED_BRICK as default */
-            break;
-
 #if IOC_USE_JPEG_COMPRESSION
         case IOC_SMALL_JPEG:
             quality = 25;
@@ -280,20 +253,38 @@ no_compression:
         case IOC_LARGE_JPEG:
             quality = 75;
 compress_jpeg:
-            s = os_compress_JPEG(src + sizeof(iocBrickHdr), src_w, src_h, format, quality,
+            s = os_compress_JPEG(data, w, h, format, quality,
                 OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
-            if (s) goto no_compression;
-            os_memcpy(buf, src, sizeof(iocBrickHdr));
-            hdr->compression = IOC_NORMAL_JPEG; /* Flag always as IOC_NORMAL_JPEG regardless */
-            break;
+            if (s == OSAL_SUCCESS)
+            {
+                /* Flag always as IOC_NORMAL_JPEG regardless */
+                dhdr->compression = IOC_NORMAL_JPEG;
+                break;
+            }
+            /* continues... */
 #endif
+
+        default:
+        case IOC_UNCOMPRESSED_BRICK:
+            sz = w * (os_memsz)h * OSAL_BITMAP_BYTES_PER_PIX(format);
+            if (sz > buf_sz) sz = buf_sz;
+            os_memcpy(buf + sizeof(iocBrickHdr), data, sz);
+            /* set IOC_UNCOMPRESSED_BRICK as default */
+            dhdr->compression = IOC_UNCOMPRESSED_BRICK; 
+            break;
     }
 
+    dhdr->format = format;
+    dhdr->width[0] = (os_uchar)w;
+    dhdr->width[1] = (os_uchar)(w >> 8);
+    dhdr->height[0] = (os_uchar)h;
+    dhdr->height[1] = (os_uchar)(h >> 8); 
+
     sz += sizeof(iocBrickHdr);
-    hdr->buf_sz[0] = (os_uchar)sz;
-    hdr->buf_sz[1] = (os_uchar)(sz >> 8);
-    hdr->buf_sz[2] = (os_uchar)(sz >> 16);
-    hdr->buf_sz[3] = (os_uchar)(sz >> 24);
+    dhdr->buf_sz[0] = (os_uchar)sz;
+    dhdr->buf_sz[1] = (os_uchar)(sz >> 8);
+    dhdr->buf_sz[2] = (os_uchar)(sz >> 16);
+    dhdr->buf_sz[3] = (os_uchar)(sz >> 24);
 
     return sz;
 }
@@ -526,10 +517,18 @@ static osalStatus osal_validate_brick_header(
     iocBrickHdr *bhdr)
 {
     os_uint w, h, buf_sz, alloc_sz, bytes_per_pix, max_brick_sz, max_brick_alloc;
+    os_int i;
+    const os_uchar format_list[] = {OSAL_GRAYSCALE8, OSAL_GRAYSCALE16, OSAL_RGB24, OSAL_RGBA32, 0};
 
-    if (bhdr->format < IOC_MIN_BRICK_FORMAT ||
-        bhdr->format > IOC_MAX_BRICK_FORMAT ||
-        bhdr->compression < IOC_MIN_BRICK_COMPRESSION ||
+    i = 0; 
+    while (bhdr->format != format_list[i])
+    {
+        if (format_list[++i] == 0) {
+            return OSAL_STATUS_FAILED;
+        }
+    }
+
+    if (bhdr->compression < IOC_MIN_BRICK_COMPRESSION ||
         bhdr->compression > IOC_MAX_BRICK_COMPRESSION)
     {
         return OSAL_STATUS_FAILED;
@@ -543,14 +542,10 @@ static osalStatus osal_validate_brick_header(
         return OSAL_STATUS_FAILED;
     }
 
-    switch (bhdr->format)
-    {
-        default:
-        case IOC_BYTE_BRICK: bytes_per_pix = 1; break;
-        case IOC_RGB24_BRICK: bytes_per_pix = 3; break;
-    }
+    bytes_per_pix = OSAL_BITMAP_BYTES_PER_PIX(bhdr->format);
     max_brick_sz = w * h * bytes_per_pix + sizeof(iocBrickHdr);
-    max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT * bytes_per_pix)/2) + sizeof(iocBrickHdr);
+    max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT 
+        * bytes_per_pix)/2) + sizeof(iocBrickHdr);
 
     buf_sz = (os_uint)ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
     alloc_sz = (os_uint)ioc_brick_int(bhdr->alloc_sz, IOC_BRICK_BYTES_SZ);

@@ -18,6 +18,7 @@ struct iocBrickBuffer;
 
 /* Do not change enumeration values, breaks compatibility.
  */
+#if 0
 typedef enum iocBrickFormat
 {
     IOC_BYTE_BRICK = 50,            /* 8 bits per pixel, one channel */
@@ -28,6 +29,8 @@ typedef enum iocBrickFormat
     IOC_MAX_BRICK_FORMAT = 52
 }
 iocBrickFormat;
+#endif
+
 
 /* Do not change enumeration values, breaks compatibility.
  */
@@ -148,10 +151,11 @@ void ioc_free_brick_buffer(
 os_memsz ioc_compress_brick(
     os_uchar *buf,
     os_memsz buf_sz,
-    os_uchar *src,
-    iocBrickFormat src_format,
-    os_int src_w,
-    os_int src_h,
+    iocBrickHdr *hdr,
+    os_uchar *data,
+    osalBitmapFormat format,
+    os_int w,
+    os_int h,
     iocBrickCompression compression);
 
 /* Store time stamp into the brick header (must be called before ioc_set_brick_checksum)

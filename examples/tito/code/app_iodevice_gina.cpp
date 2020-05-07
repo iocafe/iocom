@@ -105,10 +105,10 @@ gina_t *GinaIoDevice::inititalize(
        to clear OSAL_STATE_CONNECTED status bit when upper level, like I spy disconnects.
        See ioc_tbuf_disconnect_signals() function.
      */
-    mblk_set_signal_header(&m_gina_import, &m_gina_def.imp.hdr);
+    /* mblk_set_signal_header(&m_gina_import, &m_gina_def.imp.hdr);
     mblk_set_signal_header(&m_gina_export, &m_gina_def.exp.hdr);
     mblk_set_signal_header(&m_gina_conf_import, &m_gina_def.conf_imp.hdr);
-    mblk_set_signal_header(&m_gina_conf_export, &m_gina_def.conf_exp.hdr);
+    mblk_set_signal_header(&m_gina_conf_export, &m_gina_def.conf_exp.hdr); */
 #endif
 
     /* Set up buffer for incoming camera photo
