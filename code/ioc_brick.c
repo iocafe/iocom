@@ -258,13 +258,17 @@ compress_jpeg:
              */
             if (hdr->compression == IOC_NORMAL_JPEG)
             {
+                if (data_sz + (os_memsz)sizeof(iocBrickHdr) > buf_sz) {
+                    osal_debug_error("ioc_brick: buffer too small for JPEG");
+                    break;
+                }
+
                 os_memcpy(buf + sizeof(iocBrickHdr), data, data_sz);
                 sz = data_sz;
                 break;
             }
 
 #if IOC_USE_JPEG_COMPRESSION
-
             s = os_compress_JPEG(data, w, h, format, quality,
                 OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
             if (s == OSAL_SUCCESS)
@@ -284,7 +288,7 @@ compress_jpeg:
             osal_debug_assert(sz == data_sz);
             if (sz +  (os_memsz)sizeof(iocBrickHdr) > buf_sz) {
                 sz = buf_sz - sizeof(iocBrickHdr);
-                osal_debug_error("ioc_brik: Brick buffer too small");
+                osal_debug_error("ioc_brick: buffer too small");
             }
             os_memcpy(buf + sizeof(iocBrickHdr), data, sz);
             /* set IOC_UNCOMPRESSED_BRICK as default */
