@@ -105,9 +105,13 @@ void ApplicationRoot::start(const os_char *network_name, os_uint device_nr)
 
     m_gina1_def = m_gina1.inititalize(m_network_name, 1);
     m_gina2_def = m_gina2.inititalize(m_network_name, 2);
+    m_candy1_def = m_candy1.inititalize(m_network_name, 1);
 
     ioc_set_brick_received_callback(&m_gina1.m_camera_buffer, app_gina1_photo_received, this);
     ioc_brick_set_receive(&m_gina1.m_camera_buffer, OS_TRUE);
+
+    ioc_set_brick_received_callback(&m_candy1.m_camera_buffer, app_gina1_photo_received, this);
+    ioc_brick_set_receive(&m_candy1.m_camera_buffer, OS_TRUE);
 
     m_test_seq1.start(this);
 }
@@ -122,6 +126,7 @@ osalStatus ApplicationRoot::run(os_timer *ti)
     ioc_single_thread_run(&iocom_root);
     ioc_receive_all(&iocom_root);
     ioc_run_brick_receive(&m_gina1.m_camera_buffer);
+    ioc_run_brick_receive(&m_candy1.m_camera_buffer);
 
     /* Call basic server implementation to maintain control streams.
      */

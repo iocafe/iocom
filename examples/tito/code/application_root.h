@@ -60,6 +60,8 @@ public:
     GinaIoDevice m_gina2;
     gina_t *m_gina1_def;
     gina_t *m_gina2_def;
+    GinaIoDevice m_candy1;
+    gina_t *m_candy1_def;
 
     BlinkLedSequence m_test_seq1;
 

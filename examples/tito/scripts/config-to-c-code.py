@@ -41,6 +41,7 @@ def do_hardware(MYPINS, MYINCLUDE):
     runcmd(BINTOC + ' -v ioapp_signal_config ' + MYSIGNALS + '.binjson -o ' + MYINCLUDE + '/info-mblk-binary.c')
 
     runcmd(SIGNALSTOC + ' -a controller-static ' + MYCODEROOT + '/iocom/examples/gina/config/signals/signals.json -o ' + MYINCLUDE + '/gina-for-' + MYAPP + '.c')
+    runcmd(SIGNALSTOC + ' -a controller-static ' + MYCODEROOT + '/iocom/examples/candy/config/signals/signals.json -o ' + MYINCLUDE + '/candy-for-' + MYAPP + '.c')
 
     runcmd(JSONTOOL + ' --t2b -title ' + MYNETDEFAULTS + '.json ' + MYNETDEFAULTS + '.binjson')
     runcmd(JSONTOOL + ' --b2t ' + MYNETDEFAULTS + '.binjson ' + MYNETDEFAULTS + '-check.json')

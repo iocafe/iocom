@@ -22,10 +22,12 @@
 #include "info-mblk-binary.h"
 #include "network-defaults.h"
 #include "gina-for-tito.h"
+#include "candy-for-tito.h"
 
 #include "pins-io.c"
 #include "signals.c"
 #include "info-mblk-binary.c"
 #include "network-defaults.c"
 #include "gina-for-tito.c"
+#include "candy-for-tito.c"
 

@@ -39,8 +39,10 @@ OSAL_C_HEADER_ENDS
 /* Include header files of this module
  */
 #include "gina-for-tito.h"
+#include "candy-for-tito.h"
 #include "iodevice_base_class.h"
 #include "app_iodevice_gina.h"
+#include "app_iodevice_candy.h"
 #include "sequence_base_class.h"
 #include "app_seq_blink_led.h"
 #include "application_root.h"
