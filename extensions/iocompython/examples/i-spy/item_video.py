@@ -77,6 +77,7 @@ class VideoItem(GridLayout):
         self.run()
 
     def run(self):
+        return 
         data = self.camera_buffer.get()
         if data != None:
             self.update_plot(data)
