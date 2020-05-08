@@ -280,6 +280,7 @@ compress_jpeg:
             /* continues... */
 #else
             osal_debug_error("JPEG is not included in build");
+            /* continues... */
 #endif
 
         default:
