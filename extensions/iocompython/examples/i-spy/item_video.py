@@ -83,6 +83,7 @@ class VideoItem(GridLayout):
 
     def update_plot(self, data):
         arr = array('B', data[0])
+        self.texture.size=(data[1], data[2])
         self.texture.blit_buffer(arr, colorfmt='rgb', bufferfmt='ubyte')
 
 class MainApp(App):
