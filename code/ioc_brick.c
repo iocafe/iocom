@@ -260,7 +260,7 @@ compress_jpeg:
             {
                 if (data_sz + (os_memsz)sizeof(iocBrickHdr) > buf_sz) {
                     osal_debug_error("ioc_brick: buffer too small for JPEG");
-                    break;
+                    data_sz = buf_sz - sizeof(iocBrickHdr);
                 }
 
                 os_memcpy(buf + sizeof(iocBrickHdr), data, data_sz);
