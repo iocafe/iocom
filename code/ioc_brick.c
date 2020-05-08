@@ -230,9 +230,9 @@ os_memsz ioc_compress_brick(
 {
     iocBrickHdr *dhdr;
     os_memsz sz;
+    os_int quality;
 
 #if IOC_USE_JPEG_COMPRESSION
-    os_int quality;
     osalStatus s;
 #endif
 
@@ -243,7 +243,6 @@ os_memsz ioc_compress_brick(
 
     switch (compression)
     {
-#if IOC_USE_JPEG_COMPRESSION
         case IOC_SMALL_JPEG:
             quality = 25;
             goto compress_jpeg;
@@ -264,6 +263,8 @@ compress_jpeg:
                 break;
             }
 
+#if IOC_USE_JPEG_COMPRESSION
+
             s = os_compress_JPEG(data, w, h, format, quality,
                 OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
             if (s == OSAL_SUCCESS)
@@ -273,6 +274,8 @@ compress_jpeg:
                 break;
             }
             /* continues... */
+#else
+            osal_debug_error("JPEG is not included in build");
 #endif
 
         default:

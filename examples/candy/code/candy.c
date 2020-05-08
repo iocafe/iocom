@@ -302,6 +302,9 @@ osalStatus osal_loop(
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
+static int u;
+ioc_sets0_int(&candy.exp.ambient, u++);
+
     /* The call is here for development testing.
      */
     s = io_run_device_console(&ioconsole);
