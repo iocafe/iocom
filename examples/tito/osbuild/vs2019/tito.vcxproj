@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\code\application_root.cpp" />
+    <ClCompile Include="..\..\code\app_iodevice_candy.cpp" />
     <ClCompile Include="..\..\code\app_iodevice_gina.cpp" />
     <ClCompile Include="..\..\code\app_seq_blink_led.cpp" />
     <ClCompile Include="..\..\code\controller_config.c" />
@@ -29,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\code\application_root.h" />
+    <ClInclude Include="..\..\code\app_iodevice_candy.h" />
     <ClInclude Include="..\..\code\app_iodevice_gina.h" />
     <ClInclude Include="..\..\code\app_seq_blink_led.h" />
     <ClInclude Include="..\..\code\controller_main.h" />
