@@ -265,6 +265,7 @@ osalStatus osal_loop(
 {
     os_timer ti;
     osalStatus s;
+    os_int send_freq_ms = 10;
 
     os_get_timer(&ti);
 
@@ -294,7 +295,8 @@ osalStatus osal_loop(
     ioc_run_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
 
 #if PINS_CAMERA
-    ioc_run_brick_send(&video_output);
+    s = ioc_run_brick_send(&video_output);
+    if (s == OSAL_SUCCESS) send_freq_ms = 2;
 #endif
 
     /* Read all input pins from hardware into global pins structures. Reading will forward
@@ -321,7 +323,7 @@ ioc_sets0_int(&candy.exp.ambient, u++ / 200);
        even then to keep software updates, etc. working. This doesn't generate much
        communication tough, conf_export doesn't change during normal operation.
      */
-    if (os_timer_hit(&send_timer, &ti, 10))
+    if (os_timer_hit(&send_timer, &ti, send_freq_ms))
     {
         ioc_send_all(&ioboard_root);
         ioc_run(&ioboard_root);

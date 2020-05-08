@@ -184,7 +184,7 @@ void ioc_set_brick_checksum(
 
 /* Run brick data transfer
  */
-void ioc_run_brick_send(
+osalStatus ioc_run_brick_send(
     iocBrickBuffer *b);
 
 /* Turn receiving on or off

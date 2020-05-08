@@ -528,19 +528,14 @@ static PyObject *BrickBuffer_get(
         case IOC_NORMAL_JPEG:
             os_memclear(&alloc_context, sizeof(alloc_context));
 
-osal_debug_error_int("HERE os_uncompress_JPEG CRASHES WITH SOME BUILD SETS = ", data_sz);
-
             s = os_uncompress_JPEG(data, data_sz, OS_NULL, &alloc_context, OSAL_JPEG_DEFAULT);
             if (s) {
-                osal_debug_error_int("os_uncompress_JPEG() failed s=", s);
                 os_free(alloc_context.buf, alloc_context.buf_sz);
                 ioc_unlock(iocroot);
                 self->status = OSAL_STATUS_FAILED;
                 Py_RETURN_NONE;
             }
             else {
-                osal_debug_error_int("uncompressed bytes ", alloc_context.nbytes);
-
                 brick_data = PyBytes_FromStringAndSize((const char*)alloc_context.buf, alloc_context.nbytes);
             }
 

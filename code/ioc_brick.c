@@ -318,19 +318,6 @@ compress_jpeg:
     dhdr->buf_sz[2] = (os_uchar)(sz >> 16);
     dhdr->buf_sz[3] = (os_uchar)(sz >> 24);
 
-os_int alloc_sz;
-osal_debug_error_int("********* hdr struct size  ", sizeof(iocBrickHdr));
-alloc_sz = (os_memsz)ioc_brick_int(dhdr->buf_sz, IOC_BRICK_BYTES_SZ);
-osal_debug_error_int("buf sz ", alloc_sz);
-alloc_sz = (os_memsz)ioc_brick_int(dhdr->alloc_sz, IOC_BRICK_BYTES_SZ);
-osal_debug_error_int("alloc sz ", alloc_sz);
-alloc_sz = (os_memsz)ioc_brick_int(dhdr->width, IOC_BRICK_DIM_SZ);
-osal_debug_error_int("width ", alloc_sz);
-alloc_sz = (os_memsz)ioc_brick_int(dhdr->height, IOC_BRICK_DIM_SZ);
-osal_debug_error_int("height ", alloc_sz);
-osal_debug_error_int("format ", dhdr->format);
-osal_debug_error_int("compression ", dhdr->compression);
-
     return sz;
 }
 
@@ -453,11 +440,13 @@ static osalStatus ioc_send_brick_data(
   This function can be called repeatedly from loop.
 
   @param   b Pointer to brick buffer
-  @return  None.
+  @return  OSAL_NOTHING_TO_DO indicates that nothing was done, no need to hurry to call again.
+           OSAL_SUCCESS indicates that work was done.
+           Other values indicate an error.
 
 ****************************************************************************************************
 */
-void ioc_run_brick_send(
+osalStatus ioc_run_brick_send(
     iocBrickBuffer *b)
 {
     iocStreamerState cmd;
@@ -467,11 +456,13 @@ void ioc_run_brick_send(
 
     if (b->stream == OS_NULL) {
         cmd = (iocStreamerState)ioc_gets_int(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
-        if (cmd != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) return;
+        if (cmd != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) {
+            return OSAL_NOTHING_TO_DO;
+        }
 
         osal_trace("BRICK: IOC_STREAM_RUNNING command");
         b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
-        if (b->stream == OS_NULL) return;
+        if (b->stream == OS_NULL) return OSAL_NOTHING_TO_DO;
 
         if (b->timeout_ms) {
             osal_stream_set_parameter(b->stream, OSAL_STREAM_WRITE_TIMEOUT_MS, b->timeout_ms);
@@ -485,12 +476,14 @@ void ioc_run_brick_send(
     }
     else {
         s = ioc_streamer_write(b->stream, osal_str_empty, 0, &n_written, OSAL_STREAM_DEFAULT);
+        if (!OSAL_IS_ERROR(s)) s = OSAL_NOTHING_TO_DO;
     }
 
-    if (s) {
+    if (OSAL_IS_ERROR(s)) {
         ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
         b->stream = OS_NULL;
     }
+    return s;
 }
 
 
@@ -665,17 +658,6 @@ static osalStatus ioc_receive_brick_data(
         }
 
         b->buf_sz = (os_memsz)ioc_brick_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
-
-alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
-osal_debug_error_int("********* hdr size buf_sz ", sizeof(iocBrickHdr));
-osal_debug_error_int("buf sz ", b->buf_sz);
-osal_debug_error_int("alloc sz ", alloc_sz);
-alloc_sz = (os_memsz)ioc_brick_int(first.hdr.width, IOC_BRICK_DIM_SZ);
-osal_debug_error_int("width ", alloc_sz);
-alloc_sz = (os_memsz)ioc_brick_int(first.hdr.height, IOC_BRICK_DIM_SZ);
-osal_debug_error_int("height ", alloc_sz);
-osal_debug_error_int("format ", first.hdr.format);
-osal_debug_error_int("compression ", first.hdr.compression);
 
         alloc_sz = b->buf_sz | 0x0FFF;;
         if (b->buf == OS_NULL || alloc_sz > b->buf_alloc_sz)
