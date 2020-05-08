@@ -308,6 +308,19 @@ compress_jpeg:
     dhdr->buf_sz[2] = (os_uchar)(sz >> 16);
     dhdr->buf_sz[3] = (os_uchar)(sz >> 24);
 
+os_int alloc_sz;
+osal_debug_error_int("********* hdr struct size  ", sizeof(iocBrickHdr));
+alloc_sz = (os_memsz)ioc_brick_int(dhdr->buf_sz, IOC_BRICK_BYTES_SZ);
+osal_debug_error_int("buf sz ", alloc_sz);
+alloc_sz = (os_memsz)ioc_brick_int(dhdr->alloc_sz, IOC_BRICK_BYTES_SZ);
+osal_debug_error_int("alloc sz ", alloc_sz);
+alloc_sz = (os_memsz)ioc_brick_int(dhdr->width, IOC_BRICK_DIM_SZ);
+osal_debug_error_int("width ", alloc_sz);
+alloc_sz = (os_memsz)ioc_brick_int(dhdr->height, IOC_BRICK_DIM_SZ);
+osal_debug_error_int("height ", alloc_sz);
+osal_debug_error_int("format ", dhdr->format);
+osal_debug_error_int("compression ", dhdr->compression);
+
     return sz;
 }
 
@@ -642,15 +655,21 @@ static osalStatus ioc_receive_brick_data(
         }
 
         b->buf_sz = (os_memsz)ioc_brick_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
-osal_debug_error_int("buf_sz ", b->buf_sz);
 
-        alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
+alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
+osal_debug_error_int("********* hdr size buf_sz ", sizeof(iocBrickHdr));
+osal_debug_error_int("buf sz ", b->buf_sz);
 osal_debug_error_int("alloc sz ", alloc_sz);
+alloc_sz = (os_memsz)ioc_brick_int(first.hdr.width, IOC_BRICK_DIM_SZ);
+osal_debug_error_int("width ", alloc_sz);
+alloc_sz = (os_memsz)ioc_brick_int(first.hdr.height, IOC_BRICK_DIM_SZ);
+osal_debug_error_int("height ", alloc_sz);
+osal_debug_error_int("format ", first.hdr.format);
+osal_debug_error_int("compression ", first.hdr.compression);
 
         alloc_sz = b->buf_sz | 0x0FFF;;
         if (b->buf == OS_NULL || alloc_sz > b->buf_alloc_sz)
         {
-osal_debug_error_int("BRICK REC ALLOC ", alloc_sz);
             if (b->buf) {
                 os_free(b->buf, b->buf_alloc_sz);
             }

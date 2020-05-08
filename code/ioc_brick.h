@@ -16,21 +16,6 @@
 
 struct iocBrickBuffer;
 
-/* Do not change enumeration values, breaks compatibility.
- */
-#if 0
-typedef enum iocBrickFormat
-{
-    IOC_BYTE_BRICK = 50,            /* 8 bits per pixel, one channel */
-    IOC_RGB24_BRICK = 51,           /* color image, RGB 24  */
-    IOC_GRAYSCALE8_BRICK = 52,      /* Grayscale image, 8 bit per pixel */
-
-    IOC_MIN_BRICK_FORMAT = 50,
-    IOC_MAX_BRICK_FORMAT = 52
-}
-iocBrickFormat;
-#endif
-
 
 /* Do not change enumeration values, breaks compatibility.
  */
@@ -70,15 +55,41 @@ iocBrickCompression;
 #define IOC_BRICK_DIM_SZ 2
 #define IOC_BRICK_BYTES_SZ 4
 
+/**
+****************************************************************************************************
+
+  @brief Brick header structure.
+
+    - format Basic image format, See enumeration osalBitmapFormat.
+    - compression: Either IOC_UNCOMPRESSED_BRICK or IOC_NORMAL_JPEG  See enumeration
+      iocBrickCompression, but notice that only enum values IOC_UNCOMPRESSED_BRICK
+      and IOC_NORMAL_JPEG are valid in transferred brick.
+    - checksum: Modbus checksum calculated over whole buffer including header
+      and data (either compressed or uncompressed). Calculating the checksum
+      should be last modification to a brick to send. I "locks" the brick.
+      Two checksum bytes in brick are set to zero before calculating the checksum
+      and set to real values after it.
+    - width: WidthW idth in pixels, etc.
+    - height: Height in pixels, etc.
+    - buf_sz: Number of actual bytes in this brick, including both header and data.
+      If image is uncomressed, this may be same as alloc_sz (is same unless we have varying
+      image width/height). If image is compressed this is smaller than alloc size.
+    - alloc_sz: Uncompresses format size: size of header + size of uncompressed image
+      data. Used by received to allocate space for uncompressed buffer. This may be
+      larger than minimum number of bytes needed, if image size varies.
+    - tstamp: Time stamp, microseconds since boot.
+
+****************************************************************************************************
+*/
 typedef struct iocBrickHdr
 {
     os_uchar format;
     os_uchar compression;
     os_uchar checksum[IOC_BRICK_CHECKSUM_SZ];
-    os_uchar width[IOC_BRICK_DIM_SZ];    /* Width in pixels, etc. */
-    os_uchar height[IOC_BRICK_DIM_SZ];   /* Height in pixels, etc. */
-    os_uchar buf_sz[IOC_BRICK_BYTES_SZ];   /* Number of actual bytes including this header for reading right number of bytes in frame */
-    os_uchar alloc_sz[IOC_BRICK_BYTES_SZ]; /* Maximum bytes needed including this header for memory allocation by receiver */
+    os_uchar width[IOC_BRICK_DIM_SZ];
+    os_uchar height[IOC_BRICK_DIM_SZ];
+    os_uchar buf_sz[IOC_BRICK_BYTES_SZ];
+    os_uchar alloc_sz[IOC_BRICK_BYTES_SZ];
     os_uchar tstamp[IOC_BRICK_TSTAMP_SZ];
 }
 iocBrickHdr;
