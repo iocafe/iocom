@@ -303,7 +303,7 @@ osalStatus osal_loop(
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
 static int u;
-ioc_sets0_int(&candy.exp.ambient, u++);
+ioc_sets0_int(&candy.exp.ambient, u++ / 200);
 
     /* The call is here for development testing.
      */

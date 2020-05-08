@@ -282,8 +282,8 @@ compress_jpeg:
         case IOC_UNCOMPRESSED_BRICK:
             sz = w * (os_memsz)h * OSAL_BITMAP_BYTES_PER_PIX(format);
             osal_debug_assert(sz == data_sz);
-            if (sz > buf_sz) {
-                sz = buf_sz;
+            if (sz +  sizeof(iocBrickHdr) > buf_sz) {
+                sz = buf_sz - sizeof(iocBrickHdr);
                 osal_debug_error("ioc_brik: Brick buffer too small");
             }
             os_memcpy(buf + sizeof(iocBrickHdr), data, sz);
