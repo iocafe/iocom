@@ -49,15 +49,15 @@ void frank_init_signal_struct(frank_t *s)
   s->conf_exp.frd_state.n = 1;
   s->conf_exp.frd_state.flags = OS_CHAR;
 
- /* frd_buf */
-  s->conf_exp.frd_buf.addr = 9;
-  s->conf_exp.frd_buf.n = 257;
-  s->conf_exp.frd_buf.flags = OS_UCHAR;
-
  /* frd_head */
-  s->conf_exp.frd_head.addr = 267;
+  s->conf_exp.frd_head.addr = 9;
   s->conf_exp.frd_head.n = 1;
   s->conf_exp.frd_head.flags = OS_INT;
+
+ /* frd_buf */
+  s->conf_exp.frd_buf.addr = 14;
+  s->conf_exp.frd_buf.n = 257;
+  s->conf_exp.frd_buf.flags = OS_UCHAR;
   s->mblk_list[2] = &s->conf_exp.hdr;
 
   s->conf_imp.hdr.mblk_name = "conf_imp";
@@ -75,15 +75,15 @@ void frank_init_signal_struct(frank_t *s)
   s->conf_imp.tod_select.n = 1;
   s->conf_imp.tod_select.flags = OS_CHAR;
 
- /* tod_buf */
-  s->conf_imp.tod_buf.addr = 4;
-  s->conf_imp.tod_buf.n = 257;
-  s->conf_imp.tod_buf.flags = OS_UCHAR;
-
  /* tod_head */
-  s->conf_imp.tod_head.addr = 262;
+  s->conf_imp.tod_head.addr = 4;
   s->conf_imp.tod_head.n = 1;
   s->conf_imp.tod_head.flags = OS_INT;
+
+ /* tod_buf */
+  s->conf_imp.tod_buf.addr = 9;
+  s->conf_imp.tod_buf.n = 257;
+  s->conf_imp.tod_buf.flags = OS_UCHAR;
 
  /* frd_cmd */
   s->conf_imp.frd_cmd.addr = 267;

@@ -10,8 +10,8 @@ OS_FLASH_MEM struct gina_t gina =
     {38, 1, OS_BOOLEAN|IOC_PIN_PTR, &ioboard_exp, &pins.inputs.in_x}, /* in_x */
     {39, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
     {44, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
-    {46, 20000, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
-    {20047, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
+    {46, 1, OS_INT, &ioboard_exp, OS_NULL}, /* rec_head */
+    {51, 20000, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
   },
 
   {
@@ -30,16 +30,16 @@ OS_FLASH_MEM struct gina_t gina =
     {0, 1, OS_CHAR, &ioboard_conf_exp, OS_NULL}, /* tod_state */
     {2, 1, OS_INT, &ioboard_conf_exp, OS_NULL}, /* tod_tail */
     {7, 1, OS_CHAR, &ioboard_conf_exp, OS_NULL}, /* frd_state */
-    {9, 257, OS_UCHAR, &ioboard_conf_exp, OS_NULL}, /* frd_buf */
-    {267, 1, OS_INT, &ioboard_conf_exp, OS_NULL} /* frd_head */
+    {9, 1, OS_INT, &ioboard_conf_exp, OS_NULL}, /* frd_head */
+    {14, 257, OS_UCHAR, &ioboard_conf_exp, OS_NULL} /* frd_buf */
   },
 
   {
     {"conf_imp", &ioboard_conf_imp, 7, GINA_CONF_IMP_MBLK_SZ, (iocSignal*)&gina.conf_imp.tod_cmd},
     {0, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* tod_cmd */
     {2, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* tod_select */
-    {4, 257, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* tod_buf */
-    {262, 1, OS_INT, &ioboard_conf_imp, OS_NULL}, /* tod_head */
+    {4, 1, OS_INT, &ioboard_conf_imp, OS_NULL}, /* tod_head */
+    {9, 257, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* tod_buf */
     {267, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* frd_cmd */
     {269, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
     {271, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */

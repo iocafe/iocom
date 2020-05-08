@@ -13,8 +13,8 @@ typedef struct gina_t
     iocSignal in_x;
     iocSignal potentiometer;
     iocSignal rec_state;
-    iocSignal rec_buf;
     iocSignal rec_head;
+    iocSignal rec_buf;
   }
   exp;
 
@@ -37,8 +37,8 @@ typedef struct gina_t
     iocSignal tod_state;
     iocSignal tod_tail;
     iocSignal frd_state;
-    iocSignal frd_buf;
     iocSignal frd_head;
+    iocSignal frd_buf;
   }
   conf_exp;
 
@@ -47,8 +47,8 @@ typedef struct gina_t
     iocMblkSignalHdr hdr;
     iocSignal tod_cmd;
     iocSignal tod_select;
-    iocSignal tod_buf;
     iocSignal tod_head;
+    iocSignal tod_buf;
     iocSignal frd_cmd;
     iocSignal frd_select;
     iocSignal frd_tail;
@@ -85,8 +85,8 @@ extern OS_FLASH_MEM_H iocDeviceHdr gina_hdr;
 #define GINA_EXP_IN_X
 #define GINA_EXP_POTENTIOMETER
 #define GINA_EXP_REC_STATE
-#define GINA_EXP_REC_BUF
 #define GINA_EXP_REC_HEAD
+#define GINA_EXP_REC_BUF
 #define GINA_IMP_STRTODEVICE
 #define GINA_IMP_SEVEN_SEGMENT
 #define GINA_IMP_DIMMER_LED
@@ -97,12 +97,12 @@ extern OS_FLASH_MEM_H iocDeviceHdr gina_hdr;
 #define GINA_CONF_EXP_TOD_STATE
 #define GINA_CONF_EXP_TOD_TAIL
 #define GINA_CONF_EXP_FRD_STATE
-#define GINA_CONF_EXP_FRD_BUF
 #define GINA_CONF_EXP_FRD_HEAD
+#define GINA_CONF_EXP_FRD_BUF
 #define GINA_CONF_IMP_TOD_CMD
 #define GINA_CONF_IMP_TOD_SELECT
-#define GINA_CONF_IMP_TOD_BUF
 #define GINA_CONF_IMP_TOD_HEAD
+#define GINA_CONF_IMP_TOD_BUF
 #define GINA_CONF_IMP_FRD_CMD
 #define GINA_CONF_IMP_FRD_SELECT
 #define GINA_CONF_IMP_FRD_TAIL

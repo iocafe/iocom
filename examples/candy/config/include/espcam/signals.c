@@ -6,8 +6,8 @@ OS_FLASH_MEM struct candy_t candy =
     {0, 1, OS_UINT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.ambient}, /* ambient */
     {5, 1, OS_UINT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.unused_pin}, /* unused_pin */
     {10, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
-    {12, 10000, OS_UCHAR, &ioboard_exp, OS_NULL}, /* rec_buf */
-    {10013, 1, OS_INT, &ioboard_exp, OS_NULL} /* rec_head */
+    {12, 1, OS_INT, &ioboard_exp, OS_NULL}, /* rec_head */
+    {17, 10000, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
   },
 
   {
@@ -24,16 +24,16 @@ OS_FLASH_MEM struct candy_t candy =
     {0, 1, OS_CHAR, &ioboard_conf_exp, OS_NULL}, /* tod_state */
     {2, 1, OS_INT, &ioboard_conf_exp, OS_NULL}, /* tod_tail */
     {7, 1, OS_CHAR, &ioboard_conf_exp, OS_NULL}, /* frd_state */
-    {9, 257, OS_UCHAR, &ioboard_conf_exp, OS_NULL}, /* frd_buf */
-    {267, 1, OS_INT, &ioboard_conf_exp, OS_NULL} /* frd_head */
+    {9, 1, OS_INT, &ioboard_conf_exp, OS_NULL}, /* frd_head */
+    {14, 257, OS_UCHAR, &ioboard_conf_exp, OS_NULL} /* frd_buf */
   },
 
   {
     {"conf_imp", &ioboard_conf_imp, 7, CANDY_CONF_IMP_MBLK_SZ, (iocSignal*)&candy.conf_imp.tod_cmd},
     {0, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* tod_cmd */
     {2, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* tod_select */
-    {4, 257, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* tod_buf */
-    {262, 1, OS_INT, &ioboard_conf_imp, OS_NULL}, /* tod_head */
+    {4, 1, OS_INT, &ioboard_conf_imp, OS_NULL}, /* tod_head */
+    {9, 257, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* tod_buf */
     {267, 1, OS_CHAR, &ioboard_conf_imp, OS_NULL}, /* frd_cmd */
     {269, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
     {271, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */

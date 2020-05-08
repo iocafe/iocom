@@ -26,8 +26,8 @@
         "name": "camera up",
         "signals": [
           {"name": "rec_state", "type": "char"},
-          {"name": "rec_buf", "type": "uchar", "array": 10000},
-          {"name": "rec_head", "type": "int"}
+          {"name": "rec_head", "type": "int"},
+          {"name": "rec_buf", "type": "uchar", "array": 10000}
         ]
       }
     ]
@@ -72,8 +72,8 @@
         "name": "transfer from device",
         "signals": [
           {"name": "frd_state", "type": "char"},
-          {"name": "frd_buf", "type": "uchar", "array": 257},
-          {"name": "frd_head", "type": "int"}
+          {"name": "frd_head", "type": "int"},
+          {"name": "frd_buf", "type": "uchar", "array": 257}
         ]
       }
     ]
@@ -89,8 +89,8 @@
         "signals": [
           {"name": "tod_cmd", "type": "char"},
           {"name": "tod_select", "type": "char"},
-          {"name": "tod_buf", "type": "uchar", "array": 257},
-          {"name": "tod_head", "type": "int"}
+          {"name": "tod_head", "type": "int"},
+          {"name": "tod_buf", "type": "uchar", "array": 257}
         ]
       },
       {

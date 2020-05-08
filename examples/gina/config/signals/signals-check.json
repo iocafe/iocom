@@ -57,13 +57,13 @@
 						"type": "char"
 					},
 					{
+						"name": "rec_head",
+						"type": "int"
+					},
+					{
 						"name": "rec_buf",
 						"type": "uchar",
 						"array": 20000
-					},
-					{
-						"name": "rec_head",
-						"type": "int"
 					}
 				]
 			}
@@ -151,13 +151,13 @@
 						"type": "char"
 					},
 					{
+						"name": "frd_head",
+						"type": "int"
+					},
+					{
 						"name": "frd_buf",
 						"type": "uchar",
 						"array": 257
-					},
-					{
-						"name": "frd_head",
-						"type": "int"
 					}
 				]
 			}
@@ -179,13 +179,13 @@
 						"type": "char"
 					},
 					{
+						"name": "tod_head",
+						"type": "int"
+					},
+					{
 						"name": "tod_buf",
 						"type": "uchar",
 						"array": 257
-					},
-					{
-						"name": "tod_head",
-						"type": "int"
 					}
 				]
 			},

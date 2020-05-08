@@ -1,6 +1,6 @@
 /* This file is gerated by bin-to-c.py script, do not modify. */
 OSAL_C_HEADER_BEGINS
 
-extern const os_char ioapp_network_defaults[269];
+extern OS_FLASH_MEM_H os_char ioapp_network_defaults[269];
 
 OSAL_C_HEADER_ENDS
