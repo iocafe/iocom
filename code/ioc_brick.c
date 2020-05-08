@@ -236,6 +236,15 @@ os_memsz ioc_compress_brick(
     osalStatus s;
 #endif
 
+    if (compression == IOC_DEFAULT_CAM_IMG_COMPR)
+    {
+#if IOC_USE_JPEG_COMPRESSION
+        compression = IOC_NORMAL_JPEG;
+#else
+        compression = hdr->compression;
+#endif
+    }
+
     /* Copy or compress.
      */
     dhdr = (iocBrickHdr*)buf;
@@ -244,11 +253,11 @@ os_memsz ioc_compress_brick(
     switch (compression)
     {
         case IOC_SMALL_JPEG:
-            quality = 25;
+            quality = 15;
             goto compress_jpeg;
 
         case IOC_NORMAL_JPEG:
-            quality = 50;
+            quality = 40;
             goto compress_jpeg;
 
         case IOC_LARGE_JPEG:
@@ -667,7 +676,6 @@ alloc_sz = (os_memsz)ioc_brick_int(first.hdr.height, IOC_BRICK_DIM_SZ);
 osal_debug_error_int("height ", alloc_sz);
 osal_debug_error_int("format ", first.hdr.format);
 osal_debug_error_int("compression ", first.hdr.compression);
-first.hdr.compression = IOC_NORMAL_JPEG;
 
         alloc_sz = b->buf_sz | 0x0FFF;;
         if (b->buf == OS_NULL || alloc_sz > b->buf_alloc_sz)

@@ -21,6 +21,7 @@ struct iocBrickBuffer;
  */
 typedef enum iocBrickCompression
 {
+    IOC_DEFAULT_CAM_IMG_COMPR = 0,
     IOC_UNCOMPRESSED_BRICK = 1,     /* Uncompresssed brick */
     IOC_SMALL_JPEG = 2,             /* JPEG compression  */
     IOC_NORMAL_JPEG = 3,
