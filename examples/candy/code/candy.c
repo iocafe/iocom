@@ -117,15 +117,15 @@ osalStatus osal_main(
      */
     osal_initialize_net_state();
 
-    /* If we are using devicedir for development testing, initialize.
-     */
-    io_initialize_device_console(&ioconsole, &ioboard_root);
-
     /* Initialize persistent storage (typically flash is running in micro-controller)
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.device_name = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
+
+    /* If we are using devicedir for development testing, initialize.
+     */
+    io_initialize_device_console(&ioconsole, &ioboard_root);
 
     /* Setup IO pins.
      */
