@@ -153,6 +153,7 @@ os_memsz ioc_compress_brick(
     os_memsz buf_sz,
     iocBrickHdr *hdr,
     os_uchar *data,
+    os_memsz data_sz,
     osalBitmapFormat format,
     os_int w,
     os_int h,

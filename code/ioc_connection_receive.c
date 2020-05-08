@@ -223,7 +223,7 @@ osalStatus ioc_connection_receive(
                 os_get_timer(&con->socket_open_fail_timer);
             }
             ioc_unlock(root);
-            osal_trace("Reading stream failed");
+            osal_trace_int("Reading stream failed, status=", status);
             return status;
         }
 #if OSAL_TRACE >= 3

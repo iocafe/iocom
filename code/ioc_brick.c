@@ -205,8 +205,9 @@ void ioc_free_brick_buffer(
 
   @param  buf Pointer to char buffer where to store brick header and compressed data.
   @param  buf_sz Size of buffer buf. Must have space for data and brick header.
-  @paramm hdr Brick header to save.
-  @param  data Uncompressed source data.
+  @param  hdr Brick header to save.
+  @param  data Uncompressed (or compressed in special cases) source data.
+  @param  data_sz Data size in bytes, important if data is compressed JPEG.
   @param  format Source data format, set IOC_BYTE_BRICK, IOC_RGB24_BRICK, IOC_GRAYSCALE8_BRICK...
   @param  w Source image width in pixels, etc.
   @param  h Source image height in pixels, etc.
@@ -221,6 +222,7 @@ os_memsz ioc_compress_brick(
     os_memsz buf_sz,
     iocBrickHdr *hdr,
     os_uchar *data,
+    os_memsz data_sz,
     osalBitmapFormat format,
     os_int w,
     os_int h,
@@ -253,6 +255,15 @@ os_memsz ioc_compress_brick(
         case IOC_LARGE_JPEG:
             quality = 75;
 compress_jpeg:
+            /* If already compressed by camera (ESP32 cam can make JPEG)
+             */
+            if (hdr->compression == IOC_NORMAL_JPEG)
+            {
+                os_memcpy(buf + sizeof(iocBrickHdr), data, data_sz);
+                sz = data_sz;
+                break;
+            }
+
             s = os_compress_JPEG(data, w, h, format, quality,
                 OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
             if (s == OSAL_SUCCESS)
@@ -267,10 +278,14 @@ compress_jpeg:
         default:
         case IOC_UNCOMPRESSED_BRICK:
             sz = w * (os_memsz)h * OSAL_BITMAP_BYTES_PER_PIX(format);
-            if (sz > buf_sz) sz = buf_sz;
+            osal_debug_assert(sz == data_sz);
+            if (sz > buf_sz) {
+                sz = buf_sz;
+                osal_debug_error("ioc_brik: Brick buffer too small");
+            }
             os_memcpy(buf + sizeof(iocBrickHdr), data, sz);
             /* set IOC_UNCOMPRESSED_BRICK as default */
-            dhdr->compression = IOC_UNCOMPRESSED_BRICK; 
+            dhdr->compression = IOC_UNCOMPRESSED_BRICK;
             break;
     }
 
@@ -278,7 +293,7 @@ compress_jpeg:
     dhdr->width[0] = (os_uchar)w;
     dhdr->width[1] = (os_uchar)(w >> 8);
     dhdr->height[0] = (os_uchar)h;
-    dhdr->height[1] = (os_uchar)(h >> 8); 
+    dhdr->height[1] = (os_uchar)(h >> 8);
 
     sz += sizeof(iocBrickHdr);
     dhdr->buf_sz[0] = (os_uchar)sz;
@@ -520,7 +535,7 @@ static osalStatus osal_validate_brick_header(
     os_int i;
     const os_uchar format_list[] = {OSAL_GRAYSCALE8, OSAL_GRAYSCALE16, OSAL_RGB24, OSAL_RGBA32, 0};
 
-    i = 0; 
+    i = 0;
     while (bhdr->format != format_list[i])
     {
         if (format_list[++i] == 0) {
@@ -544,7 +559,7 @@ static osalStatus osal_validate_brick_header(
 
     bytes_per_pix = OSAL_BITMAP_BYTES_PER_PIX(bhdr->format);
     max_brick_sz = w * h * bytes_per_pix + sizeof(iocBrickHdr);
-    max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT 
+    max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT
         * bytes_per_pix)/2) + sizeof(iocBrickHdr);
 
     buf_sz = (os_uint)ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
