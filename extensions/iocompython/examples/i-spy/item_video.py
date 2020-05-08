@@ -72,7 +72,6 @@ class VideoItem(GridLayout):
 
     def delete(self):
         pass
-
  
     def update_signal(self):
         self.run()
