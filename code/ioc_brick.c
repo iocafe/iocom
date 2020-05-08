@@ -667,6 +667,7 @@ alloc_sz = (os_memsz)ioc_brick_int(first.hdr.height, IOC_BRICK_DIM_SZ);
 osal_debug_error_int("height ", alloc_sz);
 osal_debug_error_int("format ", first.hdr.format);
 osal_debug_error_int("compression ", first.hdr.compression);
+first.hdr.compression = IOC_NORMAL_JPEG;
 
         alloc_sz = b->buf_sz | 0x0FFF;;
         if (b->buf == OS_NULL || alloc_sz > b->buf_alloc_sz)
