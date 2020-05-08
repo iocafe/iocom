@@ -641,9 +641,19 @@ static osalStatus ioc_receive_brick_data(
             return OSAL_STATUS_FAILED;
         }
 
-        if (b->buf == OS_NULL)
+        b->buf_sz = (os_memsz)ioc_brick_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
+osal_debug_error_int("buf_sz ", b->buf_sz);
+
+        alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
+osal_debug_error_int("alloc sz ", alloc_sz);
+
+        alloc_sz = b->buf_sz | 0x0FFF;;
+        if (b->buf == OS_NULL || alloc_sz > b->buf_alloc_sz)
         {
-            alloc_sz = (os_memsz)ioc_brick_int(first.hdr.alloc_sz, IOC_BRICK_BYTES_SZ);
+osal_debug_error_int("BRICK REC ALLOC ", alloc_sz);
+            if (b->buf) {
+                os_free(b->buf, b->buf_alloc_sz);
+            }
             b->buf = (os_uchar*)os_malloc(alloc_sz, &b->buf_alloc_sz);
             if (b->buf == OS_NULL) {
                 return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
@@ -651,7 +661,6 @@ static osalStatus ioc_receive_brick_data(
             os_memclear(b->buf, b->buf_alloc_sz);
         }
 
-        b->buf_sz = (os_memsz)ioc_brick_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
     }
 
     n = b->buf_sz - b->pos;
@@ -672,6 +681,7 @@ static osalStatus ioc_receive_brick_data(
     os_memclear(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, b->buf_sz, OS_NULL) != checksum)
     {
+        osal_debug_error("brick checksum error");
         return OSAL_STATUS_CHECKSUM_ERROR;
     }
 
