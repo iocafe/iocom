@@ -496,7 +496,7 @@ void ioboard_communication_callback(
 
         /* Call pins library extension to forward communication signal changes to IO pins.
          */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, flags);
+        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &gina_hdr, flags);
     }
 #else
     if (flags & IOC_MBLK_CALLBACK_RECEIVE)
