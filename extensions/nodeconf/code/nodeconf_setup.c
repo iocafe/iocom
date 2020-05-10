@@ -129,8 +129,10 @@ void ioc_load_node_config(
             os_persistent_close(h, OSAL_PERSISTENT_DEFAULT);
             if (n_read == block_sz)
             {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
                 node->allocated_buf = loadblock;
                 node->allocated_sz = block_sz;
+#endif
                 goto gotit;
             }
 

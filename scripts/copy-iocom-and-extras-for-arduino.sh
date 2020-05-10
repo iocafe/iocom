@@ -3,7 +3,7 @@
 # into /coderoot/lib/arduino/* directories. 
 
 cd /coderoot/eosal/scripts
-python3 ./copy-eosal-for-duino.py duino -o /coderoot/lib/arduino/eosal
+python3 ./copy-eosal-for-duino.py duino sam -o /coderoot/lib/arduino/eosal
 
 cd /coderoot/iocom/scripts
 python3 ./copy-iocom-for-duino.py -o /coderoot/lib/arduino/iocom
