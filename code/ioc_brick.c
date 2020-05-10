@@ -715,7 +715,7 @@ static osalStatus ioc_receive_brick_data(
 osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b)
 {
-    iocStreamerState state;
+    iocStreamerState state, cmd;
     osalStatus s;
     os_char state_bits;
 
@@ -743,8 +743,8 @@ osalStatus ioc_run_brick_receive(
 
         if (b->prm.frd.state)
         {
-            ioc_gets_int(b->prm.frd.cmd, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
-            if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
+            cmd = (iocStreamerState)ioc_gets_int(b->prm.frd.cmd, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0 || cmd) {
                 ioc_sets0_int(b->prm.frd.cmd, 0);
             }
 
