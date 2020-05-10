@@ -56,7 +56,7 @@ typedef struct candy_t
 }
 candy_t;
 
-#define CANDY_EXP_MBLK_SZ 10018
+#define CANDY_EXP_MBLK_SZ 5018
 #define CANDY_IMP_MBLK_SZ 32
 #define CANDY_CONF_EXP_MBLK_SZ 272
 #define CANDY_CONF_IMP_MBLK_SZ 276
@@ -64,7 +64,7 @@ candy_t;
 void candy_init_signal_struct(candy_t *s);
 
 /* Array length defines. */
-#define CANDY_EXP_REC_BUF_ARRAY_SZ 10000
+#define CANDY_EXP_REC_BUF_ARRAY_SZ 5000
 #define CANDY_CONF_EXP_FRD_BUF_ARRAY_SZ 257
 #define CANDY_CONF_IMP_TOD_BUF_ARRAY_SZ 257
 

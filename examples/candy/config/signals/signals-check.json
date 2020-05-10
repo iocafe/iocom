@@ -42,7 +42,7 @@
 					{
 						"name": "rec_buf",
 						"type": "uchar",
-						"array": 10000
+						"array": 5000
 					}
 				]
 			}

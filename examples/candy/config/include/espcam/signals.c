@@ -7,7 +7,7 @@ OS_FLASH_MEM struct candy_t candy =
     {5, 1, OS_UINT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.unused_pin}, /* unused_pin */
     {10, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
     {12, 1, OS_INT, &ioboard_exp, OS_NULL}, /* rec_head */
-    {17, 10000, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
+    {17, 5000, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
   },
 
   {

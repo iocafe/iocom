@@ -29,7 +29,7 @@ void candy_init_signal_struct(candy_t *s)
 
  /* rec_buf */
   s->exp.rec_buf.addr = 17;
-  s->exp.rec_buf.n = 10000;
+  s->exp.rec_buf.n = 5000;
   s->exp.rec_buf.flags = OS_UCHAR;
   s->mblk_list[0] = &s->exp.hdr;
 

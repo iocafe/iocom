@@ -11,7 +11,7 @@ OS_FLASH_MEM struct gina_t gina =
     {39, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
     {44, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
     {46, 1, OS_INT, &ioboard_exp, OS_NULL}, /* rec_head */
-    {51, 20000, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
+    {51, 5000, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
   },
 
   {

@@ -27,7 +27,7 @@
         "signals": [
           {"name": "rec_state", "type": "char"},
           {"name": "rec_head", "type": "int"},
-          {"name": "rec_buf", "type": "uchar", "array": 10000}
+          {"name": "rec_buf", "type": "uchar", "array": 5000}
         ]
       }
     ]
