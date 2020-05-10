@@ -461,6 +461,7 @@ osalStatus ioc_run_brick_send(
         }
 
         osal_trace("BRICK: IOC_STREAM_RUNNING command");
+        b->buf_n = 0;
         b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
         if (b->stream == OS_NULL) return OSAL_NOTHING_TO_DO;
 
@@ -482,6 +483,7 @@ osalStatus ioc_run_brick_send(
     if (OSAL_IS_ERROR(s)) {
         ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
         b->stream = OS_NULL;
+        b->buf_n = 0;
     }
     return s;
 }
@@ -617,8 +619,6 @@ static osalStatus ioc_receive_brick_data(
     os_memsz n, n_read, alloc_sz;
     osalStatus s;
     os_uint checksum;
-    /* iocStreamerState state;
-    os_char state_bits; */
 
     union
     {
@@ -629,20 +629,6 @@ static osalStatus ioc_receive_brick_data(
 
     if (b->pos < sizeof(iocBrickHdr))
     {
-        /* n = ioc_streamer_get_parameter(b->stream, OSAL_STREAM_RX_AVAILABLE);
-        if (n < sizeof(iocBrickHdr))
-        {
-            if (n < 0) return OSAL_STATUS_FAILED;
-
-            state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
-            if (state != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) {
-                if (os_has_elapsed(&b->open_timer, IOC_STREAMER_TIMEOUT)) {
-                    return OSAL_STATUS_TIMEOUT;
-                }
-            }
-            return OSAL_SUCCESS;
-        } */
-
         s = ioc_streamer_read(b->stream, (os_char*)first.bytes,
             sizeof(iocBrickHdr), &n_read, OSAL_STREAM_PEEK);
         if (s) {
@@ -671,7 +657,6 @@ static osalStatus ioc_receive_brick_data(
             }
             os_memclear(b->buf, b->buf_alloc_sz);
         }
-
     }
 
     n = b->buf_sz - b->pos;
