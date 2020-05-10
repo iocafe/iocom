@@ -449,21 +449,26 @@ static osalStatus ioc_send_brick_data(
 osalStatus ioc_run_brick_send(
     iocBrickBuffer *b)
 {
-    iocStreamerState cmd;
+    osalStream stream;
+    iocStreamerState cmd, prev_cmd;
     os_char state_bits;
     os_memsz n_written;
     osalStatus s;
 
+    cmd = (iocStreamerState)ioc_gets_int(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
+    prev_cmd = b->prev_cmd;
+    b->prev_cmd = cmd;
     if (b->stream == OS_NULL) {
-        cmd = (iocStreamerState)ioc_gets_int(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
-        if (cmd != IOC_STREAM_RUNNING || (state_bits & OSAL_STATE_CONNECTED) == 0) {
+        if (cmd != IOC_STREAM_RUNNING || cmd == prev_cmd || (state_bits & OSAL_STATE_CONNECTED) == 0) {
             return OSAL_NOTHING_TO_DO;
         }
 
-        osal_trace("BRICK: IOC_STREAM_RUNNING command");
+        /* Order here is important. 
+         */
+        stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
+        if (stream == OS_NULL) return OSAL_NOTHING_TO_DO;
         b->buf_n = 0;
-        b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
-        if (b->stream == OS_NULL) return OSAL_NOTHING_TO_DO;
+        b->stream = stream;
 
         if (b->timeout_ms) {
             osal_stream_set_parameter(b->stream, OSAL_STREAM_WRITE_TIMEOUT_MS, b->timeout_ms);
@@ -483,7 +488,6 @@ osalStatus ioc_run_brick_send(
     if (OSAL_IS_ERROR(s)) {
         ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
         b->stream = OS_NULL;
-        b->buf_n = 0;
     }
     return s;
 }
