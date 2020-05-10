@@ -739,6 +739,11 @@ osalStatus ioc_run_brick_receive(
 
         if (b->prm.frd.state)
         {
+            ioc_gets_int(b->prm.frd.cmd, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+            if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
+                ioc_sets0_int(b->prm.frd.cmd, 0);
+            }
+
             state = (iocStreamerState)ioc_gets_int(b->prm.frd.state, &state_bits, IOC_SIGNAL_DEFAULT);
             if (state != IOC_STREAM_IDLE || (state_bits & OSAL_STATE_CONNECTED) == 0) {
                 return (state_bits & OSAL_STATE_CONNECTED) ? OSAL_STATUS_NOT_CONNECTED : OSAL_SUCCESS;
