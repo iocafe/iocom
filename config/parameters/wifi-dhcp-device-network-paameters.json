@@ -1,0 +1,29 @@
+{
+  "network": 
+  {
+    "title": "network pamameters",
+    "groups": [
+      {
+        "name": "device_id",
+        "parameters": [
+          {"name": "device_nr", "type": "str", "array": 6, "init":"*"},
+          {"name": "network_name", "type": "str", "array": 16, "init":"*"}
+        ]
+      },
+      {
+        "name": "wifi",
+        "parameters": [
+          {"name": "network", "type": "str", "array": 16, "init":"*"},
+          {"name": "passwd", "type": "str", "array": 16, "init":"*"}
+        ]
+      },
+      {
+        "name": "server_connection",
+        "parameters": [
+          {"name": "connect_to", "type": "str", "array": 60, "init":"*"}
+        ]
+      }
+    ]
+  }
+}
+
