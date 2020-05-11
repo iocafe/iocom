@@ -431,7 +431,7 @@ def process_source_file(path):
                 hfile.write(p + '\n')
 
     else:
-        printf ("Opening file " + path + " failed")
+        print("Opening file " + path + " failed")
 
 def list_pins_rootblock(rootblock):
     global pinlist
@@ -462,7 +462,7 @@ def list_pins_in_pinsfile(path):
             list_pins_rootblock(rootblock)
 
     else:
-        printf ("Opening file " + path + " failed")
+        print("Opening file " + path + " failed")
 
 def mymain():
     global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic

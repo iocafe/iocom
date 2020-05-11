@@ -266,7 +266,7 @@ osalStatus osal_main(
 
     /* Setup to blink LED to indicate boot errors, etc.
      */
-    initialize_morse_code(&morse, &pins.outputs.led_builtin,
+    initialize_morse_code(&morse, &pins.outputs.led_builtin, OS_NULL,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on

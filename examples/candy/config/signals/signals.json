@@ -23,6 +23,12 @@
         ]
       },
       {
+        "name": "parameters",
+        "signals": [
+           {"name": "prm_resolution", "type": "str", "array": 10}
+         ]
+      },
+      {
         "name": "camera up",
         "signals": [
           {"name": "rec_state", "type": "char"},
@@ -42,9 +48,16 @@
         "name": "controls",
         "signals": [
            {"name": "on", "type": "boolean"},
-           {"name": "illumination", "type": "uint", "max": 4095}
+           {"name": "headlight", "type": "uint", "max": 4095}
          ]
       },
+      {
+        "name": "settings",
+        "signals": [
+           {"name": "set_resolution", "type": "str", "array": 10}
+         ]
+      },
+
       {
         "name": "camera down",
         "signals": [

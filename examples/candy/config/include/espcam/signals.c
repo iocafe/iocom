@@ -13,7 +13,7 @@ OS_FLASH_MEM struct candy_t candy =
   {
     {"imp", &ioboard_imp, 5, CANDY_IMP_MBLK_SZ, (iocSignal*)&candy.imp.on},
     {0, 1, OS_BOOLEAN, &ioboard_imp, OS_NULL}, /* on */
-    {1, 1, OS_UINT|IOC_PIN_PTR, &ioboard_imp, &pins.pwm.illumination}, /* illumination */
+    {1, 1, OS_UINT, &ioboard_imp, OS_NULL}, /* illumination */
     {6, 1, OS_CHAR, &ioboard_imp, OS_NULL}, /* rec_cmd */
     {8, 1, OS_UCHAR, &ioboard_imp, OS_NULL}, /* rec_select */
     {10, 1, OS_INT, &ioboard_imp, OS_NULL} /* rec_tail */

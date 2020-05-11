@@ -15,6 +15,7 @@ typedef struct
   {
     PinGroupHdr hdr;
     Pin led_morse;
+    Pin led_builtin;
   }
   outputs;
 
@@ -29,7 +30,7 @@ typedef struct
   struct
   {
     PinGroupHdr hdr;
-    Pin illumination;
+    Pin headlight;
   }
   pwm;
 
@@ -58,9 +59,10 @@ extern OS_FLASH_MEM_H pins_t pins;
 /* Name defines for pins and application pin groups (use ifdef to check if HW has pin) */
 #define PINS_INPUTS_GAZERBEAM "gazerbeam"
 #define PINS_OUTPUTS_LED_MORSE "led_morse"
+#define PINS_OUTPUTS_LED_BUILTIN "led_builtin"
 #define PINS_ANALOG_INPUTS_AMBIENT "ambient"
 #define PINS_ANALOG_INPUTS_UNUSED_PIN "unused_pin"
-#define PINS_PWM_ILLUMINATION "illumination"
+#define PINS_PWM_HEADLIGHT "headlight"
 #define PINS_CAMERAS_CAMERA "camera"
 #define PINS_UART_UART2 "uart2"
 

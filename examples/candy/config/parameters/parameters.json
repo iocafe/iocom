@@ -1,0 +1,39 @@
+{
+  "name": "candy",
+  "persistent": 
+  {
+    "title": "candy camera pamameters",
+    "groups": [
+      {
+        "name": "image",
+        "parameters": [
+          {"name": "size", "type": "str", "array": 10, "init":"320x240", "select":"320x240,640x480"},
+          {"name": "quality", "type": "uchar", "init":40}
+        ]
+      },
+      {
+        "name": "color",
+        "parameters": [
+          {"name": "brightness", "type": "uchar", "init":50},
+          {"name": "contrast", "type": "uchar", "init":50},
+          {"name": "hue", "type": "uchar", "init":50},
+          {"name": "saturation", "type": "uchar", "init":50}
+        ]
+      }
+    ]
+  },
+
+ "volatile": 
+  {
+    "title": "candy camera control",
+    "groups": [
+      {
+        "name": "run",
+        "parameters": [
+          {"name": "on", "type": "boolean", "init":1}
+        ]
+      }
+    ]
+  }
+}
+
