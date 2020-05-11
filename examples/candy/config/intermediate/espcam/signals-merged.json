@@ -1,0 +1,195 @@
+{
+    "name": "candy",
+    "assembly": [
+        {
+            "type": "camera",
+            "exp": "exp.rec_",
+            "name": "camera",
+            "imp": "imp.rec_"
+        }
+    ],
+    "mblk": [
+        {
+            "flags": "up",
+            "name": "exp",
+            "groups": [
+                {
+                    "name": "state",
+                    "signals": [
+                        {
+                            "max": 4095,
+                            "type": "uint",
+                            "name": "ambient"
+                        },
+                        {
+                            "max": 4095,
+                            "type": "uint",
+                            "name": "unused_pin"
+                        }
+                    ]
+                },
+                {
+                    "name": "parameters",
+                    "signals": [
+                        {
+                            "type": "str",
+                            "array": 10,
+                            "name": "prm_resolution"
+                        }
+                    ]
+                },
+                {
+                    "name": "camera up",
+                    "signals": [
+                        {
+                            "type": "char",
+                            "name": "rec_state"
+                        },
+                        {
+                            "type": "int",
+                            "name": "rec_head"
+                        },
+                        {
+                            "type": "uchar",
+                            "array": 8192,
+                            "name": "rec_buf"
+                        }
+                    ]
+                }
+            ],
+            "title": "Exported by 'candy' IO device"
+        },
+        {
+            "flags": "down",
+            "name": "imp",
+            "groups": [
+                {
+                    "name": "controls",
+                    "signals": [
+                        {
+                            "type": "boolean",
+                            "name": "on"
+                        },
+                        {
+                            "max": 4095,
+                            "type": "uint",
+                            "name": "headlight"
+                        }
+                    ]
+                },
+                {
+                    "name": "settings",
+                    "signals": [
+                        {
+                            "type": "str",
+                            "array": 10,
+                            "name": "set_resolution"
+                        }
+                    ]
+                },
+                {
+                    "name": "camera down",
+                    "signals": [
+                        {
+                            "type": "char",
+                            "name": "rec_cmd"
+                        },
+                        {
+                            "type": "uchar",
+                            "name": "rec_select"
+                        },
+                        {
+                            "type": "int",
+                            "name": "rec_tail"
+                        }
+                    ]
+                }
+            ],
+            "title": "Imported by 'candy' IO device"
+        },
+        {
+            "flags": "up,conf",
+            "name": "conf_exp",
+            "groups": [
+                {
+                    "name": "transfer to device",
+                    "signals": [
+                        {
+                            "type": "char",
+                            "name": "tod_state"
+                        },
+                        {
+                            "type": "int",
+                            "name": "tod_tail"
+                        }
+                    ]
+                },
+                {
+                    "name": "transfer from device",
+                    "signals": [
+                        {
+                            "type": "char",
+                            "name": "frd_state"
+                        },
+                        {
+                            "type": "int",
+                            "name": "frd_head"
+                        },
+                        {
+                            "type": "uchar",
+                            "array": 257,
+                            "name": "frd_buf"
+                        }
+                    ]
+                }
+            ],
+            "title": "IO device's configuration signal exports"
+        },
+        {
+            "flags": "down,conf",
+            "name": "conf_imp",
+            "groups": [
+                {
+                    "name": "transfer to device",
+                    "signals": [
+                        {
+                            "type": "char",
+                            "name": "tod_cmd"
+                        },
+                        {
+                            "type": "char",
+                            "name": "tod_select"
+                        },
+                        {
+                            "type": "int",
+                            "name": "tod_head"
+                        },
+                        {
+                            "type": "uchar",
+                            "array": 257,
+                            "name": "tod_buf"
+                        }
+                    ]
+                },
+                {
+                    "name": "transfer from device",
+                    "signals": [
+                        {
+                            "type": "char",
+                            "name": "frd_cmd"
+                        },
+                        {
+                            "type": "uchar",
+                            "name": "frd_select"
+                        },
+                        {
+                            "type": "int",
+                            "name": "frd_tail"
+                        }
+                    ]
+                }
+            ],
+            "title": "IO device's configuration signal imports"
+        }
+    ]
+}

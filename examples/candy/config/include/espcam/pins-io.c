@@ -1,4 +1,4 @@
-/* This file is gerated by pins-to-c.py script, do not modify. */
+/* This file is gerated by pins_to_c.py script, do not modify. */
 #include "pins.h"
 
 /* Parameters for inputs */
@@ -14,13 +14,13 @@ static os_ushort pins_analog_inputs_ambient_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 409
 static os_ushort pins_analog_inputs_unused_pin_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
 
 /* Parameters for pwm */
-static os_ushort pins_pwm_headlight_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_RESOLUTION, 12, PIN_INIT, 0, PIN_MAX, 4095};
+static os_ushort pins_pwm_headlight_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095, PIN_FREQENCY, 5000, PIN_INIT, 0, PIN_RESOLUTION, 12};
 
 /* Parameters for cameras */
 static os_ushort pins_cameras_camera_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for uart */
-static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_RX, 16, PIN_SPEED, 1152, PIN_TX, 2};
+static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_TX, 2, PIN_RX, 16, PIN_SPEED, 1152};
 
 /* CANDY IO configuration structure */
 OS_FLASH_MEM pins_t pins =
@@ -40,7 +40,7 @@ OS_FLASH_MEM pins_t pins =
   },
 
   {{1, &pins.pwm.headlight}, /* pwm */
-    {PIN_PWM, 1, 4, pins_pwm_headlight_prm, sizeof(pins_pwm_headlight_prm)/sizeof(os_ushort), OS_NULL, OS_NULL PINS_INTCONF_NULL} /* headlight */
+    {PIN_PWM, 1, 4, pins_pwm_headlight_prm, sizeof(pins_pwm_headlight_prm)/sizeof(os_ushort), OS_NULL, &candy.imp.headlight PINS_INTCONF_NULL} /* headlight */
   },
 
   {{1, &pins.cameras.camera}, /* cameras */
