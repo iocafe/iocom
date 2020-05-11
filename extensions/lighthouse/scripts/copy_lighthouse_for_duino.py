@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# copy-lighthouse-for-duino.py 21.4.2020/pekka
+# copy_lighthouse_for_duino.py 21.4.2020/pekka
 # Copies lighthouse library files needed for PlatformIO Arduino build
-# into /coderoot/lib/arduino-platformio/lighthouse directory. 
+# into /coderoot/lib/arduino-platformio/lighthouse directory.
 # To make this look like Arduino library all .c and .cpp
 # files are copied to target root folder, and all header
 # files info subfolders.
@@ -70,10 +70,10 @@ def mymain():
             if not expectplatform:
                 outdir = sys.argv[i];
 
-            expectplatform = True    
+            expectplatform = True
 
     copy_level_1("/coderoot/iocom/extensions/lighthouse", outdir)
 
-# Usage copy-lighthouse-for-duino.py -o /coderoot/lib/esp32/lighthouse
+# Usage copy_lighthouse_for_duino.py -o /coderoot/lib/esp32/lighthouse
 mymain()
 

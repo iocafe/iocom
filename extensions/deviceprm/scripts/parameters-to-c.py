@@ -1,4 +1,4 @@
-# parameters-to-c.py 8.1.2020/pekka
+# parameters_to_c.py 8.1.2020/pekka
 # Converts communication parameter map written in JSON to C source and header files.
 import json
 import os
@@ -50,8 +50,8 @@ def start_c_files():
     global cfile, hfile, cfilepath, hfilepath
     cfile = open(cfilepath, "w")
     hfile = open(hfilepath, "w")
-    cfile.write('/* This file is gerated by parameters-to-c.py script, do not modify. */\n')
-    hfile.write('/* This file is gerated by parameters-to-c.py script, do not modify. */\n')
+    cfile.write('/* This file is gerated by parameters_to_c.py script, do not modify. */\n')
+    hfile.write('/* This file is gerated by parameters_to_c.py script, do not modify. */\n')
     hfile.write('OSAL_C_HEADER_BEGINS\n\n')
 
 def finish_c_files():
@@ -218,7 +218,7 @@ def process_parameter_block(name, pblk):
         process_group_block(group)
 
     hfile.write('}\n' + struct_name + ';\n')
-    
+
     # define_name = device_name + '_' + block_name + "_pblk_SZ"
     # define_list.append("#define " + define_name.upper() + " " + str(max_addr) + "\n")
 
@@ -286,7 +286,7 @@ def process_source_file(path):
             hfile.write('\n/* Defines to check in code with #ifdef to know if parameter is configured in JSON. */\n')
             for p in parameter_list:
                 hfile.write(p + '\n')
-        '''                
+        '''
 
     else:
         print ("Opening file " + path + " failed")

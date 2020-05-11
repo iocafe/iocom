@@ -1,4 +1,4 @@
-# signals-to-c.py 8.1.2020/pekka
+# signals-to_c.py 8.1.2020/pekka
 # Converts communication signal map written in JSON to C source and header files.
 import json
 import os
@@ -52,8 +52,8 @@ def start_c_files():
     global cfile, hfile, cfilepath, hfilepath
     cfile = open(cfilepath, "w")
     hfile = open(hfilepath, "w")
-    cfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
-    hfile.write('/* This file is gerated by signals-to-c.py script, do not modify. */\n')
+    cfile.write('/* This file is gerated by signals_to_c.py script, do not modify. */\n')
+    hfile.write('/* This file is gerated by signals_to_c.py script, do not modify. */\n')
     hfile.write('OSAL_C_HEADER_BEGINS\n\n')
 
 def finish_c_files():

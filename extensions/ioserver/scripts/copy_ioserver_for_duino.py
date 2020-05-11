@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# copy-devicedir-for-duino.py 21.4.2020/pekka
-# Copies devicedir library files needed for PlatformIO Arduino build
-# into /coderoot/lib/arduino-platformio/devicedir directory. 
+# copy_ioserver_for_duino.py 21.4.2020/pekka
+# Copies ioserver library files needed for PlatformIO Arduino build
+# into /coderoot/lib/arduino-platformio/ioserver directory.
 # To make this look like Arduino library all .c and .cpp
 # files are copied to target root folder, and all header
 # files info subfolders.
@@ -59,7 +59,7 @@ def copy_level_1(sourcedir,targetdir):
 
 
 def mymain():
-    outdir = "/coderoot/lib/arduino-platformio/devicedir"
+    outdir = "/coderoot/lib/arduino-platformio/ioserver"
     expectplatform = True
     n = len(sys.argv)
     for i in range(1, n):
@@ -71,10 +71,9 @@ def mymain():
             if not expectplatform:
                 outdir = sys.argv[i];
 
-            expectplatform = True    
+            expectplatform = True
 
-    copy_level_1("/coderoot/iocom/extensions/devicedir", outdir)
+    copy_level_1("/coderoot/iocom/extensions/ioserver", outdir)
 
-# Usage copy-devicedir-for-duino.py -o /coderoot/lib/esp32/devicedir
+# Usage copy_ioserver_for_duino.py -o /coderoot/lib/esp32/ioserver
 mymain()
-

@@ -11,8 +11,8 @@ else:
     MYPYTHON = 'python3'
     MYCODEROOT = '/coderoot'
     JSONTOOL = MYCODEROOT + '/bin/linux/json'
-BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin-to-c.py'
-SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals-to-c.py'
+BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin_to_c.py'
+SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals_to_c.py'
 
 MYCONFIG = MYCODEROOT + '/iocom/extensions/' + MYAPP + '/config'
 MYINCLUDE = MYCONFIG + '/include'

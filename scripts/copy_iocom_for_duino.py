@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# copy-nodeconf-for-duino.py 21.4.2020/pekka
-# Copies nodeconf library files needed for PlatformIO Arduino build
-# into /coderoot/lib/arduino-platformio/nodeconf directory. 
+# copy_iocom_for_duino.py 21.4.2020/pekka
+# Copies iocom library files needed for PlatformIO Arduino build
+# into /coderoot/lib/arduino-platformio/iocom directory.
 # To make this look like Arduino library all .c and .cpp
 # files are copied to target root folder, and all header
 # files info subfolders.
@@ -31,7 +31,7 @@ def copy_level_2(sourcedir,roottargetdir,targetdir):
                 copyfile(p, t)
 
 def copy_info(f,sourcedir,targetdir):
-    infodir = sourcedir + '/osbuild/arduino-library'
+    infodir = sourcedir + '/build/arduino-library'
     p = join(infodir, f)
     t = join(targetdir, f)
     if exists(p):
@@ -52,13 +52,15 @@ def copy_level_1(sourcedir,targetdir):
 
     # Copy code and extensions folders
     copy_level_2(sourcedir + '/code', targetdir, targetdir + '/code')
+#    copy_level_2(sourcedir + '/extensions', targetdir, targetdir + '/extensions')
 
     # Copy informative arduino files
     copy_info('library.json', sourcedir, targetdir)
     copy_info('library.properties', sourcedir, targetdir)
 
+
 def mymain():
-    outdir = "/coderoot/lib/arduino-platformio/nodeconf"
+    outdir = "/coderoot/lib/arduino-platformio/iocom"
     expectplatform = True
     n = len(sys.argv)
     for i in range(1, n):
@@ -70,10 +72,11 @@ def mymain():
             if not expectplatform:
                 outdir = sys.argv[i];
 
-            expectplatform = True    
+            expectplatform = True
 
-    copy_level_1("/coderoot/iocom/extensions/nodeconf", outdir)
+    copy_level_1("/coderoot/iocom", outdir)
 
-# Usage copy-nodeconf-for-duino.py -o /coderoot/lib/esp32/nodeconf
+# Usage copy_iocom_for_duino.py -o /coderoot/lib/esp32/iocom
 mymain()
+
 

@@ -14,9 +14,9 @@ else:
     MYPYTHON = 'python3'
     MYCODEROOT = '/coderoot'
     JSONTOOL = MYCODEROOT + '/bin/linux/json'
-PINSTOC = MYPYTHON + ' ' + MYCODEROOT + '/pins/scripts/pins-to-c.py'
-BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin-to-c.py'
-SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals-to-c.py'
+PINSTOC = MYPYTHON + ' ' + MYCODEROOT + '/pins/scripts/pins_to_c.py'
+BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin_to_c.py'
+SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals_to_c.py'
 
 MYCONFIG = MYCODEROOT + '/iocom/examples/' + MYAPP + '/config'
 MYINCLUDE1 = MYCONFIG + '/include/' + MYHW1
@@ -33,7 +33,7 @@ def runcmd(cmd):
 
 def do_hardware(MYPINS, MYINCLUDE):
     runcmd(PINSTOC + ' ' + MYPINS + '.json -o ' + MYINCLUDE + '/pins-io.c -s ' + MYSIGNALS + '.json')
-    
+
     runcmd(JSONTOOL + ' --t2b -title ' + MYSIGNALS + '.json ' + MYSIGNALS + '.binjson')
     runcmd(JSONTOOL + ' --b2t ' + MYSIGNALS + '.binjson ' + MYSIGNALS + '-check.json')
     runcmd(SIGNALSTOC + ' -a controller-static ' + MYSIGNALS + '.json -o ' + MYINCLUDE + '/signals.c')

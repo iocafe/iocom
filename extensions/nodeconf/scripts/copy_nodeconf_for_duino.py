@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# copy-gazerbeam-for-duino.py 21.4.2020/pekka
-# Copies gazerbeam library files needed for PlatformIO Arduino build
-# into /coderoot/lib/arduino-platformio/gazerbeam directory. 
+# copy_nodeconf_for_duino.py 21.4.2020/pekka
+# Copies nodeconf library files needed for PlatformIO Arduino build
+# into /coderoot/lib/arduino-platformio/nodeconf directory.
 # To make this look like Arduino library all .c and .cpp
 # files are copied to target root folder, and all header
 # files info subfolders.
@@ -9,7 +9,6 @@ from os import listdir, makedirs
 from os.path import isfile, isdir, join, splitext, exists
 from shutil import copyfile
 import sys
-
 
 def mymakedir(targetdir):
     if not exists(targetdir):
@@ -58,9 +57,8 @@ def copy_level_1(sourcedir,targetdir):
     copy_info('library.json', sourcedir, targetdir)
     copy_info('library.properties', sourcedir, targetdir)
 
-
 def mymain():
-    outdir = "/coderoot/lib/arduino-platformio/gazerbeam"
+    outdir = "/coderoot/lib/arduino-platformio/nodeconf"
     expectplatform = True
     n = len(sys.argv)
     for i in range(1, n):
@@ -72,9 +70,10 @@ def mymain():
             if not expectplatform:
                 outdir = sys.argv[i];
 
-            expectplatform = True    
+            expectplatform = True
 
-    copy_level_1("/coderoot/iocom/extensions/gazerbeam", outdir)
+    copy_level_1("/coderoot/iocom/extensions/nodeconf", outdir)
 
-# Usage copy-gazerbeam-for-duino.py -o /coderoot/lib/esp32/gazerbeam
+# Usage copy_nodeconf_for_duino.py -o /coderoot/lib/esp32/nodeconf
 mymain()
+
