@@ -40,7 +40,7 @@
 		"flags": "up,conf",
 		"groups": [
 			{
-				"name": "transfer to the IO node",
+				"name": "transfer to device",
 				"signals": [
 					{
 						"name": "tod_state",
@@ -53,7 +53,7 @@
 				]
 			},
 			{
-				"name": "transfer from IO node",
+				"name": "transfer from device",
 				"signals": [
 					{
 						"name": "frd_state",
@@ -65,8 +65,8 @@
 					},
 					{
 						"name": "frd_buf",
-						"type": "uchar",
-						"array": 257
+						"array": 257,
+						"type": "uchar"
 					}
 				]
 			}
@@ -77,7 +77,7 @@
 		"flags": "down,conf",
 		"groups": [
 			{
-				"name": "transfer to IO node",
+				"name": "transfer to device",
 				"signals": [
 					{
 						"name": "tod_cmd",
@@ -93,13 +93,13 @@
 					},
 					{
 						"name": "tod_buf",
-						"type": "uchar",
-						"array": 257
+						"array": 257,
+						"type": "uchar"
 					}
 				]
 			},
 			{
-				"name": "transfer from IO node",
+				"name": "transfer from device",
 				"signals": [
 					{
 						"name": "frd_cmd",

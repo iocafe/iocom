@@ -1,0 +1,99 @@
+{
+    "io": [
+        {
+            "name": "tito",
+            "title": "IO pin setup for the 'tito' application on 'carol' hardware",
+            "groups": [
+                {
+                    "name": "inputs",
+                    "pins": [
+                        {
+                            "name": "gazerbeam",
+                            "interrupt": 1,
+                            "addr": 39
+                        }
+                    ]
+                },
+                {
+                    "name": "outputs",
+                    "pins": [
+                        {
+                            "name": "led_builtin",
+                            "addr": 33
+                        }
+                    ]
+                },
+                {
+                    "name": "uart",
+                    "pins": [
+                        {
+                            "name": "uart2",
+                            "tx": 17,
+                            "rx": 16,
+                            "addr": 2,
+                            "speed": 96
+                        }
+                    ]
+                },
+                {
+                    "name": "debugger",
+                    "pins": [
+                        {
+                            "name": "AD1_TDI",
+                            "addr": 12
+                        },
+                        {
+                            "name": "AD0_TCK",
+                            "addr": 13
+                        },
+                        {
+                            "name": "AD3_TMS",
+                            "addr": 14
+                        },
+                        {
+                            "name": "AD2_TDO",
+                            "addr": 15
+                        },
+                        {
+                            "name": "U0_TXD",
+                            "addr": 1
+                        },
+                        {
+                            "name": "U0_RXD",
+                            "addr": 3
+                        }
+                    ]
+                },
+                {
+                    "name": "devboard",
+                    "pins": [
+                        {
+                            "name": "DEV_SCK",
+                            "addr": 6
+                        },
+                        {
+                            "name": "DEV_SDO",
+                            "addr": 7
+                        },
+                        {
+                            "name": "DEV_SDI",
+                            "addr": 8
+                        },
+                        {
+                            "name": "DEV_SHD",
+                            "addr": 9
+                        },
+                        {
+                            "name": "DEV_SWP",
+                            "addr": 10
+                        },
+                        {
+                            "name": "DEV_CSC",
+                            "addr": 11
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

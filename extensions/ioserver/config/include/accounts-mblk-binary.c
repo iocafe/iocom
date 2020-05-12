@@ -1,5 +1,5 @@
-/* This file is gerated by bin-to-c.py script, do not modify. */
-const os_char ioserver_account_config[989] = {
+/* This file is gerated by bin_to_c.py script, do not modify. */
+OS_FLASH_MEM os_char ioserver_account_config[989] = {
 19,64,97,99,99,111,117,110,116,95,115,105,103,110,97,108,115,0,109,98,108,107,0,101,120,
 112,0,102,108,97,103,115,0,117,112,0,110,101,119,32,100,101,118,105,99,101,115,0,110,101,
 119,49,95,116,101,120,116,0,97,114,114,97,121,0,110,101,119,49,95,110,97,109,101,0,110,

@@ -1,4 +1,4 @@
-/* This file is gerated by signals-to-c.py script, do not modify. */
+/* This file is gerated by signals_to_c.py script, do not modify. */
 void gina_init_signal_struct(gina_t *s)
 {
   os_memclear(s, sizeof(gina_t));
@@ -49,7 +49,7 @@ void gina_init_signal_struct(gina_t *s)
 
  /* rec_buf */
   s->exp.rec_buf.addr = 51;
-  s->exp.rec_buf.n = 5000;
+  s->exp.rec_buf.n = 8192;
   s->exp.rec_buf.flags = OS_UCHAR;
   s->mblk_list[0] = &s->exp.hdr;
 
@@ -166,13 +166,13 @@ void gina_init_signal_struct(gina_t *s)
   s->conf_imp.frd_tail.flags = OS_INT;
   s->mblk_list[3] = &s->conf_imp.hdr;
 
-  /* camera 'ccd' */
-  s->ccd.cmd =  &s->imp.rec_cmd;
-  s->ccd.select =  &s->imp.rec_select;
-  s->ccd.buf =  &s->exp.rec_buf;
-  s->ccd.head =  &s->exp.rec_head;
-  s->ccd.tail =  &s->imp.rec_tail;
-  s->ccd.state =  &s->exp.rec_state;
+  /* camera 'camera' */
+  s->camera.cmd =  &s->imp.rec_cmd;
+  s->camera.select =  &s->imp.rec_select;
+  s->camera.buf =  &s->exp.rec_buf;
+  s->camera.head =  &s->exp.rec_head;
+  s->camera.tail =  &s->imp.rec_tail;
+  s->camera.state =  &s->exp.rec_state;
 
   s->hdr.n_mblk_hdrs = 4;
   s->hdr.mblk_hdr = s->mblk_list;

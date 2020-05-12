@@ -1,20 +1,18 @@
 {
-"name": "candy",
 "mblk": [
 	{
-		"name": "exp",
 		"groups": [
 			{
 				"signals": [
 					{
 						"max": 4095,
-						"name": "ambient",
-						"type": "uint"
+						"type": "uint",
+						"name": "ambient"
 					},
 					{
 						"max": 4095,
-						"name": "unused_pin",
-						"type": "uint"
+						"type": "uint",
+						"name": "unused_pin"
 					}
 				],
 				"name": "state"
@@ -22,9 +20,9 @@
 			{
 				"signals": [
 					{
-						"name": "prm_resolution",
 						"array": 10,
-						"type": "str"
+						"type": "str",
+						"name": "prm_resolution"
 					}
 				],
 				"name": "parameters"
@@ -32,37 +30,37 @@
 			{
 				"signals": [
 					{
-						"name": "rec_state",
-						"type": "char"
+						"type": "char",
+						"name": "rec_state"
 					},
 					{
-						"name": "rec_head",
-						"type": "int"
+						"type": "int",
+						"name": "rec_head"
 					},
 					{
-						"name": "rec_buf",
 						"array": 8192,
-						"type": "uchar"
+						"type": "uchar",
+						"name": "rec_buf"
 					}
 				],
 				"name": "camera up"
 			}
 		],
-		"flags": "up"
+		"flags": "up",
+		"name": "exp"
 	},
 	{
-		"name": "imp",
 		"groups": [
 			{
 				"signals": [
 					{
-						"name": "on",
-						"type": "boolean"
+						"type": "boolean",
+						"name": "on"
 					},
 					{
 						"max": 4095,
-						"name": "headlight",
-						"type": "uint"
+						"type": "uint",
+						"name": "headlight"
 					}
 				],
 				"name": "controls"
@@ -70,9 +68,9 @@
 			{
 				"signals": [
 					{
-						"name": "set_resolution",
 						"array": 10,
-						"type": "str"
+						"type": "str",
+						"name": "set_resolution"
 					}
 				],
 				"name": "settings"
@@ -80,35 +78,35 @@
 			{
 				"signals": [
 					{
-						"name": "rec_cmd",
-						"type": "char"
+						"type": "char",
+						"name": "rec_cmd"
 					},
 					{
-						"name": "rec_select",
-						"type": "uchar"
+						"type": "uchar",
+						"name": "rec_select"
 					},
 					{
-						"name": "rec_tail",
-						"type": "int"
+						"type": "int",
+						"name": "rec_tail"
 					}
 				],
 				"name": "camera down"
 			}
 		],
-		"flags": "down"
+		"flags": "down",
+		"name": "imp"
 	},
 	{
-		"name": "conf_exp",
 		"groups": [
 			{
 				"signals": [
 					{
-						"name": "tod_state",
-						"type": "char"
+						"type": "char",
+						"name": "tod_state"
 					},
 					{
-						"name": "tod_tail",
-						"type": "int"
+						"type": "int",
+						"name": "tod_tail"
 					}
 				],
 				"name": "transfer to device"
@@ -116,45 +114,45 @@
 			{
 				"signals": [
 					{
-						"name": "frd_state",
-						"type": "char"
+						"type": "char",
+						"name": "frd_state"
 					},
 					{
-						"name": "frd_head",
-						"type": "int"
+						"type": "int",
+						"name": "frd_head"
 					},
 					{
-						"name": "frd_buf",
 						"array": 257,
-						"type": "uchar"
+						"type": "uchar",
+						"name": "frd_buf"
 					}
 				],
 				"name": "transfer from device"
 			}
 		],
-		"flags": "up,conf"
+		"flags": "up,conf",
+		"name": "conf_exp"
 	},
 	{
-		"name": "conf_imp",
 		"groups": [
 			{
 				"signals": [
 					{
-						"name": "tod_cmd",
-						"type": "char"
+						"type": "char",
+						"name": "tod_cmd"
 					},
 					{
-						"name": "tod_select",
-						"type": "char"
+						"type": "char",
+						"name": "tod_select"
 					},
 					{
-						"name": "tod_head",
-						"type": "int"
+						"type": "int",
+						"name": "tod_head"
 					},
 					{
-						"name": "tod_buf",
 						"array": 257,
-						"type": "uchar"
+						"type": "uchar",
+						"name": "tod_buf"
 					}
 				],
 				"name": "transfer to device"
@@ -162,30 +160,32 @@
 			{
 				"signals": [
 					{
-						"name": "frd_cmd",
-						"type": "char"
+						"type": "char",
+						"name": "frd_cmd"
 					},
 					{
-						"name": "frd_select",
-						"type": "uchar"
+						"type": "uchar",
+						"name": "frd_select"
 					},
 					{
-						"name": "frd_tail",
-						"type": "int"
+						"type": "int",
+						"name": "frd_tail"
 					}
 				],
 				"name": "transfer from device"
 			}
 		],
-		"flags": "down,conf"
+		"flags": "down,conf",
+		"name": "conf_imp"
 	}
 ],
 "assembly": [
 	{
-		"name": "camera",
-		"imp": "imp.rec_",
 		"exp": "exp.rec_",
-		"type": "camera"
+		"type": "camera",
+		"imp": "imp.rec_",
+		"name": "camera"
 	}
-]
+],
+"name": "candy"
 }

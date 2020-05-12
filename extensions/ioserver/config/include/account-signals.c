@@ -1,4 +1,4 @@
-/* This file is gerated by signals-to-c.py script, do not modify. */
+/* This file is gerated by signals_to_c.py script, do not modify. */
 void account_signals_init_signal_struct(account_signals_t *s)
 {
   os_memclear(s, sizeof(account_signals_t));

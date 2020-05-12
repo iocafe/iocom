@@ -1,4 +1,4 @@
-/* This file is gerated by signals-to-c.py script, do not modify. */
+/* This file is gerated by signals_to_c.py script, do not modify. */
 OSAL_C_HEADER_BEGINS
 
 typedef struct gina_t
@@ -58,11 +58,11 @@ typedef struct gina_t
   }
   conf_imp;
 
-  iocStreamerSignals ccd;
+  iocStreamerSignals camera;
 }
 gina_t;
 
-#define GINA_EXP_MBLK_SZ 5052
+#define GINA_EXP_MBLK_SZ 8244
 #define GINA_IMP_MBLK_SZ 32
 #define GINA_CONF_EXP_MBLK_SZ 272
 #define GINA_CONF_IMP_MBLK_SZ 276
@@ -72,7 +72,7 @@ void gina_init_signal_struct(gina_t *s);
 /* Array length defines. */
 #define GINA_EXP_TESTFLOAT_ARRAY_SZ 5
 #define GINA_EXP_TESTSTR_ARRAY_SZ 10
-#define GINA_EXP_REC_BUF_ARRAY_SZ 5000
+#define GINA_EXP_REC_BUF_ARRAY_SZ 8192
 #define GINA_IMP_STRTODEVICE_ARRAY_SZ 16
 #define GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ 8
 #define GINA_CONF_EXP_FRD_BUF_ARRAY_SZ 257

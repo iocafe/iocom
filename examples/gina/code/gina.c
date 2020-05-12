@@ -251,7 +251,7 @@ osalStatus osal_main(
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
-    ioc_initialize_brick_buffer(&video_output, &gina.ccd, &ioboard_root, 4000, IOC_BRICK_DEVICE);
+    ioc_initialize_brick_buffer(&video_output, &gina.camera, &ioboard_root, 4000, IOC_BRICK_DEVICE);
 
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();

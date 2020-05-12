@@ -115,11 +115,22 @@ def pins_to_c():
     CFILES.append("pins-io")
     runcmd(cmd)
 
-def signals_to_c():
+def signals_to_c(server_flag):
     cmd = SIGNALSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/signals-merged.json '
     cmd += '-p ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
     cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/signals.c'
-    CFILES.append("signals")
+    if server_flag != None:
+        cmd += ' -a ' + server_flag
+    CFILES.append('signals')
+    runcmd(cmd)
+
+def slave_device_signals_to_c(slavepath, hw):
+    if hw == '*':
+        hw = MYHW
+    path, slavedevicename = os.path.split(slavepath)        
+    cmd = SIGNALSTOC + ' -a controller-static ' + slavepath + '/config/intermediate/' + hw + '/signals-merged.json '
+    cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/' + slavedevicename + '-signals.c'
+    CFILES.append(slavedevicename + '-signals')
     runcmd(cmd)
 
 def bin_json_to_c(v, src_json, c_file):
@@ -159,7 +170,7 @@ def mymakedir(path):
     except FileExistsError:
         pass        
 
-def generate_c_for_hardware():
+def generate_c_for_hardware(slavedevices, server_flag):
     mymakedir(MYINCLUDE + '/' + MYHW)
     mymakedir(MYINTERMEDIATE + '/' + MYHW)
     merge_jsons('signals.json', 'signals')
@@ -167,17 +178,20 @@ def generate_c_for_hardware():
     merge_jsons('pins-io.json', 'pins')
     merge_jsons('network-defaults.json', 'network')
     compress_json('signals-merged')
-    signals_to_c()
+    signals_to_c(server_flag)
     bin_json_to_c('ioapp_signal_config', 'signals-merged', 'info-mblk')
     if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json'):
         pins_to_c()
     if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/network-defaults-merged.json'):
         compress_json('network-defaults-merged')
         bin_json_to_c('ioapp_network_defaults', 'network-defaults-merged', 'network-defaults')
+    for device in slavedevices:
+        path_hw = device.split(',')
+        slave_device_signals_to_c(path_hw[0], path_hw[1])
     make_common_header()
     make_common_cfile()
 
-def generate_c_for_io_application(confpath, coderoot, pythoncmd):
+def generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, server_flag):
     # Generate list of HW configurations
     hw_list = []
     append_subdirectories(hw_list, confpath + '/signals')
@@ -188,11 +202,11 @@ def generate_c_for_io_application(confpath, coderoot, pythoncmd):
     # Loop trough hardware configurations. If none, use 'generic'
     if len(hw_list) == 0:
         setup_environment(confpath, 'generic', coderoot, pythoncmd)
-        generate_c_for_hardware()
+        generate_c_for_hardware(slavedevices, server_flag)
     else:
         for hw in hw_list:
             setup_environment(confpath, hw, coderoot, pythoncmd)
-            generate_c_for_hardware()
+            generate_c_for_hardware(slavedevices, server_flag)
 
 def runcmd(cmd):
     stream = os.popen(cmd)
@@ -202,13 +216,16 @@ def runcmd(cmd):
 def mymain():
     n = len(sys.argv)
     sourcepaths = []
+    conflibs = []
+    slavedevices = []
     expect = None
     coderoot = None
     pythoncmd = None
+    server_flag = None
     for i in range(1, n):
         if sys.argv[i][0] == "-":
             switch = sys.argv[i][1]
-            if switch == 'r' or switch == 'p':
+            if switch == 'r' or switch == 'p' or switch == 'l' or switch == 'd' or switch == 'a':
                 expect = switch
         else:
             if expect=='r':
@@ -217,17 +234,35 @@ def mymain():
             elif expect=='p':
                 pythoncmd = sys.argv[i]
                 expect = None
+            elif expect=='l':
+                conflibs.append(sys.argv[i])
+                expect = None
+            elif expect=='d':
+                slavedevices.append(sys.argv[i])
+                expect = None
+            elif expect=='s':
+                slavedevices.append(sys.argv[i])
+                expect = None
+            elif expect=='a':
+                server_flag = sys.argv[i]
+                expect = None
             else:
                 sourcepaths.append(sys.argv[i])
 
     if len(sourcepaths) < 1:
         print("No source files")
 #        exit()
-
         sourcepaths.append('/coderoot/iocom/examples/candy/config')
+
+    # Run slave device and library configuration scripts
+    for lib in conflibs:
+        runcmd(lib + '/scripts/config_to_c_code.py')
+    for device in slavedevices:
+        path_hw = device.split(',')
+        runcmd(path_hw[0] + '/scripts/config_to_c_code.py')
 
     for confpath in sourcepaths:
         print("Processing path " + confpath)
-        generate_c_for_io_application(confpath, coderoot, pythoncmd)
+        generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, server_flag)
 
 mymain()

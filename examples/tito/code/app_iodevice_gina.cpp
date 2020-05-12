@@ -113,7 +113,7 @@ gina_t *GinaIoDevice::inititalize(
 
     /* Set up buffer for incoming camera photo
      */
-    ioc_initialize_brick_buffer(&m_camera_buffer, &m_gina_def.ccd,
+    ioc_initialize_brick_buffer(&m_camera_buffer, &m_gina_def.camera,
         &iocom_root, -1, IOC_BRICK_CONTROLLER);
 
     /* Set callback to detect received data and connection status changes.

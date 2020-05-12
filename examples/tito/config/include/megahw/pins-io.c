@@ -1,4 +1,4 @@
-/* This file is gerated by pins-to-c.py script, do not modify. */
+/* This file is gerated by pins_to_c.py script, do not modify. */
 #include "pins.h"
 
 /* Parameters for inputs */
@@ -9,7 +9,7 @@ PINS_INTCONF_STRUCT(pin_gazerbeam_intconf)
 static os_ushort pins_outputs_led_builtin_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for uart */
-static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 96, PIN_TX, 17, PIN_RX, 16};
+static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_TX, 17, PIN_RX, 16, PIN_SPEED, 96};
 
 /* TITO IO configuration structure */
 OS_FLASH_MEM pins_t pins =

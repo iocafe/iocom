@@ -1,0 +1,121 @@
+{
+"mblk": [
+	{
+		"flags": "up",
+		"groups": [
+			{
+				"signals": [
+					{
+						"type": "int",
+						"name": "nro_devices"
+					},
+					{
+						"type": "boolean",
+						"name": "test"
+					}
+				],
+				"name": "state"
+			}
+		],
+		"name": "exp"
+	},
+	{
+		"flags": "down",
+		"groups": [
+			{
+				"signals": [
+					{
+						"type": "boolean",
+						"name": "restart"
+					}
+				],
+				"name": "control"
+			}
+		],
+		"name": "imp"
+	},
+	{
+		"flags": "up,conf",
+		"groups": [
+			{
+				"signals": [
+					{
+						"type": "char",
+						"name": "tod_state"
+					},
+					{
+						"type": "int",
+						"name": "tod_tail"
+					}
+				],
+				"name": "transfer to device"
+			},
+			{
+				"signals": [
+					{
+						"type": "char",
+						"name": "frd_state"
+					},
+					{
+						"type": "int",
+						"name": "frd_head"
+					},
+					{
+						"type": "uchar",
+						"array": 257,
+						"name": "frd_buf"
+					}
+				],
+				"name": "transfer from device"
+			}
+		],
+		"name": "conf_exp"
+	},
+	{
+		"flags": "down,conf",
+		"groups": [
+			{
+				"signals": [
+					{
+						"type": "char",
+						"name": "tod_cmd"
+					},
+					{
+						"type": "char",
+						"name": "tod_select"
+					},
+					{
+						"type": "int",
+						"name": "tod_head"
+					},
+					{
+						"type": "uchar",
+						"array": 257,
+						"name": "tod_buf"
+					}
+				],
+				"name": "transfer to device"
+			},
+			{
+				"signals": [
+					{
+						"type": "char",
+						"name": "frd_cmd"
+					},
+					{
+						"type": "uchar",
+						"name": "frd_select"
+					},
+					{
+						"type": "int",
+						"name": "frd_tail"
+					}
+				],
+				"name": "transfer from device"
+			}
+		],
+		"name": "conf_imp"
+	}
+],
+"name": "tito"
+}

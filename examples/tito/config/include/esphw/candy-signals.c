@@ -1,9 +1,9 @@
-/* This file is gerated by signals-to-c.py script, do not modify. */
+/* This file is gerated by signals_to_c.py script, do not modify. */
 void candy_init_signal_struct(candy_t *s)
 {
   os_memclear(s, sizeof(candy_t));
   s->exp.hdr.mblk_name = "exp";
-  s->exp.hdr.n_signals = 5;
+  s->exp.hdr.n_signals = 6;
   s->exp.hdr.mblk_sz = CANDY_EXP_MBLK_SZ;
   s->exp.hdr.first_signal = &s->exp.ambient;
 
@@ -17,24 +17,29 @@ void candy_init_signal_struct(candy_t *s)
   s->exp.unused_pin.n = 1;
   s->exp.unused_pin.flags = OS_UINT;
 
+ /* prm_resolution */
+  s->exp.prm_resolution.addr = 10;
+  s->exp.prm_resolution.n = 10;
+  s->exp.prm_resolution.flags = OS_STR;
+
  /* rec_state */
-  s->exp.rec_state.addr = 10;
+  s->exp.rec_state.addr = 21;
   s->exp.rec_state.n = 1;
   s->exp.rec_state.flags = OS_CHAR;
 
  /* rec_head */
-  s->exp.rec_head.addr = 12;
+  s->exp.rec_head.addr = 23;
   s->exp.rec_head.n = 1;
   s->exp.rec_head.flags = OS_INT;
 
  /* rec_buf */
-  s->exp.rec_buf.addr = 17;
-  s->exp.rec_buf.n = 5000;
+  s->exp.rec_buf.addr = 28;
+  s->exp.rec_buf.n = 8192;
   s->exp.rec_buf.flags = OS_UCHAR;
   s->mblk_list[0] = &s->exp.hdr;
 
   s->imp.hdr.mblk_name = "imp";
-  s->imp.hdr.n_signals = 5;
+  s->imp.hdr.n_signals = 6;
   s->imp.hdr.mblk_sz = CANDY_IMP_MBLK_SZ;
   s->imp.hdr.first_signal = &s->imp.on;
 
@@ -43,23 +48,28 @@ void candy_init_signal_struct(candy_t *s)
   s->imp.on.n = 1;
   s->imp.on.flags = OS_BOOLEAN;
 
- /* illumination */
-  s->imp.illumination.addr = 1;
-  s->imp.illumination.n = 1;
-  s->imp.illumination.flags = OS_UINT;
+ /* headlight */
+  s->imp.headlight.addr = 1;
+  s->imp.headlight.n = 1;
+  s->imp.headlight.flags = OS_UINT;
+
+ /* set_resolution */
+  s->imp.set_resolution.addr = 6;
+  s->imp.set_resolution.n = 10;
+  s->imp.set_resolution.flags = OS_STR;
 
  /* rec_cmd */
-  s->imp.rec_cmd.addr = 6;
+  s->imp.rec_cmd.addr = 17;
   s->imp.rec_cmd.n = 1;
   s->imp.rec_cmd.flags = OS_CHAR;
 
  /* rec_select */
-  s->imp.rec_select.addr = 8;
+  s->imp.rec_select.addr = 19;
   s->imp.rec_select.n = 1;
   s->imp.rec_select.flags = OS_UCHAR;
 
  /* rec_tail */
-  s->imp.rec_tail.addr = 10;
+  s->imp.rec_tail.addr = 21;
   s->imp.rec_tail.n = 1;
   s->imp.rec_tail.flags = OS_INT;
   s->mblk_list[1] = &s->imp.hdr;
