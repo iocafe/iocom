@@ -1,6 +1,7 @@
 {
     "io": [
         {
+            "title": "IO pin setup for the 'gina' application on 'carol' hardware",
             "groups": [
                 {
                     "pins": [
@@ -33,14 +34,14 @@
                     "pins": [
                         {
                             "addr": 36,
-                            "name": "ccd_signal",
-                            "max": 4095
+                            "max": 4095,
+                            "name": "ccd_signal"
                         },
                         {
                             "addr": 26,
+                            "speed": 3,
                             "max": 4095,
-                            "name": "potentiometer",
-                            "speed": 3
+                            "name": "potentiometer"
                         }
                     ],
                     "name": "analog_inputs"
@@ -48,23 +49,23 @@
                 {
                     "pins": [
                         {
-                            "bank": 0,
-                            "resolution": 1,
-                            "frequency-kHz": 800,
-                            "name": "ccd_clock",
+                            "addr": 22,
                             "init": 1,
                             "timer": 0,
-                            "addr": 22,
-                            "hpoint": 0
+                            "frequency-kHz": 800,
+                            "bank": 0,
+                            "hpoint": 0,
+                            "name": "ccd_clock",
+                            "resolution": 1
                         },
                         {
-                            "bank": 1,
-                            "resolution": 12,
-                            "name": "dimmer_led",
-                            "init": 0,
                             "addr": 27,
+                            "init": 0,
+                            "max": 4095,
+                            "bank": 1,
                             "frequency": 5000,
-                            "max": 4095
+                            "name": "dimmer_led",
+                            "resolution": 12
                         }
                     ],
                     "name": "pwm"
@@ -72,11 +73,11 @@
                 {
                     "pins": [
                         {
-                            "miso": 19,
-                            "name": "tft_spi",
                             "addr": 0,
                             "dc": 2,
+                            "miso": 19,
                             "sclk": 18,
+                            "name": "tft_spi",
                             "mosi": 23
                         }
                     ],
@@ -86,9 +87,9 @@
                     "pins": [
                         {
                             "tgroup": 0,
-                            "frequency-kHz": 100,
+                            "timer": 0,
                             "name": "ccd_data",
-                            "timer": 0
+                            "frequency-kHz": 100
                         }
                     ],
                     "name": "timers"
@@ -96,14 +97,14 @@
                 {
                     "pins": [
                         {
-                            "pin-d": 35,
-                            "pin-b": 21,
                             "timer": 1,
-                            "bank-c": 2,
                             "bank-b": 1,
-                            "pin-c": 32,
+                            "bank-c": 2,
+                            "pin-b": 21,
                             "pin-a": 36,
-                            "name": "ccd"
+                            "name": "ccd",
+                            "pin-c": 32,
+                            "pin-d": 35
                         }
                     ],
                     "name": "cameras"
@@ -112,10 +113,10 @@
                     "pins": [
                         {
                             "addr": 2,
-                            "rx": 16,
                             "tx": 17,
+                            "speed": 96,
                             "name": "uart2",
-                            "speed": 96
+                            "rx": 16
                         }
                     ],
                     "name": "uart"
@@ -179,8 +180,7 @@
                     "name": "devboard"
                 }
             ],
-            "name": "gina",
-            "title": "IO pin setup for the 'gina' application on 'carol' hardware"
+            "name": "gina"
         }
     ]
 }

@@ -1,14 +1,5 @@
 {
   "name": "gina",
-  "assembly": [
-    {
-      "name": "ccd",
-      "type": "camera",
-      "exp": "exp.rec_",
-      "imp": "imp.rec_"
-    }
-  ],
-
   "mblk": [
   {
     "name": "exp",
@@ -29,14 +20,6 @@
         "signals": [
           {"name": "in_x", "type": "boolean"},
           {"name": "potentiometer", "type": "float"}
-        ]
-      },
-      {
-        "name": "camera up",
-        "signals": [
-          {"name": "rec_state", "type": "char"},
-          {"name": "rec_head", "type": "int"},
-          {"name": "rec_buf", "type": "uchar", "array": 5000}
         ]
       }
     ]
@@ -64,62 +47,6 @@
         "name": "outputs",
         "signals": [
           {"name": "myoutput", "type": "boolean"}
-        ]
-      },
-      {
-        "name": "camera down",
-        "signals": [
-          {"name": "rec_cmd", "type": "char"},
-          {"name": "rec_select", "type": "uchar"},
-          {"name": "rec_tail", "type": "int"}
-        ]
-      }
-    ]
-  },
-
-  {
-    "name": "conf_exp",
-    "title": "Exported configuration signals by 'gina' IO device",
-    "flags": "up,conf",
-    "groups": [
-      {
-        "name": "transfer to device",
-        "signals": [
-          {"name": "tod_state", "type": "char"},
-          {"name": "tod_tail", "type": "int"}
-        ]
-      },
-      {
-        "name": "transfer from device",
-        "signals": [
-          {"name": "frd_state", "type": "char"},
-          {"name": "frd_head", "type": "int"},
-          {"name": "frd_buf", "type": "uchar", "array": 257}
-        ]
-      }
-    ]
-  },
-
-  {
-    "name": "conf_imp",
-    "title": "Imported configuration signals by 'gina' IO device",
-    "flags": "down,conf",
-    "groups": [
-      {
-        "name": "transfer to device",
-        "signals": [
-          {"name": "tod_cmd", "type": "char"},
-          {"name": "tod_select", "type": "char"},
-          {"name": "tod_head", "type": "int"},
-          {"name": "tod_buf", "type": "uchar", "array": 257}
-        ]
-      },
-      {
-        "name": "transfer from device",
-        "signals": [
-          {"name": "frd_cmd", "type": "char"},
-          {"name": "frd_select", "type": "uchar"},
-          {"name": "frd_tail", "type": "int"}
         ]
       }
     ]

@@ -11,7 +11,7 @@ OS_FLASH_MEM struct gina_t gina =
     {39, 1, OS_FLOAT|IOC_PIN_PTR, &ioboard_exp, &pins.analog_inputs.potentiometer}, /* potentiometer */
     {44, 1, OS_CHAR, &ioboard_exp, OS_NULL}, /* rec_state */
     {46, 1, OS_INT, &ioboard_exp, OS_NULL}, /* rec_head */
-    {51, 5000, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
+    {51, 8192, OS_UCHAR, &ioboard_exp, OS_NULL} /* rec_buf */
   },
 
   {
@@ -44,15 +44,6 @@ OS_FLASH_MEM struct gina_t gina =
     {269, 1, OS_UCHAR, &ioboard_conf_imp, OS_NULL}, /* frd_select */
     {271, 1, OS_INT, &ioboard_conf_imp, OS_NULL} /* frd_tail */
   },
-
-  /* Signals for camera 'ccd' */
-  {&gina.imp.rec_cmd,
-   &gina.imp.rec_select,
-   &gina.exp.rec_buf,
-   &gina.exp.rec_head,
-   &gina.imp.rec_tail,
-   &gina.exp.rec_state,
-   OS_FALSE},
 
   /* Signals for camera 'camera' */
   {&gina.imp.rec_cmd,

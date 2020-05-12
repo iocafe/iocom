@@ -1,16 +1,9 @@
 {
-"name": "gina",
 "assembly": [
 	{
-		"exp": "exp.rec_",
-		"name": "ccd",
 		"imp": "imp.rec_",
-		"type": "camera"
-	},
-	{
 		"exp": "exp.rec_",
 		"name": "camera",
-		"imp": "imp.rec_",
 		"type": "camera"
 	}
 ],
@@ -18,7 +11,6 @@
 	{
 		"groups": [
 			{
-				"name": "state",
 				"signals": [
 					{
 						"name": "frame_rate",
@@ -38,10 +30,10 @@
 						"name": "testbool",
 						"type": "boolean"
 					}
-				]
+				],
+				"name": "state"
 			},
 			{
-				"name": "inputs",
 				"signals": [
 					{
 						"name": "in_x",
@@ -51,10 +43,10 @@
 						"name": "potentiometer",
 						"type": "float"
 					}
-				]
+				],
+				"name": "inputs"
 			},
 			{
-				"name": "camera up",
 				"signals": [
 					{
 						"name": "rec_state",
@@ -65,20 +57,20 @@
 						"type": "int"
 					},
 					{
-						"array": 5000,
+						"array": 8192,
 						"name": "rec_buf",
 						"type": "uchar"
 					}
-				]
+				],
+				"name": "camera up"
 			}
 		],
-		"name": "exp",
-		"flags": "up"
+		"flags": "up",
+		"name": "exp"
 	},
 	{
 		"groups": [
 			{
-				"name": "controls",
 				"signals": [
 					{
 						"array": 16,
@@ -90,29 +82,29 @@
 						"name": "seven_segment",
 						"type": "boolean"
 					}
-				]
+				],
+				"name": "controls"
 			},
 			{
-				"name": "pwm",
 				"signals": [
 					{
 						"max": 100,
 						"name": "dimmer_led",
 						"type": "ushort"
 					}
-				]
+				],
+				"name": "pwm"
 			},
 			{
-				"name": "outputs",
 				"signals": [
 					{
 						"name": "myoutput",
 						"type": "boolean"
 					}
-				]
+				],
+				"name": "outputs"
 			},
 			{
-				"name": "camera down",
 				"signals": [
 					{
 						"name": "rec_cmd",
@@ -126,16 +118,16 @@
 						"name": "rec_tail",
 						"type": "int"
 					}
-				]
+				],
+				"name": "camera down"
 			}
 		],
-		"name": "imp",
-		"flags": "down"
+		"flags": "down",
+		"name": "imp"
 	},
 	{
 		"groups": [
 			{
-				"name": "transfer to device",
 				"signals": [
 					{
 						"name": "tod_state",
@@ -145,10 +137,10 @@
 						"name": "tod_tail",
 						"type": "int"
 					}
-				]
+				],
+				"name": "transfer to device"
 			},
 			{
-				"name": "transfer from device",
 				"signals": [
 					{
 						"name": "frd_state",
@@ -163,16 +155,16 @@
 						"name": "frd_buf",
 						"type": "uchar"
 					}
-				]
+				],
+				"name": "transfer from device"
 			}
 		],
-		"name": "conf_exp",
-		"flags": "up,conf"
+		"flags": "up,conf",
+		"name": "conf_exp"
 	},
 	{
 		"groups": [
 			{
-				"name": "transfer to device",
 				"signals": [
 					{
 						"name": "tod_cmd",
@@ -191,10 +183,10 @@
 						"name": "tod_buf",
 						"type": "uchar"
 					}
-				]
+				],
+				"name": "transfer to device"
 			},
 			{
-				"name": "transfer from device",
 				"signals": [
 					{
 						"name": "frd_cmd",
@@ -208,11 +200,13 @@
 						"name": "frd_tail",
 						"type": "int"
 					}
-				]
+				],
+				"name": "transfer from device"
 			}
 		],
-		"name": "conf_imp",
-		"flags": "down,conf"
+		"flags": "down,conf",
+		"name": "conf_imp"
 	}
-]
+],
+"name": "gina"
 }
