@@ -5,9 +5,13 @@
                 {
                     "pins": [
                         {
-                            "addr": 12,
-                            "interrupt": 1,
-                            "name": "gazerbeam"
+                            "addr": 39,
+                            "name": "gazerbeam",
+                            "interrupt": 1
+                        },
+                        {
+                            "addr": 34,
+                            "name": "in_x"
                         }
                     ],
                     "name": "inputs"
@@ -15,12 +19,12 @@
                 {
                     "pins": [
                         {
-                            "addr": 15,
-                            "name": "led_morse"
-                        },
-                        {
                             "addr": 33,
                             "name": "led_builtin"
+                        },
+                        {
+                            "addr": 5,
+                            "name": "tft_light"
                         }
                     ],
                     "name": "outputs"
@@ -28,14 +32,15 @@
                 {
                     "pins": [
                         {
-                            "addr": 13,
-                            "name": "ambient",
+                            "addr": 36,
+                            "name": "ccd_signal",
                             "max": 4095
                         },
                         {
-                            "addr": 14,
-                            "name": "unused_pin",
-                            "max": 4095
+                            "addr": 26,
+                            "max": 4095,
+                            "name": "potentiometer",
+                            "speed": 3
                         }
                     ],
                     "name": "analog_inputs"
@@ -43,13 +48,23 @@
                 {
                     "pins": [
                         {
-                            "frequency": 5000,
+                            "bank": 0,
+                            "resolution": 1,
+                            "frequency-kHz": 800,
+                            "name": "ccd_clock",
+                            "init": 1,
+                            "timer": 0,
+                            "addr": 22,
+                            "hpoint": 0
+                        },
+                        {
                             "bank": 1,
-                            "max": 4095,
                             "resolution": 12,
-                            "addr": 4,
-                            "name": "headlight",
-                            "init": 0
+                            "name": "dimmer_led",
+                            "init": 0,
+                            "addr": 27,
+                            "frequency": 5000,
+                            "max": 4095
                         }
                     ],
                     "name": "pwm"
@@ -57,7 +72,38 @@
                 {
                     "pins": [
                         {
-                            "name": "camera"
+                            "miso": 19,
+                            "name": "tft_spi",
+                            "addr": 0,
+                            "dc": 2,
+                            "sclk": 18,
+                            "mosi": 23
+                        }
+                    ],
+                    "name": "spi"
+                },
+                {
+                    "pins": [
+                        {
+                            "tgroup": 0,
+                            "frequency-kHz": 100,
+                            "name": "ccd_data",
+                            "timer": 0
+                        }
+                    ],
+                    "name": "timers"
+                },
+                {
+                    "pins": [
+                        {
+                            "pin-d": 35,
+                            "pin-b": 21,
+                            "timer": 1,
+                            "bank-c": 2,
+                            "bank-b": 1,
+                            "pin-c": 32,
+                            "pin-a": 36,
+                            "name": "ccd"
                         }
                     ],
                     "name": "cameras"
@@ -65,11 +111,11 @@
                 {
                     "pins": [
                         {
-                            "addr": 0,
+                            "addr": 2,
                             "rx": 16,
+                            "tx": 17,
                             "name": "uart2",
-                            "speed": 1152,
-                            "tx": 2
+                            "speed": 96
                         }
                     ],
                     "name": "uart"
@@ -133,8 +179,8 @@
                     "name": "devboard"
                 }
             ],
-            "name": "candy",
-            "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware"
+            "name": "gina",
+            "title": "IO pin setup for the 'gina' application on 'carol' hardware"
         }
     ]
 }

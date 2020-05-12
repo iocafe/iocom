@@ -15,10 +15,4 @@
 
 ****************************************************************************************************
 */
-#include "gina.h"
-
-#include "pins-io.c"
-#include "signals.c"
-#include "info-mblk.c"
-#include "network-defaults.c"
-
+#include "json_io_config.c"

@@ -4,6 +4,16 @@ IO device pin, signal and parameter configuration information is set up as JSON 
 typically in orgianized by hardware (IO board name, etc). Python scripts compress JSON configuration files to store signal map in device,
 and to generate C code. 
 
+The JSON configuration files can placed either directly under specific configuration folder, like "signals". This makes JSON to apply to all
+hardware configurations. Alternatively JSON files can be hardware configuration specific and placed under HW subfolders, like "signals/espcam"
+or "pins/espcam". 
+
+Multiple JSONs can be merged into one by listing files to merge in merge.json. 
+
+JSON files are searched by name. For example default name for IOCOM signal configuration is "signals.json". This holds unless there merge.json is
+found. The JSON file (assumings signals file and espcam hardware) is searched first from IO device's config/signals/espcam directory, then
+from IO device's config/signals, then iocom/config/signals/espcam and finally from iocom/config/signals.
+
 signals - IOCOM signal configuration
 pins - PIN IO configuration JSON
 parameters - Device parameter list JSON

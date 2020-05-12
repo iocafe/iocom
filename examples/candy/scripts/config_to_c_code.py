@@ -16,7 +16,7 @@ def runcmd(cmd):
     output = stream.read()
     print(output)
 
-runcmd(MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG + ' -r ' + MYCODEROOT ' -p ' + MYPYTHON)
+runcmd(MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG + ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON)
 
 print("*** Check that output files have been generated (error checks are imperfect).")
 print("*** You may need to recompile all C code since generated files in config/include folder are not in compiler dependencies.")

@@ -1,4 +1,4 @@
-/* This file is gerated by signals-to-c.py script, do not modify. */
+/* This file is gerated by signals_to_c.py script, do not modify. */
 OS_FLASH_MEM struct gina_t gina = 
 {
   {
@@ -46,6 +46,15 @@ OS_FLASH_MEM struct gina_t gina =
   },
 
   /* Signals for camera 'ccd' */
+  {&gina.imp.rec_cmd,
+   &gina.imp.rec_select,
+   &gina.exp.rec_buf,
+   &gina.exp.rec_head,
+   &gina.imp.rec_tail,
+   &gina.exp.rec_state,
+   OS_FALSE},
+
+  /* Signals for camera 'camera' */
   {&gina.imp.rec_cmd,
    &gina.imp.rec_select,
    &gina.exp.rec_buf,

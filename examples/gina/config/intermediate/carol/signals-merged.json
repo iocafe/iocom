@@ -1,35 +1,60 @@
 {
-    "name": "candy",
+    "name": "gina",
+    "assembly": [
+        {
+            "exp": "exp.rec_",
+            "name": "ccd",
+            "imp": "imp.rec_",
+            "type": "camera"
+        },
+        {
+            "exp": "exp.rec_",
+            "name": "camera",
+            "imp": "imp.rec_",
+            "type": "camera"
+        }
+    ],
     "mblk": [
         {
-            "name": "exp",
             "groups": [
                 {
+                    "name": "state",
                     "signals": [
                         {
-                            "max": 4095,
-                            "name": "ambient",
-                            "type": "uint"
+                            "name": "frame_rate",
+                            "type": "float"
                         },
                         {
-                            "max": 4095,
-                            "name": "unused_pin",
-                            "type": "uint"
+                            "array": 5,
+                            "name": "testfloat",
+                            "type": "float"
+                        },
+                        {
+                            "array": 10,
+                            "name": "teststr",
+                            "type": "str"
+                        },
+                        {
+                            "name": "testbool",
+                            "type": "boolean"
                         }
-                    ],
-                    "name": "state"
+                    ]
                 },
                 {
+                    "name": "inputs",
                     "signals": [
                         {
-                            "name": "prm_resolution",
-                            "array": 10,
-                            "type": "str"
+                            "name": "in_x",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "potentiometer",
+                            "type": "float"
                         }
-                    ],
-                    "name": "parameters"
+                    ]
                 },
                 {
+                    "name": "camera up",
                     "signals": [
                         {
                             "name": "rec_state",
@@ -40,45 +65,55 @@
                             "type": "int"
                         },
                         {
+                            "array": 5000,
                             "name": "rec_buf",
-                            "array": 8192,
                             "type": "uchar"
                         }
-                    ],
-                    "name": "camera up"
+                    ]
                 }
             ],
-            "flags": "up",
-            "title": "Exported by 'candy' IO device"
+            "title": "Exported by 'gina' IO device",
+            "name": "exp",
+            "flags": "up"
         },
         {
-            "name": "imp",
             "groups": [
                 {
+                    "name": "controls",
                     "signals": [
                         {
-                            "name": "on",
-                            "type": "boolean"
+                            "array": 16,
+                            "name": "strtodevice",
+                            "type": "str"
                         },
                         {
-                            "max": 4095,
-                            "name": "headlight",
-                            "type": "uint"
+                            "array": 8,
+                            "name": "seven_segment",
+                            "type": "boolean"
                         }
-                    ],
-                    "name": "controls"
+                    ]
                 },
                 {
+                    "name": "pwm",
                     "signals": [
                         {
-                            "name": "set_resolution",
-                            "array": 10,
-                            "type": "str"
+                            "max": 100,
+                            "name": "dimmer_led",
+                            "type": "ushort"
                         }
-                    ],
-                    "name": "settings"
+                    ]
                 },
                 {
+                    "name": "outputs",
+                    "signals": [
+                        {
+                            "name": "myoutput",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
+                    "name": "camera down",
                     "signals": [
                         {
                             "name": "rec_cmd",
@@ -92,17 +127,17 @@
                             "name": "rec_tail",
                             "type": "int"
                         }
-                    ],
-                    "name": "camera down"
+                    ]
                 }
             ],
-            "flags": "down",
-            "title": "Imported by 'candy' IO device"
+            "title": "Imported by 'gina' IO device",
+            "name": "imp",
+            "flags": "down"
         },
         {
-            "name": "conf_exp",
             "groups": [
                 {
+                    "name": "transfer to device",
                     "signals": [
                         {
                             "name": "tod_state",
@@ -112,10 +147,10 @@
                             "name": "tod_tail",
                             "type": "int"
                         }
-                    ],
-                    "name": "transfer to device"
+                    ]
                 },
                 {
+                    "name": "transfer from device",
                     "signals": [
                         {
                             "name": "frd_state",
@@ -126,21 +161,21 @@
                             "type": "int"
                         },
                         {
-                            "name": "frd_buf",
                             "array": 257,
+                            "name": "frd_buf",
                             "type": "uchar"
                         }
-                    ],
-                    "name": "transfer from device"
+                    ]
                 }
             ],
-            "flags": "up,conf",
-            "title": "IO device's configuration signal exports"
+            "title": "Exported configuration signals by 'gina' IO device",
+            "name": "conf_exp",
+            "flags": "up,conf"
         },
         {
-            "name": "conf_imp",
             "groups": [
                 {
+                    "name": "transfer to device",
                     "signals": [
                         {
                             "name": "tod_cmd",
@@ -155,14 +190,14 @@
                             "type": "int"
                         },
                         {
-                            "name": "tod_buf",
                             "array": 257,
+                            "name": "tod_buf",
                             "type": "uchar"
                         }
-                    ],
-                    "name": "transfer to device"
+                    ]
                 },
                 {
+                    "name": "transfer from device",
                     "signals": [
                         {
                             "name": "frd_cmd",
@@ -176,20 +211,12 @@
                             "name": "frd_tail",
                             "type": "int"
                         }
-                    ],
-                    "name": "transfer from device"
+                    ]
                 }
             ],
-            "flags": "down,conf",
-            "title": "IO device's configuration signal imports"
-        }
-    ],
-    "assembly": [
-        {
-            "name": "camera",
-            "imp": "imp.rec_",
-            "exp": "exp.rec_",
-            "type": "camera"
+            "title": "Imported configuration signals by 'gina' IO device",
+            "name": "conf_imp",
+            "flags": "down,conf"
         }
     ]
 }

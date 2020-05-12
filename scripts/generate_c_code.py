@@ -1,13 +1,13 @@
+#!/usr/bin/env python3
 # generate_c_code.py 11.5.2020/pekka
 import json
 import os
 import platform
 import sys
 
-
 def setup_environment(confpath, hw, coderoot, pythoncmd):
-    global MYHW,  MYPYTHON,  CODEROOT, JSONTOOL, PINSTOC, BINTOC, SIGNALSTOC, MERGEJSON, MYIMPORTS
-    global MYCONFIG, MYSIGNALS, MYPINS, MYPARAMETERS, MYNETWORK, MYINCLUDE, MYINTERMEDIATE
+    global MYHW, MYPYTHON,  CODEROOT, JSONTOOL, PINSTOC, BINTOC, SIGNALSTOC, MERGEJSON, MYIMPORTS
+    global MYCONFIG, MYSIGNALS, MYPINS, MYPARAMETERS, MYNETWORK, MYINCLUDE, MYINTERMEDIATE, CFILES
      
     MYHW = hw
     if platform.system() == 'Windows':
@@ -38,10 +38,7 @@ def setup_environment(confpath, hw, coderoot, pythoncmd):
     MYNETWORK = MYCONFIG + '/network'
     MYINCLUDE = MYCONFIG + '/include'
     MYINTERMEDIATE = MYCONFIG + '/intermediate'
-
-    # MYNETDEFAULTS = MYCONFIG + '/network/network-defaults'
-    # MYINTERMEDIATESIG = MYINTERMEDIATE + '/signals-merged'
-    # MYINTERMEDIATENET = MYINTERMEDIATE + '/network-defaults'
+    CFILES = []
 
 def append_subdirectories(subdirs, path):
     try:
@@ -101,13 +98,62 @@ def merge_jsons(default_file, confdir):
     cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + filename + '-merged.json'
     runcmd(cmd)
 
+def compress_json(fname):
+    cmd = JSONTOOL + ' --t2b -title '
+    cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '.json '
+    cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '.binjson'
+    runcmd(cmd)
+
+    cmd = JSONTOOL + ' --b2t '
+    cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '.binjson '
+    cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '-check.json'
+    runcmd(cmd)
+
 def pins_to_c():
     cmd = PINSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
     cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/pins-io.c -s ' + MYINTERMEDIATE + '/' + MYHW + '/signals-merged.json'
+    CFILES.append("pins-io")
     runcmd(cmd)
 
+def signals_to_c():
+    cmd = SIGNALSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/signals-merged.json '
+    cmd += '-p ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
+    cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/signals.c'
+    CFILES.append("signals")
+    runcmd(cmd)
+
+def bin_json_to_c(v, src_json, c_file):
+    cmd = BINTOC + ' -v ' + v + ' '
+    cmd += MYINTERMEDIATE + '/' + MYHW + '/' + src_json + '.binjson '
+    cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/' + c_file + '.c'
+    CFILES.append(c_file)
+    runcmd(cmd)
+
+def make_common_header():
+    hfile = open(MYINCLUDE + '/' + MYHW + '/json_io_config.h', "w")
+    hfile.write('/* This file is gerated by generate_c_code.py script, do not modify. */\n')
+    for fname in CFILES:
+        hfile.write('#include "' + fname + '.h"\n')
+    hfile.close()
+
+def make_common_cfile():
+    cfile = open(MYINCLUDE + '/' + MYHW + '/json_io_config.c', "w")
+    cfile.write('/* This file is gerated by generate_c_code.py script, do not modify. */\n')
+
+    cfile.write('#define IOCOM_IOBOARD\n')
+    cfile.write('#include "iocom.h"\n')
+    if "pins-io" in CFILES:
+        cfile.write('#include "pinsx.h"\n')
+
+    for fname in CFILES:
+        cfile.write('#include "' + fname + '.h"\n')
+    for fname in CFILES:
+        cfile.write('#include "' + fname + '.c"\n')
+    cfile.close()
+    pass
+
 def mymakedir(path):
-    # Make sure that "include" "intermediate" directory exists. 
+    # Make sure that "include" and "intermediate" directories exists. 
     try:
         os.makedirs(path)
     except FileExistsError:
@@ -120,8 +166,16 @@ def generate_c_for_hardware():
     merge_jsons('parameters.json', 'parameters')
     merge_jsons('pins-io.json', 'pins')
     merge_jsons('network-defaults.json', 'network')
-    pins_to_c()
-
+    compress_json('signals-merged')
+    signals_to_c()
+    bin_json_to_c('ioapp_signal_config', 'signals-merged', 'info-mblk')
+    if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json'):
+        pins_to_c()
+    if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/network-defaults-merged.json'):
+        compress_json('network-defaults-merged')
+        bin_json_to_c('ioapp_network_defaults', 'network-defaults-merged', 'network-defaults')
+    make_common_header()
+    make_common_cfile()
 
 def generate_c_for_io_application(confpath, coderoot, pythoncmd):
     # Generate list of HW configurations
@@ -175,6 +229,5 @@ def mymain():
     for confpath in sourcepaths:
         print("Processing path " + confpath)
         generate_c_for_io_application(confpath, coderoot, pythoncmd)
-
 
 mymain()

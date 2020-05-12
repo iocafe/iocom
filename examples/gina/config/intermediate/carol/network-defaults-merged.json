@@ -1,0 +1,35 @@
+{
+    "network": {
+        "nic": [
+            {
+                "dns": "8.8.4.4",
+                "dhcp": 1,
+                "mac": "36:12:64:A4:B4:C4",
+                "gateway": "192.168.1.254",
+                "dns2": "8.8.8.8",
+                "ip": "192.168.1.217",
+                "subnet": "255.255.255.0"
+            }
+        ],
+        "network_name": "*",
+        "title": "Network configuration for 'gina' IO device",
+        "wifi": [
+            {
+                "password": "*",
+                "network": "*"
+            },
+            {
+                "password": "*",
+                "network": "*"
+            }
+        ],
+        "connect": [
+            {
+                "transport": "tls",
+                "flags": "connect,up",
+                "parameters": "*"
+            }
+        ],
+        "device_nr": "*"
+    }
+}

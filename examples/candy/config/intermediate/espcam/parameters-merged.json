@@ -1,34 +1,36 @@
 {
+    "name": "candy",
     "volatile": {
+        "title": "candy camera control",
         "groups": [
             {
                 "parameters": [
                     {
+                        "name": "on",
                         "init": 1,
-                        "type": "boolean",
-                        "name": "on"
+                        "type": "boolean"
                     }
                 ],
                 "name": "run"
             }
-        ],
-        "title": "candy camera control"
+        ]
     },
     "persistent": {
+        "title": "candy camera pamameters",
         "groups": [
             {
                 "parameters": [
                     {
+                        "name": "size",
                         "init": "320x240",
                         "array": 10,
-                        "type": "str",
                         "select": "320x240,640x480",
-                        "name": "size"
+                        "type": "str"
                     },
                     {
+                        "name": "quality",
                         "init": 40,
-                        "type": "uchar",
-                        "name": "quality"
+                        "type": "uchar"
                     }
                 ],
                 "name": "image"
@@ -36,30 +38,28 @@
             {
                 "parameters": [
                     {
+                        "name": "brightness",
                         "init": 50,
-                        "type": "uchar",
-                        "name": "brightness"
+                        "type": "uchar"
                     },
                     {
+                        "name": "contrast",
                         "init": 50,
-                        "type": "uchar",
-                        "name": "contrast"
+                        "type": "uchar"
                     },
                     {
+                        "name": "hue",
                         "init": 50,
-                        "type": "uchar",
-                        "name": "hue"
+                        "type": "uchar"
                     },
                     {
+                        "name": "saturation",
                         "init": 50,
-                        "type": "uchar",
-                        "name": "saturation"
+                        "type": "uchar"
                     }
                 ],
                 "name": "color"
             }
-        ],
-        "title": "candy camera pamameters"
-    },
-    "name": "candy"
+        ]
+    }
 }
