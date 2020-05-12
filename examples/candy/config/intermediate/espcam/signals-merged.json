@@ -1,30 +1,20 @@
 {
-    "name": "candy",
-    "assembly": [
-        {
-            "type": "camera",
-            "exp": "exp.rec_",
-            "name": "camera",
-            "imp": "imp.rec_"
-        }
-    ],
     "mblk": [
         {
-            "flags": "up",
-            "name": "exp",
+            "title": "Exported by 'candy' IO device",
             "groups": [
                 {
                     "name": "state",
                     "signals": [
                         {
+                            "name": "ambient",
                             "max": 4095,
-                            "type": "uint",
-                            "name": "ambient"
+                            "type": "uint"
                         },
                         {
+                            "name": "unused_pin",
                             "max": 4095,
-                            "type": "uint",
-                            "name": "unused_pin"
+                            "type": "uint"
                         }
                     ]
                 },
@@ -32,9 +22,9 @@
                     "name": "parameters",
                     "signals": [
                         {
-                            "type": "str",
                             "array": 10,
-                            "name": "prm_resolution"
+                            "name": "prm_resolution",
+                            "type": "str"
                         }
                     ]
                 },
@@ -42,38 +32,38 @@
                     "name": "camera up",
                     "signals": [
                         {
-                            "type": "char",
-                            "name": "rec_state"
+                            "name": "rec_state",
+                            "type": "char"
                         },
                         {
-                            "type": "int",
-                            "name": "rec_head"
+                            "name": "rec_head",
+                            "type": "int"
                         },
                         {
-                            "type": "uchar",
                             "array": 8192,
-                            "name": "rec_buf"
+                            "name": "rec_buf",
+                            "type": "uchar"
                         }
                     ]
                 }
             ],
-            "title": "Exported by 'candy' IO device"
+            "name": "exp",
+            "flags": "up"
         },
         {
-            "flags": "down",
-            "name": "imp",
+            "title": "Imported by 'candy' IO device",
             "groups": [
                 {
                     "name": "controls",
                     "signals": [
                         {
-                            "type": "boolean",
-                            "name": "on"
+                            "name": "on",
+                            "type": "boolean"
                         },
                         {
+                            "name": "headlight",
                             "max": 4095,
-                            "type": "uint",
-                            "name": "headlight"
+                            "type": "uint"
                         }
                     ]
                 },
@@ -81,9 +71,9 @@
                     "name": "settings",
                     "signals": [
                         {
-                            "type": "str",
                             "array": 10,
-                            "name": "set_resolution"
+                            "name": "set_resolution",
+                            "type": "str"
                         }
                     ]
                 },
@@ -91,83 +81,83 @@
                     "name": "camera down",
                     "signals": [
                         {
-                            "type": "char",
-                            "name": "rec_cmd"
+                            "name": "rec_cmd",
+                            "type": "char"
                         },
                         {
-                            "type": "uchar",
-                            "name": "rec_select"
+                            "name": "rec_select",
+                            "type": "uchar"
                         },
                         {
-                            "type": "int",
-                            "name": "rec_tail"
+                            "name": "rec_tail",
+                            "type": "int"
                         }
                     ]
                 }
             ],
-            "title": "Imported by 'candy' IO device"
+            "name": "imp",
+            "flags": "down"
         },
         {
-            "flags": "up,conf",
+            "title": "IO device's configuration signal exports",
+            "groups": [
+                {
+                    "name": "transfer to device",
+                    "signals": [
+                        {
+                            "name": "tod_state",
+                            "type": "char"
+                        },
+                        {
+                            "name": "tod_tail",
+                            "type": "int"
+                        }
+                    ]
+                },
+                {
+                    "name": "transfer from device",
+                    "signals": [
+                        {
+                            "name": "frd_state",
+                            "type": "char"
+                        },
+                        {
+                            "name": "frd_head",
+                            "type": "int"
+                        },
+                        {
+                            "array": 257,
+                            "name": "frd_buf",
+                            "type": "uchar"
+                        }
+                    ]
+                }
+            ],
             "name": "conf_exp",
-            "groups": [
-                {
-                    "name": "transfer to device",
-                    "signals": [
-                        {
-                            "type": "char",
-                            "name": "tod_state"
-                        },
-                        {
-                            "type": "int",
-                            "name": "tod_tail"
-                        }
-                    ]
-                },
-                {
-                    "name": "transfer from device",
-                    "signals": [
-                        {
-                            "type": "char",
-                            "name": "frd_state"
-                        },
-                        {
-                            "type": "int",
-                            "name": "frd_head"
-                        },
-                        {
-                            "type": "uchar",
-                            "array": 257,
-                            "name": "frd_buf"
-                        }
-                    ]
-                }
-            ],
-            "title": "IO device's configuration signal exports"
+            "flags": "up,conf"
         },
         {
-            "flags": "down,conf",
-            "name": "conf_imp",
+            "title": "IO device's configuration signal imports",
             "groups": [
                 {
                     "name": "transfer to device",
                     "signals": [
                         {
-                            "type": "char",
-                            "name": "tod_cmd"
+                            "name": "tod_cmd",
+                            "type": "char"
                         },
                         {
-                            "type": "char",
-                            "name": "tod_select"
+                            "name": "tod_select",
+                            "type": "char"
                         },
                         {
-                            "type": "int",
-                            "name": "tod_head"
+                            "name": "tod_head",
+                            "type": "int"
                         },
                         {
-                            "type": "uchar",
                             "array": 257,
-                            "name": "tod_buf"
+                            "name": "tod_buf",
+                            "type": "uchar"
                         }
                     ]
                 },
@@ -175,21 +165,31 @@
                     "name": "transfer from device",
                     "signals": [
                         {
-                            "type": "char",
-                            "name": "frd_cmd"
+                            "name": "frd_cmd",
+                            "type": "char"
                         },
                         {
-                            "type": "uchar",
-                            "name": "frd_select"
+                            "name": "frd_select",
+                            "type": "uchar"
                         },
                         {
-                            "type": "int",
-                            "name": "frd_tail"
+                            "name": "frd_tail",
+                            "type": "int"
                         }
                     ]
                 }
             ],
-            "title": "IO device's configuration signal imports"
+            "name": "conf_imp",
+            "flags": "down,conf"
+        }
+    ],
+    "name": "candy",
+    "assembly": [
+        {
+            "exp": "exp.rec_",
+            "imp": "imp.rec_",
+            "name": "camera",
+            "type": "camera"
         }
     ]
 }

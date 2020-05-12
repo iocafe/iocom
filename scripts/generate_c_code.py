@@ -79,24 +79,48 @@ def read_json(fname, confdir):
     return None
 
 def merge_jsons(default_file, confdir):
-    merge_list = read_json('merge.json', confdir)
-    if merge_list == None:
-        merge_list = []
-        merge_list.append(default_file)
+    merge_data = read_json('merge.json', confdir)
+    if merge_data == None:
+        merge_list = [default_file]
+    else:        
+        merge_list = merge_data.get('merge', None)
+        if merge_list == None:
+            print("Merge data for '" + confdir + "' is erronous.")
+            exit()
+
     cmd = MERGEJSON 
     for f in merge_list:
         path = get_exact_path(f, confdir)
         if path == None:
-            print("File '" + f + "' not found for '" + condfir + "'.")
+            if merge_data == None:
+                return
+            print("File '" + f + "' not found for '" + confdir + "'.")
             exit()
         cmd += ' ' + path 
     filename, file_extension = os.path.splitext(default_file)
-    cmd += ' -o ' + MYINTERMEDIATE + '/' + filename + '-merged.json'
-    #runcmd(cmd);
-    print (cmd)
+    cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + filename + '-merged.json'
+    runcmd(cmd)
+
+def pins_to_c():
+    cmd = PINSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
+    cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/pins-io.c -s ' + MYINTERMEDIATE + '/' + MYHW + '/signals-merged.json'
+    runcmd(cmd)
+
+def mymakedir(path):
+    # Make sure that "include" "intermediate" directory exists. 
+    try:
+        os.makedirs(path)
+    except FileExistsError:
+        pass        
 
 def generate_c_for_hardware():
+    mymakedir(MYINCLUDE + '/' + MYHW)
+    mymakedir(MYINTERMEDIATE + '/' + MYHW)
     merge_jsons('signals.json', 'signals')
+    merge_jsons('parameters.json', 'parameters')
+    merge_jsons('pins-io.json', 'pins')
+    merge_jsons('network-defaults.json', 'network')
+    pins_to_c()
 
 
 def generate_c_for_io_application(confpath, coderoot, pythoncmd):
@@ -122,8 +146,6 @@ def runcmd(cmd):
     print(output)
 
 def mymain():
-    global MYPYTHON, MYCODEROOT
-
     n = len(sys.argv)
     sourcepaths = []
     expect = None
