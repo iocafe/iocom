@@ -14,6 +14,7 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#if IOC_DYNAMIC_MBLK_CODE
 
 
 /**
@@ -130,3 +131,5 @@ os_boolean ioc_get_part_of_iopath(
     *iopath = e;
     return OS_FALSE;
 }
+
+#endif

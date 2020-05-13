@@ -230,9 +230,9 @@ os_memsz ioc_compress_brick(
 {
     iocBrickHdr *dhdr;
     os_memsz sz;
-    os_int quality;
 
 #if IOC_USE_JPEG_COMPRESSION
+    os_int quality;
     osalStatus s;
 #endif
 
@@ -252,6 +252,7 @@ os_memsz ioc_compress_brick(
 
     switch (compression)
     {
+#if IOC_USE_JPEG_COMPRESSION
         case IOC_SMALL_JPEG:
             quality = 15;
             goto compress_jpeg;
@@ -263,6 +264,11 @@ os_memsz ioc_compress_brick(
         case IOC_LARGE_JPEG:
             quality = 75;
 compress_jpeg:
+#else
+        case IOC_SMALL_JPEG:
+        case IOC_NORMAL_JPEG:
+        case IOC_LARGE_JPEG:
+#endif
             /* If already compressed by camera (ESP32 cam can make JPEG)
              */
             if (hdr->compression == IOC_NORMAL_JPEG)
@@ -463,7 +469,7 @@ osalStatus ioc_run_brick_send(
             return OSAL_NOTHING_TO_DO;
         }
 
-        /* Order here is important. 
+        /* Order here is important.
          */
         stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
         if (stream == OS_NULL) return OSAL_NOTHING_TO_DO;

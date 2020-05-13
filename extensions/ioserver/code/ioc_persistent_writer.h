@@ -16,6 +16,10 @@
 ****************************************************************************************************
 */
 
+#if IOC_DYNAMIC_MBLK_CODE
+
+iocStream *stream;
+
 /* Persistent writer object structure.
  */
 typedef struct iocPersistentWriter
@@ -58,3 +62,5 @@ osalStatus ioc_run_persistent_writer(
  */
 void ioc_upload_cert_chain_or_flash_prog(
     iocBServer *m);
+
+#endif

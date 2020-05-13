@@ -16,6 +16,7 @@
 ****************************************************************************************************
 */
 #include "ioserver.h"
+#if IOC_DYNAMIC_MBLK_CODE
 
 
 /**
@@ -240,3 +241,5 @@ void ioc_upload_cert_chain_or_flash_prog(
         m->check_cert_chain_etc = OS_FALSE;
     }
 }
+
+#endif

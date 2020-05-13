@@ -168,10 +168,12 @@ osalStatus ioc_run_bserver(
         }
     }
 
+#if IOC_DYNAMIC_MBLK_CODE
     /* Handle uploading certificate chain to IO device, and optionally (in future?) updating
        flash program version.
      */
     ioc_upload_cert_chain_or_flash_prog(m);
+#endif
 
     return s;
 }
