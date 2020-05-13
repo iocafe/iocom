@@ -98,47 +98,6 @@ void account_signals_init_signal_struct(account_signals_t *s)
   s->exp.new3_count.flags = OS_INT;
   s->mblk_list[0] = &s->exp.hdr;
 
-  s->conf_imp.hdr.mblk_name = "conf_imp";
-  s->conf_imp.hdr.n_signals = 7;
-  s->conf_imp.hdr.mblk_sz = ACCOUNT_SIGNALS_CONF_IMP_MBLK_SZ;
-  s->conf_imp.hdr.first_signal = &s->conf_imp.tod_cmd;
-
- /* tod_cmd */
-  s->conf_imp.tod_cmd.addr = 0;
-  s->conf_imp.tod_cmd.n = 1;
-  s->conf_imp.tod_cmd.flags = OS_CHAR;
-
- /* tod_select */
-  s->conf_imp.tod_select.addr = 2;
-  s->conf_imp.tod_select.n = 1;
-  s->conf_imp.tod_select.flags = OS_CHAR;
-
- /* tod_buf */
-  s->conf_imp.tod_buf.addr = 4;
-  s->conf_imp.tod_buf.n = 257;
-  s->conf_imp.tod_buf.flags = OS_UCHAR;
-
- /* tod_head */
-  s->conf_imp.tod_head.addr = 262;
-  s->conf_imp.tod_head.n = 1;
-  s->conf_imp.tod_head.flags = OS_INT;
-
- /* frd_cmd */
-  s->conf_imp.frd_cmd.addr = 267;
-  s->conf_imp.frd_cmd.n = 1;
-  s->conf_imp.frd_cmd.flags = OS_CHAR;
-
- /* frd_select */
-  s->conf_imp.frd_select.addr = 269;
-  s->conf_imp.frd_select.n = 1;
-  s->conf_imp.frd_select.flags = OS_UCHAR;
-
- /* frd_tail */
-  s->conf_imp.frd_tail.addr = 271;
-  s->conf_imp.frd_tail.n = 1;
-  s->conf_imp.frd_tail.flags = OS_INT;
-  s->mblk_list[1] = &s->conf_imp.hdr;
-
   s->conf_exp.hdr.mblk_name = "conf_exp";
   s->conf_exp.hdr.n_signals = 5;
   s->conf_exp.hdr.mblk_sz = ACCOUNT_SIGNALS_CONF_EXP_MBLK_SZ;
@@ -159,16 +118,57 @@ void account_signals_init_signal_struct(account_signals_t *s)
   s->conf_exp.frd_state.n = 1;
   s->conf_exp.frd_state.flags = OS_CHAR;
 
- /* frd_buf */
-  s->conf_exp.frd_buf.addr = 9;
-  s->conf_exp.frd_buf.n = 257;
-  s->conf_exp.frd_buf.flags = OS_UCHAR;
-
  /* frd_head */
-  s->conf_exp.frd_head.addr = 267;
+  s->conf_exp.frd_head.addr = 9;
   s->conf_exp.frd_head.n = 1;
   s->conf_exp.frd_head.flags = OS_INT;
-  s->mblk_list[2] = &s->conf_exp.hdr;
+
+ /* frd_buf */
+  s->conf_exp.frd_buf.addr = 14;
+  s->conf_exp.frd_buf.n = 257;
+  s->conf_exp.frd_buf.flags = OS_UCHAR;
+  s->mblk_list[1] = &s->conf_exp.hdr;
+
+  s->conf_imp.hdr.mblk_name = "conf_imp";
+  s->conf_imp.hdr.n_signals = 7;
+  s->conf_imp.hdr.mblk_sz = ACCOUNT_SIGNALS_CONF_IMP_MBLK_SZ;
+  s->conf_imp.hdr.first_signal = &s->conf_imp.tod_cmd;
+
+ /* tod_cmd */
+  s->conf_imp.tod_cmd.addr = 0;
+  s->conf_imp.tod_cmd.n = 1;
+  s->conf_imp.tod_cmd.flags = OS_CHAR;
+
+ /* tod_select */
+  s->conf_imp.tod_select.addr = 2;
+  s->conf_imp.tod_select.n = 1;
+  s->conf_imp.tod_select.flags = OS_CHAR;
+
+ /* tod_head */
+  s->conf_imp.tod_head.addr = 4;
+  s->conf_imp.tod_head.n = 1;
+  s->conf_imp.tod_head.flags = OS_INT;
+
+ /* tod_buf */
+  s->conf_imp.tod_buf.addr = 9;
+  s->conf_imp.tod_buf.n = 257;
+  s->conf_imp.tod_buf.flags = OS_UCHAR;
+
+ /* frd_cmd */
+  s->conf_imp.frd_cmd.addr = 267;
+  s->conf_imp.frd_cmd.n = 1;
+  s->conf_imp.frd_cmd.flags = OS_CHAR;
+
+ /* frd_select */
+  s->conf_imp.frd_select.addr = 269;
+  s->conf_imp.frd_select.n = 1;
+  s->conf_imp.frd_select.flags = OS_UCHAR;
+
+ /* frd_tail */
+  s->conf_imp.frd_tail.addr = 271;
+  s->conf_imp.frd_tail.n = 1;
+  s->conf_imp.frd_tail.flags = OS_INT;
+  s->mblk_list[2] = &s->conf_imp.hdr;
 
 
   s->hdr.n_mblk_hdrs = 3;

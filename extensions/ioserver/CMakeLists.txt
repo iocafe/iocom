@@ -15,6 +15,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
 # Set path to source files.
 set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 
+# Build C code from JSON configuration
+if (WIN32)
+  execute_process(COMMAND "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/scripts/config_to_c_code.py")
+else()
+  execute_process(COMMAND "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/scripts/config_to_c_code.py")
+endif()
+
 # Add include paths.
 include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")

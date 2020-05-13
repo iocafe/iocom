@@ -15,7 +15,7 @@
 */
 #include "ioserver.h"
 
-#include "config/include/account-signals.h"
+#include "config/include/generic/account-signals.h"
 #include "config/include/account-defaults.h"
 #include "config/include/accounts-mblk-binary.h"
 

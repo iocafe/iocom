@@ -5,8 +5,8 @@
                 {
                     "pins": [
                         {
-                            "interrupt": 1,
                             "addr": 12,
+                            "interrupt": 1,
                             "name": "gazerbeam"
                         }
                     ],
@@ -28,13 +28,13 @@
                 {
                     "pins": [
                         {
-                            "addr": 13,
                             "max": 4095,
+                            "addr": 13,
                             "name": "ambient"
                         },
                         {
-                            "addr": 14,
                             "max": 4095,
+                            "addr": 14,
                             "name": "unused_pin"
                         }
                     ],
@@ -43,12 +43,12 @@
                 {
                     "pins": [
                         {
-                            "bank": 1,
                             "addr": 4,
-                            "max": 4095,
-                            "name": "headlight",
+                            "bank": 1,
                             "init": 0,
                             "resolution": 12,
+                            "max": 4095,
+                            "name": "headlight",
                             "frequency": 5000
                         }
                     ],
@@ -66,10 +66,10 @@
                     "pins": [
                         {
                             "rx": 16,
-                            "addr": 0,
                             "speed": 1152,
-                            "tx": 2,
-                            "name": "uart2"
+                            "addr": 0,
+                            "name": "uart2",
+                            "tx": 2
                         }
                     ],
                     "name": "uart"
@@ -133,8 +133,8 @@
                     "name": "devboard"
                 }
             ],
-            "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware",
-            "name": "candy"
+            "name": "candy",
+            "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware"
         }
     ]
 }

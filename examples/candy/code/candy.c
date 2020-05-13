@@ -173,8 +173,8 @@ osalStatus osal_main(
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
     // prm.device_signal_hdr = &candy_hdr;
-    prm.device_info = ioapp_signal_config;
-    prm.device_info_sz = sizeof(ioapp_signal_config);
+    prm.device_info = ioapp_signals_config;
+    prm.device_info_sz = sizeof(ioapp_signals_config);
     prm.conf_send_block_sz = CANDY_CONF_EXP_MBLK_SZ;
     prm.conf_receive_block_sz = CANDY_CONF_IMP_MBLK_SZ;
 #if CANDY_USE_LIGHTHOUSE

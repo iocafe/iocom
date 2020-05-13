@@ -1,0 +1,31 @@
+{
+    "network": {
+        "network_name": "*",
+        "title": "Network configuration for 'candy' IO device",
+        "connect": [
+            {
+                "parameters": "*",
+                "transport": "tls",
+                "flags": "connect,up"
+            }
+        ],
+        "wifi": [
+            {
+                "password": "*",
+                "network": "*"
+            }
+        ],
+        "nic": [
+            {
+                "dns2": "8.8.8.8",
+                "ip": "192.168.1.217",
+                "dhcp": 1,
+                "gateway": "192.168.1.254",
+                "subnet": "255.255.255.0",
+                "mac": "36:12:64:A4:B4:C4",
+                "dns": "8.8.4.4"
+            }
+        ],
+        "device_nr": "*"
+    }
+}

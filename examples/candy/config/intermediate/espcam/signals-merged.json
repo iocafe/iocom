@@ -1,29 +1,25 @@
 {
     "assembly": [
         {
-            "imp": "imp.rec_",
             "type": "camera",
-            "name": "camera",
-            "exp": "exp.rec_"
+            "imp": "imp.rec_",
+            "exp": "exp.rec_",
+            "name": "camera"
         }
     ],
-    "name": "candy",
     "mblk": [
         {
-            "flags": "up",
-            "title": "Exported by 'candy' IO device",
-            "name": "exp",
             "groups": [
                 {
                     "signals": [
                         {
-                            "max": 4095,
                             "type": "uint",
+                            "max": 4095,
                             "name": "ambient"
                         },
                         {
-                            "max": 4095,
                             "type": "uint",
+                            "max": 4095,
                             "name": "unused_pin"
                         }
                     ],
@@ -32,8 +28,8 @@
                 {
                     "signals": [
                         {
-                            "array": 10,
                             "type": "str",
+                            "array": 10,
                             "name": "prm_resolution"
                         }
                     ],
@@ -50,19 +46,19 @@
                             "name": "rec_head"
                         },
                         {
-                            "array": 8192,
                             "type": "uchar",
+                            "array": 8192,
                             "name": "rec_buf"
                         }
                     ],
                     "name": "camera up"
                 }
-            ]
+            ],
+            "title": "Exported by 'candy' IO device",
+            "flags": "up",
+            "name": "exp"
         },
         {
-            "flags": "down",
-            "title": "Imported by 'candy' IO device",
-            "name": "imp",
             "groups": [
                 {
                     "signals": [
@@ -71,8 +67,8 @@
                             "name": "on"
                         },
                         {
-                            "max": 4095,
                             "type": "uint",
+                            "max": 4095,
                             "name": "headlight"
                         }
                     ],
@@ -81,8 +77,8 @@
                 {
                     "signals": [
                         {
-                            "array": 10,
                             "type": "str",
+                            "array": 10,
                             "name": "set_resolution"
                         }
                     ],
@@ -105,12 +101,12 @@
                     ],
                     "name": "camera down"
                 }
-            ]
+            ],
+            "title": "Imported by 'candy' IO device",
+            "flags": "down",
+            "name": "imp"
         },
         {
-            "flags": "up,conf",
-            "title": "IO device's configuration signal exports",
-            "name": "conf_exp",
             "groups": [
                 {
                     "signals": [
@@ -136,19 +132,19 @@
                             "name": "frd_head"
                         },
                         {
-                            "array": 257,
                             "type": "uchar",
+                            "array": 257,
                             "name": "frd_buf"
                         }
                     ],
                     "name": "transfer from device"
                 }
-            ]
+            ],
+            "title": "IO device's configuration signal exports",
+            "flags": "up,conf",
+            "name": "conf_exp"
         },
         {
-            "flags": "down,conf",
-            "title": "IO device's configuration signal imports",
-            "name": "conf_imp",
             "groups": [
                 {
                     "signals": [
@@ -165,8 +161,8 @@
                             "name": "tod_head"
                         },
                         {
-                            "array": 257,
                             "type": "uchar",
+                            "array": 257,
                             "name": "tod_buf"
                         }
                     ],
@@ -189,7 +185,11 @@
                     ],
                     "name": "transfer from device"
                 }
-            ]
+            ],
+            "title": "IO device's configuration signal imports",
+            "flags": "down,conf",
+            "name": "conf_imp"
         }
-    ]
+    ],
+    "name": "candy"
 }

@@ -33,54 +33,6 @@
         ]
       }
     ]
-  },
-
-  {
-    "name": "conf_imp",
-    "title": "User account signals downwards",
-    "flags": "down,conf",
-    "groups": [
-      {
-        "name": "transfer downwards, commands",
-        "signals": [
-          {"name": "tod_cmd", "type": "char"},
-          {"name": "tod_select", "type": "char"},
-          {"name": "tod_buf", "type": "uchar", "array": 257},
-          {"name": "tod_head", "type": "int"}
-        ]
-      },
-      {
-        "name": "transfer upwards, commands",
-        "signals": [
-          {"name": "frd_cmd", "type": "char"},
-          {"name": "frd_select", "type": "uchar"},
-          {"name": "frd_tail", "type": "int"}
-        ]
-      }
-    ]
-  },
-
-  {
-    "name": "conf_exp",
-    "title": "User account signals upwards",
-    "flags": "up,conf",
-    "groups": [
-      {
-        "name": "transfer downwards, replies",
-        "signals": [
-          {"name": "tod_state", "type": "char"},
-          {"name": "tod_tail", "type": "int"}
-        ]
-      },
-      {
-        "name": "transfer upwards, replies",
-        "signals": [
-          {"name": "frd_state", "type": "char"},
-          {"name": "frd_buf", "type": "uchar", "array": 257},
-          {"name": "frd_head", "type": "int"}
-        ]
-      }
-    ]
   }
   ]
 }

@@ -89,7 +89,9 @@ void ioc_initialize_selectwifi(
     const os_char *parameters;
     iocMemoryBlockParams blockprm;
     iocConnectionParams conprm;
+#if SELECTWIFI_ENABLE_SOCKET_TEST
     iocEndPointParams epprm;
+#endif
 
     /* Parameters
      */
@@ -140,6 +142,7 @@ void ioc_initialize_selectwifi(
 
     switch (swf.transport)
     {
+        default:
         case IOC_SWF_BLUE_TOOTH:
         case IOC_SWF_SERIAL_PORT:
             os_memclear(&conprm, sizeof(conprm));

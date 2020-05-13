@@ -55,8 +55,8 @@ AppRoot::AppRoot(
     prm.signals_imp_hdr = &m_signals.imp.hdr;
     prm.signals_conf_exp_hdr = &m_signals.conf_exp.hdr;
     prm.signals_conf_imp_hdr = &m_signals.conf_imp.hdr;
-    prm.signal_config = ioapp_signal_config;
-    prm.signal_config_sz = sizeof(ioapp_signal_config);
+    prm.signal_config = ioapp_signals_config;
+    prm.signal_config_sz = sizeof(ioapp_signals_config);
     prm.network_defaults = ioapp_network_defaults;
     prm.network_defaults_sz = sizeof(ioapp_network_defaults);
     prm.account_defaults = ioapp_account_defaults;

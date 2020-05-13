@@ -76,6 +76,7 @@ def read_json(fname, confdir):
     return None
 
 def merge_jsons(default_file, confdir):
+    rval = default_file
     merge_data = read_json('merge.json', confdir)
     if merge_data == None:
         merge_list = [default_file]
@@ -84,19 +85,21 @@ def merge_jsons(default_file, confdir):
         if merge_list == None:
             print("Merge data for '" + confdir + "' is erronous.")
             exit()
-
+        rval = merge_list[0]
+    rval, ext = os.path.splitext(rval)
     cmd = MERGEJSON 
     for f in merge_list:
         path = get_exact_path(f, confdir)
         if path == None:
             if merge_data == None:
-                return
+                return None
             print("File '" + f + "' not found for '" + confdir + "'.")
             exit()
         cmd += ' ' + path 
-    filename, file_extension = os.path.splitext(default_file)
-    cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + filename + '-merged.json'
+    # filename, file_extension = os.path.splitext(default_file)
+    cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + rval + '-merged.json'
     runcmd(cmd)
+    return rval
 
 def compress_json(fname):
     cmd = JSONTOOL + ' --t2b -title '
@@ -109,20 +112,22 @@ def compress_json(fname):
     cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '-check.json'
     runcmd(cmd)
 
-def pins_to_c():
-    cmd = PINSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
-    cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/pins-io.c -s ' + MYINTERMEDIATE + '/' + MYHW + '/signals-merged.json'
-    CFILES.append("pins-io")
+def pins_to_c(pins_name, signals_name):
+    cmd = PINSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/' + pins_name + '-merged.json '
+    cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/' + pins_name + '.c -s ' + MYINTERMEDIATE + '/' + MYHW + '/' + signals_name + '-merged.json'
+    CFILES.append(pins_name)
     runcmd(cmd)
 
-def signals_to_c(server_flag):
-    cmd = SIGNALSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/signals-merged.json '
-    if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json'):
-        cmd += '-p ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
-    cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/signals.c'
+def signals_to_c(server_flag, signals_name, pins_name):
+    cmd = SIGNALSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/' + signals_name + '-merged.json'
+    if pins_name != None:
+        pins_json = MYINTERMEDIATE + '/' + MYHW + '/' + pins_name + '-merged.json'
+        if os.path.exists(pins_json):
+            cmd += ' -p ' + pins_json
+    cmd += ' -o ' + MYINCLUDE + '/' + MYHW + '/' + signals_name + '.c'
     if server_flag != None:
         cmd += ' -a ' + server_flag
-    CFILES.append('signals')
+    CFILES.append(signals_name)
     runcmd(cmd)
 
 def slave_device_signals_to_c(slavepath, hw):
@@ -174,18 +179,20 @@ def mymakedir(path):
 def generate_c_for_hardware(slavedevices, server_flag):
     mymakedir(MYINCLUDE + '/' + MYHW)
     mymakedir(MYINTERMEDIATE + '/' + MYHW)
-    merge_jsons('signals.json', 'signals')
-    merge_jsons('parameters.json', 'parameters')
-    merge_jsons('pins-io.json', 'pins')
-    merge_jsons('network-defaults.json', 'network')
-    compress_json('signals-merged')
-    signals_to_c(server_flag)
-    bin_json_to_c('ioapp_signal_config', 'signals-merged', 'info-mblk')
-    if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json'):
-        pins_to_c()
-    if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/network-defaults-merged.json'):
-        compress_json('network-defaults-merged')
-        bin_json_to_c('ioapp_network_defaults', 'network-defaults-merged', 'network-defaults')
+    signals_name = merge_jsons('signals.json', 'signals')
+    parameters_name = merge_jsons('parameters.json', 'parameters')
+    pins_name = merge_jsons('pins-io.json', 'pins')
+    network_name = merge_jsons('network_defaults.json', 'network')
+    compress_json(signals_name + '-merged')
+    signals_to_c(server_flag, signals_name, pins_name)
+    bin_json_to_c('ioapp_' + signals_name + '_config', signals_name + '-merged', 'info-mblk')
+    if pins_name != None:
+        if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + pins_name + '-merged.json'):
+            pins_to_c(pins_name, signals_name)
+    if network_name != None:
+        if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + network_name + '-merged.json'):
+            compress_json(network_name + '-merged')
+            bin_json_to_c('ioapp_' + network_name, network_name + '-merged', network_name)
     for device in slavedevices:
         path_hw = device.split(',')
         slave_device_signals_to_c(path_hw[0], path_hw[1])

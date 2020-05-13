@@ -8,15 +8,15 @@
                 "parameters": [
                     {
                         "name": "size",
-                        "init": "320x240",
-                        "array": 10,
                         "type": "str",
-                        "select": "320x240,640x480"
+                        "init": "320x240",
+                        "select": "320x240,640x480",
+                        "array": 10
                     },
                     {
                         "name": "quality",
-                        "init": 40,
-                        "type": "uchar"
+                        "type": "uchar",
+                        "init": 40
                     }
                 ]
             },
@@ -25,23 +25,23 @@
                 "parameters": [
                     {
                         "name": "brightness",
-                        "init": 50,
-                        "type": "uchar"
+                        "type": "uchar",
+                        "init": 50
                     },
                     {
                         "name": "contrast",
-                        "init": 50,
-                        "type": "uchar"
+                        "type": "uchar",
+                        "init": 50
                     },
                     {
                         "name": "hue",
-                        "init": 50,
-                        "type": "uchar"
+                        "type": "uchar",
+                        "init": 50
                     },
                     {
                         "name": "saturation",
-                        "init": 50,
-                        "type": "uchar"
+                        "type": "uchar",
+                        "init": 50
                     }
                 ]
             }
@@ -55,8 +55,8 @@
                 "parameters": [
                     {
                         "name": "on",
-                        "init": 1,
-                        "type": "boolean"
+                        "type": "boolean",
+                        "init": 1
                     }
                 ]
             }

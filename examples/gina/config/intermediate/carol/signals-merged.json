@@ -1,11 +1,11 @@
 {
+    "name": "gina",
     "mblk": [
         {
-            "title": "Exported by 'gina' IO device",
             "name": "exp",
+            "flags": "up",
             "groups": [
                 {
-                    "name": "state",
                     "signals": [
                         {
                             "name": "frame_rate",
@@ -25,10 +25,10 @@
                             "name": "testbool",
                             "type": "boolean"
                         }
-                    ]
+                    ],
+                    "name": "state"
                 },
                 {
-                    "name": "inputs",
                     "signals": [
                         {
                             "name": "in_x",
@@ -38,10 +38,10 @@
                             "name": "potentiometer",
                             "type": "float"
                         }
-                    ]
+                    ],
+                    "name": "inputs"
                 },
                 {
-                    "name": "camera up",
                     "signals": [
                         {
                             "name": "rec_state",
@@ -56,17 +56,17 @@
                             "name": "rec_buf",
                             "type": "uchar"
                         }
-                    ]
+                    ],
+                    "name": "camera up"
                 }
             ],
-            "flags": "up"
+            "title": "Exported by 'gina' IO device"
         },
         {
-            "title": "Imported by 'gina' IO device",
             "name": "imp",
+            "flags": "down",
             "groups": [
                 {
-                    "name": "controls",
                     "signals": [
                         {
                             "array": 16,
@@ -78,29 +78,29 @@
                             "name": "seven_segment",
                             "type": "boolean"
                         }
-                    ]
+                    ],
+                    "name": "controls"
                 },
                 {
-                    "name": "pwm",
                     "signals": [
                         {
                             "name": "dimmer_led",
                             "max": 100,
                             "type": "ushort"
                         }
-                    ]
+                    ],
+                    "name": "pwm"
                 },
                 {
-                    "name": "outputs",
                     "signals": [
                         {
                             "name": "myoutput",
                             "type": "boolean"
                         }
-                    ]
+                    ],
+                    "name": "outputs"
                 },
                 {
-                    "name": "camera down",
                     "signals": [
                         {
                             "name": "rec_cmd",
@@ -114,17 +114,17 @@
                             "name": "rec_tail",
                             "type": "int"
                         }
-                    ]
+                    ],
+                    "name": "camera down"
                 }
             ],
-            "flags": "down"
+            "title": "Imported by 'gina' IO device"
         },
         {
-            "title": "IO device's configuration signal exports",
             "name": "conf_exp",
+            "flags": "up,conf",
             "groups": [
                 {
-                    "name": "transfer to device",
                     "signals": [
                         {
                             "name": "tod_state",
@@ -134,10 +134,10 @@
                             "name": "tod_tail",
                             "type": "int"
                         }
-                    ]
+                    ],
+                    "name": "transfer to device"
                 },
                 {
-                    "name": "transfer from device",
                     "signals": [
                         {
                             "name": "frd_state",
@@ -152,17 +152,17 @@
                             "name": "frd_buf",
                             "type": "uchar"
                         }
-                    ]
+                    ],
+                    "name": "transfer from device"
                 }
             ],
-            "flags": "up,conf"
+            "title": "IO device's configuration signal exports"
         },
         {
-            "title": "IO device's configuration signal imports",
             "name": "conf_imp",
+            "flags": "down,conf",
             "groups": [
                 {
-                    "name": "transfer to device",
                     "signals": [
                         {
                             "name": "tod_cmd",
@@ -181,10 +181,10 @@
                             "name": "tod_buf",
                             "type": "uchar"
                         }
-                    ]
+                    ],
+                    "name": "transfer to device"
                 },
                 {
-                    "name": "transfer from device",
                     "signals": [
                         {
                             "name": "frd_cmd",
@@ -198,13 +198,13 @@
                             "name": "frd_tail",
                             "type": "int"
                         }
-                    ]
+                    ],
+                    "name": "transfer from device"
                 }
             ],
-            "flags": "down,conf"
+            "title": "IO device's configuration signal imports"
         }
     ],
-    "name": "gina",
     "assembly": [
         {
             "exp": "exp.rec_",
