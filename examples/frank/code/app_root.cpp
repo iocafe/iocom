@@ -110,14 +110,14 @@ AppRoot::~AppRoot()
 osalStatus AppRoot::run()
 {
     os_int i;
-    osalStatus s;
+    osalStatus s = OSAL_SUCCESS;
 
     ioc_single_thread_run(&iocom_root);
     ioc_receive_all(&iocom_root);
 
     /* Call basic server implementation to maintain control streams.
      */
-    s = ioc_run_bserver(&m_bmain);
+    /* s = */ ioc_run_bserver(&m_bmain);
 
     /* Run applications.
      */
@@ -125,6 +125,7 @@ osalStatus AppRoot::run()
     {
         if (m_app[i])
         {
+            m_app[i]->run();
             if (m_app[i]->run() != OSAL_NOTHING_TO_DO)
                 s = OSAL_SUCCESS;
         }
@@ -132,7 +133,7 @@ osalStatus AppRoot::run()
 
     ioc_send_all(&iocom_root);
     ioc_single_thread_run(&iocom_root);
-    return OSAL_SUCCESS;
+    return s;
 }
 
 

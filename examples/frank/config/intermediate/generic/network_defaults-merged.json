@@ -1,6 +1,14 @@
 {
     "network": {
         "device_nr": "*",
+        "publish": "iocafenet,asteroidnet",
+        "title": "Network configuration defaults",
+        "nic": [
+            {
+                "ip": "*",
+                "send_udp": 1
+            }
+        ],
         "security": [
             {
                 "certchainfile": "myhome-bundle.crt",
@@ -10,30 +18,22 @@
         ],
         "connect": [
             {
-                "parameters": "127.0.0.1:6367",
                 "transport": "none",
-                "flags": "connect,down,cloud"
+                "flags": "connect,down,cloud",
+                "parameters": "127.0.0.1:6367"
             },
             {
-                "parameters": "*:6369",
                 "transport": "tls",
-                "flags": "listen,down"
+                "flags": "listen,down",
+                "parameters": "*:6369"
             },
             {
-                "parameters": "[*]:6369",
                 "transport": "none",
-                "flags": "listen,down"
+                "flags": "listen,down",
+                "parameters": "[*]:6369"
             }
         ],
         "password": "",
-        "title": "Network configuration defaults",
-        "publish": "iocafenet,asteroidnet",
-        "nic": [
-            {
-                "ip": "*",
-                "send_udp": 1
-            }
-        ],
         "network_name": "iocafenet"
     }
 }

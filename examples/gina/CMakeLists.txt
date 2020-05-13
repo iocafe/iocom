@@ -34,7 +34,8 @@ else()
   execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
 endif()
 
-# Include IO pin and communication signal configuration for this hardware.
+# Include path for the project and for IO pin and communication signal configuration (for this hardware).
+include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
 
 # Add iocom and pins to include path.

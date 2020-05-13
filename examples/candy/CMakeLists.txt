@@ -34,6 +34,7 @@ else()
 endif()
 
 # Include IO pin and communication signal configuration for this hardware.
+include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
 
 # Add iocom and pins to include path.

@@ -2,9 +2,7 @@
     "name": "tito",
     "mblk": [
         {
-            "name": "exp",
             "title": "Exported by the IO controller",
-            "flags": "up",
             "groups": [
                 {
                     "name": "state",
@@ -19,12 +17,12 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "flags": "up",
+            "name": "exp"
         },
         {
-            "name": "imp",
             "title": "Imported by the IO controller",
-            "flags": "down",
             "groups": [
                 {
                     "name": "control",
@@ -35,12 +33,12 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "flags": "down",
+            "name": "imp"
         },
         {
-            "name": "conf_exp",
             "title": "IO device's configuration signal exports",
-            "flags": "up,conf",
             "groups": [
                 {
                     "name": "transfer to device",
@@ -67,18 +65,18 @@
                             "type": "int"
                         },
                         {
-                            "name": "frd_buf",
                             "array": 257,
+                            "name": "frd_buf",
                             "type": "uchar"
                         }
                     ]
                 }
-            ]
+            ],
+            "flags": "up,conf",
+            "name": "conf_exp"
         },
         {
-            "name": "conf_imp",
             "title": "IO device's configuration signal imports",
-            "flags": "down,conf",
             "groups": [
                 {
                     "name": "transfer to device",
@@ -96,8 +94,8 @@
                             "type": "int"
                         },
                         {
-                            "name": "tod_buf",
                             "array": 257,
+                            "name": "tod_buf",
                             "type": "uchar"
                         }
                     ]
@@ -119,7 +117,9 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "flags": "down,conf",
+            "name": "conf_imp"
         }
     ]
 }

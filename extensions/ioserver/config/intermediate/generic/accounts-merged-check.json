@@ -1,34 +1,37 @@
 {
+"name": "account_signals",
 "mblk": [
 	{
+		"flags": "up",
+		"name": "exp",
 		"groups": [
 			{
 				"name": "new devices",
 				"signals": [
 					{
 						"type": "str",
-						"array": 16,
-						"name": "new1_text"
+						"name": "new1_text",
+						"array": 16
 					},
 					{
 						"type": "str",
-						"array": 28,
-						"name": "new1_name"
+						"name": "new1_name",
+						"array": 28
 					},
 					{
 						"type": "str",
-						"array": 46,
-						"name": "new1_password"
+						"name": "new1_password",
+						"array": 46
 					},
 					{
 						"type": "str",
-						"array": 16,
-						"name": "new1_privileges"
+						"name": "new1_privileges",
+						"array": 16
 					},
 					{
 						"type": "str",
-						"array": 64,
-						"name": "new1_ip"
+						"name": "new1_ip",
+						"array": 64
 					},
 					{
 						"type": "int",
@@ -36,28 +39,28 @@
 					},
 					{
 						"type": "str",
-						"array": 16,
-						"name": "new2_text"
+						"name": "new2_text",
+						"array": 16
 					},
 					{
 						"type": "str",
-						"array": 28,
-						"name": "new2_name"
+						"name": "new2_name",
+						"array": 28
 					},
 					{
 						"type": "str",
-						"array": 46,
-						"name": "new2_password"
+						"name": "new2_password",
+						"array": 46
 					},
 					{
 						"type": "str",
-						"array": 16,
-						"name": "new2_privileges"
+						"name": "new2_privileges",
+						"array": 16
 					},
 					{
 						"type": "str",
-						"array": 64,
-						"name": "new2_ip"
+						"name": "new2_ip",
+						"array": 64
 					},
 					{
 						"type": "int",
@@ -65,28 +68,28 @@
 					},
 					{
 						"type": "str",
-						"array": 16,
-						"name": "new3_text"
+						"name": "new3_text",
+						"array": 16
 					},
 					{
 						"type": "str",
-						"array": 28,
-						"name": "new3_name"
+						"name": "new3_name",
+						"array": 28
 					},
 					{
 						"type": "str",
-						"array": 46,
-						"name": "new3_password"
+						"name": "new3_password",
+						"array": 46
 					},
 					{
 						"type": "str",
-						"array": 16,
-						"name": "new3_privileges"
+						"name": "new3_privileges",
+						"array": 16
 					},
 					{
 						"type": "str",
-						"array": 64,
-						"name": "new3_ip"
+						"name": "new3_ip",
+						"array": 64
 					},
 					{
 						"type": "int",
@@ -94,11 +97,11 @@
 					}
 				]
 			}
-		],
-		"flags": "up",
-		"name": "exp"
+		]
 	},
 	{
+		"flags": "up,conf",
+		"name": "conf_exp",
 		"groups": [
 			{
 				"name": "transfer to device",
@@ -126,16 +129,16 @@
 					},
 					{
 						"type": "uchar",
-						"array": 257,
-						"name": "frd_buf"
+						"name": "frd_buf",
+						"array": 257
 					}
 				]
 			}
-		],
-		"flags": "up,conf",
-		"name": "conf_exp"
+		]
 	},
 	{
+		"flags": "down,conf",
+		"name": "conf_imp",
 		"groups": [
 			{
 				"name": "transfer to device",
@@ -154,8 +157,8 @@
 					},
 					{
 						"type": "uchar",
-						"array": 257,
-						"name": "tod_buf"
+						"name": "tod_buf",
+						"array": 257
 					}
 				]
 			},
@@ -176,10 +179,7 @@
 					}
 				]
 			}
-		],
-		"flags": "down,conf",
-		"name": "conf_imp"
+		]
 	}
-],
-"name": "account_signals"
+]
 }

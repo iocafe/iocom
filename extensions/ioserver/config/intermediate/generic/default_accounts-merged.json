@@ -1,0 +1,13 @@
+{
+    "accounts": {
+        "accounts": [
+            {
+                "user": "ispy*",
+                "password": "pass",
+                "privileges": "admin"
+            }
+        ],
+        "whitelist": [],
+        "title": "Default user accounts"
+    }
+}

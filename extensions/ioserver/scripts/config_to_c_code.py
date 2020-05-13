@@ -19,6 +19,7 @@ def runcmd(cmd):
 cmd = MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG
 cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON 
 cmd += ' -a controller-static'
+cmd += ' -c json_server_config'
 runcmd(cmd)
 
 print("*** Check that output files have been generated (error checks are imperfect).")

@@ -18,8 +18,6 @@
 
 #if IOC_DYNAMIC_MBLK_CODE
 
-iocStream *stream;
-
 /* Persistent writer object structure.
  */
 typedef struct iocPersistentWriter

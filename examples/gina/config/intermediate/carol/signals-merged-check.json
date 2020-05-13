@@ -1,29 +1,27 @@
 {
-"name": "gina",
 "mblk": [
 	{
-		"name": "exp",
 		"flags": "up",
 		"groups": [
 			{
 				"signals": [
 					{
-						"name": "frame_rate",
-						"type": "float"
+						"type": "float",
+						"name": "frame_rate"
 					},
 					{
 						"array": 5,
-						"name": "testfloat",
-						"type": "float"
+						"type": "float",
+						"name": "testfloat"
 					},
 					{
 						"array": 10,
-						"name": "teststr",
-						"type": "str"
+						"type": "str",
+						"name": "teststr"
 					},
 					{
-						"name": "testbool",
-						"type": "boolean"
+						"type": "boolean",
+						"name": "testbool"
 					}
 				],
 				"name": "state"
@@ -31,12 +29,12 @@
 			{
 				"signals": [
 					{
-						"name": "in_x",
-						"type": "boolean"
+						"type": "boolean",
+						"name": "in_x"
 					},
 					{
-						"name": "potentiometer",
-						"type": "float"
+						"type": "float",
+						"name": "potentiometer"
 					}
 				],
 				"name": "inputs"
@@ -44,38 +42,38 @@
 			{
 				"signals": [
 					{
-						"name": "rec_state",
-						"type": "char"
+						"type": "char",
+						"name": "rec_state"
 					},
 					{
-						"name": "rec_head",
-						"type": "int"
+						"type": "int",
+						"name": "rec_head"
 					},
 					{
 						"array": 8192,
-						"name": "rec_buf",
-						"type": "uchar"
+						"type": "uchar",
+						"name": "rec_buf"
 					}
 				],
 				"name": "camera up"
 			}
-		]
+		],
+		"name": "exp"
 	},
 	{
-		"name": "imp",
 		"flags": "down",
 		"groups": [
 			{
 				"signals": [
 					{
 						"array": 16,
-						"name": "strtodevice",
-						"type": "str"
+						"type": "str",
+						"name": "strtodevice"
 					},
 					{
 						"array": 8,
-						"name": "seven_segment",
-						"type": "boolean"
+						"type": "boolean",
+						"name": "seven_segment"
 					}
 				],
 				"name": "controls"
@@ -83,9 +81,9 @@
 			{
 				"signals": [
 					{
-						"name": "dimmer_led",
 						"max": 100,
-						"type": "ushort"
+						"type": "ushort",
+						"name": "dimmer_led"
 					}
 				],
 				"name": "pwm"
@@ -93,8 +91,8 @@
 			{
 				"signals": [
 					{
-						"name": "myoutput",
-						"type": "boolean"
+						"type": "boolean",
+						"name": "myoutput"
 					}
 				],
 				"name": "outputs"
@@ -102,35 +100,35 @@
 			{
 				"signals": [
 					{
-						"name": "rec_cmd",
-						"type": "char"
+						"type": "char",
+						"name": "rec_cmd"
 					},
 					{
-						"name": "rec_select",
-						"type": "uchar"
+						"type": "uchar",
+						"name": "rec_select"
 					},
 					{
-						"name": "rec_tail",
-						"type": "int"
+						"type": "int",
+						"name": "rec_tail"
 					}
 				],
 				"name": "camera down"
 			}
-		]
+		],
+		"name": "imp"
 	},
 	{
-		"name": "conf_exp",
 		"flags": "up,conf",
 		"groups": [
 			{
 				"signals": [
 					{
-						"name": "tod_state",
-						"type": "char"
+						"type": "char",
+						"name": "tod_state"
 					},
 					{
-						"name": "tod_tail",
-						"type": "int"
+						"type": "int",
+						"name": "tod_tail"
 					}
 				],
 				"name": "transfer to device"
@@ -138,45 +136,45 @@
 			{
 				"signals": [
 					{
-						"name": "frd_state",
-						"type": "char"
+						"type": "char",
+						"name": "frd_state"
 					},
 					{
-						"name": "frd_head",
-						"type": "int"
+						"type": "int",
+						"name": "frd_head"
 					},
 					{
 						"array": 257,
-						"name": "frd_buf",
-						"type": "uchar"
+						"type": "uchar",
+						"name": "frd_buf"
 					}
 				],
 				"name": "transfer from device"
 			}
-		]
+		],
+		"name": "conf_exp"
 	},
 	{
-		"name": "conf_imp",
 		"flags": "down,conf",
 		"groups": [
 			{
 				"signals": [
 					{
-						"name": "tod_cmd",
-						"type": "char"
+						"type": "char",
+						"name": "tod_cmd"
 					},
 					{
-						"name": "tod_select",
-						"type": "char"
+						"type": "char",
+						"name": "tod_select"
 					},
 					{
-						"name": "tod_head",
-						"type": "int"
+						"type": "int",
+						"name": "tod_head"
 					},
 					{
 						"array": 257,
-						"name": "tod_buf",
-						"type": "uchar"
+						"type": "uchar",
+						"name": "tod_buf"
 					}
 				],
 				"name": "transfer to device"
@@ -184,29 +182,31 @@
 			{
 				"signals": [
 					{
-						"name": "frd_cmd",
-						"type": "char"
+						"type": "char",
+						"name": "frd_cmd"
 					},
 					{
-						"name": "frd_select",
-						"type": "uchar"
+						"type": "uchar",
+						"name": "frd_select"
 					},
 					{
-						"name": "frd_tail",
-						"type": "int"
+						"type": "int",
+						"name": "frd_tail"
 					}
 				],
 				"name": "transfer from device"
 			}
-		]
+		],
+		"name": "conf_imp"
 	}
 ],
 "assembly": [
 	{
 		"exp": "exp.rec_",
-		"name": "camera",
 		"imp": "imp.rec_",
-		"type": "camera"
+		"type": "camera",
+		"name": "camera"
 	}
-]
+],
+"name": "gina"
 }

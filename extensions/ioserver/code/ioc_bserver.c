@@ -397,8 +397,8 @@ static void ioc_setup_bserver_network(
     account_defaults_sz = m->account_defaults_sz;
     if (account_defaults == OS_NULL)
     {
-        account_defaults = ioserver_account_defaults;
-        account_defaults_sz  = sizeof(ioserver_account_defaults);
+        account_defaults = ioapp_default_accounts;
+        account_defaults_sz  = sizeof(ioapp_default_accounts);
     }
 
     /* Load user account configuration from persistent storage and publish it
@@ -414,8 +414,8 @@ static void ioc_setup_bserver_network(
         account_defaults_sz);
 
     blockprm.mblk_name = "info";
-    blockprm.buf = (os_char*)ioserver_account_config;
-    blockprm.nbytes = sizeof(ioserver_account_config);
+    blockprm.buf = (os_char*)ioapp_accounts_config;
+    blockprm.nbytes = sizeof(ioapp_accounts_config);
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&n->accounts_info, OS_NULL, m->root, &blockprm);
 

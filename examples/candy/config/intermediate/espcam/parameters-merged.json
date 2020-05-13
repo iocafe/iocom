@@ -1,5 +1,4 @@
 {
-    "name": "candy",
     "persistent": {
         "title": "candy camera pamameters",
         "groups": [
@@ -7,10 +6,10 @@
                 "name": "image",
                 "parameters": [
                     {
-                        "name": "size",
-                        "type": "str",
                         "init": "320x240",
+                        "name": "size",
                         "select": "320x240,640x480",
+                        "type": "str",
                         "array": 10
                     },
                     {
@@ -47,6 +46,7 @@
             }
         ]
     },
+    "name": "candy",
     "volatile": {
         "title": "candy camera control",
         "groups": [

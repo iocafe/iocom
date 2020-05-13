@@ -19,9 +19,7 @@
 */
 
 #ifdef BSERVER_INTERNALS
-#include "config/include/account-signals.h"
-#include "config/include/account-defaults.h"
-#include "config/include/accounts-mblk-binary.h"
+#include "config/include/generic/json_server_config.h"
 #endif
 
 struct iocBServerNetwork;

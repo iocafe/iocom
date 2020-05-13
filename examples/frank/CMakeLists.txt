@@ -33,6 +33,7 @@ else()
 endif()
 
 # Include communication signal configuration.
+include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/generic")
 
 # Add iocom, nodeconf, ioserver, lighthouse and devicedir to include path.

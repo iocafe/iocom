@@ -9,8 +9,8 @@
                     "pins": [
                         {
                             "name": "gazerbeam",
-                            "interrupt": 1,
-                            "addr": 39
+                            "addr": 39,
+                            "interrupt": 1
                         }
                     ]
                 },
@@ -29,9 +29,9 @@
                         {
                             "name": "uart2",
                             "tx": 17,
-                            "rx": 16,
+                            "speed": 96,
                             "addr": 2,
-                            "speed": 96
+                            "rx": 16
                         }
                     ]
                 },

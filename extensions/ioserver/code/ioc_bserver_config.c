@@ -13,13 +13,4 @@
 
 ****************************************************************************************************
 */
-#include "ioserver.h"
-
-#include "config/include/generic/account-signals.h"
-#include "config/include/account-defaults.h"
-#include "config/include/accounts-mblk-binary.h"
-
-#include "config/include/account-signals.c"
-#include "config/include/account-defaults.c"
-#include "config/include/accounts-mblk-binary.c"
-
+#include "config/include/generic/json_server_config.c"

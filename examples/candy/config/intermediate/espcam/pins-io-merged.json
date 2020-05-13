@@ -6,8 +6,8 @@
                     "pins": [
                         {
                             "addr": 12,
-                            "interrupt": 1,
-                            "name": "gazerbeam"
+                            "name": "gazerbeam",
+                            "interrupt": 1
                         }
                     ],
                     "name": "inputs"
@@ -28,13 +28,13 @@
                 {
                     "pins": [
                         {
-                            "max": 4095,
                             "addr": 13,
+                            "max": 4095,
                             "name": "ambient"
                         },
                         {
-                            "max": 4095,
                             "addr": 14,
+                            "max": 4095,
                             "name": "unused_pin"
                         }
                     ],
@@ -43,13 +43,13 @@
                 {
                     "pins": [
                         {
-                            "addr": 4,
-                            "bank": 1,
-                            "init": 0,
-                            "resolution": 12,
                             "max": 4095,
                             "name": "headlight",
-                            "frequency": 5000
+                            "init": 0,
+                            "addr": 4,
+                            "frequency": 5000,
+                            "resolution": 12,
+                            "bank": 1
                         }
                     ],
                     "name": "pwm"
@@ -65,11 +65,11 @@
                 {
                     "pins": [
                         {
-                            "rx": 16,
                             "speed": 1152,
                             "addr": 0,
+                            "tx": 2,
                             "name": "uart2",
-                            "tx": 2
+                            "rx": 16
                         }
                     ],
                     "name": "uart"
@@ -133,8 +133,8 @@
                     "name": "devboard"
                 }
             ],
-            "name": "candy",
-            "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware"
+            "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware",
+            "name": "candy"
         }
     ]
 }

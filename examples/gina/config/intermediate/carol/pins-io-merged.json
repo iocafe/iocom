@@ -6,12 +6,12 @@
                     "pins": [
                         {
                             "interrupt": 1,
-                            "name": "gazerbeam",
-                            "addr": 39
+                            "addr": 39,
+                            "name": "gazerbeam"
                         },
                         {
-                            "name": "in_x",
-                            "addr": 34
+                            "addr": 34,
+                            "name": "in_x"
                         }
                     ],
                     "name": "inputs"
@@ -19,12 +19,12 @@
                 {
                     "pins": [
                         {
-                            "name": "led_builtin",
-                            "addr": 33
+                            "addr": 33,
+                            "name": "led_builtin"
                         },
                         {
-                            "name": "tft_light",
-                            "addr": 5
+                            "addr": 5,
+                            "name": "tft_light"
                         }
                     ],
                     "name": "outputs"
@@ -32,14 +32,14 @@
                 {
                     "pins": [
                         {
-                            "name": "ccd_signal",
                             "addr": 36,
-                            "max": 4095
+                            "max": 4095,
+                            "name": "ccd_signal"
                         },
                         {
+                            "addr": 26,
                             "speed": 3,
                             "name": "potentiometer",
-                            "addr": 26,
                             "max": 4095
                         }
                     ],
@@ -48,23 +48,23 @@
                 {
                     "pins": [
                         {
-                            "timer": 0,
-                            "bank": 0,
-                            "name": "ccd_clock",
                             "init": 1,
                             "frequency-kHz": 800,
+                            "name": "ccd_clock",
                             "hpoint": 0,
+                            "timer": 0,
                             "addr": 22,
-                            "resolution": 1
+                            "resolution": 1,
+                            "bank": 0
                         },
                         {
-                            "max": 4095,
-                            "bank": 1,
-                            "name": "dimmer_led",
                             "init": 0,
+                            "name": "dimmer_led",
                             "frequency": 5000,
                             "addr": 27,
-                            "resolution": 12
+                            "resolution": 12,
+                            "max": 4095,
+                            "bank": 1
                         }
                     ],
                     "name": "pwm"
@@ -72,9 +72,9 @@
                 {
                     "pins": [
                         {
-                            "mosi": 23,
                             "sclk": 18,
                             "name": "tft_spi",
+                            "mosi": 23,
                             "dc": 2,
                             "addr": 0,
                             "miso": 19
@@ -86,9 +86,9 @@
                     "pins": [
                         {
                             "tgroup": 0,
-                            "timer": 0,
                             "frequency-kHz": 100,
-                            "name": "ccd_data"
+                            "name": "ccd_data",
+                            "timer": 0
                         }
                     ],
                     "name": "timers"
@@ -96,14 +96,14 @@
                 {
                     "pins": [
                         {
+                            "pin-c": 32,
+                            "pin-a": 36,
+                            "pin-b": 21,
+                            "name": "ccd",
                             "timer": 1,
                             "bank-b": 1,
-                            "name": "ccd",
-                            "pin-c": 32,
                             "pin-d": 35,
-                            "bank-c": 2,
-                            "pin-a": 36,
-                            "pin-b": 21
+                            "bank-c": 2
                         }
                     ],
                     "name": "cameras"
@@ -111,11 +111,11 @@
                 {
                     "pins": [
                         {
-                            "speed": 96,
                             "rx": 16,
-                            "name": "uart2",
+                            "tx": 17,
                             "addr": 2,
-                            "tx": 17
+                            "speed": 96,
+                            "name": "uart2"
                         }
                     ],
                     "name": "uart"
@@ -123,28 +123,28 @@
                 {
                     "pins": [
                         {
-                            "name": "AD1_TDI",
-                            "addr": 12
+                            "addr": 12,
+                            "name": "AD1_TDI"
                         },
                         {
-                            "name": "AD0_TCK",
-                            "addr": 13
+                            "addr": 13,
+                            "name": "AD0_TCK"
                         },
                         {
-                            "name": "AD3_TMS",
-                            "addr": 14
+                            "addr": 14,
+                            "name": "AD3_TMS"
                         },
                         {
-                            "name": "AD2_TDO",
-                            "addr": 15
+                            "addr": 15,
+                            "name": "AD2_TDO"
                         },
                         {
-                            "name": "U0_TXD",
-                            "addr": 1
+                            "addr": 1,
+                            "name": "U0_TXD"
                         },
                         {
-                            "name": "U0_RXD",
-                            "addr": 3
+                            "addr": 3,
+                            "name": "U0_RXD"
                         }
                     ],
                     "name": "debugger"
@@ -152,28 +152,28 @@
                 {
                     "pins": [
                         {
-                            "name": "DEV_SCK",
-                            "addr": 6
+                            "addr": 6,
+                            "name": "DEV_SCK"
                         },
                         {
-                            "name": "DEV_SDO",
-                            "addr": 7
+                            "addr": 7,
+                            "name": "DEV_SDO"
                         },
                         {
-                            "name": "DEV_SDI",
-                            "addr": 8
+                            "addr": 8,
+                            "name": "DEV_SDI"
                         },
                         {
-                            "name": "DEV_SHD",
-                            "addr": 9
+                            "addr": 9,
+                            "name": "DEV_SHD"
                         },
                         {
-                            "name": "DEV_SWP",
-                            "addr": 10
+                            "addr": 10,
+                            "name": "DEV_SWP"
                         },
                         {
-                            "name": "DEV_CSC",
-                            "addr": 11
+                            "addr": 11,
+                            "name": "DEV_CSC"
                         }
                     ],
                     "name": "devboard"

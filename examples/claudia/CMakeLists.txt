@@ -24,8 +24,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 # Set path to source files.
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
-# Include communication signal configuration.
-include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include")
+# Build C code from JSON configuration
+if (WIN32)
+  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+else()
+  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+endif()
+
+# Include paths to project and signal configuration.
+include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
+include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/generic")
 
 # Add iocom, nodeconf, ioserver and devicedir to include path.
 include_directories("$ENV{E_ROOT}/iocom")

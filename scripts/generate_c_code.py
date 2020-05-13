@@ -146,15 +146,15 @@ def bin_json_to_c(v, src_json, c_file):
     CFILES.append(c_file)
     runcmd(cmd)
 
-def make_common_header():
-    hfile = open(MYINCLUDE + '/' + MYHW + '/json_io_config.h', "w")
+def make_common_header(common_c_file):
+    hfile = open(MYINCLUDE + '/' + MYHW + '/' + common_c_file + '.h', "w")
     hfile.write('/* This file is gerated by generate_c_code.py script, do not modify. */\n')
     for fname in CFILES:
-        hfile.write('#include "' + fname + '.h"\n')
+        hfile.write('#include "config/include/' + MYHW + '/' + fname + '.h"\n')
     hfile.close()
 
-def make_common_cfile():
-    cfile = open(MYINCLUDE + '/' + MYHW + '/json_io_config.c', "w")
+def make_common_cfile(common_c_file):
+    cfile = open(MYINCLUDE + '/' + MYHW + '/' + common_c_file + '.c', "w")
     cfile.write('/* This file is gerated by generate_c_code.py script, do not modify. */\n')
 
     cfile.write('#define IOCOM_IOBOARD\n')
@@ -163,9 +163,9 @@ def make_common_cfile():
         cfile.write('#include "pinsx.h"\n')
 
     for fname in CFILES:
-        cfile.write('#include "' + fname + '.h"\n')
+        cfile.write('#include "config/include/' + MYHW + '/' + fname + '.h"\n')
     for fname in CFILES:
-        cfile.write('#include "' + fname + '.c"\n')
+        cfile.write('#include "config/include/' + MYHW + '/' + fname + '.c"\n')
     cfile.close()
     pass
 
@@ -176,7 +176,7 @@ def mymakedir(path):
     except FileExistsError:
         pass        
 
-def generate_c_for_hardware(slavedevices, server_flag):
+def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     mymakedir(MYINCLUDE + '/' + MYHW)
     mymakedir(MYINTERMEDIATE + '/' + MYHW)
     signals_name = merge_jsons('signals.json', 'signals')
@@ -185,7 +185,7 @@ def generate_c_for_hardware(slavedevices, server_flag):
     network_name = merge_jsons('network_defaults.json', 'network')
     compress_json(signals_name + '-merged')
     signals_to_c(server_flag, signals_name, pins_name)
-    bin_json_to_c('ioapp_' + signals_name + '_config', signals_name + '-merged', 'info-mblk')
+    bin_json_to_c('ioapp_' + signals_name + '_config', signals_name + '-merged', signals_name + '-info-mblk')
     if pins_name != None:
         if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + pins_name + '-merged.json'):
             pins_to_c(pins_name, signals_name)
@@ -196,10 +196,10 @@ def generate_c_for_hardware(slavedevices, server_flag):
     for device in slavedevices:
         path_hw = device.split(',')
         slave_device_signals_to_c(path_hw[0], path_hw[1])
-    make_common_header()
-    make_common_cfile()
+    make_common_header(common_c_file)
+    make_common_cfile(common_c_file)
 
-def generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, server_flag):
+def generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, server_flag, common_c_file):
     # Generate list of HW configurations
     hw_list = []
     append_subdirectories(hw_list, confpath + '/signals')
@@ -210,11 +210,11 @@ def generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, s
     # Loop trough hardware configurations. If none, use 'generic'
     if len(hw_list) == 0:
         setup_environment(confpath, 'generic', coderoot, pythoncmd)
-        generate_c_for_hardware(slavedevices, server_flag)
+        generate_c_for_hardware(slavedevices, server_flag, common_c_file)
     else:
         for hw in hw_list:
             setup_environment(confpath, hw, coderoot, pythoncmd)
-            generate_c_for_hardware(slavedevices, server_flag)
+            generate_c_for_hardware(slavedevices, server_flag, common_c_file)
 
 def runcmd(cmd):
     stream = os.popen(cmd)
@@ -230,10 +230,11 @@ def mymain():
     coderoot = None
     pythoncmd = None
     server_flag = None
+    common_c_file = 'json_io_config'
     for i in range(1, n):
         if sys.argv[i][0] == "-":
             switch = sys.argv[i][1]
-            if switch == 'r' or switch == 'p' or switch == 'l' or switch == 'd' or switch == 'a':
+            if switch == 'r' or switch == 'p' or switch == 'l' or switch == 'd' or switch == 'a' or switch == 'c':
                 expect = switch
         else:
             if expect=='r':
@@ -254,6 +255,9 @@ def mymain():
             elif expect=='a':
                 server_flag = sys.argv[i]
                 expect = None
+            elif expect=='c':
+                common_c_file = sys.argv[i]
+                expect = None
             else:
                 sourcepaths.append(sys.argv[i])
 
@@ -272,6 +276,6 @@ def mymain():
 
     for confpath in sourcepaths:
         print("Processing path " + confpath)
-        generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, server_flag)
+        generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, server_flag, common_c_file)
 
 mymain()
