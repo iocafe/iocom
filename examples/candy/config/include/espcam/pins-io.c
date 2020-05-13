@@ -14,13 +14,13 @@ static os_ushort pins_analog_inputs_ambient_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 409
 static os_ushort pins_analog_inputs_unused_pin_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
 
 /* Parameters for pwm */
-static os_ushort pins_pwm_headlight_prm[]= {PIN_RV, PIN_RV, PIN_FREQENCY, 5000, PIN_MAX, 4095, PIN_INIT, 0, PIN_RESOLUTION, 12};
+static os_ushort pins_pwm_headlight_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095, PIN_RESOLUTION, 12, PIN_FREQENCY, 5000, PIN_INIT, 0};
 
 /* Parameters for cameras */
 static os_ushort pins_cameras_camera_prm[]= {PIN_RV, PIN_RV};
 
 /* Parameters for uart */
-static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_SPEED, 1152, PIN_RX, 16, PIN_TX, 2};
+static os_ushort pins_uart_uart2_prm[]= {PIN_RV, PIN_RV, PIN_RX, 16, PIN_TX, 2, PIN_SPEED, 1152};
 
 /* CANDY IO configuration structure */
 OS_FLASH_MEM pins_t pins =

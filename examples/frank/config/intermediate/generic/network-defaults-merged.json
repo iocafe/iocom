@@ -1,0 +1,39 @@
+{
+    "network": {
+        "security": [
+            {
+                "certchainfile": "myhome-bundle.crt",
+                "keyfile": "secret/myhome.key",
+                "certfile": "myhome.crt"
+            }
+        ],
+        "title": "Network configuration defaults",
+        "network_name": "iocafenet",
+        "device_nr": "*",
+        "connect": [
+            {
+                "transport": "none",
+                "flags": "connect,down,cloud",
+                "parameters": "127.0.0.1:6367"
+            },
+            {
+                "transport": "tls",
+                "flags": "listen,down",
+                "parameters": "*:6369"
+            },
+            {
+                "transport": "none",
+                "flags": "listen,down",
+                "parameters": "[*]:6369"
+            }
+        ],
+        "password": "",
+        "nic": [
+            {
+                "send_udp": 1,
+                "ip": "*"
+            }
+        ],
+        "publish": "iocafenet,asteroidnet"
+    }
+}

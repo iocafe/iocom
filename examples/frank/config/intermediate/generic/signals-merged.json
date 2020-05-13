@@ -1,0 +1,125 @@
+{
+    "name": "frank",
+    "mblk": [
+        {
+            "groups": [
+                {
+                    "name": "state",
+                    "signals": [
+                        {
+                            "name": "nro_devices",
+                            "type": "int"
+                        },
+                        {
+                            "name": "test",
+                            "type": "boolean"
+                        }
+                    ]
+                }
+            ],
+            "name": "exp",
+            "title": "Exported by the IO controller",
+            "flags": "up"
+        },
+        {
+            "groups": [
+                {
+                    "name": "control",
+                    "signals": [
+                        {
+                            "name": "restart",
+                            "type": "boolean"
+                        }
+                    ]
+                }
+            ],
+            "name": "imp",
+            "title": "Imported by the IO controller",
+            "flags": "down"
+        },
+        {
+            "groups": [
+                {
+                    "name": "transfer to device",
+                    "signals": [
+                        {
+                            "name": "tod_state",
+                            "type": "char"
+                        },
+                        {
+                            "name": "tod_tail",
+                            "type": "int"
+                        }
+                    ]
+                },
+                {
+                    "name": "transfer from device",
+                    "signals": [
+                        {
+                            "name": "frd_state",
+                            "type": "char"
+                        },
+                        {
+                            "name": "frd_head",
+                            "type": "int"
+                        },
+                        {
+                            "name": "frd_buf",
+                            "array": 257,
+                            "type": "uchar"
+                        }
+                    ]
+                }
+            ],
+            "name": "conf_exp",
+            "title": "IO device's configuration signal exports",
+            "flags": "up,conf"
+        },
+        {
+            "groups": [
+                {
+                    "name": "transfer to device",
+                    "signals": [
+                        {
+                            "name": "tod_cmd",
+                            "type": "char"
+                        },
+                        {
+                            "name": "tod_select",
+                            "type": "char"
+                        },
+                        {
+                            "name": "tod_head",
+                            "type": "int"
+                        },
+                        {
+                            "name": "tod_buf",
+                            "array": 257,
+                            "type": "uchar"
+                        }
+                    ]
+                },
+                {
+                    "name": "transfer from device",
+                    "signals": [
+                        {
+                            "name": "frd_cmd",
+                            "type": "char"
+                        },
+                        {
+                            "name": "frd_select",
+                            "type": "uchar"
+                        },
+                        {
+                            "name": "frd_tail",
+                            "type": "int"
+                        }
+                    ]
+                }
+            ],
+            "name": "conf_imp",
+            "title": "IO device's configuration signal imports",
+            "flags": "down,conf"
+        }
+    ]
+}

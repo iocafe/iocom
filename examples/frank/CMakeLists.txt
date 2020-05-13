@@ -26,7 +26,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
 # Include communication signal configuration.
-include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include")
+include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/generic")
 
 # Add iocom, nodeconf, ioserver, lighthouse and devicedir to include path.
 include_directories("$ENV{E_ROOT}/iocom")

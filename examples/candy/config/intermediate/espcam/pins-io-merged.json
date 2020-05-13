@@ -3,138 +3,138 @@
         {
             "groups": [
                 {
-                    "name": "inputs",
                     "pins": [
                         {
-                            "name": "gazerbeam",
                             "interrupt": 1,
-                            "addr": 12
+                            "addr": 12,
+                            "name": "gazerbeam"
                         }
-                    ]
+                    ],
+                    "name": "inputs"
                 },
                 {
-                    "name": "outputs",
                     "pins": [
                         {
-                            "name": "led_morse",
-                            "addr": 15
+                            "addr": 15,
+                            "name": "led_morse"
                         },
                         {
-                            "name": "led_builtin",
-                            "addr": 33
+                            "addr": 33,
+                            "name": "led_builtin"
                         }
-                    ]
+                    ],
+                    "name": "outputs"
                 },
                 {
-                    "name": "analog_inputs",
                     "pins": [
                         {
-                            "name": "ambient",
+                            "addr": 13,
                             "max": 4095,
-                            "addr": 13
+                            "name": "ambient"
                         },
                         {
-                            "name": "unused_pin",
+                            "addr": 14,
                             "max": 4095,
-                            "addr": 14
+                            "name": "unused_pin"
                         }
-                    ]
+                    ],
+                    "name": "analog_inputs"
                 },
                 {
-                    "name": "pwm",
                     "pins": [
                         {
-                            "resolution": 12,
-                            "init": 0,
                             "bank": 1,
-                            "name": "headlight",
-                            "max": 4095,
                             "addr": 4,
+                            "max": 4095,
+                            "name": "headlight",
+                            "init": 0,
+                            "resolution": 12,
                             "frequency": 5000
                         }
-                    ]
+                    ],
+                    "name": "pwm"
                 },
                 {
-                    "name": "cameras",
                     "pins": [
                         {
                             "name": "camera"
                         }
-                    ]
+                    ],
+                    "name": "cameras"
                 },
                 {
-                    "name": "uart",
                     "pins": [
                         {
                             "rx": 16,
-                            "name": "uart2",
-                            "tx": 2,
+                            "addr": 0,
                             "speed": 1152,
-                            "addr": 0
+                            "tx": 2,
+                            "name": "uart2"
                         }
-                    ]
+                    ],
+                    "name": "uart"
                 },
                 {
-                    "name": "debugger",
                     "pins": [
                         {
-                            "name": "AD1_TDI",
-                            "addr": 12
+                            "addr": 12,
+                            "name": "AD1_TDI"
                         },
                         {
-                            "name": "AD0_TCK",
-                            "addr": 13
+                            "addr": 13,
+                            "name": "AD0_TCK"
                         },
                         {
-                            "name": "AD3_TMS",
-                            "addr": 14
+                            "addr": 14,
+                            "name": "AD3_TMS"
                         },
                         {
-                            "name": "AD2_TDO",
-                            "addr": 15
+                            "addr": 15,
+                            "name": "AD2_TDO"
                         },
                         {
-                            "name": "U0_TXD",
-                            "addr": 1
+                            "addr": 1,
+                            "name": "U0_TXD"
                         },
                         {
-                            "name": "U0_RXD",
-                            "addr": 3
+                            "addr": 3,
+                            "name": "U0_RXD"
                         }
-                    ]
+                    ],
+                    "name": "debugger"
                 },
                 {
-                    "name": "devboard",
                     "pins": [
                         {
-                            "name": "DEV_SCK",
-                            "addr": 6
+                            "addr": 6,
+                            "name": "DEV_SCK"
                         },
                         {
-                            "name": "DEV_SDO",
-                            "addr": 7
+                            "addr": 7,
+                            "name": "DEV_SDO"
                         },
                         {
-                            "name": "DEV_SDI",
-                            "addr": 8
+                            "addr": 8,
+                            "name": "DEV_SDI"
                         },
                         {
-                            "name": "DEV_SHD",
-                            "addr": 9
+                            "addr": 9,
+                            "name": "DEV_SHD"
                         },
                         {
-                            "name": "DEV_SWP",
-                            "addr": 10
+                            "addr": 10,
+                            "name": "DEV_SWP"
                         },
                         {
-                            "name": "DEV_CSC",
-                            "addr": 11
+                            "addr": 11,
+                            "name": "DEV_CSC"
                         }
-                    ]
+                    ],
+                    "name": "devboard"
                 }
             ],
-            "name": "candy",
-            "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware"
+            "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware",
+            "name": "candy"
         }
     ]
 }

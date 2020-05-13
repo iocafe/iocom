@@ -1,4 +1,4 @@
-/* This file is gerated by signals-to-c.py script, do not modify. */
+/* This file is gerated by signals_to_c.py script, do not modify. */
 void frank_init_signal_struct(frank_t *s)
 {
   os_memclear(s, sizeof(frank_t));

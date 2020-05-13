@@ -117,7 +117,8 @@ def pins_to_c():
 
 def signals_to_c(server_flag):
     cmd = SIGNALSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/signals-merged.json '
-    cmd += '-p ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
+    if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json'):
+        cmd += '-p ' + MYINTERMEDIATE + '/' + MYHW + '/pins-io-merged.json '
     cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/signals.c'
     if server_flag != None:
         cmd += ' -a ' + server_flag
@@ -252,7 +253,8 @@ def mymain():
     if len(sourcepaths) < 1:
         print("No source files")
 #        exit()
-        sourcepaths.append('/coderoot/iocom/examples/candy/config')
+#        sourcepaths.append('/coderoot/iocom/examples/candy/config')
+        sourcepaths.append('/coderoot/dehec-ref/dref/config')
 
     # Run slave device and library configuration scripts
     for lib in conflibs:

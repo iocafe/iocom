@@ -2,8 +2,6 @@
 "name": "frank",
 "mblk": [
 	{
-		"name": "exp",
-		"flags": "up",
 		"groups": [
 			{
 				"name": "state",
@@ -18,11 +16,11 @@
 					}
 				]
 			}
-		]
+		],
+		"name": "exp",
+		"flags": "up"
 	},
 	{
-		"name": "imp",
-		"flags": "down",
 		"groups": [
 			{
 				"name": "control",
@@ -33,14 +31,14 @@
 					}
 				]
 			}
-		]
+		],
+		"name": "imp",
+		"flags": "down"
 	},
 	{
-		"name": "conf_exp",
-		"flags": "up,conf",
 		"groups": [
 			{
-				"name": "transfer to the IO node",
+				"name": "transfer to device",
 				"signals": [
 					{
 						"name": "tod_state",
@@ -53,7 +51,7 @@
 				]
 			},
 			{
-				"name": "transfer from IO node",
+				"name": "transfer from device",
 				"signals": [
 					{
 						"name": "frd_state",
@@ -65,19 +63,19 @@
 					},
 					{
 						"name": "frd_buf",
-						"type": "uchar",
-						"array": 257
+						"array": 257,
+						"type": "uchar"
 					}
 				]
 			}
-		]
+		],
+		"name": "conf_exp",
+		"flags": "up,conf"
 	},
 	{
-		"name": "conf_imp",
-		"flags": "down,conf",
 		"groups": [
 			{
-				"name": "transfer to IO node",
+				"name": "transfer to device",
 				"signals": [
 					{
 						"name": "tod_cmd",
@@ -93,13 +91,13 @@
 					},
 					{
 						"name": "tod_buf",
-						"type": "uchar",
-						"array": 257
+						"array": 257,
+						"type": "uchar"
 					}
 				]
 			},
 			{
-				"name": "transfer from IO node",
+				"name": "transfer from device",
 				"signals": [
 					{
 						"name": "frd_cmd",
@@ -115,7 +113,9 @@
 					}
 				]
 			}
-		]
+		],
+		"name": "conf_imp",
+		"flags": "down,conf"
 	}
 ]
 }

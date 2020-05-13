@@ -1,6 +1,17 @@
 {
+"assembly": [
+	{
+		"imp": "imp.rec_",
+		"type": "camera",
+		"name": "camera",
+		"exp": "exp.rec_"
+	}
+],
+"name": "candy",
 "mblk": [
 	{
+		"flags": "up",
+		"name": "exp",
 		"groups": [
 			{
 				"signals": [
@@ -45,11 +56,11 @@
 				],
 				"name": "camera up"
 			}
-		],
-		"flags": "up",
-		"name": "exp"
+		]
 	},
 	{
+		"flags": "down",
+		"name": "imp",
 		"groups": [
 			{
 				"signals": [
@@ -92,11 +103,11 @@
 				],
 				"name": "camera down"
 			}
-		],
-		"flags": "down",
-		"name": "imp"
+		]
 	},
 	{
+		"flags": "up,conf",
+		"name": "conf_exp",
 		"groups": [
 			{
 				"signals": [
@@ -129,11 +140,11 @@
 				],
 				"name": "transfer from device"
 			}
-		],
-		"flags": "up,conf",
-		"name": "conf_exp"
+		]
 	},
 	{
+		"flags": "down,conf",
+		"name": "conf_imp",
 		"groups": [
 			{
 				"signals": [
@@ -174,18 +185,7 @@
 				],
 				"name": "transfer from device"
 			}
-		],
-		"flags": "down,conf",
-		"name": "conf_imp"
+		]
 	}
-],
-"assembly": [
-	{
-		"exp": "exp.rec_",
-		"type": "camera",
-		"imp": "imp.rec_",
-		"name": "camera"
-	}
-],
-"name": "candy"
+]
 }
