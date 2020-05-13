@@ -1,22 +1,5 @@
 {
 "network" : {
-	"network_name": "iocafenet",
-	"security": [
-		{
-			"certfile": "myhome.crt",
-			"keyfile": "secret/myhome.key",
-			"certchainfile": "myhome-bundle.crt"
-		}
-	],
-	"publish": "iocafenet,asteroidnet",
-	"nic": [
-		{
-			"ip": "*",
-			"send_udp": 1
-		}
-	],
-	"device_nr": "*",
-	"password": "",
 	"connect": [
 		{
 			"flags": "connect,down,cloud",
@@ -32,6 +15,23 @@
 			"flags": "listen,down",
 			"parameters": "[*]:6369",
 			"transport": "none"
+		}
+	],
+	"publish": "iocafenet,asteroidnet",
+	"network_name": "iocafenet",
+	"device_nr": "*",
+	"password": "",
+	"nic": [
+		{
+			"ip": "*",
+			"send_udp": 1
+		}
+	],
+	"security": [
+		{
+			"certfile": "myhome.crt",
+			"certchainfile": "myhome-bundle.crt",
+			"keyfile": "secret/myhome.key"
 		}
 	]
 }

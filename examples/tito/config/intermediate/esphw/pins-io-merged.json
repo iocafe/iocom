@@ -1,42 +1,39 @@
 {
     "io": [
         {
-            "name": "tito",
-            "title": "IO pin setup for the 'tito' application on 'carol' hardware",
             "groups": [
                 {
-                    "name": "inputs",
                     "pins": [
                         {
+                            "interrupt": 1,
                             "name": "gazerbeam",
-                            "addr": 39,
-                            "interrupt": 1
+                            "addr": 39
                         }
-                    ]
+                    ],
+                    "name": "inputs"
                 },
                 {
-                    "name": "outputs",
                     "pins": [
                         {
                             "name": "led_builtin",
                             "addr": 33
                         }
-                    ]
+                    ],
+                    "name": "outputs"
                 },
                 {
-                    "name": "uart",
                     "pins": [
                         {
-                            "name": "uart2",
                             "tx": 17,
+                            "rx": 16,
                             "speed": 96,
-                            "addr": 2,
-                            "rx": 16
+                            "name": "uart2",
+                            "addr": 2
                         }
-                    ]
+                    ],
+                    "name": "uart"
                 },
                 {
-                    "name": "debugger",
                     "pins": [
                         {
                             "name": "AD1_TDI",
@@ -62,10 +59,10 @@
                             "name": "U0_RXD",
                             "addr": 3
                         }
-                    ]
+                    ],
+                    "name": "debugger"
                 },
                 {
-                    "name": "devboard",
                     "pins": [
                         {
                             "name": "DEV_SCK",
@@ -91,9 +88,12 @@
                             "name": "DEV_CSC",
                             "addr": 11
                         }
-                    ]
+                    ],
+                    "name": "devboard"
                 }
-            ]
+            ],
+            "title": "IO pin setup for the 'tito' application on 'carol' hardware",
+            "name": "tito"
         }
     ]
 }

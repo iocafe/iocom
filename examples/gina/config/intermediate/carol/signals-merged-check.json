@@ -1,4 +1,12 @@
 {
+"assembly": [
+	{
+		"imp": "imp.rec_",
+		"exp": "exp.rec_",
+		"type": "camera",
+		"name": "camera"
+	}
+],
 "mblk": [
 	{
 		"flags": "up",
@@ -10,13 +18,13 @@
 						"name": "frame_rate"
 					},
 					{
-						"array": 5,
 						"type": "float",
+						"array": 5,
 						"name": "testfloat"
 					},
 					{
-						"array": 10,
 						"type": "str",
+						"array": 10,
 						"name": "teststr"
 					},
 					{
@@ -50,8 +58,8 @@
 						"name": "rec_head"
 					},
 					{
-						"array": 8192,
 						"type": "uchar",
+						"array": 8192,
 						"name": "rec_buf"
 					}
 				],
@@ -66,13 +74,13 @@
 			{
 				"signals": [
 					{
-						"array": 16,
 						"type": "str",
+						"array": 16,
 						"name": "strtodevice"
 					},
 					{
-						"array": 8,
 						"type": "boolean",
+						"array": 8,
 						"name": "seven_segment"
 					}
 				],
@@ -81,8 +89,8 @@
 			{
 				"signals": [
 					{
-						"max": 100,
 						"type": "ushort",
+						"max": 100,
 						"name": "dimmer_led"
 					}
 				],
@@ -144,8 +152,8 @@
 						"name": "frd_head"
 					},
 					{
-						"array": 257,
 						"type": "uchar",
+						"array": 257,
 						"name": "frd_buf"
 					}
 				],
@@ -172,8 +180,8 @@
 						"name": "tod_head"
 					},
 					{
-						"array": 257,
 						"type": "uchar",
+						"array": 257,
 						"name": "tod_buf"
 					}
 				],
@@ -198,14 +206,6 @@
 			}
 		],
 		"name": "conf_imp"
-	}
-],
-"assembly": [
-	{
-		"exp": "exp.rec_",
-		"imp": "imp.rec_",
-		"type": "camera",
-		"name": "camera"
 	}
 ],
 "name": "gina"

@@ -14,7 +14,7 @@ static os_ushort pins_analog_inputs_ambient_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 409
 static os_ushort pins_analog_inputs_unused_pin_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095};
 
 /* Parameters for pwm */
-static os_ushort pins_pwm_headlight_prm[]= {PIN_RV, PIN_RV, PIN_MAX, 4095, PIN_FREQENCY, 5000, PIN_RESOLUTION, 12, PIN_INIT, 0};
+static os_ushort pins_pwm_headlight_prm[]= {PIN_RV, PIN_RV, PIN_INIT, 0, PIN_FREQENCY, 5000, PIN_MAX, 4095, PIN_RESOLUTION, 12};
 
 /* Parameters for cameras */
 static os_ushort pins_cameras_camera_prm[]= {PIN_RV, PIN_RV};
