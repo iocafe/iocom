@@ -449,7 +449,7 @@ static PyObject *MemoryBlock_write(
     }
 
     PyBytes_AsStringAndSize(pydata, &buffer, &length);
-    ioc_write(&self->mblk_handle, pyaddr, buffer, length, 0);
+    ioc_write(&self->mblk_handle, pyaddr, buffer, (os_int)length, 0);
 
     Py_RETURN_NONE;
 }
@@ -514,7 +514,7 @@ static PyObject *MemoryBlock_publish(
     if (pydata)
     {
         PyBytes_AsStringAndSize(pydata, &buffer, &length);
-        ioc_write(&self->mblk_handle, pyaddr, buffer, length, 0);
+        ioc_write(&self->mblk_handle, pyaddr, buffer, (os_int)length, 0);
     }
 
     /* Publish block content as dynamic structure. Resize memory block (make bigger only).

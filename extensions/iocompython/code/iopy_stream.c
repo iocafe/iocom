@@ -265,8 +265,8 @@ static PyObject *Stream_start_write(
     }
 
     PyBytes_AsStringAndSize(pydata, &buffer, &length);
-    if (count < 0) count = length;
-    if (pos + count > length) count = length - pos;
+    if (count < 0) count = (int)length;
+    if (pos + count > length) count = (int)(length - pos);
     if (count < 0) count = 0;
     ioc_start_stream_write(self->stream, buffer + pos, count, OS_TRUE);
 
@@ -568,8 +568,8 @@ PyObject *iocom_stream_setconf(
         OSAL_STRING_SEARCH_ITEM_NAME) ?  IOC_IS_DEVICE : IOC_IS_CONTROLLER);
 
     PyBytes_AsStringAndSize(pydata, &buffer, &length);
-    if (count < 0) count = length;
-    if (pos + count > length) count = length - pos;
+    if (count < 0) count = (int)length;
+    if (pos + count > length) count = (int)length - pos;
     if (count < 0) count = 0;
     ioc_start_stream_write(stream, buffer + pos, count, OS_TRUE);
 
