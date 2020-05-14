@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "tito")
-set(E_HW "esphw")
+set(E_HW "generic")
 project(${E_PROJECT})
 
 # include build information common to all projects.
