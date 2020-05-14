@@ -69,7 +69,6 @@ void devicedir_append_int_param(
     os_char nbuf[OSAL_NBUF_SZ];
 
     devicedir_append_organize(list, flags);
-    osal_stream_print_str(list, "\"", 0);
     osal_stream_print_str(list, param_name, 0);
     osal_stream_print_str(list, "\":", 0);
     osal_int_to_str(nbuf, sizeof(nbuf), x);
