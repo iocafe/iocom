@@ -90,8 +90,7 @@ extern iocSelectWiFi swf;
 ****************************************************************************************************
  */
 #ifdef SELECTWIFI_INTERNALS
-#include "config/include/swf-info-mblk.h"
-#include "config/include/swf-signals.h"
+#include "json_selectwifi_config.h"
 #endif
 
 

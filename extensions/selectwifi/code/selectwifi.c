@@ -126,8 +126,8 @@ void ioc_initialize_selectwifi(
     ioc_initialize_memory_block(&swf.imp, &swf.imp_mblk, &swf.root, &blockprm);
 
     blockprm.mblk_name = "info";
-    blockprm.buf = (char*)&selectwifi_signal_config;
-    blockprm.nbytes = sizeof(selectwifi_signal_config);
+    blockprm.buf = (char*)&ioapp_selectwifi_signals_config;
+    blockprm.nbytes = sizeof(ioapp_selectwifi_signals_config);
     blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
     ioc_initialize_memory_block(&swf.info, &swf.info_mblk, &swf.root, &blockprm);
 

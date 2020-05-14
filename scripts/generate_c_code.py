@@ -8,7 +8,7 @@ import sys
 def setup_environment(confpath, hw, coderoot, pythoncmd):
     global MYHW, MYPYTHON,  CODEROOT, JSONTOOL, PINSTOC, BINTOC, SIGNALSTOC, MERGEJSON, MYIMPORTS
     global MYCONFIG, MYSIGNALS, MYPINS, MYPARAMETERS, MYNETWORK, MYINCLUDE, MYINTERMEDIATE, CFILES
-     
+
     MYHW = hw
     if platform.system() == 'Windows':
         MYPYTHON = 'python'
@@ -42,7 +42,7 @@ def setup_environment(confpath, hw, coderoot, pythoncmd):
 
 def append_subdirectories(subdirs, path):
     try:
-        dirlist = [fname for fname in os.listdir(path) if os.path.isdir(os.path.join(path, fname))]    
+        dirlist = [fname for fname in os.listdir(path) if os.path.isdir(os.path.join(path, fname))]
     except FileNotFoundError:
         return
     for fname in dirlist:
@@ -80,14 +80,14 @@ def merge_jsons(default_file, confdir):
     merge_data = read_json('merge.json', confdir)
     if merge_data == None:
         merge_list = [default_file]
-    else:        
+    else:
         merge_list = merge_data.get('merge', None)
         if merge_list == None:
             print("Merge data for '" + confdir + "' is erronous.")
             exit()
         rval = merge_list[0]
     rval, ext = os.path.splitext(rval)
-    cmd = MERGEJSON 
+    cmd = MERGEJSON
     for f in merge_list:
         path = get_exact_path(f, confdir)
         if path == None:
@@ -95,7 +95,7 @@ def merge_jsons(default_file, confdir):
                 return None
             print("File '" + f + "' not found for '" + confdir + "'.")
             exit()
-        cmd += ' ' + path 
+        cmd += ' ' + path
     # filename, file_extension = os.path.splitext(default_file)
     cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + rval + '-merged.json'
     runcmd(cmd)
@@ -133,7 +133,7 @@ def signals_to_c(server_flag, signals_name, pins_name):
 def slave_device_signals_to_c(slavepath, hw):
     if hw == '*':
         hw = MYHW
-    path, slavedevicename = os.path.split(slavepath)        
+    path, slavedevicename = os.path.split(slavepath)
     cmd = SIGNALSTOC + ' -a controller-static ' + slavepath + '/config/intermediate/' + hw + '/signals-merged.json '
     cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/' + slavedevicename + '-signals.c'
     CFILES.append(slavedevicename + '-signals')
@@ -170,11 +170,11 @@ def make_common_cfile(common_c_file):
     pass
 
 def mymakedir(path):
-    # Make sure that "include" and "intermediate" directories exists. 
+    # Make sure that "include" and "intermediate" directories exists.
     try:
         os.makedirs(path)
     except FileExistsError:
-        pass        
+        pass
 
 def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     mymakedir(MYINCLUDE + '/' + MYHW)
@@ -186,7 +186,7 @@ def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     accounts_name = merge_jsons('account_defaults.json', 'accounts')
     compress_json(signals_name + '-merged')
     signals_to_c(server_flag, signals_name, pins_name)
-    bin_json_to_c('ioapp_' + signals_name + '_config', signals_name + '-merged', signals_name + '-info-mblk')
+    bin_json_to_c('ioapp_' + signals_name + '_config', signals_name + '-merged', signals_name + '_info_mblk')
     if pins_name != None:
         if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + pins_name + '-merged.json'):
             pins_to_c(pins_name, signals_name)

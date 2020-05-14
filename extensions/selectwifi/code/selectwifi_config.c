@@ -17,6 +17,4 @@
 */
 #define SELECTWIFI_INTERNALS
 #include "selectwifi.h"
-
-#include "config/include/swf-info-mblk.c"
-#include "config/include/swf-signals.c"
+#include "json_selectwifi_config.c"

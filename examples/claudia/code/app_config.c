@@ -16,14 +16,3 @@
 ****************************************************************************************************
 */
 #include "json_io_config.c"
-
-/* #include "iocom.h"
-#include "signals.h"
-#include "info-mblk-binary.h"
-#include "network-defaults.h"
-#include "app-account-defaults.h"
-#include "signals.c"
-#include "info-mblk-binary.c"
-#include "network-defaults.c"
-#include "app-account-defaults.c"
-*/

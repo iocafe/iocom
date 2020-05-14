@@ -18,7 +18,6 @@ def runcmd(cmd):
 
 cmd = MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG
 cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON 
-cmd += ' -a controller-static'
 cmd += ' -c json_selectwifi_config'
 runcmd(cmd)
 
