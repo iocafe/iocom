@@ -284,7 +284,7 @@ osalStatus ioc_listen(
         osalThreadOptParams opt;
         os_memclear(&opt, sizeof(osalThreadOptParams));
         opt.thread_name = "endpoint";
-        opt.stack_size = 4000;
+        /* opt.stack_size = 4000; */
         opt.pin_to_core = OS_TRUE;
         opt.pin_to_core_nr = 0;
 
