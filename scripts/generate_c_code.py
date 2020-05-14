@@ -101,8 +101,10 @@ def merge_jsons(default_file, confdir):
     runcmd(cmd)
     return rval
 
-def compress_json(fname):
+def compress_json(fname, extra_args):
     cmd = JSONTOOL + ' --t2b -title '
+    if extra_args != None:
+        cmd += extra_args + ' '
     cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '.json '
     cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '.binjson'
     runcmd(cmd)
@@ -184,7 +186,7 @@ def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     pins_name = merge_jsons('pins_io.json', 'pins')
     network_name = merge_jsons('network_defaults.json', 'network')
     accounts_name = merge_jsons('account_defaults.json', 'accounts')
-    compress_json(signals_name + '-merged')
+    compress_json(signals_name + '-merged', None)
     signals_to_c(server_flag, signals_name, pins_name)
     bin_json_to_c('ioapp_' + signals_name + '_config', signals_name + '-merged', signals_name + '_info_mblk')
     if pins_name != None:
@@ -192,11 +194,11 @@ def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
             pins_to_c(pins_name, signals_name)
     if network_name != None:
         if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + network_name + '-merged.json'):
-            compress_json(network_name + '-merged')
+            compress_json(network_name + '-merged', None)
             bin_json_to_c('ioapp_' + network_name, network_name + '-merged', network_name)
     if accounts_name != None:
         if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + accounts_name + '-merged.json'):
-            compress_json(accounts_name + '-merged')
+            compress_json(accounts_name + '-merged', '--hash-pw')
             bin_json_to_c('ioapp_' + accounts_name, accounts_name + '-merged', accounts_name)
     for device in slavedevices:
         path_hw = device.split(',')
