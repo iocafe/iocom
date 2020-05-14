@@ -903,6 +903,10 @@ void ioc_receive_nolock(
     os_int bitsi;
 #endif
 
+    /* Ignore data, if we are receiving data into a static memory block?
+     */
+    if (mblk->flags & IOC_STATIC) return;
+
     /* We usually have only one target buffer. Multiple target buffers relate to special
      * options like bidirectional transfers and perhaps redundancy in future.
      */
