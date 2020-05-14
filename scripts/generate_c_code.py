@@ -183,6 +183,7 @@ def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     parameters_name = merge_jsons('parameters.json', 'parameters')
     pins_name = merge_jsons('pins-io.json', 'pins')
     network_name = merge_jsons('network_defaults.json', 'network')
+    accounts_name = merge_jsons('account_defaults.json', 'accounts')
     compress_json(signals_name + '-merged')
     signals_to_c(server_flag, signals_name, pins_name)
     bin_json_to_c('ioapp_' + signals_name + '_config', signals_name + '-merged', signals_name + '-info-mblk')
@@ -193,6 +194,10 @@ def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
         if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + network_name + '-merged.json'):
             compress_json(network_name + '-merged')
             bin_json_to_c('ioapp_' + network_name, network_name + '-merged', network_name)
+    if accounts_name != None:
+        if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + accounts_name + '-merged.json'):
+            compress_json(accounts_name + '-merged')
+            bin_json_to_c('ioapp_' + accounts_name, accounts_name + '-merged', accounts_name)
     for device in slavedevices:
         path_hw = device.split(',')
         slave_device_signals_to_c(path_hw[0], path_hw[1])

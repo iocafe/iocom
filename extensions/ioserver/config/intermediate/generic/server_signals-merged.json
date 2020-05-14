@@ -1,7 +1,10 @@
 {
+    "name": "account_signals",
     "mblk": [
         {
+            "flags": "up",
             "name": "exp",
+            "title": "New device notification signals",
             "groups": [
                 {
                     "signals": [
@@ -95,12 +98,12 @@
                     ],
                     "name": "new devices"
                 }
-            ],
-            "title": "New device notification signals",
-            "flags": "up"
+            ]
         },
         {
+            "flags": "up,conf",
             "name": "conf_exp",
+            "title": "IO device's configuration signal exports",
             "groups": [
                 {
                     "signals": [
@@ -133,12 +136,12 @@
                     ],
                     "name": "transfer from device"
                 }
-            ],
-            "title": "IO device's configuration signal exports",
-            "flags": "up,conf"
+            ]
         },
         {
+            "flags": "down,conf",
             "name": "conf_imp",
+            "title": "IO device's configuration signal imports",
             "groups": [
                 {
                     "signals": [
@@ -179,10 +182,7 @@
                     ],
                     "name": "transfer from device"
                 }
-            ],
-            "title": "IO device's configuration signal imports",
-            "flags": "down,conf"
+            ]
         }
-    ],
-    "name": "account_signals"
+    ]
 }

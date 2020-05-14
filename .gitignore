@@ -85,3 +85,5 @@ CMakeCache.txt
 .externalNativeBuild
 # .cxx
 
+config/include
+config/intermediate

@@ -1,1 +1,1 @@
-{"merge": ["accounts.json",  "device-conf-signals.json"]}
+{"merge": ["server_signals.json",  "device_conf_signals.json"]}

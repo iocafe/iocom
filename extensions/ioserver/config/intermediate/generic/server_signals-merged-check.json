@@ -1,6 +1,8 @@
 {
+"name": "account_signals",
 "mblk": [
 	{
+		"flags": "up",
 		"name": "exp",
 		"groups": [
 			{
@@ -95,10 +97,10 @@
 				],
 				"name": "new devices"
 			}
-		],
-		"flags": "up"
+		]
 	},
 	{
+		"flags": "up,conf",
 		"name": "conf_exp",
 		"groups": [
 			{
@@ -132,10 +134,10 @@
 				],
 				"name": "transfer from device"
 			}
-		],
-		"flags": "up,conf"
+		]
 	},
 	{
+		"flags": "down,conf",
 		"name": "conf_imp",
 		"groups": [
 			{
@@ -177,9 +179,7 @@
 				],
 				"name": "transfer from device"
 			}
-		],
-		"flags": "down,conf"
+		]
 	}
-],
-"name": "account_signals"
+]
 }

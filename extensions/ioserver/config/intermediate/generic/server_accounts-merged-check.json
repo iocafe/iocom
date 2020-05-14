@@ -2,9 +2,9 @@
 "accounts" : {
 	"accounts": [
 		{
+			"privileges": "admin",
 			"user": "ispy*",
-			"password": "pass",
-			"privileges": "admin"
+			"password": "pass"
 		}
 	],
 	"whitelist": [
