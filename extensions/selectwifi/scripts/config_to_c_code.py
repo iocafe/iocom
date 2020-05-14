@@ -2,31 +2,27 @@
 import os
 import platform
 
-MYAPP = 'selectwifi'
 if platform.system() == 'Windows':
     MYPYTHON = 'python'
     MYCODEROOT = 'c:/coderoot'
-    JSONTOOL = MYCODEROOT + '/bin/win32/json'
 else:
     MYPYTHON = 'python3'
     MYCODEROOT = '/coderoot'
-    JSONTOOL = MYCODEROOT + '/bin/linux/json'
-BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin_to_c.py'
-SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals_to_c.py'
 
-MYCONFIG = MYCODEROOT + '/iocom/extensions/' + MYAPP + '/config'
-MYINCLUDE = MYCONFIG + '/include'
-MYSIGNALS = MYCONFIG + '/signals/signals'
+MYAPPCONFIG = MYCODEROOT + '/iocom/extensions/selectwifi/config'
 
 def runcmd(cmd):
     stream = os.popen(cmd)
     output = stream.read()
     print(output)
 
-runcmd(JSONTOOL + ' --t2b -title ' + MYSIGNALS + '.json ' + MYSIGNALS + '.binjson')
-runcmd(JSONTOOL + ' --b2t ' + MYSIGNALS + '.binjson ' + MYSIGNALS + '-check.json')
-runcmd(BINTOC + ' -v selectwifi_signal_config ' + MYSIGNALS + '.binjson -o ' + MYINCLUDE + '/swf-info-mblk.c')
-runcmd(SIGNALSTOC + ' ' + MYSIGNALS + '.json -o ' + MYINCLUDE + '/swf-signals.c')
+cmd = MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG
+cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON 
+cmd += ' -a controller-static'
+cmd += ' -c json_selectwifi_config'
+runcmd(cmd)
 
-print("*** Check that the output files have been generated (error checks are still missing).")
+print("*** Check that output files have been generated (error checks are imperfect).")
 print("*** You may need to recompile all C code since generated files in config/include folder are not in compiler dependencies.")
+print("*** For clean build delete contents of config/intermediate and config/include directories before running this script.")
+
