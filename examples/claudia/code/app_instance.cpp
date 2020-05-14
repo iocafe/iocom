@@ -78,6 +78,3 @@ osalStatus AppInstance::run()
 
     return OSAL_NOTHING_TO_DO;
 }
-
-
-

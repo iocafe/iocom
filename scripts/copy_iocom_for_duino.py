@@ -52,7 +52,7 @@ def copy_level_1(sourcedir,targetdir):
 
     # Copy code and extensions folders
     copy_level_2(sourcedir + '/code', targetdir, targetdir + '/code')
-#    copy_level_2(sourcedir + '/extensions', targetdir, targetdir + '/extensions')
+    copy_level_2(sourcedir + '/extensions/dynamicio', targetdir, targetdir + '/extensions/dynamicio')
 
     # Copy informative arduino files
     copy_info('library.json', sourcedir, targetdir)
