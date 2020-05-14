@@ -33,7 +33,7 @@ def setup_environment(confpath, hw, coderoot, pythoncmd):
 
     MYCONFIG = confpath
     MYSIGNALS = MYCONFIG + '/signals'
-    MYPINS = MYCONFIG + '/pins/' + MYHW + '/pins-io'
+    MYPINS = MYCONFIG + '/pins/' + MYHW + '/pins_io'
     MYPARAMETERS = MYCONFIG + '/parameters'
     MYNETWORK = MYCONFIG + '/network'
     MYINCLUDE = MYCONFIG + '/include'
@@ -159,7 +159,7 @@ def make_common_cfile(common_c_file):
 
     cfile.write('#define IOCOM_IOBOARD\n')
     cfile.write('#include "iocom.h"\n')
-    if "pins-io" in CFILES:
+    if "pins_io" in CFILES:
         cfile.write('#include "pinsx.h"\n')
 
     for fname in CFILES:
@@ -181,7 +181,7 @@ def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     mymakedir(MYINTERMEDIATE + '/' + MYHW)
     signals_name = merge_jsons('signals.json', 'signals')
     parameters_name = merge_jsons('parameters.json', 'parameters')
-    pins_name = merge_jsons('pins-io.json', 'pins')
+    pins_name = merge_jsons('pins_io.json', 'pins')
     network_name = merge_jsons('network_defaults.json', 'network')
     accounts_name = merge_jsons('account_defaults.json', 'accounts')
     compress_json(signals_name + '-merged')
