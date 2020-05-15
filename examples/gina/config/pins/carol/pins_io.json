@@ -52,7 +52,7 @@
       {
         "name": "uart",
         "pins": [
-          {"name": "uart2", "addr": 2, "rx": 16, "tx": 17, "speed": 96}
+          {"name": "comport", "addr": 2, "rx": 16, "tx": 17, "speed": 1152}
         ]
       },
       {
