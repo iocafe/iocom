@@ -17,9 +17,9 @@
                 "flags": "listen,down"
             },
             {
-                "transport": "none",
-                "parameters": "[*]:6369",
-                "flags": "listen,down"
+                "transport": "serial",
+                "parameters": "COM3:rxpin=16,txpin=17",
+                "flags": "connect,up"
             }
         ],
 
