@@ -1,8 +1,5 @@
 #include <Arduino.h>
 #include <eosalx.h>
-#include <iocom.h>
-#include <devicedir.h>
-#include <pins.h>
 #if OSAL_MULTITHREAD_SUPPORT
 #include <FreeRTOS.h>
 #endif
@@ -30,7 +27,7 @@ void loop()
      */
     if (osal_loop(osal_application_context)) osal_reboot(0);
 
-    /* ESP-IDF 3.X/MELIFE test board : We cannot write too fast through WiFi, WiFi will lock up.
+    /* ESP-IDF 3.X/MELIFE test board : We cannot run too fast, WiFi may lock up (unsure if this is power issue).
      */
 #ifdef ESP_PLATFORM
     os_sleep(3);
