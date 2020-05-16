@@ -270,9 +270,9 @@ def mymain():
 
     if len(sourcepaths) < 1:
         print("No source files")
-#        exit()
+        exit()
 #        sourcepaths.append('/coderoot/iocom/examples/candy/config')
-        sourcepaths.append('/coderoot/dehec-ref/dref/config')
+#        sourcepaths.append('/coderoot/iocom/examples/gina/config')
 
     # Run slave device and library configuration scripts
     for lib in conflibs:
