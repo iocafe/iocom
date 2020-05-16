@@ -16,7 +16,7 @@ def runcmd(cmd):
     output = stream.read()
     print(output)
 
-cmd = MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG + ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON
+cmd = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG + ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON
 cmd += ' -a controller-static '
 runcmd(cmd)
 

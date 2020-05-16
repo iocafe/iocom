@@ -16,8 +16,8 @@ def runcmd(cmd):
     output = stream.read()
     print(output)
 
-cmd = MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG
-cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON 
+cmd = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG
+cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON
 cmd += ' -c json_selectwifi_config'
 runcmd(cmd)
 
