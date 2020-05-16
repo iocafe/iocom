@@ -8,11 +8,6 @@
 #endif
 
 /*
-#include <SPI.h>
-#include <WiFi101.h>
-*/
-
-/*
   tito_platformio.ino
   To build it within Visual Studio Code and PlatformIO.
  */
