@@ -3,7 +3,14 @@
 #include <iocom.h>
 #include <devicedir.h>
 #include <pins.h>
+#if OSAL_MULTITHREAD_SUPPORT
 #include <FreeRTOS.h>
+#endif
+
+/*
+#include <SPI.h>
+#include <WiFi101.h>
+*/
 
 /*
   tito_platformio.ino
