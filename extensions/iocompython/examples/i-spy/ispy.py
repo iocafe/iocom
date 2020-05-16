@@ -35,18 +35,36 @@ class MainApp(App):
         self.ioc_params = args[2]
         transport_flag = self.ioc_params['transport'].lower();
 
+        if transport_flag == 'serial':
+            parameters = self.ioc_params['serport']
+        else:
+            parameters = self.ioc_params['ip']
+
         if self.ioc_params['role'] == "CLIENT":
-            self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
-            self.ioc_root.queue_events()
-            self.ioc_connection = Connection(self.ioc_root, parameters=self.ioc_params['ip'], flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user, password=ioc_password)
+            if transport_flag == 'tls':
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
+                self.ioc_root.queue_events()
+                self.ioc_connection = Connection(self.ioc_root, parameters=parameters, flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user, password=ioc_password)
+            else:
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet')
+                self.ioc_root.queue_events()
+                self.ioc_connection = Connection(self.ioc_root, parameters=parameters, flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user)
 
         else:
-            self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
-            self.ioc_root.queue_events()
-            self.ioc_epoint = EndPoint(self.ioc_root, flags= transport_flag + ',dynamic')
+            if transport_flag == 'tls':
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
+                self.ioc_root.queue_events()
+                self.ioc_epoint = EndPoint(self.ioc_root, flags=transport_flag + ',dynamic')
+            else:
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet')
+                self.ioc_root.queue_events()
+                    
+                if transport_flag == 'serial':
+                    self.ioc_epoint = EndPoint(self.ioc_root, parameters=parameters, flags=transport_flag + ',dynamic')
+                else:
+                    self.ioc_epoint = EndPoint(self.ioc_root, flags=transport_flag + ',dynamic')
 
         self.set_displayed_page(None, 'wait')
-
         self.start_mytimer() 
 
     def disconnect(self):
