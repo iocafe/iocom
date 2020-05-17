@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1 id="title">My First Heading</h1>
+
+<p>My first paragraph.</p>
+<button onclick="settitle()">set title</button>
+
+</body>
+<script type="text/javascript">
+
+function settitle()
+{
+fetch("http://127.0.0.1:5000/pekka")
+.then(responce => responce.text())
+.then(function (textResponse) { 
+    document.getElementById("title").innerHTML = textResponse;
+})
+.catch(function (error) {
+    alert(error);
+});
+}
+
+</script>
+</html>
