@@ -28,6 +28,9 @@ include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
 include_directories("$ENV{E_ROOT}/iocom/extensions/iocompython")
 
+# TEMP PATCH TO COMPILE ON UBUNTO 20.04
+include_directories("/usr/include/python3.8")
+
 # Add main headers.
 set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
 
