@@ -189,7 +189,6 @@ osalStatus osal_main(
     prm.receive_block_sz = GINA_IMP_MBLK_SZ;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
-    // prm.device_signal_hdr = &gina_hdr;
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
     prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
@@ -257,8 +256,13 @@ osalStatus osal_main(
     PINS_CAMERA_IFACE.initialize();
     os_memclear(&camera_prm, sizeof(camera_prm));
     camera_prm.camera_nr = 0;
+#ifdef PINS_CAMERAS_CCD
     camera_prm.camera_pin = &pins.cameras.ccd;
     camera_prm.timer_pin = &pins.timers.ccd_data;
+#endif
+#ifdef PINS_CAMERAS_CAMERA    
+    camera_prm.camera_pin = &pins.cameras.camera;
+#endif
     camera_prm.callback_func = ioboard_camera_callback;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
     PINS_CAMERA_IFACE.start(&pins_camera);

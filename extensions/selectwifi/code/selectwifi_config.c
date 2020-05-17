@@ -17,4 +17,4 @@
 */
 #define SELECTWIFI_INTERNALS
 #include "selectwifi.h"
-#include "json_selectwifi_config.c"
+#include "config/include/generic/json_selectwifi_config.c"

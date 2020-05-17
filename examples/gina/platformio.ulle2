@@ -1,17 +1,22 @@
 [platformio]
+
 src_dir = /coderoot/iocom/examples/gina/code
+lib_dir = /coderoot/lib/esp32
 build_dir = /tmp/gina_ioboard_tmp
 
 [env:esp32doit-devkit-v1]
 platform = espressif32
 board = esp32doit-devkit-v1
+; [env:esp32dev]
+; platform = espressif32
+; board = esp32dev
+
 framework = arduino
 board_build.f_cpu = 240000000L
 extra_scripts = pre:scripts/config_to_c_code.py
 
 lib_extra_dirs =
     /coderoot/arduino-esp32-master/libraries
-    /coderoot/lib/esp32
 
 build_flags =
     -Wall
@@ -44,22 +49,31 @@ lib_deps =
     WiFiClientSecure
 ;    FreeRTOS
     EEPROM
+;    lwip lwip is built in to ESP32 platform, not needed
+;    FreeRTOS Do not add FreeRTOS here, is built in to ESP32 platform, just add #include <FreeRTOS.h> in gina_platformio.ino
 
-upload_protocol = esp-prog
+; these are needed with esp32doit-devkit-v1
+;upload_protocol = esp-prog
 ;upload_port = /dev/ttyUSB0
 monitor_port = /dev/ttyUSB0
 monitor_speed = 115200
-debug_tool = esp-prog
+;debug_tool = esp-prog
+
+; these are needed with esp32dev (wroom board)
+; monitor_port = /dev/ttyUSB0
+; monitor_speed = 115200
+
 
 [env:esp32dev]
 platform = espressif32
 board = esp32dev
+
 framework = arduino
 board_build.f_cpu = 240000000L
 extra_scripts = pre:scripts/config_to_c_code.py
 
 lib_extra_dirs =
-    /coderoot/lib/esp32
+    /coderoot/arduino-esp32-master/libraries
 
 build_flags =
     -Wall
@@ -87,50 +101,21 @@ lib_deps =
     SPI
     FS
     SPIFFS
+;    BluetoothSerial
     WiFi
     WiFiClientSecure
+;    FreeRTOS
     EEPROM
+;    lwip lwip is built in to ESP32 platform, not needed
+;    FreeRTOS Do not add FreeRTOS here, is built in to ESP32 platform, just add #include <FreeRTOS.h> in gina_platformio.ino
 
+; these are needed with esp32doit-devkit-v1
+;upload_protocol = esp-prog
+;upload_port = /dev/ttyUSB0
 monitor_port = /dev/ttyUSB0
 monitor_speed = 115200
+;debug_tool = esp-prog
 
-[env:esp32cam]
-platform = espressif32
-board = esp32cam
-framework = arduino
-board_build.f_cpu = 240000000L
-lib_extra_dirs = /coderoot/lib/esp32
-extra_scripts = pre:scripts/config_to_c_code.py
-
-; IOC_USE_JPEG_COMPRESSION=0 Uses ESP32 inbuilt JPEG, generic implementation is not needed.
-
-build_flags =
-    -Wall
-    -fpermissive
-    -D OSAL_DEBUG=1
-    -D OSAL_TRACE=1
-    -D PINS_CAMERA=14
-    -D IOC_USE_JPEG_COMPRESSION=0
-    -D OSAL_SOCKET_SUPPORT=1
-    -D OSAL_TLS_SUPPORT=2
-    -D OSAL_SERIAL_SUPPORT=1
-    -D OSAL_BLUETOOTH_SUPPORT=0
-    -D OSAL_MULTITHREAD_SUPPORT=1
-    -D OSAL_PERSISTENT_SUPPORT=1
-    -D CORE_DEBUG_LEVEL=0
-    -D MBEDTLS_NET_C
-    -I /coderoot/eosal
-    -I /coderoot/eosal/dependencies/eosal_jpeg
-    -I /coderoot/iocom
-    -I /coderoot/iocom/extensions/devicedir
-    -I /coderoot/iocom/extensions/selectwifi
-    -I /coderoot/pins
-    -I /coderoot/iocom/examples/gina
-    -I /coderoot/iocom/examples/gina/config/include/espcam
-
-lib_deps =
-    eosal_jpeg
-    WiFi
-    EEPROM
-
-monitor_speed = 115200
+; these are needed with esp32dev (wroom board)
+; monitor_port = /dev/ttyUSB0
+; monitor_speed = 115200

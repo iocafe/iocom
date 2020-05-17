@@ -90,7 +90,7 @@ extern iocSelectWiFi swf;
 ****************************************************************************************************
  */
 #ifdef SELECTWIFI_INTERNALS
-#include "json_selectwifi_config.h"
+#include "config/include/generic/json_selectwifi_config.h"
 #endif
 
 

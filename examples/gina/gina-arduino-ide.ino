@@ -26,12 +26,12 @@ void loop()
     if (osal_loop(osal_application_context)) osal_reboot(0);
 
 #ifdef ESP_PLATFORM
-    /* ESP-IDF 3.X/MELIFE test board : We cannot write too fast through WiFi, WiFi will lock up.
+    /* ESP-IDF 3.X/MELIFE test board : We cannot run too fast, WiFi will lock up?
      */
-    os_sleep(20);
+    os_sleep(10);
 #endif
 }
 
-/* Include code for the application
+/* Include test code
  */
-#include "/coderoot/iocom/examples/ioboard_test/code/ioboard_example.c"
+// #include "/coderoot/iocom/examples/ioboard_test/code/ioboard_example.c"

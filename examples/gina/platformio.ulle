@@ -59,6 +59,7 @@ board_build.f_cpu = 240000000L
 extra_scripts = pre:scripts/config_to_c_code.py
 
 lib_extra_dirs =
+    /coderoot/arduino-esp32-master/libraries
     /coderoot/lib/esp32
 
 build_flags =
@@ -126,7 +127,7 @@ build_flags =
     -I /coderoot/iocom/extensions/selectwifi
     -I /coderoot/pins
     -I /coderoot/iocom/examples/gina
-    -I /coderoot/iocom/examples/gina/config/include/espcam
+    -I /coderoot/iocom/examples/gina/config/include/carol
 
 lib_deps =
     eosal_jpeg
