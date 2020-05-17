@@ -80,7 +80,7 @@ class AsteroidApp(object):
 
 def run_testapp(myapp):
     while (myapp.run()):
-        time.sleep(0.03)
+        time.sleep(0.02)
 
 def start(proot, network_name):
     global root

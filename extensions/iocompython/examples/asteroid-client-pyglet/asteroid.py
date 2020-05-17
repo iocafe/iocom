@@ -101,9 +101,9 @@ def update(dt):
     global total_array_n, data_vector_n, nro_objects
 
     keyboard_input(dt)
-    exp.send();
+    exp.send()
 
-    imp.receive();
+    imp.receive()
     state_bits, nro_objects = imp_nro_objects.get_ext()
 
     total_array_n = imp_object_data.get_attribute("n")
