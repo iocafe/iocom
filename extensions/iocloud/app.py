@@ -8,6 +8,7 @@ from flask import redirect, request, jsonify, url_for
 # from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 # from matplotlib.figure import Figure
 # import numpy as np
+import random
 
 app = Flask(__name__, static_url_path='')
 # app.secret_key = 's3cr3t'
@@ -27,6 +28,11 @@ def dille():
 @app.route('/files/<path:path>')
 def send_js(path):
     return send_from_directory('files', path)
+
+@app.route('/markku', methods=['GET'])
+def markku():
+    title =  str(random.random() * 100)
+    return title
 
 '''
     return render_template('layouts/index.html',

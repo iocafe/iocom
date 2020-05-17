@@ -6,6 +6,8 @@
 
 <p>My first paragraph.</p>
 <button onclick="settitle()">set title</button>
+<button onclick="settitlerandom()">set title random</button>
+
 
 </body>
 <script type="text/javascript">
@@ -21,6 +23,19 @@ fetch("http://127.0.0.1:5000/pekka")
     alert(error);
 });
 }
+
+function settitlerandom()
+{
+fetch("http://127.0.0.1:5000/markku")
+.then(responce => responce.text())
+.then(function (textResponse) { 
+    document.getElementById("title").innerHTML = textResponse;
+})
+.catch(function (error) {
+    alert(error);
+});
+}
+
 
 </script>
 </html>
