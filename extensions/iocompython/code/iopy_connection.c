@@ -182,7 +182,7 @@ static PyObject *Connection_new(
 
 
 #if IOPYTHON_TRACE
-    PySys_WriteStdout("Connection.new(%s, %s)\n", prm.parameters, flags);
+    PySys_WriteStdout("Connection.new(%s,%s)\n", prm.parameters, flags);
 #endif
 
     return (PyObject *)self;
