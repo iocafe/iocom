@@ -111,8 +111,6 @@ class MainApp(App):
                     self.set_displayed_page(None, None)
 
     def mytimer_tick(self, interval): 
-        # self.timer_ms  += .1
-        # self.timer_ms = 0.001 * Clock.get_time()
         self.ioc_root.receive("*");
         self.check_iocom_events()
         for d in self.ioc_devices:
@@ -122,7 +120,6 @@ class MainApp(App):
         self.ioc_root.send("*");
  
     def start_mytimer(self): 
-        # self.timer_ms = 0;
         Clock.schedule_interval(self.mytimer_tick, 1.0 / 30) 
   
     def stop_mytimer(self): 
@@ -142,7 +139,6 @@ class MainApp(App):
         self.set_displayed_page(None, 'connect')
         return self.root
 
-    # display page in kivy gui
     def set_displayed_page(self, device_path, page_name):
         if len(self.ioc_devices) == 0:
             if self.ioc_root == None:
