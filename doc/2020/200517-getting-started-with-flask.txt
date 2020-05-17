@@ -1,0 +1,16 @@
+flask notes 17.5.2020/pekka
+
+Install flask
+
+	sudo python3 -m pip install flask
+
+Update GIT repos, you get iocloud and can start flask by 
+
+	cd /coderoot/iocom/extensions/iocloud
+	python3 app.py
+	
+Open web browser, try 
+	http://127.0.0.1
+	http://127.0.0.1/pekka
+	http://127.0.0.1/files/hugo.html
+	
