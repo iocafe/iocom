@@ -10,4 +10,5 @@ sudo ufw allow 6366
 sudo ufw allow 6367
 sudo ufw allow 6368
 sudo ufw allow 6369
+sudo ufw enable
 
