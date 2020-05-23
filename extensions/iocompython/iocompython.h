@@ -29,8 +29,8 @@
 #else
 #include <python3.8/Python.h>
 #include <python3.8/structmember.h>
-// #include <python3.7m/Python.h>
-// #include <python3.7m/structmember.h>
+//#include <python3.7m/Python.h>
+//#include <python3.7m/structmember.h>
 #endif
 
 /* Include iocom and operating system abstraction layer.
