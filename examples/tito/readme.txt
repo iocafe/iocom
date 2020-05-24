@@ -1,11 +1,11 @@
-notes 8.1.2020/pekka
+notes 22.5.2020/pekka
 Tito - IO controller using static IO board configuration. 
 
-Tito is controller which runs multiple device IO networks, for example "iocafenet" for Pekka's devices and and "markkunet" for Markku.
-This idea can used by cloud server, which need to serve several people, connect devices of one person together but still keep devices private to owner.
+Tito demonstrates how to create more complex devices by compining multiple simple ones. To upper level Tito is seen (mostly) as one IO device 
+which has multiple "minions". Example could be a robot where Tito is "the robot", and minions are for example motor control board, camera module,
+etc. Minions can join to Tito either trough network or serial communication.
 
-This program uses static configuration, and creates "iocafenet" and "markkunet" and devices in those at start at start. More practical approach is to
-do this dynamically, so that networks and devices appear at controller as needed, but this example simplifies a few aspects of it.
-Also signals in IO board are mapped by statically by signal address. This is also not optimal for versioning. Expanding form here to using "info" memory
-block, which named signals, can allow running different versions of IO devices.
+Tito used static address scheme (as oppose to dynamic). This means that IO memory map of minions is linked into Tito and known in advange.
+Advantage of this approach is that it is simple and easy. Downside is that changing some minion's IO signal addressess requires recompilation 
+of both tito and the minion.
 

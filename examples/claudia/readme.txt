@@ -1,6 +1,14 @@
 notes 16.1.2020/pekka
-Claudia - cloud server application for routing connections to controller at site. 
+Claudia - routing connections trough cloud server. 
 
-A top level controller (claudia, etc) is running in computer at local network (pekka's home network, etc). IO devices within Pekka's home network connect directly to claudia. But Pekka has also devices outside home, which need to be connected as part of Pekka's home network. Like Android phone (ispy) used to control the home network, and car music device. Here Cloudia comes in. Frank at Pekka's house, the i-spy in andoid phone and music device in car all connect to claudia running on cloud server. Claudia passes information between these. 
+Home network application example: A top level controller (frank, etc) is running in computer at house (home network). 
+IO devices within the house network connect directly to frank. But the user  has also devices outside home,
+which need to be connected as a part of the house home network. This could be Android phone user interface
+used to control the home network, or some other device. Here Cloudia comes in. Frank at pekka's house creates
+a socket to claudia in cloud server. Then data from remote application can be routed trough the server to
+house network.
 
-Then there is Markku's home network. We do not want to set up own cloud server application for Markku, but Markku and Pekka share same claudia. So same claudia process server multiple IO networks, which could be here named pekkanet and markkunet. Security in claudia makes sure that Markku's and Pekka's stuff is kept completely separated.
+One instance of claudia can support multiple users. If there is also home network of other user, we do not want to set
+up own cloud server instance. So same claudia process serves multiple IO networks, which could be here named pekkanet
+and markkunet. Claudia makes sure that Markku's and Pekka's stuff is kept completely separated.
+
