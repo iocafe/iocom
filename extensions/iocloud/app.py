@@ -1,6 +1,11 @@
 # from __future__ import print_function
-from flask import Flask, render_template, make_response, send_from_directory
+from flask import Flask, render_template, make_response, send_from_directory, Response
 from flask import redirect, request, jsonify, url_for
+
+from PIL import Image
+import base64
+
+# image.show()
 
 # import io
 # import os
@@ -33,6 +38,25 @@ def send_js(path):
 def markku():
     title =  str(random.random() * 100)
     return title
+
+@app.route('/video_feed')
+def video_feed():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(gen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+def gen():
+    """Video streaming generator function."""
+    i = 0
+    while True:
+        path = "files/IMG" + str(i) + ".jpg"
+        image = open(path, 'rb').read()
+        i = i + 1
+        if i > 3:
+            i = 0
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n')
+
 
 '''
     return render_template('layouts/index.html',

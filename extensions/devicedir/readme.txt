@@ -1,4 +1,6 @@
-8.1.2020 / pekka
-devicedir library provides function to get current state IOCOM state of IO device as JSON. Current state prints include memory block, transfer buffer, connection and end point structures. 
-This is used for development testing and should not be linked into released IO products.
+devicedir library
+23.5.2020 / pekka
+
+Functions to get current IOCOM state as JSON. This include memory block, transfer buffer, connection and end point structures. 
+The library is intended mostly for development testing.
 
