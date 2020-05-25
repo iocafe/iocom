@@ -4,6 +4,7 @@ from flask import redirect, request, jsonify, url_for
 
 from PIL import Image
 import base64
+import time
 
 # image.show()
 
@@ -57,6 +58,7 @@ def gen():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n')
 
+        time.sleep(0.3)
 
 '''
     return render_template('layouts/index.html',
