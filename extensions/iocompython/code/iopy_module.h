@@ -15,19 +15,11 @@
 
 ****************************************************************************************************
 */
-#include "iocompython.h"
 
-
-/* Select different python extension name depending if we are building release or debug version.
+/* Select same name (at least for now)regardless we are building release or debug version.
  */
-#if OSAL_CC_DEBUG
-  #define IOCOMPYTHON_NAME "iocompythond"
-  #define IOCOMPYTHON_INIT_FUNC PyInit_iocompythond
-#else
-  #define IOCOMPYTHON_NAME "iocompython"
-  #define IOCOMPYTHON_INIT_FUNC PyInit_iocompython
-#endif
-
+#define IOCOMPYTHON_NAME "iocompython"
+#define IOCOMPYTHON_INIT_FUNC PyInit_iocompython
 
 /* Python module definition
  */

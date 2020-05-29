@@ -20,6 +20,15 @@ add_subdirectory($ENV{E_ROOT}/iocom/extensions/devicedir "${CMAKE_CURRENT_BINARY
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_BIN})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
 
+# iocompython is exception how debug build is handled. There is no 'd' postfix and
+# resuting library is placed in debug folder. This allows .py files to import iocompython
+# without modification while debugging.
+if (${E_POSTFIX} MATCHES "d")
+    set(E_POSTFIX "")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_BIN}/debug)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT}/debug)
+endif()
+
 # Set path to source files.
 set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 
@@ -28,8 +37,14 @@ include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
 include_directories("$ENV{E_ROOT}/iocom/extensions/iocompython")
 
-# TEMP PATCH TO COMPILE ON UBUNTO 20.04
-include_directories("/usr/include/python3.8")
+# Guess where Python header could be? Is there better way to do this?
+if(EXISTS "/coderoot/python/include/python3.9d")
+  include_directories("/coderoot/python/include/python3.9d")
+elseif(EXISTS "/usr/include/python3.8")
+  include_directories("/usr/include/python3.8")
+elseif(EXISTS "/usr/include/python3.7m")
+  include_directories("/usr/include/python3.7m")
+endif()
 
 # Add main headers.
 set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
