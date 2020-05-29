@@ -16,7 +16,6 @@
 #include "iocom.h"
 
 
-
 /**
 ****************************************************************************************************
 
@@ -123,7 +122,7 @@ os_int ioc_compress(
 ****************************************************************************************************
 
   @brief Uncompress data.
-  @anchor ioc_compress
+  @anchor ioc_uncompress
 
   The ioc_uncompress() function uncompresses data from source buffer into destination buffer.
   Delta encoding is taken care of if set in flags.
@@ -189,7 +188,6 @@ os_int ioc_uncompress(
 
         return (os_int)(dst - dst_start);
     }
-
 
     while (src < src_end && dst < dst_end)
     {
