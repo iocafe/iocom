@@ -310,7 +310,7 @@ osalStatus ioc_streamer_flush(
 
   The ioc_streamer_write() function writes up to n bytes of data from buffer to the stream.
   Call this function repeatedly to send the content until it returns OSAL_COMPLETED
-  or error code. Call the function with n argument -1 to mark successfull completion
+  or error code. Call the function with n argument -1 to mark successful completion
   of the transfer.
 
   @param   stream Stream handle.
@@ -442,7 +442,7 @@ osalStatus ioc_streamer_read(
 
   The ioc_streamer_device_write() function handles IO device writing data to stream.
   Call this function repeatedly to receive the content until it returns OSAL_COMPLETED
-  or error code. Call the function with n argument -1 to mark successfull completion
+  or error code. Call the function with n argument -1 to mark successful completion
   of the transfer. Alternativelu, ioc_streamer_flush() with OSAL_STREAM_FINAL_HANDSHAKE
   flag does call write with n = -1 and return SUCCESS/pending return values. This is propably
   more readable way to handle final handshake.

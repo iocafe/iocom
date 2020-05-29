@@ -447,11 +447,11 @@ static void ioc_delete_expired_lighthouse_nets(
   @param   flags Flags as given to ioc_connect(), these define the transport: Bit flag
            IOC_SOCKET for both TLS and plain TCP socket,  IOC_SECURE_CONNECTION
            for TLS socket.
-  @param   connectstr If successfull, "connect to" string with IP address and port number is
+  @param   connectstr If successful, "connect to" string with IP address and port number is
            stored here, for example "192.168.1.220:6368".
   @param   Size of connectstr buffer in bytes. Should be at least OSAL_HOST_BUF_SZ characters.
 
-  @return  If successfull, the function returns either OSAL_SUCCESS or OSAL_IO_NETWORK_NAME_SET.
+  @return  If successful, the function returns either OSAL_SUCCESS or OSAL_IO_NETWORK_NAME_SET.
            The latter indicates that network_name was set by this function. The function
            return OSAL_STATUS_FAILED or other error code if unable to resolve IP address/port
            to connect to.

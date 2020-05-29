@@ -549,11 +549,11 @@ typedef struct iocConnection
      */
     os_timer socket_open_try_timer;
 
-    /** Timer of the last successfull receive.
+    /** Timer of the last successful receive.
      */
     os_timer last_receive;
 
-    /** Timer of the last successfull send.
+    /** Timer of the last successful send.
      */
     os_timer last_send;
 

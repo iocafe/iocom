@@ -304,7 +304,7 @@ static void ioc_stream_cleanup(
   for all signals used for the stream in either direction.
 
   @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
-  @return  If successfull, the function returns OSAL_SUCCESS. If it was not possible to set up
+  @return  If successful, the function returns OSAL_SUCCESS. If it was not possible to set up
            all the signals, the function returns error code (!= OSAL_SUCCESS).
 
 ****************************************************************************************************
@@ -623,7 +623,7 @@ os_char *ioc_get_stream_data(
 
   @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
   @param   flags IOC_CALL_SYNC to call ioc_send() to transfer the initial signal values.
-  @return  If successfull, the function returns OSAL_SUCCESS. Other values indicate an error.
+  @return  If successful, the function returns OSAL_SUCCESS. Other values indicate an error.
 
 ****************************************************************************************************
 */

@@ -219,7 +219,7 @@ void ioc_release_end_point(
              IOC_CREATE_THREAD Create thread to run end_point and create thread to run
              each accepted connection (multithread support needed).
 
-  @return  OSAL_SUCCESS if successfull. Other return values indicate an error.
+  @return  OSAL_SUCCESS if successful. Other return values indicate an error.
 
 ****************************************************************************************************
 */
@@ -433,7 +433,7 @@ static osalStatus ioc_try_to_open_endpoint(
   by ioc_run() and should not be called from application.
 
   @param   epoint Pointer to the end_point object.
-  @return  Returns OSAL_SUCCESS if successfull, regardless if new socket is accepted or not.
+  @return  Returns OSAL_SUCCESS if successful, regardless if new socket is accepted or not.
            Other return values indicate an error with listening socket (closed now).
            Even if when running out of connection pool, this function must return OSAL_SUCCESS.
 
@@ -511,7 +511,7 @@ static osalStatus ioc_try_accept_new_sockets(
 
   @param   epoint Pointer to the end_point object.
   @param   newsocket Accepted socket handle.
-  @return  OSAL_SUCCESS if successfull. OSAL_STATUS_FAILED if connection failed and needs to
+  @return  OSAL_SUCCESS if successful. OSAL_STATUS_FAILED if connection failed and needs to
            be closed. For example pool is given, but there is no space for the connection.
 
 ****************************************************************************************************

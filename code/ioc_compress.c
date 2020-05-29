@@ -23,17 +23,17 @@
   @brief Compress data.
   @anchor ioc_compress
 
-  The ioc_compress() function compressess data from source buffer into destination buffer.
+  The ioc_compress() function compresses data from source buffer into destination buffer.
   Source data is from start_address
 
   @param   srcbuf Source buffer pointer.
-  @param   startaddr At entry, index of the first byte in source buffer to compress. At exit index
+  @param   start_addr At entry, index of the first byte in source buffer to compress. At exit index
            of first byte which was left uncompressed. If whole source buffer was compressed,
            this is end_addr + 1.
   @param   end_addr Index of last byte in source buffer to compress.
   @param   dst Pointer to destination buffer.
   @param   dst_sz Maximum number of bytes to store in destination buffer. The compression
-           is interrupred when up to this many bytes have been stored in destination buffer.
+           is interrupted when up to this many bytes have been stored in destination buffer.
   @return  Number of bytes in destination buffer or -1 if is not compressed (longer than original)
 
 ****************************************************************************************************
@@ -125,7 +125,7 @@ os_int ioc_compress(
   @brief Uncompress data.
   @anchor ioc_compress
 
-  The ioc_uncompress() function uncompressess data from source buffer into destination buffer.
+  The ioc_uncompress() function uncompresses data from source buffer into destination buffer.
   Delta encoding is taken care of if set in flags.
 
   1. Start from first source byte to process.
@@ -142,7 +142,7 @@ os_int ioc_compress(
   @param   end_addr Index of last byte in source buffer to compress.
   @param   dst Pointer to destination buffer.
   @param   dst_sz Maximum number of bytes to store in destination buffer.
-  @return  Number of destination bytes if uncompression was successfull. -1 indicates failed
+  @return  Number of destination bytes if uncompression was successful. -1 indicates failed
            decompression (source data is corrupted)
 
 ****************************************************************************************************

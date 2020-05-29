@@ -29,7 +29,7 @@
   @param   connconf Connection configuration (from persistent storate or JSON defaults).
   @param   additional_flags Bits IOC_DYNAMIC_MBLKS or IOC_CREATE_THREAD can be listed,
            set zero for no additional flags.
-  @return  If successfull, the function returns OSAL_SUCCESS. If failed, even partially,
+  @return  If successful, the function returns OSAL_SUCCESS. If failed, even partially,
            the function returns error code.
 
 ****************************************************************************************************

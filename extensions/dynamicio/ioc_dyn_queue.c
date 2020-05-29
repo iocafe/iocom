@@ -130,7 +130,7 @@ void ioc_release_event_queue(
   @param   device_name Device name.
   @param   device_nr Device number.
   @param   mblk_name Memory block name.
-  @return  OSAL_SUCCESS if successfull. Other values indicate an error (out of memory or
+  @return  OSAL_SUCCESS if successful. Other values indicate an error (out of memory or
            queue overflow).
 
 ****************************************************************************************************

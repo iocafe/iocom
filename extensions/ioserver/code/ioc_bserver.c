@@ -258,7 +258,7 @@ static void ioc_setup_bserver_mblks(
 
   @param   m Pointer to basic server structure.
   @param   publish List containing network to publish, comma is separator.
-  @return  If successfull, the function returns OSAL_SUCCESS. Other values indicate an error.
+  @return  If successful, the function returns OSAL_SUCCESS. Other values indicate an error.
 
 ****************************************************************************************************
 */

@@ -29,7 +29,7 @@
   @param   connconf Connection configuration (from persistent storate or JSON defaults).
   @param   info Network information structure to fill for light house. Contains listened TCP port 
            number,  Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET and .
-  @return  If successfull, the function returns OSAL_SUCCESS. If end point information not
+  @return  If successful, the function returns OSAL_SUCCESS. If end point information not
            available, the function returns OSAL_STATUS_FAILED.
 
 ****************************************************************************************************

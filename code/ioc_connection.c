@@ -376,7 +376,7 @@ static void ioc_free_source_and_target_bufs(
            - flags Bit fields: IOC_SOCKET Connect with TCP socket. IOC_CREATE_THREAD Create
              thread to run connection (multithread support needed).
 
-  @return  OSAL_SUCCESS if successfull. Other return values indicate an error.
+  @return  OSAL_SUCCESS if successful. Other return values indicate an error.
 
 ****************************************************************************************************
 */
@@ -1098,7 +1098,7 @@ static void ioc_connection_thread(
                     goto failed;
                 }
 
-                /* Record timer of last successfull receive.
+                /* Record timer of last successful receive.
                  */
                 con->last_receive = tnow;
             }

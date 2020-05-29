@@ -826,7 +826,7 @@ void ioc_generate_header(
   @param   start Start position of content data.
   @param   p End position of content data.
 
-  @return  OSAL_SUCCESS if successfull. OSAL_PENDING transmission is blocked by the flow
+  @return  OSAL_SUCCESS if successful. OSAL_PENDING transmission is blocked by the flow
            control and needs to be retried later.
 
 ****************************************************************************************************
