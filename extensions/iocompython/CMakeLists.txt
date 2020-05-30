@@ -20,6 +20,8 @@ add_subdirectory($ENV{E_ROOT}/iocom/extensions/devicedir "${CMAKE_CURRENT_BINARY
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_BIN})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
 
+set (E_TARGET ${E_PROJECT}${E_POSTFIX})
+
 # iocompython is exception how debug build is handled. There is no 'd' postfix and
 # resuting library is placed in debug folder. This allows .py files to import iocompython
 # without modification while debugging.
@@ -38,9 +40,10 @@ include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
 include_directories("$ENV{E_ROOT}/iocom/extensions/iocompython")
 
 # Guess where Python header could be? Is there better way to do this?
-if(EXISTS "/coderoot/python/include/python3.9d" AND CMAKE_BUILD_TYPE MATCHES Debug)
-  include_directories("/coderoot/python/include/python3.9d")
-elseif(EXISTS "/usr/include/python3.8")
+# if(EXISTS "/coderoot/python/include/python3.9d" AND CMAKE_BUILD_TYPE MATCHES Debug)
+#   include_directories("/coderoot/python/include/python3.9d")
+# elseif(EXISTS "/usr/include/python3.8")
+if(EXISTS "/usr/include/python3.8")
   include_directories("/usr/include/python3.8")
 elseif(EXISTS "/usr/include/python3.7m")
   include_directories("/usr/include/python3.7m")
