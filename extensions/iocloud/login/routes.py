@@ -19,7 +19,7 @@ def dashboard():
                            title='Flask-Login Tutorial.',
                            template='dashboard-template',
                            current_user=current_user,
-                           body="You are now logged in!")
+                           body="You are now logged in, see <a href=\"video_feed\">video!</a>")
 
 
 @main_bp.route("/logout")
