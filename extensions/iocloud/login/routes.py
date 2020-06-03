@@ -32,6 +32,9 @@ def logout():
 
 @main_bp.route('/video_feed')
 def video_feed():
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth_bp.login'))
+
     """Video streaming route. Put this in the src attribute of an img tag."""
     return Response(gen(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
