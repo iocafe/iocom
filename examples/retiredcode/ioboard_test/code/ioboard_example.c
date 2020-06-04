@@ -262,7 +262,7 @@ osalStatus osal_loop(
     if (os_has_elapsed(&my_signal_timer, 2000))
     {
         os_get_timer(&my_signal_timer);
-        ioc_sets_int(&my_tc_count, ++my_signal_count, OSAL_STATE_CONNECTED);
+        ioc_set_ext(&my_tc_count, ++my_signal_count, OSAL_STATE_CONNECTED);
     }
 
     /* ioboard_show_communication_status(acontext); */

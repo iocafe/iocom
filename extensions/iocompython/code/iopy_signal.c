@@ -499,7 +499,7 @@ static void Signal_set_one_value(
     if (state->n_values)
     {
         state->storage.vv.state_bits = state->state_bits;
-        ioc_movex_signals(state->signal, &state->storage.vv, 1,
+        ioc_move(state->signal, &state->storage.vv, 1,
             IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
     }
 }
@@ -527,7 +527,7 @@ static void Signal_set_string_value(
         return;
     }
 
-    ioc_moves_str(state->signal, str_value, -1, state->state_bits, IOC_SIGNAL_WRITE|OS_STR);
+    ioc_move_str(state->signal, str_value, -1, state->state_bits, IOC_SIGNAL_WRITE|OS_STR);
 }
 
 
@@ -565,7 +565,7 @@ static void Signal_set_array(
 
     /* Write always all values in array, even if caller would provides fewer. Rest will be zeros.
      */
-    ioc_moves_array(state->signal, offset, state->buf, state->max_values,
+    ioc_move_array(state->signal, offset, state->buf, state->max_values,
         state->state_bits, IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
 
     /* If we allocated extra buffer space, free it.
@@ -778,7 +778,7 @@ static PyObject *Signal_get_one_value(
     iocValue vv;
     PyObject *rval, *value;
 
-    ioc_movex_signals(state->signal, &vv, 1, IOC_SIGNAL_NO_THREAD_SYNC|flags);
+    ioc_move(state->signal, &vv, 1, IOC_SIGNAL_NO_THREAD_SYNC|flags);
 
     if ((vv.state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
     {
@@ -853,7 +853,7 @@ static PyObject *Signal_get_str_value(
         p = os_malloc(n, OS_NULL);
     }
 
-    state_bits = ioc_moves_str(state->signal, p, n,
+    state_bits = ioc_move_str(state->signal, p, n,
         OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC|flags);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0 && state->no_state_bits)
     {
@@ -915,7 +915,7 @@ static PyObject *Signal_get_array(
 
     /* Read values.
      */
-    state_bits = ioc_moves_array(state->signal, offset, buf, state->max_values,
+    state_bits = ioc_move_array(state->signal, offset, buf, state->max_values,
         OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC|flags);
 
     if (!state->nro_values)

@@ -35,11 +35,10 @@ iocTypeConvUnion;
 ****************************************************************************************************
 
   @brief Read or write one or more signals to memory block.
-  @anchor ioc_movex_signals
+  @anchor ioc_move
 
-  The ioc_movex_signals() function reads or writes one or more signal values to memory block.
-  This is used for basic types, like integers and floats. Use ioc_setx_str() for strings or
-  ioc_setx_int_array() for arrays.
+  The ioc_move() function reads or writes one or more signal values to memory block.
+  This is used for basic types, like integers and floats.
 
   The IOC_SIGNAL_WRITE Write signals to memory block. If this flag is not given, signals
   are read.
@@ -60,7 +59,7 @@ iocTypeConvUnion;
 
 ****************************************************************************************************
 */
-void ioc_movex_signals(
+void ioc_move(
     const iocSignal *signal,
     iocValue *vv,
     os_int n_signals,
@@ -131,11 +130,11 @@ void ioc_movex_signals(
             if (flags & IOC_SIGNAL_WRITE)
             {
                 osal_int_to_str(nbuf, sizeof(nbuf), vv[i].value.l);
-                vv[i].state_bits = ioc_moves_str(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
+                vv[i].state_bits = ioc_move_str(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
             }
             else
             {
-                vv[i].state_bits = ioc_moves_str(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
+                vv[i].state_bits = ioc_move_str(sig, nbuf, sizeof(nbuf), OSAL_STATE_CONNECTED, flags);
                 vv[i].value.l = osal_str_to_int(nbuf, OS_NULL);
             }
             goto nextone;
@@ -249,9 +248,9 @@ nextone:
 ****************************************************************************************************
 
   @brief Set integer value as a signal.
-  @anchor ioc_sets_int
+  @anchor ioc_set_ext
 
-  The ioc_sets_int() function writes one signal value to memory block. This is used for basic
+  The ioc_set_ext() function writes one signal value to memory block. This is used for basic
   types like integers and floats and cannot be used for strings or arrays.
 
   @param   signal Pointer to signal structure. This holds memory address,  state bits and data
@@ -262,7 +261,7 @@ nextone:
 
 ****************************************************************************************************
 */
-os_char ioc_sets_int(
+os_char ioc_set_ext(
     const iocSignal *signal,
     os_long value,
     os_char state_bits)
@@ -282,7 +281,7 @@ os_char ioc_sets_int(
             break;
     }
     vv.state_bits = state_bits;
-    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_WRITE);
+    ioc_move(signal, &vv, 1, IOC_SIGNAL_WRITE);
     return vv.state_bits;
 }
 
@@ -291,7 +290,7 @@ os_char ioc_sets_int(
 ****************************************************************************************************
 
   @brief Set double value as a signal.
-  @anchor ioc_sets_double
+  @anchor ioc_set_double_ext
 
   The ioc_sets_doubleint() function writes one signal value to memory block. This is used for basic
   types like integers and floats and cannot be used for strings or arrays.
@@ -304,7 +303,7 @@ os_char ioc_sets_int(
 
 ****************************************************************************************************
 */
-os_char ioc_sets_double(
+os_char ioc_set_double_ext(
     const iocSignal *signal,
     os_double value,
     os_char state_bits)
@@ -324,121 +323,7 @@ os_char ioc_sets_double(
             break;
     }
     vv.state_bits = state_bits;
-    ioc_movex_signals(signal, &vv, 1, IOC_SIGNAL_WRITE);
-    return vv.state_bits;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Set integer value as a signal.
-  @anchor ioc_setx_int
-
-  The ioc_setx_int() function writes one signal value to memory block. This is used for basic
-  types like integers and floats and cannot be used for strings or arrays.
-
-  @param   handle Memory block handle.
-  @param   address Address within memory block.
-  @param   value Integer value to write.
-  @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
-           with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
-  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
-           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
-           with type.
-
-  @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
-
-****************************************************************************************************
-*/
-os_char ioc_setx_int(
-    iocHandle *handle,
-    os_int addr,
-    os_long value,
-    os_char state_bits,
-    os_short flags)
-{
-    iocSignal signal;
-    iocValue vv;
-
-    switch (flags & OSAL_TYPEID_MASK)
-    {
-        case OS_FLOAT:
-        case OS_DOUBLE:
-            vv.value.d = (os_double)value;
-            break;
-
-        default:
-            vv.value.l = value;
-            break;
-    }
-    vv.state_bits = state_bits;
-
-    os_memclear(&signal, sizeof(signal));
-    signal.handle = handle;
-    signal.addr = addr;
-    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.n = 1;
-
-    ioc_movex_signals(&signal, &vv, 1, flags|IOC_SIGNAL_WRITE);
-    return vv.state_bits;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Set floating point value as a signal.
-  @anchor ioc_setx_float
-
-  The ioc_setx_float() function writes one signal value to memory block. This is used for basic
-  types like integers and floats and cannot be used for strings or arrays.
-
-  @param   handle Memory block handle.
-  @param   address Address within memory block.
-  @param   value Floating point value to write.
-  @oaram   state_bits State bits. This typically has OSAL_STATE_CONNECTED and if we have a problem
-           with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit. Can be OS_NULL if
-           not needed.
-  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
-           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
-           with type.
-
-  @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
-
-****************************************************************************************************
-*/
-os_char ioc_setx_double(
-    iocHandle *handle,
-    os_int addr,
-    os_double value,
-    os_char state_bits,
-    os_short flags)
-{
-    iocSignal signal;
-    iocValue vv;
-
-    os_memclear(&signal, sizeof(signal));
-
-    switch (flags & OSAL_TYPEID_MASK)
-    {
-        case OS_FLOAT:
-        case OS_DOUBLE:
-            vv.value.d = value;
-            break;
-
-        default:
-            vv.value.l = os_round_long(value);
-            break;
-    }
-    vv.state_bits = state_bits;
-
-    signal.handle = handle;
-    signal.addr = addr;
-    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.n = 1;
-
-    ioc_movex_signals(&signal, &vv, 1, flags|IOC_SIGNAL_WRITE);
+    ioc_move(signal, &vv, 1, IOC_SIGNAL_WRITE);
     return vv.state_bits;
 }
 
@@ -447,9 +332,9 @@ os_char ioc_setx_double(
 ****************************************************************************************************
 
   @brief Get signal as integer value.
-  @anchor ioc_gets_int
+  @anchor ioc_get_ext
 
-  The ioc_gets_int() function reads one signal value from memory block. This is used for basic
+  The ioc_get_ext() function reads one signal value from memory block. This is used for basic
   types like integers and floats and cannot be used for strings or arrays.
 
   @param   signal Pointer to signal structure. This holds memory address,  state bits and data
@@ -464,7 +349,7 @@ os_char ioc_setx_double(
 
 ****************************************************************************************************
 */
-os_long ioc_gets_int(
+os_long ioc_get_ext(
     const iocSignal *signal,
     os_char *state_bits,
     os_short flags)
@@ -473,7 +358,7 @@ os_long ioc_gets_int(
 
     if (signal == OS_NULL) return 0;
 
-    ioc_movex_signals(signal, &vv, 1, flags);
+    ioc_move(signal, &vv, 1, flags);
     if (state_bits) *state_bits = vv.state_bits;
 
     switch (signal->flags & OSAL_TYPEID_MASK)
@@ -492,9 +377,9 @@ os_long ioc_gets_int(
 ****************************************************************************************************
 
   @brief Get signal as double precision floating point value.
-  @anchor ioc_gets_int
+  @anchor ioc_get_ext
 
-  The ioc_gets_double() function reads one signal value from memory block. This is used for basic
+  The ioc_get_double_ext() function reads one signal value from memory block. This is used for basic
   types like integers and floats and cannot be used for strings or arrays.
 
   @param   signal Pointer to signal structure. This holds memory address,  state bits and data
@@ -509,14 +394,14 @@ os_long ioc_gets_int(
 
 ****************************************************************************************************
 */
-os_double ioc_gets_double(
+os_double ioc_get_double_ext(
     const iocSignal *signal,
     os_char *state_bits,
     os_short flags)
 {
     iocValue vv;
 
-    ioc_movex_signals(signal, &vv, 1, flags);
+    ioc_move(signal, &vv, 1, flags);
     if (state_bits) *state_bits = vv.state_bits;
 
     switch (signal->flags & OSAL_TYPEID_MASK)
@@ -534,115 +419,10 @@ os_double ioc_gets_double(
 /**
 ****************************************************************************************************
 
-  @brief Get integer signal value.
-  @anchor ioc_getx_int
-
-  The ioc_getx_int() function reads one signal value from to memory block. This is used for basic
-  types like integers and floats and cannot be used for strings or arrays.
-
-  @param   handle Memory block handle.
-  @param   address Address within memory block.
-  @oaram   state_bits Pointer to integer where to store state bits.
-           OSAL_STATE_CONNECTED indicates that we have the signal value. HW errors are indicated
-           by OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bits.
-  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
-           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
-           with type.
-
-  @return  Integer value.
-
-****************************************************************************************************
-*/
-os_long ioc_getx_int(
-    iocHandle *handle,
-    os_int addr,
-    os_char *state_bits,
-    os_short flags)
-{
-    iocSignal signal;
-    iocValue vv;
-
-    os_memclear(&signal, sizeof(signal));
-
-    signal.handle = handle;
-    signal.addr = addr;
-    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.n = 1;
-
-    ioc_movex_signals(&signal, &vv, 1, flags);
-    if (state_bits) *state_bits = vv.state_bits;
-
-    switch (flags & OSAL_TYPEID_MASK)
-    {
-        case OS_FLOAT:
-        case OS_DOUBLE:
-            return os_round_long(vv.value.d);
-
-        default:
-            return vv.value.l;
-    }
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Get floating point signal value.
-  @anchor ioc_getx_float
-
-  The ioc_getx_float() function reads one signal value from to memory block. This is returns
-  value as float, integers and string are converted.
-
-  @param   handle Memory block handle.
-  @param   address Address within memory block.
-  @oaram   state_bits Pointer to integer where to store state bits.
-           OSAL_STATE_CONNECTED indicates that we have the signal value. HW errors are indicated
-           by OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bits. Can be OS_NULL if not needed.
-  @param   flags Storage type to be within memory block, like: OS_BOOLEAN, OS_CHAR, OS_UCHAR,
-           OS_SHORT, OS_USHORT, OS_FLOAT, etc. Flag IOC_SIGNAL_NO_THREAD_SYNC can be combined
-           with type.
-
-  @return  Floating point value.
-
-****************************************************************************************************
-*/
-os_double ioc_getx_double(
-    iocHandle *handle,
-    os_int addr,
-    os_char *state_bits,
-    os_short flags)
-{
-    iocSignal signal;
-    iocValue vv;
-
-    os_memclear(&signal, sizeof(signal));
-    signal.handle = handle;
-    signal.addr = addr;
-    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.n = 1;
-
-    ioc_movex_signals(&signal, &vv, 1, flags);
-    if (state_bits) *state_bits = vv.state_bits;
-
-    switch (flags & OSAL_TYPEID_MASK)
-    {
-        case OS_FLOAT:
-        case OS_DOUBLE:
-            return vv.value.d;
-
-        default:
-            return (os_double)vv.value.l;
-    }
-}
-
-
-/**
-****************************************************************************************************
-
   @brief Read or write one string from/to memory block.
-  @anchor ioc_moves_str
+  @anchor ioc_move_str
 
-  The ioc_moves_str() function reads or writes one string signal from or to memory
+  The ioc_move_str() function reads or writes one string signal from or to memory
   block.
 
   The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string
@@ -665,7 +445,7 @@ os_double ioc_getx_double(
 
 ****************************************************************************************************
 */
-os_char ioc_moves_str(
+os_char ioc_move_str(
     const iocSignal *signal,
     os_char *str,
     os_memsz str_sz,
@@ -698,11 +478,11 @@ os_char ioc_moves_str(
         case OS_FLOAT:
             if (flags & IOC_SIGNAL_WRITE)
             {
-                return ioc_sets_double(signal, osal_str_to_double(str, OS_NULL), state_bits);
+                return ioc_set_double_ext(signal, osal_str_to_double(str, OS_NULL), state_bits);
             }
             else
             {
-                dvalue = ioc_gets_double(signal, &state_bits, flags);
+                dvalue = ioc_get_double_ext(signal, &state_bits, flags);
                 osal_double_to_str(str, str_sz, dvalue, 4, OSAL_FLOAT_DEFAULT);
                 return state_bits;
             }
@@ -710,11 +490,11 @@ os_char ioc_moves_str(
         default:
             if (flags & IOC_SIGNAL_WRITE)
             {
-                return ioc_sets_int(signal, (os_int)osal_str_to_int(str, OS_NULL), state_bits);
+                return ioc_set_ext(signal, (os_int)osal_str_to_int(str, OS_NULL), state_bits);
             }
             else
             {
-                value = ioc_gets_int(signal, &state_bits, flags);
+                value = ioc_get_ext(signal, &state_bits, flags);
                 osal_int_to_str(str, str_sz, value);
                 return state_bits;
             }
@@ -800,55 +580,10 @@ goon:
 /**
 ****************************************************************************************************
 
-  @brief Read or write string from/to memory block.
-  @anchor ioc_movex_signals
-
-  The ioc_movex_str() function reads or writes a string from/to memory block.
-
-  @param   handle Memory block handle.
-  @param   signal Pointer to signal structure. This holds memory address, value,
-           state bits and data type.
-  @param   str Pointer to string buffer
-  @param   str_sz String buffer size in bytes (including terminating NULL character).
-  @oaram   state_bits State bits. This can have OSAL_STATE_CONNECTED and if we have a problem
-           with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, and IOC_SIGNAL_NO_THREAD_SYNC.
-           Type flags here are ignored, since type is set for each signal separately in
-           the signals array.
-  @return  Updated state bits.
-
-****************************************************************************************************
-*/
-os_char ioc_movex_str(
-    iocHandle *handle,
-    os_int addr,
-    os_char *str,
-    os_memsz str_sz,
-    os_char state_bits,
-    os_short flags)
-{
-    iocSignal signal;
-    os_memclear(&signal, sizeof(signal));
-
-    signal.handle = handle;
-    signal.addr = addr;
-    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.n = (os_short)str_sz;
-
-    state_bits = ioc_moves_str(&signal, str, str_sz, state_bits, flags);
-
-    return state_bits;
-}
-
-
-/**
-****************************************************************************************************
-
   @brief Read or write array from/to memory block.
-  @anchor ioc_moves_str
+  @anchor ioc_move_str
 
-  The ioc_moves_array() function reads or writes array as one from or to memory
+  The ioc_move_array() function reads or writes array as one from or to memory
   block.
 
   The IOC_SIGNAL_WRITE Write string to memory block. If this flag is not given, string
@@ -874,7 +609,7 @@ os_char ioc_movex_str(
 
 ****************************************************************************************************
 */
-os_char ioc_moves_array(
+os_char ioc_move_array(
     const iocSignal *signal,
     os_int offset,
     void *array,
@@ -1050,51 +785,6 @@ goon:
     }
 
     return state_bits;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Read or write array from/to memory block.
-  @anchor ioc_movex_array
-
-  The ioc_movex_array() function reads or writes an array as one signal.
-
-  @param   handle Memory block handle.
-  @param   addr Memory address where array begins (position of state bits),
-  @param   offset 0 to start write from beginning of array. But there can be offset to write
-           if less than array size elements are written. Thisis needed for ring buffers, etc.
-  @param   array Pointer to array data
-  @param   n Number of elements in array.
-  @oaram   state_bits State bits. This can have OSAL_STATE_CONNECTED and if we have a problem
-           with this signal OSAL_STATE_ORANGE and/or OSAL_STATE_YELLOW bit.
-  @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
-           operator: IOC_SIGNAL_WRITE, and IOC_SIGNAL_NO_THREAD_SYNC.
-           Array element type must be here, one of OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT,
-           OS_USHORT, OS_INT, OS_UINT or OS_FLOAT. This is used for type checking.
-  @return  Updated state bits.
-
-****************************************************************************************************
-*/
-os_char ioc_movex_array(
-    iocHandle *handle,
-    os_int addr,
-    os_int offset,
-    void *array,
-    os_int n,
-    os_char state_bits,
-    os_short flags)
-{
-    iocSignal signal;
-    os_memclear(&signal, sizeof(signal));
-
-    signal.handle = handle;
-    signal.addr = addr;
-    signal.flags = (flags & ~IOC_SIGNAL_FLAGS_MASK);
-    signal.n = n;
-
-    return ioc_moves_array(&signal, offset, array, n, state_bits, flags);
 }
 
 

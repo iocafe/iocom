@@ -363,7 +363,7 @@ osalStatus osal_loop(
         ioc_sets_array(&gina.exp.testfloat, f, 5);
     }
 
-    command = (os_int)ioc_gets0_int(&gina.imp.myoutput);
+    command = (os_int)ioc_get(&gina.imp.myoutput);
     if (command != prev_command)
     {
         f[0] = f[0] + 1.0F;

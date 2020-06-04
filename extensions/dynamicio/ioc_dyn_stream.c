@@ -657,8 +657,8 @@ osalStatus ioc_stream_initconf(
 
     if (stream->prm.is_device)
     {
-        ioc_sets0_int(stream->prm.frd.state, 0);
-        ioc_sets0_int(stream->prm.tod.state, 0);
+        ioc_set(stream->prm.frd.state, 0);
+        ioc_set(stream->prm.tod.state, 0);
 
         if (flags & IOC_CALL_SYNC)
         {

@@ -216,7 +216,7 @@ static void ioc_selectfiwi_imp_data_changed(
 
     if (ioc_is_my_address(&selectwifi.imp.save, start_addr, end_addr))
     {
-        if (ioc_gets0_int(&selectwifi.imp.save))
+        if (ioc_get(&selectwifi.imp.save))
         {
             if (!os_has_elapsed(&swf.boot_timer, 5000)) return;
             ioc_selectfiwi_save();

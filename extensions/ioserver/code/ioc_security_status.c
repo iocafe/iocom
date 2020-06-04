@@ -245,9 +245,9 @@ row_selected:
     ioc_sets_str(r->ip, note->ip);
     if (!reset_count)
     {
-        count = ioc_gets0_int(r->count) + 1;
+        count = ioc_get(r->count) + 1;
     }
-    ioc_sets0_int(r->count, count);
+    ioc_set(r->count, count);
     ioc_sets_str(r->text, text);
     os_get_timer(&timers[row]);
     is_set[row] = OS_TRUE;
@@ -295,12 +295,12 @@ static void ioc_notifications_time_out(
         if (!os_has_elapsed_since(&timers[row], &now_t, timeout_ms)) continue;
 
         r = table + row;
-        ioc_moves_str(r->password, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
-        ioc_moves_str(r->privileges, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
-        ioc_moves_str(r->ip, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
-        ioc_moves_str(r->text, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
-        ioc_sets_int(r->count, 0, 0);
-        ioc_moves_str(r->user_name, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_move_str(r->password, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_move_str(r->privileges, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_move_str(r->ip, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_move_str(r->text, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
+        ioc_set_ext(r->count, 0, 0);
+        ioc_move_str(r->user_name, OS_NULL, -1,  0, IOC_SIGNAL_WRITE|OS_STR);
         is_set[row] = OS_FALSE;
     }
 
