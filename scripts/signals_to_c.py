@@ -305,7 +305,7 @@ def process_assembly(assembly):
     assembly_type = assembly.get("type", None)
     check_valid_name("Assembly type", assembly_type, IOC_NAME_SZ, True)
 
-    if assembly_type == 'linecam' or assembly_type == 'camera' or assembly_type == 'microphone' or assembly_type == 'userinput':
+    if assembly_type == 'linecam' or assembly_type == 'cam_ring':
         imp = assembly.get("imp", "imp.undefined_*")
         exp = assembly.get("exp", "exp.undefined_*")
 
@@ -323,6 +323,28 @@ def process_assembly(assembly):
         write_assembly_item(exp, "state", assembly_name)
         if not is_controller:
             cfile.write('OS_FALSE}')
+        else:
+            cfile.write('OS_TRUE}')
+
+    if assembly_type == 'cam_flat':
+        imp = assembly.get("imp", "imp.undefined_*")
+        exp = assembly.get("exp", "exp.undefined_*")
+
+        hfile.write('\n  iocStreamerSignals ' + assembly_name + ';\n')
+
+        if is_controller:
+            cfile.write('  /* ' + assembly_type + " '" + assembly_name + "' */\n")
+        else:
+            cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
+        write_assembly_item(imp, "cmd", assembly_name)
+        cfile.write('OS_NULL, ')
+        write_assembly_item(exp, "buf", assembly_name)
+        write_assembly_item(exp, "head", assembly_name)
+        cfile.write('OS_NULL, OS_NULL, ')
+        if not is_controller:
+            cfile.write('OS_FALSE}')
+        else:
+            cfile.write('OS_TRUE}')
 
     elif assembly_type == 'display' or assembly_type == 'speaker':
         imp = assembly.get("imp", "imp.undefined_*")
@@ -342,10 +364,13 @@ def process_assembly(assembly):
         write_assembly_item(exp, "state", assembly_name)
         if not is_controller:
             cfile.write('OS_TRUE}')
+        else:
+            cfile.write('OS_FALSE}')
 
     else:
         print("Assembly '" + assembly_name + "' type '" + assembly_type + "' is uknown")
         exit()
+
 
 def process_source_file(path):
     global cfile, hfile, array_list, signal_list
