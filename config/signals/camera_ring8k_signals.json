@@ -2,7 +2,7 @@
   "assembly": [
     {
       "name": "camera",
-      "type": "camera",
+      "type": "cam_ring",
       "exp": "exp.rec_",
       "imp": "imp.rec_"
     }
