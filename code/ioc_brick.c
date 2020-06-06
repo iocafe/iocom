@@ -82,7 +82,7 @@ void ioc_initialize_brick_buffer(
     b->prm.is_device = (os_boolean)((flags & IOC_BRICK_CONTROLLER) == 0);
 
     /* In device end, we need to set IDLE status with connected state bit */
-    if (b->prm.is_device) {
+    if (b->prm.is_device && !signals->flat_buffer) {
         ioc_set(signals->state, IOC_STREAM_IDLE);
     }
 }
@@ -149,24 +149,33 @@ osalStatus ioc_allocate_brick_buffer(
     iocBrickBuffer *b,
     os_memsz buf_sz)
 {
-    if (buf_sz <= sizeof(iocBrickHdr) || buf_sz > IOC_MAX_BRICK_ALLOC)
-    {
-        osal_debug_error("ioc_allocate_brick_buffer: Illegal size");
-        return OSAL_STATUS_FAILED;
-    }
 
-    ioc_lock(b->root);
-    b->buf_n = 0;
-    b->pos = 0;
-    if (b->buf_sz != buf_sz)
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    /* No temp buffer needed for flat buffer transfers
+     */
+    if (!b->signals.flat_buffer)
     {
-        ioc_free_brick_buffer(b);
-        b->buf = (os_uchar*)os_malloc(buf_sz, &b->buf_alloc_sz);
-        if (b->buf == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
-        os_memclear(b->buf, b->buf_alloc_sz);
-        b->buf_sz = buf_sz;
+        if (buf_sz <= sizeof(iocBrickHdr) || buf_sz > IOC_MAX_BRICK_ALLOC)
+        {
+            osal_debug_error("ioc_allocate_brick_buffer: Illegal size");
+            return OSAL_STATUS_FAILED;
+        }
+
+        ioc_lock(b->root);
+        b->buf_n = 0;
+        b->pos = 0;
+        if (b->buf_sz != buf_sz)
+        {
+            ioc_free_brick_buffer(b);
+            b->buf = (os_uchar*)os_malloc(buf_sz, &b->buf_alloc_sz);
+            if (b->buf == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+            os_memclear(b->buf, b->buf_alloc_sz);
+            b->buf_sz = buf_sz;
+        }
+        ioc_unlock(b->root);
     }
-    ioc_unlock(b->root);
+#endif
+
     return OSAL_SUCCESS;
 }
 

@@ -62,6 +62,9 @@ typedef struct iocStreamerSignals
     const iocSignal *tail;
     const iocSignal *state;
     os_boolean to_device;
+
+    /* The flat_buffer flag indicates that a flat buffer instead of a ring buffer.
+     */
     os_boolean flat_buffer;
 }
 iocStreamerSignals;

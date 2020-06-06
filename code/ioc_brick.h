@@ -116,8 +116,8 @@ typedef struct iocBrickBuffer
     os_int timeout_ms; /* timeout for streamer continuous data transfer, -1 = no timeout */
 
     iocStreamerState prev_cmd; /* used to detect change (edge) */
-    os_boolean err_timer_set;
     os_timer err_timer;
+    os_boolean err_timer_set;
 
     /* callback */
     volatile os_boolean enable_receive;
