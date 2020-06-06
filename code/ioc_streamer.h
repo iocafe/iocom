@@ -62,6 +62,7 @@ typedef struct iocStreamerSignals
     const iocSignal *tail;
     const iocSignal *state;
     os_boolean to_device;
+    os_boolean flat_buffer;
 }
 iocStreamerSignals;
 
