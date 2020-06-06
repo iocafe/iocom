@@ -124,6 +124,12 @@ typedef struct iocBrickBuffer
     ioc_brick_received *receive_callback;
     void *receive_context;
     // os_timer open_timer;
+
+    /* Flat buffer send timing.
+     */
+    os_timer flat_frame_timer;
+    os_boolean flat_ready_for_brick;
+    os_boolean flat_connected;
 }
 iocBrickBuffer;
 
@@ -139,6 +145,12 @@ void ioc_initialize_brick_buffer(
 /* Release brick buffer which has been initialized by ioc_initialize_brick_buffer
  */
 void ioc_release_brick_buffer(
+    iocBrickBuffer *b);
+
+os_boolean ioc_ready_for_new_brick(
+    iocBrickBuffer *b);
+
+os_boolean ioc_is_brick_connected(
     iocBrickBuffer *b);
 
 /* Set function to call when brick is received.
@@ -161,9 +173,8 @@ void ioc_free_brick_buffer(
 
 /* Compress brick into buffer.
  */
-os_memsz ioc_compress_brick(
-    os_uchar *buf,
-    os_memsz buf_sz,
+osalStatus ioc_compress_brick(
+    iocBrickBuffer *b,
     iocBrickHdr *hdr,
     os_uchar *data,
     os_memsz data_sz,
@@ -175,13 +186,13 @@ os_memsz ioc_compress_brick(
 /* Store time stamp into the brick header (must be called before ioc_set_brick_checksum)
  */
 void ioc_set_brick_timestamp(
-    os_uchar *buf);
+    iocBrickHdr *hdr);
 
 /* Store check sum within brick header
  */
 void ioc_set_brick_checksum(
-    os_uchar *buf,
-    os_memsz buf_n);
+    iocBrickHdr *hdr,
+    os_ushort checksum);
 
 /* Run brick data transfer
  */
@@ -203,8 +214,5 @@ os_ulong ioc_brick_int(
     os_uchar *data,
     os_int nro_bytes);
 
-#define ioc_is_brick_empty(b) ((b)->buf_n == 0)
-#define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)
-#define ioc_is_brick_connected(b) ((b)->stream != OS_NULL)
 
 #endif

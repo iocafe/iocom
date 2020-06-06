@@ -108,6 +108,48 @@ void ioc_release_brick_buffer(
 /**
 ****************************************************************************************************
 
+  @brief Check if we are can send new brick (previous has been processed)
+  @anchor ioc_ready_for_new_brick
+
+  @param   b Pointer to brick buffer
+  @return  OS_TRUE if if we can send new brick, OS_FALSE if not.
+
+****************************************************************************************************
+*/
+os_boolean ioc_ready_for_new_brick(
+    iocBrickBuffer *b)
+{
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    if (!b->signals->flat_buffer) return b->buf_n == 0;
+#endif
+    return b->flat_ready_for_brick;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Check if we are connected to someone who wants to received data.
+  @anchor ioc_is_brick_connected
+
+  @param   b Pointer to brick buffer
+  @return  OS_TRUE if connected, OS_FALSE if not.
+
+****************************************************************************************************
+*/
+os_boolean ioc_is_brick_connected(
+    iocBrickBuffer *b)
+{
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    if (!b->signals->flat_buffer) return b->stream != OS_NULL;
+#endif
+    return b->flat_connected;
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Set function to call when brick is received.
   @anchor ioc_set_brick_received_callback
 
@@ -194,15 +236,20 @@ osalStatus ioc_allocate_brick_buffer(
 void ioc_free_brick_buffer(
     iocBrickBuffer *b)
 {
-    ioc_lock(b->root);
-    if (b->buf)
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    if (!b->signals->flat_buffer)
     {
-        os_free(b->buf, b->buf_alloc_sz);
-        b->buf = OS_NULL;
-        b->buf_sz = 0;
-        b->buf_alloc_sz = 0;
+        ioc_lock(b->root);
+        if (b->buf)
+        {
+            os_free(b->buf, b->buf_alloc_sz);
+            b->buf = OS_NULL;
+            b->buf_sz = 0;
+            b->buf_alloc_sz = 0;
+        }
+        ioc_unlock(b->root);
     }
-    ioc_unlock(b->root);
+#endif
 }
 
 
@@ -212,8 +259,7 @@ void ioc_free_brick_buffer(
   @brief Store/compress data to send into brick buffer.
   @anchor ioc_compress_brick
 
-  @param  buf Pointer to char buffer where to store brick header and compressed data.
-  @param  buf_sz Size of buffer buf. Must have space for data and brick header.
+  @param  b Pointer to brick buffer.
   @param  hdr Brick header to save.
   @param  data Uncompressed (or compressed in special cases) source data.
   @param  data_sz Data size in bytes, important if data is compressed JPEG.
@@ -222,13 +268,12 @@ void ioc_free_brick_buffer(
   @param  h Source image height in pixels, etc.
   @param  compression How to compress data, set IOC_UNCOMPRESSED_BRICK, IOC_SMALL_JPEG,
           IOC_NORMAL_JPEG, IOC_LARGE_JPEG...
-  @return Number of final bytes in buf (includes brick header).
+  @return OSAL_SUCCESS (0) if all is fine. Other values indicate an error.
 
 ****************************************************************************************************
 */
-os_memsz ioc_compress_brick(
-    os_uchar *buf,
-    os_memsz buf_sz,
+osalStatus ioc_compress_brick(
+    iocBrickBuffer *b,
     iocBrickHdr *hdr,
     os_uchar *data,
     os_memsz data_sz,
@@ -237,13 +282,40 @@ os_memsz ioc_compress_brick(
     os_int h,
     iocBrickCompression compression)
 {
-    iocBrickHdr *dhdr;
-    os_memsz sz;
+    iocBrickHdr *dhdr, dhdr_tmp;
+    os_uchar *buf;
+    os_memsz sz, buf_sz;
+    os_ushort checksum = 0;
+    os_boolean flat_buffer;
+    osalStatus s = OSAL_SUCCESS;
 
 #if IOC_USE_JPEG_COMPRESSION
     os_int quality;
-    osalStatus s;
 #endif
+
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    flat_buffer = b->signals->flat_buffer;
+    if (flat_buffer)
+    {
+        buf = OS_NULL;
+        buf_sz = 0;
+        dhdr = &dhdr_tmp;
+        ioc_lock(b->root);
+    }
+    else
+    {
+        buf = b->buf;
+        buf_sz = b->buf_sz;
+        dhdr = (iocBrickHdr*)buf;
+    }
+#else
+    flat_buffer = OS_TRUE;
+    buf = OS_NULL;
+    buf_sz = 0;
+    dhdr = &dhdr_tmp;
+    ioc_lock(b->root);
+#endif
+    os_memcpy(buf, hdr, sizeof(iocBrickHdr));
 
     if (compression == IOC_DEFAULT_CAM_IMG_COMPR)
     {
@@ -256,9 +328,6 @@ os_memsz ioc_compress_brick(
 
     /* Copy or compress.
      */
-    dhdr = (iocBrickHdr*)buf;
-    os_memcpy(buf, hdr, sizeof(iocBrickHdr));
-
     switch (compression)
     {
 #if IOC_USE_JPEG_COMPRESSION
@@ -293,6 +362,29 @@ compress_jpeg:
             }
 
 #if IOC_USE_JPEG_COMPRESSION
+            if (flat_buffer) {
+                buf_sz = b->signals->buf->n - sizeof(iocBrickHdr);
+                buf = os_malloc(buf_sz, OS_NULL);
+                if (buf == OS_NULL)  {
+                    s = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+                    goto getout;
+                }
+
+                s = os_compress_JPEG(data, w, h, format, quality,
+                    OS_NULL, buf, buf_sz, &sz, OSAL_JPEG_DEFAULT);
+                if (s)  {
+                    s = OSAL_STATUS_OUT_OF_BUFFER;
+                    goto getout;
+                }
+                dhdr->compression = IOC_NORMAL_JPEG;
+
+                ioc_move_array(b->signals->buf, sizeof(iocBrickHdr), buf, (os_int)sz,
+                    OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE); 
+                
+                checksum = os_checksum(buf, sz, OS_NULL);
+                break;
+            }
+
             s = os_compress_JPEG(data, w, h, format, quality,
                 OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
             if (s == OSAL_SUCCESS)
@@ -333,7 +425,20 @@ compress_jpeg:
     dhdr->buf_sz[2] = (os_uchar)(sz >> 16);
     dhdr->buf_sz[3] = (os_uchar)(sz >> 24);
 
-    return sz;
+    ioc_set_brick_timestamp(dhdr);
+    dhdr->checksum[0] = 0;
+    dhdr->checksum[1] = 0;
+    os_checksum((const os_char*)dhdr, sizeof(iocBrickHdr), &checksum);
+    ioc_set_brick_checksum(dhdr, checksum);
+    b->buf_n = sz;
+
+getout:
+    if (flat_buffer) {
+        os_free(buf, buf_sz);
+        ioc_unlock(b->root);
+    }
+
+    return s;
 }
 
 
@@ -343,18 +448,15 @@ compress_jpeg:
   @brief Set timestamp (timer) in brick header.
   @anchor ioc_set_brick_timestamp
 
-  @param   buf Pointer to brick header (in buffer).
+  @param   hdr Pointer to brick header (in buffer).
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_set_brick_timestamp(
-    os_uchar *buf)
+    iocBrickHdr *hdr)
 {
-    iocBrickHdr *hdr;
     os_timer ti;
-
-    hdr = (iocBrickHdr*)buf;
     os_get_timer(&ti);
 
 #ifdef OSAL_SMALL_ENDIAN
@@ -380,28 +482,30 @@ void ioc_set_brick_timestamp(
   @brief Store check sum within brick header
   @anchor ioc_set_brick_checksum
 
-  @param   buf Pointer to buffer (starts with brick header).
-  @param   buf_n Number of data bytes in buffer.
+  @param   hdr Pointer to brick header (in buffer).
+  @param   checksum Value to set.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_set_brick_checksum(
-    os_uchar *buf,
-    os_memsz buf_n)
+    iocBrickHdr *hdr,
+    os_ushort checksum)
 {
-    iocBrickHdr *hdr;
+    /* iocBrickHdr *hdr;
     os_ushort checksum;
-
     hdr = (iocBrickHdr*)buf;
     hdr->checksum[0] = 0;
     hdr->checksum[1] = 0;
     checksum = os_checksum((const os_char*)buf, buf_n, OS_NULL);
+    */
+
     hdr->checksum[0] = (os_uchar)checksum;
     hdr->checksum[1] = (os_uchar)(checksum >> 8);
 }
 
 
+#if IOC_BRICK_RING_BUFFER_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -444,6 +548,7 @@ static osalStatus ioc_send_brick_data(
     ioc_unlock(b->root);
     return OSAL_SUCCESS;
 }
+#endif
 
 
 /**
@@ -464,47 +569,79 @@ static osalStatus ioc_send_brick_data(
 osalStatus ioc_run_brick_send(
     iocBrickBuffer *b)
 {
-    osalStream stream;
     iocStreamerState cmd, prev_cmd;
     os_char state_bits;
-    os_memsz n_written;
-    osalStatus s;
 
     cmd = (iocStreamerState)ioc_get_ext(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
     prev_cmd = b->prev_cmd;
     b->prev_cmd = cmd;
-    if (b->stream == OS_NULL) {
-        if (cmd != IOC_STREAM_RUNNING || cmd == prev_cmd || (state_bits & OSAL_STATE_CONNECTED) == 0) {
-            return OSAL_NOTHING_TO_DO;
+
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    if (!b->signals->flat_buffer)
+    {
+        osalStream stream;
+        os_memsz n_written;
+        osalStatus s;
+
+        if (b->stream == OS_NULL) {
+            if (cmd != IOC_STREAM_RUNNING || cmd == prev_cmd || (state_bits & OSAL_STATE_CONNECTED) == 0) {
+                return OSAL_NOTHING_TO_DO;
+            }
+
+            /* Order here is important.
+             */
+            stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
+            if (stream == OS_NULL) return OSAL_NOTHING_TO_DO;
+            b->buf_n = 0;
+            b->stream = stream;
+
+            if (b->timeout_ms) {
+                osal_stream_set_parameter(b->stream, OSAL_STREAM_WRITE_TIMEOUT_MS, b->timeout_ms);
+            }
         }
 
-        /* Order here is important.
+        /* If we got data, then try to sending it. Even without data, keep streamer alive.
          */
-        stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
-        if (stream == OS_NULL) return OSAL_NOTHING_TO_DO;
-        b->buf_n = 0;
-        b->stream = stream;
+        if (b->pos < b->buf_n) {
+            s = ioc_send_brick_data(b);
+        }
+        else {
+            s = ioc_streamer_write(b->stream, osal_str_empty, 0, &n_written, OSAL_STREAM_DEFAULT);
+            if (!OSAL_IS_ERROR(s)) s = OSAL_NOTHING_TO_DO;
+        }
 
-        if (b->timeout_ms) {
-            osal_stream_set_parameter(b->stream, OSAL_STREAM_WRITE_TIMEOUT_MS, b->timeout_ms);
+        if (OSAL_IS_ERROR(s)) {
+            ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
+            b->stream = OS_NULL;
+        }
+        return s;
+    }
+#endif
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0)
+    {
+        b->flat_ready_for_brick = OS_FALSE;
+        b->flat_connected = OS_FALSE;
+    }
+    else
+    {
+        if (cmd && cmd != prev_cmd)
+        {
+            os_get_timer(&b->flat_frame_timer);
+            b->flat_ready_for_brick = OS_TRUE;
+            b->flat_connected = OS_TRUE;
+        }
+        else
+        {
+            if (b->flat_connected) {
+                if (os_has_elapsed(&b->flat_frame_timer, 10000))
+                {
+                    b->flat_connected = OS_FALSE;
+                }
+            }
         }
     }
 
-    /* If we got data, then try to sending it. Even without data, keep streamer alive.
-     */
-    if (b->pos < b->buf_n) {
-        s = ioc_send_brick_data(b);
-    }
-    else {
-        s = ioc_streamer_write(b->stream, osal_str_empty, 0, &n_written, OSAL_STREAM_DEFAULT);
-        if (!OSAL_IS_ERROR(s)) s = OSAL_NOTHING_TO_DO;
-    }
-
-    if (OSAL_IS_ERROR(s)) {
-        ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
-        b->stream = OS_NULL;
-    }
-    return s;
+    return OSAL_SUCCESS;
 }
 
 

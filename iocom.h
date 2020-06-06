@@ -59,11 +59,14 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
-
 /* Do we need support ring buffer transfer for video, etc.
  */
 #ifndef IOC_BRICK_RING_BUFFER_SUPPORT
-#define IOC_BRICK_RING_BUFFER_SUPPORT IOC_STREAMER_SUPPORT
+  #if OSAL_MICROCONTROLLER == 0 && IOC_STREAMER_SUPPORT
+    #define IOC_BRICK_RING_BUFFER_SUPPORT OS_TRUE
+  #else
+    #define IOC_BRICK_RING_BUFFER_SUPPORT OS_FALSE
+  #endif
 #endif
 
 /* Authentication support level defines.
