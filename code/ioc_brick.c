@@ -153,7 +153,7 @@ osalStatus ioc_allocate_brick_buffer(
 #if IOC_BRICK_RING_BUFFER_SUPPORT
     /* No temp buffer needed for flat buffer transfers
      */
-    if (!b->signals.flat_buffer)
+    if (!b->signals->flat_buffer)
     {
         if (buf_sz <= sizeof(iocBrickHdr) || buf_sz > IOC_MAX_BRICK_ALLOC)
         {
