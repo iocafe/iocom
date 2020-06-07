@@ -340,7 +340,8 @@ def process_assembly(assembly):
         cfile.write('OS_NULL, ')
         write_assembly_item(exp, "buf", assembly_name)
         write_assembly_item(exp, "head", assembly_name)
-        cfile.write('OS_NULL, OS_NULL, ')
+        cfile.write('OS_NULL, ')
+        write_assembly_item(exp, "state", assembly_name)
         if not is_controller:
             cfile.write('OS_FALSE, OS_TRUE}')
         else:

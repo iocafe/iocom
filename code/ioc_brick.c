@@ -364,7 +364,7 @@ compress_jpeg:
 #if IOC_USE_JPEG_COMPRESSION
             if (flat_buffer) {
                 buf_sz = b->signals->buf->n - sizeof(iocBrickHdr);
-                buf = os_malloc(buf_sz, OS_NULL);
+                buf = (os_uchar*)os_malloc(buf_sz, OS_NULL);
                 if (buf == OS_NULL)  {
                     s = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
                     goto getout;
@@ -379,9 +379,9 @@ compress_jpeg:
                 dhdr->compression = IOC_NORMAL_JPEG;
 
                 ioc_move_array(b->signals->buf, sizeof(iocBrickHdr), buf, (os_int)sz,
-                    OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE); 
-                
-                checksum = os_checksum(buf, sz, OS_NULL);
+                    OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
+
+                checksum = os_checksum((os_char*)buf, sz, OS_NULL);
                 break;
             }
 
