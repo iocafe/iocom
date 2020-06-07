@@ -59,13 +59,24 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+/* If we need streamer support?
+ */
+#ifndef IOC_DEVICE_STREAMER
+#define IOC_DEVICE_STREAMER OSAL_PERSISTENT_SUPPORT
+#endif
+#ifndef IOC_CONTROLLER_STREAMER
+#define IOC_CONTROLLER_STREAMER 1
+#endif
+
+#define IOC_STREAMER_SUPPORT (IOC_DEVICE_STREAMER || IOC_CONTROLLER_STREAMER)
+
 /* Do we need support ring buffer transfer for video, etc.
  */
 #ifndef IOC_BRICK_RING_BUFFER_SUPPORT
   #if OSAL_MICROCONTROLLER == 0 && IOC_STREAMER_SUPPORT
-    #define IOC_BRICK_RING_BUFFER_SUPPORT OS_TRUE
-  #else
-    #define IOC_BRICK_RING_BUFFER_SUPPORT OS_FALSE
+    #define IOC_BRICK_RING_BUFFER_SUPPORT 1
+#else
+    #define IOC_BRICK_RING_BUFFER_SUPPORT 0
   #endif
 #endif
 

@@ -115,7 +115,9 @@ typedef struct iocBrickBuffer
     osalStream stream;
     os_int timeout_ms; /* timeout for streamer continuous data transfer, -1 = no timeout */
 
-    iocStreamerState prev_cmd; /* used to detect change (edge) */
+    /* iocStreamerState prev_cmd; */
+    os_int prev_cmd; /* used to detect change (edge) */
+    os_int prev_state; /* used to detect change (edge) */
     os_timer err_timer;
     os_boolean err_timer_set;
 
@@ -125,7 +127,7 @@ typedef struct iocBrickBuffer
     void *receive_context;
     // os_timer open_timer;
 
-    /* Flat buffer send timing.
+    /* Flat buffer.
      */
     os_timer flat_frame_timer;
     os_ushort flat_frame_count;

@@ -14,14 +14,6 @@
 ****************************************************************************************************
 */
 
-#ifndef IOC_DEVICE_STREAMER
-#define IOC_DEVICE_STREAMER OSAL_PERSISTENT_SUPPORT
-#endif
-#ifndef IOC_CONTROLLER_STREAMER
-#define IOC_CONTROLLER_STREAMER 1
-#endif
-
-#define IOC_STREAMER_SUPPORT (IOC_DEVICE_STREAMER || IOC_CONTROLLER_STREAMER)
 #if IOC_STREAMER_SUPPORT
 
 /** Stream interface structure for streamers.

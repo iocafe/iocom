@@ -577,10 +577,10 @@ static osalStatus ioc_send_brick_data(
 osalStatus ioc_run_brick_send(
     iocBrickBuffer *b)
 {
-    iocStreamerState cmd, prev_cmd;
+    os_int cmd, prev_cmd;
     os_char state_bits;
 
-    cmd = (iocStreamerState)ioc_get_ext(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
+    cmd = (os_int)ioc_get_ext(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
     prev_cmd = b->prev_cmd;
     b->prev_cmd = cmd;
 
@@ -762,6 +762,7 @@ static osalStatus osal_validate_brick_header(
 }
 
 
+#if IOC_BRICK_RING_BUFFER_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -856,7 +857,75 @@ static osalStatus ioc_receive_brick_data(
     b->pos = 0;
     return OSAL_COMPLETED;
 }
+#endif
 
+
+/**
+****************************************************************************************************
+
+  @brief Process received data in flat brick buffer. (internal).
+  @anchor ioc_process_flat_brick_data
+
+  Helper function for ioc_run_brick_receive().
+
+  @param   b Pointer to brick buffer structure.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_process_flat_brick_data(
+    iocBrickBuffer *b)
+{
+    iocBrickHdr hdr, *dhdr;
+    os_int n;
+    os_uint checksum;
+    os_char state_bits;
+
+    n = (os_int)ioc_get_ext(b->signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
+    if (n <= sizeof(iocBrickHdr) || (state_bits & OSAL_STATE_CONNECTED) == 0) 
+    {
+        osal_debug_error_int("Invalid received brick length", n);
+        return;
+    }
+
+    ioc_move_array(b->signals->buf, 0, &hdr, sizeof(iocBrickHdr), 
+        OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+    if (ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n || osal_validate_brick_header(&hdr)) 
+    {
+        osal_debug_error_int("Corrupted brick header received", n);
+        return;
+    }
+
+    /* Setup temporary buffer with data for passing the brick to the callback function.
+     */
+    b->buf = os_malloc(n, OS_NULL);
+    if (b->buf == OS_NULL) return;
+    b->buf_sz = n;
+    ioc_move_array(b->signals->buf, 0, b->buf, n, OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+
+    /* Verify that checksum is correct
+     */
+    checksum = (os_uint)ioc_brick_int(hdr.checksum, IOC_BRICK_CHECKSUM_SZ);
+    dhdr = (iocBrickHdr*)b->buf;
+    os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
+    if (os_checksum((const os_char*)b->buf, n, OS_NULL) != checksum)
+    {
+        osal_debug_error("brick checksum error");
+        goto getout;
+    }
+
+    /* Callback function.
+     */
+    if (b->receive_callback)
+    {
+        b->receive_callback(b, b->receive_context);
+    }
+
+getout:
+    os_free(b->buf, n);
+    b->buf = OS_NULL;
+    b->buf_sz = 0;
+}
 
 /**
 ****************************************************************************************************
@@ -875,17 +944,67 @@ static osalStatus ioc_receive_brick_data(
 osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b)
 {
-    iocStreamerState state, cmd;
-    osalStatus s;
+    os_int state;
     os_char state_bits;
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    os_int cmd;
+    osalStatus s;
+#endif
 
     if (!b->enable_receive)
     {
+#if IOC_BRICK_RING_BUFFER_SUPPORT
         if (b->stream != OS_NULL) {
             ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
             b->stream = OS_NULL;
         }
+#endif
+        if (b->signals->flat_buffer) {
+            if (b->flat_connected) {
+                ioc_set(b->signals->cmd, 0);
+                b->flat_connected = OS_FALSE;
+            }
+        }
+
         return OSAL_SUCCESS;
+    }
+
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+    if (b->signals->flat_buffer)
+    {
+#endif
+        state = (os_int)ioc_get_ext(b->signals->state, &state_bits, IOC_SIGNAL_DEFAULT);
+        if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
+            if (b->flat_connected) {
+                ioc_set(b->signals->cmd, 0);
+                b->flat_connected = OS_FALSE;
+            }
+            return OSAL_SUCCESS;
+        }
+
+        if (!b->flat_connected || os_has_elapsed(&b->flat_frame_timer, 3000) || state != b->prev_state) 
+        {
+            ioc_lock(b->root);
+            os_get_timer(&b->flat_frame_timer);
+
+            if (b->prev_state != state && state) {
+                ioc_process_flat_brick_data(b);
+            }
+            b->prev_state = state;
+
+            if (!b->flat_connected) {
+                b->prev_cmd = (os_int)ioc_get_ext(b->prm.frd.cmd, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+                b->flat_connected = OS_TRUE;
+            }
+
+            if (++(b->prev_cmd) == 0) b->prev_cmd++;
+            ioc_set(b->signals->cmd, b->prev_cmd); 
+
+            ioc_unlock(b->root);
+        }
+
+        return OSAL_SUCCESS;
+#if IOC_BRICK_RING_BUFFER_SUPPORT
     }
 
     if (b->stream == OS_NULL)
@@ -903,7 +1022,7 @@ osalStatus ioc_run_brick_receive(
 
         if (b->prm.frd.state)
         {
-            cmd = (iocStreamerState)ioc_get_ext(b->prm.frd.cmd, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+            cmd = (os_int)ioc_get_ext(b->prm.frd.cmd, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
             if ((state_bits & OSAL_STATE_CONNECTED) == 0 || cmd) {
                 ioc_set(b->prm.frd.cmd, 0);
             }
@@ -934,6 +1053,7 @@ osalStatus ioc_run_brick_receive(
     }
 
     return s;
+#endif
 }
 
 #endif
