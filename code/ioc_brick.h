@@ -128,6 +128,7 @@ typedef struct iocBrickBuffer
     /* Flat buffer send timing.
      */
     os_timer flat_frame_timer;
+    os_ushort flat_frame_count;
     os_boolean flat_ready_for_brick;
     os_boolean flat_connected;
 }

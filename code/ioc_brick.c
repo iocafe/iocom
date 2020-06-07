@@ -432,6 +432,14 @@ compress_jpeg:
     ioc_set_brick_checksum(dhdr, checksum);
     b->buf_n = sz;
 
+    if (flat_buffer) {
+        ioc_move_array(b->signals->buf, 0, &dhdr, sizeof(iocBrickHdr),
+            OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
+        ioc_set(b->signals->head, sz);
+        if (++(b->flat_frame_count) == 0) b->flat_frame_count++;
+        ioc_set(b->signals->state, b->flat_frame_count);
+    }
+
 getout:
     if (flat_buffer) {
         os_free(buf, buf_sz);
