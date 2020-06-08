@@ -16,9 +16,10 @@ from kivy.uix.boxlayout import BoxLayout
 import math
 
 class VideoItem(GridLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, assembly_type, **kwargs):
         self.texture = None
         super(VideoItem, self).__init__(**kwargs)
+        self.assembly_type = assembly_type;
         self.cols = 1
 
         self.height = self.minimum_height = 480
@@ -114,7 +115,7 @@ class VideoItem(GridLayout):
 class MainApp(App):
     def build(self):
         assembly_data = {}
-        self.root = VideoItem()
+        self.root = VideoItem("cam_flat")
         self.root.set_device(Root('testwidget'), "gina2.iocafenet", assembly_data)
     
         return self.root

@@ -46,6 +46,8 @@ elseif(EXISTS "/usr/include/python3.8")
   include_directories("/usr/include/python3.8")
 elseif(EXISTS "/usr/include/python3.7m")
   include_directories("/usr/include/python3.7m")
+elseif(EXISTS "/usr/include/python3.5m")
+  include_directories("/usr/include/python3.5m")
 endif()
 
 # Add main headers.

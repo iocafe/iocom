@@ -65,11 +65,12 @@ class Panel(GridLayout):
     def add_assembly(self, ioc_root, assembly_data, device_path):
         assembly_type = assembly_data.get("type", "no_type")
 
-        if assembly_type=="camera":
-            cam = VideoItem()
+        if assembly_type=="cam_flat" or assembly_type=="cam_ring":
+            cam = VideoItem(assembly_type)
+            assembly_type
 
-        elif assembly_type=="linecam":
-            cam = LinearCameraItem()
+        elif assembly_type=="lcam_flat" or assembly_type=="lcam_ring":
+            cam = LinearCameraItem(assembly_type)
 
         else:
             cam = LinearCameraItem()

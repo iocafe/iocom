@@ -20,8 +20,9 @@ from garden_graph import Graph, SmoothLinePlot, MeshLinePlot, MeshStemPlot, BarP
 
 
 class LinearCameraItem(GridLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, assembly_type, **kwargs):
         super(LinearCameraItem, self).__init__(**kwargs)
+        self.assembly_type = assembly_type;
         self.cols = 1
 
         self.height = self.minimum_height = 400
@@ -197,7 +198,7 @@ class LinearCameraItem(GridLayout):
 class MainApp(App):
     def build(self):
         assembly_data = {}
-        self.root = LinearCameraItem()
+        self.root = LinearCameraItem("lcam_flat")
         self.root.set_device(Root('testwidget'), "gina2.iocafenet", assembly_data)
     
         return self.root
