@@ -307,6 +307,7 @@ osalStatus ioc_compress_brick(
         buf = b->buf;
         buf_sz = b->buf_sz;
         dhdr = (iocBrickHdr*)buf;
+        os_memcpy(buf, hdr, sizeof(iocBrickHdr));
     }
 #else
     flat_buffer = OS_TRUE;
@@ -315,7 +316,6 @@ osalStatus ioc_compress_brick(
     dhdr = &dhdr_tmp;
     ioc_lock(b->root);
 #endif
-    os_memcpy(buf, hdr, sizeof(iocBrickHdr));
 
     if (compression == IOC_DEFAULT_CAM_IMG_COMPR)
     {
@@ -362,6 +362,8 @@ compress_jpeg:
             }
 
 #if IOC_USE_JPEG_COMPRESSION
+            /* Flat buffer
+             */
             if (flat_buffer) {
                 buf_sz = b->signals->buf->n - sizeof(iocBrickHdr);
                 buf = (os_uchar*)os_malloc(buf_sz, OS_NULL);
@@ -385,6 +387,9 @@ compress_jpeg:
                 break;
             }
 
+            /* Ring buffer
+             */
+#if IOC_BRICK_RING_BUFFER_SUPPORT
             s = os_compress_JPEG(data, w, h, format, quality,
                 OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
             if (s == OSAL_SUCCESS)
@@ -393,6 +398,7 @@ compress_jpeg:
                 dhdr->compression = IOC_NORMAL_JPEG;
                 break;
             }
+#endif
             /* continues... */
 #else
             osal_debug_error("JPEG is not included in build");
@@ -500,14 +506,6 @@ void ioc_set_brick_checksum(
     iocBrickHdr *hdr,
     os_ushort checksum)
 {
-    /* iocBrickHdr *hdr;
-    os_ushort checksum;
-    hdr = (iocBrickHdr*)buf;
-    hdr->checksum[0] = 0;
-    hdr->checksum[1] = 0;
-    checksum = os_checksum((const os_char*)buf, buf_n, OS_NULL);
-    */
-
     hdr->checksum[0] = (os_uchar)checksum;
     hdr->checksum[1] = (os_uchar)(checksum >> 8);
 }
@@ -577,7 +575,7 @@ static osalStatus ioc_send_brick_data(
 osalStatus ioc_run_brick_send(
     iocBrickBuffer *b)
 {
-    os_int cmd, prev_cmd;
+    os_int cmd, prev_cmd, state;
     os_char state_bits;
 
     cmd = (os_int)ioc_get_ext(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
@@ -647,6 +645,12 @@ osalStatus ioc_run_brick_send(
                 }
             }
         }
+    }
+
+    /* Set connected bit. We should write function just to set connected bit. This will also rewrite value, which may cause sync problems */
+    state = (os_int)ioc_get_ext(b->signals->state, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
+        ioc_set(b->signals->state, state);
     }
 
     return OSAL_SUCCESS;

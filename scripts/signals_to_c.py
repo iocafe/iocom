@@ -344,6 +344,9 @@ def process_assembly(assembly):
         write_assembly_item(exp, "state", assembly_name)
         if not is_controller:
             cfile.write('OS_FALSE, OS_TRUE}')
+        
+        else:        
+            cfile.write('  s->' + assembly_name + '.flat_buffer = OS_TRUE;\n')
 
     else:
         print("Assembly '" + assembly_name + "' type '" + assembly_type + "' is uknown")
