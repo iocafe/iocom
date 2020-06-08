@@ -260,7 +260,7 @@ osalStatus osal_main(
     camera_prm.camera_pin = &pins.cameras.ccd;
     camera_prm.timer_pin = &pins.timers.ccd_data;
 #endif
-#ifdef PINS_CAMERAS_CAMERA    
+#ifdef PINS_CAMERAS_CAMERA
     camera_prm.camera_pin = &pins.cameras.camera;
 #endif
     camera_prm.callback_func = ioboard_camera_callback;
@@ -434,7 +434,9 @@ void osal_main_cleanup(
 #endif
     osal_serial_shutdown();
 
+#if PINS_CAMERA
     PINS_CAMERA_IFACE.close(&pins_camera);
+#endif
     pins_shutdown(&pins_hdr);
 
     ioc_release_node_config(&ioapp_device_conf);
