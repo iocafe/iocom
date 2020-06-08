@@ -426,12 +426,16 @@ void osal_main_cleanup(
 #endif
 
     ioboard_end_communication();
+
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
     osal_tls_shutdown();
 #else
     osal_socket_shutdown();
 #endif
     osal_serial_shutdown();
+
+    PINS_CAMERA_IFACE.close(&pins_camera);
+    pins_shutdown(&pins_hdr);
 
     ioc_release_node_config(&ioapp_device_conf);
 }

@@ -367,6 +367,9 @@ void osal_main_cleanup(
     osal_socket_shutdown();
 #endif
 
+    PINS_CAMERA_IFACE.close(&pins_camera);
+    pins_shutdown(&pins_hdr);
+
     ioc_release_node_config(&ioapp_device_conf);
 }
 
