@@ -326,7 +326,7 @@ def process_assembly(assembly):
         else:
             cfile.write('OS_TRUE, OS_FALSE}')
 
-    if assembly_type == 'lcam_flat' or assembly_type == 'cam_flat':
+    elif assembly_type == 'lcam_flat' or assembly_type == 'cam_flat':
         imp = assembly.get("imp", "imp.undefined_*")
         exp = assembly.get("exp", "exp.undefined_*")
 
