@@ -375,7 +375,7 @@ compress_jpeg:
                 s = os_compress_JPEG(data, w, h, format, quality,
                     OS_NULL, buf, buf_sz, &sz, OSAL_JPEG_DEFAULT);
                 if (s)  {
-                    if (quality > 10) 
+                    if (quality > 10)
                     {
                         osal_debug_error_int("Out of flat buffer, JPEG quality reduced to ", quality/2);
                         s = os_compress_JPEG(data, w, h, format, quality/2,
@@ -894,15 +894,15 @@ static void ioc_process_flat_brick_data(
     os_char state_bits;
 
     n = (os_int)ioc_get_ext(b->signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
-    if (n <= sizeof(iocBrickHdr) || (state_bits & OSAL_STATE_CONNECTED) == 0) 
+    if (n <= sizeof(iocBrickHdr) || (state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         osal_debug_error_int("Invalid received brick length", n);
         return;
     }
 
-    ioc_move_array(b->signals->buf, 0, &hdr, sizeof(iocBrickHdr), 
+    ioc_move_array(b->signals->buf, 0, &hdr, sizeof(iocBrickHdr),
         OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
-    if (ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n || osal_validate_brick_header(&hdr)) 
+    if (ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n || osal_validate_brick_header(&hdr))
     {
         osal_debug_error_int("Corrupted brick header received", n);
         return;
@@ -910,7 +910,7 @@ static void ioc_process_flat_brick_data(
 
     /* Setup temporary buffer with data for passing the brick to the callback function.
      */
-    b->buf = os_malloc(n, OS_NULL);
+    b->buf = (os_uchar*)os_malloc(n, OS_NULL);
     if (b->buf == OS_NULL) return;
     b->buf_sz = n;
     ioc_move_array(b->signals->buf, 0, b->buf, n, OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
@@ -994,7 +994,7 @@ osalStatus ioc_run_brick_receive(
             return OSAL_SUCCESS;
         }
 
-        if (!b->flat_connected || os_has_elapsed(&b->flat_frame_timer, 3000) || state != b->prev_state) 
+        if (!b->flat_connected || os_has_elapsed(&b->flat_frame_timer, 3000) || state != b->prev_state)
         {
             ioc_lock(b->root);
             os_get_timer(&b->flat_frame_timer);
@@ -1010,7 +1010,7 @@ osalStatus ioc_run_brick_receive(
             }
 
             if (++(b->prev_cmd) == 0) b->prev_cmd++;
-            ioc_set(b->signals->cmd, b->prev_cmd); 
+            ioc_set(b->signals->cmd, b->prev_cmd);
 
             ioc_unlock(b->root);
         }
