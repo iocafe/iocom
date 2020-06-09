@@ -236,8 +236,7 @@ osalStatus ioc_allocate_brick_buffer(
 void ioc_free_brick_buffer(
     iocBrickBuffer *b)
 {
-#if IOC_BRICK_RING_BUFFER_SUPPORT
-    if (!b->signals->flat_buffer)
+    if (!b->signals->flat_buffer && b->buf)
     {
         ioc_lock(b->root);
         if (b->buf)
@@ -249,7 +248,6 @@ void ioc_free_brick_buffer(
         }
         ioc_unlock(b->root);
     }
-#endif
 }
 
 
@@ -897,21 +895,34 @@ static void ioc_process_flat_brick_data(
     if (n <= (os_memsz)sizeof(iocBrickHdr) || (state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         osal_debug_error_int("Invalid received brick length", n);
-        return;
+        goto failed;
     }
 
     ioc_move_array(b->signals->buf, 0, &hdr, sizeof(iocBrickHdr),
         OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
-    if ((os_int)ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n || osal_validate_brick_header(&hdr))
+    if ((os_int)ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n ||
+        osal_validate_brick_header(&hdr))
     {
         osal_debug_error_int("Corrupted brick header received", n);
-        return;
+        goto failed;
     }
 
     /* Setup temporary buffer with data for passing the brick to the callback function.
      */
-    b->buf = (os_uchar*)os_malloc(n, OS_NULL);
-    if (b->buf == OS_NULL) return;
+    if (b->buf)
+    {
+        if (n > b->buf_alloc_sz)
+        {
+            os_free(b->buf, b->buf_alloc_sz);
+            b->buf = OS_NULL;
+            b->buf_alloc_sz = b->buf_sz = 0;
+        }
+    }
+    if (b->buf == OS_NULL)
+    {
+        b->buf = (os_uchar*)os_malloc(n, &b->buf_alloc_sz);
+        if (b->buf == OS_NULL) goto failed;
+    }
     b->buf_sz = n;
     ioc_move_array(b->signals->buf, 0, b->buf, n, OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
 
@@ -923,21 +934,23 @@ static void ioc_process_flat_brick_data(
     if (os_checksum((const os_char*)b->buf, n, OS_NULL) != checksum)
     {
         osal_debug_error("brick checksum error");
-        // goto getout;
+        // goto failed;
     }
 
-    /* Callback function.
+    /* Callback function. Leave image into buffer. Can be processed from there as well.
      */
     if (b->receive_callback)
     {
         b->receive_callback(b, b->receive_context);
     }
+    return;
 
-getout:
-    os_free(b->buf, n);
+failed:
+    os_free(b->buf, b->buf_alloc_sz);
     b->buf = OS_NULL;
-    b->buf_sz = 0;
+    b->buf_alloc_sz = b->buf_sz = 0;
 }
+
 
 /**
 ****************************************************************************************************
@@ -994,6 +1007,8 @@ osalStatus ioc_run_brick_receive(
             return OSAL_SUCCESS;
         }
 
+        s = OSAL_SUCCESS;
+
         if (!b->flat_connected || os_has_elapsed(&b->flat_frame_timer, 3000) || state != b->prev_state)
         {
             ioc_lock(b->root);
@@ -1001,6 +1016,7 @@ osalStatus ioc_run_brick_receive(
 
             if (b->prev_state != state && state) {
                 ioc_process_flat_brick_data(b);
+                if (b->buf) s = OSAL_COMPLETED;
             }
             b->prev_state = state;
 
@@ -1015,7 +1031,7 @@ osalStatus ioc_run_brick_receive(
             ioc_unlock(b->root);
         }
 
-        return OSAL_SUCCESS;
+        return s;
 #if IOC_BRICK_RING_BUFFER_SUPPORT
     }
 
