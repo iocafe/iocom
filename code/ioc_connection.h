@@ -76,7 +76,7 @@
 
 /* Maximum data frame bytes that can be written.
  */
-#define IOC_SOCKET_MAX_IN_AIR (3 * IOC_SOCKET_FRAME_SZ)
+#define IOC_SOCKET_MAX_IN_AIR (32 * IOC_SOCKET_FRAME_SZ)
 
 /* Maximum acknowledge bytes that can be written.
  */
