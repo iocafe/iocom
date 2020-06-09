@@ -1085,7 +1085,7 @@ static void ioc_process_flat_brick_data(
     if (os_checksum((const os_char*)b->buf, n, OS_NULL) != checksum)
     {
         osal_debug_error("brick checksum error");
-        goto failed;
+        // goto failed;
     }
 
     /* Callback function. Leave image into buffer. Can be processed from there as well.
