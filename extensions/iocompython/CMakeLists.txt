@@ -8,6 +8,7 @@ project(${E_PROJECT})
 # include build environment setting common to all projects.
 include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
+# Find python stuff. This sets a bunch of variables. We need Python 3.12 for this.
 find_package (Python3 COMPONENTS Interpreter Development)
 
 # Build individual library projects.
@@ -18,7 +19,6 @@ add_subdirectory($ENV{E_ROOT}/iocom/extensions/devicedir "${CMAKE_CURRENT_BINARY
 # Set path to where to keep libraries.
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_BIN})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
-
 
 # iocompython is exception how debug build is handled. There is no 'd' postfix and
 # resuting library is placed in debug folder. This allows .py files to import iocompython
@@ -38,19 +38,8 @@ include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
 include_directories("$ENV{E_ROOT}/iocom/extensions/iocompython")
 
-# Guess where Python header could be? Is there better way to do this?
-# if(EXISTS "/coderoot/python/include/python3.7dm" AND CMAKE_BUILD_TYPE MATCHES Debug)
-#   include_directories("/coderoot/python/include/python3.7dm")
-# elseif(EXISTS "/usr/include/python3.8")
-#   include_directories("/usr/include/python3.8")
-# elseif(EXISTS "/usr/include/python3.7m")
-#   include_directories("/usr/include/python3.7m")
-# elseif(EXISTS "/usr/include/python3.5m")
-#   include_directories("/usr/include/python3.5m")
-# endif()
-
+# Python include directories
 include_directories(${Python3_INCLUDE_DIRS})
-
 
 # Add main headers.
 set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
