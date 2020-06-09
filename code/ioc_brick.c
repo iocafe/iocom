@@ -406,7 +406,7 @@ compress_jpeg:
     dhdr->checksum[0] = 0;
     dhdr->checksum[1] = 0;
     checksum = os_checksum((const os_char*)dhdr, sizeof(iocBrickHdr), OS_NULL);
-    os_checksum(buf, sz - sizeof(iocBrickHdr), &checksum);
+    os_checksum((os_char*)buf, sz - sizeof(iocBrickHdr), &checksum);
 
     ioc_set_brick_checksum(dhdr, checksum);
     b->buf_n = sz;
@@ -566,7 +566,7 @@ compress_jpeg:
     ioc_set_brick_timestamp(dhdr);
     dhdr->checksum[0] = 0;
     dhdr->checksum[1] = 0;
-    checksum = os_checksum(buf, sz, OS_NULL);
+    checksum = os_checksum((os_char*)buf, sz, OS_NULL);
     ioc_set_brick_checksum(dhdr, checksum);
     b->buf_n = sz;
 
