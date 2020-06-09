@@ -166,6 +166,12 @@ static PyObject *BrickBuffer_new(
         self->from_device = OS_FALSE;
     }
 
+    self->flat_buffer = OS_TRUE;
+    if (os_strstr(flags, "ring", OSAL_STRING_SEARCH_ITEM_NAME))
+    {
+        self->flat_buffer = OS_FALSE;
+    }
+
     bb_init_signal(&self->sig_cmd, &self->h_imp);
     bb_init_signal(&self->sig_select, &self->h_imp);
     bb_init_signal(&self->sig_state, &self->h_exp);
@@ -190,12 +196,14 @@ static PyObject *BrickBuffer_new(
     */
     os_memclear(&sig, sizeof(iocStreamerSignals));
     sig.to_device = !self->from_device;
+    sig.flat_buffer = self->flat_buffer;
     sig.cmd = &self->sig_cmd;
     sig.select = &self->sig_select;
     sig.state = &self->sig_state;
     sig.buf = &self->sig_buf;
     sig.head = &self->sig_head;
     sig.tail = &self->sig_tail;
+
     ioc_initialize_brick_buffer(&self->brick_buffer, &sig, iocroot, timeout_ms,
         self->is_device ? IOC_BRICK_DEVICE : IOC_BRICK_CONTROLLER);
 
@@ -368,31 +376,41 @@ static osalStatus bb_try_setup(
     BrickBuffer *self,
     iocRoot *iocroot)
 {
-    /* If setup is already good. We check head and tail because they are in different
+    /* If setup is already good. We check head and cmd because they are in different
        memory blocks and last to be set up.
      */
     if (self->sig_head.handle->mblk && self->sig_head.flags &&
-        self->sig_tail.handle->mblk && self->sig_tail.flags)
+        self->sig_cmd.handle->mblk &&(self->sig_cmd.flags))
     {
         return OSAL_SUCCESS;
     }
     self->sig_head.flags = 0;
     self->sig_tail.flags = 0;
 
-    if (bb_try_signal_setup(&self->sig_cmd, "cmd", self->prefix, &self->imp_ids, iocroot)) goto getout;
-    if (bb_try_signal_setup(&self->sig_select, "select", self->prefix, &self->imp_ids, iocroot)) goto getout;
+    if (!self->flat_buffer) {
+        if (bb_try_signal_setup(&self->sig_select, "select", self->prefix, &self->imp_ids, iocroot))
+            goto getout;
+    }
     if (bb_try_signal_setup(&self->sig_state, "state", self->prefix, &self->exp_ids, iocroot)) goto getout;
 
     if (self->from_device) {
         if (bb_try_signal_setup(&self->sig_buf, "buf", self->prefix, &self->exp_ids, iocroot)) goto getout;
         if (bb_try_signal_setup(&self->sig_head, "head", self->prefix, &self->exp_ids, iocroot)) goto getout;
-        if (bb_try_signal_setup(&self->sig_tail, "tail", self->prefix, &self->imp_ids, iocroot)) goto getout;
+        if (!self->flat_buffer) {
+            if (bb_try_signal_setup(&self->sig_tail, "tail", self->prefix, &self->imp_ids, iocroot))
+                goto getout;
+        }
     }
     else {
         if (bb_try_signal_setup(&self->sig_buf, "buf", self->prefix, &self->imp_ids, iocroot)) goto getout;
         if (bb_try_signal_setup(&self->sig_head, "head", self->prefix, &self->imp_ids, iocroot)) goto getout;
-        if (bb_try_signal_setup(&self->sig_tail, "tail", self->prefix, &self->exp_ids, iocroot)) goto getout;
+        if (!self->flat_buffer) {
+            if (bb_try_signal_setup(&self->sig_tail, "tail", self->prefix, &self->exp_ids, iocroot))
+                goto getout;
+        }
     }
+
+    if (bb_try_signal_setup(&self->sig_cmd, "cmd", self->prefix, &self->imp_ids, iocroot)) goto getout;
 
     return OSAL_COMPLETED;
 
@@ -501,7 +519,7 @@ static PyObject *BrickBuffer_get(
      */
     s = ioc_run_brick_receive(&self->brick_buffer);
     buf_sz = self->brick_buffer.buf_sz;
-    if (s != OSAL_COMPLETED || buf_sz <= sizeof(iocBrickHdr))
+    if (s != OSAL_COMPLETED || buf_sz <= (os_memsz)sizeof(iocBrickHdr))
     {
         ioc_unlock(iocroot);
         self->status = s;
@@ -573,7 +591,7 @@ static PyObject *BrickBuffer_get(
 */
 static PyMemberDef BrickBuffer_members[] = {
     {(char*)"status", T_INT, offsetof(BrickBuffer, status), 0, (char*)"constructor status"},
-    {NULL} /* Sentinel */
+    {NULL, 0, 0, 0, NULL} /* Sentinel */
 };
 
 
@@ -587,7 +605,7 @@ static PyMethodDef BrickBuffer_methods[] = {
     {"set_receive", (PyCFunction)BrickBuffer_set_receive, METH_VARARGS|METH_KEYWORDS, "Enable/disable reciving data"},
     {"get", (PyCFunction)BrickBuffer_get, METH_VARARGS|METH_KEYWORDS, "Get buffered data brick"},
 //    {"set", (PyCFunction)BrickBuffer_set, METH_VARARGS|METH_KEYWORDS, "Store brick_buffer data"},
-    {NULL} /* Sentinel */
+    {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
 

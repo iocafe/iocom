@@ -59,6 +59,7 @@ typedef struct
      */
     os_boolean is_device;
     os_boolean from_device;
+    os_boolean flat_buffer;
 
     /** Connection initialization status: 0 = all good, other values are errors.
         Set by the constructor function.

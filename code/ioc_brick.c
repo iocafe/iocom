@@ -197,7 +197,7 @@ osalStatus ioc_allocate_brick_buffer(
      */
     if (!b->signals->flat_buffer)
     {
-        if (buf_sz <= sizeof(iocBrickHdr) || buf_sz > IOC_MAX_BRICK_ALLOC)
+        if (buf_sz <= (os_memsz)sizeof(iocBrickHdr) || buf_sz > IOC_MAX_BRICK_ALLOC)
         {
             osal_debug_error("ioc_allocate_brick_buffer: Illegal size");
             return OSAL_STATUS_FAILED;
@@ -804,7 +804,7 @@ static osalStatus ioc_receive_brick_data(
     }
     first;
 
-    if (b->pos < sizeof(iocBrickHdr))
+    if (b->pos < (os_memsz)sizeof(iocBrickHdr))
     {
         s = ioc_streamer_read(b->stream, (os_char*)first.bytes,
             sizeof(iocBrickHdr), &n_read, OSAL_STREAM_PEEK);
@@ -812,7 +812,7 @@ static osalStatus ioc_receive_brick_data(
             return s;
         }
 
-        if (n_read < sizeof(iocBrickHdr)) {
+        if (n_read < (os_memsz)sizeof(iocBrickHdr)) {
             return OSAL_SUCCESS;
         }
 
@@ -894,7 +894,7 @@ static void ioc_process_flat_brick_data(
     os_char state_bits;
 
     n = (os_int)ioc_get_ext(b->signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
-    if (n <= sizeof(iocBrickHdr) || (state_bits & OSAL_STATE_CONNECTED) == 0)
+    if (n <= (os_memsz)sizeof(iocBrickHdr) || (state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         osal_debug_error_int("Invalid received brick length", n);
         return;
@@ -902,7 +902,7 @@ static void ioc_process_flat_brick_data(
 
     ioc_move_array(b->signals->buf, 0, &hdr, sizeof(iocBrickHdr),
         OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
-    if (ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n || osal_validate_brick_header(&hdr))
+    if ((os_int)ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n || osal_validate_brick_header(&hdr))
     {
         osal_debug_error_int("Corrupted brick header received", n);
         return;
