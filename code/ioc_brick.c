@@ -80,6 +80,10 @@ void ioc_initialize_brick_buffer(
         os_memcpy(b->signals, signals, sizeof(iocStreamerSignals));
     }
     b->prm.is_device = (os_boolean)((flags & IOC_BRICK_CONTROLLER) == 0);
+    
+    /* Initial JPEG compression quality
+     */
+    b->compression_quality = 30.0;
 
     /* In device end, we need to set IDLE status with connected state bit */
     if (b->prm.is_device && !signals->flat_buffer) {
@@ -283,13 +287,10 @@ static osalStatus ioc_compress_brick_flat(
     iocBrickHdr *dhdr, dhdr_tmp;
     os_uchar *buf;
     os_memsz sz, buf_sz;
+    os_int quality;
     os_ushort checksum = 0;
     os_boolean lock_on = OS_FALSE;
     osalStatus s = OSAL_SUCCESS;
-
-#if IOC_USE_JPEG_COMPRESSION
-    os_int quality;
-#endif
 
     buf = OS_NULL;
     buf_sz = 0;
@@ -309,23 +310,7 @@ static osalStatus ioc_compress_brick_flat(
      */
     switch (compression)
     {
-#if IOC_USE_JPEG_COMPRESSION
-        case IOC_SMALL_JPEG:
-            quality = 15;
-            goto compress_jpeg;
-
         case IOC_NORMAL_JPEG:
-            quality = 40;
-            goto compress_jpeg;
-
-        case IOC_LARGE_JPEG:
-            quality = 75;
-compress_jpeg:
-#else
-        case IOC_SMALL_JPEG:
-        case IOC_NORMAL_JPEG:
-        case IOC_LARGE_JPEG:
-#endif
             /* If already compressed by camera (ESP32 cam can make JPEG)
              */
             if (hdr->compression == IOC_NORMAL_JPEG)
@@ -348,19 +333,13 @@ compress_jpeg:
                 goto getout;
             }
 
+            quality = ioc_get_jpeg_compression_quality(b);
             s = os_compress_JPEG(data, w, h, format, quality,
                 OS_NULL, buf, buf_sz, &sz, OSAL_JPEG_DEFAULT);
+            ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, s, sz);
             if (s)  {
-                if (quality > 10)
-                {
-                    osal_debug_error_int("Out of flat buffer, JPEG quality reduced to ", quality/2);
-                    s = os_compress_JPEG(data, w, h, format, quality/2,
-                        OS_NULL, buf, buf_sz, &sz, OSAL_JPEG_DEFAULT);
-                }
-                if (s)  {
-                    s = OSAL_STATUS_OUT_OF_BUFFER;
-                    goto getout;
-                }
+                s = OSAL_STATUS_OUT_OF_BUFFER;
+                goto getout;
             }
             dhdr->compression = IOC_NORMAL_JPEG;
 
@@ -464,10 +443,7 @@ static osalStatus ioc_compress_brick_ring(
     os_memsz sz, buf_sz;
     os_ushort checksum = 0;
     osalStatus s = OSAL_SUCCESS;
-
-#if IOC_USE_JPEG_COMPRESSION
     os_int quality;
-#endif
 
     buf = b->buf;
     buf_sz = b->buf_sz;
@@ -488,23 +464,9 @@ static osalStatus ioc_compress_brick_ring(
      */
     switch (compression)
     {
-#if IOC_USE_JPEG_COMPRESSION
-        case IOC_SMALL_JPEG:
-            quality = 15;
-            goto compress_jpeg;
-
         case IOC_NORMAL_JPEG:
-            quality = 40;
-            goto compress_jpeg;
+            quality = ioc_get_jpeg_compression_quality(b);
 
-        case IOC_LARGE_JPEG:
-            quality = 75;
-compress_jpeg:
-#else
-        case IOC_SMALL_JPEG:
-        case IOC_NORMAL_JPEG:
-        case IOC_LARGE_JPEG:
-#endif
             /* If already compressed by camera (ESP32 cam can make JPEG)
              */
             if (hdr->compression == IOC_NORMAL_JPEG)
@@ -838,7 +800,7 @@ void ioc_brick_set_receive(
 ****************************************************************************************************
 
   @brief Get integer from brick header.
-  @anchor ioc_brick_int
+  @anchor ioc_get_brick_hdr_int
 
   Get integer value from brick header. Integers byte order in brick header are always least
   significant first, and they are not necessarily aligned by type size. This function gets
@@ -850,7 +812,7 @@ void ioc_brick_set_receive(
 
 ****************************************************************************************************
 */
-os_ulong ioc_brick_int(
+os_ulong ioc_get_brick_hdr_int(
     os_uchar *data,
     os_int nro_bytes)
 {
@@ -899,8 +861,8 @@ static osalStatus osal_validate_brick_header(
         return OSAL_STATUS_FAILED;
     }
 
-    w = (os_uint)ioc_brick_int(bhdr->width, IOC_BRICK_DIM_SZ);
-    h = (os_uint)ioc_brick_int(bhdr->height, IOC_BRICK_DIM_SZ);
+    w = (os_uint)ioc_get_brick_hdr_int(bhdr->width, IOC_BRICK_DIM_SZ);
+    h = (os_uint)ioc_get_brick_hdr_int(bhdr->height, IOC_BRICK_DIM_SZ);
     if (w < 1 || w > IOC_MAX_BRICK_WIDTH ||
         h < 1 || h > IOC_MAX_BRICK_HEIGHT)
     {
@@ -912,8 +874,8 @@ static osalStatus osal_validate_brick_header(
     max_brick_alloc = 3*((IOC_MAX_BRICK_WIDTH * IOC_MAX_BRICK_HEIGHT
         * bytes_per_pix)/2) + sizeof(iocBrickHdr);
 
-    buf_sz = (os_uint)ioc_brick_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
-    alloc_sz = (os_uint)ioc_brick_int(bhdr->alloc_sz, IOC_BRICK_BYTES_SZ);
+    buf_sz = (os_uint)ioc_get_brick_hdr_int(bhdr->buf_sz, IOC_BRICK_BYTES_SZ);
+    alloc_sz = (os_uint)ioc_get_brick_hdr_int(bhdr->alloc_sz, IOC_BRICK_BYTES_SZ);
     if (buf_sz < 1 || buf_sz > max_brick_sz ||
         alloc_sz < 1 || alloc_sz > max_brick_alloc)
     {
@@ -969,7 +931,7 @@ static osalStatus ioc_receive_brick_data(
             return OSAL_STATUS_FAILED;
         }
 
-        b->buf_sz = (os_memsz)ioc_brick_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
+        b->buf_sz = (os_memsz)ioc_get_brick_hdr_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
 
         alloc_sz = b->buf_sz | 0x0FFF;;
         if (b->buf == OS_NULL || alloc_sz > b->buf_alloc_sz)
@@ -999,7 +961,7 @@ static osalStatus ioc_receive_brick_data(
     /* Verify the checksum.
      */
     bhdr = (iocBrickHdr*)b->buf;
-    checksum = (os_uint)ioc_brick_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
+    checksum = (os_uint)ioc_get_brick_hdr_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     os_memclear(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, b->buf_sz, OS_NULL) != checksum)
     {
@@ -1051,7 +1013,7 @@ static void ioc_process_flat_brick_data(
 
     ioc_move_array(b->signals->buf, 0, &hdr, sizeof(iocBrickHdr),
         OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
-    if ((os_int)ioc_brick_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n ||
+    if ((os_int)ioc_get_brick_hdr_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n ||
         osal_validate_brick_header(&hdr))
     {
         osal_debug_error_int("Corrupted brick header received", n);
@@ -1079,7 +1041,7 @@ static void ioc_process_flat_brick_data(
 
     /* Verify that checksum is correct
      */
-    checksum = (os_uint)ioc_brick_int(hdr.checksum, IOC_BRICK_CHECKSUM_SZ);
+    checksum = (os_uint)ioc_get_brick_hdr_int(hdr.checksum, IOC_BRICK_CHECKSUM_SZ);
     dhdr = (iocBrickHdr*)b->buf;
     os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, n, OS_NULL) != checksum)
@@ -1219,8 +1181,6 @@ osalStatus ioc_run_brick_receive(
         if (b->timeout_ms) {
             osal_stream_set_parameter(b->stream, OSAL_STREAM_READ_TIMEOUT_MS, b->timeout_ms);
         }
-
-        // os_get_timer(&b->open_timer);
         b->pos = 0;
     }
 
@@ -1233,6 +1193,88 @@ osalStatus ioc_run_brick_receive(
 
     return s;
 #endif
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Adjust compression quality used to send data t obrick buffer.
+  @anchor ioc_adjust_jpeg_compression_quality
+
+  Compression results of an image are used to adjust JPEG compression quality so that the
+  resulting JPEG will fit in buffer given, but is still reasonably precise.
+
+  @param   b Pointer to brick buffer structure.
+  @param   format Bitmap format, OSAL_GRAYSCALE8 or  OSAL_RGB24.
+
+  @param   w Image width in pixels.
+  @param   h Image height in pixels.
+
+  @param   compression_quality  Compression quality 1 - 100 which was used to compress.
+  @param   compression_status OSAL_SUCCESS if the compression was successfull, other
+           values indicate compression error due to buffer overlow.
+  @param   compressed_sz Size of compressed image in bytes.
+
+  @return  None
+
+****************************************************************************************************
+*/
+void ioc_adjust_jpeg_compression_quality(
+    iocBrickBuffer *b,
+    osalBitmapFormat format,
+    os_int w,
+    os_int h, 
+    os_int compression_quality,
+    osalStatus compression_status,
+    os_memsz compressed_sz)
+{
+    const os_double adjust_rate = 0.2; /* How much to adjust quality per one call to this function 0 - 1.0 */
+    const os_double buffer_use_target = 0.80; /* Try to fill buffer up to 85% use */
+    const os_double compression_ratio_target = 0.05; /* Try to reduce bitmap size by 95% -> comressed size 5% of original */
+    os_double ratio, calc_quality;
+    os_int max_sz, desired_sz, limit_sz;
+    
+    /* If we failed, drop quality bu 30%.
+     */
+    if (compression_status)
+    {
+        b->compression_quality *= 0.7;
+        if (b->compression_quality < 10.0) b->compression_quality = 10.0;
+        osal_debug_error_int("Out of buffer, JPEG quality reduced to ", (os_int)b->compression_quality);
+        return;
+    }
+
+    /* We can use absolute maximum of N bytes
+     */
+    max_sz = b->signals->buf->n - sizeof(iocBrickHdr);
+
+    /* Looking at image size and format, what we would like image size to be 3% of uncompressed bitmap size
+     */
+    desired_sz = (os_int)(compression_ratio_target * (w * h * OSAL_BITMAP_BYTES_PER_PIX(format)));
+
+    /* Limit desired size to 80% of the maximum size
+     */
+    limit_sz = (os_int)(buffer_use_target * max_sz);
+    if (desired_sz > limit_sz) {
+        desired_sz = limit_sz;
+    }
+
+    /* Calculate ratio of desired size and real compressed size.
+     */
+    if (compressed_sz < 1) {
+        compressed_sz = 1;
+    }
+    ratio = desired_sz / (os_double)compressed_sz;
+    if (ratio > 2.0) ratio = 2.0;
+    if (ratio < 0.5) ratio = 0.5;
+
+    /* Adjust compression quality.
+     */
+    calc_quality = compression_quality * ratio;
+    if (calc_quality < 10) calc_quality = 10;
+    if (calc_quality > 90) calc_quality = 90;
+    b->compression_quality = (1.0 - adjust_rate) * b->compression_quality + adjust_rate * calc_quality;
 }
 
 #endif

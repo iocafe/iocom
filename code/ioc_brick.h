@@ -23,12 +23,11 @@ typedef enum iocBrickCompression
 {
     IOC_DEFAULT_CAM_IMG_COMPR = 0,
     IOC_UNCOMPRESSED_BRICK = 1,     /* Uncompresssed brick */
-    IOC_SMALL_JPEG = 2,             /* JPEG compression  */
-    IOC_NORMAL_JPEG = 3,
-    IOC_LARGE_JPEG = 4,
+    IOC_RESERVED = 2,             
+    IOC_NORMAL_JPEG = 3,            /* JPEG compression  */
 
     IOC_MIN_BRICK_COMPRESSION = 1,
-    IOC_MAX_BRICK_COMPRESSION = 4
+    IOC_MAX_BRICK_COMPRESSION = 3
 }
 iocBrickCompression;
 
@@ -55,6 +54,7 @@ iocBrickCompression;
 #define IOC_BRICK_CHECKSUM_SZ 2
 #define IOC_BRICK_DIM_SZ 2
 #define IOC_BRICK_BYTES_SZ 4
+
 
 /**
 ****************************************************************************************************
@@ -95,14 +95,19 @@ typedef struct iocBrickHdr
 }
 iocBrickHdr;
 
-/* Brick received callback function.
+/* Brick received callback function type.
  */
 typedef osalStatus ioc_brick_received(
     struct iocBrickBuffer *b,
     void *context);
 
+/* Brick buffer used to send and receive large or complex data as "bricks".
+ */
 typedef struct iocBrickBuffer
 {
+    /* Data buffering. Different use for ring buffer and flat buffer transfers
+      and receivind and sending end.
+     */
     iocRoot *root;
     os_uchar *buf;
     os_memsz buf_sz;
@@ -110,22 +115,26 @@ typedef struct iocBrickBuffer
     volatile os_memsz buf_n;
     volatile os_memsz pos;
 
-    iocStreamerParams prm;
+    /* Sturctoru containing used IO signal pointers.
+     */
     iocStreamerSignals *signals;
-    osalStream stream;
-    os_int timeout_ms; /* timeout for streamer continuous data transfer, -1 = no timeout */
 
-    /* iocStreamerState prev_cmd; */
-    os_int prev_cmd; /* used to detect change (edge) */
-    os_int prev_state; /* used to detect change (edge) */
+    /* Stream,. OS_NULL for flat buffer trasfber.
+     */
+    osalStream stream;
+    iocStreamerParams prm;
+
+    /* Rimeout for streamer continuous data transfer, -1 = no timeout
+     */
+    os_int timeout_ms; 
+
+    /* Previous value to detecta change (edge)
+     */
+    os_int prev_cmd; 
+    os_int prev_state; 
+
     os_timer err_timer;
     os_boolean err_timer_set;
-
-    /* callback */
-    volatile os_boolean enable_receive;
-    ioc_brick_received *receive_callback;
-    void *receive_context;
-    // os_timer open_timer;
 
     /* Flat buffer.
      */
@@ -133,6 +142,16 @@ typedef struct iocBrickBuffer
     os_ushort flat_frame_count;
     os_boolean flat_ready_for_brick;
     os_boolean flat_connected;
+
+    /* Current JPEG compression quality, scale 0 - 100 (small and low quality - big and precise).
+     */
+    os_double compression_quality;
+
+    /* Callback.
+     */
+    volatile os_boolean enable_receive;
+    ioc_brick_received *receive_callback;
+    void *receive_context;
 }
 iocBrickBuffer;
 
@@ -213,9 +232,25 @@ void ioc_brick_set_receive(
 osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b);
 
-os_ulong ioc_brick_int(
+/* Get integer value from brick header (take care of endianess) 
+ */
+os_ulong ioc_get_brick_hdr_int(
     os_uchar *data,
     os_int nro_bytes);
 
+/* Adjust compression quality used to send data t obrick buffer.
+ */
+void ioc_adjust_jpeg_compression_quality(
+    iocBrickBuffer *b,
+    osalBitmapFormat format,
+    os_int w,
+    os_int h, 
+    os_int compression_quality,
+    osalStatus compression_status,
+    os_memsz compressed_sz);
+
+/* Get compression quality to use for this brick.
+ */
+#define ioc_get_jpeg_compression_quality(b) ((os_int)((b)->compression_quality))
 
 #endif

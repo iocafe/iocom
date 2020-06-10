@@ -533,8 +533,8 @@ static PyObject *BrickBuffer_get(
 
     format = (osalBitmapFormat)hdr->format;
     compression = (iocBrickCompression) hdr->compression;
-    width = (os_int)ioc_brick_int(hdr->width, IOC_BRICK_DIM_SZ);
-    height = (os_int)ioc_brick_int(hdr->height, IOC_BRICK_DIM_SZ);
+    width = (os_int)ioc_get_brick_hdr_int(hdr->width, IOC_BRICK_DIM_SZ);
+    height = (os_int)ioc_get_brick_hdr_int(hdr->height, IOC_BRICK_DIM_SZ);
 
     switch (compression)
     {
@@ -574,7 +574,7 @@ static PyObject *BrickBuffer_get(
     PyList_SetItem(rval, 1, Py_BuildValue("i", (int)format));
     PyList_SetItem(rval, 2, Py_BuildValue("i", (int)width));
     PyList_SetItem(rval, 3, Py_BuildValue("i", (int)height));
-    PyList_SetItem(rval, 4, Py_BuildValue("L", (long long)ioc_brick_int(hdr->tstamp, IOC_BRICK_TSTAMP_SZ)));
+    PyList_SetItem(rval, 4, Py_BuildValue("L", (long long)ioc_get_brick_hdr_int(hdr->tstamp, IOC_BRICK_TSTAMP_SZ)));
 
     /* End synchronization and return data.
      */
