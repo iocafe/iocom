@@ -404,7 +404,7 @@ static osalStatus ioc_compress_brick_flat(
     dhdr->checksum[0] = 0;
     dhdr->checksum[1] = 0;
     checksum = os_checksum((const os_char*)dhdr, sizeof(iocBrickHdr), OS_NULL);
-    os_checksum((os_char*)buf ? buf : data, sz - sizeof(iocBrickHdr), &checksum);
+    os_checksum((os_char*)(buf ? buf : data), sz - sizeof(iocBrickHdr), &checksum);
 
     ioc_set_brick_checksum(dhdr, checksum);
     b->buf_n = sz;
@@ -1284,7 +1284,6 @@ void ioc_adjust_jpeg_compression_quality(
 
     /* Limit desired size to 80% of the maximum size
      */
-    limit_sz = (os_int)(buffer_use_target * max_sz);
     if (desired_sz > limit_sz) {
         desired_sz = limit_sz;
     }

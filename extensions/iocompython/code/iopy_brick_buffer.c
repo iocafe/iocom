@@ -536,37 +536,35 @@ static PyObject *BrickBuffer_get(
     width = (os_int)ioc_get_brick_hdr_int(hdr->width, IOC_BRICK_DIM_SZ);
     height = (os_int)ioc_get_brick_hdr_int(hdr->height, IOC_BRICK_DIM_SZ);
 
-    switch (compression)
+    if (compression == IOC_UNCOMPRESSED)
     {
-        case IOC_UNCOMPRESSED_BRICK:
-            brick_data = PyBytes_FromStringAndSize((const char*)data, data_sz);
-            break;
-
+        brick_data = PyBytes_FromStringAndSize((const char*)data, data_sz);
+    }
 #if IOC_USE_JPEG_COMPRESSION
-        case IOC_NORMAL_JPEG:
-            os_memclear(&alloc_context, sizeof(alloc_context));
+    else if (compression & IOC_JPEG)
+    {
+        os_memclear(&alloc_context, sizeof(alloc_context));
 
-            s = os_uncompress_JPEG(data, data_sz, OS_NULL, &alloc_context, OSAL_JPEG_DEFAULT);
-            if (s) {
-                os_free(alloc_context.buf, alloc_context.buf_sz);
-                ioc_unlock(iocroot);
-                self->status = OSAL_STATUS_FAILED;
-                Py_RETURN_NONE;
-            }
-            else {
-                brick_data = PyBytes_FromStringAndSize((const char*)alloc_context.buf, alloc_context.nbytes);
-            }
-
+        s = os_uncompress_JPEG(data, data_sz, OS_NULL, &alloc_context, OSAL_JPEG_DEFAULT);
+        if (s) {
             os_free(alloc_context.buf, alloc_context.buf_sz);
-
-            break;
-#endif
-
-        default:
-            osal_debug_error_int("unsupported brick compression = ", compression);
             ioc_unlock(iocroot);
-            self->status = OSAL_STATUS_NOT_SUPPORTED;
+            self->status = OSAL_STATUS_FAILED;
             Py_RETURN_NONE;
+        }
+        else {
+            brick_data = PyBytes_FromStringAndSize((const char*)alloc_context.buf, alloc_context.nbytes);
+        }
+
+        os_free(alloc_context.buf, alloc_context.buf_sz);
+    }
+#endif
+    else
+    {
+        osal_debug_error_int("unsupported brick compression = ", compression);
+        ioc_unlock(iocroot);
+        self->status = OSAL_STATUS_NOT_SUPPORTED;
+        Py_RETURN_NONE;
     }
 
     rval = PyList_New(5);
