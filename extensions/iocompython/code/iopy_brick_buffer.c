@@ -475,7 +475,7 @@ static PyObject *BrickBuffer_get(
     os_uchar *buf, *data;
     os_memsz buf_sz, data_sz;
     osalBitmapFormat format;
-    iocBrickCompression compression;
+    os_uchar compression;
     os_int width, height;
     osalStatus s;
 
@@ -532,7 +532,7 @@ static PyObject *BrickBuffer_get(
     hdr = (iocBrickHdr*)buf;
 
     format = (osalBitmapFormat)hdr->format;
-    compression = (iocBrickCompression) hdr->compression;
+    compression = hdr->compression;
     width = (os_int)ioc_get_brick_hdr_int(hdr->width, IOC_BRICK_DIM_SZ);
     height = (os_int)ioc_get_brick_hdr_int(hdr->height, IOC_BRICK_DIM_SZ);
 

@@ -58,6 +58,8 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context);
 
+/* Callback from camera when a photo has been taken.
+ */
 void ioboard_camera_callback(
     struct pinsPhoto *photo,
     void *context);

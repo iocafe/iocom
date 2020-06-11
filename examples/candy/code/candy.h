@@ -44,6 +44,8 @@ struct pinsPhoto;
  */
 #include "json_io_config.h"
 
+/* Callback from camera when a photo has been taken.
+ */
 void ioboard_camera_callback(
     struct pinsPhoto *photo,
     void *context);

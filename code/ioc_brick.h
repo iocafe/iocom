@@ -17,20 +17,14 @@
 struct iocBrickBuffer;
 
 
-/* Do not change enumeration values, breaks compatibility.
+/* Do not change enumeration values, breaks compatibility. Future compressions should be marked 
+   with nonzero value 1 - 126 (highest bit zero, nonzero value). JPEG quality 0 means that
+   quality is not set.
  */
-typedef enum iocBrickCompression
-{
-    IOC_DEFAULT_CAM_IMG_COMPR = 0,
-    IOC_UNCOMPRESSED_BRICK = 1,     /* Uncompresssed brick */
-    IOC_RESERVED = 2,             
-    IOC_NORMAL_JPEG = 3,            /* JPEG compression  */
-
-    IOC_MIN_BRICK_COMPRESSION = 1,
-    IOC_MAX_BRICK_COMPRESSION = 3
-}
-iocBrickCompression;
-
+#define IOC_UNCOMPRESSED 0
+#define IOC_JPEG 0x80
+#define IOC_JPEG_QUALITY_MASK 0x7F
+#define IOC_DEFAULT_COMPRESSION 0x7F
 
 #if IOC_STREAMER_SUPPORT
 
@@ -62,9 +56,7 @@ iocBrickCompression;
   @brief Brick header structure.
 
     - format Basic image format, See enumeration osalBitmapFormat.
-    - compression: Either IOC_UNCOMPRESSED_BRICK or IOC_NORMAL_JPEG  See enumeration
-      iocBrickCompression, but notice that only enum values IOC_UNCOMPRESSED_BRICK
-      and IOC_NORMAL_JPEG are valid in transferred brick.
+    - compression: Compression as bit fields: IOC_UNCOMPRESSED, IOC_NORMAL_JPEG, etc.
     - checksum: Modbus checksum calculated over whole buffer including header
       and data (either compressed or uncompressed). Calculating the checksum
       should be last modification to a brick to send. I "locks" the brick.
@@ -203,7 +195,7 @@ osalStatus ioc_compress_brick(
     osalBitmapFormat format,
     os_int w,
     os_int h,
-    iocBrickCompression compression);
+    os_uchar compression);
 
 /* Store time stamp into the brick header (must be called before ioc_set_brick_checksum)
  */
