@@ -3,48 +3,70 @@
 import json
 import os
 import sys
+import copy
 
-'''
-def merge(merged, di):
-    for item in di.items():
-        key = item[0]
-        value = item[1]
-        mitem = merged.get(key, None)
-        if mitem == None:
-            if value != None:
-                merged[key] = value
-        else:
-            if isinstance(mitem, list):
-                for item in value:
-                    mergelist(mitem, item)
+def setup_group(x_groups, group_name):
+    for group in x_groups:
+        if group_name == group.get("name", None):
+            return group["signals"]
 
-            elif isinstance(mitem, dict):
-                merge(mitem, value)
+    group = {"name" : group_name, "signals" : []} 
+    x_groups.append(group)
+    return group["signals"]
 
-def mergelist(mlist, item):
-    name = item.get('name', None)
-    if name == None:
-        print('List item without name?')
+def append_parameter(x_signals, parameter, prefix, is_persistent):
+    p = copy.deepcopy(parameter)
+    if prefix != None:
+        name = p.get("name", "noname")
+        p["name"] = prefix + name
+
+    if is_persistent:
+        p["prm_flags"] = 3
+    else:
+        p["prm_flags"] = 1
+
+    x_signals.append(p)
+ 
+def merge_group(merged, data, exp_groups, imp_groups, is_persistent):
+    group_name = data.get("name", "noname")
+    parameters = data.get("parameters", None)
+    if parameters == None:
+        print("No parameters for " + name + "?")
         return
 
-    for m in mlist:
-        mname = m.get('name', None)
-        if mname == name:
-            merge(m, item)
-            return
+    exp_signals = setup_group(exp_groups, group_name)
+    imp_signals = setup_group(imp_groups, group_name)
 
-    mlist.append(item)
-'''
+    for parameter in parameters:
+        append_parameter(exp_signals, parameter, None, is_persistent)
+        append_parameter(imp_signals, parameter, "set_", is_persistent)
 
-def process_source_file(merged, path):
+def merge(merged, data, exp_groups, imp_groups, is_persistent):
+    title = data.get("title", "untitled")
+    groups = data.get("groups", None)
+    if groups == None:
+        print('"' + title + '" is empty?')
+        return
+
+    for group in groups:
+        merge_group(merged, group, exp_groups, imp_groups, is_persistent)
+
+def process_source_file(merged, path, exp_groups, imp_groups):
     read_file = open(path, "r")
     if read_file:
         data = json.load(read_file)
 
-        name = data.get("name", "noname")
-        name = data.get("persistent", "noname")
+        device_name = data.get("name", None)
+        if device_name != None:
+            merged["name"] = device_name
 
-        merge(merged, data)
+        persistent = data.get("persistent", None)
+        if persistent != None:
+            merge(merged, persistent, exp_groups, imp_groups, True)
+
+        volatile = data.get("volatile", None)
+        if volatile != None:
+            merge(merged, volatile, exp_groups, imp_groups, False)
     else:
         print ("Opening file " + path + " failed")
 
@@ -86,9 +108,17 @@ def mymain():
 
     print("Writing file " + outpath)
 
-    merged = {}
+    exp = {"name":"exp", "flags": "up"}
+    imp = {"name":"imp", "flags": "down"}
+    exp_groups = []
+    exp["groups"] = exp_groups
+    imp_groups = []
+    imp["groups"] = imp_groups
+    mblk = [exp, imp]
+    merged = {"mblk" : mblk}
+
     for path in sourcefiles:
-        process_source_file(merged, path)
+        process_source_file(merged, path, exp_groups, imp_groups)
 
     with open(outpath, "w") as outfile:
         json.dump(merged, outfile, indent=4)
