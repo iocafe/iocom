@@ -8,6 +8,7 @@ import sys
 def setup_environment(confpath, hw, coderoot, pythoncmd):
     global MYHW, MYPYTHON,  CODEROOT, JSONTOOL, PINSTOC, BINTOC, SIGNALSTOC, MERGEJSON, MYIMPORTS
     global MYCONFIG, MYSIGNALS, MYPINS, MYPARAMETERS, MYNETWORK, MYINCLUDE, MYINTERMEDIATE, CFILES
+    global PARAMETERSTOSIGNALS
 
     MYHW = hw
     if platform.system() == 'Windows':
@@ -28,6 +29,7 @@ def setup_environment(confpath, hw, coderoot, pythoncmd):
     PINSTOC = MYPYTHON + ' ' + MYCODEROOT + '/pins/scripts/pins_to_c.py'
     BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin_to_c.py'
     SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals_to_c.py'
+    PARAMETERSTOSIGNALS = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/parameters_to_signals.py'
     MERGEJSON = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/merge_json.py'
     MYIMPORTS  = MYCODEROOT + '/iocom/config'
 
@@ -62,6 +64,16 @@ def get_exact_path(fname, confdir):
     path = MYIMPORTS + '/' + confdir + '/' + fname
     if os.path.exists(path):
         return path
+
+    # Check also intermediate directory
+    if fname != "merge.json":
+        path = MYCONFIG + '/intermediate/' + MYHW + '/' + fname
+        if os.path.exists(path):
+            return path
+        path = MYCONFIG + '/intermediate/' + fname
+        if os.path.exists(path):
+            return path
+
     return None
 
 def read_json(fname, confdir):
@@ -96,7 +108,6 @@ def merge_jsons(default_file, confdir):
             print("File '" + f + "' not found for '" + confdir + "'.")
             exit()
         cmd += ' ' + path
-    # filename, file_extension = os.path.splitext(default_file)
     cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + rval + '-merged.json'
     runcmd(cmd)
     return rval
@@ -112,6 +123,11 @@ def compress_json(fname, extra_args):
     cmd = JSONTOOL + ' --b2t '
     cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '.binjson '
     cmd += MYINTERMEDIATE + '/' + MYHW + '/' + fname + '-check.json'
+    runcmd(cmd)
+
+def parameters_to_signals(parameters_name):
+    cmd = PARAMETERSTOSIGNALS + ' ' + MYINTERMEDIATE + '/' + MYHW + '/' + parameters_name + '-merged.json'
+    cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + parameters_name + '-as-signals.json'
     runcmd(cmd)
 
 def pins_to_c(pins_name, signals_name):
@@ -181,8 +197,12 @@ def mymakedir(path):
 def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     mymakedir(MYINCLUDE + '/' + MYHW)
     mymakedir(MYINTERMEDIATE + '/' + MYHW)
-    signals_name = merge_jsons('signals.json', 'signals')
     parameters_name = merge_jsons('parameters.json', 'parameters')
+    if parameters_name != None:
+        if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + parameters_name + '-merged.json'):
+            parameters_to_signals(parameters_name)
+
+    signals_name = merge_jsons('signals.json', 'signals')
     pins_name = merge_jsons('pins_io.json', 'pins')
     network_name = merge_jsons('network_defaults.json', 'network')
     accounts_name = merge_jsons('account_defaults.json', 'accounts')

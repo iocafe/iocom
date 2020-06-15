@@ -7,7 +7,7 @@
       {
         "name": "image",
         "parameters": [
-          {"name": "size", "type": "str", "array": 10, "init":1},
+          {"name": "size", "type": "str", "array": 10, "init": "320x240", "select": "320x240,640x480"},
           {"name": "quality", "type": "uchar", "init":40}
         ]
       },

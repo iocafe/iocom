@@ -25,6 +25,13 @@ def append_parameter(x_signals, parameter, prefix, is_persistent):
     else:
         p["prm_flags"] = 1
 
+    # Do not duplicate "init" and "select" in "set_"
+    if prefix == "set_":
+        if "init" in p:
+            del p["init"]
+        if "select" in p:
+            del p["select"]
+
     x_signals.append(p)
  
 def merge_group(merged, data, exp_groups, imp_groups, is_persistent):
@@ -88,10 +95,8 @@ def mymain():
 
     if len(sourcefiles) < 1:
         print("No source files")
-#        exit()
-
-        sourcefiles.append('/coderoot/iocom/examples/candy/config/parameters/parameters.json')
-#        sourcefiles.append('/coderoot/iocom/config/parameters/wifi_dhcp_device_network_parameters.json')
+        exit()
+        # sourcefiles.append('/coderoot/iocom/examples/candy/config/parameters/parameters.json')
 
     # If output path is not given as argument.
     if outpath is None:
