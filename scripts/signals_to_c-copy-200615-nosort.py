@@ -82,12 +82,18 @@ def calc_signal_memory_sz(type, array_n):
     type_sz = osal_typeinfo[type];
     return array_n * type_sz + 1
 
-def write_signal_to_c_source_for_iodevice(signal_name, signal):
-    global cfile, hfile, array_list, signal_list
-    global max_addr, signal_nr, nro_signals, handle, pinlist
+def write_signal_to_c_source_for_iodevice(pin_type, signal_name, signal):
+    global cfile, hfile, array_list, signal_list, reserved_addrs
+    global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
+    if addr != current_addr:
+        current_addr = addr
+
     type = signal.get('type', current_type);
+    if type != current_type:
+        current_type = type
+
     array_n = signal.get('array', 1);
     if array_n < 1:
         array_n = 1
@@ -97,6 +103,13 @@ def write_signal_to_c_source_for_iodevice(signal_name, signal):
     if array_n > 1:
         arr_name = sname.upper() + '_ARRAY_SZ'
         array_list.append('#define ' + arr_name + ' ' + str(array_n))
+
+    mem_sz_bytes = calc_signal_memory_sz(type, array_n);
+    reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
+
+    current_addr += mem_sz_bytes
+    if current_addr > max_addr:
+        max_addr = current_addr
 
     my_name = device_name + '.' + block_name + '.' + signal_name
 
@@ -129,21 +142,34 @@ def write_signal_to_c_source_for_iodevice(signal_name, signal):
     signal_nr = signal_nr + 1
     cfile.write(' /* ' + signal_name + ' */\n')
 
-def write_signal_to_c_source_for_controller(signal_name, signal):
-    global cfile, hfile, array_list, signal_list
-    global max_addr, signal_nr, nro_signals, handle, pinlist
+def write_signal_to_c_source_for_controller(pin_type, signal_name, signal):
+    global cfile, hfile, array_list, signal_list, reserved_addrs
+    global current_type, current_addr, max_addr, signal_nr, nro_signals, handle, pinlist
 
     addr = signal.get('addr', current_addr);
+    if addr != current_addr:
+        current_addr = addr
+
     type = signal.get('type', current_type);
+    if type != current_type:
+        current_type = type
+
     array_n = signal.get('array', 1);
     if array_n < 1:
         array_n = 1
+
+    mem_sz_bytes = calc_signal_memory_sz(type, array_n);
+    reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
 
     sname = device_name + '_' + block_name + '_' + signal_name
     signal_list.append('#define ' + sname.upper())
     if array_n > 1  and not is_dynamic:
         arr_name = sname.upper() + '_ARRAY_SZ'
         array_list.append('#define ' + arr_name + ' ' + str(array_n))
+
+    current_addr += mem_sz_bytes
+    if current_addr > max_addr:
+        max_addr = current_addr
 
     if signal_nr == 1:
         my_name = '  s->' + block_name + '.hdr'
@@ -166,20 +192,39 @@ def write_signal_to_c_source_for_controller(signal_name, signal):
 
     signal_nr = signal_nr + 1
 
-def process_signal(signal):
+def process_signal(group_name, signal):
     global block_name
     signal_name = signal.get("name", None)
     if signal_name == None:
-        print("'name' not found for signal in '" + block_name + "'")
+        print("'name' not found for signal in '" + block_name + "' group '" + group_name + "'")
         exit()
 
     check_valid_name("Signal", signal_name, IOC_SIGNAL_NAME_SZ, True)
 
     write_signal_to_c_header(signal_name)
     if is_controller:
-        write_signal_to_c_source_for_controller(signal_name, signal)
+        write_signal_to_c_source_for_controller(group_name, signal_name, signal)
     else:
-        write_signal_to_c_source_for_iodevice(signal_name, signal)
+        write_signal_to_c_source_for_iodevice(group_name, signal_name, signal)
+
+def process_group_block(group):
+    global current_type
+    group_name = group.get("name", None)
+    if group_name == None:
+        print("'name' not found for group in " + block_name)
+        exit()
+    signals = group.get("signals", None)
+    if signals == None:
+        print("'signals' not found for " + block_name + " " + group_name)
+        exit()
+
+    if group_name == 'inputs' or group_name == 'outputs':
+        current_type = "boolean"
+    else:
+        current_type = "ushort"
+
+    for signal in signals:
+        process_signal(group_name, signal)
 
 def check_if_duplicates(mylist):
     return len(mylist) != len(set(mylist))
@@ -200,22 +245,34 @@ def process_mblk(mblk):
     if handle == "OS_NULL":
         handle = "&ioboard_" + block_name
 
-    signals = mblk.get("signals", None)
-    if signals == None:
-        print("'signals' not found for " + block_name)
+    groups = mblk.get("groups", None)
+    if groups == None:
+        print("'groups' not found for " + block_name)
         exit()
 
     mblk_list.append(device_name + '.' + block_name)
-   
+
+    current_addr = 0
+    reserved_addrs = []
+    max_addr = 32
     signal_nr = 1
-    nro_signals = len(signals)
-    max_addr = mblk['max_addr']
+
+    nro_signals = 0
+    for group in groups:
+        signals = group.get("signals", None)
+        if signals != None:
+            for signal in signals:
+                nro_signals += 1
+        else:
+            gname = group.get("name", "noname")
+            print("'signals' not found for '" + block_name + "' group '" + gname + "'")
+            exit()
 
     hfile.write('\n  struct ' + '\n  {\n')
     hfile.write('    iocMblkSignalHdr hdr;\n')
 
-    for signal in signals:
-        process_signal(signal)
+    for group in groups:
+        process_group_block(group)
 
     hfile.write('  }\n  ' + block_name + ';\n')
     if not is_dynamic:
@@ -296,108 +353,12 @@ def process_assembly(assembly):
         exit()
 
 
-# Preprocess signal
-# Assign addresses to signal
-def preprocess_signal(p_signals, signal):
-    global current_type, current_addr, max_addr, reserved_addrs
-
-    addr = signal.get('addr', None);
-    if addr != None:
-        current_addr = addr
-
-    p_signal = {}
-    p_signals[current_addr] = p_signal
-    p_signal['addr'] = current_addr
-
-    type = signal.get('type', None);
-    if type != None:
-        current_type = type
-    p_signal['type'] = current_type
-
-    array_n = signal.get('array', 1);
-    if array_n < 1:
-        array_n = 1
-
-    mem_sz_bytes = calc_signal_memory_sz(current_type, array_n);
-    reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
-
-    current_addr += mem_sz_bytes
-    if current_addr > max_addr:
-        max_addr = current_addr
-
-    for key in signal:
-        if p_signal.get(key, None) == None:
-            p_signal[key] = signal[key]
-
-
-# Preprocess memory block
-# Remove group layer
-# Assign addresses with signals
-# Sorts signals by address
-def preprocess_mblk(p_mblk, mblk):
-    global current_type, current_addr, max_addr, reserved_addrs
-
-    current_type = "ushort"
-    current_addr = 0
-    max_addr = 32
-    reserved_addrs = []
-
-    # Remove group layer and assign addressess to signals.
-    for key in mblk:
-        if key == 'groups':
-            groups  = mblk[key]
-            p_signals = {}
-            p_mblk['signals'] = p_signals
-            for group in groups:
-                signals = group.get("signals", None)
-                if signals != None:
-                    for signal in signals: 
-                        preprocess_signal(p_signals, signal)
-
-        else:
-            p_mblk[key] = mblk[key]
-
-    # Sort signals by address
-    unsorted_signals = p_mblk.get('signals', None)
-    if unsorted_signals != None:
-        sorted_signals = []
-        for i in sorted(unsorted_signals): 
-            sorted_signals.append(unsorted_signals[i])
-
-        p_mblk['signals'] = sorted_signals
-
-    p_mblk['max_addr'] = max_addr
-
-# Preprocess JSON file
-# Remove group layer from memory block
-# Assign addresses with signals
-# Sorts signals by address
-def preprocess_json(preprocessed, data):
-    for key in data:
-        if key == 'mblk':
-            mblks = data[key]
-            p_mblks = []
-            preprocessed[key] = p_mblks
-            for mblk in mblks:
-                p_mblk = {}
-                preprocess_mblk(p_mblk, mblk)
-                p_mblks.append(p_mblk)
-
-        else:
-            preprocessed[key] = data[key]
-
-
 def process_source_file(path):
     global cfile, hfile, array_list, signal_list
     global device_name, define_list, mblk_nr, nro_mblks, mblk_list
     read_file = open(path, "r")
     if read_file:
         data = json.load(read_file)
-
-        preprocessed = {}
-        preprocess_json(preprocessed, data)
-        data = preprocessed
-
         if device_name == None:
             device_name = data.get("name", "unnameddevice")
 
@@ -409,7 +370,9 @@ def process_source_file(path):
             exit()
 
         mblk_nr = 1;
-        nro_mblks = len(mblks)
+        nro_mblks = 0
+        for mblk in mblks:
+            nro_mblks += 1
 
         struct_name = device_name + '_t'
         define_list = []
@@ -555,7 +518,6 @@ def mymain():
         print("No source files")
         exit()
 
-#    sourcefiles.append('/coderoot/iocom/examples/candy/config/signals/signals.json')
 #    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/signals.json')
 #    outpath = '/coderoot/iocom/examples/gina/config/include/carol/signals.c'
 #    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
@@ -592,7 +554,7 @@ def mymain():
 
     if not is_controller:
         hfile.write('\n#ifndef IOBOARD_DEVICE_NAME\n')
-        hfile.write('#define IOBOARD_DEVICE_NAME \"' + str(device_name) + '\"\n#endif\n')
+        hfile.write('#define IOBOARD_DEVICE_NAME \"' + device_name + '\"\n#endif\n')
 
     finish_c_files()
 

@@ -376,6 +376,49 @@ void osal_main_cleanup(
 }
 
 
+/*
+ *
+START BY WRITING DOC "HANDLING SIGNAL CHANGES IN COMMUNICATION CALLBACK"
+MODIFY signals_to_c.py so that signals are sorted by address
+MODIFY signals_to_c.py so that flags for parameters (much like IOC_PIN_PTR exist)
+
+
+Memory block has signal header pointer which can be used to access memory block's signal list
+(if linked with code) get signal pointer (iocSignal)
+- addr
+- nbytes
+
+sorted
+
+callbak functionality
+
+find index of signal which is touched by start addr
+find last signal which is touched by start addr
+
+loop though touched signals
+   if pins pointer
+   if set parameter flag
+   handle custom stuff with switch ()
+
+signals_to_c.py
+- Sort memory block's signal list by address (enables quick searching)
+- Propably easiest way to do this is first to assign signal addressess, then sort, then write
+
+Memory block needs to have signal header poiner (iocMblkSignalHdr*), see old mblk_set_signal_header
+then callback has directly signal header pointer.
+signal header is directly followed by IO signal data (iocSignal)
+
+
+HANDLING
+   From signal flags we know if signal is pin HW output, parameter setting, etc IOC_PIN_PTR
+    Pointer to IO pin configuration, etc structure. OS_NULL if this is not used.
+    const void *ptr;
+
+*/
+
+
+
+
 #if PINS_CAMERA
 /**
 ****************************************************************************************************

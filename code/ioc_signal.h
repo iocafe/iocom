@@ -75,8 +75,7 @@ typedef struct iocSignal
      */
     iocHandle *handle;
 
-    /** Pointer to IO pin configuration structure. OS_NULL if this signal doesn't
-        match to an IO pin.
+    /** Pointer to IO pin configuration structure, etc. OS_NULL if this ptr is not used.
      */
     const void *ptr;
 }
