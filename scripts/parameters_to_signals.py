@@ -21,9 +21,9 @@ def append_parameter(x_signals, parameter, prefix, is_persistent):
         p["name"] = prefix + name
 
     if is_persistent:
-        p["prm_flags"] = 3
+        p["pflag"] = 196
     else:
-        p["prm_flags"] = 1
+        p["pflag"] = 64
 
     # Do not duplicate "init" and "select" in "set_"
     if prefix == "set_":

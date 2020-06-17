@@ -113,11 +113,20 @@ def write_signal_to_c_source_for_iodevice(signal_name, signal):
     cfile.write('OS_' + type.upper())
     if signal_name in pinlist:
         cfile.write('|IOC_PIN_PTR')
+    else:
+        pflag = signal.get('pflag', 0)
+        if pflag & 64:
+            cfile.write('|IOC_PFLAG_IS_PRM')
+        if pflag & 128:
+            cfile.write('|IOC_PFLAG_IS_PERSISTENT')
 
     cfile.write(', ' + handle)
 
+    paddr = signal.get('paddr', None)
     if signal_name in pinlist:
         cfile.write(', ' + pinlist[signal_name])
+    elif paddr != None:
+        cfile.write(', (void*)' + str(paddr))
     else:
         cfile.write(', OS_NULL')
 
@@ -300,6 +309,7 @@ def process_assembly(assembly):
 # Assign addresses to signal
 def preprocess_signal(p_signals, signal):
     global current_type, current_addr, max_addr, reserved_addrs
+    global volatile_prm_addr, persistent_prm_addr
 
     addr = signal.get('addr', None);
     if addr != None:
@@ -325,6 +335,14 @@ def preprocess_signal(p_signals, signal):
     if current_addr > max_addr:
         max_addr = current_addr
 
+    pflag = signal.get('pflag', 0)
+    if pflag & 128:
+        p_signal['paddr'] = persistent_prm_addr
+        persistent_prm_addr += mem_sz_bytes
+    elif pflag & 64:
+        p_signal['paddr'] = volatile_prm_addr
+        volatile_prm_addr += mem_sz_bytes
+
     for key in signal:
         if p_signal.get(key, None) == None:
             p_signal[key] = signal[key]
@@ -336,11 +354,14 @@ def preprocess_signal(p_signals, signal):
 # Sorts signals by address
 def preprocess_mblk(p_mblk, mblk):
     global current_type, current_addr, max_addr, reserved_addrs
+    global volatile_prm_addr, persistent_prm_addr
 
     current_type = "ushort"
     current_addr = 0
     max_addr = 32
     reserved_addrs = []
+    volatile_prm_addr = 0
+    persistent_prm_addr = 0
 
     # Remove group layer and assign addressess to signals.
     for key in mblk:

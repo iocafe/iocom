@@ -42,9 +42,15 @@ typedef struct iocDeviceHdr
 }
 iocDeviceHdr;
 
-/* Additional flag bits to type in bits byte
+/* Additional flag bits to type in bits byte.
+   - IOC_PIN_PTR (32): ptr is pointer to IO pin structure
+   - IOC_PFLAG_IS_PRM (64): This signal is a parameter.
+   - IOC_PFLAG_IS_PERSISTENT (128): This is persistent parameter.
+
  */
 #define IOC_PIN_PTR 0x20
+#define IOC_PFLAG_IS_PRM 0x40
+#define IOC_PFLAG_IS_PERSISTENT  0x80
 
 
 /**
