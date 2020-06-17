@@ -445,7 +445,7 @@ static osalStatus ioc_new_signal_by_info(
             break;
 
         default:
-            sz = (os_int)osal_typeid_size(signal_type_id);
+            sz = (os_int)osal_type_size(signal_type_id);
             state->current_addr += n * sz + 1;
             break;
     }

@@ -551,7 +551,7 @@ static void Signal_set_array(
     /* If we need more space than we have in small fixed buffer, allocate.
      */
     state->buf = state->storage.fixbuf;
-    type_sz = osal_typeid_size(state->type_id);
+    type_sz = osal_type_size(state->type_id);
     buf_sz = state->max_values * type_sz;
     if (buf_sz > IOPY_FIXBUF_SZ)
     {
@@ -905,7 +905,7 @@ static PyObject *Signal_get_array(
     /* If we need more space than we have in small fixed buffer, allocate.
      */
     buf = fixbuf;
-    type_sz = osal_typeid_size(state->type_id);
+    type_sz = osal_type_size(state->type_id);
     buf_sz = state->max_values * type_sz;
     if (buf_sz > sizeof(fixbuf))
     {

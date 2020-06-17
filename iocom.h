@@ -138,6 +138,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_root.h"
 #include "code/ioc_memory_block.h"
 #include "code/ioc_signal.h"
+#include "code/ioc_signal_addr.h"
 #if IOC_DYNAMIC_MBLK_CODE
   #include "extensions/dynamicio/ioc_remove_mblk_list.h"
 #endif

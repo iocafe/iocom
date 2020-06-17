@@ -376,47 +376,80 @@ void osal_main_cleanup(
 }
 
 
-/*
- *
-START BY WRITING DOC "HANDLING SIGNAL CHANGES IN COMMUNICATION CALLBACK"
-MODIFY signals_to_c.py so that signals are sorted by address
-MODIFY signals_to_c.py so that flags for parameters (much like IOC_PIN_PTR exist)
+/**
+****************************************************************************************************
 
+  @brief Callback function when data has been received from communication.
 
-Memory block has signal header pointer which can be used to access memory block's signal list
-(if linked with code) get signal pointer (iocSignal)
-- addr
-- nbytes
+  The ioboard_communication_callback function reacts to data from communication. Here we treat
+  memory block as set of communication signals, and mostly just forward these to IO.
 
-sorted
+  @param   handle Memory block handle.
+  @param   start_addr First changed memory block address.
+  @param   end_addr Last changed memory block address.
+  @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
+           IOC_MBLK_CALLBACK_RECEIVE change by data received.
+  @param   context Callback context, not used by "gina" example.
+  @return  None.
 
-callbak functionality
-
-find index of signal which is touched by start addr
-find last signal which is touched by start addr
-
-loop though touched signals
-   if pins pointer
-   if set parameter flag
-   handle custom stuff with switch ()
-
-signals_to_c.py
-- Sort memory block's signal list by address (enables quick searching)
-- Propably easiest way to do this is first to assign signal addressess, then sort, then write
-
-Memory block needs to have signal header poiner (iocMblkSignalHdr*), see old mblk_set_signal_header
-then callback has directly signal header pointer.
-signal header is directly followed by IO signal data (iocSignal)
-
-
-HANDLING
-   From signal flags we know if signal is pin HW output, parameter setting, etc IOC_PIN_PTR
-    Pointer to IO pin configuration, etc structure. OS_NULL if this is not used.
-    const void *ptr;
-
+****************************************************************************************************
 */
+void ioboard_communication_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context)
+{
+#undef PINS_SEGMENT7_GROUP
 
+    /* '#ifdef' is used to compile code in only if 7-segment display is configured
+       for the hardware.
+     */
+#ifdef PINS_SEGMENT7_GROUP
+    os_char buf[GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ];
+    const Pin *pin;
+    os_short i;
 
+    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
+    {
+        /* Process 7 segment display. Since this is transferred as boolean array, the
+           forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
+           boolean array from communication signal, and write it to IO pins.
+         */
+        if (ioc_is_my_address(&gina.imp.seven_segment, start_addr, end_addr))
+        {
+            sb = ioc_gets_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
+            if (sb & OSAL_STATE_CONNECTED)
+            {
+                osal_console_write("7 segment data received\n");
+                for (i = GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
+                     i >= 0 && pin;
+                     i--, pin = pin->next) /* For now we need to loop backwards, fix this */
+                {
+                    pin_set(pin, buf[i]);
+                }
+            }
+            else
+            {
+                // WE DO NOT COME HERE. SHOULD WE INVALIDATE WHOLE MAP ON DISCONNECT?
+                osal_console_write("7 segment data DISCONNECTED\n");
+            }
+        }
+
+        /* Call pins library extension to forward communication signal changes to IO pins.
+         */
+        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &gina_hdr, flags);
+    }
+#else
+    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
+    {
+        /* Call pins library extension to forward communication signal changes to IO pins.
+         */
+        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &candy_hdr, flags);
+    }
+#endif
+}
 
 
 #if PINS_CAMERA

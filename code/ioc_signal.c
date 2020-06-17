@@ -147,7 +147,7 @@ void ioc_move(
         }
         else
         {
-            type_sz = osal_typeid_size(type_id);
+            type_sz = osal_type_size(type_id);
             osal_debug_assert(type_sz > 0);
         }
 
@@ -638,7 +638,7 @@ os_char ioc_move_array(
     osal_debug_assert(n > 0);
 
     type_id = signal->flags & OSAL_TYPEID_MASK;
-    type_sz = osal_typeid_size(type_id);
+    type_sz = osal_type_size(type_id);
 
     /* Get memory block pointer and start synchronization (unless disabled by no thread sync flag).
      */
@@ -787,57 +787,3 @@ goon:
     return state_bits;
 }
 
-
-/**
-****************************************************************************************************
-
-  @brief Check if memory address range belongs to signal.
-  @anchor ioc_is_my_address
-
-  The ioc_is_my_address() function checks if memory address range given as argument touches
-  the address range of the signal. This is typically used by callback function to ask
-  "is this signal affected?".
-
-  @param   signal Pointer to signal structure.
-  @param   start_addr First changed address.
-  @param   end_addr Last changed address.
-  @return  OS_TRUE if this address effects to the signal.
-
-****************************************************************************************************
-*/
-os_boolean ioc_is_my_address(
-    const iocSignal *signal,
-    os_int start_addr,
-    os_int end_addr)
-{
-    os_int addr, n;
-    osalTypeId type_id;
-
-    addr = signal->addr;
-    if (end_addr < addr) return OS_FALSE;
-
-    type_id = signal->flags & OSAL_TYPEID_MASK;
-
-    n = signal->n;
-    if (n < 1) n = 1;
-
-    switch (type_id)
-    {
-        case OS_STR:
-            n++;
-            break;
-
-        case OS_BOOLEAN:
-            if (n > 1)
-            {
-                n = (n + 7) / 8 + 1;
-            }
-            break;
-
-        default:
-            n = n * (os_int)osal_typeid_size(type_id) + 1;
-            break;
-    }
-
-    return (os_boolean)(start_addr < addr + n);
-}

@@ -215,11 +215,4 @@ os_char ioc_move_array(
     os_char state_bits,
     os_short flags);
 
-/* Check if memory address range belongs to signal.
- */
-os_boolean ioc_is_my_address(
-    const iocSignal *signal,
-    os_int start_addr,
-    os_int end_addr);
-
 /*@}*/
