@@ -89,11 +89,13 @@ void ioboard_start_communication(
     blockprm.nbytes = prm->send_block_sz;
     blockprm.flags = IOC_MBLK_UP;
     ioc_initialize_memory_block(&ioboard_exp, &ioboard_export_mblk, &ioboard_root, &blockprm);
+    ioboard_export_mblk.signal_hdr = prm->exp_signal_hdr;
 
     blockprm.mblk_name = "imp";
     blockprm.nbytes = prm->receive_block_sz;
     blockprm.flags = IOC_MBLK_DOWN;
     ioc_initialize_memory_block(&ioboard_imp, &ioboard_import_mblk, &ioboard_root, &blockprm);
+    ioboard_import_mblk.signal_hdr = prm->imp_signal_hdr;
 
     if (prm->conf_send_block_sz)
     {
@@ -101,6 +103,7 @@ void ioboard_start_communication(
         blockprm.nbytes = prm->conf_send_block_sz;
         blockprm.flags = IOC_MBLK_UP;
         ioc_initialize_memory_block(&ioboard_conf_exp, OS_NULL, &ioboard_root, &blockprm);
+        ioboard_conf_exp.mblk->signal_hdr = prm->conf_exp_signal_hdr;
     }
 
     if (prm->conf_receive_block_sz)
@@ -109,6 +112,7 @@ void ioboard_start_communication(
         blockprm.nbytes = prm->conf_receive_block_sz;
         blockprm.flags = IOC_MBLK_DOWN;
         ioc_initialize_memory_block(&ioboard_conf_imp, OS_NULL, &ioboard_root, &blockprm);
+        ioboard_conf_imp.mblk->signal_hdr = prm->conf_imp_signal_hdr;
     }
 
     /* Do we publish device information?

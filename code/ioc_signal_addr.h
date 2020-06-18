@@ -18,6 +18,7 @@
 */
 
 struct iocSignal;
+struct iocHandle;
 
 /* Get number of bytes needed to store the signal.
  */
@@ -31,12 +32,22 @@ os_boolean ioc_is_my_address(
     os_int start_addr,
     os_int end_addr);
 
-/* Which signals are effected by changes in memory address range.
+/* Which signals are effected by changes in memory address range (use memory block signal
+   header pointer).
  */
-const iocSignal *ioc_get_signal_range(
+const iocSignal *ioc_get_signal_range_by_hdr(
     const iocMblkSignalHdr *hdr,
     os_int start_addr,
     os_int end_addr,
     os_int *n_signals);
+
+/* Which signals are effected by changes in memory address range (use memory block handle).
+ */
+const iocSignal *ioc_get_signal_range(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_int *n_signals);
+
 
 /*@}*/

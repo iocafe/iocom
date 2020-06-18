@@ -210,6 +210,13 @@ typedef struct
      os_int conf_send_block_sz;
      os_int conf_receive_block_sz;
 
+    /** Signal header pointers for memory blocks.
+     */
+    const struct iocMblkSignalHdr *exp_signal_hdr;
+    const struct iocMblkSignalHdr *imp_signal_hdr;
+    const struct iocMblkSignalHdr *conf_exp_signal_hdr;
+    const struct iocMblkSignalHdr *conf_imp_signal_hdr;
+
     /** Light house "run" function, used to get IP address to connect to by UDP multicast.
      */
     ioc_lighthouse_func *lighthouse_func;

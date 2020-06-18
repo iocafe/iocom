@@ -177,6 +177,11 @@ osalStatus osal_main(
     prm.device_info_sz = sizeof(ioapp_signals_config);
     prm.conf_send_block_sz = CANDY_CONF_EXP_MBLK_SZ;
     prm.conf_receive_block_sz = CANDY_CONF_IMP_MBLK_SZ;
+    prm.exp_signal_hdr = &candy.exp.hdr;
+    prm.imp_signal_hdr = &candy.imp.hdr;
+    prm.conf_exp_signal_hdr = &candy.conf_exp.hdr;
+    prm.conf_imp_signal_hdr = &candy.conf_imp.hdr;
+
 #if CANDY_USE_LIGHTHOUSE
     lighthouse_on = ioc_is_lighthouse_used(prm.socket_con_str, &is_ipv6_wildcard);
     if (lighthouse_on) {
@@ -191,7 +196,7 @@ osalStatus osal_main(
 
     /* Set callback to pass communcation to pins.
      */
-    ioc_add_callback(&ioboard_imp, pins_default_iocom_callback, (void*)&candy_hdr);
+    ioc_add_callback(&ioboard_imp, ioboard_communication_callback, (void*)&candy_hdr);
 
     /* Connect PINS library to IOCOM library
      */
@@ -401,54 +406,28 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
-#undef PINS_SEGMENT7_GROUP
+    const iocSignal *sig;
+    os_int n_signals;
 
-    /* '#ifdef' is used to compile code in only if 7-segment display is configured
-       for the hardware.
+    /* If this memory block is not written by communication, no need to do anything.
      */
-#ifdef PINS_SEGMENT7_GROUP
-    os_char buf[GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ];
-    const Pin *pin;
-    os_short i;
-
-    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
+    if ((handle->flags & IOC_MBLK_DOWN) == 0 ||
+        (flags & IOC_MBLK_CALLBACK_RECEIVE) == 0)
     {
-        /* Process 7 segment display. Since this is transferred as boolean array, the
-           forward_signal_change_to_io_pins() doesn't know to handle this. Thus, read
-           boolean array from communication signal, and write it to IO pins.
-         */
-        if (ioc_is_my_address(&gina.imp.seven_segment, start_addr, end_addr))
-        {
-            sb = ioc_gets_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
-            if (sb & OSAL_STATE_CONNECTED)
-            {
-                osal_console_write("7 segment data received\n");
-                for (i = GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ - 1, pin = pins_segment7_group;
-                     i >= 0 && pin;
-                     i--, pin = pin->next) /* For now we need to loop backwards, fix this */
-                {
-                    pin_set(pin, buf[i]);
-                }
-            }
-            else
-            {
-                // WE DO NOT COME HERE. SHOULD WE INVALIDATE WHOLE MAP ON DISCONNECT?
-                osal_console_write("7 segment data DISCONNECTED\n");
-            }
+        return;
+    }
+
+    sig = ioc_get_signal_range(handle, start_addr, end_addr, &n_signals);
+    while (n_signals-- > 0)
+    {
+        if (sig->flags & IOC_PIN_PTR) {
+            forward_signal_change_to_io_pin(sig, 0);
         }
-
-        /* Call pins library extension to forward communication signal changes to IO pins.
-         */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &gina_hdr, flags);
+        /* else if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
+            changed ioc_set_parameter_by_sig(sig);
+        } */
+        sig++;
     }
-#else
-    if (flags & IOC_MBLK_CALLBACK_RECEIVE)
-    {
-        /* Call pins library extension to forward communication signal changes to IO pins.
-         */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &candy_hdr, flags);
-    }
-#endif
 }
 
 

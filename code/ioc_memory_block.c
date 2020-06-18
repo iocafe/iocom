@@ -407,7 +407,6 @@ void ioc_generate_del_mblk_request(
 #endif
 
 
-#if IOC_DYNAMIC_MBLK_CODE
 /**
 ****************************************************************************************************
 
@@ -424,7 +423,7 @@ void ioc_generate_del_mblk_request(
 
 ****************************************************************************************************
 */
-/* void mblk_set_signal_header(
+void mblk_set_signal_header(
     iocHandle *handle,
     struct iocMblkSignalHdr *hdr)
 {
@@ -435,8 +434,7 @@ void ioc_generate_del_mblk_request(
     if (mblk == OS_NULL) return;
     mblk->signal_hdr = hdr;
     ioc_unlock(root);
-} */
-#endif
+}
 
 
 /**

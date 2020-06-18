@@ -339,10 +339,10 @@ typedef struct iocMemoryBlock
      */
     os_boolean to_be_deleted;
 
+#endif
     /** Pointer to fixed signal header for the memory block. OS_NULL if none.
      */
-    /* struct iocMblkSignalHdr *signal_hdr; */
-#endif
+    const struct iocMblkSignalHdr *signal_hdr;
 }
 iocMemoryBlock;
 

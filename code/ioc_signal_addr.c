@@ -7,7 +7,7 @@
   @date    16.6.2020
 
   Helper functions for implementing communication callback. These function check
-  signal address
+  signal address.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -100,9 +100,9 @@ os_boolean ioc_is_my_address(
 ****************************************************************************************************
 
   @brief Which signals are effected by changes in memory address range.
-  @anchor ioc_is_my_address
+  @anchor ioc_get_signal_range_by_hdr
 
-  The ioc_get_signal_range() function gets range of signals that are at least partly within
+  The ioc_get_signal_range_by_hdr() function gets range of signals that are at least partly within
   start, end address range given as argument. This is log N algorithm.
 
   @param   hdr Pointer to signal header for the memory block.
@@ -113,7 +113,7 @@ os_boolean ioc_is_my_address(
 
 ****************************************************************************************************
 */
-const iocSignal *ioc_get_signal_range(
+const iocSignal *ioc_get_signal_range_by_hdr(
     const iocMblkSignalHdr *hdr,
     os_int start_addr,
     os_int end_addr,
@@ -208,3 +208,47 @@ const iocSignal *ioc_get_signal_range(
 }
 
 
+
+/**
+****************************************************************************************************
+
+  @brief Which signals are effected by changes in memory address range.
+  @anchor ioc_get_signal_range
+
+  The ioc_get_signal_range() function gets range of signals that are at least partly within
+  start, end address range given as argument. This is log N algorithm.
+
+  @param   handle Memory block handle.
+  @param   start_addr First address.
+  @param   end_addr Last address.
+  @param   n_signal Pointer to integer where to store number of effected signals.
+  @return  Pointer to first effected signal. OS_NULL if no signals effected.
+
+****************************************************************************************************
+*/
+const iocSignal *ioc_get_signal_range(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_int *n_signals)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    const iocSignal *sig = OS_NULL;
+
+    *n_signals = 0;
+
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return OS_NULL;
+
+    if (mblk->signal_hdr) {
+        sig = ioc_get_signal_range_by_hdr(mblk->signal_hdr, start_addr, end_addr, n_signals);
+    }
+
+    /* End syncronization.
+     */
+    ioc_unlock(root);
+    return sig;
+}
