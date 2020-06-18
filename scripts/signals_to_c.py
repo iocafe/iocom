@@ -307,7 +307,7 @@ def process_assembly(assembly):
 
 # Preprocess signal
 # Assign addresses to signal
-def preprocess_signal(p_signals, signal):
+def preprocess_signal(p_signals, signal, is_up):
     global current_type, current_addr, max_addr, reserved_addrs
     global volatile_prm_addr, persistent_prm_addr
 
@@ -337,11 +337,11 @@ def preprocess_signal(p_signals, signal):
 
     pflag = signal.get('pflag', 0)
     if pflag & 128:
-        p_signal['paddr'] = persistent_prm_addr
-        persistent_prm_addr += mem_sz_bytes
+        p_signal['paddr'] = persistent_prm_addr[is_up]
+        persistent_prm_addr[is_up] += mem_sz_bytes
     elif pflag & 64:
-        p_signal['paddr'] = volatile_prm_addr
-        volatile_prm_addr += mem_sz_bytes
+        p_signal['paddr'] = volatile_prm_addr[is_up]
+        volatile_prm_addr[is_up] += mem_sz_bytes
 
     for key in signal:
         if p_signal.get(key, None) == None:
@@ -354,14 +354,20 @@ def preprocess_signal(p_signals, signal):
 # Sorts signals by address
 def preprocess_mblk(p_mblk, mblk):
     global current_type, current_addr, max_addr, reserved_addrs
-    global volatile_prm_addr, persistent_prm_addr
 
     current_type = "ushort"
     current_addr = 0
     max_addr = 32
     reserved_addrs = []
-    volatile_prm_addr = 0
-    persistent_prm_addr = 0
+
+    is_up = 0
+    flags = mblk.get("flags", None)
+    if flags == None:
+        print ("WARNING: No flags for Memory bloc " + block_name)
+    else:
+        sflags = flags.split(',')
+        if 'down' in sflags:
+            is_up = 1
 
     # Remove group layer and assign addressess to signals.
     for key in mblk:
@@ -373,7 +379,7 @@ def preprocess_mblk(p_mblk, mblk):
                 signals = group.get("signals", None)
                 if signals != None:
                     for signal in signals: 
-                        preprocess_signal(p_signals, signal)
+                        preprocess_signal(p_signals, signal, is_up)
 
         else:
             p_mblk[key] = mblk[key]
@@ -536,6 +542,7 @@ def list_pins_in_pinsfile(path):
 
 def mymain():
     global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic
+    global volatile_prm_addr, persistent_prm_addr
 
     # Get command line arguments
     n = len(sys.argv)
@@ -603,6 +610,9 @@ def mymain():
     filename, file_extension = os.path.splitext(outpath)
     cfilepath = filename + '.c'
     hfilepath = filename + '.h'
+
+    volatile_prm_addr  = [0, 0]
+    persistent_prm_addr = [0, 0]
 
     print("Writing files " + cfilepath + " and " + hfilepath)
 
