@@ -74,6 +74,8 @@ typedef struct iocSignal
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
         or OS_STR.
         Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.
+        Flag bit IOC_PFLAG_IS_PRM indicates parameter, parameter is pointer to buffer
+        Flag bit IOC_PFLAG_IS_PERSISTENT with IOC_PFLAG_IS_PRM marks persistent parameter data.
      */
     os_char flags;
 
@@ -81,7 +83,9 @@ typedef struct iocSignal
      */
     iocHandle *handle;
 
-    /** Pointer to IO pin configuration structure, etc. OS_NULL if this ptr is not used.
+    /** Pointer to IO pin configuration structure, etc. This function can be also pointer
+     *  to OS_NULL if this ptr is not used.
+     *
      */
     const void *ptr;
 }

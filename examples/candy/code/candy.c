@@ -60,6 +60,10 @@ IO_DEVICE_CONSOLE(ioconsole);
  */
 static MorseCode morse;
 
+/* Parameter storage support.
+ */
+static iocParameterStorage parameter_storage;
+
 /* Maximum number of sockets, etc.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
@@ -111,6 +115,7 @@ osalStatus osal_main(
     ioboardParams prm;
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
+    iocParameterStorageInitParams psprm;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().
@@ -122,6 +127,17 @@ osalStatus osal_main(
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.device_name = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
+
+    /* Initialize persistent storage and store pointers to persistant and volatile structures.
+     */
+    os_memclear(&psprm, sizeof(psprm));
+    psprm.block_nr = OS_PBNR_CUST_A;
+    psprm.persistent_prm = &ioc_persistent_prm;
+    psprm.persistent_prm_sz = sizeof(ioc_persistent_prm);
+    psprm.volatile_prm = &ioc_volatile_prm;
+    psprm.volatile_prm_sz = sizeof(ioc_volatile_prm);
+    ioc_initialize_parameters(&parameter_storage, &psprm);
+    ioc_load_parameters(&parameter_storage);
 
     /* If we are using devicedir for development testing, initialize.
      */
@@ -408,6 +424,7 @@ void ioboard_communication_callback(
 {
     const iocSignal *sig;
     os_int n_signals;
+    osalStatus s;
 
     /* If this memory block is not written by communication, no need to do anything.
      */
@@ -423,9 +440,13 @@ void ioboard_communication_callback(
         if (sig->flags & IOC_PIN_PTR) {
             forward_signal_change_to_io_pin(sig, 0);
         }
-        /* else if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
-            changed ioc_set_parameter_by_sig(sig);
-        } */
+        else if (sig->flags & IOC_PFLAG_IS_PRM) {
+            s = ioc_set_parameter_by_signal(sig);
+            if (s == OSAL_COMPLETED)
+            {
+
+            }
+        }
         sig++;
     }
 }
