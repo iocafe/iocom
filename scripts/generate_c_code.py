@@ -8,7 +8,7 @@ import sys
 def setup_environment(confpath, hw, coderoot, pythoncmd):
     global MYHW, MYPYTHON,  CODEROOT, JSONTOOL, PINSTOC, BINTOC, SIGNALSTOC, MERGEJSON, MYIMPORTS
     global MYCONFIG, MYSIGNALS, MYPINS, MYPARAMETERS, MYNETWORK, MYINCLUDE, MYINTERMEDIATE, CFILES
-    global PARAMETERSTOSIGNALS
+    global PARAMETERSTOC, PARAMETERSTOSIGNALS
 
     MYHW = hw
     if platform.system() == 'Windows':
@@ -29,6 +29,7 @@ def setup_environment(confpath, hw, coderoot, pythoncmd):
     PINSTOC = MYPYTHON + ' ' + MYCODEROOT + '/pins/scripts/pins_to_c.py'
     BINTOC = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/bin_to_c.py'
     SIGNALSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/signals_to_c.py'
+    PARAMETERSTOC = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/parameters_to_c.py'
     PARAMETERSTOSIGNALS = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/parameters_to_signals.py'
     MERGEJSON = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/merge_json.py'
     MYIMPORTS  = MYCODEROOT + '/iocom/config'
@@ -130,6 +131,12 @@ def parameters_to_signals(parameters_name):
     cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + parameters_name + '-as-signals.json'
     runcmd(cmd)
 
+def parameters_to_c(parameters_name):
+    cmd = PARAMETERSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/' + parameters_name + '-merged.json'
+    cmd += ' -o ' + MYINCLUDE + '/' + MYHW + '/' + parameters_name + '.c'
+    CFILES.append(parameters_name)
+    runcmd(cmd)
+
 def pins_to_c(pins_name, signals_name):
     cmd = PINSTOC + ' ' + MYINTERMEDIATE + '/' + MYHW + '/' + pins_name + '-merged.json '
     cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/' + pins_name + '.c -s ' + MYINTERMEDIATE + '/' + MYHW + '/' + signals_name + '-merged.json'
@@ -201,6 +208,7 @@ def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     if parameters_name != None:
         if os.path.exists(MYINTERMEDIATE + '/' + MYHW + '/' + parameters_name + '-merged.json'):
             parameters_to_signals(parameters_name)
+            parameters_to_c(parameters_name)
 
     signals_name = merge_jsons('signals.json', 'signals')
     pins_name = merge_jsons('pins_io.json', 'pins')
