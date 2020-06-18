@@ -84,11 +84,11 @@ def process_source_file(path):
 
         persistent = data.get("persistent", None)
         if persistent != None:
-            process_struct(persistent, "iocDevicePersistent")
+            process_struct(persistent, "iocDevicePersistentPrm")
 
         volatile = data.get("volatile", None)
         if volatile != None:
-            process_struct(volatile, "iocDeviceVolatile")
+            process_struct(volatile, "iocDeviceVolatilePrm")
     else:
         print ("Opening file " + path + " failed")
 

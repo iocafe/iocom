@@ -126,7 +126,7 @@ def write_signal_to_c_source_for_iodevice(signal_name, signal):
     if signal_name in pinlist:
         cfile.write(', ' + pinlist[signal_name])
     elif paddr != None:
-        cfile.write(', (void*)' + str(paddr))
+        cfile.write(', ' + paddr)
     else:
         cfile.write(', OS_NULL')
 
@@ -307,9 +307,8 @@ def process_assembly(assembly):
 
 # Preprocess signal
 # Assign addresses to signal
-def preprocess_signal(p_signals, signal, is_up):
+def preprocess_signal(p_signals, signal):
     global current_type, current_addr, max_addr, reserved_addrs
-    global volatile_prm_addr, persistent_prm_addr
 
     addr = signal.get('addr', None);
     if addr != None:
@@ -336,12 +335,21 @@ def preprocess_signal(p_signals, signal, is_up):
         max_addr = current_addr
 
     pflag = signal.get('pflag', 0)
-    if pflag & 128:
-        p_signal['paddr'] = persistent_prm_addr[is_up]
-        persistent_prm_addr[is_up] += mem_sz_bytes
-    elif pflag & 64:
-        p_signal['paddr'] = volatile_prm_addr[is_up]
-        volatile_prm_addr[is_up] += mem_sz_bytes
+    if pflag & 64:
+        if array_n > 1:
+            ref = ''
+        else:
+            ref = '&'
+        if pflag & 128:
+            ref += "ioc_persistent_prm."
+        else:
+            ref += "ioc_volatile_prm."
+
+        name = signal.get('name', "NONAME")
+        if name.startswith('set_'):
+            name = name [4:]
+        ref += name
+        p_signal['paddr'] = ref
 
     for key in signal:
         if p_signal.get(key, None) == None:
@@ -360,15 +368,6 @@ def preprocess_mblk(p_mblk, mblk):
     max_addr = 32
     reserved_addrs = []
 
-    is_up = 0
-    flags = mblk.get("flags", None)
-    if flags == None:
-        print ("WARNING: No flags for Memory bloc " + block_name)
-    else:
-        sflags = flags.split(',')
-        if 'down' in sflags:
-            is_up = 1
-
     # Remove group layer and assign addressess to signals.
     for key in mblk:
         if key == 'groups':
@@ -379,7 +378,7 @@ def preprocess_mblk(p_mblk, mblk):
                 signals = group.get("signals", None)
                 if signals != None:
                     for signal in signals: 
-                        preprocess_signal(p_signals, signal, is_up)
+                        preprocess_signal(p_signals, signal)
 
         else:
             p_mblk[key] = mblk[key]
@@ -542,7 +541,6 @@ def list_pins_in_pinsfile(path):
 
 def mymain():
     global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic
-    global volatile_prm_addr, persistent_prm_addr
 
     # Get command line arguments
     n = len(sys.argv)
@@ -610,9 +608,6 @@ def mymain():
     filename, file_extension = os.path.splitext(outpath)
     cfilepath = filename + '.c'
     hfilepath = filename + '.h'
-
-    volatile_prm_addr  = [0, 0]
-    persistent_prm_addr = [0, 0]
 
     print("Writing files " + cfilepath + " and " + hfilepath)
 
