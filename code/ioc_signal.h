@@ -45,12 +45,11 @@ iocDeviceHdr;
 /* Additional flag bits to type in bits byte.
    - IOC_PIN_PTR (32): ptr is pointer to IO pin structure
    - IOC_PFLAG_IS_PRM (64): This signal is a parameter.
-   - IOC_PFLAG_IS_PERSISTENT (128): This is persistent parameter.
-
+   - IOC_PFLAG_IS_PERSISTENT (128): This signal is persistent parameter (with IOC_PFLAG_IS_PRM).
  */
 #define IOC_PIN_PTR 0x20
 #define IOC_PFLAG_IS_PRM 0x40
-#define IOC_PFLAG_IS_PERSISTENT  0x80
+#define IOC_PFLAG_IS_PERSISTENT 0x80
 
 
 /**
@@ -73,9 +72,9 @@ typedef struct iocSignal
 
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
         or OS_STR.
-        Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.
-        Flag bit IOC_PFLAG_IS_PRM indicates parameter, parameter is pointer to buffer
-        Flag bit IOC_PFLAG_IS_PERSISTENT with IOC_PFLAG_IS_PRM marks persistent parameter data.
+        - Flag bit IOC_PIN_PTR marks that ptr is "Pin *" pointer.
+        - Flag bit IOC_PFLAG_IS_PRM indicates parameter
+        - Flag bit IOC_PFLAG_IS_PERSISTENT with IOC_PFLAG_IS_PRM marks persistent parameter data.
      */
     os_char flags;
 
@@ -83,9 +82,9 @@ typedef struct iocSignal
      */
     iocHandle *handle;
 
-    /** Pointer to IO pin configuration structure, etc. This function can be also pointer
-     *  to OS_NULL if this ptr is not used.
-     *
+    /** Pointer to IO pin configuration structure, or iocSignal pointer is this is parameter
+        "set_" signal in "imp" memory block. If this is parameter value in "exp" memory block,
+        this can still be pin pointer. OS_NULL indicates that "ptr" is not used.
      */
     const void *ptr;
 }

@@ -308,7 +308,7 @@ def process_assembly(assembly):
 # Preprocess signal
 # Assign addresses to signal
 def preprocess_signal(p_signals, signal):
-    global current_type, current_addr, max_addr, reserved_addrs
+    global current_type, current_addr, max_addr, reserved_addrs, device_name
 
     addr = signal.get('addr', None);
     if addr != None:
@@ -334,27 +334,18 @@ def preprocess_signal(p_signals, signal):
     if current_addr > max_addr:
         max_addr = current_addr
 
-    pflag = signal.get('pflag', 0)
-    if pflag & 64:
-        if array_n > 1:
-            ref = ''
-        else:
-            ref = '&'
-        if pflag & 128:
-            ref += "ioc_persistent_prm."
-        else:
-            ref += "ioc_volatile_prm."
-
-        name = signal.get('name', "NONAME")
-        if name.startswith('set_'):
-            name = name [4:]
-        ref += name
-        p_signal['paddr'] = ref
-
     for key in signal:
         if p_signal.get(key, None) == None:
             p_signal[key] = signal[key]
 
+    pflag = p_signal.get('pflag', 0)
+    if pflag & 64:
+        name = p_signal.get('name', "NONAME")
+        if name.startswith('set_'):
+            p_signal['paddr'] = '&' + device_name + '.exp.' + name[4:]
+
+        else:
+            del p_signal['pflag']
 
 # Preprocess memory block
 # Remove group layer
@@ -420,12 +411,12 @@ def process_source_file(path):
     if read_file:
         data = json.load(read_file)
 
+        if device_name == None:
+            device_name = data.get("name", "unnameddevice")
+
         preprocessed = {}
         preprocess_json(preprocessed, data)
         data = preprocessed
-
-        if device_name == None:
-            device_name = data.get("name", "unnameddevice")
 
         check_valid_name("Device", device_name, IOC_NAME_SZ, False)
 

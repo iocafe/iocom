@@ -128,7 +128,7 @@ osalStatus osal_main(
     persistentprm.device_name = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
 
-    /* Initialize persistent storage and store pointers to persistant and volatile structures.
+    /* Initialize parameter storage and store pointers to persistant and volatile structures.
      */
     os_memclear(&psprm, sizeof(psprm));
     psprm.block_nr = OS_PBNR_CUST_A;
@@ -137,7 +137,6 @@ osalStatus osal_main(
     psprm.volatile_prm = &ioc_volatile_prm;
     psprm.volatile_prm_sz = sizeof(ioc_volatile_prm);
     ioc_initialize_parameters(&parameter_storage, &psprm);
-    ioc_load_parameters(&parameter_storage);
 
     /* If we are using devicedir for development testing, initialize.
      */
@@ -210,6 +209,10 @@ osalStatus osal_main(
      */
     ioboard_start_communication(&prm);
 
+    /* Load camera parameters from persistent storage to "exp" memory buffer.
+     */
+    ioc_load_parameters(&parameter_storage);
+
     /* Set callback to pass communcation to pins.
      */
     ioc_add_callback(&ioboard_imp, ioboard_communication_callback, (void*)&candy_hdr);
@@ -249,6 +252,7 @@ osalStatus osal_main(
     camera_prm.camera_pin = &pins.cameras.camera;
     camera_prm.callback_func = ioboard_camera_callback;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
+    ioboard_configure_camera();
     PINS_CAMERA_IFACE.start(&pins_camera);
 #endif
 
@@ -422,9 +426,11 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
+// #if IOC_DEVICE_PARAMETER_SUPPORT
     const iocSignal *sig;
     os_int n_signals;
     osalStatus s;
+    os_boolean configuration_changed;
 
     /* If this memory block is not written by communication, no need to do anything.
      */
@@ -434,6 +440,7 @@ void ioboard_communication_callback(
         return;
     }
 
+    configuration_changed = OS_FALSE;
     sig = ioc_get_signal_range(handle, start_addr, end_addr, &n_signals);
     while (n_signals-- > 0)
     {
@@ -441,13 +448,18 @@ void ioboard_communication_callback(
             forward_signal_change_to_io_pin(sig, 0);
         }
         else if (sig->flags & IOC_PFLAG_IS_PRM) {
-            s = ioc_set_parameter_by_signal(sig);
-            if (s == OSAL_COMPLETED)
-            {
-
+            s = ioc_set_parameter_by_signal(&parameter_storage, sig);
+            if (s == OSAL_COMPLETED) {
+                configuration_changed = OS_TRUE;
             }
         }
         sig++;
+    }
+
+    if (configuration_changed) {
+#if PINS_CAMERA
+        ioboard_configure_camera();
+#endif
     }
 }
 
@@ -477,4 +489,51 @@ void ioboard_camera_callback(
         pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION);
     }
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief Configure one camera parameter.
+
+  The ioboard_set_camera_prm function moves one camera parameter from "exp" memory buffer
+  to camera.
+
+  @param   ix Camera parameter index, like PINS_CAM_BRIGHTNESS.
+  @param   sig Pointer to signal in "exp" memory block.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioboard_set_camera_prm(
+    pinsCameraParamIx ix,
+    iocSignal *sig)
+{
+    os_long x;
+
+    x = ioc_get_ext(&sig, &state_bits, IOC_SIGNAL_DEFAULT);
+    if (state_bits & OSAL_STATE_CONNECTED) {
+        PINS_CAMERA_IFACE.set_parameter(&pins_camera, x, ix, x);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Configure camera.
+
+  The ioboard_set_camera_parameters function moves all camera parameters from memory buffer
+  to camera.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioboard_configure_camera(void)
+{
+    ioboard_set_camera_prm(PINS_CAM_BRIGHTNESS, &candy.exp.brightness);
+    ioboard_set_camera_prm(PINS_CAM_CONTRAST, &candy.exp.contrast);
+}
+
 #endif

@@ -59,3 +59,6 @@ void ioboard_camera_callback(
     struct pinsPhoto *photo,
     void *context);
 
+/* Configure camera.
+ */
+void ioboard_configure_camera(void);

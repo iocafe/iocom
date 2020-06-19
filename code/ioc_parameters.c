@@ -71,77 +71,63 @@ osalStatus ioc_save_parameters(
  * @return  OSAL_COMPLETED indicates change, OSAL_NOTHING_TO_DO = no change.
  */
 osalStatus ioc_set_parameter_by_signal(
+    iocParameterStorage *ps,
     const struct iocSignal *sig)
 {
-    os_long x;
-    os_char state_bits, *src;
+    os_char *buf1ptr = OS_NULL, *buf2ptr = OS_NULL;
+    os_char buf1[64], buf2[62];
+    iocSignal *dsig;
     osalTypeId type;
-    os_memsz type_sz;
-    os_double d;
-    os_float f;
+    os_memsz type_sz, sz, n;
     osalStatus s = OSAL_NOTHING_TO_DO;
 
     osal_debug_assert(sig->flags & IOC_PFLAG_IS_PRM);
 
+    dsig = (iocSignal*)sig->ptr;
+    if (dsig == OS_NULL) return OSAL_STATUS_FAILED;
+
     type = (sig->flags & OSAL_TYPEID_MASK);
     type_sz = osal_type_size(type);
-    if (sig->n <= 1) {
-        switch (type)
-        {
-            case OS_FLOAT:
-                f = (os_float)ioc_get_double_ext(sig, &state_bits, IOC_SIGNAL_DEFAULT);
-                if (state_bits & OSAL_STATE_CONNECTED)
-                {
-                    if (f != *(os_float*)sig->ptr) {
-                        *(os_float*)sig->ptr = f;
-                        s = OSAL_COMPLETED;
-                    }
-                }
-                break;
-
-            case OS_DOUBLE:
-                d = ioc_get_double_ext(sig, &state_bits, IOC_SIGNAL_DEFAULT);
-                if (state_bits & OSAL_STATE_CONNECTED)
-                {
-                    if (d != *(os_double*)sig->ptr) {
-                        *(os_double*)sig->ptr = d;
-                        s = OSAL_COMPLETED;
-                    }
-                }
-                break;
-
-            default:
-                x = ioc_get_ext(sig, &state_bits, IOC_SIGNAL_DEFAULT);
-                if (state_bits & OSAL_STATE_CONNECTED)
-                {
-#if OSAL_SMALL_ENDIAN
-                    src = (os_char*)&x;
-#else
-                    src = (os_char*)&x + sizeof(os_long) - type_sz;
-#endif
-                    if (os_memcmp(sig->ptr, src, type_sz))
-                    {
-                        os_memcpy((os_char*)sig->ptr, src, type_sz);
-                        s = OSAL_COMPLETED;
-                    }
-                }
-                break;
-        }
+    n = sig->n;
+    if (n < 1) n = 1;
+    if (type == OS_BOOLEAN) {
+        sz = 1;
+        if (n > 1) sz += (n + 7)/8;
     }
-    else {
-        switch (type)
-        {
-            case OS_STR:
-                break;
+    else
+    {
+        sz = n * type_sz + 1;
+    }
 
-            default:
-                break;
+    buf1ptr = buf1;
+    buf2ptr = buf2;
+    if (sz > sizeof(buf1)) {
+        buf1ptr = os_malloc(2*sz, OS_NULL);
+        if (buf1ptr == OS_NULL)
+        {
+            s = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+            goto getout;
+        }
+        buf2ptr = buf1ptr + sz;
+    }
+    ioc_read(sig->handle, sig->addr, buf1ptr, sz, 0);
+    if (buf1ptr[0] & OSAL_STATE_CONNECTED)
+    {
+        ioc_read(dsig->handle, dsig->addr, buf2ptr, sz, 0);
+        if (os_memcmp(buf1ptr, buf2ptr, sz))
+        {
+            ioc_write(dsig->handle, dsig->addr, buf1ptr, sz, 0);
+            s = OSAL_COMPLETED;
         }
     }
 
+    if (s == OSAL_COMPLETED && (sig->flags & IOC_PFLAG_IS_PERSISTENT)) {
+        ps->changed = OS_TRUE;
+    }
 
+getout:
+    os_free(buf1ptr, sz);
     return s;
 }
-
 
 #endif

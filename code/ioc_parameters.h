@@ -47,6 +47,9 @@ typedef struct iocParameterStorage
 {
     iocParameterStorageInitParams prm;
 
+    /* Flag to indicate that persistent data has been changed but not saved.
+     */
+    os_boolean changed;
 }
 iocParameterStorage;
 
@@ -71,6 +74,7 @@ osalStatus ioc_save_parameters(
 /* Set parameter value by signal (used from communication callback)
  */
 osalStatus ioc_set_parameter_by_signal(
+    iocParameterStorage *ps,
     const struct iocSignal *sig);
 
 

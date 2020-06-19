@@ -80,7 +80,6 @@ def append_parameter(parameter):
             cfile.write(str(init))
 
     cfile.write(' /* ' + name + ' */')
-    return name
     
 def process_struct(data, struct_name, global_name):
     global current_type
@@ -96,8 +95,6 @@ def process_struct(data, struct_name, global_name):
 
     is_first = True
 
-    parameter_list = []
-
     for group in groups:
         parameters = group.get("parameters", None)
         if parameters == None:
@@ -107,16 +104,11 @@ def process_struct(data, struct_name, global_name):
                 if not is_first:
                     cfile.write(',\n  ')
                 is_first = False
-                name = append_parameter(parameter)
-                parameter_list.append((global_name, name))
+                append_parameter(parameter)
 
     hfile.write('}\n' + struct_name + ';\n\n')
     hfile.write('extern ' + struct_name + ' ' + global_name + ';\n\n')
     cfile.write('};\n\n')
-
-    for i in parameter_list:
-        hfile.write('#define IOCP_' + i[1].upper() + ' ' +  i[0] + '.' + i[1] + '\n')
-    hfile.write('\n')
 
 def process_source_file(path):
     global cfile, hfile
