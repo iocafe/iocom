@@ -242,18 +242,18 @@ static void ioc_selectfiwi_load(
 
     os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
 
-    ioc_sets_str(&selectwifi.exp.net_1, block.wifi[0].wifi_net_name);
+    ioc_set_str(&selectwifi.exp.net_1, block.wifi[0].wifi_net_name);
 
 #ifdef SELECTWIFI_IMP_SET_NET_2_ARRAY_SZ
-    ioc_sets_str(&selectwifi.exp.net_2, block.wifi[1].wifi_net_name);
+    ioc_set_str(&selectwifi.exp.net_2, block.wifi[1].wifi_net_name);
 #endif
 
 #ifdef SELECTWIFI_IMP_SET_NET_3_ARRAY_SZ
-    ioc_sets_str(&selectwifi.exp.net_3, block.wifi[2].wifi_net_name);
+    ioc_set_str(&selectwifi.exp.net_3, block.wifi[2].wifi_net_name);
 #endif
 
 #ifdef SELECTWIFI_IMP_SET_NET_4_ARRAY_SZ
-    ioc_sets_str(&selectwifi.exp.net_4, block.wifi[3].wifi_net_name);
+    ioc_set_str(&selectwifi.exp.net_4, block.wifi[3].wifi_net_name);
 #endif
 }
 
@@ -276,29 +276,29 @@ static void ioc_selectfiwi_save(
 
     os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
 
-    ioc_gets_str(&selectwifi.imp.set_net_1, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_net_1, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[0].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
-    ioc_gets_str(&selectwifi.imp.set_password_1, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_password_1, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[0].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
 
 #ifdef SELECTWIFI_IMP_SET_NET_2_ARRAY_SZ
-    ioc_gets_str(&selectwifi.imp.set_net_2, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_net_2, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[1].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
-    ioc_gets_str(&selectwifi.imp.set_password_2, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_password_2, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[1].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
 #endif
 
 #ifdef SELECTWIFI_IMP_SET_NET_3_ARRAY_SZ
-    ioc_gets_str(&selectwifi.imp.set_net_3, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_net_3, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[2].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
-    ioc_gets_str(&selectwifi.imp.set_password_3, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_password_3, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[2].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
 #endif
 
 #ifdef SELECTWIFI_IMP_SET_NET_4_ARRAY_SZ
-    ioc_gets_str(&selectwifi.imp.set_net_4, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_net_4, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[3].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
-    ioc_gets_str(&selectwifi.imp.set_password_4, str, OSAL_WIFI_PRM_SZ);
+    ioc_get_str(&selectwifi.imp.set_password_4, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[3].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
 #endif
 

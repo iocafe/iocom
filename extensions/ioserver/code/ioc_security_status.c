@@ -222,7 +222,7 @@ static void ioc_set_notification(
     empty_row = -1;
     for (row = 0; row < nrows; row++)
     {
-        ioc_gets_str(table[row].user_name, buf, sizeof(buf));
+        ioc_get_str(table[row].user_name, buf, sizeof(buf));
         if (!os_strcmp(buf, note->user)) goto row_selected;
         if (buf[0] == '\0' && empty_row == -1) empty_row = row;
     }
@@ -239,16 +239,16 @@ static void ioc_set_notification(
 
 row_selected:
     r = table + row;
-    ioc_sets_str(r->user_name, note->user);
-    ioc_sets_str(r->password, note->password);
-    ioc_sets_str(r->privileges, note->privileges);
-    ioc_sets_str(r->ip, note->ip);
+    ioc_set_str(r->user_name, note->user);
+    ioc_set_str(r->password, note->password);
+    ioc_set_str(r->privileges, note->privileges);
+    ioc_set_str(r->ip, note->ip);
     if (!reset_count)
     {
         count = ioc_get(r->count) + 1;
     }
     ioc_set(r->count, count);
-    ioc_sets_str(r->text, text);
+    ioc_set_str(r->text, text);
     os_get_timer(&timers[row]);
     is_set[row] = OS_TRUE;
 

@@ -360,7 +360,7 @@ osalStatus osal_loop(
         os_get_timer(&sti);
 
         f[2] = (os_float)i++;
-        ioc_sets_array(&gina.exp.testfloat, f, 5);
+        ioc_set_array(&gina.exp.testfloat, f, 5);
     }
 
     command = (os_int)ioc_get(&gina.imp.myoutput);
@@ -368,7 +368,7 @@ osalStatus osal_loop(
     {
         f[0] = f[0] + 1.0F;
         test_str = (int)f[0] % 2 ? "dance" : "gabriel";
-        ioc_sets_str(&gina.exp.teststr, test_str);
+        ioc_set_str(&gina.exp.teststr, test_str);
         prev_command = command;
     }
 
@@ -486,7 +486,7 @@ void ioboard_communication_callback(
          */
         if (ioc_is_my_address(&gina.imp.seven_segment, start_addr, end_addr))
         {
-            sb = ioc_gets_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
+            sb = ioc_get_array(&gina.imp.seven_segment, buf, GINA_IMP_SEVEN_SEGMENT_ARRAY_SZ);
             if (sb & OSAL_STATE_CONNECTED)
             {
                 osal_console_write("7 segment data received\n");

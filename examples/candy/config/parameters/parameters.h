@@ -3,36 +3,10 @@
 #define IOC_PARAMETERS_INCLUDED
 OSAL_C_HEADER_BEGINS
 
-
-typedef struct iocDevicePersistentPrm {
-  os_char size[10];
-  os_uchar quality;
-  os_uchar brightness;
-  os_uchar contrast;
-  os_uchar hue;
-  os_uchar saturation;
-}
-iocDevicePersistentPrm;
-
-extern iocDevicePersistentPrm ioc_persistent_prm;
-
-#define IOCP_SIZE ioc_persistent_prm.size
-#define IOCP_QUALITY ioc_persistent_prm.quality
-#define IOCP_BRIGHTNESS ioc_persistent_prm.brightness
-#define IOCP_CONTRAST ioc_persistent_prm.contrast
-#define IOCP_HUE ioc_persistent_prm.hue
-#define IOCP_SATURATION ioc_persistent_prm.saturation
-
-
-typedef struct iocDeviceVolatilePrm {
-  os_boolean on;
-}
-iocDeviceVolatilePrm;
-
-extern iocDeviceVolatilePrm ioc_volatile_prm;
-
-#define IOCP_ON ioc_volatile_prm.on
-
+void ioc_initialize_parameters(os_int block_nr);
+iosStatus ioc_load_parameters(void);
+iosStatus ioc_save_parameters(void);
+iosStatus ioc_autosave_parameters(void);
 
 OSAL_C_HEADER_ENDS
 #endif

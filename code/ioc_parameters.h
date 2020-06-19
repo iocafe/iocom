@@ -19,62 +19,19 @@
 
 struct iocSignal;
 
-typedef struct iocParameterStorageInitParams
-{
-    /* Persistent block number. */
-    os_int block_nr;
-
-    /* Pointer to persistent data structure.
-     */
-    void *persistent_prm;
-
-    /* Peristent data structure size in bytes.
-     */
-    os_memsz persistent_prm_sz;
-
-    /* Pointer to volatile data structure.
-     */
-    void *volatile_prm;
-
-    /* Volatile data structure size in bytes.
-     */
-    os_memsz volatile_prm_sz;
-}
-iocParameterStorageInitParams;
-
-
 typedef struct iocParameterStorage
 {
-    iocParameterStorageInitParams prm;
-
-    /* Flag to indicate that persistent data has been changed but not saved.
-     */
+    os_int block_nr;
     os_boolean changed;
+    os_timer ti;
 }
-iocParameterStorage;
+iocParameterStorage;;
 
-
-
-/* Initialize persistent storage and store pointers to persistant and volatile structures.
- */
-void ioc_initialize_parameters(
-    iocParameterStorage *ps,
-    iocParameterStorageInitParams *prm);
-
-/* Load persistant parameters from storage (flash, EEPROM, SSD, etc).
- */
-osalStatus ioc_load_parameters(
-    iocParameterStorage *ps);
-
-/* Save persistant parameters from storage.
- */
-osalStatus ioc_save_parameters(
-    iocParameterStorage *ps);
+extern iocParameterStorage ioc_prm_storage;
 
 /* Set parameter value by signal (used from communication callback)
  */
 osalStatus ioc_set_parameter_by_signal(
-    iocParameterStorage *ps,
     const struct iocSignal *sig);
 
 

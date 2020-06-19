@@ -33,7 +33,8 @@ def setup_group(x_groups, group_name):
     x_groups.append(group)
     return group["signals"]
 
-def append_parameter(parameter):
+'''
+def append_persistent_parameter_to_h(parameter):
     global current_type;
 
     name = parameter.get("name", None);
@@ -80,12 +81,49 @@ def append_parameter(parameter):
             cfile.write(str(init))
 
     cfile.write(' /* ' + name + ' */')
-    
-def process_struct(data, struct_name, global_name):
-    global current_type
-    hfile.write('\ntypedef struct ' + struct_name + ' {\n')
-    cfile.write(struct_name + ' ' + global_name + ' = {\n  ')
+'''
 
+def append_init_parameter_to_c(parameter):
+    global current_type, device_name;
+
+    init = parameter.get('init', None);
+    if init == None:
+        return;
+
+    name = parameter.get("name", None);
+    if name == None:
+        print("Parameter without name");
+        return
+
+    type = parameter.get("type", None);
+    if type != None:
+        current_type = type
+
+    array_n = parameter.get('array', 1);
+
+    cfile.write('  ')
+
+    if array_n > 1:
+        if type == 'str':
+            cfile.write('ioc_set_str(&' + device_name + '.exp.' + name + ', "' + str(init) + '");\n')
+        else:
+            cfile.write('static OS_FLASH_MEM os_' + type + ' ioc_idata_' + name + '[] = {')
+            init_list = init.split(',')
+            is_first = True
+            for i in init_list:
+                if not is_first:
+                    cfile.write(', ')
+                is_first = False
+                cfile.write(str(i))
+            cfile.write('};\n  ')
+            cfile.write('ioc_set_array(&' + device_name + '.exp.' + name + ', ' + 'ioc_idata_' + name + ');\n')
+    else:
+        cfile.write('ioc_set(&' + device_name + '.exp.' + name + ', ' + str(init) + ');\n')
+    
+def process_struct(step, data, struct_name, global_name):
+    global current_type
+
+    is_first = True
     current_type = "ushort"
     title = data.get("title", "untitled")
     groups = data.get("groups", None)
@@ -93,45 +131,52 @@ def process_struct(data, struct_name, global_name):
         print('"' + title + '" is empty?')
         return
 
-    is_first = True
 
     for group in groups:
         parameters = group.get("parameters", None)
         if parameters == None:
             print("Group without parameters?")
-        else:
+        elif step == 'init':
+            for parameter in parameters:
+                append_init_parameter_to_c(parameter);
+
+        '''
+        elif step == 'init':
             for parameter in parameters:
                 if not is_first:
                     cfile.write(',\n  ')
                 is_first = False
                 append_parameter(parameter)
+        '''
 
-    hfile.write('}\n' + struct_name + ';\n\n')
-    hfile.write('extern ' + struct_name + ' ' + global_name + ';\n\n')
-    cfile.write('};\n\n')
+def process_source_data(step, sourcedata):
+    for data in sourcedata:
+        persistent = data.get("persistent", None)
+        if persistent != None:
+            process_struct(step, persistent, "iocDevicePersistentPrm", "ioc_persistent_prm")
 
-def process_source_file(path):
-    global cfile, hfile
+        if step == 'init':
+            volatile = data.get("volatile", None)
+            if volatile != None:
+                process_struct(step, volatile, "iocDeviceVolatilePrm", "ioc_volatile_prm")
+
+def load_source_file(path):
+    global device_name
     read_file = open(path, "r")
     if read_file:
         data = json.load(read_file)
 
-        persistent = data.get("persistent", None)
-        if persistent != None:
-            process_struct(persistent, "iocDevicePersistentPrm", "ioc_persistent_prm")
-
-        volatile = data.get("volatile", None)
-        if volatile != None:
-            process_struct(volatile, "iocDeviceVolatilePrm", "ioc_volatile_prm")
-    else:
-        print ("Opening file " + path + " failed")
+        if device_name == None:
+            device_name = data.get("name", "NONAME")
+    return data;
 
 def mymain():
-    global cfilepath, hfilepath
+    global cfilepath, hfilepath, device_name
     n = len(sys.argv)
     sourcefiles = []
     outpath = None
     expect = None
+    device_name = None
     for i in range(1, n):
         if sys.argv[i][0] == "-":
             if sys.argv[i][1] == "o":
@@ -162,12 +207,55 @@ def mymain():
     except FileExistsError:
         pass
 
+    sourcedata = []
+    for path in sourcefiles:
+        data = load_source_file(path)
+        sourcedata.append(data)
+
     print("Writing files " + cfilepath + " and " + hfilepath)
 
     start_c_files()
 
-    for path in sourcefiles:
-        process_source_file(path)
+    # Write initialization structure  save function
+    # hfile.write('typedef struct iocDevicePersistentPrm {\n')
+    # process_source_data('struct', sourcedata)
+    # hfile.write('};\n\n')
+
+    # Write initialization function
+    cfile.write('void ioc_initialize_parameters(os_int block_nr)\n{\n')
+    cfile.write('  os_memclear(&ioc_prm_storage, sizeof(ioc_prm_storage));\n')
+    cfile.write('  ioc_prm_storage.block_nr = block_nr;\n')
+    process_source_data('init', sourcedata)
+    cfile.write('};\n\n')
+
+    # Write persistent load function
+    cfile.write('osalStatus ioc_load_parameters(void)\n{\n')
+    process_source_data('load', sourcedata)
+    cfile.write('  return OSAL_SUCCESS;\n')
+    cfile.write('};\n\n')
+
+    # Write persistent save function
+    cfile.write('osalStatus ioc_save_parameters(void)\n{\n')
+    process_source_data('save', sourcedata)
+    cfile.write('  return OSAL_SUCCESS;\n')
+    cfile.write('};\n\n')
+    # SET CHANGED BIT OFF
+
+    # Write autosave function
+    cfile.write('osalStatus ioc_autosave_parameters(void)\n{\n')
+    cfile.write('  if (ioc_prm_storage.changed) {\n')
+    cfile.write('    if (os_has_elapsed(&ioc_prm_storage.ti, 10000)) {\n')
+    cfile.write('       ioc_save_parameters();\n')
+    cfile.write('    }\n')
+    cfile.write('  }\n')
+    cfile.write('  return OSAL_SUCCESS;\n')
+    cfile.write('};\n\n')
+
+    # Write heade file
+    hfile.write('void ioc_initialize_parameters(os_int block_nr);\n')
+    hfile.write('osalStatus ioc_load_parameters(void);\n')
+    hfile.write('osalStatus ioc_save_parameters(void);\n')
+    hfile.write('osalStatus ioc_autosave_parameters(void);\n')
 
     finish_c_files()
 

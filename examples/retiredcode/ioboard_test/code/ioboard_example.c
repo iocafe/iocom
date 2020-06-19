@@ -319,7 +319,7 @@ static void ioboard_fc_callback(
 
     if (ioc_is_my_address(&my_fc_7_segments, start_addr, end_addr))
     {
-        sb = ioc_gets_array(&my_fc_7_segments, buf, N_LEDS);
+        sb = ioc_get_array(&my_fc_7_segments, buf, N_LEDS);
         if (sb & OSAL_STATE_CONNECTED)
         {
             osal_console_write("7 segment data received\n");

@@ -60,10 +60,6 @@ IO_DEVICE_CONSOLE(ioconsole);
  */
 static MorseCode morse;
 
-/* Parameter storage support.
- */
-static iocParameterStorage parameter_storage;
-
 /* Maximum number of sockets, etc.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
@@ -115,7 +111,6 @@ osalStatus osal_main(
     ioboardParams prm;
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
-    iocParameterStorageInitParams psprm;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().
@@ -127,16 +122,6 @@ osalStatus osal_main(
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.device_name = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
-
-    /* Initialize parameter storage and store pointers to persistant and volatile structures.
-     */
-    os_memclear(&psprm, sizeof(psprm));
-    psprm.block_nr = OS_PBNR_CUST_A;
-    psprm.persistent_prm = &ioc_persistent_prm;
-    psprm.persistent_prm_sz = sizeof(ioc_persistent_prm);
-    psprm.volatile_prm = &ioc_volatile_prm;
-    psprm.volatile_prm_sz = sizeof(ioc_volatile_prm);
-    ioc_initialize_parameters(&parameter_storage, &psprm);
 
     /* If we are using devicedir for development testing, initialize.
      */
@@ -187,7 +172,6 @@ osalStatus osal_main(
     prm.receive_block_sz = CANDY_IMP_MBLK_SZ;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
-    // prm.device_signal_hdr = &candy_hdr;
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
     prm.conf_send_block_sz = CANDY_CONF_EXP_MBLK_SZ;
@@ -209,9 +193,10 @@ osalStatus osal_main(
      */
     ioboard_start_communication(&prm);
 
-    /* Load camera parameters from persistent storage to "exp" memory buffer.
+    /* Initialize defaults and try to load camera parameters from persistent storage to "exp" memory buffer.
      */
-    ioc_load_parameters(&parameter_storage);
+    ioc_initialize_parameters(OS_PBNR_CUST_A);
+    ioc_load_parameters();
 
     /* Set callback to pass communcation to pins.
      */
@@ -448,7 +433,7 @@ void ioboard_communication_callback(
             forward_signal_change_to_io_pin(sig, 0);
         }
         else if (sig->flags & IOC_PFLAG_IS_PRM) {
-            s = ioc_set_parameter_by_signal(&parameter_storage, sig);
+            s = ioc_set_parameter_by_signal(sig);
             if (s == OSAL_COMPLETED) {
                 configuration_changed = OS_TRUE;
             }

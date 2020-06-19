@@ -140,13 +140,13 @@ iocValue;
 
 /* Set or get a string using initialized signal structure.
  */
-#define ioc_sets_str(s,st) ioc_move_str((s), (os_char*)(st), -1, OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_STR)
-#define ioc_gets_str(s,st,ss) ioc_move_str((s), (st), (ss), OSAL_STATE_CONNECTED, OS_STR)
+#define ioc_set_str(s,st) ioc_move_str((s), (os_char*)(st), -1, OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|OS_STR)
+#define ioc_get_str(s,st,ss) ioc_move_str((s), (st), (ss), OSAL_STATE_CONNECTED, OS_STR)
 
 /* Set or get array of values using initialized signal structure. Array type must match to JSON configuration.
  */
-#define ioc_sets_array(s,v,n) ioc_move_array((s), 0, (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE)
-#define ioc_gets_array(s,v,n) ioc_move_array((s), 0, (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT)
+#define ioc_set_array(s,v,n) ioc_move_array((s), 0, (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE)
+#define ioc_get_array(s,v,n) ioc_move_array((s), 0, (v), (n), OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT)
 
 /* Shorter markings when we dot care to set state bits ourselves.
  */

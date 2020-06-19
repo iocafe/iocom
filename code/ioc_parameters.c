@@ -17,61 +17,22 @@
 
 #if IOC_DEVICE_PARAMETER_SUPPORT
 
+iocParameterStorage ioc_prm_storage;
+
 /**
 ****************************************************************************************************
 
-  @brief Initialize and set up parameter storage structure.
-  @anchor ioc_initialize_parameters
+  @brief Set parameter value by signal (used from communication callback)
+  @anchor ioc_set_parameter_by_signal
 
-  The ioc_initialize_parameters() function clears memory allocated for parameter storage structure
-  and for persistent/volatile buffer data structures and stores pointers to buffer stuctures
-  within parameter storage.
+  The ioc_set_parameter_by_signal()
 
-  This function must be called before parameter storage is used.
-
-  @param   ps Pointer to parameter storage structure to initialize.
-  @param   prm Parameters for this function.
-  @return  None.
+  @param   sig Changed signal.
+  @return  OSAL_COMPLETED indicates change, OSAL_NOTHING_TO_DO = no change.
 
 ****************************************************************************************************
 */
-void ioc_initialize_parameters(
-    iocParameterStorage *ps,
-    iocParameterStorageInitParams *prm)
-{
-    os_memclear(ps, sizeof(iocParameterStorage));
-    os_memcpy(&ps->prm, prm, sizeof(iocParameterStorageInitParams));
-    if (prm->persistent_prm) {
-        os_memclear(prm->persistent_prm, prm->persistent_prm_sz);
-    }
-    if (prm->volatile_prm) {
-        os_memclear(prm->volatile_prm, prm->volatile_prm_sz);
-    }
-}
-
-
-/* Load persistant parameters from storage (flash, EEPROM, SSD, etc).
- */
-osalStatus ioc_load_parameters(
-    iocParameterStorage *ps)
-{
-    return OSAL_SUCCESS;
-}
-
-/* Save persistant parameters from storage.
- */
-osalStatus ioc_save_parameters(
-    iocParameterStorage *ps)
-{
-    return OSAL_SUCCESS;
-}
-
-
-/* Set parameter value by signal (used from communication callback)
- * @return  OSAL_COMPLETED indicates change, OSAL_NOTHING_TO_DO = no change.
- */
 osalStatus ioc_set_parameter_by_signal(
-    iocParameterStorage *ps,
     const struct iocSignal *sig)
 {
     os_char *buf1ptr = OS_NULL, *buf2ptr = OS_NULL;
@@ -122,7 +83,11 @@ osalStatus ioc_set_parameter_by_signal(
     }
 
     if (s == OSAL_COMPLETED && (sig->flags & IOC_PFLAG_IS_PERSISTENT)) {
-        ps->changed = OS_TRUE;
+        if (!ioc_prm_storage.changed)
+        {
+            os_get_timer(&ioc_prm_storage.ti);
+            ioc_prm_storage.changed = OS_TRUE;
+        }
     }
 
 getout:
