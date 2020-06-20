@@ -1,1 +1,1 @@
-{"merge": ["device_conf_signals.json", "parameters-as-signals.json", "camera_flat12k_signals.json"]}
+{"merge": ["signals.json", "device_conf_signals.json", "parameters-as-signals.json", "camera_flat12k_signals.json"]}
