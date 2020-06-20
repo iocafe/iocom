@@ -67,13 +67,13 @@ def process_source_file(merged, path, exp_groups, imp_groups):
         if device_name != None:
             merged["name"] = device_name
 
-        persistent = data.get("persistent", None)
-        if persistent != None:
-            merge(merged, persistent, exp_groups, imp_groups, True)
-
         volatile = data.get("volatile", None)
         if volatile != None:
             merge(merged, volatile, exp_groups, imp_groups, False)
+
+        persistent = data.get("persistent", None)
+        if persistent != None:
+            merge(merged, persistent, exp_groups, imp_groups, True)
     else:
         print ("Opening file " + path + " failed")
 
