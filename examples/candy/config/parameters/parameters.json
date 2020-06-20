@@ -2,18 +2,13 @@
   "name": "candy",
   "persistent": 
   {
-    "title": "candy camera pamameters",
+    "title": "camera pamameters",
     "groups": [
       {
-        "name": "image",
+        "name": "camera parameters",
         "parameters": [
           {"name": "size", "type": "str", "array": 10, "init": "320x240", "select": "320x240,640x480"},
-          {"name": "quality", "type": "uchar", "init":40}
-        ]
-      },
-      {
-        "name": "color",
-        "parameters": [
+          {"name": "quality", "type": "uchar", "init":40},
           {"name": "brightness", "type": "uchar", "init":50},
           {"name": "contrast", "type": "uchar", "init":50},
           {"name": "hue", "type": "uchar", "init":50},
@@ -25,11 +20,12 @@
 
  "volatile": 
   {
-    "title": "candy camera control",
+    "title": "camera control",
     "groups": [
       {
-        "name": "run",
+        "name": "canera control",
         "parameters": [
+          {"name": "headlight", "type": "uint", "max": 4095},
           {"name": "on", "type": "boolean", "init":1}
         ]
       }

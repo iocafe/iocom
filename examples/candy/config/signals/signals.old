@@ -12,12 +12,6 @@
           {"name": "ambient", "type": "uint", "max": 4095},
           {"name": "unused_pin", "type": "uint", "max": 4095}
         ]
-      },
-      {
-        "name": "parameters",
-        "signals": [
-           {"name": "prm_resolution", "type": "str", "array": 10}
-         ]
       }
     ]
   },
@@ -31,13 +25,7 @@
         "name": "controls",
         "signals": [
            {"name": "on", "type": "boolean"},
-           {"name": "headlight", "type": "uint", "max": 4095}
-         ]
-      },
-      {
-        "name": "settings",
-        "signals": [
-           {"name": "set_resolution", "type": "str", "array": 10}
+           {"name": "headlightx", "type": "uint", "max": 4095}
          ]
       }
     ]
