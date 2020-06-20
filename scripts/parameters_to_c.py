@@ -272,7 +272,7 @@ def mymain():
     cfile.write('osalStatus ioc_autosave_parameters(void)\n{\n')
     cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
     cfile.write('  if (ioc_prm_storage.changed) {\n')
-    cfile.write('    if (os_has_elapsed(&ioc_prm_storage.ti, 10000)) {\n')
+    cfile.write('    if (os_has_elapsed(&ioc_prm_storage.ti, 3000)) {\n')
     cfile.write('       ioc_save_parameters();\n')
     cfile.write('    }\n')
     cfile.write('  }\n')
