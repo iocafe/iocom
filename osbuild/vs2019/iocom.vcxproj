@@ -30,9 +30,11 @@
     <ClInclude Include="..\..\code\ioc_memory.h" />
     <ClInclude Include="..\..\code\ioc_memory_block.h" />
     <ClInclude Include="..\..\code\ioc_memory_block_info.h" />
+    <ClInclude Include="..\..\code\ioc_parameters.h" />
     <ClInclude Include="..\..\code\ioc_poolsize.h" />
     <ClInclude Include="..\..\code\ioc_root.h" />
     <ClInclude Include="..\..\code\ioc_signal.h" />
+    <ClInclude Include="..\..\code\ioc_signal_addr.h" />
     <ClInclude Include="..\..\code\ioc_source_buffer.h" />
     <ClInclude Include="..\..\code\ioc_streamer.h" />
     <ClInclude Include="..\..\code\ioc_target_buffer.h" />
@@ -62,8 +64,10 @@
     <ClCompile Include="..\..\code\ioc_memory.c" />
     <ClCompile Include="..\..\code\ioc_memory_block.c" />
     <ClCompile Include="..\..\code\ioc_memory_block_info.c" />
+    <ClCompile Include="..\..\code\ioc_parameters.c" />
     <ClCompile Include="..\..\code\ioc_root.c" />
     <ClCompile Include="..\..\code\ioc_signal.c" />
+    <ClCompile Include="..\..\code\ioc_signal_addr.c" />
     <ClCompile Include="..\..\code\ioc_source_buffer.c" />
     <ClCompile Include="..\..\code\ioc_streamer.c" />
     <ClCompile Include="..\..\code\ioc_target_buffer.c" />

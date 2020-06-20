@@ -71,13 +71,13 @@ osalStatus ioc_set_parameter_by_signal(
         }
         buf2ptr = buf1ptr + sz;
     }
-    ioc_read(sig->handle, sig->addr, buf1ptr, sz, 0);
+    ioc_read(sig->handle, sig->addr, buf1ptr, (os_int)sz, 0);
     if (buf1ptr[0] & OSAL_STATE_CONNECTED)
     {
-        ioc_read(dsig->handle, dsig->addr, buf2ptr, sz, 0);
+        ioc_read(dsig->handle, dsig->addr, buf2ptr, (os_int)sz, 0);
         if (os_memcmp(buf1ptr, buf2ptr, sz))
         {
-            ioc_write(dsig->handle, dsig->addr, buf1ptr, sz, 0);
+            ioc_write(dsig->handle, dsig->addr, buf1ptr, (os_int)sz, 0);
             s = OSAL_COMPLETED;
         }
     }

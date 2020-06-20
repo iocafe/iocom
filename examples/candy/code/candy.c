@@ -494,13 +494,14 @@ void ioboard_camera_callback(
 */
 void ioboard_set_camera_prm(
     pinsCameraParamIx ix,
-    iocSignal *sig)
+    const iocSignal *sig)
 {
     os_long x;
+    os_char state_bits;
 
-    x = ioc_get_ext(&sig, &state_bits, IOC_SIGNAL_DEFAULT);
+    x = ioc_get_ext(sig, &state_bits, IOC_SIGNAL_DEFAULT);
     if (state_bits & OSAL_STATE_CONNECTED) {
-        PINS_CAMERA_IFACE.set_parameter(&pins_camera, x, ix, x);
+        PINS_CAMERA_IFACE.set_parameter(&pins_camera, ix, x);
     }
 }
 
