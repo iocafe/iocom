@@ -77,18 +77,18 @@ def calc_signal_memory_sz(type, array_n):
         if array_n <= 1:
             return 1
         else:
-            return ((array_n + 7) >> 3) + 1;
+            return ((array_n + 7) >> 3) + 1
 
-    type_sz = osal_typeinfo[type];
+    type_sz = osal_typeinfo[type]
     return array_n * type_sz + 1
 
 def write_signal_to_c_source_for_iodevice(signal_name, signal):
     global cfile, hfile, array_list, signal_list
     global max_addr, signal_nr, nro_signals, handle, pinlist
 
-    addr = signal.get('addr', current_addr);
-    type = signal.get('type', current_type);
-    array_n = signal.get('array', 1);
+    addr = signal['addr']
+    type = signal['type']
+    array_n = signal.get('array', 1)
     if array_n < 1:
         array_n = 1
 
@@ -142,8 +142,8 @@ def write_signal_to_c_source_for_controller(signal_name, signal):
     global cfile, hfile, array_list, signal_list
     global max_addr, signal_nr, nro_signals, handle, pinlist
 
-    addr = signal.get('addr', current_addr);
-    type = signal.get('type', current_type);
+    addr = signal['addr']
+    type = signal['type']
     array_n = signal.get('array', 1);
     if array_n < 1:
         array_n = 1
@@ -201,7 +201,7 @@ def write_my_error(msg):
 def process_mblk(mblk):
     global cfile, hfile, reserved_addrs
     global block_name, handle, define_list, mblk_nr, nro_mblks, mblk_list
-    global current_addr, max_addr, signal_nr, nro_signals, is_controller
+    global max_addr, signal_nr, nro_signals, is_controller
 
     block_name = mblk.get("name", "MBLK")
     check_valid_name("Memory block", block_name, IOC_NAME_SZ, True)
@@ -310,7 +310,7 @@ def process_assembly(assembly):
 def preprocess_signal(p_signals, signal):
     global current_type, current_addr, max_addr, reserved_addrs, device_name
 
-    addr = signal.get('addr', None);
+    addr = signal.get('addr', None)
     if addr != None:
         current_addr = addr
 
@@ -318,16 +318,16 @@ def preprocess_signal(p_signals, signal):
     p_signals[current_addr] = p_signal
     p_signal['addr'] = current_addr
 
-    type = signal.get('type', None);
+    type = signal.get('type', None)
     if type != None:
         current_type = type
     p_signal['type'] = current_type
 
-    array_n = signal.get('array', 1);
+    array_n = signal.get('array', 1)
     if array_n < 1:
         array_n = 1
 
-    mem_sz_bytes = calc_signal_memory_sz(current_type, array_n);
+    mem_sz_bytes = calc_signal_memory_sz(current_type, array_n)
     reserved_addrs += list(range(current_addr, current_addr + mem_sz_bytes))
 
     current_addr += mem_sz_bytes
