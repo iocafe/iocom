@@ -35,7 +35,7 @@ iocParameterStorage ioc_prm_storage;
 osalStatus ioc_set_parameter_by_signal(
     const struct iocSignal *sig)
 {
-    os_char *buf1ptr = OS_NULL, *buf2ptr = OS_NULL;
+    os_char *buf1ptr, *buf2ptr, *tmpbuf = OS_NULL;
     os_char buf1[64], buf2[62];
     iocSignal *dsig;
     osalTypeId type;
@@ -63,12 +63,13 @@ osalStatus ioc_set_parameter_by_signal(
     buf1ptr = buf1;
     buf2ptr = buf2;
     if (sz > sizeof(buf1)) {
-        buf1ptr = os_malloc(2*sz, OS_NULL);
-        if (buf1ptr == OS_NULL)
+        tmpbuf = os_malloc(2*sz, OS_NULL);
+        if (tmpbuf== OS_NULL)
         {
             s = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
             goto getout;
         }
+        buf1ptr = tmpbuf;
         buf2ptr = buf1ptr + sz;
     }
     ioc_read(sig->handle, sig->addr, buf1ptr, (os_int)sz, 0);
@@ -91,7 +92,7 @@ osalStatus ioc_set_parameter_by_signal(
     }
 
 getout:
-    os_free(buf1ptr, sz);
+    os_free(tmpbuf, sz);
     return s;
 }
 
