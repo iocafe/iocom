@@ -4,6 +4,27 @@ import json
 import os
 import sys
 
+# Size excludes signal state byte.
+osal_typeinfo = {
+    "undef" : 0,
+    "boolean" : 1,
+    "char" : 1,
+    "uchar" : 1,
+    "short" : 2,
+    "ushort" : 2,
+    "int" : 4,
+    "uint" : 4,
+    "int64" : 8,
+    "long" : 8,
+    "float" : 4,
+    "double" : 8,
+    "dec01" : 2,
+    "dec001" : 2,
+    "str" : 1,
+    "object" : 0,
+    "pointer" : 0}
+
+
 def start_c_files():
     global cfile, hfile, cfilepath, hfilepath
     cfile = open(cfilepath, "w")
@@ -24,67 +45,39 @@ def finish_c_files():
     cfile.close()
     hfile.close()
 
-def setup_group(x_groups, group_name):
-    for group in x_groups:
-        if group_name == group.get("name", None):
-            return group["signals"]
+def calc_signal_memory_sz(type, array_n):
+    if type == "boolean":
+        if array_n <= 1:
+            return 1
+        else:
+            return ((array_n + 7) >> 3) + 1
 
-    group = {"name" : group_name, "signals" : []} 
-    x_groups.append(group)
-    return group["signals"]
+    type_sz = osal_typeinfo[type];
+    return array_n * type_sz + 1
 
-'''
-def append_persistent_parameter_to_h(parameter):
-    global current_type;
+# Set address and type, if not set
+def set_offset_and_type(parameter):
+    global current_type, current_offset
 
-    name = parameter.get("name", None);
-    if name == None:
-        print("Parameter without name");
-        return
-
-    type = parameter.get("type", None);
+    type = parameter.get('type', None)
     if type != None:
         current_type = type
+    else:
+        parameter['type'] = current_type
 
-    array_n = parameter.get('array', 1);
+    array_n = parameter.get('array', 1)
     if array_n < 1:
         array_n = 1
 
-    if current_type == 'str':
-        ctype = 'char'
-    else:
-        ctype = current_type
-    hfile.write('  os_' + ctype + ' ' + name)
+    mem_sz_bytes = calc_signal_memory_sz(current_type, array_n)
+    parameter['my_offset'] = current_offset
+    parameter['my_bytes'] = mem_sz_bytes
 
-    if array_n > 1:
-        hfile.write('[' + str(array_n) + ']')
+    current_offset += mem_sz_bytes
 
-    hfile.write(';\n')
-
-    init = parameter.get('init', None);
-
-    if init != None:
-        if array_n > 1:
-            if type == 'str':
-                cfile.write('"' + str(init) + '"')
-            else:
-                init_list = init.split(',')
-                is_first = True
-                cfile.write('{')
-                for i in init_list:
-                    if not is_first:
-                        cfile.write(', ')
-                    is_first = False
-                    cfile.write(str(i))
-                cfile.write('{')
-        else:
-            cfile.write(str(init))
-
-    cfile.write(' /* ' + name + ' */')
-'''
 
 def append_init_parameter_to_c(parameter):
-    global current_type, device_name;
+    global device_name;
 
     init = parameter.get('init', None);
     if init == None:
@@ -95,10 +88,7 @@ def append_init_parameter_to_c(parameter):
         print("Parameter without name");
         return
 
-    type = parameter.get("type", None);
-    if type != None:
-        current_type = type
-
+    type = parameter["type"]
     array_n = parameter.get('array', 1);
 
     cfile.write('  ')
@@ -119,11 +109,35 @@ def append_init_parameter_to_c(parameter):
             cfile.write('ioc_set_array(&' + device_name + '.exp.' + name + ', ' + 'ioc_idata_' + name + ');\n')
     else:
         cfile.write('ioc_set(&' + device_name + '.exp.' + name + ', ' + str(init) + ');\n')
-    
-def process_struct(step, data, struct_name, global_name):
-    global current_type
+
+
+def append_load_parameter_to_c(parameter):
+    global device_name;
+
+    name = parameter.get("name", None);
+    if name == None:
+        return
+
+    dsig = device_name + '.exp.' + name
+    cfile.write('    ioc_write(' + dsig + '.handle, ' + dsig + '.addr, buf + ' + str(parameter['my_offset']) + ', ' + str(parameter['my_bytes']) + ', 0);\n')
+
+def append_save_parameter_to_c(parameter):
+    global device_name;
+
+    name = parameter.get("name", None);
+    if name == None:
+        return
+
+    dsig = device_name + '.exp.' + name
+    cfile.write('  ioc_read(' + dsig + '.handle, ' + dsig + '.addr, buf + ' + str(parameter['my_offset']) + ', ' + str(parameter['my_bytes']) + ', 0);\n')
+
+def process_struct(step, data):
+    global current_type, current_offset, persistent_struct_sz
 
     is_first = True
+    current_type = "ushort"
+    current_offset = 0
+
     current_type = "ushort"
     title = data.get("title", "untitled")
     groups = data.get("groups", None)
@@ -131,34 +145,36 @@ def process_struct(step, data, struct_name, global_name):
         print('"' + title + '" is empty?')
         return
 
-
     for group in groups:
         parameters = group.get("parameters", None)
         if parameters == None:
             print("Group without parameters?")
+        elif step == 'setoffsets':
+            for parameter in parameters:
+                set_offset_and_type(parameter)
         elif step == 'init':
             for parameter in parameters:
-                append_init_parameter_to_c(parameter);
+                append_init_parameter_to_c(parameter)
+        elif step == 'load':
+            for parameter in parameters:
+                append_load_parameter_to_c(parameter)
+        elif step == 'save':
+            for parameter in parameters:
+                append_save_parameter_to_c(parameter)
 
-        '''
-        elif step == 'init':
-            for parameter in parameters:
-                if not is_first:
-                    cfile.write(',\n  ')
-                is_first = False
-                append_parameter(parameter)
-        '''
+    if step == 'setoffsets':
+        persistent_struct_sz = current_offset
 
 def process_source_data(step, sourcedata):
     for data in sourcedata:
         persistent = data.get("persistent", None)
         if persistent != None:
-            process_struct(step, persistent, "iocDevicePersistentPrm", "ioc_persistent_prm")
+            process_struct(step, persistent)
 
         if step == 'init':
             volatile = data.get("volatile", None)
             if volatile != None:
-                process_struct(step, volatile, "iocDeviceVolatilePrm", "ioc_volatile_prm")
+                process_struct(step, volatile)
 
 def load_source_file(path):
     global device_name
@@ -216,40 +232,55 @@ def mymain():
 
     start_c_files()
 
-    # Write initialization structure  save function
-    # hfile.write('typedef struct iocDevicePersistentPrm {\n')
-    # process_source_data('struct', sourcedata)
-    # hfile.write('};\n\n')
-
-    # Write initialization function
+    # Set offset, size in bytes and type for every parameter
+    # and structure sizes for volatile and persistent parameters.
+    process_source_data('setoffsets', sourcedata)
+    
+    # Write initialization function, set offset and size for 
     cfile.write('void ioc_initialize_parameters(os_int block_nr)\n{\n')
     cfile.write('  os_memclear(&ioc_prm_storage, sizeof(ioc_prm_storage));\n')
     cfile.write('  ioc_prm_storage.block_nr = block_nr;\n')
     process_source_data('init', sourcedata)
-    cfile.write('};\n\n')
+    cfile.write('}\n\n')
 
     # Write persistent load function
     cfile.write('osalStatus ioc_load_parameters(void)\n{\n')
+    cfile.write('  os_char buf[' + str(persistent_struct_sz) + '];\n')
+    cfile.write('  osalStatus s;\n\n')
+    cfile.write('  s = os_load_persistent(ioc_prm_storage.block_nr, buf, sizeof(buf));\n')
+    cfile.write('  if (!OSAL_IS_ERROR(s)) {\n')
     process_source_data('load', sourcedata)
-    cfile.write('  return OSAL_SUCCESS;\n')
-    cfile.write('};\n\n')
+    cfile.write('  }\n')
+    cfile.write('  return s;\n')
+    cfile.write('}\n\n')
 
     # Write persistent save function
     cfile.write('osalStatus ioc_save_parameters(void)\n{\n')
+    cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
+    cfile.write('  os_char buf[' + str(persistent_struct_sz) + '];\n')
+    cfile.write('  osalStatus s;\n\n')
     process_source_data('save', sourcedata)
-    cfile.write('  return OSAL_SUCCESS;\n')
-    cfile.write('};\n\n')
-    # SET CHANGED BIT OFF
+    cfile.write('  s = os_save_persistent(ioc_prm_storage.block_nr, buf, sizeof(buf), OS_FALSE);\n')
+    cfile.write('  ioc_prm_storage.changed = OS_FALSE;\n')
+    cfile.write('  return s;\n')
+    cfile.write('#else\n')
+    cfile.write('  return OSAL_STATUS_NOT_SUPPORTED;\n')
+    cfile.write('#endif\n')
+    cfile.write('}\n\n')
 
     # Write autosave function
     cfile.write('osalStatus ioc_autosave_parameters(void)\n{\n')
+    cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
     cfile.write('  if (ioc_prm_storage.changed) {\n')
     cfile.write('    if (os_has_elapsed(&ioc_prm_storage.ti, 10000)) {\n')
     cfile.write('       ioc_save_parameters();\n')
     cfile.write('    }\n')
     cfile.write('  }\n')
     cfile.write('  return OSAL_SUCCESS;\n')
-    cfile.write('};\n\n')
+    cfile.write('#else\n')
+    cfile.write('  return OSAL_STATUS_NOT_SUPPORTED;\n')
+    cfile.write('#endif\n')
+    cfile.write('}\n\n')
 
     # Write heade file
     hfile.write('void ioc_initialize_parameters(os_int block_nr);\n')

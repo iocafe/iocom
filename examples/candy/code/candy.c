@@ -339,6 +339,8 @@ ioc_set(&candy.exp.ambient, u++ / 200);
         ioc_run(&ioboard_root);
     }
 
+    ioc_autosave_parameters();
+
     return s;
 }
 

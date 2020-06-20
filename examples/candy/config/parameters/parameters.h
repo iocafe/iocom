@@ -4,9 +4,9 @@
 OSAL_C_HEADER_BEGINS
 
 void ioc_initialize_parameters(os_int block_nr);
-iosStatus ioc_load_parameters(void);
-iosStatus ioc_save_parameters(void);
-iosStatus ioc_autosave_parameters(void);
+osalStatus ioc_load_parameters(void);
+osalStatus ioc_save_parameters(void);
+osalStatus ioc_autosave_parameters(void);
 
 OSAL_C_HEADER_ENDS
 #endif
