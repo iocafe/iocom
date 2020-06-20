@@ -165,8 +165,8 @@ const iocSignal *ioc_get_signal_range_by_hdr(
     /* Search last signal only part of signal list, which follows first
      */
     sig += first;
-    first = 0;
     last = hdr->n_signals - first - 1;
+    first = 0;
 
     /* First last effected signal
      */
