@@ -533,7 +533,6 @@ void ioboard_configure_camera(void)
 #endif
 #ifdef CANDY_EXP_IMG_HEIGHT
     ioboard_set_camera_prm(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
-    ioboard_read_camera_prm_back(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
     ioboard_read_camera_prm_back(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
 #endif
 #ifdef CANDY_EXP_FRAMERATE
