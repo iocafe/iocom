@@ -36,7 +36,7 @@
     "title": "camera control",
     "groups": [
       {
-        "name": "canera control",
+        "name": "camera control",
         "parameters": [
           {"name": "headlight", "type": "uint", "max": 4095},
           {"name": "on", "type": "boolean", "init":1}
