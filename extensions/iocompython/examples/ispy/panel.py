@@ -67,7 +67,6 @@ class Panel(GridLayout):
 
         if assembly_type=="cam_flat" or assembly_type=="cam_ring":
             cam = VideoItem(assembly_type)
-            assembly_type
 
         elif assembly_type=="lcam_flat" or assembly_type=="lcam_ring":
             cam = LinearCameraItem(assembly_type)

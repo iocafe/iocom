@@ -4,6 +4,7 @@ from kivy.uix.label import Label
 # from kivy.uix.button import Button
 
 from kivy.graphics import Rectangle
+from kivy.graphics import Color
 from kivy.graphics.texture import Texture
 from array import array
 
@@ -76,6 +77,8 @@ class VideoItem(GridLayout):
         # with self.canvas.before:
         self.canvas.clear()
         with self.canvas:
+            #Color(1., 0, 0, 1.)
+            Color(1., 1., 1., 1.)
             Rectangle(texture=self.texture, pos=self.pos, size=(640, 480))
 
     def set_device(self, ioc_root, device_path, assembly_data):
