@@ -492,7 +492,7 @@ void ioboard_camera_callback(
 
 ****************************************************************************************************
 */
-void ioboard_set_camera_prm(
+static void ioboard_set_camera_prm(
     pinsCameraParamIx ix,
     const iocSignal *sig)
 {
@@ -501,6 +501,15 @@ void ioboard_set_camera_prm(
     PINS_CAMERA_IFACE.set_parameter(&pins_camera, ix, x);
 }
 
+
+static void ioboard_read_camera_prm_back(
+    pinsCameraParamIx ix,
+    const iocSignal *sig)
+{
+    os_long x;
+    x = PINS_CAMERA_IFACE.get_parameter(&pins_camera, ix);
+    ioc_set(sig, x);
+}
 
 /**
 ****************************************************************************************************
@@ -519,9 +528,12 @@ void ioboard_configure_camera(void)
 
 #ifdef CANDY_EXP_IMG_WIDTH
     ioboard_set_camera_prm(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
+    ioboard_read_camera_prm_back(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
+    ioboard_read_camera_prm_back(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
 #endif
 #ifdef CANDY_EXP_IMG_HEIGHT
     ioboard_set_camera_prm(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
+    ioboard_read_camera_prm_back(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
 #endif
 #ifdef CANDY_EXP_FRAMERATE
     ioboard_set_camera_prm(PINS_CAM_FRAMERATE, &candy.exp.framerate);

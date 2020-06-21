@@ -1257,7 +1257,7 @@ void ioc_adjust_jpeg_compression_quality(
     if (compression_status)
     {
         b->compression_quality *= 0.7;
-        if (b->compression_quality < 10.0) b->compression_quality = 10.0;
+        if (b->compression_quality < 1.0) b->compression_quality = 1.0;
         osal_debug_error_int("Out of buffer, JPEG quality reduced to ", (os_int)b->compression_quality);
         return;
     }
@@ -1300,7 +1300,7 @@ void ioc_adjust_jpeg_compression_quality(
     /* Adjust compression quality.
      */
     calc_quality = compression_quality * ratio;
-    if (calc_quality < 10) calc_quality = 10;
+    if (calc_quality < 2) calc_quality = 2;
     if (calc_quality > 90) calc_quality = 90;
     b->compression_quality = (1.0 - adjust_rate) * b->compression_quality + adjust_rate * calc_quality;
 }
