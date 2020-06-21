@@ -44,24 +44,25 @@ static iocEndPoint
 static iocConnection
     *ioboard_connection;
 
+
 /**
 ****************************************************************************************************
 
-  @brief Initialize IO board communication.
+  @brief Initialize IOCOM and set up memory blocks for the ioboard.
 
-  The ioboard_start_communication() function sets up an IO board with connects two memory blocks,
-  "to controller" and "from controller".
+  The ioboard_setup_communication() function initializes IOCOM and sets up memory blocks for
+  basic IO board use. These memory blocks are "exp", "imp", "conf_exp", "conf_imp" and "info".
 
+  @param   prm IO board communication parameters.
   @return  None.
 
 ****************************************************************************************************
 */
-void ioboard_start_communication(
+void ioboard_setup_communication(
     ioboardParams *prm)
 {
     ioboardParams defaultprm;
     iocMemoryBlockParams blockprm;
-    iocConnectionParams conprm;
 
     if (prm == OS_NULL)
     {
@@ -72,8 +73,8 @@ void ioboard_start_communication(
     ioc_streamer_initialize();
 #endif
     ioc_initialize_root(&ioboard_root);
-    ioc_set_iodevice_id(&ioboard_root, prm->device_name, prm->device_nr, prm->password, prm->network_name);
-    // ioboard_root.device_signal_hdr = prm->device_signal_hdr;
+    ioc_set_iodevice_id(&ioboard_root, prm->device_name, prm->device_nr,
+        prm->password, prm->network_name);
 
     if (prm->pool)
     {
@@ -124,6 +125,34 @@ void ioboard_start_communication(
         blockprm.nbytes = prm->device_info_sz;
         blockprm.flags = IOC_MBLK_UP|IOC_STATIC;
         ioc_initialize_memory_block(&ioboard_dinfo, OS_NULL, &ioboard_root, &blockprm);
+    }
+
+    prm->mblk_setup_called = OS_TRUE;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Start communicating.
+
+  The ioboard_start_communication() connects to controller or starts listening for incoming
+  connections.
+
+  The function calls ioboard_setup_communication() if it has not been called earlier.
+
+  @param   prm IO board communication parameters.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioboard_start_communication(
+    ioboardParams *prm)
+{
+    iocConnectionParams conprm;
+
+    if (!prm->mblk_setup_called) {
+        ioboard_setup_communication(prm);
     }
 
 #if OSAL_MULTITHREAD_SUPPORT
@@ -187,7 +216,7 @@ void ioboard_start_communication(
 
   @brief Shut down IO board communication.
 
-  The ioboard_end_communication() function stops communication and releases all resources.
+  The ioboard_end_communication() function stops communication and releases allocated resources.
 
   @return  None.
 

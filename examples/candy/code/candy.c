@@ -189,11 +189,12 @@ osalStatus osal_main(
     }
 #endif
 
-    /* Start communication.
+    /* Initialize IOCOM and set up memory blocks for the ioboard.
      */
-    ioboard_start_communication(&prm);
+    ioboard_setup_communication(&prm);
 
-    /* Initialize defaults and try to load camera parameters from persistent storage to "exp" memory buffer.
+    /* Initialize defaults and try to load camera parameters from persistent storage
+       to "exp" memory buffer.
      */
     ioc_initialize_parameters(OS_PBNR_CUST_A);
     ioc_load_parameters();
@@ -228,7 +229,8 @@ osalStatus osal_main(
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
-    ioc_initialize_brick_buffer(&video_output, &candy.camera, &ioboard_root, 4000, IOC_BRICK_DEVICE);
+    ioc_initialize_brick_buffer(&video_output, &candy.camera,
+        &ioboard_root, 4000, IOC_BRICK_DEVICE);
 
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
@@ -244,6 +246,10 @@ osalStatus osal_main(
      */
     initialize_morse_code(&morse, &pins.outputs.led_morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
+
+    /* Start communication.
+     */
+    ioboard_start_communication(&prm);
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.

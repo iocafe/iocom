@@ -224,12 +224,23 @@ typedef struct
     /** Pointer to initialized light house state structure for the light house function.
      */
     struct LighthouseClient *lighthouse;
+
+    /** Flag indicating that ioboard_setup_communication() has been called. Used by
+        ioboard_start_communication() to call memory block setup if it has not been done.
+     */
+    os_boolean mblk_setup_called;
 }
 ioboardParams;
 
-/* Initialize the communication for an IO board.
+/* Initialize IOCOM and set up memory blocks for the ioboard.
  */
-void ioboard_start_communication(ioboardParams *prm);
+void ioboard_setup_communication(
+    ioboardParams *prm);
+
+/* Stary IO board communication (if ioboard_setup_communication() has not been called, calls it).
+ */
+void ioboard_start_communication(
+    ioboardParams *prm);
 
 /* Shut down the communication.
  */
