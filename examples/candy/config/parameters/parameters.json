@@ -7,6 +7,7 @@
       {
         "name": "camera parameters",
         "parameters": [
+          {"name": "cam_nr", "type": "uchar", "init":1},
           {"name": "img_width", "type": "ushort", "init":320},
           {"name": "img_height", "type": "ushort", "init":240},
           {"name": "framerate", "type": "ushort", "init":30},

@@ -233,7 +233,6 @@ osalStatus osal_main(
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
     os_memclear(&camera_prm, sizeof(camera_prm));
-    camera_prm.camera_nr = 0;
     camera_prm.camera_pin = &pins.cameras.camera;
     camera_prm.callback_func = ioboard_camera_callback;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
@@ -525,7 +524,9 @@ static void ioboard_read_camera_prm_back(
 */
 void ioboard_configure_camera(void)
 {
-
+#ifdef CANDY_EXP_CAM_NR
+    ioboard_set_camera_prm(PINS_CAM_NR, &candy.exp.cam_nr);
+#endif
 #ifdef CANDY_EXP_IMG_WIDTH
     ioboard_set_camera_prm(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
     ioboard_read_camera_prm_back(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
