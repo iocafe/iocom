@@ -385,7 +385,7 @@ static void ioc_make_mblk_info_frame(
      */
     p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
     *(p++) = IOC_SYSRAME_MBLK_INFO;
-    iflags = p; /* version, for future additions + flags */
+    iflags = p; /* version, for future additions (only 1 bit left for version) + flags */
     *(p++) = 0;
 
     /* Set device number. If we are sending to device with automatically
@@ -401,7 +401,7 @@ static void ioc_make_mblk_info_frame(
     }
 
     ioc_msg_set_uint(device_nr, &p, iflags, IOC_INFO_D_2BYTES, iflags, IOC_INFO_D_4BYTES);
-    if (ioc_msg_set_ushort(mblk->nbytes, &p)) *iflags |= IOC_INFO_N_2BYTES;
+    ioc_msg_set_uint(mblk->nbytes, &p, iflags, IOC_INFO_N_2BYTES, iflags, IOC_INFO_N_4BYTES);
     if (ioc_msg_set_ushort(mblk->flags, &p)) *iflags |= IOC_INFO_F_2BYTES;
     if (mblk->device_name[0])
     {

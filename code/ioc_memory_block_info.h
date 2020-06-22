@@ -59,13 +59,13 @@
 
 /** "1/2 byte" and "has string", etc flags for packing memory block info.
  */
-#define IOC_INFO_D_2BYTES 4
-#define IOC_INFO_D_4BYTES 8
-#define IOC_INFO_N_2BYTES 16
+#define IOC_INFO_D_2BYTES 2
+#define IOC_INFO_D_4BYTES 4
+#define IOC_INFO_N_2BYTES 8
+#define IOC_INFO_N_4BYTES 16
 #define IOC_INFO_F_2BYTES 32
 #define IOC_INFO_HAS_DEVICE_NAME 64
 #define IOC_INFO_HAS_MBLK_NAME 128
-
 
 struct iocMemoryBlock;
 struct iocConnection;

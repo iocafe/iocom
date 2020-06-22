@@ -410,7 +410,9 @@ osalStatus ioc_process_received_mbinfo_frame(
         iflags & IOC_INFO_D_4BYTES);
 
     mbinfo.mblk_id = mblk_id;
-    mbinfo.nbytes = ioc_msg_get_ushort(&p, iflags & IOC_INFO_N_2BYTES);
+    mbinfo.nbytes = ioc_msg_get_uint(&p,
+        iflags & IOC_INFO_N_2BYTES,
+        iflags & IOC_INFO_N_4BYTES);
     mbinfo.flags = ioc_msg_get_ushort(&p, iflags & IOC_INFO_F_2BYTES);
     if (iflags & IOC_INFO_HAS_DEVICE_NAME)
     {
