@@ -1,0 +1,49 @@
+{
+  "name": "candy",
+  "persistent": 
+  {
+    "title": "camera pamameters",
+    "groups": [
+      {
+        "name": "camera parameters",
+        "parameters": [
+          {"name": "cam_nr", "type": "uchar", "init":1},
+          {"name": "img_width", "type": "ushort", "init":320},
+          {"name": "img_height", "type": "ushort", "init":240},
+          {"name": "framerate", "type": "ushort", "init":30},
+          {"name": "brightness", "type": "uchar", "init":50},
+          {"name": "contrast", "type": "uchar", "init":50},
+          
+          {"name": "hue", "type": "uchar", "init":50},
+          {"name": "saturation", "type": "uchar", "init":50},
+          {"name": "sharpness", "type": "uchar", "init":50},
+          {"name": "gamma", "type": "ushort", "init":1000},
+          {"name": "color", "type": "boolean", "init":1},
+          {"name": "white_bal", "type": "uchar", "init":50},
+
+          {"name": "bl_comp", "type": "uchar", "init":50},
+          {"name": "gain", "type": "uchar", "init":50},
+
+          {"name": "exposure", "type": "uint", "init":0},
+          {"name": "iris", "type": "uchar", "init":50},
+          {"name": "focus", "type": "uchar", "init":50}
+        ]
+      }
+    ]
+  },
+
+ "volatile": 
+  {
+    "title": "camera control",
+    "groups": [
+      {
+        "name": "camera control",
+        "parameters": [
+          {"name": "headlight", "type": "uint", "max": 4095},
+          {"name": "on", "type": "boolean", "init":1}
+        ]
+      }
+    ]
+  }
+}
+
