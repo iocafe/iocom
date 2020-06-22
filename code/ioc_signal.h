@@ -68,7 +68,7 @@ typedef struct iocSignal
         number of elements reserved in memory block. Either 0 or 1 for single variables.
         Unsigned type used for reason, we want to have max 65535 items.
      */
-    os_ushort n;
+    os_int n;
 
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
         or OS_STR.
