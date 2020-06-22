@@ -62,3 +62,8 @@ void ioboard_camera_callback(
 /* Configure camera.
  */
 void ioboard_configure_camera(void);
+
+/* Turn camera on/off.
+ */
+void ioboard_control_camera(void);
+

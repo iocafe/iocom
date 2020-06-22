@@ -68,6 +68,9 @@ static MorseCode morse;
  */
 static os_timer send_timer;
 
+/* Camera control parameter has changed, camera on/off */
+static os_boolean camera_control_changed;
+
 /* Use static memory pool
  */
 static os_char
@@ -251,11 +254,13 @@ osalStatus osal_main(
      */
     ioboard_start_communication(&prm);
 
+    os_get_timer(&send_timer);
+    camera_control_changed = OS_FALSE;
+
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
     osal_simulated_loop(OS_NULL);
-    os_get_timer(&send_timer);
 
     return OSAL_SUCCESS;
 }
@@ -343,6 +348,14 @@ osalStatus osal_loop(
         ioc_send_all(&ioboard_root);
         ioc_run(&ioboard_root);
     }
+
+#if PINS_CAMERA
+    if (camera_control_changed) {
+        camera_control_changed = OS_FALSE;
+        ioboard_control_camera();
+    }
+#endif
+
 
     ioc_autosave_parameters();
 
@@ -442,7 +455,12 @@ void ioboard_communication_callback(
         else if (sig->flags & IOC_PFLAG_IS_PRM) {
             s = ioc_set_parameter_by_signal(sig);
             if (s == OSAL_COMPLETED) {
-                configuration_changed = OS_TRUE;
+                if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
+                    configuration_changed = OS_TRUE;
+                }
+                else {
+                    camera_control_changed = OS_TRUE;
+                }
             }
         }
         sig++;
@@ -587,6 +605,18 @@ void ioboard_configure_camera(void)
 #ifdef CANDY_EXP_FOCUS
     ioboard_set_camera_prm(PINS_CAM_FOCUS, &candy.exp.focus);
 #endif
+}
+
+/* Turn camera on/off.
+ */
+void ioboard_control_camera(void)
+{
+    if (ioc_get(&candy.exp.on)) {
+        PINS_CAMERA_IFACE.start(&pins_camera);
+    }
+    else {
+        PINS_CAMERA_IFACE.stop(&pins_camera);
+    }
 }
 
 #endif
