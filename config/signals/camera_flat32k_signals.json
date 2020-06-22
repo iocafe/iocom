@@ -1,0 +1,43 @@
+{
+  "assembly": [
+    {
+      "name": "camera",
+      "type": "cam_flat",
+      "exp": "exp.rec_",
+      "imp": "imp.rec_"
+    }
+  ],
+
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "IO device's signal exports",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "camera data transfer",
+        "signals": [
+          {"name": "rec_state", "type": "ushort"},
+          {"name": "rec_head", "type": "int"},
+          {"name": "rec_buf", "type": "uchar", "array": 32768}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "IO device's signal imports",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "camera data transfer",
+        "signals": [
+          {"name": "rec_cmd", "type": "int"}
+        ]
+      }
+    ]
+  }
+  ]
+}
+
