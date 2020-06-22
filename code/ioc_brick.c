@@ -274,7 +274,11 @@ void ioc_free_brick_buffer(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_compress_brick_flat(
+#if IOC_BRICK_RING_BUFFER_SUPPORT
+osalStatus ioc_compress_brick_flat(
+#else
+osalStatus ioc_compress_brick(
+#endif
     iocBrickBuffer *b,
     iocBrickHdr *hdr,
     os_uchar *data,
@@ -447,7 +451,7 @@ getout:
 
 ****************************************************************************************************
 */
-static osalStatus ioc_compress_brick_ring(
+osalStatus ioc_compress_brick_ring(
     iocBrickBuffer *b,
     iocBrickHdr *hdr,
     os_uchar *data,
@@ -560,6 +564,7 @@ getout:
 }
 #endif
 
+#if IOC_BRICK_RING_BUFFER_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -597,6 +602,7 @@ osalStatus ioc_compress_brick(
         return ioc_compress_brick_ring(b, hdr, data, data_sz, format, w, h, compression);
     }
 }
+#endif
 
 /**
 ****************************************************************************************************
@@ -1103,8 +1109,8 @@ osalStatus ioc_run_brick_receive(
     os_char state_bits;
 #if IOC_BRICK_RING_BUFFER_SUPPORT
     os_int cmd;
-    osalStatus s;
 #endif
+    osalStatus s;
 
     if (!b->enable_receive)
     {

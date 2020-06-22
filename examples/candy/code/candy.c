@@ -71,14 +71,22 @@ static os_timer send_timer;
 /* Camera control parameter has changed, camera on/off */
 static os_boolean camera_control_changed;
 
-/* Use static memory pool
+/* Memory pool
  */
-static os_char
-    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
-        CANDY_EXP_MBLK_SZ, CANDY_IMP_MBLK_SZ)
-        + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)
-        + IOBOARD_POOL_IMP_EXP_CONF(IOBOARD_MAX_CONNECTIONS,
-            CANDY_CONF_EXP_MBLK_SZ, CANDY_CONF_IMP_MBLK_SZ)];
+#define MY_POOL_SZ \
+    (IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, \
+     CANDY_EXP_MBLK_SZ, CANDY_IMP_MBLK_SZ) \
+     + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS) \
+     + IOBOARD_POOL_IMP_EXP_CONF(IOBOARD_MAX_CONNECTIONS, \
+        CANDY_CONF_EXP_MBLK_SZ, CANDY_CONF_IMP_MBLK_SZ))
+
+#define MY_POOL_IS_DYNAMIC OSAL_DYNAMIC_MEMORY_ALLOCATION
+
+#if MY_POOL_IS_DYNAMIC
+    static os_char *ioboard_pool;
+#else
+    static os_char ioboard_pool[MY_POOL_SZ];
+#endif
 
 /* Streamer for transferring IO device configuration and flash program. The streamer is used
    to transfer a stream using buffer within memory block. This static structure selects which
@@ -159,6 +167,12 @@ osalStatus osal_main(
      */
     iface = IOBOARD_IFACE;
 
+    /* Sometimes it is better to allocate memory pool dynamically (ESP32)
+     */
+#if MY_POOL_IS_DYNAMIC
+    ioboard_pool = osal_sysmem_alloc(MY_POOL_SZ, OS_NULL);
+#endif
+
     /* Set up parameters for the IO board.
      */
     os_memclear(&prm, sizeof(prm));
@@ -173,8 +187,9 @@ osalStatus osal_main(
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.send_block_sz = CANDY_EXP_MBLK_SZ;
     prm.receive_block_sz = CANDY_IMP_MBLK_SZ;
+    os_memclear(ioboard_pool, MY_POOL_SZ);
     prm.pool = ioboard_pool;
-    prm.pool_sz = sizeof(ioboard_pool);
+    prm.pool_sz = MY_POOL_SZ;
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
     prm.conf_send_block_sz = CANDY_CONF_EXP_MBLK_SZ;
