@@ -29,7 +29,8 @@
 
 /* Acknowledgement/keep alive message size in bytes.
  */
-#define IOC_ACK_SIZE 3
+#define IOC_SERIAL_ACK_SIZE 3
+#define IOC_SOCKET_ACK_SIZE 4
 
 /** Maximum number of bytes in transit. Serial receive buffer must be at least 256 bytes
     (holds 255 bytes of data).
@@ -54,7 +55,7 @@
 
 /* Maximum data frame bytes that can be written.
  */
-#define IOC_SERIAL_MAX_IN_AIR (IOC_SERIAL_RX_BUF_MIN_SZ - 1 - IOC_SERIAL_UNACKNOGLEDGED_LIMIT - IOC_SERIAL_NRO_ACKS_TO_RESEVE * IOC_ACK_SIZE)
+#define IOC_SERIAL_MAX_IN_AIR (IOC_SERIAL_RX_BUF_MIN_SZ - 1 - IOC_SERIAL_UNACKNOGLEDGED_LIMIT - IOC_SERIAL_NRO_ACKS_TO_RESEVE * IOC_SERIAL_ACK_SIZE)
 
 /* Maximum acknowledge bytes that can be written.
  */
@@ -76,11 +77,13 @@
 
 /* Maximum data frame bytes that can be written.
  */
+#ifndef IOC_SOCKET_MAX_IN_AIR
 #define IOC_SOCKET_MAX_IN_AIR (44 * IOC_SOCKET_FRAME_SZ)
+#endif
 
 /* Maximum acknowledge bytes that can be written.
  */
-#define IOC_SOCKET_MAX_ACK_IN_AIR (IOC_SOCKET_MAX_IN_AIR + IOC_SOCKET_UNACKNOGLEDGED_LIMIT + IOC_SOCKET_NRO_ACKS_TO_RESEVE * IOC_ACK_SIZE)
+#define IOC_SOCKET_MAX_ACK_IN_AIR (IOC_SOCKET_MAX_IN_AIR + IOC_SOCKET_UNACKNOGLEDGED_LIMIT + IOC_SOCKET_NRO_ACKS_TO_RESEVE * IOC_SOCKET_ACK_SIZE)
 /*@}*/
 
 
@@ -523,7 +526,7 @@ typedef struct iocConnection
     /** Flow control: Maximum number of bytes in transit without being
         acknowledged (for ack messages).
      */
-    os_ushort max_ack_in_air;
+    os_int max_ack_in_air;
 
     /** Number of bytes to leave unacknwledged (Minimum acknowledgement size).
      */
@@ -577,20 +580,20 @@ typedef struct iocConnection
 
     /** Number of received bytes since last connect.
      */
-    os_ushort bytes_received;
+    os_uint bytes_received;
 
     /** Number of bytes acknowledged.
      */
-    os_ushort bytes_acknowledged;
+    os_uint bytes_acknowledged;
 
     /** Number of bytes sent since last connect.
      */
-    os_ushort bytes_sent;
+    os_uint bytes_sent;
 
     /** Number of bytes received by the other end
         of the connection (last received RBYTES value).
      */
-    os_ushort processed_bytes;
+    os_uint processed_bytes;
 
 #if OSAL_MULTITHREAD_SUPPORT
     /** Worker thread specific member variables.

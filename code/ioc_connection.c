@@ -868,7 +868,7 @@ void ioc_reset_connection_state(
     /* Clear flow control variables.
      */
     con->bytes_received = 0;
-    con->bytes_acknowledged = 0xA000;
+    con->bytes_acknowledged = 0xA0A000;
     con->bytes_sent = con->processed_bytes = 0;
 
     /* Initialize timers.

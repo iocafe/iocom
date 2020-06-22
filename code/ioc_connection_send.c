@@ -216,9 +216,11 @@ static void ioc_make_data_frame(
     iocSendHeaderPtrs
         ptrs;
 
-    os_ushort
-        crc,
+    os_uint
         u;
+
+    os_ushort
+        crc;
 
     /* Set frame header
      */
@@ -265,6 +267,7 @@ static void ioc_make_data_frame(
        frame, cancel the send.
      */
     u = con->bytes_sent - con->processed_bytes;
+    u &= ((con->flags & IOC_SOCKET) ? 0xFFFFFF : 0xFFFF);
     bytes = con->max_in_air - (os_int)u;
     if (used_bytes > bytes)
     {
@@ -455,7 +458,7 @@ osalStatus ioc_send_acknowledge(
     os_char
         *p;
 
-    os_ushort
+    os_uint
         rbytes;
 
     ioc_set_mt_root(root, con->link.root);
@@ -476,7 +479,13 @@ osalStatus ioc_send_acknowledge(
     rbytes = con->bytes_received;
     *(p++) = (os_uchar)rbytes;
     *p = (os_uchar)(rbytes >> 8);
-    con->frame_out.used = IOC_ACK_SIZE;
+    if (con->flags & IOC_SOCKET) {
+        *(++p) = (os_uchar)(rbytes >> 16);
+        con->frame_out.used = IOC_SOCKET_ACK_SIZE;
+    }
+    else {
+        con->frame_out.used = IOC_SERIAL_ACK_SIZE;
+    }
     con->bytes_acknowledged = rbytes;
 
     status = ioc_write_to_stream(con);
@@ -574,35 +583,45 @@ osalStatus ioc_acknowledge_as_needed(
     iocConnection *con)
 {
     os_int
-        bytes;
+        bytes,
+        ack_sz;
 
-    os_ushort
-        u;
+    os_uint
+        u,
+        mask;
 
     osalStatus
         status;
 
-    /* If other end has not acknowledged 3 bytes of free space, return
+    if (con->flags & IOC_SOCKET)
+    {
+        mask = 0xFFFFFF;
+        ack_sz = IOC_SOCKET_ACK_SIZE;
+    }
+    else
+    {
+        mask = 0xFFFF;
+        ack_sz = IOC_SERIAL_ACK_SIZE;
+    }
+
+    /* If other end has not acknowledged 3 (serial) bytes or 4 (socket) of free space, return
        OSAL_PENDING.
      */
-    u = con->bytes_sent - con->processed_bytes;
-    bytes = (os_int)con->max_ack_in_air - (os_int)u;
-    if (bytes < IOC_ACK_SIZE)
-    {
+    u = (con->bytes_sent - con->processed_bytes) & mask;
+    bytes = con->max_ack_in_air - (os_int)u;
+    if (bytes <  ack_sz) {
         return OSAL_PENDING;
     }
 
     /* If we have received enough unacknowledged bytes to acknowledge now.
      */
-    u = con->bytes_received - con->bytes_acknowledged;
-    if (u < con->unacknogledged_limit)
-    {
+    u = (con->bytes_received - con->bytes_acknowledged) & mask;
+    if (u < con->unacknogledged_limit) {
         return OSAL_SUCCESS;
     }
 
     status = ioc_send_acknowledge(con);
-    if (status != OSAL_SUCCESS && status != OSAL_PENDING)
-    {
+    if (status != OSAL_SUCCESS && status != OSAL_PENDING) {
         osal_debug_error("send acknowledge failed");
         return OSAL_STATUS_FAILED;
     }
@@ -659,7 +678,7 @@ static osalStatus ioc_write_to_stream(
 
         /* Add sent bytes to flow control.
          */
-        con->bytes_sent += (os_ushort)n_written;
+        con->bytes_sent += (os_uint)n_written;
     }
 
     /* If this is late return for refused connection,
@@ -842,9 +861,11 @@ osalStatus ioc_finish_frame(
         used_bytes,
         bytes;
 
-    os_ushort
-        crc,
+    os_uint
         u;
+
+    os_ushort
+        crc;
 
     /* If other end has not acknowledged enough data to send the
        frame, cancel the send.
@@ -852,6 +873,7 @@ osalStatus ioc_finish_frame(
     content_bytes = (os_int)(p - start);
     used_bytes = content_bytes + ptrs->header_sz;
     u = con->bytes_sent - con->processed_bytes;
+    u &= ((con->flags & IOC_SOCKET) ? 0xFFFFFF : 0xFFFF);
     bytes = con->max_in_air - (os_int)u;
     if (used_bytes > bytes)
     {

@@ -114,7 +114,7 @@ osalStatus ioc_connection_receive(
             if (buf[0] == IOC_ACKNOWLEDGE && n >= 1)
             {
                 data_sz = 0;
-                needed = 3;
+                needed = IOC_SERIAL_ACK_SIZE;
                 flags = 0;
             }
             else if (n >= 6)
@@ -148,7 +148,7 @@ osalStatus ioc_connection_receive(
             else
             {
                 data_sz = 0xFFFF;
-                needed = 3;
+                needed = IOC_SERIAL_ACK_SIZE;
                 flags = 0;
             }
         }
@@ -160,7 +160,7 @@ osalStatus ioc_connection_receive(
             if (buf[0] == IOC_ACKNOWLEDGE && n >= 1)
             {
                 data_sz = 0;
-                needed = 3;
+                needed = IOC_SOCKET_ACK_SIZE;
                 flags = 0;
             }
             else if (n >= 5)
@@ -194,7 +194,7 @@ osalStatus ioc_connection_receive(
             else
             {
                 data_sz = 0xFFFF;
-                needed = 3;
+                needed = IOC_SOCKET_ACK_SIZE;
                 flags = 0;
             }
         }
@@ -250,7 +250,7 @@ osalStatus ioc_connection_receive(
              * number of received bytes.
              */
             n += (os_int)n_read;
-            con->bytes_received += (os_ushort)n_read;
+            con->bytes_received += (os_uint)n_read;
 
             /* Record time of receive.
              */
@@ -293,7 +293,10 @@ osalStatus ioc_connection_receive(
      */
     if (buf[0] == IOC_ACKNOWLEDGE)
     {
-        con->processed_bytes = (os_ushort)buf[1] | (((os_ushort)buf[2]) << 8);
+        con->processed_bytes = (os_uint)buf[1] | (((os_uint)buf[2]) << 8);
+        if (con->flags & IOC_SOCKET) {
+            con->processed_bytes |= (((os_uint)buf[3]) << 16);
+        }
 
         osal_trace2_int("ACK received, in air=",
             (con->bytes_sent - con->processed_bytes));
