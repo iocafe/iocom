@@ -76,7 +76,7 @@ void ioboard_setup_communication(
     ioc_set_iodevice_id(&ioboard_root, prm->device_name, prm->device_nr,
         prm->password, prm->network_name);
 
-    if (prm->pool)
+    if (prm->pool_sz)
     {
         ioc_set_memory_pool(&ioboard_root, prm->pool, prm->pool_sz);
     }

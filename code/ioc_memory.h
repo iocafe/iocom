@@ -24,6 +24,11 @@ void ioc_set_memory_pool(
     os_char *buf,
     os_memsz bufsz);
 
+/* If pool was allocated by ioc_set_memory_pool(), then release it.
+ */
+void ioc_release_memory_pool(
+    iocRoot *root);
+
 /* Allocate a block of memory.
  */
 os_char *ioc_malloc(

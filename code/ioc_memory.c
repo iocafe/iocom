@@ -40,10 +40,10 @@ iocFreeBlk;
   The ioc_set_memory_pool must be called soon after ioc_initialize(), before any memory allocation
   is done. Once set, pool cannot be modified.
 
-
   @param   root Pointer to iocom root structure.
-  @param   buf Pointer to static buffer to use as pool.
-  @param   bufsz BUffer size in bytes.
+  @param   buf Pointer to static buffer to use as pool. If OS_NULL, pool size (buf_sz) is given
+           and dynamic memory allocation is supported, pool is allocated.
+  @param   bufsz BUffer size in bytes. Set NULL buf and 0 buf size not to use pool.
   @return  None.
 
 ****************************************************************************************************
@@ -53,11 +53,51 @@ void ioc_set_memory_pool(
     os_char *buf,
     os_memsz bufsz)
 {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    root->pool_alllocated = OS_FALSE;
+    if (buf == OS_NULL && bufsz)
+    {
+        buf = osal_sysmem_alloc(bufsz, OS_NULL);
+        osal_debug_assert(buf);
+        root->pool_alllocated = OS_TRUE;
+    }
+#endif
+    if (buf) {
+        os_memclear(buf, bufsz);
+    }
+
     root->pool = buf;
     root->poolsz = (os_int)bufsz;
     root->poolpos = 0;
     root->poolfree  = OS_NULL;
 }
+
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+/**
+****************************************************************************************************
+
+  @brief If pool was allocated by ioc_set_memory_pool(), then release it.
+  @anchor ioc_release_memory_pool
+
+  The ioc_release_memory_pool function release memory allocated by ioc_set_memory_pool(),
+ if any.
+
+  @param   root Pointer to iocom root structure.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_release_memory_pool(
+    iocRoot *root)
+{
+    if (root->pool_alllocated)
+    {
+        osal_sysmem_free(root->pool, root->poolsz);
+        root->pool = OS_NULL;
+    }
+}
+#endif
 
 
 /**

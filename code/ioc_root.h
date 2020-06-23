@@ -200,6 +200,10 @@ typedef struct iocRoot
     os_int poolpos;
     struct iocFreeBlk *poolfree;
 
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_boolean pool_alllocated;
+#endif
+
 #if OSAL_MULTITHREAD_SUPPORT
     /** Mutex to synchronize access to communication object hierarchy.
      */

@@ -47,7 +47,7 @@ void ioc_initialize_root(
 #endif
 
     /* Start automatic device enumeration from 10001 and start unique memory block
-       identifiers from 8
+       identifiers from 8.
      */
     root->auto_device_nr = IOC_AUTO_DEVICE_NR + 1;
     root->next_unique_mblk_id = IOC_MIN_UNIQUE_ID;
@@ -183,6 +183,13 @@ void ioc_release_root(
     /* Delete synchronization mutex.
      */
     osal_mutex_delete(root->mutex);
+#endif
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    /* If we allocated pool (fixed size pool, but dynamically allocated,
+       the release it now.
+     */
+    ioc_release_memory_pool(root);
 #endif
 
     /* Mark that the root structure is no longer initialized (for debugging).
