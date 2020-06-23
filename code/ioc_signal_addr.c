@@ -122,9 +122,9 @@ const iocSignal *ioc_get_signal_range_by_hdr(
     const iocSignal *sig;
     os_int first, last, mid, signal_end;
 
-    osal_debug_assert(hdr);
+    osal_debug_assert(hdr != OS_NULL);
     sig = hdr->first_signal;
-    osal_debug_assert(sig);
+    osal_debug_assert(sig != OS_NULL);
 
     first = 0;
     last = hdr->n_signals - 1;

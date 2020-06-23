@@ -58,7 +58,7 @@ void ioc_set_memory_pool(
     if (buf == OS_NULL && bufsz)
     {
         buf = osal_sysmem_alloc(bufsz, OS_NULL);
-        osal_debug_assert(buf);
+        osal_debug_assert(buf != OS_NULL);
         root->pool_alllocated = OS_TRUE;
     }
 #endif
@@ -80,8 +80,7 @@ void ioc_set_memory_pool(
   @brief If pool was allocated by ioc_set_memory_pool(), then release it.
   @anchor ioc_release_memory_pool
 
-  The ioc_release_memory_pool function release memory allocated by ioc_set_memory_pool(),
- if any.
+  The ioc_release_memory_pool function release memory allocated by ioc_set_memory_pool(), if any.
 
   @param   root Pointer to iocom root structure.
   @return  None.
