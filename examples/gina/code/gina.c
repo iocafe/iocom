@@ -39,12 +39,12 @@
 #include "selectwifi.h"
 #endif
 
-#if GINA_USE_GAZERBEAM
+#if IOCOM_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
 #endif
 
-#if GINA_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
 #include "lighthouse.h"
 static os_boolean lighthouse_on;
 static os_boolean is_ipv6_wildcard;
@@ -193,7 +193,7 @@ osalStatus osal_main(
     prm.device_info_sz = sizeof(ioapp_signals_config);
     prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
     prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
-#if GINA_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     lighthouse_on = ioc_is_lighthouse_used(prm.socket_con_str, &is_ipv6_wildcard);
     if (lighthouse_on) {
         prm.lighthouse = &lighthouse;
@@ -226,7 +226,7 @@ osalStatus osal_main(
     /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection
        string starts with '[' (indicates IPv6 address).
      */
-#if GINA_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
         ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_NULL);
     }
@@ -234,7 +234,7 @@ osalStatus osal_main(
 
     /* Initialize library to receive wifi configuration by phototransostor.
      */
-#if GINA_USE_GAZERBEAM
+#if IOCOM_USE_GAZERBEAM
     initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
@@ -314,7 +314,7 @@ osalStatus osal_loop(
 
     /* Run light house.
      */
-#if GINA_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
         ioc_run_lighthouse_client(&lighthouse);
     }
@@ -322,7 +322,7 @@ osalStatus osal_loop(
 
     /* Get Wifi configuration messages from Android phone flash light -> phototransistor.
      */
-#if GINA_USE_GAZERBEAM
+#if IOCOM_USE_GAZERBEAM
     gazerbeam_run_configurator(&gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
@@ -417,7 +417,7 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-#if GINA_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     ioc_release_lighthouse_client(&lighthouse);
 #endif
 

@@ -29,12 +29,12 @@
  */
 #include "devicedir.h"
 
-#if CANDY_USE_GAZERBEAM
+#if IOCOM_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
 #endif
 
-#if CANDY_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
 #include "lighthouse.h"
 static os_boolean lighthouse_on;
 static os_boolean is_ipv6_wildcard;
@@ -194,7 +194,7 @@ osalStatus osal_main(
     prm.conf_exp_signal_hdr = &candy.conf_exp.hdr;
     prm.conf_imp_signal_hdr = &candy.conf_imp.hdr;
 
-#if CANDY_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     lighthouse_on = ioc_is_lighthouse_used(prm.socket_con_str, &is_ipv6_wildcard);
     if (lighthouse_on) {
         prm.lighthouse = &lighthouse;
@@ -227,42 +227,56 @@ osalStatus osal_main(
     /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection
        string starts with '[' (indicates IPv6 address).
      */
-#if CANDY_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
         ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_NULL);
     }
 #endif
 
-    /* Initialize library to receive wifi configuration by phototransostor.
-     */
-#if CANDY_USE_GAZERBEAM
-    initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
-#endif
-
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
+osal_debug_error("HERE A1")    ;
     ioc_initialize_brick_buffer(&video_output, &candy.camera,
         &ioboard_root, 4000, IOC_BRICK_DEVICE);
 
+osal_debug_error("HERE A2")    ;
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
+osal_debug_error("HERE A3")    ;
     os_memclear(&camera_prm, sizeof(camera_prm));
     camera_prm.camera_pin = &pins.cameras.camera;
     camera_prm.callback_func = ioboard_camera_callback;
+osal_debug_error("HERE A4")    ;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
+osal_debug_error("HERE A5")    ;
     ioboard_configure_camera();
+osal_debug_error("HERE A6")    ;
     PINS_CAMERA_IFACE.start(&pins_camera);
+osal_debug_error("HERE 76")    ;
 #endif
+
+    /* Initialize library to receive wifi configuration by phototransostor.
+     */
+#if IOCOM_USE_GAZERBEAM
+    initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
+#endif
+
+osal_debug_error("HERE B1")    ;
 
     /* Setup to blink LED to indicate boot errors, etc.
      */
     initialize_morse_code(&morse, &pins.outputs.led_morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
 
+osal_debug_error("HERE B2")    ;
+
     /* Start communication.
      */
     ioboard_start_communication(&prm);
+
+osal_debug_error("HERE B3")    ;
+
 
     os_get_timer(&send_timer);
     camera_control_changed = OS_FALSE;
@@ -301,7 +315,7 @@ osalStatus osal_loop(
 
     /* Run light house.
      */
-#if CANDY_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
         ioc_run_lighthouse_client(&lighthouse);
     }
@@ -309,7 +323,7 @@ osalStatus osal_loop(
 
     /* Get Wifi configuration messages from Android phone flash light -> phototransistor.
      */
-#if CANDY_USE_GAZERBEAM
+#if IOCOM_USE_GAZERBEAM
     gazerbeam_run_configurator(&gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
@@ -392,7 +406,7 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-#if CANDY_USE_LIGHTHOUSE
+#if IOCOM_USE_LIGHTHOUSE
     ioc_release_lighthouse_client(&lighthouse);
 #endif
 
@@ -558,6 +572,8 @@ static void ioboard_read_camera_prm_back(
 */
 void ioboard_configure_camera(void)
 {
+    return;
+
 #ifdef CANDY_EXP_CAM_NR
     ioboard_set_camera_prm(PINS_CAM_NR, &candy.exp.cam_nr);
 #endif
