@@ -572,8 +572,6 @@ static void ioboard_read_camera_prm_back(
 */
 void ioboard_configure_camera(void)
 {
-    return;
-
 #ifdef CANDY_EXP_CAM_NR
     ioboard_set_camera_prm(PINS_CAM_NR, &candy.exp.cam_nr);
 #endif
