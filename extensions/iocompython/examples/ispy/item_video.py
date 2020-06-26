@@ -77,7 +77,6 @@ class VideoItem(GridLayout):
         # with self.canvas.before:
         self.canvas.clear()
         with self.canvas:
-            #Color(1., 0, 0, 1.)
             Color(1., 1., 1., 1.)
             Rectangle(texture=self.texture, pos=self.pos, size=(640, 480))
 

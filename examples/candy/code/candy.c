@@ -530,8 +530,8 @@ void ioboard_camera_callback(
 
   @brief Configure one camera parameter.
 
-  The ioboard_set_camera_prm function moves one camera parameter from "exp" memory buffer
-  to camera.
+  The ioboard_set_camera_prm function sets a camera parameter to camera API wrapper. The
+  value to set is taken from a signal in "exp" memory block.
 
   @param   ix Camera parameter index, like PINS_CAM_BRIGHTNESS.
   @param   sig Pointer to signal in "exp" memory block.
@@ -544,12 +544,30 @@ static void ioboard_set_camera_prm(
     const iocSignal *sig)
 {
     os_long x;
-    x = ioc_get(sig);
-    PINS_CAMERA_IFACE.set_parameter(&pins_camera, ix, x);
+    os_char state_bits;
+
+    x = ioc_get_ext(sig, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+    if (state_bits & OSAL_STATE_CONNECTED) {
+        PINS_CAMERA_IFACE.set_parameter(&pins_camera, ix, x);
+    }
 }
 
 
-static void ioboard_read_camera_prm_back(
+/**
+****************************************************************************************************
+
+  @brief Get camera parameter from camera driver.
+
+  The ioboard_get_camera_prm function reads a camera parameter from camera wrapper and
+  stores the value in signal in "exp" memory block.
+
+  @param   ix Camera parameter index, like PINS_CAM_BRIGHTNESS.
+  @param   sig Pointer to signal in "exp" memory block.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioboard_get_camera_prm(
     pinsCameraParamIx ix,
     const iocSignal *sig)
 {
@@ -558,13 +576,14 @@ static void ioboard_read_camera_prm_back(
     ioc_set(sig, x);
 }
 
+
 /**
 ****************************************************************************************************
 
   @brief Configure camera.
 
-  The ioboard_set_camera_parameters function moves all camera parameters from memory buffer
-  to camera.
+  The ioboard_set_camera_parameters function sets all camera parameters from signals in
+  "exp" memory block to camera API.
 
   @return  None.
 
@@ -577,13 +596,13 @@ void ioboard_configure_camera(void)
 #endif
 #ifdef CANDY_EXP_IMG_WIDTH
     ioboard_set_camera_prm(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
-    ioboard_read_camera_prm_back(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
-    ioboard_read_camera_prm_back(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
+    ioboard_get_camera_prm(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
+    ioboard_get_camera_prm(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
 #endif
 #ifdef CANDY_EXP_IMG_HEIGHT
     ioboard_set_camera_prm(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
-    ioboard_read_camera_prm_back(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
-    ioboard_read_camera_prm_back(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
+    ioboard_get_camera_prm(PINS_CAM_IMG_WIDTH, &candy.exp.img_width);
+    ioboard_get_camera_prm(PINS_CAM_IMG_HEIGHT, &candy.exp.img_height);
 #endif
 #ifdef CANDY_EXP_FRAMERATE
     ioboard_set_camera_prm(PINS_CAM_FRAMERATE, &candy.exp.framerate);
