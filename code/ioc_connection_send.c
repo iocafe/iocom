@@ -316,15 +316,6 @@ static void ioc_make_data_frame(
         }
         else
         {
-#if 0
-            THIS SHOULD NOT BE NECESSARY, INVALIDATED RANGE TO BE TRAFSFERRED WILL BE COPIED
-            SO NO HARM TO LEAVE OLD MARK BITS LAYING AROUND.
-            if (sbuf->syncbuf.bidir_start_addr > 0) /* cannot be 0, there is data */
-            {
-                os_memclear(sbuf->syncbuf.buf + sbuf->syncbuf.bidir_start_addr,
-                    sbuf->syncbuf.bidir_end_addr - sbuf->syncbuf.start_addr + 1);
-            }
-#endif
             sbuf->syncbuf.used = OS_FALSE;
             *ptrs.flags |= IOC_SYNC_COMPLETE;
         }
