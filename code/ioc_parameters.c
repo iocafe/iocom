@@ -86,11 +86,9 @@ osalStatus ioc_set_parameter_by_signal(
             ioc_write(dsig->handle, dsig->addr, buf1ptr, (os_int)sz, 0);
             s = OSAL_COMPLETED;
 
-            if ((dsig->flags & IOC_PIN_PTR) && pin_sig) {
-                *pin_sig =  dsig->ptr;
-
+            if ((dsig->flags & IOC_PIN_PTR) && dsig->ptr && pin_sig) {
+                *pin_sig =  dsig;
             }
-
         }
     }
 

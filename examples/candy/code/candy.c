@@ -480,13 +480,13 @@ void ioboard_communication_callback(
     while (n_signals-- > 0)
     {
         if (sig->flags & IOC_PIN_PTR) {
-            forward_signal_change_to_io_pin(sig, 0);
+            forward_signal_change_to_io_pin(sig, IOC_SIGNAL_DEFAULT);
         }
         else if (sig->flags & IOC_PFLAG_IS_PRM) {
             s = ioc_set_parameter_by_signal(sig, &pin_sig);
             if (s == OSAL_COMPLETED) {
                 if (pin_sig) {
-                    forward_signal_change_to_io_pin(pin_sig, 0);
+                    forward_signal_change_to_io_pin(pin_sig, IOC_SIGNAL_NO_TBUF_CHECK);
                 }
                 if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
                     configuration_changed = OS_TRUE;
