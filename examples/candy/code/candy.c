@@ -238,24 +238,17 @@ osalStatus osal_main(
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
-osal_debug_error("HERE A1")    ;
     ioc_initialize_brick_buffer(&video_output, &candy.camera,
         &ioboard_root, 4000, IOC_BRICK_DEVICE);
 
-osal_debug_error("HERE A2")    ;
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
-osal_debug_error("HERE A3")    ;
     os_memclear(&camera_prm, sizeof(camera_prm));
     camera_prm.camera_pin = &pins.cameras.camera;
     camera_prm.callback_func = ioboard_camera_callback;
-osal_debug_error("HERE A4")    ;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
-osal_debug_error("HERE A5")    ;
     ioboard_configure_camera();
-osal_debug_error("HERE A6")    ;
     PINS_CAMERA_IFACE.start(&pins_camera);
-osal_debug_error("HERE 76")    ;
 #endif
 
     /* Initialize library to receive wifi configuration by phototransostor.
@@ -264,21 +257,14 @@ osal_debug_error("HERE 76")    ;
     initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
-osal_debug_error("HERE B1")    ;
-
     /* Setup to blink LED to indicate boot errors, etc.
      */
     initialize_morse_code(&morse, &pins.outputs.led_morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
 
-osal_debug_error("HERE B2")    ;
-
     /* Start communication.
      */
     ioboard_start_communication(&prm);
-
-osal_debug_error("HERE B3")    ;
-
 
     os_get_timer(&send_timer);
     camera_control_changed = OS_FALSE;

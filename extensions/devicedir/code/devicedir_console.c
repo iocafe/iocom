@@ -91,6 +91,7 @@ osalStatus io_run_device_console(
     {
         case 'x':
         case 'X':
+            osal_reboot(0);
             osal_global->exit_process = OS_TRUE;
             return OSAL_END_OF_FILE;
 
