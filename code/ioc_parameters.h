@@ -32,7 +32,8 @@ extern iocParameterStorage ioc_prm_storage;
 /* Set parameter value by signal (used from communication callback)
  */
 osalStatus ioc_set_parameter_by_signal(
-    const struct iocSignal *sig);
+    const struct iocSignal *sig,
+    const struct iocSignal **pin_sig);
 
 
 #endif

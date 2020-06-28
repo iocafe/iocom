@@ -122,6 +122,8 @@ osalStatus osal_main(
     ioboardParams prm;
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
+    OSAL_UNUSED(argc);
+    OSAL_UNUSED(argv);
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().
@@ -310,6 +312,7 @@ osalStatus osal_loop(
     os_timer ti;
     osalStatus s;
     os_int send_freq_ms = 10;
+    OSAL_UNUSED(app_context);
 
     os_get_timer(&ti);
 
@@ -348,8 +351,8 @@ osalStatus osal_loop(
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
-static int u;
-ioc_set(&candy.exp.headlight, (u++ / 200) % 2);
+// static int u;
+// ioc_set(&candy.exp.headlight, (u++ / 200) % 2);
 
     /* The call is here for development testing.
      */
@@ -406,6 +409,8 @@ ioc_set(&candy.exp.headlight, (u++ / 200) % 2);
 void osal_main_cleanup(
     void *app_context)
 {
+    OSAL_UNUSED(app_context);
+
 #if IOCOM_USE_LIGHTHOUSE
     ioc_release_lighthouse_client(&lighthouse);
 #endif
@@ -456,10 +461,11 @@ void ioboard_communication_callback(
     void *context)
 {
 // #if IOC_DEVICE_PARAMETER_SUPPORT
-    const iocSignal *sig;
+    const iocSignal *sig, *pin_sig;
     os_int n_signals;
     osalStatus s;
     os_boolean configuration_changed;
+    OSAL_UNUSED(context);
 
     /* If this memory block is not written by communication, no need to do anything.
      */
@@ -477,8 +483,11 @@ void ioboard_communication_callback(
             forward_signal_change_to_io_pin(sig, 0);
         }
         else if (sig->flags & IOC_PFLAG_IS_PRM) {
-            s = ioc_set_parameter_by_signal(sig);
+            s = ioc_set_parameter_by_signal(sig, &pin_sig);
             if (s == OSAL_COMPLETED) {
+                if (pin_sig) {
+                    forward_signal_change_to_io_pin(pin_sig, 0);
+                }
                 if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
                     configuration_changed = OS_TRUE;
                 }

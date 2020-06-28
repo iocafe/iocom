@@ -28,12 +28,14 @@ iocParameterStorage ioc_prm_storage;
   The ioc_set_parameter_by_signal()
 
   @param   sig Changed signal.
-  @return  OSAL_COMPLETED indicates change, OSAL_NOTHING_TO_DO = no change.
+  @param   pin_sig Pointer to set to point value signal if this is to be forwarded to pin.
+  @return  OSAL_COMPLETED indicates change, OSAL_NOTHING_TO_DO = no change. OS_NULL if not needed.
 
 ****************************************************************************************************
 */
 osalStatus ioc_set_parameter_by_signal(
-    const struct iocSignal *sig)
+    const struct iocSignal *sig,
+    const struct iocSignal **pin_sig)
 {
     os_char *buf1ptr, *buf2ptr, *tmpbuf = OS_NULL;
     os_char buf1[64], buf2[62];
@@ -44,6 +46,9 @@ osalStatus ioc_set_parameter_by_signal(
 
     osal_debug_assert(sig->flags & IOC_PFLAG_IS_PRM);
 
+    if (pin_sig) {
+        *pin_sig = OS_NULL;
+    }
     dsig = (iocSignal*)sig->ptr;
     if (dsig == OS_NULL) return OSAL_STATUS_FAILED;
 
@@ -80,6 +85,12 @@ osalStatus ioc_set_parameter_by_signal(
         {
             ioc_write(dsig->handle, dsig->addr, buf1ptr, (os_int)sz, 0);
             s = OSAL_COMPLETED;
+
+            if ((dsig->flags & IOC_PIN_PTR) && pin_sig) {
+                *pin_sig =  dsig->ptr;
+
+            }
+
         }
     }
 

@@ -43,6 +43,9 @@ extern const osalStreamInterface ioc_streamer_iface;
 
   @name Parameter structure for opening a streamer (options).
 
+  Keep the order of structure members, static initialization depends on order.
+  The flat_buffer flag indicates that a flat buffer instead of a ring buffer.
+
 ****************************************************************************************************
  */
 typedef struct iocStreamerSignals
@@ -54,9 +57,6 @@ typedef struct iocStreamerSignals
     const iocSignal *tail;
     const iocSignal *state;
     os_boolean to_device;
-
-    /* The flat_buffer flag indicates that a flat buffer instead of a ring buffer.
-     */
     os_boolean flat_buffer;
 }
 iocStreamerSignals;
