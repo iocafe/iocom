@@ -322,11 +322,14 @@ osalStatus ioc_compress_brick(
             if (quality == 0) {
                 quality = ioc_get_jpeg_compression_quality(b);
             }
-            ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, OSAL_SUCCESS, data_sz);
 
             if (data_sz + (os_memsz)sizeof(iocBrickHdr) > b->signals->buf->n) {
                 osal_debug_error("ioc_brick: buffer too small for JPEG");
                 s = OSAL_STATUS_OUT_OF_BUFFER;
+            }
+
+            ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, s, data_sz);
+            if (s) {
                 goto getout;
             }
 
@@ -1255,14 +1258,14 @@ void ioc_adjust_jpeg_compression_quality(
     const os_double adjust_rate = 0.2; /* How much to adjust quality per one call to this function 0 - 1.0 */
     const os_double buffer_use_target = 0.80; /* Try to fill buffer up to 85% use */
     const os_double compression_ratio_target = 0.05; /* Try to reduce bitmap size by 95% -> comressed size 5% of original */
-    os_double ratio, calc_quality;
+    os_double ratio, calc_quality; //, lim , max_change;
     os_int max_sz, desired_sz, limit_sz;
     
     /* If we failed, drop quality bu 30%.
      */
     if (compression_status)
     {
-        b->compression_quality *= 0.7;
+        b->compression_quality = 0.7 * compression_quality;
         if (b->compression_quality < 1.0) b->compression_quality = 1.0;
         osal_debug_error_int("Out of buffer, JPEG quality reduced to ", (os_int)b->compression_quality);
         return;
@@ -1306,8 +1309,15 @@ void ioc_adjust_jpeg_compression_quality(
     /* Adjust compression quality.
      */
     calc_quality = compression_quality * ratio;
+    /* max_change = compression_quality / 5.0 + 1;
+    if (max_change < 2) max_change = 2;
+    if (max_change > 10) max_change = 10;
+    lim = b->compression_quality - max_change;
+    if (calc_quality < lim) calc_quality = lim;
+    lim = b->compression_quality + max_change;
+    if (calc_quality > lim) calc_quality = lim; */
     if (calc_quality < 2) calc_quality = 2;
-    if (calc_quality > 90) calc_quality = 90;
+    if (calc_quality > 80) calc_quality = 80;
     b->compression_quality = (1.0 - adjust_rate) * b->compression_quality + adjust_rate * calc_quality;
 }
 
