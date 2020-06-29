@@ -14,19 +14,31 @@
           {"name": "brightness", "type": "uchar", "init":50},
           {"name": "contrast", "type": "uchar", "init":50},
           
-          {"name": "hue", "type": "uchar", "init":50},
           {"name": "saturation", "type": "uchar", "init":50},
           {"name": "sharpness", "type": "uchar", "init":50},
-          {"name": "gamma", "type": "ushort", "init":1000},
-          {"name": "color", "type": "boolean", "init":1},
-          {"name": "white_bal", "type": "uchar", "init":50},
+          {"name": "gamma", "type": "short", "init":-1},
+          {"name": "bl_comp", "type": "char", "init":-1},
 
-          {"name": "bl_comp", "type": "uchar", "init":50},
-          {"name": "gain", "type": "uchar", "init":50},
+          {"name": "gain", "type": "char", "init":-1},
+          {"name": "agc_gain", "type": "char", "init":-1},
+          {"name": "gain_ctrl", "type": "char", "init":-1},
+          {"name": "gain_ceiling", "type": "char", "init":-1},
 
-          {"name": "exposure", "type": "uint", "init":0},
-          {"name": "iris", "type": "uchar", "init":50},
-          {"name": "focus", "type": "uchar", "init":50}
+          {"name": "exposure", "type": "int", "init":-1},
+          {"name": "exposure_ctrl", "type": "char", "init":-1},
+          {"name": "aec2", "type": "int", "init":-1},
+          {"name": "ae_level", "type": "int", "init":-1},
+
+          {"name": "iris", "type": "char", "init":-1},
+          {"name": "focus", "type": "char", "init":-1},
+     
+          {"name": "bpc", "type": "char", "init":-1},
+          {"name": "wpc", "type": "char", "init":-1},
+          {"name": "lenc", "type": "char", "init":-1},
+          {"name": "dcw", "type": "char", "init":-1},
+          {"name": "colorbar", "type": "char", "init":-1},
+          {"name": "raw_gma", "type": "char", "init":-1}
+      
         ]
       }
     ]
