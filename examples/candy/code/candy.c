@@ -622,32 +622,12 @@ void ioboard_configure_camera(void)
 #ifdef CANDY_EXP_BL_COMP
     ioboard_set_camera_prm(PINS_CAM_BACKLIGHT_COMPENSATION, &candy.exp.bl_comp);
 #endif
-#ifdef CANDY_EXP_GAIN
+// #ifdef CANDY_EXP_GAIN
     ioboard_set_camera_prm(PINS_CAM_GAIN, &candy.exp.gain);
-#endif
+// #endif
 #ifdef CANDY_EXP_EXPOSURE
     ioboard_set_camera_prm(PINS_CAM_EXPOSURE, &candy.exp.exposure);
 #endif
-#ifdef CANDY_EXP_IRIS
-    ioboard_set_camera_prm(PINS_CAM_IRIS, &candy.exp.iris);
-#endif
-#ifdef CANDY_EXP_FOCUS
-    ioboard_set_camera_prm(PINS_CAM_FOCUS, &candy.exp.focus);
-#endif
-
-    ioboard_set_camera_prm(PINS_CAM_AGC_GAIN, &candy.exp.agc_gain);
-    ioboard_set_camera_prm(PINS_CAM_GAIN_CTRL, &candy.exp.gain_ctrl);
-    ioboard_set_camera_prm(PINS_CAM_GAIN_CEILING, &candy.exp.gain_ceiling);
-
-    ioboard_set_camera_prm(PINS_CAM_EXPOSURE_CTRL, &candy.exp.exposure_ctrl);
-    ioboard_set_camera_prm(PINS_CAM_AEC2, &candy.exp.aec2);
-    ioboard_set_camera_prm(PINS_CAM_AE_LEVEL, &candy.exp.ae_level);
-    ioboard_set_camera_prm(PINS_CAM_BPC, &candy.exp.bpc);
-    ioboard_set_camera_prm(PINS_CAM_WPC, &candy.exp.wpc);
-    ioboard_set_camera_prm(PINS_CAM_LENC, &candy.exp.lenc);
-    ioboard_set_camera_prm(PINS_CAM_DCW, &candy.exp.dcw);
-    ioboard_set_camera_prm(PINS_CAM_COLORBAR, &candy.exp.colorbar);
-    ioboard_set_camera_prm(PINS_CAM_RAW_GMA, &candy.exp.raw_gma);
 }
 
 /* Turn camera on/off.

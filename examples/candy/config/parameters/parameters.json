@@ -19,26 +19,9 @@
           {"name": "gamma", "type": "short", "init":-1},
           {"name": "bl_comp", "type": "char", "init":-1},
 
-          {"name": "gain", "type": "char", "init":-1},
-          {"name": "agc_gain", "type": "char", "init":-1},
-          {"name": "gain_ctrl", "type": "char", "init":-1},
-          {"name": "gain_ceiling", "type": "char", "init":-1},
+          {"name": "gain", "type": "char", "init":0},
 
-          {"name": "exposure", "type": "int", "init":-1},
-          {"name": "exposure_ctrl", "type": "char", "init":-1},
-          {"name": "aec2", "type": "int", "init":-1},
-          {"name": "ae_level", "type": "int", "init":-1},
-
-          {"name": "iris", "type": "char", "init":-1},
-          {"name": "focus", "type": "char", "init":-1},
-     
-          {"name": "bpc", "type": "char", "init":-1},
-          {"name": "wpc", "type": "char", "init":-1},
-          {"name": "lenc", "type": "char", "init":-1},
-          {"name": "dcw", "type": "char", "init":-1},
-          {"name": "colorbar", "type": "char", "init":-1},
-          {"name": "raw_gma", "type": "char", "init":-1}
-      
+          {"name": "exposure", "type": "short", "init":-1}
         ]
       }
     ]
