@@ -606,25 +606,12 @@ void ioboard_configure_camera(void)
 #ifdef CANDY_EXP_BRIGHTNESS
     ioboard_set_camera_prm(PINS_CAM_BRIGHTNESS, &candy.exp.brightness);
 #endif
-#ifdef CANDY_EXP_CONTRAST
-    ioboard_set_camera_prm(PINS_CAM_CONTRAST, &candy.exp.contrast);
-#endif
-
 #ifdef CANDY_EXP_SATURATION
     ioboard_set_camera_prm(PINS_CAM_SATURATION, &candy.exp.saturation);
 #endif
-#ifdef CANDY_EXP_SHARPNESS
-    ioboard_set_camera_prm(PINS_CAM_SHARPNESS, &candy.exp.sharpness);
-#endif
-#ifdef CANDY_EXP_GAMMA
-    ioboard_set_camera_prm(PINS_CAM_GAMMA, &candy.exp.gamma);
-#endif
-#ifdef CANDY_EXP_BL_COMP
-    ioboard_set_camera_prm(PINS_CAM_BACKLIGHT_COMPENSATION, &candy.exp.bl_comp);
-#endif
-// #ifdef CANDY_EXP_GAIN
+#ifdef CANDY_EXP_GAIN
     ioboard_set_camera_prm(PINS_CAM_GAIN, &candy.exp.gain);
-// #endif
+#endif
 #ifdef CANDY_EXP_EXPOSURE
     ioboard_set_camera_prm(PINS_CAM_EXPOSURE, &candy.exp.exposure);
 #endif
