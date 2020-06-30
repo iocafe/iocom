@@ -609,12 +609,6 @@ void ioboard_configure_camera(void)
 #ifdef CANDY_EXP_SATURATION
     ioboard_set_camera_prm(PINS_CAM_SATURATION, &candy.exp.saturation);
 #endif
-#ifdef CANDY_EXP_GAIN
-    ioboard_set_camera_prm(PINS_CAM_GAIN, &candy.exp.gain);
-#endif
-#ifdef CANDY_EXP_EXPOSURE
-    ioboard_set_camera_prm(PINS_CAM_EXPOSURE, &candy.exp.exposure);
-#endif
 }
 
 /* Turn camera on/off.
