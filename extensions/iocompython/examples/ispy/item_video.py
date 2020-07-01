@@ -105,6 +105,8 @@ class VideoItem(GridLayout):
 
     def update_plot(self, data):
         arr = array('B', data[0])
+
+
         if self.texture.size[0] != data[2] or self.texture.size[1] !=  data[3]:
             texture = Texture.create(size=(data[2], data[3]))
             self.texture = texture
