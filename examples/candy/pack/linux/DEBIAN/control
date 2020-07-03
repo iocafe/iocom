@@ -1,0 +1,10 @@
+Package: iocafe-candy
+Version: 1.0
+Section: custom
+Priority: optional
+Architecture: amd64
+Essential: no
+Installed-Size: 1024
+Maintainer: iocafe.org
+Copyrighht: DEBIAN/copyright
+Description: Camera IO device software
