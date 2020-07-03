@@ -1461,7 +1461,7 @@ osalStatus ioc_run_control_stream(
     iocStreamerState cmd;
     osPersistentBlockNr select;
     os_char state_bits;
-    osalStatus s = OSAL_NOTHING_TO_DO;
+    osalStatus s = OSAL_NOTHING_TO_DO, rval;
 
     /* Just for debugging, assert here that ioc_init_control_stream() has been called.
      */
@@ -1534,7 +1534,7 @@ osalStatus ioc_run_control_stream(
                 if (select == OS_PBNR_FLASH_PROGRAM)
                 {
                     ctrl->transferring_program = OS_TRUE;
-                    osal_start_device_programming();
+                    rval = osal_start_device_programming();
                 }
                 else
                 {
@@ -1590,8 +1590,7 @@ static void ioc_ctrl_stream_from_device(
         bytes = ioc_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
         while (OS_TRUE)
         {
-            if (bytes <= 0)
-            {
+            if (bytes <= 0) {
                 if (!os_has_elapsed(&ctrl->timer_ms, IOC_STREAMER_TIMEOUT)) {
                     return;
                 }
@@ -1604,10 +1603,8 @@ static void ioc_ctrl_stream_from_device(
 
             /* Get static default network congiguration.
              */
-            if (ctrl->transferring_default_config)
-            {
-                if (params->default_config == OS_NULL)
-                {
+            if (ctrl->transferring_default_config) {
+                if (params->default_config == OS_NULL) {
                     ctrl->fdr_persistent_ok = OS_FALSE;
                     break;
                 }
@@ -1619,13 +1616,11 @@ static void ioc_ctrl_stream_from_device(
 
             /* Get actual persistent data.
              */
-            else
-            {
+            else {
                 n_read = os_persistent_read(ctrl->fdr_persistent, buf, rdnow);
             }
 
-            if (n_read > 0)
-            {
+            if (n_read > 0) {
                 s = ioc_streamer_write(ctrl->frd, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
                 if (s) break;
                 osal_debug_assert(n_written == n_read);
@@ -1633,8 +1628,7 @@ static void ioc_ctrl_stream_from_device(
 
             /* If all has been read?
              */
-            if (n_read < rdnow)
-            {
+            if (n_read < rdnow) {
                 if (n_read < 0) ctrl->fdr_persistent_ok = OS_FALSE;
                 break;
             }
@@ -1686,6 +1680,7 @@ static void ioc_ctrl_stream_to_device(
     os_memsz n_read;
     osalStatus s;
     os_int stream_flags;
+    osalStatus rval;
 
     stream_flags = (ctrl->tod_persistent || ctrl->transferring_program)
         ? OSAL_STREAM_DEFAULT : OSAL_STREAM_INTERRUPT;
@@ -1697,7 +1692,7 @@ static void ioc_ctrl_stream_to_device(
             break;
         }
         if (ctrl->transferring_program) {
-            osal_program_device(buf, n_read);
+            rval = osal_program_device(buf, n_read);
         }
 
         else if (ctrl->tod_persistent) {
@@ -1710,7 +1705,7 @@ static void ioc_ctrl_stream_to_device(
 
     if (ctrl->transferring_program) {
         if (s == OSAL_COMPLETED) {
-            osal_finish_device_programming(0);
+            rval = osal_finish_device_programming(0);
         }
         else {
             osal_cancel_device_programming();
