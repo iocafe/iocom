@@ -1519,7 +1519,7 @@ osalStatus ioc_run_control_stream(
         s = OSAL_SUCCESS;
     }
 
-    if (ctrl->tod  == OS_NULL)
+    if (ctrl->tod == OS_NULL)
     {
         cmd = (iocStreamerState)ioc_get_ext(params->tod.cmd, &state_bits, IOC_SIGNAL_DEFAULT);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
@@ -1530,13 +1530,22 @@ osalStatus ioc_run_control_stream(
             {
                 select = (osPersistentBlockNr)ioc_get(params->tod.select);
                 ctrl->transferred_block_nr = select;
-                ctrl->tod_persistent = os_persistent_open(select, OS_NULL, OSAL_PERSISTENT_WRITE);
-#if OSAL_DEBUG
-                if (ctrl->tod_persistent == OS_NULL)
+                ctrl->transferring_program = OS_FALSE;
+                if (select == OS_PBNR_FLASH_PROGRAM)
                 {
-                    osal_debug_error_int("Writing persistent block failed", select);
+                    ctrl->transferring_program = OS_TRUE;
+                    osal_start_device_programming();
                 }
+                else
+                {
+                    ctrl->tod_persistent = os_persistent_open(select, OS_NULL, OSAL_PERSISTENT_WRITE);
+#if OSAL_DEBUG
+                    if (ctrl->tod_persistent == OS_NULL)
+                    {
+                        osal_debug_error_int("Writing persistent block failed", select);
+                    }
 #endif
+                }
             }
         }
     }
@@ -1678,18 +1687,20 @@ static void ioc_ctrl_stream_to_device(
     osalStatus s;
     os_int stream_flags;
 
-    stream_flags = ctrl->tod_persistent ? OSAL_STREAM_DEFAULT : OSAL_STREAM_INTERRUPT;
+    stream_flags = (ctrl->tod_persistent || ctrl->transferring_program)
+        ? OSAL_STREAM_DEFAULT : OSAL_STREAM_INTERRUPT;
 
-    do
-    {
+    do {
         s = ioc_streamer_read(ctrl->tod, buf, sizeof(buf), &n_read, stream_flags);
-        if (n_read == 0)
-        {
+        if (n_read == 0) {
             if (s == OSAL_SUCCESS) return;
             break;
         }
-        if (ctrl->tod_persistent)
-        {
+        if (ctrl->transferring_program) {
+            osal_program_device(buf, n_read);
+        }
+
+        else if (ctrl->tod_persistent) {
             os_persistent_write(ctrl->tod_persistent, buf, n_read);
         }
     }
@@ -1697,7 +1708,16 @@ static void ioc_ctrl_stream_to_device(
 
     if (s != OSAL_COMPLETED) stream_flags = OSAL_STREAM_INTERRUPT;
 
-    if (ctrl->tod_persistent)
+    if (ctrl->transferring_program) {
+        if (s == OSAL_COMPLETED) {
+            osal_finish_device_programming(0);
+        }
+        else {
+            osal_cancel_device_programming();
+        }
+    }
+
+    else if (ctrl->tod_persistent)
     {
         ctrl->transfer_status = IOC_BLOCK_WRITTEN;
         os_persistent_close(ctrl->tod_persistent, stream_flags);
@@ -1707,10 +1727,9 @@ static void ioc_ctrl_stream_to_device(
     ioc_streamer_close(ctrl->tod, stream_flags);
     ctrl->tod = OS_NULL;
 
-    if (s == OSAL_COMPLETED)
-    {
-        if (ctrl->transferred_block_nr == OS_PBNR_CLIENT_CERT_CHAIN ||
-            ctrl->transferred_block_nr == OS_PBNR_FLASH_PROGRAM)
+    if (s == OSAL_COMPLETED) {
+        if (ctrl->transferred_block_nr == OS_PBNR_CLIENT_CERT_CHAIN /* ||
+            ctrl->transferred_block_nr == OS_PBNR_FLASH_PROGRAM */)
         {
             osal_reboot(0);
         }
