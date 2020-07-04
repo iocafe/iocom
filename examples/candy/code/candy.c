@@ -369,7 +369,6 @@ osalStatus osal_loop(
     }
 #endif
 
-
     ioc_autosave_parameters();
 
     return s;
