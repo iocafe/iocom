@@ -84,8 +84,7 @@ static void ioc_ctrl_stream_from_device(
     iocStreamerParams *params);
 
 static void ioc_ctrl_stream_to_device(
-    iocControlStreamState *ctrl,
-    iocStreamerParams *params);
+    iocControlStreamState *ctrl);
 #endif
 
 
@@ -1552,7 +1551,7 @@ osalStatus ioc_run_control_stream(
 
     if (ctrl->tod)
     {
-        ioc_ctrl_stream_to_device(ctrl, params);
+        ioc_ctrl_stream_to_device(ctrl);
         s = OSAL_SUCCESS;
     }
 
@@ -1667,14 +1666,12 @@ static void ioc_ctrl_stream_from_device(
   storage fails, the IOC_STREAM_INTERRUPT state is set to memory block.
 
   @param   ctrl IO device control stream transfer state structure.
-  @param   params Parameters for the streamer.
   @return  None.
 
 ****************************************************************************************************
 */
 static void ioc_ctrl_stream_to_device(
-    iocControlStreamState *ctrl,
-    iocStreamerParams *params)
+    iocControlStreamState *ctrl)
 {
     os_char buf[256];
     os_memsz n_read;
@@ -1749,6 +1746,8 @@ const osalStreamInterface ioc_streamer_iface
     osal_stream_default_read_value,
     ioc_streamer_get_parameter,
     osal_stream_default_set_parameter,
-    osal_stream_default_select};
+    osal_stream_default_select,
+    OS_NULL,
+    OS_NULL};
 
 #endif
