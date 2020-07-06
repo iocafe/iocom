@@ -198,7 +198,8 @@ def mymakedir(path):
     # Make sure that "include" and "intermediate" directories exists.
     try:
         os.makedirs(path)
-    except FileExistsError:
+    	# except FileExistsError:
+    except:
         pass
 
 def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
