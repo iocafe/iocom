@@ -8,7 +8,7 @@ import sys
 def setup_environment(confpath, hw, coderoot, pythoncmd):
     global MYHW, MYPYTHON,  CODEROOT, JSONTOOL, PINSTOC, BINTOC, SIGNALSTOC, MERGEJSON, MYIMPORTS
     global MYCONFIG, MYSIGNALS, MYPINS, MYPARAMETERS, MYNETWORK, MYINCLUDE, MYINTERMEDIATE, CFILES
-    global PARAMETERSTOC, PARAMETERSTOSIGNALS
+    global PARAMETERSTOC, PARAMETERSTOSIGNALS, SETVERSION
 
     MYHW = hw
     if platform.system() == 'Windows':
@@ -202,6 +202,17 @@ def mymakedir(path):
     except:
         pass
 
+def set_version():
+    if platform.system() == 'Windows':
+        MYPYTHON = 'python'
+        MYCODEROOT = 'c:/coderoot'
+    else:
+        MYPYTHON = 'python3'
+        MYCODEROOT = '/coderoot'
+        
+    cmd = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/set_version.py'
+    runcmd(cmd)
+
 def generate_c_for_hardware(slavedevices, server_flag, common_c_file):
     mymakedir(MYINCLUDE + '/' + MYHW)
     mymakedir(MYINTERMEDIATE + '/' + MYHW)
@@ -302,6 +313,9 @@ def mymain():
         exit()
 #        sourcepaths.append('/coderoot/iocom/examples/candy/config')
 #        sourcepaths.append('/coderoot/iocom/examples/gina/config')
+
+    # Set build version (date and time)
+    set_version()
 
     # Run slave device and library configuration scripts
     for lib in conflibs:
