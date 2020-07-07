@@ -29,6 +29,12 @@
  */
 OSAL_C_HEADER_BEGINS
 
+/* IOCOM library version number.
+ */
+#ifndef IOCOM_VERSION
+#define IOCOM_VERSION "0.3"
+#endif
+
 /* Enable/disable dynamic allocation of memory blocks and resizing
    the memory blocks, if dynamic memory allocation is supported.
    There are cases when there is reason to do otherwise, so this
