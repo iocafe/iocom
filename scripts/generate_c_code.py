@@ -195,7 +195,6 @@ def make_common_cfile(common_c_file):
     pass
 
 def mymakedir(path):
-    # Make sure that "include" and "intermediate" directories exists.
     try:
         os.makedirs(path)
     	# except FileExistsError:
