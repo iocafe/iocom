@@ -1,9 +1,0 @@
-Package: iocafecandy
-Version: 200707-2241
-Section: custom
-Priority: optional
-Architecture: amd64
-Essential: no
-Installed-Size: 1024
-Maintainer: iocafe
-Description: Candy camera application
