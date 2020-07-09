@@ -84,7 +84,8 @@ static void ioc_ctrl_stream_from_device(
     iocStreamerParams *params);
 
 static void ioc_ctrl_stream_to_device(
-    iocControlStreamState *ctrl);
+    iocControlStreamState *ctrl,
+    iocStreamerParams *params);
 #endif
 
 
@@ -1551,7 +1552,7 @@ osalStatus ioc_run_control_stream(
 
     if (ctrl->tod)
     {
-        ioc_ctrl_stream_to_device(ctrl);
+        ioc_ctrl_stream_to_device(ctrl, params);
         s = OSAL_SUCCESS;
     }
 
@@ -1580,25 +1581,44 @@ static void ioc_ctrl_stream_from_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params)
 {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_char *buf = OS_NULL;
+    os_memsz buf_sz = 0;
+#else
     os_char buf[256];
+    const os_memsz buf_sz = sizeof(buf);
+#endif
+
     os_memsz rdnow, n_written, n_read, bytes;
     osalStatus s;
 
     if (ctrl->fdr_persistent || ctrl->transferring_default_config)
     {
         bytes = ioc_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
-        while (OS_TRUE)
+        while (bytes > 0)
         {
             if (bytes <= 0) {
                 if (!os_has_elapsed(&ctrl->timer_ms, IOC_STREAMER_TIMEOUT)) {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+                    os_free(buf, buf_sz);
+#endif
                     return;
                 }
                 break;
             }
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+            if (buf == OS_NULL)
+            {
+                buf_sz = params->frd.buf->n - 1;
+                osal_debug_assert(buf_sz > 0);
+                buf = os_malloc(buf_sz, OS_NULL);
+                if (buf == OS_NULL) return;
+            }
+#endif
             os_get_timer(&ctrl->timer_ms);
 
             rdnow = bytes;
-            if (rdnow > sizeof(buf)) rdnow = sizeof(buf);
+            if (rdnow > buf_sz) rdnow = buf_sz;
 
             /* Get static default network congiguration.
              */
@@ -1636,6 +1656,10 @@ static void ioc_ctrl_stream_from_device(
 
         os_persistent_close(ctrl->fdr_persistent, OSAL_PERSISTENT_DEFAULT);
         ctrl->fdr_persistent = OS_NULL;
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+        os_free(buf, buf_sz);
+#endif
     }
 
     /* Finalize any handshaking signal stuff.
@@ -1666,14 +1690,22 @@ static void ioc_ctrl_stream_from_device(
   storage fails, the IOC_STREAM_INTERRUPT state is set to memory block.
 
   @param   ctrl IO device control stream transfer state structure.
+  @param   params Parameters for the streamer.
   @return  None.
 
 ****************************************************************************************************
 */
 static void ioc_ctrl_stream_to_device(
-    iocControlStreamState *ctrl)
+    iocControlStreamState *ctrl,
+    iocStreamerParams *params)
 {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_char *buf;
+    os_memsz buf_sz;
+#else
     os_char buf[256];
+    const os_memsz buf_sz = sizeof(buf);
+#endif
     os_memsz n_read;
     osalStatus s;
     os_int stream_flags;
@@ -1682,10 +1714,22 @@ static void ioc_ctrl_stream_to_device(
     stream_flags = (ctrl->tod_persistent || ctrl->transferring_program)
         ? OSAL_STREAM_DEFAULT : OSAL_STREAM_INTERRUPT;
 
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    buf_sz = params->tod.buf->n - 1;
+    osal_debug_assert(buf_sz > 0);
+    buf = os_malloc(buf_sz, OS_NULL);
+    if (buf == OS_NULL) return;
+#endif
+
     do {
-        s = ioc_streamer_read(ctrl->tod, buf, sizeof(buf), &n_read, stream_flags);
+        s = ioc_streamer_read(ctrl->tod, buf, buf_sz, &n_read, stream_flags);
         if (n_read == 0) {
-            if (s == OSAL_SUCCESS) return;
+            if (s == OSAL_SUCCESS) {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+                os_free(buf, buf_sz);
+#endif
+                return;
+            }
             break;
         }
         if (ctrl->transferring_program) {
@@ -1697,6 +1741,10 @@ static void ioc_ctrl_stream_to_device(
         }
     }
     while (s == OSAL_SUCCESS);
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_free(buf, buf_sz);
+#endif
 
     if (s != OSAL_COMPLETED) stream_flags = OSAL_STREAM_INTERRUPT;
 

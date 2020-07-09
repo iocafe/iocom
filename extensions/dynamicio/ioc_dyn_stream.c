@@ -498,29 +498,32 @@ osalStatus ioc_run_stream(
     iocStream *stream,
     os_int flags)
 {
-    os_char buf[256], nbuf[OSAL_NBUF_SZ];
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_char *buf;
+    os_memsz buf_sz;
+#else
+    os_char buf[256];
+    const os_memsz buf_sz = sizeof(buf);
+#endif
+    os_char nbuf[OSAL_NBUF_SZ];
     os_memsz n_read, n_written, n;
     osalStatus s;
 
     s = ioc_stream_try_setup(stream);
-    if (s)
-    {
+    if (s) {
         return OSAL_PENDING;
     }
 
-    if (flags & IOC_CALL_SYNC)
-    {
+    if (flags & IOC_CALL_SYNC) {
         ioc_receive(stream->prm.is_device ? &stream->imp_handle : &stream->exp_handle);
     }
 
-    if (!stream->streamer_opened)
-    {
+    if (!stream->streamer_opened) {
         osal_int_to_str(nbuf, sizeof(nbuf), stream->select);
         stream->streamer = ioc_streamer_open(nbuf, &stream->prm, OS_NULL,
             stream->flags);
 
-        if (stream->streamer == OS_NULL)
-        {
+        if (stream->streamer == OS_NULL) {
             s = OSAL_STATUS_FAILED;
             goto getout;
         }
@@ -531,13 +534,26 @@ osalStatus ioc_run_stream(
 
     if (stream->flags & OSAL_STREAM_READ)
     {
-        s = ioc_streamer_read(stream->streamer, buf, sizeof(buf), &n_read, OSAL_STREAM_DEFAULT);
-        if (n_read > 0)
-        {
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+        buf_sz = stream->prm.frd.buf->n - 1;
+        if (stream->prm.is_device) {
+            buf_sz = stream->prm.tod.buf->n - 1;
+        }
+        osal_debug_assert(buf_sz > 0);
+        buf = os_malloc(buf_sz, OS_NULL);
+        if (buf == OS_NULL) {
+            return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+        }
+#endif
+        s = ioc_streamer_read(stream->streamer, buf, buf_sz, &n_read, OSAL_STREAM_DEFAULT);
+        if (n_read > 0) {
             osal_stream_buffer_write(stream->read_buf, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
         }
-        if (s)
-        {
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+        os_free(buf, buf_sz);
+#endif
+        if (s) {
             ioc_streamer_close(stream->streamer, OSAL_STREAM_DEFAULT);
             stream->streamer = OS_NULL;
         }
@@ -545,16 +561,14 @@ osalStatus ioc_run_stream(
     else
     {
         n = stream->write_buf_sz - stream->write_buf_pos;
-        if (n > 0)
-        {
+        if (n > 0) {
             s = ioc_streamer_write(stream->streamer,
                 stream->write_buf + stream->write_buf_pos,
                 n, &n_written, OSAL_STREAM_DEFAULT);
 
             stream->write_buf_pos += (os_int)n_written;
         }
-        else
-        {
+        else {
             s = ioc_streamer_write(stream->streamer, osal_str_empty, -1,
                 &n_written, OSAL_STREAM_DEFAULT);
         }
@@ -591,6 +605,8 @@ os_char *ioc_get_stream_data(
     os_memsz *buf_sz,
     os_int flags)
 {
+    OSAL_UNUSED(flags);
+
     /* Verify that ioc_start_stream_read() has been called.
      */
     osal_debug_assert(stream->flags & OSAL_STREAM_READ);
