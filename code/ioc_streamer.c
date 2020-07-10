@@ -1750,7 +1750,7 @@ static void ioc_ctrl_stream_to_device(
 
     if (ctrl->transferring_program) {
         if (s == OSAL_COMPLETED) {
-            rval = osal_finish_device_programming(0);
+            osal_finish_device_programming(0);
         }
         else {
             osal_cancel_device_programming();

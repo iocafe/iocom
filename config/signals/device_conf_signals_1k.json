@@ -9,8 +9,10 @@
         "name": "configuration transfer",
         "signals": [
           {"name": "tod_state", "type": "char"},
+          {"name": "tod_errno", "type": "uchar"},
           {"name": "tod_tail", "type": "int"},
           {"name": "frd_state", "type": "char"},
+          {"name": "frd_cs", "type": "ushort"},
           {"name": "frd_head", "type": "int"},
           {"name": "frd_buf", "type": "uchar", "array": 1025}
         ]
@@ -28,6 +30,7 @@
         "signals": [
           {"name": "tod_cmd", "type": "char"},
           {"name": "tod_select", "type": "char"},
+          {"name": "tod_cs", "type": "ushort"},
           {"name": "tod_head", "type": "int"},
           {"name": "tod_buf", "type": "uchar", "array": 1025},
           {"name": "frd_cmd", "type": "char"},
