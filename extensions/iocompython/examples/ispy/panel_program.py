@@ -293,11 +293,11 @@ class ProgramPanel(GridLayout):
 
         if s == 'completed':
             p = MyErrorPopup()
-            p.success_message('File written to device')
+            p.success_message('file written to the IO device')
 
         else:
             p = MyErrorPopup()
-            p.error_message('Failed ' + str(s))
+            p.error_message('failed: ' + str(s))
 
         self.stream.delete()
         self.stream = None
