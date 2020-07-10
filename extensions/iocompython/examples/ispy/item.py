@@ -12,9 +12,13 @@ from kivy.uix.widget import Widget
 
 from iocompython import Signal
 
-def make_my_text_input(text):
-    return TextInput(text=text, font_size='24sp', multiline=False, write_tab=False, 
-        size_hint_y=None, height='42sp')
+def make_my_text_input(text, small = False):
+    if small:
+        return TextInput(text=text, font_size='16sp', multiline=False, write_tab=False, 
+            size_hint_y=None, height='32sp')
+    else:
+        return TextInput(text=text, font_size='24sp', multiline=False, write_tab=False, 
+            size_hint_y=None, height='42sp')
 
 class Item(GridLayout):
     def __init__(self, **kwargs):

@@ -68,7 +68,7 @@ class ProgramPanel(GridLayout):
         g.size_hint_y = None
         g.padding = [8, 6]
 
-        self.current_path = '/coderoot'
+        self.current_path = '/coderoot/packages'
 
         self.my_path = TextInput(text=self.current_path,  multiline=False, write_tab=False)
         g.add_widget(self.my_path)
@@ -142,12 +142,15 @@ class ProgramPanel(GridLayout):
             warn = Label(text = "FILE ALREADY EXISTS, IF YOU SELECT DOWNLOAD\nTHE FILE WILL BE OVERWRITTEN", markup = True, halign="center")
             grid.add_widget(warn)
 
-        pathinput = make_my_text_input(my_path)
+        pathinput = make_my_text_input(my_path, True)
         grid.add_widget(pathinput)
         self.pathinput = pathinput
 
         self.popup = popup = Popup(
             title='confirm persistent block download', content=grid)
+
+        popup.size_hint=(None, None)
+        popup.size=(0.95 * Window.width, 250)
 
         bg = GridLayout(cols = 2)
         bg.spacing = [6, 6]
@@ -199,12 +202,15 @@ class ProgramPanel(GridLayout):
         if os.path.isdir(my_path):
             my_path = os.path.join(my_path, self.my_default_fname)
 
-        pathinput = make_my_text_input(my_path)
+        pathinput = make_my_text_input(my_path, True)
         grid.add_widget(pathinput)
         self.pathinput = pathinput
 
         self.popup = popup = Popup(
             title='confirm file upload', content=grid)
+
+        popup.size_hint=(None, None)
+        popup.size=(0.95 * Window.width, 250)
 
         bg = GridLayout(cols = 2)
         bg.spacing = [6, 6]
@@ -314,6 +320,9 @@ class ProgramPanel(GridLayout):
 
         self.popup = popup = Popup(
             title='select persistent block', content=grid)
+
+        popup.size_hint=(None, None)
+        popup.size=(0.90 * Window.width, 0.90 * Window.height)
 
         # all done, open the popup !
         popup.open()
