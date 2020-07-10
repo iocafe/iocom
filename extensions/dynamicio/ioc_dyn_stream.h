@@ -120,6 +120,10 @@ typedef struct iocStream
     /** Read buffer, stream buffer class. OS_NULL if none.
      */
     osalStream read_buf;
+
+    /** Number of byted moved.
+     */
+    os_memsz bytes_moved;
 }
 iocStream;
 
@@ -181,5 +185,10 @@ os_char *ioc_get_stream_data(
 osalStatus ioc_stream_initconf(
     iocStream *stream,
     os_int flags);
+
+/* Number of bytes moved trough the stream, macro.
+ */
+#define ioc_stream_nro_bytes_moved(st) ((st)->bytes_moved)
+
 
 #endif

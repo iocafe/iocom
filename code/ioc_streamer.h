@@ -208,8 +208,8 @@ typedef struct
        number of block written to persistent storage. Valid only if transfer_status
        is IOC_BLOCK_WRITTEN.
      */
-   iocBlockTransferStatus transfer_status;
-   os_short transferred_block_nr;
+    iocBlockTransferStatus transfer_status;
+    os_short transferred_block_nr;
 
     /* Timer to interrupt wait for space in memory block.
      */

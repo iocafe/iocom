@@ -331,6 +331,28 @@ static PyObject *Stream_get_data(
 
 /**
 ****************************************************************************************************
+  The "bytes_moved" function returns how much data has been moved trough stream, this is
+  useful for scroll bars, etc. Returns -1 if stream is not open.
+****************************************************************************************************
+*/
+static PyObject *Stream_bytes_moved(
+    Stream *self)
+{
+    os_memsz bytes;
+
+    if (self->stream) {
+        bytes = ioc_stream_nro_bytes_moved(self->stream);
+    }
+    else {
+        bytes = -1;
+    }
+
+    return Py_BuildValue("i", (int)bytes);
+}
+
+
+/**
+****************************************************************************************************
   Member variables.
 ****************************************************************************************************
 */
@@ -346,11 +368,12 @@ static PyMemberDef Stream_members[] = {
 ****************************************************************************************************
 */
 static PyMethodDef Stream_methods[] = {
-    {"delete", (PyCFunction)Stream_delete, METH_NOARGS, "Deletes IOCOM signal"},
+    {"delete", (PyCFunction)Stream_delete, METH_NOARGS, "Deletes streamer"},
     {"start_write", (PyCFunction)Stream_start_write, METH_VARARGS|METH_KEYWORDS, "Start write"},
     {"start_read", (PyCFunction)Stream_start_read, METH_NOARGS, "Start read"},
     {"run", (PyCFunction)Stream_run, METH_NOARGS, "Transfer the data"},
     {"get_data", (PyCFunction)Stream_get_data, METH_NOARGS, "Get received data"},
+    {"bytes_moved", (PyCFunction)Stream_bytes_moved, METH_NOARGS, "Get number of transferred bytes"},
     {NULL} /* Sentinel */
 };
 

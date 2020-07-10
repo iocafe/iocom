@@ -1,7 +1,6 @@
 import json
 import os
 import re
-import time
 from kivy.app import App
 from kivy.config import ConfigParser
 from kivy.uix.filechooser import FileChooserListView
@@ -97,7 +96,7 @@ class ProgramPanel(GridLayout):
     def my_select(self, path):
         # Only one selection
         if len(path) < 1:
-            return
+            return;
         path = str(path[0][0])
         if len(path) > len(self.current_path) + 1:
             self.my_fname.text = path[len(self.current_path) + 1:] 
@@ -106,7 +105,7 @@ class ProgramPanel(GridLayout):
 
     def my_set_path(self, path):
         if len(path) < 1:
-            return
+            return;
         path = str(path[0])
         self.current_path = path
         self.my_path.text = self.current_path
@@ -265,25 +264,14 @@ class ProgramPanel(GridLayout):
         self.stream_prev_moved = -1
 
     def run_write(self):
-        count = 16
-        while True:
-            s = self.stream.run()
-            if s != None:
-                break
-            time.sleep(0.001)
-            count = count - 1
-            if count < 1:
-                break
+        s = self.stream.run()
+        if s == None:
+            return
 
         moved = self.stream.bytes_moved()
         if moved != self.stream_prev_moved and self.stream_total_bytes > 0:
             self.stream_prev_moved = moved
             self.popup.progress_bar.value = 1000.0 * moved / self.stream_total_bytes
-
-        if s == None:
-            return
-
-        self.popup.dismiss()
 
         if s == 'completed':
             p = MyErrorPopup()

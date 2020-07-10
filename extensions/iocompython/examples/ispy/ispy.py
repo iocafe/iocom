@@ -33,7 +33,7 @@ class MainApp(App):
         ioc_user = args[0]
         ioc_password = args[1]
         self.ioc_params = args[2]
-        transport_flag = self.ioc_params['transport'].lower();
+        transport_flag = self.ioc_params['transport'].lower()
 
         if transport_flag == 'serial':
             parameters = self.ioc_params['serport']
@@ -88,7 +88,7 @@ class MainApp(App):
             # mblk_name = e[3]
             device_name = e[2]
             network_name = e[1]
-            device_path = device_name + '.' + network_name;
+            device_path = device_name + '.' + network_name
 
             # Device connected
             if event == 'new_device':
@@ -111,13 +111,13 @@ class MainApp(App):
                     self.set_displayed_page(None, None)
 
     def mytimer_tick(self, interval): 
-        self.ioc_root.receive("*");
+        self.ioc_root.receive("*")
         self.check_iocom_events()
         for d in self.ioc_devices:
             self.ioc_devices[d].run()
         if self.my_view:
             self.my_view.run()            
-        self.ioc_root.send("*");
+        self.ioc_root.send("*")
  
     def start_mytimer(self): 
         Clock.schedule_interval(self.mytimer_tick, 1.0 / 30) 
@@ -155,7 +155,7 @@ class MainApp(App):
                 self.ioc_selected_device = None
 
         if self.ioc_selected_device == device_path and device_path != None and self.ioc_selected_page == page_name:
-            return;
+            return
 
         if self.my_scroll_panel != None:
             self.my_widget_home.remove_widget(self.my_scroll_panel)
@@ -172,7 +172,7 @@ class MainApp(App):
         if page_name == 'connect':
             connect_dlg = MyConnectDialog()
             connect_dlg.bind(on_connect=self.connect)
-            self.my_view = connect_dlg;           
+            self.my_view = connect_dlg
             self.root.add_widget(connect_dlg)
             return
 
@@ -182,7 +182,7 @@ class MainApp(App):
 
         if page_name == 'wait':
             dlg = WaitPanel()
-            self.my_view = dlg;           
+            self.my_view = dlg
             my_scroll_view.add_widget(dlg)
             return
 
@@ -208,7 +208,7 @@ class MainApp(App):
 
         elif page_name == 'memory':
             dlg = MemoryBlockPanel()
-            dlg.add_mblk_to_page(self.ioc_root, device_path);
+            dlg.add_mblk_to_page(self.ioc_root, device_path)
 
         else:
             dlg = None

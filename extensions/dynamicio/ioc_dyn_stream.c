@@ -548,6 +548,7 @@ osalStatus ioc_run_stream(
         s = ioc_streamer_read(stream->streamer, buf, buf_sz, &n_read, OSAL_STREAM_DEFAULT);
         if (n_read > 0) {
             osal_stream_buffer_write(stream->read_buf, buf, n_read, &n_written, OSAL_STREAM_DEFAULT);
+            stream->bytes_moved += n_read;
         }
 
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION
@@ -572,6 +573,7 @@ osalStatus ioc_run_stream(
             s = ioc_streamer_write(stream->streamer, osal_str_empty, -1,
                 &n_written, OSAL_STREAM_DEFAULT);
         }
+        stream->bytes_moved += n_written;
     }
 
 getout:
