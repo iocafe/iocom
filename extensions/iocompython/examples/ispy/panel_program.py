@@ -22,7 +22,7 @@ from item import make_my_text_input
 from error_popup import MyErrorPopup
 from iocompython import Root, Stream, bin2json, json2bin
 
-class MyFileChooser(FileChooserIconView):
+class MyFileChooser(FileChooserListView):
     def __init__(self, **kwargs):
         super(MyFileChooser, self).__init__(**kwargs)
 
