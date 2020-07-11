@@ -195,7 +195,7 @@ static void ioc_stream_init_signals(
     ptrs->cmd = ioc_stream_set_handle(&signal_struct->cmd, imp_handle);
     ptrs->select = ioc_stream_set_handle(&signal_struct->select, imp_handle);
     ptrs->err = ioc_stream_set_handle(&signal_struct->err, exp_handle);
-    ptrs->cs = ioc_stream_set_handle(&signal_struct->err, is_frd ? exp_handle : imp_handle);
+    ptrs->cs = ioc_stream_set_handle(&signal_struct->cs, is_frd ? exp_handle : imp_handle);
     ptrs->buf = ioc_stream_set_handle(&signal_struct->buf, is_frd ? exp_handle : imp_handle);
     ptrs->head = ioc_stream_set_handle(&signal_struct->head, is_frd ? exp_handle : imp_handle);
     ptrs->tail = ioc_stream_set_handle(&signal_struct->tail, is_frd ? imp_handle : exp_handle);
@@ -367,8 +367,8 @@ static osalStatus ioc_stream_setup_signals(
 
     if (ioc_stream_setup_one(&sigs->cmd, prefix, "cmd", ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->select, prefix, "select", ii, root)) return OSAL_STATUS_FAILED;
-    if (ioc_stream_setup_one(&sigs->select, prefix, "err", ei, root)) return OSAL_STATUS_FAILED;
-    if (ioc_stream_setup_one(&sigs->select, prefix, "cs", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
+    if (ioc_stream_setup_one(&sigs->err, prefix, "err", ei, root)) return OSAL_STATUS_FAILED;
+    if (ioc_stream_setup_one(&sigs->cs, prefix, "cs", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->buf, prefix, "buf", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->head, prefix, "head", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->tail, prefix, "tail", is_frd ? ii : ei, root)) return OSAL_STATUS_FAILED;
