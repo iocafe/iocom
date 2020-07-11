@@ -394,6 +394,14 @@ static PyObject *Stream_status(
             str = "writing file failed";
             break;
 
+        case OSAL_STATUS_TIMEOUT:
+            str = "timeout";
+            break;
+
+        case OSAL_STATUS_CHECKSUM_ERROR:
+            str = "checksum error";
+            break;
+
         default:
             os_strncpy(buf, "code = ", sizeof(buf));
             osal_int_to_str(nbuf, sizeof(nbuf), s);

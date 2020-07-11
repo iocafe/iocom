@@ -165,6 +165,10 @@ typedef struct iocStreamer
     os_int flags;
     os_timer mytimer;
     os_boolean used;
+
+    /** Cumulative checksum.
+     */
+    os_ushort checksum;
 }
 iocStreamer;
 
@@ -180,18 +184,18 @@ iocStreamer;
 typedef struct
 {
 #if OSAL_DEBUG
-    /* Initial signal values set flag, used for debugging.
+    /** Initial signal values set flag, used for debugging.
      */
     os_boolean initialized;
 #endif
 
-    /* Transfer from device to controller.
+    /** Transfer from device to controller.
      */
     osalStream frd;
     osPersistentHandle *fdr_persistent;
     os_boolean fdr_persistent_ok;
 
-    /* Program transfer (to device).
+    /** Program transfer (to device).
      */
     os_boolean transferring_program;
 
@@ -199,25 +203,25 @@ typedef struct
      */
     os_boolean poll_programming_status;
 
-    /* Transfer of default network configuration from device to controller.
+    /** Transfer of default network configuration from device to controller.
      */
     os_boolean transferring_default_config;
     os_int default_config_pos;
 
-    /* To device from controller.
+    /** To device from controller.
      */
     osalStream tod;
     osPersistentHandle *tod_persistent;
 
-    /* Block transfer status. Used to find out when a block transfer, like programming
-       or configuration has been completed. transferred_block_nr is persistent block
-       number of block written to persistent storage. Valid only if transfer_status
-       is IOC_BLOCK_WRITTEN.
+    /** Block transfer status. Used to find out when a block transfer, like programming
+        or configuration has been completed. transferred_block_nr is persistent block
+        number of block written to persistent storage. Valid only if transfer_status
+        is IOC_BLOCK_WRITTEN.
      */
     iocBlockTransferStatus transfer_status;
     os_short transferred_block_nr;
 
-    /* Timer to interrupt wait for space in memory block.
+    /** Timer to interrupt wait for space in memory block.
      */
     os_timer timer_ms;
 }
@@ -286,7 +290,6 @@ osalStatus ioc_streamer_read(
 os_long ioc_streamer_get_parameter(
     osalStream stream,
     osalStreamParameterIx parameter_ix);
-
 
 /** Modes for ioc_set_streamer_error()
  */

@@ -17,10 +17,8 @@
 
 ****************************************************************************************************
 */
-
 #include "iocom.h"
 #if IOC_STREAMER_SUPPORT
-
 
 /* Maximum number of streamers when using static memory allocation.
  */
@@ -28,7 +26,8 @@
 static iocStreamer ioc_streamer[IOC_MAX_STREAMERS];
 #endif
 
-
+/* Forward referred static functions.
+ */
 static osalStatus ioc_streamer_device_write(
     iocStreamer *streamer,
     iocStreamerSignals *signals,
@@ -151,6 +150,7 @@ osalStream ioc_streamer_open(
     streamer->flags = flags;
     streamer->used = OS_TRUE;
     streamer->step = IOC_SSTEP_INITIALIZED;
+    streamer->checksum = OSAL_CHECKSUM_INIT;
 
     /* Get select parameter, like block number
      */
@@ -177,10 +177,12 @@ osalStream ioc_streamer_open(
         if (prm->is_device) {
             ioc_set(prm->frd.state, IOC_STREAM_IDLE);
             ioc_set(prm->frd.head, 0);
+            ioc_set(prm->frd.cs, 0);
         }
         else {
             ioc_set(prm->tod.cmd, IOC_STREAM_IDLE);
             ioc_set(prm->tod.head, 0);
+            ioc_set(prm->tod.cs, 0);
         }
     }
 
@@ -366,6 +368,10 @@ osalStatus ioc_streamer_write(
     s = ioc_streamer_device_write(streamer, &streamer->prm->frd, buf, n, n_written, flags);
 #endif
 
+    /* Add written data to checksum.
+     */
+    os_checksum(buf, *n_written, &streamer->checksum);
+
     /* Return success/failure code.
      */
     return s;
@@ -431,6 +437,10 @@ osalStatus ioc_streamer_read(
 #else
     s = ioc_streamer_device_read(streamer, &streamer->prm->tod, buf, n, n_read, flags);
 #endif
+
+    /* Add received data to checksum.
+     */
+    os_checksum(buf, *n_read, &streamer->checksum);
 
     /* Return success/failure code.
      */
@@ -543,6 +553,7 @@ static osalStatus ioc_streamer_device_write(
             {
                 if (n == -1)
                 {
+                    ioc_set(signals->cs, streamer->checksum);
                     ioc_set(signals->state, IOC_STREAM_COMPLETED);
                     streamer->step = IOC_SSTEP_TRANSFER_DONE;
                     osal_trace3("IOC_SSTEP_TRANSFER_DONE");
@@ -736,6 +747,14 @@ static osalStatus ioc_streamer_device_read(
                 break;
             }
 
+            if (streamer->checksum != ioc_get(signals->cs))
+            {
+                ioc_set_streamer_error((osalStream)streamer, OSAL_STATUS_CHECKSUM_ERROR,
+                    IOC_STREAMER_SET_ERROR);
+                streamer->step = IOC_SSTEP_FAILED;
+                break;
+            }
+
             streamer->step = IOC_SSTEP_TRANSFER_DONE;
             osal_trace3("IOC_SSTEP_TRANSFER_DONE");
             break;
@@ -910,6 +929,7 @@ static osalStatus ioc_streamer_controller_write(
                 break;
             }
 
+            ioc_set(signals->cs, streamer->checksum);
             ioc_set(signals->cmd, IOC_STREAM_COMPLETED);
             streamer->step = IOC_SSTEP_TRANSFER_DONE;
             osal_trace3("IOC_SSTEP_TRANSFER_DONE");
@@ -1089,6 +1109,15 @@ static osalStatus ioc_streamer_controller_read(
 
                 break;
             }
+
+            if (streamer->checksum != ioc_get(signals->cs))
+            {
+                ioc_set_streamer_error((osalStream)streamer, OSAL_STATUS_CHECKSUM_ERROR,
+                    IOC_STREAMER_SET_ERROR);
+                streamer->step = IOC_SSTEP_FAILED;
+                break;
+            }
+
             streamer->step = IOC_SSTEP_TRANSFER_DONE;
             /* continues ... */
 
@@ -1671,10 +1700,10 @@ static void ioc_ctrl_stream_from_device(
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION
                     os_free(buf, buf_sz);
 #endif
-                    ioc_set_streamer_error(ctrl->frd, OSAL_STATUS_TIMEOUT,
-                        IOC_STREAMER_SET_ERROR);
                     return;
                 }
+                ioc_set_streamer_error(ctrl->frd, OSAL_STATUS_TIMEOUT,
+                    IOC_STREAMER_SET_ERROR);
                 break;
             }
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION
