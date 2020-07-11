@@ -376,6 +376,14 @@ static PyObject *Stream_status(
             str = "no access rights";
             break;
 
+        case OSAL_STATUS_CREATE_PROCESS_FAILED:
+            str = "unable to start installer process";
+            break;
+
+        case OSAL_STATUS_PROGRAM_INSTALLATION_FAILED:
+            str = "program installation failed";
+            break;
+
         default:
             os_strncpy(buf, "code = ", sizeof(buf));
             osal_int_to_str(nbuf, sizeof(nbuf), s);

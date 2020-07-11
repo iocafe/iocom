@@ -1749,6 +1749,10 @@ static void ioc_ctrl_stream_to_device(
         }
         if (ctrl->transferring_program) {
             rval = osal_program_device(buf, n_read);
+            if (rval != OSAL_SUCCESS) {
+                ioc_set(params->tod.err, rval);
+                s = OSAL_DEVICE_PROGRAMMING_FAILED;
+            }
         }
 
         else if (ctrl->tod_persistent) {
