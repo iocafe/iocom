@@ -191,9 +191,13 @@ typedef struct
     osPersistentHandle *fdr_persistent;
     os_boolean fdr_persistent_ok;
 
-    /* Trogram transfer (to device).
+    /* Program transfer (to device).
      */
     os_boolean transferring_program;
+
+    /* Programming is finising, wait for status.
+     */
+    os_boolean poll_programming_status;
 
     /* Transfer of default network configuration from device to controller.
      */

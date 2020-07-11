@@ -269,8 +269,15 @@ class ProgramPanel(GridLayout):
         stream.start_write(file_content)
         self.stream_total_bytes = len(file_content)
         self.stream_prev_moved = -1
+        self.program_transferred = False
 
     def run_write(self):
+        if self.program_transferred:
+            self.wait_for_programming_status()
+        else:
+            self.transfer_program()
+
+    def transfer_program(self):
         count = 16
         while True:
             s = self.stream.run()
@@ -289,6 +296,19 @@ class ProgramPanel(GridLayout):
         if s == None:
             return
 
+        if s == 'completed':
+            self.program_transferred  = True
+
+        else:
+            self.popup.dismiss()
+            p = MyErrorPopup()
+            p.error_message('failed: ' + str(s))
+
+    def wait_for_programming_status(self):
+        s = self.stream.status()
+        if s == None:
+            return
+
         self.popup.dismiss()
 
         if s == 'completed':
@@ -301,7 +321,6 @@ class ProgramPanel(GridLayout):
 
         self.stream.delete()
         self.stream = None
-        self.stream_prev_moved 
 
     def my_select_block_dialog(self, instance):
         button_list = ["1. program", "2. config", "3. defaults", "5. server key", "6. server cert", "7. root cert", "8. cert chain", "9. publish chain", "10. wifi select", "12. cust", "21. accounts"]

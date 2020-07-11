@@ -304,6 +304,7 @@ static PyObject *Stream_run(
             Py_RETURN_NONE;
 
         case OSAL_COMPLETED:
+            os_get_timer(&self->completed_timer);
             return Py_BuildValue("s", "completed");
 
         default:
@@ -328,6 +329,63 @@ static PyObject *Stream_get_data(
     return PyBytes_FromStringAndSize(data, sz);
 }
 
+
+/**
+****************************************************************************************************
+  The "status" function returns delayed status. For example when programming flash, success or
+  failure may be not known immediately, but takes a file. This can be called for writing to
+  device after "run" has returned "completed".
+
+  Returns None if no information (yet)
+  'completed' if successfully completed.
+  Other values indicate an error
+
+****************************************************************************************************
+*/
+static PyObject *Stream_status(
+    Stream *self)
+{
+    os_char *str, nbuf[OSAL_NBUF_SZ], buf[128];
+    osalStatus s;
+
+    if (self->stream == OS_NULL) {
+        return Py_BuildValue("s", "stream has been closed");
+    }
+    s = ioc_stream_status(self->stream);
+    switch (s)
+    {
+        case OSAL_SUCCESS: /* Still zero, not really even started */
+            if (!os_has_elapsed(&self->completed_timer, 2000)) {
+                Py_RETURN_NONE;
+            }
+            str = "unable to get transfer status";
+            break;
+
+        case OSAL_PENDING: /* Waiting for installation results */
+            if (!os_has_elapsed(&self->completed_timer, 20000)) {
+                Py_RETURN_NONE;
+            }
+            str = "installation status was not received within 20 seconds";
+            break;
+
+        case OSAL_COMPLETED:
+            str = "completed";
+            break;
+
+        case OSAL_STATUS_NO_ACCESS_RIGHT:
+            str = "no access rights";
+            break;
+
+        default:
+            os_strncpy(buf, "code = ", sizeof(buf));
+            osal_int_to_str(nbuf, sizeof(nbuf), s);
+            os_strncat(buf, nbuf, sizeof(buf));
+            str = buf;
+            break;
+    }
+
+    return Py_BuildValue("s", str);
+}
 
 /**
 ****************************************************************************************************
@@ -374,6 +432,7 @@ static PyMethodDef Stream_methods[] = {
     {"run", (PyCFunction)Stream_run, METH_NOARGS, "Transfer the data"},
     {"get_data", (PyCFunction)Stream_get_data, METH_NOARGS, "Get received data"},
     {"bytes_moved", (PyCFunction)Stream_bytes_moved, METH_NOARGS, "Get number of transferred bytes"},
+    {"status", (PyCFunction)Stream_status, METH_NOARGS, "Get programming delayed status"},
     {NULL} /* Sentinel */
 };
 

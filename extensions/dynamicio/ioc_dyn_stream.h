@@ -44,6 +44,8 @@ typedef struct
     iocSignal head;
     iocSignal tail;
     iocSignal state;
+    iocSignal err;
+    iocSignal cs;
 }
 iocStreamSignals;
 
@@ -179,6 +181,12 @@ os_char *ioc_get_stream_data(
     iocStream *stream,
     os_memsz *buf_sz,
     os_int flags);
+
+/* Get delayed stream status (for example when programming flash). Can be used after
+   ioc_run_stream() has returned OSAL_COMPLETED, for now supported only for writing to device).
+ */
+osalStatus ioc_stream_status(
+    iocStream *stream);
 
 /* Setup initial stream signal states, either for device or controller.
  */

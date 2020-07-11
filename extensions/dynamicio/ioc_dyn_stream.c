@@ -194,6 +194,8 @@ static void ioc_stream_init_signals(
 {
     ptrs->cmd = ioc_stream_set_handle(&signal_struct->cmd, imp_handle);
     ptrs->select = ioc_stream_set_handle(&signal_struct->select, imp_handle);
+    ptrs->err = ioc_stream_set_handle(&signal_struct->err, exp_handle);
+    ptrs->cs = ioc_stream_set_handle(&signal_struct->err, is_frd ? exp_handle : imp_handle);
     ptrs->buf = ioc_stream_set_handle(&signal_struct->buf, is_frd ? exp_handle : imp_handle);
     ptrs->head = ioc_stream_set_handle(&signal_struct->head, is_frd ? exp_handle : imp_handle);
     ptrs->tail = ioc_stream_set_handle(&signal_struct->tail, is_frd ? imp_handle : exp_handle);
@@ -365,6 +367,8 @@ static osalStatus ioc_stream_setup_signals(
 
     if (ioc_stream_setup_one(&sigs->cmd, prefix, "cmd", ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->select, prefix, "select", ii, root)) return OSAL_STATUS_FAILED;
+    if (ioc_stream_setup_one(&sigs->select, prefix, "err", ei, root)) return OSAL_STATUS_FAILED;
+    if (ioc_stream_setup_one(&sigs->select, prefix, "cs", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->buf, prefix, "buf", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->head, prefix, "head", is_frd ? ei : ii, root)) return OSAL_STATUS_FAILED;
     if (ioc_stream_setup_one(&sigs->tail, prefix, "tail", is_frd ? ii : ei, root)) return OSAL_STATUS_FAILED;
@@ -626,6 +630,43 @@ os_char *ioc_get_stream_data(
     return OS_NULL;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Initialize IO device stream state states
+  @anchor ioc_stream_initconf
+
+  Get delayed stream status (for example when programming flash). Can be used after
+  ioc_run_stream() has returned OSAL_COMPLETED, for now supported only for writing to device).
+
+  @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
+  @return  OSAL_SUCCESS = not really started.
+           OSAL_PENDING = waiting for results.
+           OSAL_COMPLETED = successfully completed.
+
+****************************************************************************************************
+*/
+osalStatus ioc_stream_status(
+    iocStream *stream)
+{
+    osalStatus s;
+    iocSignal *sig;
+    os_char state_bits;
+
+    sig = &stream->tod.err;
+    if (sig) if (sig->handle)
+    {
+        s = (osalStatus)ioc_get_ext(sig, &state_bits, IOC_SIGNAL_DEFAULT);
+        if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
+            return OSAL_SUCCESS;
+        }
+
+        return s;
+    }
+
+    return OSAL_STATUS_FAILED;
+}
 
 /**
 ****************************************************************************************************

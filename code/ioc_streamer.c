@@ -1519,11 +1519,22 @@ osalStatus ioc_run_control_stream(
         s = OSAL_SUCCESS;
     }
 
+    /* Program has been transferred and we are waiting for programming status
+     */
+    if (ctrl->poll_programming_status) {
+        rval = get_device_programming_status();
+        if (rval != OSAL_PENDING) {
+            ioc_set(params->tod.err, rval);
+            ctrl->poll_programming_status = OS_FALSE;
+        }
+    }
+
     if (ctrl->tod == OS_NULL)
     {
         cmd = (iocStreamerState)ioc_get_ext(params->tod.cmd, &state_bits, IOC_SIGNAL_DEFAULT);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
+            ioc_set(params->tod.err, OSAL_SUCCESS);
             ctrl->tod = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_READ);
 
             if (ctrl->tod)
@@ -1535,6 +1546,9 @@ osalStatus ioc_run_control_stream(
                 {
                     ctrl->transferring_program = OS_TRUE;
                     rval = osal_start_device_programming();
+                    if (OSAL_IS_ERROR(rval)) {
+                        ioc_set(params->tod.err, rval);
+                    }
                 }
                 else
                 {
@@ -1543,6 +1557,7 @@ osalStatus ioc_run_control_stream(
                     if (ctrl->tod_persistent == OS_NULL)
                     {
                         osal_debug_error_int("Writing persistent block failed", select);
+                        ioc_set(params->tod.err, OSAL_STATUS_NO_ACCESS_RIGHT);
                     }
 #endif
                 }
@@ -1751,6 +1766,7 @@ static void ioc_ctrl_stream_to_device(
     if (ctrl->transferring_program) {
         if (s == OSAL_COMPLETED) {
             osal_finish_device_programming(0);
+            ctrl->poll_programming_status = OS_TRUE;
         }
         else {
             osal_cancel_device_programming();

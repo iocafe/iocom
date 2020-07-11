@@ -32,6 +32,10 @@ typedef struct
      */
     iocStream *stream;
 
+    /** Timer started when transfer has been completed.
+     */
+    os_timer completed_timer;
+
     /** Connection initialization status: 0 = all good, other values are errors.
         Set by the constructor function.
      */
