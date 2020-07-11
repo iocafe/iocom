@@ -144,7 +144,7 @@ def write_signal_to_c_source_for_controller(signal_name, signal):
 
     addr = signal['addr']
     type = signal['type']
-    array_n = signal.get('array', 1);
+    array_n = signal.get('array', 1)
     if array_n < 1:
         array_n = 1
 
@@ -269,6 +269,8 @@ def process_assembly(assembly):
             cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
         write_assembly_item(imp, "cmd", assembly_name)
         write_assembly_item(imp, "select", assembly_name)
+        write_assembly_item(exp, "err", assembly_name)
+        write_assembly_item(exp, "cs", assembly_name)
         write_assembly_item(exp, "buf", assembly_name)
         write_assembly_item(exp, "head", assembly_name)
         write_assembly_item(imp, "tail", assembly_name)
@@ -289,6 +291,8 @@ def process_assembly(assembly):
         write_assembly_item(imp, "cmd", assembly_name)
         if not is_controller:
             cfile.write('OS_NULL, ')
+        write_assembly_item(exp, "err", assembly_name)
+        write_assembly_item(exp, "cs", assembly_name)
         write_assembly_item(exp, "buf", assembly_name)
         write_assembly_item(exp, "head", assembly_name)
         if not is_controller:
@@ -425,7 +429,7 @@ def process_source_file(path):
             print("'mblk' not found")
             exit()
 
-        mblk_nr = 1;
+        mblk_nr = 1
         nro_mblks = len(mblks)
 
         struct_name = device_name + '_t'
@@ -505,9 +509,9 @@ def list_pins_rootblock(rootblock):
     groups = rootblock.get("groups", None)
 
     for group in groups:
-        pins  = group.get("pins", None);
+        pins  = group.get("pins", None)
         if pins != None:
-            pingroup_name = group.get("name", None);
+            pingroup_name = group.get("name", None)
             check_valid_name("Pin group", pingroup_name, IOC_PIN_GROUP_NAME_SZ, True)
             for pin in pins:
                 name = pin.get('name', None)

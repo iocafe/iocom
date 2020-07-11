@@ -134,7 +134,7 @@ extern iocHandle
 /* Define for default control stream, to avoid typing it for every IO board.
  */
 #define IOBOARD_DEFAULT_CTRL_STREAM(dn,dconfig,dconfig_sz) {OS_TRUE, \
-    {&(dn).conf_imp.frd_cmd, &(dn).conf_imp.frd_select, &(dn).conf_exp.frd_err, &(dn).confexp.frd_cs, &(dn).conf_exp.frd_buf, &(dn).conf_exp.frd_head, &(dn).conf_imp.frd_tail, &(dn).conf_exp.frd_state, OS_FALSE, OS_FALSE}, \
+    {&(dn).conf_imp.frd_cmd, &(dn).conf_imp.frd_select, &(dn).conf_exp.frd_err, &(dn).conf_exp.frd_cs, &(dn).conf_exp.frd_buf, &(dn).conf_exp.frd_head, &(dn).conf_imp.frd_tail, &(dn).conf_exp.frd_state, OS_FALSE, OS_FALSE}, \
     {&(dn).conf_imp.tod_cmd, &(dn).conf_imp.tod_select, &(dn).conf_exp.tod_err, &(dn).conf_imp.tod_cs, &(dn).conf_imp.tod_buf, &(dn).conf_imp.tod_head, &(dn).conf_exp.tod_tail, &(dn).conf_exp.tod_state, OS_TRUE, OS_FALSE}, \
     dconfig, dconfig_sz}
 

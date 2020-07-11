@@ -18,6 +18,8 @@
         "name": "camera data transfer",
         "signals": [
           {"name": "rec_state", "type": "ushort"},
+          {"name": "rec_err", "type": "uchar"},
+          {"name": "rec_cs", "type": "ushort"},
           {"name": "rec_head", "type": "int"},
           {"name": "rec_buf", "type": "uchar", "array": 65536}
         ]
