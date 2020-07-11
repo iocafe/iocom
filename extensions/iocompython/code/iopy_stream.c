@@ -156,6 +156,7 @@ static PyObject *Stream_new(
         ? IOC_IS_DEVICE : IOC_IS_CONTROLLER);
 
     self->status = OSAL_SUCCESS;
+    os_get_timer(&self->completed_timer);
 
     /* Save root pointer and increment reference count.
      */
@@ -301,6 +302,7 @@ static PyObject *Stream_run(
     switch (s)
     {
         case OSAL_SUCCESS:
+            os_get_timer(&self->completed_timer);
             Py_RETURN_NONE;
 
         case OSAL_COMPLETED:
@@ -382,6 +384,14 @@ static PyObject *Stream_status(
 
         case OSAL_STATUS_PROGRAM_INSTALLATION_FAILED:
             str = "program installation failed";
+            break;
+
+        case OSAL_STATUS_READING_FILE_FAILED:
+            str = "reading file failed";
+            break;
+
+        case OSAL_STATUS_WRITING_FILE_FAILED:
+            str = "writing file failed";
             break;
 
         default:

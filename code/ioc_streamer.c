@@ -159,6 +159,7 @@ osalStream ioc_streamer_open(
         streamer->select = (os_int)osal_str_to_int(parameters, OS_NULL);
     }
 
+    ioc_set_streamer_error((osalStream)streamer, OSAL_SUCCESS, IOC_STREAMER_UNCONDITIONAL);
     if (flags & OSAL_STREAM_READ)
     {
         if (prm->is_device) {
@@ -191,6 +192,9 @@ getout:
 }
 
 
+
+
+
 /**
 ****************************************************************************************************
 
@@ -214,6 +218,7 @@ void ioc_streamer_close(
 {
     iocStreamer *streamer;
     iocStreamerParams *prm;
+    OSAL_UNUSED(flags);
 
     /* If called with NULL argument, do nothing.
      */
@@ -240,7 +245,7 @@ void ioc_streamer_close(
             }
         }
 
-        if (flags & OSAL_STREAM_WRITE)
+        if (streamer->flags & OSAL_STREAM_WRITE)
         {
             if (prm->is_device) {
                 ioc_set(prm->frd.state, IOC_STREAM_IDLE);
@@ -1375,6 +1380,58 @@ os_long ioc_streamer_get_parameter(
   @brief Initialize memory block streamer data structure.
   @anchor ioc_streamer_initialize
 
+  The ioc_set_streamer_error() function stored  streamer error code for devide into in "exp"
+  memory block. Setting is conditioned by mode.
+
+  @param   stream Pointer to streamer structure.
+  @param   s Error code (or status code) to set.
+  @param   mode also_good One of IOC_STREAMER_UNCONDITIONAL, IOC_STREAMER_SET_ERROR, or
+           IOC_STREAMER_COMPLETED.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_set_streamer_error(
+    osalStream stream,
+    osalStatus s,
+    iocStremErrSetMode mode)
+{
+    iocStreamerParams *prm;
+    const iocSignal *sig;
+    iocStreamer *streamer;
+    osalStatus old_s;
+
+    if (stream == OS_NULL) return;
+    streamer = (iocStreamer*)stream;
+    prm = streamer->prm;
+    if (prm->is_device)
+    {
+        if (mode != IOC_STREAMER_SET_ERROR || OSAL_IS_ERROR(s))
+        {
+            sig = (streamer->flags & OSAL_STREAM_READ) ? prm->tod.err : prm->frd.err;
+            if (sig->handle) {
+                if (mode == IOC_STREAMER_COMPLETED) {
+                    old_s = ioc_get_ext(sig, OS_NULL, IOC_SIGNAL_NO_TBUF_CHECK);
+                    if (!OSAL_IS_ERROR(old_s)) {
+                        ioc_set(sig, s);
+                    }
+                }
+                else {
+                    ioc_set(sig, s);
+                }
+            }
+        }
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Initialize memory block streamer data structure.
+  @anchor ioc_streamer_initialize
+
   The ioc_streamer_initialize() clears static memory allocated for streamers. This is needed
   in some microcontroller when RAM is not cleared in soft reboot.
 
@@ -1494,12 +1551,12 @@ osalStatus ioc_run_control_stream(
                 {
                     ctrl->fdr_persistent = os_persistent_open(select, OS_NULL, OSAL_PERSISTENT_READ);
                     ctrl->fdr_persistent_ok = (ctrl->fdr_persistent != OS_NULL);
-#if OSAL_DEBUG
                     if (ctrl->fdr_persistent == OS_NULL)
                     {
                         osal_debug_error_int("Reading persistent block failed", select);
+                        ioc_set_streamer_error(ctrl->frd, OSAL_STATUS_READING_FILE_FAILED,
+                            IOC_STREAMER_SET_ERROR);
                     }
-#endif
                 }
 
                 /* If we are getting certificate chain, mark that we have it.
@@ -1534,32 +1591,29 @@ osalStatus ioc_run_control_stream(
         cmd = (iocStreamerState)ioc_get_ext(params->tod.cmd, &state_bits, IOC_SIGNAL_DEFAULT);
         if (cmd == IOC_STREAM_RUNNING && (state_bits & OSAL_STATE_CONNECTED))
         {
-            ioc_set(params->tod.err, OSAL_SUCCESS);
             ctrl->tod = ioc_streamer_open(OS_NULL, params, OS_NULL, OSAL_STREAM_READ);
 
-            if (ctrl->tod)
-            {
+            if (ctrl->tod) {
                 select = (osPersistentBlockNr)ioc_get(params->tod.select);
                 ctrl->transferred_block_nr = select;
                 ctrl->transferring_program = OS_FALSE;
-                if (select == OS_PBNR_FLASH_PROGRAM)
-                {
+                if (select == OS_PBNR_FLASH_PROGRAM) {
                     ctrl->transferring_program = OS_TRUE;
                     rval = osal_start_device_programming();
                     if (OSAL_IS_ERROR(rval)) {
-                        ioc_set(params->tod.err, rval);
+                        ioc_set_streamer_error(ctrl->tod, rval, IOC_STREAMER_SET_ERROR);
+                        ioc_streamer_close(ctrl->tod, OSAL_STREAM_DEFAULT);
+                        ctrl->tod = OS_NULL;
                     }
                 }
-                else
-                {
+                else {
                     ctrl->tod_persistent = os_persistent_open(select, OS_NULL, OSAL_PERSISTENT_WRITE);
-#if OSAL_DEBUG
                     if (ctrl->tod_persistent == OS_NULL)
                     {
                         osal_debug_error_int("Writing persistent block failed", select);
-                        ioc_set(params->tod.err, OSAL_STATUS_NO_ACCESS_RIGHT);
+                        ioc_set_streamer_error(ctrl->tod, OSAL_STATUS_NO_ACCESS_RIGHT,
+                            IOC_STREAMER_SET_ERROR);
                     }
-#endif
                 }
             }
         }
@@ -1610,13 +1664,15 @@ static void ioc_ctrl_stream_from_device(
     if (ctrl->fdr_persistent || ctrl->transferring_default_config)
     {
         bytes = ioc_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
-        while (bytes > 0)
+        while (OS_TRUE)
         {
             if (bytes <= 0) {
                 if (!os_has_elapsed(&ctrl->timer_ms, IOC_STREAMER_TIMEOUT)) {
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION
                     os_free(buf, buf_sz);
 #endif
+                    ioc_set_streamer_error(ctrl->frd, OSAL_STATUS_TIMEOUT,
+                        IOC_STREAMER_SET_ERROR);
                     return;
                 }
                 break;
@@ -1677,6 +1733,10 @@ static void ioc_ctrl_stream_from_device(
 #endif
     }
 
+    if (!ctrl->fdr_persistent_ok) {
+        ioc_set_streamer_error(ctrl->frd, OSAL_STATUS_READING_FILE_FAILED, IOC_STREAMER_SET_ERROR);
+    }
+
     /* Finalize any handshaking signal stuff.
      */
     s = ioc_streamer_flush(ctrl->frd, ctrl->fdr_persistent_ok
@@ -1687,6 +1747,7 @@ static void ioc_ctrl_stream_from_device(
 
     /* Close the stream
      */
+    ioc_set_streamer_error(ctrl->frd, OSAL_COMPLETED, IOC_STREAMER_COMPLETED);
     ioc_streamer_close(ctrl->frd, OSAL_STREAM_DEFAULT);
     ctrl->frd = OS_NULL;
 }
@@ -1750,13 +1811,15 @@ static void ioc_ctrl_stream_to_device(
         if (ctrl->transferring_program) {
             rval = osal_program_device(buf, n_read);
             if (rval != OSAL_SUCCESS) {
-                ioc_set(params->tod.err, rval);
+                ioc_set_streamer_error(ctrl->tod, rval, OS_FALSE);
                 s = OSAL_DEVICE_PROGRAMMING_FAILED;
             }
         }
 
         else if (ctrl->tod_persistent) {
-            os_persistent_write(ctrl->tod_persistent, buf, n_read);
+            if (os_persistent_write(ctrl->tod_persistent, buf, n_read)) {
+                ioc_set_streamer_error(ctrl->tod, OSAL_STATUS_WRITING_FILE_FAILED, OS_FALSE);
+            }
         }
     }
     while (s == OSAL_SUCCESS);
@@ -1782,6 +1845,7 @@ static void ioc_ctrl_stream_to_device(
         ctrl->transfer_status = IOC_BLOCK_WRITTEN;
         os_persistent_close(ctrl->tod_persistent, stream_flags);
         ctrl->tod_persistent = OS_NULL;
+        ioc_set_streamer_error(ctrl->tod, OSAL_COMPLETED, IOC_STREAMER_COMPLETED);
     }
 
     ioc_streamer_close(ctrl->tod, stream_flags);

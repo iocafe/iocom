@@ -638,12 +638,13 @@ os_char *ioc_get_stream_data(
   @anchor ioc_stream_initconf
 
   Get delayed stream status (for example when programming flash). Can be used after
-  ioc_run_stream() has returned OSAL_COMPLETED, for now supported only for writing to device).
+  ioc_run_stream() has returned OSAL_COMPLETED or failed.
 
   @param   stream Pointer to IOC stream, as returned by ioc_open_stream().
   @return  OSAL_SUCCESS = not really started.
            OSAL_PENDING = waiting for results.
            OSAL_COMPLETED = successfully completed.
+           Other return values indicate an error.
 
 ****************************************************************************************************
 */
@@ -654,7 +655,7 @@ osalStatus ioc_stream_status(
     iocSignal *sig;
     os_char state_bits;
 
-    sig = &stream->tod.err;
+    sig = (stream->flags & OSAL_STREAM_READ) ? &stream->frd.err : &stream->tod.err;
     if (sig) if (sig->handle)
     {
         s = (osalStatus)ioc_get_ext(sig, &state_bits, IOC_SIGNAL_DEFAULT);

@@ -287,6 +287,24 @@ os_long ioc_streamer_get_parameter(
     osalStream stream,
     osalStreamParameterIx parameter_ix);
 
+
+/** Modes for ioc_set_streamer_error()
+ */
+typedef enum iocStremErrSet
+{
+    IOC_STREAMER_UNCONDITIONAL,
+    IOC_STREAMER_SET_ERROR,
+    IOC_STREAMER_COMPLETED,
+}
+iocStremErrSetMode;
+
+/* Set streamer error code in "tod_err" or "frd_err".
+ */
+void ioc_set_streamer_error(
+    osalStream stream,
+    osalStatus s,
+    iocStremErrSetMode mode);
+
 /* Initialize streamer data structure.
  */
 void ioc_streamer_initialize(

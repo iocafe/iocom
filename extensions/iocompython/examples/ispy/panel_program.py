@@ -124,8 +124,10 @@ class ProgramPanel(GridLayout):
 
     def run(self):
         if self.stream != None:
-            self.run_write()
-        pass
+            if self.writing:
+                self.run_write()
+            else:
+                self.run_read()
 
     def my_read_block_dialog(self, instance):
         grid = GridLayout()
@@ -169,26 +171,80 @@ class ProgramPanel(GridLayout):
 
         grid.add_widget(bg)
 
+        pb = ProgressBar(value=0, max=1000)
+        grid.add_widget(pb)
+        popup.progress_bar = pb
+
         # all done, open the popup !
         popup.open()
-
+        
     def read_selected(self, instance):
-        # self.my_block_button.text = instance.text
-        file_content = self.ioc_root.getconf(self.device_path, select=self.my_select_nr)
-        if file_content == None:
+        # This would read file with one command, but we want progress bar, etc, so more 
+        # complex way is used. 
+        # file_content = self.ioc_root.getconf(self.device_path, select=self.my_select_nr)
+
+        exp_mblk_path = 'conf_exp.' + self.device_path
+        imp_mblk_path = 'conf_imp.' + self.device_path
+
+        stream = Stream(self.ioc_root, exp = exp_mblk_path, imp = imp_mblk_path, select = self.my_select_nr)
+        self.stream = stream
+        self.writing = False
+
+        stream.start_read()
+        self.stream_prev_moved = -1
+
+    def run_read(self):
+        count = 16
+        while True:
+            s = self.stream.run()
+            if s != None:
+                break
+            time.sleep(0.001)
+            count = count - 1
+            if count < 1:
+                break
+
+        moved = self.stream.bytes_moved() * 0.01
+        if moved != self.stream_prev_moved:
+            self.stream_prev_moved = moved
+            self.popup.progress_bar.value = moved % 1000
+
+        if s == None:
             return
 
-        # If this is key or certificate (text content), remove terminating '\0' character, if any.
-        # We should not have it in PC text files
-        if self.my_ext == '.key' or self.my_ext == '.crt':
-            l = len(file_content)
-            if file_content[l-1] == 0:
-                file_content = file_content[:l-1]
-
-        with open(self.pathinput.text, mode='wb') as file: # b is important -> binary
-            file.write(file_content)
-         
         self.popup.dismiss()
+
+        if s != 'completed':
+            s = self.stream.status()
+            p = MyErrorPopup()
+            p.error_message('failed: ' + str(s))        
+            self.stream.delete()
+            self.stream = None
+            return
+
+        file_content = self.stream.get_data() 
+
+        if s == 'completed' and file_content != None:
+            # If this is key or certificate (text content), remove terminating '\0' character, if any.
+            # We should not have it in PC text files
+            if self.my_ext == '.key' or self.my_ext == '.crt':
+                l = len(file_content)
+                if file_content[l-1] == 0:
+                    file_content = file_content[:l-1]
+
+            with open(self.pathinput.text, mode='wb') as file: # b is important -> binary
+                file.write(file_content)
+
+            p = MyErrorPopup()
+            p.success_message('file successfully read from the IO device') 
+
+        else:
+            s = self.stream.status()
+            p = MyErrorPopup()
+            p.error_message('failed: ' + str(s))        
+
+        self.stream.delete()
+        self.stream = None
         self.my_file_chooser._update_files()
 
     def my_write_block_dialog(self, instance):
@@ -265,19 +321,20 @@ class ProgramPanel(GridLayout):
 
         stream = Stream(self.ioc_root, exp = exp_mblk_path, imp = imp_mblk_path, select = self.my_select_nr)
         self.stream = stream
+        self.writing = True
 
         stream.start_write(file_content)
         self.stream_total_bytes = len(file_content)
         self.stream_prev_moved = -1
-        self.program_transferred = False
+        self.file_transferred = False
 
     def run_write(self):
-        if self.program_transferred:
-            self.wait_for_programming_status()
+        if self.file_transferred:
+            self.wait_for_transfer_status()
         else:
-            self.transfer_program()
+            self.transfer_file_to_device()
 
-    def transfer_program(self):
+    def transfer_file_to_device(self):
         count = 16
         while True:
             s = self.stream.run()
@@ -297,14 +354,14 @@ class ProgramPanel(GridLayout):
             return
 
         if s == 'completed':
-            self.program_transferred  = True
+            self.file_transferred  = True
 
         else:
             self.popup.dismiss()
             p = MyErrorPopup()
             p.error_message('failed: ' + str(s))
 
-    def wait_for_programming_status(self):
+    def wait_for_transfer_status(self):
         s = self.stream.status()
         if s == None:
             return
