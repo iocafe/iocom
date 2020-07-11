@@ -181,6 +181,8 @@ osalStatus ioc_run_bserver(
     (bmain).ctrl_stream_params.frd.head = &sig.conf_exp.frd_head; \
     (bmain).ctrl_stream_params.frd.tail = &sig.conf_imp.frd_tail; \
     (bmain).ctrl_stream_params.frd.state = &sig.conf_exp.frd_state; \
+    (bmain).ctrl_stream_params.frd.err = &sig.conf_exp.frd_err; \
+    (bmain).ctrl_stream_params.frd.cs = &sig.conf_exp.frd_cs; \
     (bmain).ctrl_stream_params.frd.to_device = OS_FALSE; \
     (bmain).ctrl_stream_params.tod.cmd = &sig.conf_imp.tod_cmd; \
     (bmain).ctrl_stream_params.tod.select = &sig.conf_imp.tod_select; \
@@ -188,6 +190,8 @@ osalStatus ioc_run_bserver(
     (bmain).ctrl_stream_params.tod.head = &sig.conf_imp.tod_head; \
     (bmain).ctrl_stream_params.tod.tail = &sig.conf_exp.tod_tail; \
     (bmain).ctrl_stream_params.tod.state = &sig.conf_exp.tod_state; \
+    (bmain).ctrl_stream_params.tod.err = &sig.conf_exp.tod_err; \
+    (bmain).ctrl_stream_params.tod.cs = &sig.conf_imp.tod_cs; \
     (bmain).ctrl_stream_params.tod.to_device = OS_TRUE; \
     ioc_init_control_stream(&(bmain).ctrl_stream, &(bmain).ctrl_stream_params);
 

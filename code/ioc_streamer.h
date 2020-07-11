@@ -52,6 +52,8 @@ typedef struct iocStreamerSignals
 {
     const iocSignal *cmd;
     const iocSignal *select;
+    const iocSignal *err;
+    const iocSignal *cs;
     const iocSignal *buf;
     const iocSignal *head;
     const iocSignal *tail;

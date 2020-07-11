@@ -9,9 +9,10 @@
         "name": "configuration transfer",
         "signals": [
           {"name": "tod_state", "type": "char"},
-          {"name": "tod_errno", "type": "uchar"},
+          {"name": "tod_err", "type": "uchar"},
           {"name": "tod_tail", "type": "int"},
           {"name": "frd_state", "type": "char"},
+          {"name": "frd_err", "type": "uchar"},
           {"name": "frd_cs", "type": "ushort"},
           {"name": "frd_head", "type": "int"},
           {"name": "frd_buf", "type": "uchar", "array": 1025}
