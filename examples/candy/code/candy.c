@@ -337,8 +337,9 @@ osalStatus osal_loop(
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
-// static int u;
+//static int u;
 // ioc_set(&candy.exp.headlight, (u++ / 200) % 2);
+//pin_set(&pins.pwm.headlight, ((u++ / 200) % 4) * 1000);
 
     /* The call is here for development testing.
      */
