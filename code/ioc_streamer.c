@@ -438,17 +438,13 @@ osalStatus ioc_streamer_read(
     s = ioc_streamer_device_read(streamer, signals, buf, n, n_read, flags);
 #endif
 
-    s = ioc_streamer_controller_read(streamer, signals, buf, n, n_read, flags);
-
     /* Add received data to checksum, werify checksum when all transfers have been completed.
      */
     os_checksum(buf, *n_read, &streamer->checksum);
     if (s == OSAL_COMPLETED) {
         if (streamer->checksum != ioc_get(signals->cs))
         {
-            osal_trace3("Checksum error");
-osal_debug_error_int("HERE UKE1 ", streamer->checksum);
-osal_debug_error_int("HERE UKE2 ", ioc_get(signals->cs));
+            osal_trace("Checksum error");
             ioc_set_streamer_error(stream, OSAL_STATUS_CHECKSUM_ERROR,
                 IOC_STREAMER_MODE_SET_ERROR);
             s = OSAL_STATUS_CHECKSUM_ERROR;
@@ -567,8 +563,6 @@ static osalStatus ioc_streamer_device_write(
             {
                 if (n == -1)
                 {
-                    osal_debug_error_int("HERE CS ", streamer->checksum)            ;
-
                     ioc_set(signals->cs, streamer->checksum);
                     ioc_set(signals->state, IOC_STREAM_COMPLETED);
                     streamer->step = IOC_SSTEP_TRANSFER_DONE;

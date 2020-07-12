@@ -529,8 +529,6 @@ osalStatus ioc_run_stream(
 
         if (stream->streamer == OS_NULL) {
             s = OSAL_STATUS_FAILED;
-osal_debug_error("HERE NO STREAMER 1");
-
             goto getout;
         }
         stream->streamer_opened = OS_TRUE;
@@ -538,7 +536,6 @@ osal_debug_error("HERE NO STREAMER 1");
 
     if (stream->streamer == OS_NULL)
     {
-        osal_debug_error("HERE NO STREAMER 2");
         return OSAL_STATUS_FAILED;
     }
 
@@ -567,7 +564,6 @@ osal_debug_error("HERE NO STREAMER 1");
         if (s) {
             ioc_streamer_close(stream->streamer, OSAL_STREAM_DEFAULT);
             stream->streamer = OS_NULL;
-osal_debug_error_int("HERE STREAMER CLOSE ", s);
         }
     }
     else
