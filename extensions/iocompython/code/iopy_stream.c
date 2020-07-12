@@ -299,6 +299,8 @@ static PyObject *Stream_run(
     osalStatus s;
     s = ioc_run_stream(self->stream, IOC_CALL_SYNC);
 
+osal_debug_error_int("HERE RUN ", s)    ;
+
     switch (s)
     {
         case OSAL_SUCCESS:

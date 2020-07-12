@@ -295,9 +295,9 @@ os_long ioc_streamer_get_parameter(
  */
 typedef enum iocStremErrSet
 {
-    IOC_STREAMER_UNCONDITIONAL,
-    IOC_STREAMER_SET_ERROR,
-    IOC_STREAMER_COMPLETED,
+    IOC_STREAMER_MODE_UNCONDITIONAL,
+    IOC_STREAMER_MODE_SET_ERROR,
+    IOC_STREAMER_MODE_COMPLETED,
 }
 iocStremErrSetMode;
 
