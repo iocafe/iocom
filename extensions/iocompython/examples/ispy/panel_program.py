@@ -360,6 +360,8 @@ class ProgramPanel(GridLayout):
             self.popup.dismiss()
             p = MyErrorPopup()
             p.error_message('failed: ' + str(s))
+            self.stream.delete()
+            self.stream = None
 
     def wait_for_transfer_status(self):
         s = self.stream.status()
