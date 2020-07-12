@@ -84,6 +84,8 @@ class ProgramPanel(GridLayout):
         self.my_file_chooser.bind(path=lambda *x: self.my_set_path(x[1:]))
 
         self.stream = None
+        self.popup = None
+        self.writing = False
 
     def my_set_select(self):
         extension_list = {"1.":".elf", "4.":".key", "6.":".crt", "7.":".crt", "8.":".crt"}
@@ -121,6 +123,14 @@ class ProgramPanel(GridLayout):
         if self.stream != None:
             self.stream.delete()
             self.stream = None
+
+            if self.popup != None:
+                self.popup.dismiss()
+
+                if self.writing:
+                    p = MyErrorPopup()
+                    p.success_message('file transfer closed (reboot after programming?)')
+
 
     def run(self):
         if self.stream != None:
@@ -358,6 +368,7 @@ class ProgramPanel(GridLayout):
 
         else:
             self.popup.dismiss()
+            self.writing = False
             p = MyErrorPopup()
             p.error_message('failed: ' + str(s))
             self.stream.delete()
@@ -380,6 +391,7 @@ class ProgramPanel(GridLayout):
 
         self.stream.delete()
         self.stream = None
+        self.writing = False
 
     def my_select_block_dialog(self, instance):
         button_list = ["1. program", "2. config", "3. defaults", "5. server key", "6. server cert", "7. root cert", "8. cert chain", "9. publish chain", "10. wifi select", "12. cust", "21. accounts"]
