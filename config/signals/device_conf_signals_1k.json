@@ -15,7 +15,7 @@
           {"name": "frd_err", "type": "uchar"},
           {"name": "frd_cs", "type": "ushort"},
           {"name": "frd_head", "type": "int"},
-          {"name": "frd_buf", "type": "uchar", "array": 1025}
+          {"name": "frd_buf", "type": "uchar", "array": 257}
         ]
       }
     ]

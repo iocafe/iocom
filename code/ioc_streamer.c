@@ -440,8 +440,13 @@ osalStatus ioc_streamer_read(
 
     /* Add received data to checksum, werify checksum when all transfers have been completed.
      */
+streamer->uke += *n_read;
     os_checksum(buf, *n_read, &streamer->checksum);
     if (s == OSAL_COMPLETED) {
+osal_debug_error_int("HERE CS ", streamer->checksum)            ;
+osal_debug_error_int("HERE UKE ", streamer->uke)            ;
+osal_debug_error_int("HERE SIGNAL ",ioc_get(signals->cs)            );
+
         if (streamer->checksum != ioc_get(signals->cs))
         {
             osal_trace("Checksum error");
@@ -556,6 +561,8 @@ static osalStatus ioc_streamer_device_write(
 
             if (nbytes)
             {
+streamer->uke += nbytes;
+
                 os_checksum(buf, nbytes, &streamer->checksum);
                 os_get_timer(&streamer->mytimer);
             }
@@ -914,6 +921,7 @@ static osalStatus ioc_streamer_controller_write(
                 nbytes = ioc_streamer_write_internal(signals, buf, buf_sz,
                     (os_int)n, &streamer->head, tail);
                 os_checksum(buf, nbytes, &streamer->checksum);
+streamer->uke += nbytes;
 
                 /* More data to come, break.
                  */
@@ -931,6 +939,9 @@ static osalStatus ioc_streamer_controller_write(
                 }
                 break;
             }
+
+osal_debug_error_int("HERE CS ", streamer->checksum)            ;
+osal_debug_error_int("HERE UKE ", streamer->uke)            ;
 
             ioc_set(signals->cs, streamer->checksum);
             ioc_set(signals->cmd, IOC_STREAM_COMPLETED);

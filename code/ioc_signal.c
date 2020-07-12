@@ -21,9 +21,9 @@ typedef union
     os_char c;
     os_uchar uc;
     os_short s;
-    os_short us;
+    os_ushort us;
     os_int i;
-    os_int ui;
+    os_uint ui;
     os_long l;
     os_float f;
     os_double d;

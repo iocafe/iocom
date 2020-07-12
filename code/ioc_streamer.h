@@ -169,6 +169,8 @@ typedef struct iocStreamer
     /** Cumulative checksum.
      */
     os_ushort checksum;
+
+os_memsz uke;
 }
 iocStreamer;
 
