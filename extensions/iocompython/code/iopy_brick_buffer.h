@@ -36,6 +36,8 @@ typedef struct
      */
     iocSignal sig_cmd;
     iocSignal sig_select;
+    iocSignal sig_err;
+    iocSignal sig_cs;
     iocSignal sig_buf;
     iocSignal sig_head;
     iocSignal sig_tail;

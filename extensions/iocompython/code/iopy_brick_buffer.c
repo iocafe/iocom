@@ -174,15 +174,18 @@ static PyObject *BrickBuffer_new(
 
     bb_init_signal(&self->sig_cmd, &self->h_imp);
     bb_init_signal(&self->sig_select, &self->h_imp);
+    bb_init_signal(&self->sig_err, &self->h_exp);
     bb_init_signal(&self->sig_state, &self->h_exp);
 
     if (self->from_device) {
         bb_init_signal(&self->sig_buf, &self->h_exp);
+        bb_init_signal(&self->sig_cs, &self->h_exp);
         bb_init_signal(&self->sig_head, &self->h_exp);
         bb_init_signal(&self->sig_tail, &self->h_imp);
     }
     else {
         bb_init_signal(&self->sig_buf, &self->h_imp);
+        bb_init_signal(&self->sig_cs, &self->h_imp);
         bb_init_signal(&self->sig_head, &self->h_imp);
         bb_init_signal(&self->sig_tail, &self->h_exp);
     }
@@ -199,6 +202,8 @@ static PyObject *BrickBuffer_new(
     sig.flat_buffer = self->flat_buffer;
     sig.cmd = &self->sig_cmd;
     sig.select = &self->sig_select;
+    sig.err = &self->sig_err;
+    sig.cs = &self->sig_cs;
     sig.state = &self->sig_state;
     sig.buf = &self->sig_buf;
     sig.head = &self->sig_head;
@@ -391,9 +396,11 @@ static osalStatus bb_try_setup(
         if (bb_try_signal_setup(&self->sig_select, "select", self->prefix, &self->imp_ids, iocroot))
             goto getout;
     }
+    if (bb_try_signal_setup(&self->sig_err, "err", self->prefix, &self->exp_ids, iocroot)) goto getout;
     if (bb_try_signal_setup(&self->sig_state, "state", self->prefix, &self->exp_ids, iocroot)) goto getout;
 
     if (self->from_device) {
+        if (bb_try_signal_setup(&self->sig_cs, "cs", self->prefix, &self->exp_ids, iocroot)) goto getout;
         if (bb_try_signal_setup(&self->sig_buf, "buf", self->prefix, &self->exp_ids, iocroot)) goto getout;
         if (bb_try_signal_setup(&self->sig_head, "head", self->prefix, &self->exp_ids, iocroot)) goto getout;
         if (!self->flat_buffer) {
@@ -402,6 +409,7 @@ static osalStatus bb_try_setup(
         }
     }
     else {
+        if (bb_try_signal_setup(&self->sig_cs, "cs", self->prefix, &self->imp_ids, iocroot)) goto getout;
         if (bb_try_signal_setup(&self->sig_buf, "buf", self->prefix, &self->imp_ids, iocroot)) goto getout;
         if (bb_try_signal_setup(&self->sig_head, "head", self->prefix, &self->imp_ids, iocroot)) goto getout;
         if (!self->flat_buffer) {

@@ -37,6 +37,8 @@
         os_memclear(&vsignals, sizeof(iocStreamerSignals));
         vsignals.cmd = &gina.imp.rec_cmd;
         vsignals.select = &gina.imp.rec_select;
+        vsignals.err = &gina.imp.rec_err;
+        vsignals.cs = &gina.imp.rec_cs;
         vsignals.buf = &gina.exp.rec_buf;
         vsignals.head = &gina.exp.rec_head;
         vsignals.tail = &gina.imp.rec_tail;
