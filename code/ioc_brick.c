@@ -294,7 +294,7 @@ osalStatus ioc_compress_brick(
     os_uchar *buf;
     os_memsz sz, buf_sz;
     os_int quality;
-    os_ushort checksum = 0;
+    os_ushort checksum;
     os_boolean lock_on = OS_FALSE;
     osalStatus s = OSAL_SUCCESS;
 
@@ -414,17 +414,14 @@ osalStatus ioc_compress_brick(
     dhdr->checksum[1] = 0;
     checksum = os_checksum((const os_char*)dhdr, sizeof(iocBrickHdr), OS_NULL);
     os_checksum((os_char*)(buf ? buf : data), sz - sizeof(iocBrickHdr), &checksum);
-
-    ioc_set_brick_checksum(dhdr, checksum); // WE NEED TO GET RID OF THIS HEADER CHECKSUM
+    dhdr->checksum[0] = (os_uchar)checksum;
+    dhdr->checksum[1] = (os_uchar)(checksum >> 8);
     b->buf_n = sz;
 
     if (!lock_on) {
         ioc_lock(b->root);
         lock_on = OS_TRUE;
     }
-
-osal_debug_error_int("error S. brick checksum error", checksum);
-osal_debug_error_int("HERE. S brick checksum n", sz);
 
     ioc_set_ext(b->signals->cs, checksum, OSAL_STATE_CONNECTED|IOC_SIGNAL_NO_THREAD_SYNC);
     ioc_move_array(b->signals->buf, 0, dhdr, sizeof(iocBrickHdr),
@@ -570,7 +567,8 @@ osalStatus ioc_compress_brick_ring(
     dhdr->checksum[0] = 0;
     dhdr->checksum[1] = 0;
     checksum = os_checksum((os_char*)buf, sz, OS_NULL);
-    ioc_set_brick_checksum(dhdr, checksum);
+    dhdr->checksum[0] = (os_uchar)checksum;
+    dhdr->checksum[1] = (os_uchar)(checksum >> 8);
     b->buf_n = sz;
 
 getout:
@@ -618,6 +616,7 @@ osalStatus ioc_compress_brick(
 }
 #endif
 
+
 /**
 ****************************************************************************************************
 
@@ -649,27 +648,6 @@ void ioc_set_brick_timestamp(
         *(dd++) = ss[count];
     }
 #endif
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Store check sum within brick header
-  @anchor ioc_set_brick_checksum
-
-  @param   hdr Pointer to brick header (in buffer).
-  @param   checksum Value to set.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_set_brick_checksum(
-    iocBrickHdr *hdr,
-    os_ushort checksum)
-{
-    hdr->checksum[0] = (os_uchar)checksum;
-    hdr->checksum[1] = (os_uchar)(checksum >> 8);
 }
 
 
@@ -926,7 +904,7 @@ static osalStatus osal_validate_brick_header(
 ****************************************************************************************************
 
   @brief Receive data into brick buffer. (internal).
-  @anchor ioc_receive_brick_data
+  @anchor ioc_receive_ring_brick_data
 
   Helper function for ioc_run_brick_receive().
 
@@ -936,7 +914,7 @@ static osalStatus osal_validate_brick_header(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_receive_brick_data(
+static osalStatus ioc_receive_ring_brick_data(
     iocBrickBuffer *b)
 {
     iocBrickHdr *bhdr;
@@ -998,7 +976,8 @@ static osalStatus ioc_receive_brick_data(
      */
     bhdr = (iocBrickHdr*)b->buf;
     checksum = (os_uint)ioc_get_brick_hdr_int(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
-    os_memclear(bhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
+    bhdr->checksum[0] = 0;
+    bhdr->checksum[1] = 0;
     if (os_checksum((const os_char*)b->buf, b->buf_sz, OS_NULL) != checksum)
     {
         osal_debug_error("brick checksum error");
@@ -1078,8 +1057,9 @@ static void ioc_process_flat_brick_data(
     ioc_move_array(b->signals->buf, 0, b->buf, n, OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC);
 
 
-dhdr = (iocBrickHdr*)b->buf;
-os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
+    dhdr = (iocBrickHdr*)b->buf;
+    dhdr->checksum[0] = 0;
+    dhdr->checksum[1] = 0;
 
     /* Verify that checksum is correct
      */
@@ -1089,18 +1069,8 @@ os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (checksum != checksum2)
     {
         osal_debug_error_int("error. brick checksum error", checksum);
-osal_debug_error_int("HERE. brick checksum n", n);
         goto failed;
     }
-
-    /* checksum = (os_uint)ioc_get_brick_hdr_int(hdr.checksum, IOC_BRICK_CHECKSUM_SZ);
-    dhdr = (iocBrickHdr*)b->buf;
-    os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
-    if (os_checksum((const os_char*)b->buf, n, OS_NULL) != checksum)
-    {
-        osal_debug_error("brick checksum error");
-        goto failed;
-    } */
 
     /* Callback function. Leave image into buffer. Can be processed from there as well.
      */
@@ -1239,7 +1209,7 @@ osalStatus ioc_run_brick_receive(
         b->pos = 0;
     }
 
-    s = ioc_receive_brick_data(b);
+    s = ioc_receive_ring_brick_data(b);
     if (OSAL_IS_ERROR(s))
     {
         ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);

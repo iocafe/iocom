@@ -197,16 +197,10 @@ osalStatus ioc_compress_brick(
     os_int h,
     os_uchar compression);
 
-/* Store time stamp into the brick header (must be called before ioc_set_brick_checksum)
+/* Store time stamp into the brick header (must be called before setting check sum)
  */
 void ioc_set_brick_timestamp(
     iocBrickHdr *hdr);
-
-/* Store check sum within brick header
- */
-void ioc_set_brick_checksum(
-    iocBrickHdr *hdr,
-    os_ushort checksum);
 
 /* Run brick data transfer
  */
