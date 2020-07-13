@@ -844,12 +844,12 @@ void ioc_set_state_bits(
     ioc_read(handle, signal->addr, &current_state_bits, 1, IOC_MBLK_NO_THREAD_SYNC);
     if (flags & IOC_SIGNAL_CLEAR_BITS) {
         changed = (current_state_bits & state_bits) != 0;
-        current_state_bits |= state_bits;
+        current_state_bits &= ~state_bits;
     }
 
     else {
         changed = state_bits != (state_bits & current_state_bits);
-        current_state_bits &= ~state_bits;
+        current_state_bits |= state_bits;
     }
 
     if (changed) {
