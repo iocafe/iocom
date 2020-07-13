@@ -1081,7 +1081,7 @@ os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
 
     /* Verify that checksum is correct
      */
-    checksum = ioc_get_ext(b->signals->cs, OS_NULL,
+    checksum = (os_ushort)ioc_get_ext(b->signals->cs, OS_NULL,
         IOC_SIGNAL_NO_THREAD_SYNC|IOC_SIGNAL_NO_TBUF_CHECK);
     checksum2 = os_checksum((const os_char*)b->buf, n, OS_NULL);
     if (checksum != checksum2)
