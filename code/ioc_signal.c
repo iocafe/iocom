@@ -256,6 +256,12 @@ nextone:
   @param   signal Pointer to signal structure. This holds memory address,  state bits and data
            type for the signal.
   @param   value Integer value to write.
+  @param   state_bits OSAL_STATE_CONNECTED, OSAL_STATE_YELLOW, OSAL_STATE_ORANGE.
+           Special option for this function only is that IOC_SIGNAL_NO_THREAD_SYNC can be
+           combined with state bits (normally this is set as flag).
+
+           OSAL_STATE_RED is defined as (OSAL_STATE_ORANGE|OSAL_STATE_YELLOW) and
+           OSAL_STATE_UNCONNECTED as 0.
 
   @return  Updated state bits, at least OSAL_STATE_CONNECTED and possibly other bits.
 
@@ -264,7 +270,7 @@ nextone:
 os_char ioc_set_ext(
     const iocSignal *signal,
     os_long value,
-    os_char state_bits)
+    os_short state_bits)
 {
     iocValue vv;
     if (signal == OS_NULL) return 0;
@@ -280,8 +286,8 @@ os_char ioc_set_ext(
             vv.value.l = value;
             break;
     }
-    vv.state_bits = state_bits;
-    ioc_move(signal, &vv, 1, IOC_SIGNAL_WRITE);
+    vv.state_bits = (os_char)(state_bits & ~IOC_SIGNAL_NO_THREAD_SYNC);
+    ioc_move(signal, &vv, 1, IOC_SIGNAL_WRITE | (state_bits & IOC_SIGNAL_NO_THREAD_SYNC));
     return vv.state_bits;
 }
 
@@ -600,6 +606,10 @@ goon:
            Offset cannot be used for OS_BOOLEAN type.
   @param   array Pointer to array buffer
   @param   Number of elements in array.
+  @param   Possible state_bits for writing array to memory block are OSAL_STATE_CONNECTED,
+           OSAL_STATE_YELLOW, and OSAL_STATE_ORANGE. There can be combined with OR operatior.
+           Value OSAL_STATE_RED is defined as (OSAL_STATE_ORANGE|OSAL_STATE_YELLOW).
+           Ignored when reading an array from memory block.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
            operator: IOC_SIGNAL_WRITE, and IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
@@ -787,3 +797,68 @@ goon:
     return state_bits;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Set or clear specific state bits.
+  @anchor ioc_set_state_bits
+
+  The ioc_set_state_bits() function sets or clear state bits (thread safe).
+
+  @param   signal Pointer to signal structure. This holds memory address, value,
+           state bits and data type.
+  @param   State_bits to set or clear , possible values are OSAL_STATE_CONNECTED,
+           OSAL_STATE_YELLOW, and OSAL_STATE_ORANGE. There can be combined with OR operatior.
+           Value OSAL_STATE_RED is defined as (OSAL_STATE_ORANGE|OSAL_STATE_YELLOW).
+  @param   flags Bits, set IOC_SIGNAL_DEFAULT (0) to set state bits given as argument or
+           IOC_SIGNAL_CLEAR_BITS to clear those. Flag IOC_SIGNAL_NO_THREAD_SYNC disables
+           thread synchronization.
+
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_set_state_bits(
+    const iocSignal *signal,
+    os_char state_bits,
+    os_short flags)
+{
+#if OSAL_MULTITHREAD_SUPPORT
+    iocRoot *root;
+#endif
+    iocHandle *handle;
+    os_char current_state_bits;
+    os_boolean changed;
+
+    if (signal == OS_NULL) return;
+    handle = signal->handle;
+    if (handle == OS_NULL) return;
+
+#if OSAL_MULTITHREAD_SUPPORT
+    if ((flags & IOC_SIGNAL_NO_THREAD_SYNC) == 0) {
+        if (ioc_handle_lock_to_mblk(handle, &root) == OS_NULL) return;
+    }
+#endif
+
+    ioc_read(handle, signal->addr, &current_state_bits, 1, IOC_MBLK_NO_THREAD_SYNC);
+    if (flags & IOC_SIGNAL_CLEAR_BITS) {
+        changed = (current_state_bits & state_bits) != 0;
+        current_state_bits |= state_bits;
+    }
+
+    else {
+        changed = state_bits != (state_bits & current_state_bits);
+        current_state_bits &= ~state_bits;
+    }
+
+    if (changed) {
+        ioc_write(handle, signal->addr, &current_state_bits, 1, IOC_MBLK_NO_THREAD_SYNC);
+    }
+
+#if OSAL_MULTITHREAD_SUPPORT
+    if ((flags & IOC_SIGNAL_NO_THREAD_SYNC) == 0) {
+        ioc_unlock(root);
+    }
+#endif
+}

@@ -624,7 +624,7 @@ void ioc_memory_block_get_string_param(
              swap modes number of bytes n must be divisible by swapped bytes.
            - IOC_SWAP_32 If big endian processor, every four byte group is swapped.
            - IOC_SWAP_64 If big endian processor, every eight byte group is swapped.
-
+           - IOC_MBLK_NO_THREAD_SYNC Disable thread synchronization.
   @return  None.
 
 ****************************************************************************************************
@@ -643,7 +643,16 @@ void ioc_write(
 
     /* Get memory block pointer and start synchronization.
      */
-    mblk = ioc_handle_lock_to_mblk(handle, &root);
+#if OSAL_MULTITHREAD_SUPPORT
+    if (flags & IOC_MBLK_NO_THREAD_SYNC) {
+        mblk = handle->mblk;
+    }
+    else {
+        mblk = ioc_handle_lock_to_mblk(handle, &root);
+    }
+#else
+    mblk = handle->mblk;
+#endif
     if (mblk == OS_NULL) return;
 
     /* Check function arguments.
@@ -677,8 +686,12 @@ void ioc_write(
     }
     ioc_mblk_invalidate(mblk, addr, addr + n - 1);
 
-getout:
-    ioc_unlock(root);
+getout:;
+#if OSAL_MULTITHREAD_SUPPORT
+    if ((flags & IOC_MBLK_NO_THREAD_SYNC) == 0) {
+        ioc_unlock(root);
+    }
+#endif
 }
 
 
@@ -707,6 +720,7 @@ getout:
              number of bytes n must be divisible by swapped bytes.
            - IOC_SWAP_32 If big endian processor, every four byte group is swapped.
            - IOC_SWAP_64 If big endian processor, every eight byte group is swapped.
+           - IOC_MBLK_NO_THREAD_SYNC Disable thread synchronization.
   @return  None.
 
 ****************************************************************************************************
@@ -726,7 +740,16 @@ void ioc_read(
     /* Get memory block pointer and start synchronization. If memory block is not found, mark
        return zeroes.
      */
-    mblk = ioc_handle_lock_to_mblk(handle, &root);
+#if OSAL_MULTITHREAD_SUPPORT
+    if (flags & IOC_MBLK_NO_THREAD_SYNC) {
+        mblk = handle->mblk;
+    }
+    else {
+        mblk = ioc_handle_lock_to_mblk(handle, &root);
+    }
+#else
+    mblk = handle->mblk;
+#endif
     if (mblk == OS_NULL)
     {
         os_memclear(buf, n);
@@ -768,8 +791,12 @@ void ioc_read(
         ioc_byte_ordered_copy(buf, p, n, flags & IOC_SWAP_MASK);
     }
 
-getout:
-    ioc_unlock(root);
+getout:;
+#if OSAL_MULTITHREAD_SUPPORT
+    if ((flags & IOC_MBLK_NO_THREAD_SYNC) == 0) {
+        ioc_unlock(root);
+    }
+#endif
 }
 
 

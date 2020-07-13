@@ -73,6 +73,7 @@
 #define IOC_SWAP_MASK 15
 #define IOC_MBLK_STRING 16
 #define IOC_CLEAR_MBLK_RANGE 32
+#define IOC_MBLK_NO_THREAD_SYNC 0x80 /* Same value used as for IOC_SIGNAL_NO_THREAD_SYNC */
 
 /* Minimum memory block size in bytes.
  */

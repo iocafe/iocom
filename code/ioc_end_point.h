@@ -145,8 +145,6 @@ iocEndPoint;
   and ioc_release_end_point() releases resources associated with it. Memory allocated for the
   end_point is freed, if the memory was allocated by ioc_initialize_end_point().
 
-  The ioc_read() and ioc_write() functions are used to access data in end_point.
-
 ****************************************************************************************************
  */
 /*@{*/

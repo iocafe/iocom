@@ -681,8 +681,6 @@ iocConnection;
   and ioc_release_connection() releases resources associated with it. Memory allocated for the
   connection is freed, if the memory was allocated by ioc_initialize_connection().
 
-  The ioc_read() and ioc_write() functions are used to access data in connection.
-
 ****************************************************************************************************
  */
 /*@{*/

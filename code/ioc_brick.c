@@ -413,12 +413,18 @@ osalStatus ioc_compress_brick(
     checksum = os_checksum((const os_char*)dhdr, sizeof(iocBrickHdr), OS_NULL);
     os_checksum((os_char*)(buf ? buf : data), sz - sizeof(iocBrickHdr), &checksum);
 
-    ioc_set_brick_checksum(dhdr, checksum);
+    ioc_set_brick_checksum(dhdr, checksum); // WE NEED TO GET RID OF THIS HEADER CHECKSUM
     b->buf_n = sz;
 
+    if (!lock_on) {
+        ioc_lock(b->root);
+        lock_on = OS_TRUE;
+    }
+
+    ioc_set_ext(b->signals->cs, checksum, OSAL_STATE_CONNECTED|IOC_SIGNAL_NO_THREAD_SYNC);
     ioc_move_array(b->signals->buf, 0, dhdr, sizeof(iocBrickHdr),
-        OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE);
-    ioc_set(b->signals->head, sz);
+        OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
+    ioc_set_ext(b->signals->head, sz, OSAL_STATE_CONNECTED|IOC_SIGNAL_NO_THREAD_SYNC);
     if (++(b->flat_frame_count) == 0) b->flat_frame_count++;
     ioc_set(b->signals->state, b->flat_frame_count);
 
@@ -687,7 +693,8 @@ static osalStatus ioc_send_brick_data(
     if (b->pos < b->buf_n)
     {
         n = b->buf_n - b->pos;
-        s = ioc_streamer_write(b->stream, (const os_char*)b->buf + b->pos, n, &n_written, OSAL_STREAM_DEFAULT);
+        s = ioc_streamer_write(b->stream, (const os_char*)b->buf + b->pos,
+            n, &n_written, OSAL_STREAM_DEFAULT);
         if (s)
         {
             return s;
@@ -726,7 +733,7 @@ static osalStatus ioc_send_brick_data(
 osalStatus ioc_run_brick_send(
     iocBrickBuffer *b)
 {
-    os_int cmd, prev_cmd, state;
+    os_int cmd, prev_cmd;
     os_char state_bits;
 
     cmd = (os_int)ioc_get_ext(b->signals->cmd, &state_bits, IOC_SIGNAL_DEFAULT);
@@ -798,11 +805,14 @@ osalStatus ioc_run_brick_send(
         }
     }
 
-    /* Set connected bit. We should write function just to set connected bit. This will also rewrite value, which may cause sync problems */
-    state = (os_int)ioc_get_ext(b->signals->state, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+    /* Set connected bit.
+     */
+    ioc_set_state_bits(b->signals->state, OSAL_STATE_CONNECTED, IOC_SIGNAL_SET_BITS);
+
+    /* WAS: state = (os_int)ioc_get_ext(b->signals->state, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
         ioc_set(b->signals->state, state);
-    }
+    } */
 
     return OSAL_SUCCESS;
 }

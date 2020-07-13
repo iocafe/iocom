@@ -123,6 +123,8 @@ iocValue;
 #define IOC_SIGNAL_WRITE 0x20
 #define IOC_SIGNAL_NO_THREAD_SYNC 0x80
 #define IOC_SIGNAL_NO_TBUF_CHECK 0x100
+#define IOC_SIGNAL_SET_BITS 0
+#define IOC_SIGNAL_CLEAR_BITS 0x200
 #define IOC_SIGNAL_FLAGS_MASK 0xF80
 
 /* Macros for signal value and state bits within iocValue structure
@@ -176,7 +178,7 @@ iocValue;
 os_char ioc_set_ext(
     const iocSignal *signal,
     os_long value,
-    os_char state_bits);
+    os_short state_bits);
 
 /* Set floating point signal.
  */
@@ -215,6 +217,13 @@ os_char ioc_move_array(
     os_int offset,
     void *array,
     os_int n,
+    os_char state_bits,
+    os_short flags);
+
+/* Set or clear specific state bits.
+ */
+void ioc_set_state_bits(
+    const iocSignal *signal,
     os_char state_bits,
     os_short flags);
 
