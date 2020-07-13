@@ -809,11 +809,6 @@ osalStatus ioc_run_brick_send(
      */
     ioc_set_state_bits(b->signals->state, OSAL_STATE_CONNECTED, IOC_SIGNAL_SET_BITS);
 
-    /* WAS: state = (os_int)ioc_get_ext(b->signals->state, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
-    if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
-        ioc_set(b->signals->state, state);
-    } */
-
     return OSAL_SUCCESS;
 }
 
