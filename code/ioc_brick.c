@@ -421,6 +421,9 @@ osalStatus ioc_compress_brick(
         lock_on = OS_TRUE;
     }
 
+osal_debug_error_int("error S. brick checksum error", checksum);
+osal_debug_error_int("HERE. S brick checksum n", sz);
+
     ioc_set_ext(b->signals->cs, checksum, OSAL_STATE_CONNECTED|IOC_SIGNAL_NO_THREAD_SYNC);
     ioc_move_array(b->signals->buf, 0, dhdr, sizeof(iocBrickHdr),
         OSAL_STATE_CONNECTED, IOC_SIGNAL_WRITE|IOC_SIGNAL_NO_THREAD_SYNC);
@@ -1022,6 +1025,8 @@ static osalStatus ioc_receive_brick_data(
 
   Helper function for ioc_run_brick_receive().
 
+  ioc_lock() must be on when this function is called.
+
   @param   b Pointer to brick buffer structure.
   @return  None.
 
@@ -1032,10 +1037,10 @@ static void ioc_process_flat_brick_data(
 {
     iocBrickHdr hdr, *dhdr;
     os_int n;
-    os_uint checksum;
+    os_ushort checksum, checksum2;
     os_char state_bits;
 
-    n = (os_int)ioc_get_ext(b->signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
+    n = (os_int)ioc_get_ext(b->signals->head, &state_bits, IOC_SIGNAL_NO_THREAD_SYNC);
     if (n <= (os_memsz)sizeof(iocBrickHdr) || (state_bits & OSAL_STATE_CONNECTED) == 0)
     {
         osal_debug_error_int("Invalid received brick length", n);
@@ -1043,7 +1048,7 @@ static void ioc_process_flat_brick_data(
     }
 
     ioc_move_array(b->signals->buf, 0, &hdr, sizeof(iocBrickHdr),
-        OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+        OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC);
     if ((os_int)ioc_get_brick_hdr_int(hdr.buf_sz, IOC_BRICK_BYTES_SZ) != n ||
         osal_validate_brick_header(&hdr))
     {
@@ -1068,18 +1073,32 @@ static void ioc_process_flat_brick_data(
         if (b->buf == OS_NULL) goto failed;
     }
     b->buf_sz = n;
-    ioc_move_array(b->signals->buf, 0, b->buf, n, OSAL_STATE_CONNECTED, IOC_SIGNAL_DEFAULT);
+    ioc_move_array(b->signals->buf, 0, b->buf, n, OSAL_STATE_CONNECTED, IOC_SIGNAL_NO_THREAD_SYNC);
+
+
+dhdr = (iocBrickHdr*)b->buf;
+os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
 
     /* Verify that checksum is correct
      */
-    checksum = (os_uint)ioc_get_brick_hdr_int(hdr.checksum, IOC_BRICK_CHECKSUM_SZ);
+    checksum = ioc_get_ext(b->signals->cs, OS_NULL,
+        IOC_SIGNAL_NO_THREAD_SYNC|IOC_SIGNAL_NO_TBUF_CHECK);
+    checksum2 = os_checksum((const os_char*)b->buf, n, OS_NULL);
+    if (checksum != checksum2)
+    {
+        osal_debug_error_int("error. brick checksum error", checksum);
+osal_debug_error_int("HERE. brick checksum n", n);
+        goto failed;
+    }
+
+    /* checksum = (os_uint)ioc_get_brick_hdr_int(hdr.checksum, IOC_BRICK_CHECKSUM_SZ);
     dhdr = (iocBrickHdr*)b->buf;
     os_memclear(dhdr->checksum, IOC_BRICK_CHECKSUM_SZ);
     if (os_checksum((const os_char*)b->buf, n, OS_NULL) != checksum)
     {
         osal_debug_error("brick checksum error");
         goto failed;
-    }
+    } */
 
     /* Callback function. Leave image into buffer. Can be processed from there as well.
      */
@@ -1142,12 +1161,15 @@ osalStatus ioc_run_brick_receive(
     if (b->signals->flat_buffer)
     {
 #endif
-        state = (os_int)ioc_get_ext(b->signals->state, &state_bits, IOC_SIGNAL_DEFAULT);
+        ioc_lock(b->root);
+        state = (os_int)ioc_get_ext(b->signals->state, &state_bits,
+            IOC_SIGNAL_DEFAULT|IOC_SIGNAL_NO_THREAD_SYNC);
         if ((state_bits & OSAL_STATE_CONNECTED) == 0) {
             if (b->flat_connected) {
                 ioc_set(b->signals->cmd, 0);
                 b->flat_connected = OS_FALSE;
             }
+            ioc_unlock(b->root);
             return OSAL_SUCCESS;
         }
 
@@ -1155,7 +1177,6 @@ osalStatus ioc_run_brick_receive(
 
         if (!b->flat_connected || os_has_elapsed(&b->flat_frame_timer, 3000) || state != b->prev_state)
         {
-            ioc_lock(b->root);
             os_get_timer(&b->flat_frame_timer);
 
             if (b->prev_state != state && state) {
@@ -1165,15 +1186,16 @@ osalStatus ioc_run_brick_receive(
             b->prev_state = state;
 
             if (!b->flat_connected) {
-                b->prev_cmd = (os_int)ioc_get_ext(b->prm.frd.cmd, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+                b->prev_cmd = (os_int)ioc_get_ext(b->prm.frd.cmd,
+                    &state_bits, IOC_SIGNAL_NO_TBUF_CHECK|IOC_SIGNAL_NO_THREAD_SYNC);
                 b->flat_connected = OS_TRUE;
             }
 
             if (++(b->prev_cmd) == 0) b->prev_cmd++;
             ioc_set(b->signals->cmd, b->prev_cmd);
 
-            ioc_unlock(b->root);
         }
+        ioc_unlock(b->root);
 
         return s;
 #if IOC_BRICK_RING_BUFFER_SUPPORT
