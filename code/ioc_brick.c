@@ -737,7 +737,7 @@ osalStatus ioc_run_brick_send(
 
             /* Order here is important.
              */
-            stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE);
+            stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_WRITE|OSAL_STREAM_DISABLE_CHECKSUM);
             if (stream == OS_NULL) return OSAL_NOTHING_TO_DO;
             b->buf_n = 0;
             b->stream = stream;
@@ -1199,7 +1199,7 @@ osalStatus ioc_run_brick_receive(
             }
         }
 
-        b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_READ);
+        b->stream = ioc_streamer_open(OS_NULL, &b->prm, OS_NULL, OSAL_STREAM_READ|OSAL_STREAM_DISABLE_CHECKSUM);
         if (b->stream == OS_NULL) {
             return OSAL_STATUS_FAILED;
         }
