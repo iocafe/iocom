@@ -32,7 +32,7 @@ OSAL_C_HEADER_BEGINS
 /* IOCOM library version number.
  */
 #ifndef IOCOM_VERSION
-#define IOCOM_VERSION "0.3"
+#define IOCOM_VERSION "200712"
 #endif
 
 /* Enable/disable dynamic allocation of memory blocks and resizing

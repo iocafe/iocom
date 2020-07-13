@@ -1,0 +1,74 @@
+Device information signals
+
+device name, number, network name, connect to (currently used)
+Software version + installed package
+operating system
+architecture
+hardware
+
+Error states, etc from netinfo
+
+Network overrides
+Network setup
+Currently selected by DHCP
+
+Resource counters + main loop speed ns.
+
+
+1. Could this be dynamically created JSON, like loading from peristent block? - NO needs to have multiple simultaneous users.
+2. Could this be flat memory information as JSON, like info - yes
+3. Could this be simply signals - yes
+
+Modifying - setting network overdrives would be nice. Plus for option 3.
+Needed memory - Plus for option 2.
+Dynamic - content can be added and removed, plus for option 2.
+
+
+Maybe signals anyhow.
+- Defaults JSON in iocom/config
+- Can be modified to be app specific
+- Code needs to detect which signals are there at compile time
+- Implement as separate library, iocom extension. Header only library, needs to adopt to defines for application and sbuild ?
+
+This relates to blue tooth setup? maybe?
+Should we be able to use blootooth for full UI connections - Yes in case of complex/configurable IO devices
+
+These can be in basic exp and imp stuff?
+
+
+
+Grouping of data
+
+
+Current configuration and state
+- device name
+- device nr
+- IO network name
+- Wifi network(s) and password(s)
+- DHCP/static + currently used network settings
+- Error code
+
+Set overdrives + reboot + factory reset (security)
+- device nr
+- IO network name
+- Wifi network(s) and password(s)
+- DHCP/static + network parameters
+- Reboot
+- Factory reset
+
+Software and hardware info
+- Installation package
+- eosal version
+- iocom version
+- Operating system
+- Architecture
+- HW?
+
+Resource counters and main loop speed
+- Socket opens
+- Memory
+- Loop, average
+- Loop, max
+- Time since last boot.
+- Reset counters?
+
