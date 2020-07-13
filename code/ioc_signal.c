@@ -825,7 +825,7 @@ void ioc_set_state_bits(
     os_short flags)
 {
 #if OSAL_MULTITHREAD_SUPPORT
-    iocRoot *root;
+    iocRoot *root = OS_NULL;
 #endif
     iocHandle *handle;
     os_char current_state_bits;

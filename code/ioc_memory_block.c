@@ -636,7 +636,6 @@ void ioc_write(
     os_int n,
     os_short flags)
 {
-    iocRoot *root;
     iocMemoryBlock *mblk;
     os_char *p;
     os_int max_n, count;
@@ -644,6 +643,7 @@ void ioc_write(
     /* Get memory block pointer and start synchronization.
      */
 #if OSAL_MULTITHREAD_SUPPORT
+    iocRoot *root = OS_NULL;
     if (flags & IOC_MBLK_NO_THREAD_SYNC) {
         mblk = handle->mblk;
     }
@@ -732,7 +732,6 @@ void ioc_read(
     os_int n,
     os_short flags)
 {
-    iocRoot *root;
     iocMemoryBlock *mblk;
     os_char *p;
     os_int max_n, count;
@@ -741,6 +740,7 @@ void ioc_read(
        return zeroes.
      */
 #if OSAL_MULTITHREAD_SUPPORT
+    iocRoot *root = OS_NULL;
     if (flags & IOC_MBLK_NO_THREAD_SYNC) {
         mblk = handle->mblk;
     }
