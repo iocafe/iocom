@@ -1,0 +1,41 @@
+{
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Resource monitor",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "resources",
+        "signals": [
+          {"name": "rm_malloc", "type": "uint"},
+          {"name": "rm_muse", "type": "uint"},
+          {"name": "rm_threads", "type": "ushort"},
+          {"name": "rm_mutexes", "type": "ushort"},
+          {"name": "rm_events", "type": "ushort"},
+          {"name": "rm_sockets", "type": "ushort"},
+          {"name": "rm_connects", "type": "ushort"},
+          {"name": "rm_aveloop", "type": "float"},
+          {"name": "rm_maxloop", "type": "float"},
+          {"name": "rm_comloop", "type": "char"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "Network node configuration",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "node conf",
+        "signals": [
+          {"name": "set_rm_comloop", "type": "char"}
+        ]
+      }
+    ]
+  }
+  ]
+}
+

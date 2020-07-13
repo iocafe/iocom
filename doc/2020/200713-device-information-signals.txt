@@ -40,15 +40,15 @@ These can be in basic exp and imp stuff?
 Grouping of data
 
 
-Current configuration and state
-- device name
-- device nr
-- IO network name
-- Wifi network(s) and password(s)
-- DHCP/static + currently used network settings
+Node info
+- device nr (setting, not actual in use, append '?' if set but not yet in use)
+- IO network name (setting, not actual in use, append 'changed' if set but not yet in use) 
+- Wifi network(s) and password(s) (setting, not actual in use, append 'changed' if set but not yet in use) 
+- DHCP on/off (setting, not actual in use, append 'changed' if set but not yet in use) 
+/static + currently used network settings (append, pending if set but 
 - Error code
 
-Set overdrives + reboot + factory reset (security)
+- Set overdrives + reboot + factory reset (security)
 - device nr
 - IO network name
 - Wifi network(s) and password(s)
@@ -56,7 +56,9 @@ Set overdrives + reboot + factory reset (security)
 - Reboot
 - Factory reset
 
-Software and hardware info
+BASIC NODECONF.JSON IS FOR DHCP ONLY
+
+Software and hardware info - System specs
 - Installation package
 - eosal version
 - iocom version
@@ -67,8 +69,10 @@ Software and hardware info
 Resource counters and main loop speed
 - Socket opens
 - Memory
-- Loop, average
-- Loop, max
+- Main loop, average
+- Main loop, max
 - Time since last boot.
 - Reset counters?
+- Com loop back
+- Com loop test
 

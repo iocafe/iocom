@@ -1,0 +1,44 @@
+{
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Network node configuration",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "node conf",
+        "signals": [
+          {"name": "nc_nr", "type": "str", "array": 8},
+          {"name": "nc_net", "type": "str", "array": 25},
+          {"name": "nc_connect", "type": "str", "array": 65},
+          {"name": "nc_wifi", "type": "str", "array": 17},
+          {"name": "nc_pass", "type": "str", "array": 17},
+          {"name": "nc_ip", "type": "str", "array": 48},
+          {"name": "nc_status", "type": "char"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "Network node configuration",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "node conf",
+        "signals": [
+          {"name": "set_nc_nr", "type": "str", "array": 7},
+          {"name": "set_nc_net", "type": "str", "array": 24},
+          {"name": "set_nc_connect", "type": "str", "array": 64},
+          {"name": "set_nc_wifi", "type": "str", "array": 16},
+          {"name": "set_nc_pass", "type": "str", "array": 16},
+          {"name": "reboot", "type": "boolean"},
+          {"name": "factory_rst", "type": "boolean"}
+        ]
+      }
+    ]
+  }
+  ]
+}
+
