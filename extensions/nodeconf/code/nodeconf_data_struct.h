@@ -114,9 +114,9 @@ typedef struct iocNodeConf
      */
     osalWifiNetwork wifi[OSAL_MAX_NRO_WIFI_NETWORKS];
 
-    /** Wifi can alternatively set in persistent block OS_PBNR_WIFI.
+    /** Wifi can alternatively set in persistent block OS_PBNR_NODE_CONF.
      */
-    osalWifiPersistent wifi_pbnr_wifi;
+    osalNodeConfOverrides wifi_pbnr_wifi;
 
     /** Structure for passing information about all WiFi networks
      */

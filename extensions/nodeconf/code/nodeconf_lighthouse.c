@@ -36,14 +36,14 @@
 */
 osalStatus ioc_get_lighthouse_info(
     iocConnectionConfig *connconf,
-    iocLighthouseInfo *info)
+    osalLighthouseInfo *info)
 {
     iocOneConnectionConf *c;
     const os_char *p, *e;
     os_int i, nr, n;
     osalStatus s = OSAL_STATUS_FAILED;
 
-    os_memclear(info, sizeof(iocLighthouseInfo));
+    os_memclear(info, sizeof(osalLighthouseInfo));
     n = 0;
 
     for (i = 0; i < connconf->n_connections; i++)

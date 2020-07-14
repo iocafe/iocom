@@ -53,6 +53,7 @@ void ioc_initialize_lighthouse_client(
     os_boolean is_ipv6,
     void *reserved)
 {
+    OSAL_UNUSED(reserved);
     os_memclear(c, sizeof(LighthouseClient));
     os_get_timer(&c->socket_error_timer);
     c->socket_error_timeout = 100;
@@ -409,6 +410,7 @@ static void ioc_add_lighthouse_net(
 static void ioc_delete_expired_lighthouse_nets(
     LighthouseClient *c)
 {
+    OSAL_UNUSED(c);
 #if 0
     os_timer ti;
     os_int i;

@@ -69,7 +69,7 @@ osalStatus osal_main(
     iocNetworkInterfaces *nics;
     osalWifiNetworks *wifis;
     iocDeviceId *device_id;
-    iocLighthouseInfo lighthouse_info;
+    osalLighthouseInfo lighthouse_info;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific error handler callback by calling osal_set_error_handler().

@@ -16,8 +16,11 @@
 
 ****************************************************************************************************
 */
+#ifndef IOCOM_INCLUDED
+#include "iocom.h"
+#endif
 
-struct iocLighthouseInfo;
+struct osalLighthouseInfo;
 
 typedef enum
 {
@@ -87,7 +90,7 @@ LighthouseServer;
 void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
-    struct iocLighthouseInfo *lighthouse_info,
+    struct osalLighthouseInfo *lighthouse_info,
     void *reserved);
 
 /* Release resources allocated for lighthouse server.

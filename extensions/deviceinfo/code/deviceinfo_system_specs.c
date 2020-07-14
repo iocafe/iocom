@@ -1,10 +1,10 @@
 /**
 
-  @file    nodeconf_lighthouse.h
-  @brief   Get listening socket port number and transport.
+  @file    deviceinfo_system_specs.c
+  @brief   Publish software versions, used operating system and hardware.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    19.1.2020
+  @date    15.7.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,10 +13,24 @@
 
 ****************************************************************************************************
 */
+#include "deviceinfo.h"
 
 
-/* Get listening socket port number and transport.
- */
-osalStatus ioc_get_lighthouse_info(
-    iocConnectionConfig *connconf,
-    osalLighthouseInfo *info);
+/**
+****************************************************************************************************
+
+  @brief X
+
+  X
+
+  @param   X
+  @return  X
+
+****************************************************************************************************
+*/
+void ioc_dinfo_system_specs(
+    void)
+{
+}
+
+

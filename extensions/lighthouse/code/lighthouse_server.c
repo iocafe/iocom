@@ -56,10 +56,10 @@ static osalStatus ioc_run_lighthouse_server_one(
 void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
-    struct iocLighthouseInfo *lighthouse_info,
+    struct osalLighthouseInfo *lighthouse_info,
     void *reserved)
 {
-    iocLighthouseEndPointInfo *ep;
+    osalLighthouseEndPointInfo *ep;
     os_int i;
     iocTransportEnum ipv4_transport = 0, ipv6_transport = 0;
     os_int ipv4_port = 0, ipv6_port = 0;

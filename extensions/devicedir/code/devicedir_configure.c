@@ -40,10 +40,10 @@ static osalStatus devicedir_get_config_item(
 osalStatus devicedir_save_config(
     os_char *line_buf)
 {
-    osalWifiPersistent block;
+    osalNodeConfOverrides block;
     osalStatus s, rval = OSAL_NOTHING_TO_DO;
 
-    os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
+    os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
 #if OSAL_MAX_NRO_WIFI_NETWORKS > 0
     os_char buf[32], nbuf[OSAL_NBUF_SZ];
@@ -79,7 +79,7 @@ osalStatus devicedir_save_config(
     if (s == OSAL_SUCCESS) rval = s;
 
     if (rval == OSAL_SUCCESS) {
-        os_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
+        os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);
     }
 
     return rval;

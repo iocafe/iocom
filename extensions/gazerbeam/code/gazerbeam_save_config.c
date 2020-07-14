@@ -85,10 +85,10 @@ osalStatus gazerbeam_save_config(
     os_char *message,
     os_memsz message_sz)
 {
-    osalWifiPersistent block;
+    osalNodeConfOverrides block;
     osalStatus s, rval = OSAL_NOTHING_TO_DO;
 
-    os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
+    os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
 #if OSAL_MAX_NRO_WIFI_NETWORKS > 0
     s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_NETWORK,
@@ -130,7 +130,7 @@ osalStatus gazerbeam_save_config(
     if (s == OSAL_SUCCESS) rval = s;
 
     if (rval == OSAL_SUCCESS) {
-        os_save_persistent(OS_PBNR_WIFI, (const os_char*)&block, sizeof(block), OS_FALSE);
+        os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);
     }
 
     return rval;

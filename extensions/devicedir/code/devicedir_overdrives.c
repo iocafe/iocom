@@ -57,10 +57,10 @@ osalStatus devicedir_overrides(
     osalStream list,
     os_short flags)
 {
-    osalWifiPersistent block;
+    osalNodeConfOverrides block;
     const os_char hidden_password[] = "<hidden>";
 
-    os_load_persistent(OS_PBNR_WIFI, (os_char*)&block, sizeof(block));
+    os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
     if ((flags & IOC_HELP_MODE) == 0) {
         osal_stream_print_str(list, "{", 0);

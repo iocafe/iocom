@@ -89,7 +89,7 @@ void ioc_load_node_config(
 {
     const os_char *block;
     os_char *loadblock;
-    osalWifiNetworkBuf *wifibuf;
+    osalFlatWifiNetworkConf *wifibuf;
     osPersistentHandle *h;
     os_memsz block_sz, n_read;
     osalStatus s;
@@ -163,7 +163,7 @@ gotit:
      */
     if (flags & IOC_LOAD_PBNR_WIFI)
     {
-        os_load_persistent(OS_PBNR_WIFI, (os_char*)&node->wifi_pbnr_wifi, sizeof(osalWifiPersistent));
+        os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&node->wifi_pbnr_wifi, sizeof(osalNodeConfOverrides));
         for (i = 0; i < OSAL_MAX_NRO_WIFI_NETWORKS; i++)
         {
             wifibuf = &node->wifi_pbnr_wifi.wifi[i];
