@@ -1,7 +1,8 @@
 Blue tooth
 
 Blue tooth could be used alternatively for:
-- Connecting user interface, like ispy (can be a security harard).
+- Connecting user interface, like ispy (can be a security harard, even bluetooth supports good encryption, it is not necessatily used, 
+  and easy pairing to user devices enables easy pairing to malicious use as well).
 - As debug console port to print trace and error output for troubleshooring and set up wifi from command line (handy for debugging real devices).
 - As an alternative to gazerbeam for setting wifi network, password, device number, etc (could be useful for end used).
 - Connecting ear phones, etc. in case someone makes voice applications?
