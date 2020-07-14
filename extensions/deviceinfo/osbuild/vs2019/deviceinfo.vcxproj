@@ -19,17 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\nodeconf_connect.h" />
-    <ClInclude Include="..\..\code\nodeconf_data_struct.h" />
-    <ClInclude Include="..\..\code\nodeconf_lighthouse.h" />
-    <ClInclude Include="..\..\code\nodeconf_setup.h" />
-    <ClInclude Include="..\..\nodeconf.h" />
+    <ClInclude Include="..\..\code\deviceinfo_node_conf.h" />
+    <ClInclude Include="..\..\code\deviceinfo_resource_monitor.h" />
+    <ClInclude Include="..\..\code\deviceinfo_system_specs.h" />
+    <ClInclude Include="..\..\deviceinfo.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\nodeconf_connect.c" />
-    <ClCompile Include="..\..\code\nodeconf_data_struct.c" />
-    <ClCompile Include="..\..\code\nodeconf_lighthouse.c" />
-    <ClCompile Include="..\..\code\nodeconf_setup.c" />
+    <ClCompile Include="..\..\code\deviceinfo_node_conf.c" />
+    <ClCompile Include="..\..\code\deviceinfo_resource_monitor.c" />
+    <ClCompile Include="..\..\code\deviceinfo_system_specs.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
