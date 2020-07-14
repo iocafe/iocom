@@ -11,6 +11,9 @@ python3 ./copy_iocom_for_duino.py -o /coderoot/lib/esp32/iocom
 cd /coderoot/iocom/extensions/devicedir/scripts
 python3 ./copy_devicedir_for_duino.py -o /coderoot/lib/esp32/devicedir
 
+cd /coderoot/iocom/extensions/deviceinfo/scripts
+python3 ./copy_deviceinfo_for_duino.py -o /coderoot/lib/esp32/deviceinfo
+
 cd /coderoot/iocom/extensions/nodeconf/scripts
 python3 ./copy_nodeconf_for_duino.py -o /coderoot/lib/esp32/nodeconf
 

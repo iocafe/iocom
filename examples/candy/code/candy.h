@@ -17,6 +17,7 @@
 #include "iocom.h"
 #include "pinsx.h"
 #include "nodeconf.h"
+#include "deviceinfo.h"
 
 struct pinsPhoto;
 

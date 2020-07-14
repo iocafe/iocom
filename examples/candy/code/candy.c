@@ -60,6 +60,10 @@ IO_DEVICE_CONSOLE(ioconsole);
  */
 static MorseCode morse;
 
+/* Device information.
+ */
+static dinfoNodeConf dinfo_nc;
+
 /* Maximum number of sockets, etc.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
@@ -122,6 +126,7 @@ osalStatus osal_main(
     ioboardParams prm;
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
+    dinfoNodeConfSignals nc_sigs;
     OSAL_UNUSED(argc);
     OSAL_UNUSED(argv);
 
@@ -164,6 +169,12 @@ osalStatus osal_main(
 #else
     osal_socket_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi);
 #endif
+
+    /* Set up device information.
+     */
+    DINFO_SET_COMMON_NODE_CONF_SIGNALS(nc_sigs, candy);
+    dinfo_initialize_node_conf(&dinfo_nc, &nc_sigs);
+
 
     /* Get stream interface by IOBOARD_CTRL_CON define.
      */
