@@ -78,7 +78,6 @@ typedef enum dinfoNodeConfSetSigEnum
     IOC_DINFO_SET_NC_DNS2_2,
     IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2,
     //IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS_2,
-
     IOC_DINFO_SET_NC_REBOOT,
     IOC_DINFO_SET_NC_FACTORY_RST,
     IOC_DINFO_SET_NC_COMLOOP,
@@ -158,6 +157,6 @@ void dinfo_run_node_conf(
 
 void dinfo_node_conf_callback(
     dinfoNodeConf *dinfo_nc,
-    const iocSignal *sig,
+    const iocSignal *check_signals,
     os_int n_signals,
     os_ushort flags);

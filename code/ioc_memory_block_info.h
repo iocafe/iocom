@@ -41,9 +41,9 @@
  */
 #define IOC_PASSWORD_SZ OSAL_SECRET_STR_SZ
 
-/** Maximum network name string length.
+/** Maximum network name string length (24).
  */
-#define IOC_NETWORK_NAME_SZ 24
+#define IOC_NETWORK_NAME_SZ OSAL_NETWORK_NAME_SZ
 
 /** Signal path is signal.mblk.deviceX.network", thus maximum path size in bytes is:
  */

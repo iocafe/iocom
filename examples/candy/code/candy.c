@@ -473,8 +473,15 @@ void ioboard_communication_callback(
         return;
     }
 
-    configuration_changed = OS_FALSE;
+    /* Get range of signals that may have changed. Signals are in order by address.
+     */
     sig = ioc_get_signal_range(handle, start_addr, end_addr, &n_signals);
+
+    /* Check if this callback causes change in device info
+     */
+    dinfo_node_conf_callback(&dinfo_nc, sig, n_signals, flags);
+
+    configuration_changed = OS_FALSE;
     while (n_signals-- > 0)
     {
         if (sig->flags & IOC_PIN_PTR) {
@@ -496,10 +503,6 @@ void ioboard_communication_callback(
         }
         sig++;
     }
-
-    /* Check if this callback causes change in device info
-     */
-    dinfo_node_conf_callback(&dinfo_nc, sig, n_signals, flags);
 
     if (configuration_changed) {
 #if PINS_CAMERA

@@ -39,7 +39,6 @@ void dinfo_initialize_node_conf(
 {
     os_memclear(dinfo_nc, sizeof(dinfoNodeConf));
     os_memcpy(&dinfo_nc->sigs, sigs, sizeof(dinfoNodeConfSignals));
-
 }
 
 
@@ -268,20 +267,39 @@ static void dinfo_nc_net_state_notification_handler(
 
 void dinfo_node_conf_callback(
     dinfoNodeConf *dinfo_nc,
-    const iocSignal *sig,
+    const iocSignal *check_signals,
     os_int n_signals,
     os_ushort flags)
 {
+    const iocSignal **sigs, **set_sigs, *sig;
+    os_char buf[OSAL_IPADDR_AND_PORT_SZ];
+    os_int i;
+
     if ((flags & IOC_MBLK_CALLBACK_RECEIVE) == 0) {
         return;
     }
 
-    if (sig[0].addr > dinfo_nc->max_set_addr ||
-        sig[n_signals - 1].addr < dinfo_nc->min_set_addr ||
-        sig->handle->mblk != dinfo_nc->mblk)
+    if (check_signals[0].addr > dinfo_nc->max_set_addr ||
+        check_signals[n_signals - 1].addr < dinfo_nc->min_set_addr ||
+        check_signals->handle->mblk != dinfo_nc->mblk)
     {
         return;
     }
 
+    sigs = dinfo_nc->sigs.sig;
+    set_sigs = dinfo_nc->sigs.set_sig;
+
+    for (i = 0; i < n_signals; i++)
+    {
+        sig = check_signals + i;
+        if (sig->addr < dinfo_nc->min_set_addr) continue;
+        if (sig->addr > dinfo_nc->max_set_addr) break;
+
+        if (sig->addr == set_sigs[IOC_DINFO_SET_NC_WIFI]->addr) {
+            ioc_get_str(sig, buf, sizeof(buf));
+            os_strncat(buf, "^", sizeof(buf));
+            ioc_set_str(sigs[IOC_DINFO_NC_WIFI], buf);
+        }
+    }
 }
 
