@@ -131,7 +131,8 @@ typedef struct
     os_boolean
         dhcp,                   /* DHCP used for first NIC */
         dhcp_2,                 /* DHCP used for second NIC */
-        io_network_name_set;
+        io_network_name_set,
+        connect_to_set;
 }
 dinfoNodeConf;
 
@@ -148,7 +149,7 @@ void dinfo_set_node_conf(
     iocDeviceId *device_id,
     iocConnectionConfig *connconf,
     iocNetworkInterfaces *nics,
-    osalWifiNetworks *wifis,
+    iocWifiNetworks *wifis,
     osalSecurityConfig *security);
 
 void dinfo_run_node_conf(

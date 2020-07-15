@@ -78,7 +78,7 @@ osalStatus osal_main(
     iocDeviceId *device_id;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
-    osalWifiNetworks *wifis;
+    iocWifiNetworks *wifis;
     iocConnectionConfig *connconf;
     const os_char *device_name = "claudia";
 

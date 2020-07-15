@@ -67,7 +67,7 @@ osalStatus osal_main(
     iocConnectionConfig *connconf;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
-    osalWifiNetworks *wifis;
+    iocWifiNetworks *wifis;
     iocDeviceId *device_id;
     osalLighthouseInfo lighthouse_info;
 

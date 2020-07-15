@@ -45,7 +45,7 @@ iocDeviceId;
 
 /* Structure for passing information about all network interfaces
  */
-typedef struct osalNetworkInterfaces
+typedef struct iocNetworkInterfaces
 {
     osalNetworkInterface *nic;
     os_int n_nics;
@@ -54,12 +54,12 @@ iocNetworkInterfaces;
 
 /* Structure for passing information about all WiFi networks
  */
-typedef struct osalWifiNetworks
+typedef struct iocWifiNetworks
 {
     osalWifiNetwork *wifi;
     os_int n_wifi;
 }
-osalWifiNetworks;
+iocWifiNetworks;
 
 /** Structure for passing information about all network interfaces
  */
@@ -120,7 +120,7 @@ typedef struct iocNodeConf
 
     /** Structure for passing information about all WiFi networks
      */
-    osalWifiNetworks wifis;
+    iocWifiNetworks wifis;
 
     /** Security configuration, user name, password, trusted parties, certificates.
      */
@@ -156,7 +156,7 @@ iocNetworkInterfaces *ioc_get_nics(
 
 /* Get wifi network interface configuration.
  */
-osalWifiNetworks *ioc_get_wifis(
+iocWifiNetworks *ioc_get_wifis(
     iocNodeConf *node);
 
 /* Get network interface configuration.

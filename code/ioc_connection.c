@@ -26,7 +26,6 @@ static void ioc_free_connection_bufs(
     iocConnection *con);
 
 static void ioc_free_source_and_target_bufs(
-    iocRoot *root,
     iocConnection *con);
 
 static osalStatus ioc_try_to_connect(
@@ -166,7 +165,7 @@ void ioc_release_connection(
 
     /* Release all source and target buffers.
      */
-    ioc_free_source_and_target_bufs(root, con);
+    ioc_free_source_and_target_bufs(con);
 
     /* Remove connection from linked list.
      */
@@ -274,14 +273,12 @@ static void ioc_free_connection_bufs(
 
   Mutex lock must be on.
 
-  @param   root Pointer to root object.
   @param   con Pointer to the connection object.
   @return  None.
 
 ****************************************************************************************************
 */
 static void ioc_free_source_and_target_bufs(
-    iocRoot *root,
     iocConnection *con)
 {
 #if IOC_DYNAMIC_MBLK_CODE
@@ -609,14 +606,17 @@ osalStatus ioc_run_connection(
             os_char connectstr[OSAL_HOST_BUF_SZ];
             if (con->lighthouse_func == OS_NULL) return OSAL_SUCCESS;
             status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
-                con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
-                connectstr, sizeof(connectstr));
+                con->link.root->network_name, con->flags, connectstr, sizeof(connectstr));
             if (OSAL_IS_ERROR(status)) {
                 con->ip_from_lighthouse[0] = '\0';
                 return OSAL_SUCCESS;
             }
             os_strncpy(con->ip_from_lighthouse, connectstr, OSAL_IPADDR_AND_PORT_SZ);
             parameters = connectstr;
+
+            /* Here we may want to used some connection number instead of 0
+             */
+            osal_set_network_state_str(OSAL_NS_LIGHTHOUSE_CONNECT_TO, 0, connectstr);
         }
 #endif
 
@@ -720,7 +720,7 @@ failed:
         ioc_reset_connection_state(con);
         ioc_lock(root);
         con->connected = OS_FALSE;
-        ioc_free_source_and_target_bufs(con->link.root, con);
+        ioc_free_source_and_target_bufs(con);
         /* ioc_count_connected_streams(con->link.root, OS_TRUE); */
         ioc_mbinfo_con_is_closed(con);
         ioc_unlock(root);
@@ -1014,12 +1014,16 @@ static void ioc_connection_thread(
                 if (con->lighthouse_func == OS_NULL) goto failed;
                 os_char connectstr[OSAL_IPADDR_AND_PORT_SZ];
                 status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
-                    con->link.root->network_name, IOC_NETWORK_NAME_SZ, con->flags,
+                    con->link.root->network_name, con->flags,
                     connectstr, sizeof(connectstr));
 
                 os_strncpy(con->ip_from_lighthouse, connectstr, OSAL_IPADDR_AND_PORT_SZ);
                 if (OSAL_IS_ERROR(status)) goto failed;
                 parameters = connectstr;
+
+                /* Here we may want to used some connection number instead of 0
+                 */
+                osal_set_network_state_str(OSAL_NS_LIGHTHOUSE_CONNECT_TO, 0, connectstr);
             }
 #endif
 
@@ -1041,9 +1045,6 @@ static void ioc_connection_thread(
              */
             ioc_reset_connection_state(con);
         }
-
-// ioc_send_all(root);
-// ioc_receive_all(root); TO BE TESTED
 
         if (con->flags & IOC_DISABLE_SELECT)
         {
@@ -1149,11 +1150,9 @@ failed:
         {
             con->connected = OS_FALSE;
 
-  //          root = con->link.root;
             ioc_lock(root);
-            ioc_free_source_and_target_bufs(root, con);
+            ioc_free_source_and_target_bufs(con);
             ioc_unlock(root);
-            /* ioc_count_connected_streams(con->link.root, OS_TRUE); */
             ioc_mbinfo_con_is_closed(con);
         }
 
@@ -1165,7 +1164,6 @@ failed:
 
     /* Delete trigger event and mark that this thread is no longer running.
      */
-//    root = con->link.root;
     ioc_lock(root);
     osal_event_delete(con->worker.trig);
     con->worker.trig = OS_NULL;

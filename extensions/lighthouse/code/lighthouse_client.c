@@ -257,7 +257,7 @@ osalStatus ioc_run_lighthouse_client(
             e = os_strchr(p, ',');
             if (e == OS_NULL) e = os_strchr(p, '\0');
             n = e - p + 1;
-            if (n > sizeof(network_name)) n = sizeof(network_name);
+            if (n > (os_memsz)sizeof(network_name)) n = sizeof(network_name);
             os_strncpy(network_name, p, n);
             ioc_add_lighthouse_net(c, remote_addr, port_nr,
                 msg.hdr.transport, network_name, &received_timer);
@@ -442,10 +442,7 @@ static void ioc_delete_expired_lighthouse_nets(
   @param   c Pointer to the light house client object structure.
   @param   func_nr Reserved for future, set LIGHTHOUSE_GET_CONNECT_STR for now.
   @param   network_name IO network name as input. If IO network name is empty string
-           or equals to "*", it will be set by this function. Simply first known IO
-           network name.
-  @param   network_name_sz Network name buffer size in bytes, meaningfull if this function
-           sets the network name. Should be at least IOC_NETWORK_NAME_SZ.
+           or equals to "*", any IO network name will match.
   @param   flags Flags as given to ioc_connect(), these define the transport: Bit flag
            IOC_SOCKET for both TLS and plain TCP socket,  IOC_SECURE_CONNECTION
            for TLS socket.
@@ -464,7 +461,6 @@ osalStatus ioc_get_lighthouse_connectstr(
     LighthouseClient *c,
     LighthouseFuncNr func_nr,
     os_char *network_name,
-    os_memsz network_name_sz,
     os_short flags,
     os_char *connectstr,
     os_memsz connectstr_sz)
@@ -474,6 +470,7 @@ osalStatus ioc_get_lighthouse_connectstr(
     const os_char *compare_name;
     iocTransportEnum transport;
     os_boolean lighthouse_visible;
+    OSAL_UNUSED(func_nr);
 
     /* If this is not socket (TCP or TLS, we can do nothing)
      * Set transport number, either IOC_TCP_SOCKET or IOC_TLS_SOCKET.
@@ -536,14 +533,6 @@ osalStatus ioc_get_lighthouse_connectstr(
     /* Save the network name we are looking for to provide faster indication
      */
     os_strncpy(c->network_name, c->net[selected_i].network_name, IOC_NETWORK_NAME_SZ);
-
-    /* If we do not have network name, set it
-     */
-    /* THIS SHOULD NO LONGER BE NEEDED, MOVED TO IOC_AUTHENTICATION
-     * if (*compare_name == '\0') {
-        os_strncpy(network_name, c->net[selected_i].network_name, network_name_sz);
-        return OSAL_IO_NETWORK_NAME_SET;
-    } */
 
     osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, OSAL_LIGHTHOUSE_OK);
     return OSAL_SUCCESS;

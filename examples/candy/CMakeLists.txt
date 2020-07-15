@@ -16,10 +16,8 @@ add_subdirectory($ENV{E_ROOT}/iocom/extensions/nodeconf "${CMAKE_CURRENT_BINARY_
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/deviceinfo "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/deviceinfo")
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/lighthouse "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/lighthouse")
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/gazerbeam "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/gazerbeam")
-add_subdirectory($ENV{E_ROOT}/pins "${CMAKE_CURRENT_BINARY_DIR}/pins")
-
-# The devicedir library is here for testing only, take away.
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/devicedir "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/devicedir")
+add_subdirectory($ENV{E_ROOT}/pins "${CMAKE_CURRENT_BINARY_DIR}/pins")
 
 # Set path to where to keep libraries.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
@@ -38,16 +36,14 @@ endif()
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
 
-# Add iocom and pins to include path.
+# Add used libraries to include path.
 include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
 include_directories("$ENV{E_ROOT}/iocom/extensions/deviceinfo")
 include_directories("$ENV{E_ROOT}/iocom/extensions/lighthouse")
 include_directories("$ENV{E_ROOT}/iocom/extensions/gazerbeam")
-include_directories("$ENV{E_ROOT}/pins")
-
-# The devicedir library is here for testing only, take away.
 include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
+include_directories("$ENV{E_ROOT}/pins")
 
 # Add header files, the file(GLOB_RECURSE...) allows for wildcards and recurses subdirs.
 file(GLOB_RECURSE HEADERS "${E_SOURCE_PATH}/*.h")

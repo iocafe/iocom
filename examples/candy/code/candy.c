@@ -118,7 +118,7 @@ osalStatus osal_main(
 {
     osalSecurityConfig *security = OS_NULL;
     iocNetworkInterfaces *nics;
-    osalWifiNetworks *wifis;
+    iocWifiNetworks *wifis;
     iocDeviceId *device_id;
     iocConnectionConfig *connconf;
     ioboardParams prm;

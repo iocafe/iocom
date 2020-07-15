@@ -84,7 +84,7 @@ osalStatus osal_main(
     iocConnectionConfig *connconf;
     osalSecurityConfig *security;
     iocNetworkInterfaces *nics;
-    osalWifiNetworks *wifis;
+    iocWifiNetworks *wifis;
     const os_char *device_name = "frank";
     osalLighthouseInfo lighthouse_info;
 

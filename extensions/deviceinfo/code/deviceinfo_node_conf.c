@@ -61,14 +61,16 @@ void dinfo_set_node_conf(
     iocDeviceId *device_id,
     iocConnectionConfig *connconf,
     iocNetworkInterfaces *nics,
-    osalWifiNetworks *wifis,
+    iocWifiNetworks *wifis,
     osalSecurityConfig *security)
 {
     iocMemoryBlock *mblk;
+    const os_char *p;
     os_int addr, mina, maxa, i;
     os_boolean dhcp;
     os_char nbuf[OSAL_NBUF_SZ];
     static OS_FLASH_MEM os_char one[] = "1", zero[] = "0";
+    OSAL_UNUSED(security);
 
     /* Device identification.
      */
@@ -81,16 +83,19 @@ void dinfo_set_node_conf(
             osal_int_to_str(nbuf, sizeof(nbuf), device_id->device_nr);
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_NR], nbuf);
         }
-        ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_NET], device_id->network_name);
-        dinfo_nc->io_network_name_set = (os_boolean)(device_id->network_name[0] != '\0' &&
-            os_strcmp(device_id->network_name, osal_str_asterisk));
+        p = device_id->network_name;
+        ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_NET], p);
+        dinfo_nc->io_network_name_set = (os_boolean)(p[0] != '\0' && os_strcmp(p, osal_str_asterisk));
     }
 
     /* Connections.
      */
     if (connconf)
     {
-        ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_CONNECT], connconf->connection[0].parameters);
+        p = connconf->connection[0].parameters;
+        ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_CONNECT], p);
+
+        dinfo_nc->connect_to_set = (os_boolean)(p[0] != '\0' && os_strcmp(p, osal_str_asterisk));
     }
 
     /* Wifi
@@ -99,11 +104,18 @@ void dinfo_set_node_conf(
     if (wifis) if (wifis->n_wifi >= 1)
     {
         ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_WIFI], wifis->wifi[0].wifi_net_name);
-        ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_PASS], wifis->wifi[0].wifi_net_password[0] ? osal_str_asterisk : osal_str_empty);
+        p = wifis->wifi[0].wifi_net_password;
+        ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_PASS], (p[0] == '\0' || !os_strcmp(p, osal_str_asterisk))
+                ? "not set" : "hidden");
+
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 1
         if (wifis->n_wifi >= 2) {
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_WIFI_2], wifis->wifi[1].wifi_net_name);
-            ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_PASS_2], wifis->wifi[1].wifi_net_password[0] ? osal_str_asterisk : osal_str_empty);
+            p = wifis->wifi[1].wifi_net_password;
+            ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_PASS_2], (p[0] == '\0' || !os_strcmp(p, osal_str_asterisk))
+                    ? "not set" : "hidden");
         }
+#endif
     }
 
     /* NICs
@@ -187,7 +199,7 @@ static void dinfo_nc_net_state_notification_handler(
     void *context)
 {
     const iocSignal *sig;
-    os_char buf[OSAL_IPADDR_SZ+1], *p;
+    os_char buf[OSAL_IPADDR_AND_PORT_SZ+1], *p;
     osalMorseCodeEnum code;
     dinfoNodeConf *dinfo_nc;
     dinfo_nc = (dinfoNodeConf*)context;
@@ -234,11 +246,21 @@ static void dinfo_nc_net_state_notification_handler(
         }
     }
 
+    /* Connect to by lighhouse.
+     */
+    if (!dinfo_nc->connect_to_set) {
+        sig = dinfo_nc->sigs.sig[IOC_DINFO_NC_CONNECT];
+        if (sig) {
+            osal_get_network_state_str(OSAL_NS_LIGHTHOUSE_CONNECT_TO, 0, buf, sizeof(buf));
+            os_strncat(buf, osal_str_asterisk, sizeof(buf));
+            ioc_set_str(sig, buf);
+        }
+    }
+
     /* Status code.
      */
     code = osal_network_state_to_morse_code(net_state);
     ioc_set(dinfo_nc->sigs.sig[IOC_DINFO_NC_STATUS], code);
-
 }
 
 

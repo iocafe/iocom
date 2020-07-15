@@ -43,7 +43,7 @@ iocNetworkInterfaces *ioc_get_nics(
   Get wifi network configuration.
 ****************************************************************************************************
 */
-osalWifiNetworks *ioc_get_wifis(
+iocWifiNetworks *ioc_get_wifis(
     iocNodeConf *node)
 {
     return &node->wifis;
