@@ -15,6 +15,7 @@
           {"name": "rm_events", "type": "ushort"},
           {"name": "rm_sockets", "type": "ushort"},
           {"name": "rm_connects", "type": "ushort"},
+          {"name": "rm_tbytes", "type": "long"},
           {"name": "rm_aveloop", "type": "float"},
           {"name": "rm_maxloop", "type": "float"},
           {"name": "rm_comloop", "type": "char"}

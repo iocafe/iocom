@@ -332,6 +332,36 @@ void ioc_sbuf_invalidate(
     os_int start_addr,
     os_int end_addr)
 {
+    os_char *buf, *syncbuf;
+
+    /* Experimental, invalidate only bytes which are really changed (optimization).
+     * Helps especially in case when unchanged values are rewritten. Do not bother
+     * to check wide ranges (256), these contain image data, etc, and checking
+     * loop is easily waste of time.
+     */
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    if ((sbuf->syncbuf.flags & IOC_BIDIRECTIONAL) == 0)
+    {
+#endif
+        buf = sbuf->mlink.mblk->buf;
+        syncbuf = sbuf->syncbuf.buf;
+
+        if (buf && syncbuf && end_addr - start_addr < 256) {
+            while (start_addr <= end_addr) {
+                if (buf[start_addr] != syncbuf[start_addr]) break;
+                if (start_addr == end_addr) return;
+                start_addr++;
+            }
+            while (end_addr > start_addr) {
+                if (buf[end_addr] != syncbuf[end_addr]) break;
+                end_addr--;
+            }
+        }
+
+#if IOC_BIDIRECTIONAL_MBLK_CODE
+    }
+#endif
+
     if (!sbuf->changed.range_set)
     {
         sbuf->changed.start_addr = start_addr;

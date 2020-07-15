@@ -497,6 +497,10 @@ void ioboard_communication_callback(
         sig++;
     }
 
+    /* Check if this callback causes change in device info
+     */
+    dinfo_node_conf_callback(&dinfo_nc, sig, n_signals, flags);
+
     if (configuration_changed) {
 #if PINS_CAMERA
         ioboard_configure_camera();
@@ -636,14 +640,3 @@ void ioboard_control_camera(void)
 }
 
 #endif
-
-/*
-void show_node_conf_overrises()
-{
-
-#ifdef CANDY_EXP_NC_NR
-    ioc_set_str(candy.exp.nc_ne, ??)'
-#endif            '
-
-}
-*/

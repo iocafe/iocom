@@ -121,6 +121,10 @@ dinfoNodeConfSignals;
 typedef struct
 {
     dinfoNodeConfSignals sigs;
+
+    os_int
+        min_set_addr,
+        max_set_addr;
 }
 dinfoNodeConf;
 
@@ -146,4 +150,6 @@ void dinfo_run_node_conf(
 
 void dinfo_node_conf_callback(
     dinfoNodeConf *dinfo_nc,
-    iocSignal *sig);
+    const iocSignal *sig,
+    os_int n_signals,
+    os_ushort flags);
