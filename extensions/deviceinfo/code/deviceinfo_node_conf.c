@@ -64,6 +64,7 @@ void dinfo_set_node_conf(
     osalWifiNetworks *wifis,
     osalSecurityConfig *security)
 {
+    iocMemoryBlock *mblk;
     os_int addr, mina, maxa, i;
     os_boolean dhcp;
     os_char nbuf[OSAL_NBUF_SZ];
@@ -140,11 +141,16 @@ void dinfo_set_node_conf(
     mina = 0x7FFFFFFF;
     maxa = -1;
     for (i = 0; i<IOC_DINFO_NRO_SET_SIGNALS; i++) {
-        if (dinfo_nc->sigs.set_sig[i]) {
-            addr = dinfo_nc->sigs.set_sig[i]->addr;
+        if (dinfo_nc->sigs.set_sig[i] == OS_NULL) {
+            continue;
         }
+        addr = dinfo_nc->sigs.set_sig[i]->addr;
         if (addr < mina) mina = addr;
         if (addr > maxa) maxa = addr;
+        mblk = dinfo_nc->sigs.set_sig[i]->handle->mblk;
+        if (mblk) {
+            dinfo_nc->mblk = mblk;
+        }
     }
     dinfo_nc->min_set_addr = mina;
     dinfo_nc->max_set_addr = maxa;
@@ -179,6 +185,8 @@ static void dinfo_nc_net_state_notification_handler(
     dinfo_nc = (dinfoNodeConf*)context;
 
     code = osal_network_state_to_morse_code(net_state);
+    ioc_set(dinfo_nc->sigs.sig[IOC_DINFO_NC_STATUS], code);
+
 }
 
 
@@ -191,14 +199,13 @@ void dinfo_node_conf_callback(
     if ((flags & IOC_MBLK_CALLBACK_RECEIVE) == 0) {
         return;
     }
+
     if (sig[0].addr > dinfo_nc->max_set_addr ||
-        sig[n_signals - 1].addr < dinfo_nc->min_set_addr)
+        sig[n_signals - 1].addr < dinfo_nc->min_set_addr ||
+        sig->handle->mblk != dinfo_nc->mblk)
     {
         return;
     }
-
-    // if (sig->addr < min_set_addr || sig->addr > max_set_addr) return;
-
 
 }
 

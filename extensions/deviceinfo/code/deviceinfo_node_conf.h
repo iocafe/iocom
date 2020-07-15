@@ -79,6 +79,10 @@ typedef enum dinfoNodeConfSetSigEnum
     IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2,
     IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS_2,
 
+    IOC_DINFO_SET_NC_REBOOT,
+    IOC_DINFO_SET_NC_FACTORY_RST,
+    IOC_DINFO_SET_NC_COMLOOP,
+
     IOC_DINFO_NRO_SET_SIGNALS
 }
 dinfoNodeConfSetSigEnum;
@@ -89,10 +93,7 @@ typedef struct dinfoNodeConfSignals
 {
     const iocSignal
         *sig[IOC_DINFO_NRO_SIGNALS],
-        *set_sig[IOC_DINFO_NRO_SET_SIGNALS],
-        *reboot,
-        *factory_rst,
-        *comloop;
+        *set_sig[IOC_DINFO_NRO_SET_SIGNALS];
 }
 dinfoNodeConfSignals;
 
@@ -112,15 +113,16 @@ dinfoNodeConfSignals;
     sigs.set_sig[IOC_DINFO_SET_NC_CONNECT] = &staticsigs.imp.set_nc_connect; \
     sigs.set_sig[IOC_DINFO_SET_NC_WIFI] = &staticsigs.imp.set_nc_wifi; \
     sigs.set_sig[IOC_DINFO_SET_NC_PASS] = &staticsigs.imp.set_nc_pass; \
-    sigs.reboot = &staticsigs.imp.reboot; \
-    sigs.factory_rst = &staticsigs.imp.factory_rst;
-
+    sigs.set_sig[IOC_DINFO_SET_NC_REBOOT] = &staticsigs.imp.reboot; \
+    sigs.set_sig[IOC_DINFO_SET_NC_FACTORY_RST] = &staticsigs.imp.factory_rst;
 
 /* Node configuration state
  */
 typedef struct
 {
     dinfoNodeConfSignals sigs;
+
+    iocMemoryBlock *mblk;
 
     os_int
         min_set_addr,
