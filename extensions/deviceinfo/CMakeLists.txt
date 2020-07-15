@@ -17,6 +17,7 @@ set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 
 # Add include paths.
 include_directories("$ENV{E_ROOT}/iocom")
+include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
 include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 
 # Add main headers.

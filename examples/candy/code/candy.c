@@ -116,9 +116,7 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-    osalSecurityConfig *security;
-#endif
+    osalSecurityConfig *security = OS_NULL;
     iocNetworkInterfaces *nics;
     osalWifiNetworks *wifis;
     iocDeviceId *device_id;
@@ -170,11 +168,10 @@ osalStatus osal_main(
     osal_socket_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi);
 #endif
 
-    /* Set up device information.
+    /* Initialize up device information.
      */
-    DINFO_SET_COMMON_NODE_CONF_SIGNALS(nc_sigs, candy);
+    DINFO_SET_COMMON_NET_CONF_SIGNALS_FOR_WIFI(nc_sigs, candy);
     dinfo_initialize_node_conf(&dinfo_nc, &nc_sigs);
-
 
     /* Get stream interface by IOBOARD_CTRL_CON define.
      */
@@ -224,6 +221,10 @@ osalStatus osal_main(
      */
     ioc_initialize_parameters(OS_PBNR_CUST_A);
     ioc_load_parameters();
+
+    /* Initialize up device information.
+     */
+    dinfo_set_node_conf(&dinfo_nc, device_id, connconf, nics, wifis, security);
 
     /* Set callback to pass communcation to pins.
      */

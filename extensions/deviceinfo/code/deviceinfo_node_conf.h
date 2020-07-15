@@ -24,7 +24,26 @@ typedef enum dinfoNodeConfSigEnum
     IOC_DINFO_NC_CONNECT,
     IOC_DINFO_NC_WIFI,
     IOC_DINFO_NC_PASS,
+    IOC_DINFO_NC_WIFI_2,
+    IOC_DINFO_NC_PASS_2,
+    IOC_DINFO_NC_DHCP,
     IOC_DINFO_NC_IP,
+    IOC_DINFO_NC_SUBNET,
+    IOC_DINFO_NC_GATEWAY,
+    IOC_DINFO_NC_DNS,
+    IOC_DINFO_NC_DNS2,
+    IOC_DINFO_NC_SEND_UDP_MULTICASTS,
+    IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS,
+    IOC_DINFO_NC_MAC,
+    IOC_DINFO_NC_DHCP_2,
+    IOC_DINFO_NC_IP_2,
+    IOC_DINFO_NC_SUBNET_2,
+    IOC_DINFO_NC_GATEWAY_2,
+    IOC_DINFO_NC_DNS_2,
+    IOC_DINFO_NC_DNS2_2,
+    IOC_DINFO_NC_SEND_UDP_MULTICASTS_2,
+    IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS_2,
+    IOC_DINFO_NC_MAC_2,
     IOC_DINFO_NC_STATUS,
     IOC_DINFO_NRO_SIGNALS
 }
@@ -39,6 +58,27 @@ typedef enum dinfoNodeConfSetSigEnum
     IOC_DINFO_SET_NC_CONNECT,
     IOC_DINFO_SET_NC_WIFI,
     IOC_DINFO_SET_NC_PASS,
+    IOC_DINFO_SET_NC_WIFI_2,
+    IOC_DINFO_SET_NC_PASS_2,
+
+    IOC_DINFO_SET_NC_DHCP,
+    IOC_DINFO_SET_NC_IP,
+    IOC_DINFO_SET_NC_SUBNET,
+    IOC_DINFO_SET_NC_GATEWAY,
+    IOC_DINFO_SET_NC_DNS,
+    IOC_DINFO_SET_NC_DNS2,
+    IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS,
+    IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS,
+    IOC_DINFO_SET_NC_MAC,
+    IOC_DINFO_SET_NC_DHCP_2,
+    IOC_DINFO_SET_NC_IP_2,
+    IOC_DINFO_SET_NC_SUBNET_2,
+    IOC_DINFO_SET_NC_GATEWAY_2,
+    IOC_DINFO_SET_NC_DNS_2,
+    IOC_DINFO_SET_NC_DNS2_2,
+    IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2,
+    IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS_2,
+
     IOC_DINFO_NRO_SET_SIGNALS
 }
 dinfoNodeConfSetSigEnum;
@@ -58,7 +98,7 @@ dinfoNodeConfSignals;
 
 /** Macro for easy set up of default network configuration signals.
  */
-#define DINFO_SET_COMMON_NODE_CONF_SIGNALS(sigs, staticsigs)  \
+#define DINFO_SET_COMMON_NET_CONF_SIGNALS_FOR_WIFI(sigs, staticsigs)  \
     os_memclear(&sigs, sizeof(dinfoNodeConfSignals)); \
     sigs.sig[IOC_DINFO_NC_NR] = &staticsigs.exp.nc_nr; \
     sigs.sig[IOC_DINFO_NC_NET] = &staticsigs.exp.nc_net; \
@@ -84,10 +124,21 @@ typedef struct
 }
 dinfoNodeConf;
 
-
+/* Clear network configuration in device information and store IO signal pointers.
+ */
 void dinfo_initialize_node_conf(
     dinfoNodeConf *dinfo_nc,
     dinfoNodeConfSignals *sigs);
+
+/* Set device information about network configuration.
+ */
+void dinfo_set_node_conf(
+    dinfoNodeConf *dinfo_nc,
+    iocDeviceId *device_id,
+    iocConnectionConfig *connconf,
+    iocNetworkInterfaces *nics,
+    osalWifiNetworks *wifis,
+    osalSecurityConfig *security);
 
 void dinfo_run_node_conf(
     dinfoNodeConf *dinfo_nc,
