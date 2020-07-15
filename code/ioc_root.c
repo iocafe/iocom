@@ -240,6 +240,7 @@ void ioc_set_iodevice_id(
   #endif
 #endif
     os_strncpy(root->network_name, network_name, IOC_NETWORK_NAME_SZ);
+    osal_set_network_state_str(OSAL_NS_IO_NETWORK_NAME, 0, network_name);
 }
 
 
@@ -441,6 +442,7 @@ void ioc_new_root_event(
     const os_char *mblk_name;
     os_uint device_nr;
 #endif
+    OSAL_UNUSED(context);
 
     if (root->callback_func)
     {
@@ -497,7 +499,7 @@ os_uint ioc_get_unique_device_id(
     iocRoot *root)
 {
     iocConnection *con;
-    os_uint id;
+    os_int id;
     os_int count;
 
     /* Just return next number
@@ -513,7 +515,7 @@ os_uint ioc_get_unique_device_id(
     count = 100000;
     while (count--)
     {
-        id = (os_uint)osal_rand(IOC_AUTO_DEVICE_NR + 1, 0xFFFFFFFFL);
+        id = (os_int)osal_rand(IOC_AUTO_DEVICE_NR + 1, 0x7FFFFFFFL);
         for (con = root->con.first;
              con;
              con = con->link.next)
@@ -561,6 +563,8 @@ void ioc_set_network_name(
     }
 
     ioc_unlock(root);
+
+    osal_set_network_state_str(OSAL_NS_IO_NETWORK_NAME, 0, root->network_name);
 }
 
 

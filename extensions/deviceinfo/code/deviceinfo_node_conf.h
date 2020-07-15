@@ -33,7 +33,7 @@ typedef enum dinfoNodeConfSigEnum
     IOC_DINFO_NC_DNS,
     IOC_DINFO_NC_DNS2,
     IOC_DINFO_NC_SEND_UDP_MULTICASTS,
-    IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS,
+    //IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS,
     IOC_DINFO_NC_MAC,
     IOC_DINFO_NC_DHCP_2,
     IOC_DINFO_NC_IP_2,
@@ -42,7 +42,7 @@ typedef enum dinfoNodeConfSigEnum
     IOC_DINFO_NC_DNS_2,
     IOC_DINFO_NC_DNS2_2,
     IOC_DINFO_NC_SEND_UDP_MULTICASTS_2,
-    IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS_2,
+    //IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS_2,
     IOC_DINFO_NC_MAC_2,
     IOC_DINFO_NC_STATUS,
     IOC_DINFO_NRO_SIGNALS
@@ -68,7 +68,7 @@ typedef enum dinfoNodeConfSetSigEnum
     IOC_DINFO_SET_NC_DNS,
     IOC_DINFO_SET_NC_DNS2,
     IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS,
-    IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS,
+    //IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS,
     IOC_DINFO_SET_NC_MAC,
     IOC_DINFO_SET_NC_DHCP_2,
     IOC_DINFO_SET_NC_IP_2,
@@ -77,7 +77,7 @@ typedef enum dinfoNodeConfSetSigEnum
     IOC_DINFO_SET_NC_DNS_2,
     IOC_DINFO_SET_NC_DNS2_2,
     IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2,
-    IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS_2,
+    //IOC_DINFO_SET_NC_RECEIVE_UDP_MULTICASTS_2,
 
     IOC_DINFO_SET_NC_REBOOT,
     IOC_DINFO_SET_NC_FACTORY_RST,
@@ -127,6 +127,11 @@ typedef struct
     os_int
         min_set_addr,
         max_set_addr;
+
+    os_boolean
+        dhcp,                   /* DHCP used for first NIC */
+        dhcp_2,                 /* DHCP used for second NIC */
+        io_network_name_set;
 }
 dinfoNodeConf;
 

@@ -82,6 +82,8 @@ void dinfo_set_node_conf(
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_NR], nbuf);
         }
         ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_NET], device_id->network_name);
+        dinfo_nc->io_network_name_set = (os_boolean)(device_id->network_name[0] != '\0' &&
+            os_strcmp(device_id->network_name, osal_str_asterisk));
     }
 
     /* Connections.
@@ -109,6 +111,7 @@ void dinfo_set_node_conf(
     if (nics) if (nics->n_nics >= 1)
     {
         dhcp = !nics->nic[0].no_dhcp;
+        dinfo_nc->dhcp = dhcp;
         ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_DHCP], dhcp ? one : zero);
         if (!dhcp) {
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_IP], nics->nic[0].ip_address);
@@ -118,12 +121,14 @@ void dinfo_set_node_conf(
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_DNS2], nics->nic[0].dns_address_2);
         }
         ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_SEND_UDP_MULTICASTS], nics->nic[0].send_udp_multicasts  ? one : zero);
-        ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS], nics->nic[0].receive_udp_multicasts ? one : zero);
+        //ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS], nics->nic[0].receive_udp_multicasts ? one : zero);
         ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_MAC], nics->nic[0].mac);
 
+#if OSAL_MAX_NRO_NICS>1
         if (nics->n_nics >= 2)
         {
             dhcp = !nics->nic[1].no_dhcp;
+            dinfo_nc->dhcp_2 = dhcp;
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_DHCP_2], dhcp ? one : zero);
             if (!dhcp) {
                 ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_IP_2], nics->nic[1].ip_address);
@@ -133,9 +138,10 @@ void dinfo_set_node_conf(
                 ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_DNS2_2], nics->nic[1].dns_address_2);
             }
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_SEND_UDP_MULTICASTS_2], nics->nic[1].send_udp_multicasts  ? one : zero);
-            ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS_2], nics->nic[1].receive_udp_multicasts ? one : zero);
+            //ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS_2], nics->nic[1].receive_udp_multicasts ? one : zero);
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_MAC_2], nics->nic[1].mac);
         }
+#endif
     }
 
     mina = 0x7FFFFFFF;
@@ -180,6 +186,8 @@ static void dinfo_nc_net_state_notification_handler(
     struct osalNetworkState *net_state,
     void *context)
 {
+    const iocSignal *sig;
+    os_char buf[OSAL_IPADDR_SZ+1], *p;
     osalMorseCodeEnum code;
     dinfoNodeConf *dinfo_nc;
     dinfo_nc = (dinfoNodeConf*)context;
@@ -187,7 +195,53 @@ static void dinfo_nc_net_state_notification_handler(
     code = osal_network_state_to_morse_code(net_state);
     ioc_set(dinfo_nc->sigs.sig[IOC_DINFO_NC_STATUS], code);
 
+    /* IP address of the first NIC.
+     */
+    if (dinfo_nc->dhcp) {
+        p = net_state->nic_ip[0];
+        sig = dinfo_nc->sigs.sig[IOC_DINFO_NC_IP];
+        if (sig && *p) if (os_strcmp(p, osal_str_asterisk))
+        {
+            os_strncpy(buf, p, sizeof(buf));
+            os_strncat(buf, osal_str_asterisk, sizeof(buf));
+            ioc_set_str(sig, buf);
+        }
+    }
+
+#if OSAL_MAX_NRO_NICS>1
+    /* IP address of the seconf NIC.
+     */
+    if (dinfo_nc->dhcp_2) {
+        p = net_state->nic_ip[1];
+        sig = dinfo_nc->sigs.sig[IOC_DINFO_NC_IP_2];
+        if (sig && *p) if (os_strcmp(p, osal_str_asterisk))
+        {
+            os_strncpy(buf, p, sizeof(buf));
+            os_strncat(buf, osal_str_asterisk, sizeof(buf));
+            ioc_set_str(sig, buf);
+        }
+    }
+#endif
+
+    /* IO network name.
+     */
+    if (!dinfo_nc->io_network_name_set) {
+        sig = dinfo_nc->sigs.sig[IOC_DINFO_NC_NET];
+        if (sig) {
+            osal_get_network_state_str(OSAL_NS_IO_NETWORK_NAME, 0, buf, sizeof(buf));
+            os_strncat(buf, osal_str_asterisk, sizeof(buf));
+            ioc_set_str(sig, buf);
+        }
+    }
+
+    /* Status code.
+     */
+    code = osal_network_state_to_morse_code(net_state);
+    ioc_set(dinfo_nc->sigs.sig[IOC_DINFO_NC_STATUS], code);
+
 }
+
+
 
 
 void dinfo_node_conf_callback(
