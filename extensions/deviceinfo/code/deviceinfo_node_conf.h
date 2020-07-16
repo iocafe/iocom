@@ -157,10 +157,14 @@ void dinfo_set_node_conf(
     iocWifiNetworks *wifis,
     osalSecurityConfig *security);
 
+/* Check if we need to save or reboot. Can be called from application main loop.
+ */
 void dinfo_run_node_conf(
     dinfoNodeConf *dinfo_nc,
     os_timer *ti);
 
+/* Handle "set_*" signal changes.
+ */
 void dinfo_node_conf_callback(
     dinfoNodeConf *dinfo_nc,
     const iocSignal *check_signals,

@@ -331,7 +331,7 @@ static void dinfo_nc_net_state_notification_handler(
 /**
 ****************************************************************************************************
 
-  @brief Handle signal changes.
+  @brief Handle "set_*" signal changes.
   @anchor dinfo_node_conf_callback
 
   The dinfo_node_conf_callback() function is called by communication callback to process
