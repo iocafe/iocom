@@ -131,11 +131,10 @@ typedef struct
         io_network_name_set,
         connect_to_set;
 
-    /* Signal has been set
-     */
     os_boolean
-        modified[IOC_DINFO_NRO_SET_SIGNALS],
-        modified_common;
+        modified_common,
+        reboot,
+        factory_reset;
 
     os_timer
         modified_timer;

@@ -6,6 +6,10 @@
   @version 1.0
   @date    15.7.2020
 
+  Display network information aboue the device, show network status changes or automatically
+  determined IP address or IO network name. Allow user to modify network parameters trough
+  IO signals.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -70,6 +74,8 @@ static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
 };
 
 
+/* Forward referred static functions.
+ */
 static void dinfo_nc_net_state_notification_handler(
     struct osalNetworkState *net_state,
     void *context);
@@ -78,12 +84,14 @@ static void dinfo_nc_net_state_notification_handler(
 /**
 ****************************************************************************************************
 
-  @brief Clear network configuration in device information and store IO signal pointers.
+  @brief Initialize and store IO signal pointers.
 
   Called at startup.
 
-  @param   X
-  @return  X
+  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
+  @return  sigs Structure containing signal pointers to set. Macros like
+           DINFO_SET_COMMON_NET_CONF_SIGNALS_FOR_WIFI can be used to initialize typical
+           signal pointers.
 
 ****************************************************************************************************
 */
@@ -102,10 +110,16 @@ void dinfo_initialize_node_conf(
   @brief Set device information about network configuration.
 
   Called at startup after memory block "exp" has been created. Adds network state change
-  notification handler to detect changes run time.
+  notification handler to detect changes run time. The nodeconf library provides pointers
+  to initialized decice_id, connconf, nics... structure.
 
-  @param   X
-  @return  X
+  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
+  @param   device_id Device identification structure.
+  @param   connconf Connection configuration structure.
+  @param   nics Information about network interface "cards".
+  @param   wifi WiFi configuration information.
+  @param   security Security information.
+  @return  None.
 
 ****************************************************************************************************
 */
@@ -186,7 +200,6 @@ void dinfo_set_node_conf(
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_DNS2], nics->nic[0].dns_address_2);
         }
         ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_SEND_UDP_MULTICASTS], nics->nic[0].send_udp_multicasts  ? one : zero);
-        //ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS], nics->nic[0].receive_udp_multicasts ? one : zero);
         ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_MAC], nics->nic[0].mac);
 
 #if OSAL_MAX_NRO_NICS>1
@@ -203,7 +216,6 @@ void dinfo_set_node_conf(
                 ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_DNS2_2], nics->nic[1].dns_address_2);
             }
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_SEND_UDP_MULTICASTS_2], nics->nic[1].send_udp_multicasts  ? one : zero);
-            //ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_RECEIVE_UDP_MULTICASTS_2], nics->nic[1].receive_udp_multicasts ? one : zero);
             ioc_set_str(dinfo_nc->sigs.sig[IOC_DINFO_NC_MAC_2], nics->nic[1].mac);
         }
 #endif
@@ -238,11 +250,10 @@ void dinfo_set_node_conf(
   @anchor dinfo_nc_net_state_notification_handler
 
   The dinfo_nc_net_state_notification_handler() function is callback function when network state
-  changes. Determines from network state if all is ok or something is wrong, and sets morse code
-  accordingly.
+  changes. Shows the items automatically detected in device infomration.
 
   @param   net_state Network state structure.
-  @param   context Morse code structure.
+  @param   context Pointer to network device info structure.
   @return  None.
 
 ****************************************************************************************************
@@ -317,17 +328,33 @@ static void dinfo_nc_net_state_notification_handler(
 }
 
 
+/**
+****************************************************************************************************
 
+  @brief Handle signal changes.
+  @anchor dinfo_node_conf_callback
+
+  The dinfo_node_conf_callback() function is called by communication callback to process
+  changes to "set_" signals to configure the IO device.
+
+  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
+  @param   check_signals Array of signals which may have changed.
+  @param   n_signals Number of items in check_signals array.
+  @param   flags Flags of communication callback forwarded.
+  @return  None.
+
+****************************************************************************************************
+*/
 void dinfo_node_conf_callback(
     dinfoNodeConf *dinfo_nc,
     const iocSignal *check_signals,
     os_int n_signals,
     os_ushort flags)
 {
-    const iocSignal **sigs, **set_sigs, *sig, *ss;
+    const iocSignal **sigs, **set_sigs, *ss, *ds;
     const dinfoSetSignalMapping *m;
-    os_char buf[OSAL_IPADDR_AND_PORT_SZ];
-    os_int i;
+    os_char buf[OSAL_HOST_BUF_SZ], buf2[OSAL_HOST_BUF_SZ], state_bits;
+    os_int x;
 
     if ((flags & IOC_MBLK_CALLBACK_RECEIVE) == 0) {
         return;
@@ -343,83 +370,142 @@ void dinfo_node_conf_callback(
     sigs = dinfo_nc->sigs.sig;
     set_sigs = dinfo_nc->sigs.set_sig;
 
-    for (i = 0; i < n_signals; i++)
+    for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
     {
-        sig = check_signals + i;
-        if (sig->addr < dinfo_nc->min_set_addr) continue;
-        if (sig->addr > dinfo_nc->max_set_addr) break;
+        ss = set_sigs[(int)m->set_signal_nr];
+        if (ss == OS_NULL) continue;
 
-        for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
-        {
-            ss = set_sigs[(int)m->set_signal_nr];
-            if (ss == OS_NULL) continue;
-
-            if (sig->addr == ss->addr) {
-                if (m->sz < 0) {
-                    ioc_get_str(sig, buf, sizeof(buf));
-                    osal_set_network_state_str(m->net_state_item, m->net_state_index, buf);
-                    os_strncat(buf, "^", sizeof(buf));
-                    ioc_set_str(sigs[(int)m->signal_nr], buf);
-                }
-                dinfo_nc->modified[(int)m->set_signal_nr] = OS_TRUE;
-                os_get_timer(&dinfo_nc->modified_timer);
-                dinfo_nc->modified_common = OS_TRUE;
+        ds = sigs[(int)m->signal_nr];
+        if (ds == OS_NULL) continue;
+        if (m->sz < 0) {
+            state_bits = ioc_get_str(ss, buf, sizeof(buf));
+            ioc_get_str(ds, buf2, sizeof(buf2));
+            if (!os_strcmp(buf, buf2)) { state_bits = 0; }
+            os_strncat(buf, "^", sizeof(buf));
+            if (!os_strcmp(buf, buf2)) {state_bits = 0; }
+            else { ioc_set_str(ds, buf); }
+        }
+        else {
+            x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+            if (state_bits & OSAL_STATE_CONNECTED) {
+                ioc_set(ds, x);
             }
+        }
+
+        if (state_bits & OSAL_STATE_CONNECTED) {
+            os_get_timer(&dinfo_nc->modified_timer);
+            dinfo_nc->modified_common = OS_TRUE;
+        }
+    }
+
+    ss = dinfo_nc->sigs.set_sig[IOC_DINFO_SET_NC_REBOOT];
+    if (ss) {
+        x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+        if (x && (state_bits & OSAL_STATE_CONNECTED)) {
+            dinfo_nc->reboot = OS_TRUE;
+            os_get_timer(&dinfo_nc->modified_timer);
+        }
+    }
+
+    ss = dinfo_nc->sigs.set_sig[IOC_DINFO_SET_NC_FACTORY_RST];
+    if (ss) {
+        x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+        if (x && (state_bits & OSAL_STATE_CONNECTED)) {
+            dinfo_nc->factory_reset = OS_TRUE;
+            os_get_timer(&dinfo_nc->modified_timer);
         }
     }
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Check if we need to save or reboot
+  @anchor dinfo_run_node_conf
+
+  The dinfo_run_node_conf() function is called repeatedly to check if we need to save
+  configuration changes to persistent storage or reboot.
+
+  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
+  @param   ti Current timer value, If OS_NULL timer is read by function call.
+  @return  None.
+
+****************************************************************************************************
+*/
 void dinfo_run_node_conf(
     dinfoNodeConf *dinfo_nc,
     os_timer *ti)
 {
     osalNodeConfOverrides block;
     const dinfoSetSignalMapping *m;
+    const iocSignal **set_sigs, *ss;
     os_timer tmp_ti;
-    // os_int x;
+    os_int x;
+    os_char buf[OSAL_HOST_BUF_SZ], *p, state_bits;
+    os_boolean save_now;
 
-    if (!dinfo_nc->modified_common) return;
+    if (!dinfo_nc->modified_common && !dinfo_nc->reboot && !dinfo_nc->factory_reset) return;
 
     if (ti == OS_NULL) {
         os_get_timer(&tmp_ti);
         ti = &tmp_ti;
     }
 
-    if (!os_has_elapsed_since(&dinfo_nc->modified_timer, ti, 100)) {
+    if (!os_has_elapsed_since(&dinfo_nc->modified_timer, ti, 500)) {
         return;
     }
 
-    dinfo_nc->modified_common = OS_FALSE;
-    os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
-
-    /* if (dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI])
+    if (dinfo_nc->modified_common)
     {
-        dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI] = OS_FALSE;
+        dinfo_nc->modified_common = OS_FALSE;
+        os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
+        save_now = OS_FALSE;
+        set_sigs = dinfo_nc->sigs.set_sig;
 
-        osal_get_network_state_str(OSAL_NS_WIFI_NETWORK_NAME, 0, block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ);
-    } */
-
-    for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
-    {
-        if (dinfo_nc->modified[(int)m->set_signal_nr])
+        for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
         {
-            dinfo_nc->modified[(int)m->set_signal_nr] = OS_FALSE;
+            ss = set_sigs[(int)m->set_signal_nr];
+            if (ss == OS_NULL) continue;
             if (m->sz < 0) {
-                osal_get_network_state_str(m->net_state_item, m->net_state_index, ((os_char*)&block) + m->offset, -m->sz);
-            }
-            /* Here we could handle other than string types, if needed.
-            else {
-                x = osal_get_network_state_int(m->net_state_item, m->net_state_index);
-                switch (m->sz) {
-                    default:
-                        case OS_BOOLEAN: store integer x as boolean in block...
-                        break;
+                p = ((os_char*)&block) + m->offset;
+                os_memclear(buf, sizeof(buf));
+                state_bits = ioc_get_str(ss, buf, sizeof(buf));
+                if (state_bits & OSAL_STATE_CONNECTED) {
+                    if (os_strcmp(buf, p)) {
+                        os_memcpy(p, buf, -m->sz);
+                        save_now = OS_TRUE;
+                    }
                 }
             }
-            */
+            else {
+                x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+                if (state_bits & OSAL_STATE_CONNECTED) {
+                    switch (m->sz & OSAL_TYPEID_MASK) {
+                       case OS_BOOLEAN: // store integer x as boolean in block...
+                            *p = (os_char)((m->sz & IOC_DINFO_NOT) ? !x : x);
+                            save_now = OS_TRUE;
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        if (save_now) {
+            os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);
         }
     }
 
-    os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);
+    if (dinfo_nc->factory_reset)
+    {
+        osal_forget_secret();
+        osal_reboot(0);
+    }
+
+    if (dinfo_nc->reboot) {
+        osal_reboot(0);
+    }
 }
