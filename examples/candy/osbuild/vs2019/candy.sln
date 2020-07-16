@@ -34,6 +34,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gazerbeam", "..\..\..\..\ex
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ep_usbcamera", "..\..\..\..\..\pins\extensions\camera\windows\ep_usbcamera\osbuild\vs2019\ep_usbcamera.vcxproj", "{E4F73609-AFA2-464A-ADAF-DB0B7486973D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceinfo", "..\..\..\..\extensions\deviceinfo\osbuild\vs2019\deviceinfo.vcxproj", "{E54534F6-30CF-4951-8394-76006662F159}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -122,6 +124,14 @@ Global
 		{E4F73609-AFA2-464A-ADAF-DB0B7486973D}.Release|x64.Build.0 = Release|x64
 		{E4F73609-AFA2-464A-ADAF-DB0B7486973D}.Release|x86.ActiveCfg = Release|Win32
 		{E4F73609-AFA2-464A-ADAF-DB0B7486973D}.Release|x86.Build.0 = Release|Win32
+		{E54534F6-30CF-4951-8394-76006662F159}.Debug|x64.ActiveCfg = Debug|x64
+		{E54534F6-30CF-4951-8394-76006662F159}.Debug|x64.Build.0 = Debug|x64
+		{E54534F6-30CF-4951-8394-76006662F159}.Debug|x86.ActiveCfg = Debug|Win32
+		{E54534F6-30CF-4951-8394-76006662F159}.Debug|x86.Build.0 = Debug|Win32
+		{E54534F6-30CF-4951-8394-76006662F159}.Release|x64.ActiveCfg = Release|x64
+		{E54534F6-30CF-4951-8394-76006662F159}.Release|x64.Build.0 = Release|x64
+		{E54534F6-30CF-4951-8394-76006662F159}.Release|x86.ActiveCfg = Release|Win32
+		{E54534F6-30CF-4951-8394-76006662F159}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
