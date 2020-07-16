@@ -16,6 +16,26 @@
 #include "deviceinfo.h"
 #include <stddef.h>
 
+
+typedef struct dinfoSetSignalMapping
+{
+    os_char set_signal_nr;              /* Imported set value for signal. */
+    os_char signal_nr;                  /* Exported signal value to display. */
+    os_char net_state_item;             /* Net state item. */
+    os_char net_state_index;            /* Nwt state index, like wifi nr, nic nr, connection number. */
+    os_short offset;                    /* Position within persistent block */
+    os_short sz;                        /* Negative values: size in persistent block, positive values: data type */
+}
+dinfoSetSignalMapping;
+
+static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 0
+    {IOC_DINFO_SET_NC_WIFI, IOC_DINFO_NC_WIFI, OSAL_NS_WIFI_NETWORK_NAME, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, wifi[0].wifi_net_name), -OSAL_WIFI_PRM_SZ},
+#endif
+    {-1, 0, 0, 0, 0, 0}
+};
+
+
 static void dinfo_nc_net_state_notification_handler(
     struct osalNetworkState *net_state,
     void *context);
@@ -271,6 +291,7 @@ void dinfo_node_conf_callback(
     os_ushort flags)
 {
     const iocSignal **sigs, **set_sigs, *sig;
+    const dinfoSetSignalMapping *m;
     os_char buf[OSAL_IPADDR_AND_PORT_SZ];
     os_int i;
 
@@ -288,7 +309,7 @@ void dinfo_node_conf_callback(
     sigs = dinfo_nc->sigs.sig;
     set_sigs = dinfo_nc->sigs.set_sig;
 
-    for (i = 0; i < n_signals; i++)
+    /* for (i = 0; i < n_signals; i++)
     {
         sig = check_signals + i;
         if (sig->addr < dinfo_nc->min_set_addr) continue;
@@ -303,8 +324,50 @@ void dinfo_node_conf_callback(
             dinfo_nc->modified_common = OS_TRUE;
         }
     }
+    */
+
+    for (i = 0; i < n_signals; i++)
+    {
+        sig = check_signals + i;
+        if (sig->addr < dinfo_nc->min_set_addr) continue;
+        if (sig->addr > dinfo_nc->max_set_addr) break;
+
+        for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
+        {
+            if (sig->addr == set_sigs[(int)m->set_signal_nr]->addr) {
+                if (m->sz < 0) {
+                    ioc_get_str(sig, buf, sizeof(buf));
+                    os_strncat(buf, "^", sizeof(buf));
+                    ioc_set_str(sigs[(int)m->signal_nr], buf);
+                }
+                dinfo_nc->modified[(int)m->set_signal_nr] = OS_TRUE;
+                os_get_timer(&dinfo_nc->modified_timer);
+                dinfo_nc->modified_common = OS_TRUE;
+            }
+        }
+    }
 }
 
+
+#if 0
+typedef struct dinfoSetSignalMapping
+{
+    os_char set_signal_nr;              /* Imported set value for signal. */
+    os_char signal_nr;                  /* Exported signal value to display. */
+    os_char net_state_item;             /* Net state item. */
+    os_char net_state_index;            /* Nwt state index, like wifi nr, nic nr, connection number. */
+    os_short offset;                    /* Position within persistent block */
+    os_short sz;                        /* Negative values: size in persistent block, positive values: data type */
+}
+dinfoSetSignalMapping;
+
+static dinfoSetSignalMapping dinfo_sigmap[] = {
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 0
+    {IOC_DINFO_SET_NC_WIFI, IOC_DINFO_NC_WIFI, OSAL_NS_WIFI_NETWORK_NAME, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, wifi[0].wifi_net_name), -OSAL_WIFI_PRM_SZ},
+#endif
+    {-1, 0, 0, 0, 0, 0}
+};
+#endif
 
 
 void dinfo_run_node_conf(
@@ -312,7 +375,9 @@ void dinfo_run_node_conf(
     os_timer *ti)
 {
     osalNodeConfOverrides block;
+    const dinfoSetSignalMapping *m;
     os_timer tmp_ti;
+    // os_int x;
 
     if (!dinfo_nc->modified_common) return;
 
@@ -328,36 +393,37 @@ void dinfo_run_node_conf(
     dinfo_nc->modified_common = OS_FALSE;
     os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
-    if (dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI])
+    /* if (dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI])
     {
         dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI] = OS_FALSE;
 
         osal_get_network_state_str(OSAL_NS_WIFI_NETWORK_NAME, 0, block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ);
-    }
+    } */
 
+    for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
+    {
+        if (dinfo_nc->modified[(int)m->set_signal_nr])
+        {
+            dinfo_nc->modified[(int)m->set_signal_nr] = OS_FALSE;
+            if (m->sz < 0) {
+                osal_get_network_state_str(m->net_state_item, m->net_state_index, ((os_char*)&block) + m->offset, -m->sz);
+            }
+            /* Here we could handle other than string types, if needed.
+            else {
+                x = osal_get_network_state_int(m->net_state_item, m->net_state_index);
+                switch (m->sz) {
+                    default:
+                        case OS_BOOLEAN: store integer x as boolean in block...
+                        break;
+                }
+            }
+            */
+        }
+    }
 
     os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);
 }
 
-
-typedef struct dinfoSetSignalMapping
-{
-
-    /* Position in persistent block
-     */
-    os_ushort offset;
-
-    /* Size in persistent block
-     */
-    os_ushort sz;
-
-
-}
-dinfoSetSignalMapping;
-
-static dinfoSetSignalMapping dinfo_sigmap[] = {
-    {(os_ushort)offsetof(struct osalNodeConfOverrides, wifi), OSAL_WIFI_PRM_SZ}
-};
 
 
 #if 0
