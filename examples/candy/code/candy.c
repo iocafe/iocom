@@ -383,6 +383,8 @@ osalStatus osal_loop(
 #endif
 
     ioc_autosave_parameters();
+    dinfo_run_node_conf(&dinfo_nc, &ti);
+
 
     return s;
 }

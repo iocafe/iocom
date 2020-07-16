@@ -132,6 +132,15 @@ typedef struct
         dhcp_2,                 /* DHCP used for second NIC */
         io_network_name_set,
         connect_to_set;
+
+    /* Signal has been set
+     */
+    os_boolean
+        modified[IOC_DINFO_NRO_SET_SIGNALS],
+        modified_common;
+
+    os_timer
+        modified_timer;
 }
 dinfoNodeConf;
 
@@ -160,3 +169,4 @@ void dinfo_node_conf_callback(
     const iocSignal *check_signals,
     os_int n_signals,
     os_ushort flags);
+

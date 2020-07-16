@@ -14,7 +14,7 @@
 ****************************************************************************************************
 */
 #include "deviceinfo.h"
-
+#include <stddef.h>
 
 static void dinfo_nc_net_state_notification_handler(
     struct osalNetworkState *net_state,
@@ -264,7 +264,6 @@ static void dinfo_nc_net_state_notification_handler(
 
 
 
-
 void dinfo_node_conf_callback(
     dinfoNodeConf *dinfo_nc,
     const iocSignal *check_signals,
@@ -299,7 +298,133 @@ void dinfo_node_conf_callback(
             ioc_get_str(sig, buf, sizeof(buf));
             os_strncat(buf, "^", sizeof(buf));
             ioc_set_str(sigs[IOC_DINFO_NC_WIFI], buf);
+            dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI] = OS_TRUE;
+            os_get_timer(&dinfo_nc->modified_timer);
+            dinfo_nc->modified_common = OS_TRUE;
         }
     }
 }
 
+
+
+void dinfo_run_node_conf(
+    dinfoNodeConf *dinfo_nc,
+    os_timer *ti)
+{
+    osalNodeConfOverrides block;
+    os_timer tmp_ti;
+
+    if (!dinfo_nc->modified_common) return;
+
+    if (ti == OS_NULL) {
+        os_get_timer(&tmp_ti);
+        ti = &tmp_ti;
+    }
+
+    if (!os_has_elapsed_since(&dinfo_nc->modified_timer, ti, 100)) {
+        return;
+    }
+
+    dinfo_nc->modified_common = OS_FALSE;
+    os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
+
+    if (dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI])
+    {
+        dinfo_nc->modified[IOC_DINFO_SET_NC_WIFI] = OS_FALSE;
+
+        osal_get_network_state_str(OSAL_NS_WIFI_NETWORK_NAME, 0, block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ);
+    }
+
+
+    os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);
+}
+
+
+typedef struct dinfoSetSignalMapping
+{
+
+    /* Position in persistent block
+     */
+    os_ushort offset;
+
+    /* Size in persistent block
+     */
+    os_ushort sz;
+
+
+}
+dinfoSetSignalMapping;
+
+static dinfoSetSignalMapping dinfo_sigmap[] = {
+    {(os_ushort)offsetof(struct osalNodeConfOverrides, wifi), OSAL_WIFI_PRM_SZ}
+};
+
+
+#if 0
+/**
+****************************************************************************************************
+
+  @brief Save wifi configuration from gazerbeam message to persistent storage.
+
+  @param   message Received Gazebeam message.
+  @param   message_sz Message size in bytes.
+  @return  OSAL_SUCCESS if field was succesfully set.
+           OSAL_NOTHING_TO_DO if field was unchanged.
+           OSAL_STATUS_FAILED if field was not set in message.
+
+****************************************************************************************************
+*/
+static void dinfo_nc_net_state_notification_handler(
+    struct osalNetworkState *net_state)
+{
+    osalNodeConfOverrides block;
+    osalStatus s, rval = OSAL_NOTHING_TO_DO;
+
+    os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
+
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 0
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_NETWORK,
+        block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_PASSWORD,
+        block.wifi[0].wifi_net_password, OSAL_WIFI_PRM_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+#endif
+
+#if OSAL_MAX_NRO_WIFI_NETWORKS > 1
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI2_NETWORK,
+        block.wifi[1].wifi_net_name, OSAL_WIFI_PRM_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI2_PASSWORD,
+        block.wifi[1].wifi_net_password, OSAL_WIFI_PRM_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+#endif
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_NETWORK_NAME_OVERRIDE,
+        block.network_name_override, OSAL_NETWORK_NAME_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_DEVICE_NR_OVERRIDE,
+        block.device_nr_override, OSAL_DEVICE_NR_STR_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_CONNECT_IP_OVERRIDE,
+        block.connect_to_override, OSAL_HOST_BUF_SZ,
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) rval = s;
+
+    if (rval == OSAL_SUCCESS) {
+        os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);
+    }
+
+    return rval;
+}
+#endif
