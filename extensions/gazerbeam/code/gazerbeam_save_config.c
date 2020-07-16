@@ -125,7 +125,7 @@ osalStatus gazerbeam_save_config(
     if (s == OSAL_SUCCESS) rval = s;
 
     s = gazerbeam_get_config_item(GAZERBEAM_ID_CONNECT_IP_OVERRIDE,
-        block.connect_to_override, OSAL_HOST_BUF_SZ,
+        block.connect_to_override[0].parameters, OSAL_HOST_BUF_SZ,
         message, message_sz, GAZERBEAM_DEFAULT);
     if (s == OSAL_SUCCESS) rval = s;
 

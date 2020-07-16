@@ -53,7 +53,6 @@ static void devicedir_override_prm(
 ****************************************************************************************************
 */
 osalStatus devicedir_overrides(
-    iocRoot *root,
     osalStream list,
     os_short flags)
 {
@@ -94,7 +93,7 @@ osalStatus devicedir_overrides(
     devicedir_override_prm("net", block.network_name_override, list, flags, OS_TRUE);
 #endif
 
-    devicedir_override_prm("connect", block.connect_to_override, list, flags, OS_FALSE);
+    devicedir_override_prm("connect", block.connect_to_override[0].parameters, list, flags, OS_FALSE);
     devicedir_override_prm("nr", block.device_nr_override, list, flags, OS_FALSE);
 
     if ((flags & IOC_HELP_MODE) == 0) {

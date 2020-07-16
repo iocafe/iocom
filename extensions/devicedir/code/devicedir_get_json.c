@@ -72,7 +72,7 @@ osalStatus devicedir_get_json(
 
         case IO_DD_OVERRIDES:
             label = "overrides";
-            devicedir_overrides(root, list, flags);
+            devicedir_overrides(list, flags);
             s = OSAL_SUCCESS;
             break;
 

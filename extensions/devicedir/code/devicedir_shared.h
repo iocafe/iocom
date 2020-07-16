@@ -41,7 +41,6 @@ void devicedir_end_points(
     os_short flags);
 
 osalStatus devicedir_overrides(
-    iocRoot *root,
     osalStream list,
     os_short flags);
 

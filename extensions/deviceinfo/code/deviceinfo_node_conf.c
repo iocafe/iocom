@@ -28,7 +28,16 @@ typedef struct dinfoSetSignalMapping
 }
 dinfoSetSignalMapping;
 
+#define IOC_DINFO_NOT 0x40
+
 static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
+    {IOC_DINFO_SET_NC_NR, IOC_DINFO_NC_NR, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, device_nr_override), -OSAL_DEVICE_NR_STR_SZ},
+    {IOC_DINFO_SET_NC_NET, IOC_DINFO_NC_NET, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, network_name_override), -OSAL_NETWORK_NAME_SZ},
+    {IOC_DINFO_SET_NC_CONNECT, IOC_DINFO_NC_CONNECT, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, connect_to_override[0].parameters), -OSAL_HOST_BUF_SZ},
+#if OSAL_NSTATE_MAX_CONNECTIONS > 1
+    {IOC_DINFO_SET_NC_CONNECT_2, IOC_DINFO_NC_CONNECT_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, connect_to_override[1].parameters), -OSAL_HOST_BUF_SZ},
+#endif
+
 #if OSAL_SUPPORT_WIFI_NETWORK_CONF
     {IOC_DINFO_SET_NC_WIFI, IOC_DINFO_NC_WIFI, OSAL_NS_WIFI_NETWORK_NAME, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, wifi[0].wifi_net_name), -OSAL_WIFI_PRM_SZ},
     {IOC_DINFO_SET_NC_PASS, IOC_DINFO_NC_PASS, OSAL_NS_WIFI_PASSWORD, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, wifi[0].wifi_net_password), -OSAL_WIFI_PRM_SZ},
@@ -36,7 +45,27 @@ static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
     {IOC_DINFO_SET_NC_WIFI_2, IOC_DINFO_NC_WIFI_2, OSAL_NS_WIFI_NETWORK_NAME, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, wifi[1].wifi_net_name), -OSAL_WIFI_PRM_SZ},
     {IOC_DINFO_SET_NC_PASS_2, IOC_DINFO_NC_PASS_2, OSAL_NS_WIFI_PASSWORD, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, wifi[1].wifi_net_password), -OSAL_WIFI_PRM_SZ},
 #endif
-    #endif
+#endif
+
+#if OSAL_SUPPORT_STATIC_NETWORK_CONF
+    {IOC_DINFO_SET_NC_DHCP, IOC_DINFO_NC_DHCP, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].no_dhcp), OS_BOOLEAN|IOC_DINFO_NOT},
+    {IOC_DINFO_SET_NC_IP, IOC_DINFO_NC_IP, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].ip_address), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SUBNET, IOC_DINFO_NC_SUBNET, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].subnet_mask), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_GATEWAY, IOC_DINFO_NC_GATEWAY, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].gateway_address), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS, IOC_DINFO_NC_DNS, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].dns_address), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS2, IOC_DINFO_NC_DNS2, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].dns_address_2), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS, IOC_DINFO_NC_SEND_UDP_MULTICASTS, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].send_udp_multicasts), OS_BOOLEAN},
+#if OSAL_MAX_NRO_NICS > 1
+    {IOC_DINFO_SET_NC_DHCP_2, IOC_DINFO_NC_DHCP_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].no_dhcp), OS_BOOLEAN|IOC_DINFO_NOT},
+    {IOC_DINFO_SET_NC_IP_2, IOC_DINFO_NC_IP_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].ip_address), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SUBNET_2, IOC_DINFO_NC_SUBNET_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].subnet_mask), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_GATEWAY_2, IOC_DINFO_NC_GATEWAY_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].gateway_address), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS_2, IOC_DINFO_NC_DNS_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].dns_address), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS2_2, IOC_DINFO_NC_DNS2_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].dns_address_2), OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2, IOC_DINFO_NC_SEND_UDP_MULTICASTS_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].send_udp_multicasts), OS_BOOLEAN},
+#endif
+#endif
+
     {-1, 0, 0, 0, 0, 0}
 };
 

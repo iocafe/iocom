@@ -192,10 +192,19 @@ gotit:
 
         /* Connect to IP address, etc.
          */
-        if (node->wifi_pbnr_wifi.connect_to_override[0])
+        if (node->wifi_pbnr_wifi.connect_to_override[0].parameters[0])
         {
-            node->connections.connection[0].parameters = node->wifi_pbnr_wifi.connect_to_override;
+            node->connections.connection[0].parameters
+                = node->wifi_pbnr_wifi.connect_to_override[0].parameters;
         }
+
+#if OSAL_NSTATE_MAX_CONNECTIONS  > 1
+        if (node->wifi_pbnr_wifi.connect_to_override[1].parameters[0])
+        {
+            node->connections.connection[1].parameters
+                = node->wifi_pbnr_wifi.connect_to_override[1].parameters;
+        }
+#endif
     }
 }
 
