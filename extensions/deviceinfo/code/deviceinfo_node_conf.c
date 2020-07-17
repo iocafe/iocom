@@ -32,7 +32,7 @@ typedef struct dinfoSetSignalMapping
 }
 dinfoSetSignalMapping;
 
-#define IOC_DINFO_NOT 0x40
+// #define IOC_DINFO_NOT 0x40
 
 static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
     {IOC_DINFO_SET_NC_NR, IOC_DINFO_NC_NR, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, device_nr_override), -OSAL_DEVICE_NR_STR_SZ},
@@ -52,21 +52,21 @@ static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
 #endif
 
 #if OSAL_SUPPORT_STATIC_NETWORK_CONF
-    {IOC_DINFO_SET_NC_DHCP, IOC_DINFO_NC_DHCP, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].no_dhcp), OS_BOOLEAN|IOC_DINFO_NOT},
-    {IOC_DINFO_SET_NC_IP, IOC_DINFO_NC_IP, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].ip_address), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_SUBNET, IOC_DINFO_NC_SUBNET, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].subnet_mask), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_GATEWAY, IOC_DINFO_NC_GATEWAY, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].gateway_address), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_DNS, IOC_DINFO_NC_DNS, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].dns_address), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_DNS2, IOC_DINFO_NC_DNS2, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].dns_address_2), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS, IOC_DINFO_NC_SEND_UDP_MULTICASTS, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].send_udp_multicasts), OS_BOOLEAN},
+    {IOC_DINFO_SET_NC_DHCP, IOC_DINFO_NC_DHCP, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].dhcp), -OSAL_BOOL_STR_SZ},
+    {IOC_DINFO_SET_NC_IP, IOC_DINFO_NC_IP, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].ip_address), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SUBNET, IOC_DINFO_NC_SUBNET, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].subnet_mask), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_GATEWAY, IOC_DINFO_NC_GATEWAY, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].gateway_address), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS, IOC_DINFO_NC_DNS, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].dns_address), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS2, IOC_DINFO_NC_DNS2, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].dns_address_2), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS, IOC_DINFO_NC_SEND_UDP_MULTICASTS, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[0].send_udp_multicasts), -OSAL_BOOL_STR_SZ},
 #if OSAL_MAX_NRO_NICS > 1
-    {IOC_DINFO_SET_NC_DHCP_2, IOC_DINFO_NC_DHCP_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].no_dhcp), OS_BOOLEAN|IOC_DINFO_NOT},
-    {IOC_DINFO_SET_NC_IP_2, IOC_DINFO_NC_IP_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].ip_address), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_SUBNET_2, IOC_DINFO_NC_SUBNET_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].subnet_mask), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_GATEWAY_2, IOC_DINFO_NC_GATEWAY_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].gateway_address), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_DNS_2, IOC_DINFO_NC_DNS_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].dns_address), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_DNS2_2, IOC_DINFO_NC_DNS2_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].dns_address_2), OSAL_IPADDR_SZ},
-    {IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2, IOC_DINFO_NC_SEND_UDP_MULTICASTS_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].send_udp_multicasts), OS_BOOLEAN},
+    {IOC_DINFO_SET_NC_DHCP_2, IOC_DINFO_NC_DHCP_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].dhcp), -OSAL_BOOL_STR_SZ},
+    {IOC_DINFO_SET_NC_IP_2, IOC_DINFO_NC_IP_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].ip_address), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SUBNET_2, IOC_DINFO_NC_SUBNET_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].subnet_mask), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_GATEWAY_2, IOC_DINFO_NC_GATEWAY_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].gateway_address), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS_2, IOC_DINFO_NC_DNS_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].dns_address), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_DNS2_2, IOC_DINFO_NC_DNS2_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].dns_address_2), -OSAL_IPADDR_SZ},
+    {IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2, IOC_DINFO_NC_SEND_UDP_MULTICASTS_2, -1, 1, (os_ushort)offsetof(struct osalNodeConfOverrides, nics[1].send_udp_multicasts), -OSAL_BOOL_STR_SZ},
 #endif
 #endif
 
@@ -441,7 +441,6 @@ void dinfo_run_node_conf(
     const dinfoSetSignalMapping *m;
     const iocSignal **set_sigs, *ss;
     os_timer tmp_ti;
-    os_int x;
     os_char buf[OSAL_HOST_BUF_SZ], *p, state_bits;
     os_boolean save_now;
 
@@ -478,7 +477,7 @@ void dinfo_run_node_conf(
                     }
                 }
             }
-            else {
+            /* else {
                 x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
                 if (state_bits & OSAL_STATE_CONNECTED) {
                     switch (m->sz & OSAL_TYPEID_MASK) {
@@ -491,7 +490,7 @@ void dinfo_run_node_conf(
                             break;
                     }
                 }
-            }
+            } */
         }
 
         if (save_now) {
