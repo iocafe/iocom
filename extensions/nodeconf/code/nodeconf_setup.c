@@ -163,10 +163,10 @@ gotit:
      */
     if (flags & IOC_LOAD_PBNR_WIFI)
     {
-        os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&node->wifi_pbnr_wifi, sizeof(osalNodeConfOverrides));
+        os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&node->overrides, sizeof(osalNodeConfOverrides));
         for (i = 0; i < OSAL_MAX_NRO_WIFI_NETWORKS; i++)
         {
-            wifibuf = &node->wifi_pbnr_wifi.wifi[i];
+            wifibuf = &node->overrides.wifi[i];
             if (wifibuf->wifi_net_name[0] /* && wifibuf->wifi_net_password[0] */)
             {
                 node->wifi[i].wifi_net_name = wifibuf->wifi_net_name;
@@ -177,32 +177,32 @@ gotit:
 
         /* Network name.
          */
-        if (node->wifi_pbnr_wifi.network_name_override[0])
+        if (node->overrides.network_name_override[0])
         {
-            node->device_id.network_name = node->wifi_pbnr_wifi.network_name_override;
+            node->device_id.network_name = node->overrides.network_name_override;
         }
 
         /* Device number.
          */
-        if (node->wifi_pbnr_wifi.device_nr_override[0])
+        if (node->overrides.device_nr_override[0])
         {
-            i = (os_int)osal_str_to_int(node->wifi_pbnr_wifi.device_nr_override, OS_NULL);
+            i = (os_int)osal_str_to_int(node->overrides.device_nr_override, OS_NULL);
             if (i > 0) node->device_id.device_nr = i;
         }
 
         /* Connect to IP address, etc.
          */
-        if (node->wifi_pbnr_wifi.connect_to_override[0].parameters[0])
+        if (node->overrides.connect_to_override[0].parameters[0])
         {
             node->connections.connection[0].parameters
-                = node->wifi_pbnr_wifi.connect_to_override[0].parameters;
+                = node->overrides.connect_to_override[0].parameters;
         }
 
 #if OSAL_NSTATE_MAX_CONNECTIONS  > 1
-        if (node->wifi_pbnr_wifi.connect_to_override[1].parameters[0])
+        if (node->overrides.connect_to_override[1].parameters[0])
         {
             node->connections.connection[1].parameters
-                = node->wifi_pbnr_wifi.connect_to_override[1].parameters;
+                = node->overrides.connect_to_override[1].parameters;
         }
 #endif
     }

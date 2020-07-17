@@ -116,7 +116,7 @@ typedef struct iocNodeConf
 
     /** Wifi can alternatively set in persistent block OS_PBNR_NODE_CONF.
      */
-    osalNodeConfOverrides wifi_pbnr_wifi;
+    osalNodeConfOverrides overrides;
 
     /** Structure for passing information about all WiFi networks
      */

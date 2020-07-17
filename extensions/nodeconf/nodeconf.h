@@ -30,7 +30,7 @@ OSAL_C_HEADER_BEGINS
 
 /* Include all nodeconf headers.
  */
-#include "extensions/nodeconf/code/nodeconf_data_struct.h"
+#include "code/nodeconf_data_struct.h"
 #include "code/nodeconf_setup.h"
 #include "code/nodeconf_connect.h"
 #include "code/nodeconf_lighthouse.h"
