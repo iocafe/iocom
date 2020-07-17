@@ -391,6 +391,7 @@ osalStatus osal_loop(
 
     ioc_autosave_parameters();
     dinfo_run_node_conf(&dinfo_nc, &ti);
+    dinfo_run_resource_monitor(&dinfo_rm, &ti);
 
     return s;
 }

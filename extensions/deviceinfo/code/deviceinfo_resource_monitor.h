@@ -18,7 +18,17 @@
  */
 typedef enum dinfoResMonSigEnum
 {
-    IOC_DINFO_RM_,
+    IOC_DINFO_RM_MALLOC,
+    IOC_DINFO_RM_MUSE,
+    IOC_DINFO_RM_THREADS,
+    IOC_DINFO_RM_EVENTS,
+    IOC_DINFO_RM_MUTEXES,
+    IOC_DINFO_RM_SOCKETS,
+    IOC_DINFO_RM_CONNECTS,
+    IOC_DINFO_RM_TXBYTES,
+    IOC_DINFO_RM_RXBYTES,
+    IOC_DINFO_RM_AVELOOP,
+    IOC_DINFO_RM_MAXLOOP,
 
     IOC_DINFO_RM_NRO_SIGNALS
 }
@@ -50,7 +60,18 @@ dinfoResMonState;
  */
 #define DINFO_SET_COMMON_RESOURCE_MONITOR_SIGNALS(sigs, staticsigs)  \
     os_memclear(&sigs, sizeof(dinfoSystemSpecSigEnum)); \
-    sigs.sig[IOC_DINFO_RM_] = &staticsigs.exp.si_package;
+    sigs.sig[IOC_DINFO_RM_MALLOC] = &staticsigs.exp.rm_malloc; \
+    sigs.sig[IOC_DINFO_RM_MUSE] = &staticsigs.exp.rm_muse; \
+    sigs.sig[IOC_DINFO_RM_THREADS] = &staticsigs.exp.rm_threads; \
+    sigs.sig[IOC_DINFO_RM_EVENTS] = &staticsigs.exp.rm_events; \
+    sigs.sig[IOC_DINFO_RM_MUTEXES] = &staticsigs.exp.rm_mutexes; \
+    sigs.sig[IOC_DINFO_RM_SOCKETS] = &staticsigs.exp.rm_sockets; \
+    sigs.sig[IOC_DINFO_RM_CONNECTS] = &staticsigs.exp.rm_connects; \
+    sigs.sig[IOC_DINFO_RM_TXBYTES] = &staticsigs.exp.rm_txbytes; \
+    sigs.sig[IOC_DINFO_RM_RXBYTES] = &staticsigs.exp.rm_rxbytes; \
+    sigs.sig[IOC_DINFO_RM_AVELOOP] = &staticsigs.exp.rm_aveloop; \
+    sigs.sig[IOC_DINFO_RM_MAXLOOP] = &staticsigs.exp.rm_maxloop;
+
 
 /* Initialize resource monitor state structure and store IO signal pointers.
  */
@@ -58,7 +79,7 @@ void dinfo_initialize_resource_monitor(
    dinfoResMonState *dinfo_rm,
    dinfoResMonSignals *sigs);
 
-/* Move changes to resource monitor data to signals. Can be called from application main loop.
+/* Move changes to resource monitor data to signals. Must be called from application main loop.
  */
 void dinfo_run_resource_monitor(
     dinfoResMonState *dinfo_rm,

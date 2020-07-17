@@ -26,6 +26,8 @@
 
   X
 
+  This mu
+
   @param   X
   @return  X
 
@@ -37,15 +39,18 @@ void dinfo_initialize_resource_monitor(
 {
     os_memclear(dinfo_rm, sizeof(dinfoResMonState));
     os_memcpy(&dinfo_rm->sigs, sigs, sizeof(dinfoResMonSignals));
+    os_get_timer(&dinfo_rm->update_timer);
 }
 
-/* Move changes to resource monitor data to signals. Can be called from application main loop.
+/* Move changes to resource monitor data to signals. Must be called from application main loop.
  */
 void dinfo_run_resource_monitor(
     dinfoResMonState *dinfo_rm,
     os_timer *ti)
 {
+    osalResourceMonitorState *rs;
     os_timer tmp_ti;
+    os_int elapsed_ms;
 
     if (ti == OS_NULL) {
         os_get_timer(&tmp_ti);
@@ -55,6 +60,10 @@ void dinfo_run_resource_monitor(
     if (!os_has_elapsed_since(&dinfo_rm->update_timer, ti, OSAL_RESOURCE_MONITOR_PERIOD)) {
         return;
     }
+    elapsed_ms = os_get_ms_elapsed(&dinfo_rm->update_timer, ti);
+    dinfo_rm->update_timer = *ti;
+    rs = &osal_global->resstate;
+
 
 }
 
