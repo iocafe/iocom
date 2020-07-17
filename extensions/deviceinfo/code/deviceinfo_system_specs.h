@@ -51,6 +51,8 @@ dinfoSystemSpeSignals;
     sigs.sig[IOC_DINFO_SI_ARCH] = &staticsigs.exp.si_arch; \
     sigs.sig[IOC_DINFO_SI_HW] = &staticsigs.exp.si_hw;
 
+/* Publish specification in memory block signals.
+ */
 void dinfo_set_system_specs(
     dinfoSystemSpeSignals *sigs,
     os_char *hw);

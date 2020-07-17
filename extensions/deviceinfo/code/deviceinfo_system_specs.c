@@ -6,6 +6,8 @@
   @version 1.0
   @date    15.7.2020
 
+  Publish software version, operating system, architecture and IO device hardware information.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -15,16 +17,18 @@
 */
 #include "deviceinfo.h"
 
-
 /**
 ****************************************************************************************************
 
-  @brief X
+  @brief Publish specification in memory block signals.
 
-  X
+  Set values for software version, operating system, architecture and IO device hardware
+  information. signals.
 
-  @param   X
-  @return  X
+  @param   sigs Structure containing pointers to system specfication related signals.
+  @param   hw IO device hardware from string. This can be define based on JSON configuration,
+           like CANDY_HW.
+  @return  None
 
 ****************************************************************************************************
 */

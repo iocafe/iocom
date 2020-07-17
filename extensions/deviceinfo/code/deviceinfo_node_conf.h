@@ -115,7 +115,7 @@ dinfoNodeConfSignals;
 
 /* Node configuration state
  */
-typedef struct
+typedef struct dinfoNodeConfState
 {
     dinfoNodeConfSignals sigs;
 
@@ -139,18 +139,18 @@ typedef struct
     os_timer
         modified_timer;
 }
-dinfoNodeConf;
+dinfoNodeConfState;
 
-/* Clear network configuration in device information and store IO signal pointers.
+/* Initialize node configuration state structure and store IO signal pointers.
  */
 void dinfo_initialize_node_conf(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     dinfoNodeConfSignals *sigs);
 
 /* Set device information about network configuration.
  */
 void dinfo_set_node_conf(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     iocDeviceId *device_id,
     iocConnectionConfig *connconf,
     iocNetworkInterfaces *nics,
@@ -160,13 +160,13 @@ void dinfo_set_node_conf(
 /* Check if we need to save or reboot. Can be called from application main loop.
  */
 void dinfo_run_node_conf(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     os_timer *ti);
 
 /* Handle "set_*" signal changes.
  */
 void dinfo_node_conf_callback(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     const iocSignal *check_signals,
     os_int n_signals,
     os_ushort flags);

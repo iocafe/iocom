@@ -14,12 +14,15 @@
 ****************************************************************************************************
 */
 #include "deviceinfo.h"
+#if OSAL_RESOURCE_MONITOR
+
+#define OSAL_RESOURCE_MONITOR_PERIOD 1200
 
 
 /**
 ****************************************************************************************************
 
-  @brief X
+  @brief Initialize resource monitor state structure and store IO signal pointers.
 
   X
 
@@ -28,8 +31,31 @@
 
 ****************************************************************************************************
 */
-void ioc_dinfo_resource_monitor(
-    void)
+void dinfo_initialize_resource_monitor(
+   dinfoResMonState *dinfo_rm,
+   dinfoResMonSignals *sigs)
 {
+    os_memclear(dinfo_rm, sizeof(dinfoResMonState));
+    os_memcpy(&dinfo_rm->sigs, sigs, sizeof(dinfoResMonSignals));
 }
 
+/* Move changes to resource monitor data to signals. Can be called from application main loop.
+ */
+void dinfo_run_resource_monitor(
+    dinfoResMonState *dinfo_rm,
+    os_timer *ti)
+{
+    os_timer tmp_ti;
+
+    if (ti == OS_NULL) {
+        os_get_timer(&tmp_ti);
+        ti = &tmp_ti;
+    }
+
+    if (!os_has_elapsed_since(&dinfo_rm->update_timer, ti, OSAL_RESOURCE_MONITOR_PERIOD)) {
+        return;
+    }
+
+}
+
+#endif

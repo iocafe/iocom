@@ -96,10 +96,10 @@ static void dinfo_nc_net_state_notification_handler(
 ****************************************************************************************************
 */
 void dinfo_initialize_node_conf(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     dinfoNodeConfSignals *sigs)
 {
-    os_memclear(dinfo_nc, sizeof(dinfoNodeConf));
+    os_memclear(dinfo_nc, sizeof(dinfoNodeConfState));
     os_memcpy(&dinfo_nc->sigs, sigs, sizeof(dinfoNodeConfSignals));
 }
 
@@ -124,7 +124,7 @@ void dinfo_initialize_node_conf(
 ****************************************************************************************************
 */
 void dinfo_set_node_conf(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     iocDeviceId *device_id,
     iocConnectionConfig *connconf,
     iocNetworkInterfaces *nics,
@@ -265,8 +265,8 @@ static void dinfo_nc_net_state_notification_handler(
     const iocSignal *sig;
     os_char buf[OSAL_IPADDR_AND_PORT_SZ+1], *p;
     osalMorseCodeEnum code;
-    dinfoNodeConf *dinfo_nc;
-    dinfo_nc = (dinfoNodeConf*)context;
+    dinfoNodeConfState *dinfo_nc;
+    dinfo_nc = (dinfoNodeConfState*)context;
 
     code = osal_network_state_to_morse_code(net_state);
     ioc_set(dinfo_nc->sigs.sig[IOC_DINFO_NC_STATUS], code);
@@ -346,7 +346,7 @@ static void dinfo_nc_net_state_notification_handler(
 ****************************************************************************************************
 */
 void dinfo_node_conf_callback(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     const iocSignal *check_signals,
     os_int n_signals,
     os_ushort flags)
@@ -434,7 +434,7 @@ void dinfo_node_conf_callback(
 ****************************************************************************************************
 */
 void dinfo_run_node_conf(
-    dinfoNodeConf *dinfo_nc,
+    dinfoNodeConfState *dinfo_nc,
     os_timer *ti)
 {
     osalNodeConfOverrides block;

@@ -62,7 +62,8 @@ static MorseCode morse;
 
 /* Device information.
  */
-static dinfoNodeConf dinfo_nc;
+static dinfoNodeConfState dinfo_nc;
+static dinfoResMonState dinfo_rm;
 
 /* Maximum number of sockets, etc.
  */
@@ -126,6 +127,7 @@ osalStatus osal_main(
     osPersistentParams persistentprm;
     dinfoNodeConfSignals nc_sigs;
     dinfoSystemSpeSignals si_sigs;
+    dinfoResMonSignals rm_sigs;
     OSAL_UNUSED(argc);
     OSAL_UNUSED(argv);
 
@@ -172,7 +174,9 @@ osalStatus osal_main(
     /* Initialize up device information.
      */
     DINFO_SET_COMMON_NET_CONF_SIGNALS_FOR_WIFI(nc_sigs, candy);
+    DINFO_SET_COMMON_RESOURCE_MONITOR_SIGNALS(rm_sigs, candy);
     dinfo_initialize_node_conf(&dinfo_nc, &nc_sigs);
+    dinfo_initialize_resource_monitor(&dinfo_rm, &rm_sigs);
 
     /* Get stream interface by IOBOARD_CTRL_CON define.
      */
