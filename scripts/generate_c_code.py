@@ -150,6 +150,7 @@ def signals_to_c(server_flag, signals_name, pins_name):
         if os.path.exists(pins_json):
             cmd += ' -p ' + pins_json
     cmd += ' -o ' + MYINCLUDE + '/' + MYHW + '/' + signals_name + '.c'
+    cmd += ' -h ' + MYHW
     if server_flag != None:
         cmd += ' -a ' + server_flag
     CFILES.append(signals_name)

@@ -410,7 +410,7 @@ def preprocess_json(preprocessed, data):
 
 def process_source_file(path):
     global cfile, hfile, array_list, signal_list
-    global device_name, define_list, mblk_nr, nro_mblks, mblk_list
+    global device_name, hw, define_list, mblk_nr, nro_mblks, mblk_list
     read_file = open(path, "r")
     if read_file:
         data = json.load(read_file)
@@ -490,6 +490,9 @@ def process_source_file(path):
         else:
             hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s);\n')
 
+        hfile.write('\n/* IO device hardware version. */\n')
+        hfile.write('#define ' + device_name.upper() + '_HW \"' + hw + '\"\n')
+
         if len(array_list) > 0:
             hfile.write('\n/* Array length defines. */\n')
             for p in array_list:
@@ -535,7 +538,7 @@ def list_pins_in_pinsfile(path):
         print("Opening file " + path + " failed")
 
 def mymain():
-    global cfilepath, hfilepath, pinlist, device_name, is_controller, is_dynamic
+    global cfilepath, hfilepath, pinlist, device_name, hw, is_controller, is_dynamic
 
     # Get command line arguments
     n = len(sys.argv)
@@ -544,6 +547,7 @@ def mymain():
     pinspath = None
     expectpath = True
     device_name = None
+    hw = 'generic'
     application_type = "iodevice"
     for i in range(1, n):
         if sys.argv[i][0] == "-":
@@ -565,6 +569,10 @@ def mymain():
                 #   "controller-static" Controller using static addressess and types to match data with IO device
                 #   "controller-dynamic" Controller using signal names to match types and
                 application_type = sys.argv[i+1]
+                expectpath = False
+
+            if sys.argv[i][1] == "h":
+                hw = sys.argv[i+1]
                 expectpath = False
 
         else:

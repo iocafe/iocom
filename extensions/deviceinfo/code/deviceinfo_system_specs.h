@@ -52,4 +52,5 @@ dinfoSystemSpeSignals;
     sigs.sig[IOC_DINFO_SI_HW] = &staticsigs.exp.si_hw;
 
 void dinfo_set_system_specs(
-    dinfoSystemSpeSignals *sigs);
+    dinfoSystemSpeSignals *sigs,
+    os_char *hw);

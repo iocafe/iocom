@@ -29,14 +29,15 @@
 ****************************************************************************************************
 */
 void dinfo_set_system_specs(
-    dinfoSystemSpeSignals *sigs)
+    dinfoSystemSpeSignals *sigs,
+    os_char *hw)
 {
     ioc_set_str(sigs->sig[IOC_DINFO_SI_PACKAGE], OSAL_BUILD_DATETIME);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_EOSAL], EOSAL_VERSION);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_IOCOM], IOCOM_VERSION);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_OS], OSAL_OS_NAME);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_ARCH], OSAL_ARCH_NAME);
-    // ioc_set_str(sigs->sig[IOC_DINFO_SI_HW], MY_HW_NAME);
+    ioc_set_str(sigs->sig[IOC_DINFO_SI_HW], hw);
 }
 
 
