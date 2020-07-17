@@ -58,7 +58,10 @@ class IoSignalItem(Item):
                 else:
                     self.my_text.text = 'long array...'
             else:
-                self.my_text.text = str(v[1])
+                if isinstance(v[1], float):
+                    self.my_text.text = str(round(v[1], 4))
+                else:                    
+                    self.my_text.text = str(v[1])
 
     def my_user_input(self, instance):
         try:

@@ -32,7 +32,6 @@ typedef struct dinfoSetSignalMapping
 }
 dinfoSetSignalMapping;
 
-// #define IOC_DINFO_NOT 0x40
 
 static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
     {IOC_DINFO_SET_NC_NR, IOC_DINFO_NC_NR, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, device_nr_override), -OSAL_DEVICE_NR_STR_SZ},
@@ -72,6 +71,14 @@ static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
 
     {-1, 0, 0, 0, 0, 0}
 };
+
+/* Integer type spoort not needed, all are strings. Souce code kept just in case behind ifdef.
+ */
+#define OSAL_NC_SUPPORT_INTTYPES 0
+
+#if OSAL_NC_SUPPORT_INTTYPES
+#define IOC_DINFO_NOT 0x40
+#endif
 
 
 /* Forward referred static functions.
@@ -385,12 +392,14 @@ void dinfo_node_conf_callback(
             if (!os_strcmp(buf, buf2)) {state_bits = 0; }
             else { ioc_set_str(ds, buf); }
         }
+#if OSAL_NC_SUPPORT_INTTYPES
         else {
             x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
             if (state_bits & OSAL_STATE_CONNECTED) {
                 ioc_set(ds, x);
             }
         }
+#endif
 
         if (state_bits & OSAL_STATE_CONNECTED) {
             os_get_timer(&dinfo_nc->modified_timer);
@@ -477,7 +486,8 @@ void dinfo_run_node_conf(
                     }
                 }
             }
-            /* else {
+#if OSAL_NC_SUPPORT_INTTYPES
+            else {
                 x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
                 if (state_bits & OSAL_STATE_CONNECTED) {
                     switch (m->sz & OSAL_TYPEID_MASK) {
@@ -490,7 +500,8 @@ void dinfo_run_node_conf(
                             break;
                     }
                 }
-            } */
+            }
+#endif
         }
 
         if (save_now) {

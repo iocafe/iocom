@@ -173,7 +173,23 @@ void ioc_move(
             else  sb &= ~OSAL_STATE_BOOLEAN_VALUE;
 
             *(p++) = vv[i].state_bits = sb;
-            ioc_byte_ordered_copy(p, (os_char*)&vv[i].value, type_sz, type_sz);
+
+            switch (type_id)
+            {
+                default:
+                case OS_CHAR:   tconv.c = (os_char)vv[i].value.l; break;
+                case OS_UCHAR:  tconv.uc = (os_uchar)vv[i].value.l; break;
+                case OS_SHORT:  tconv.s = (os_short)vv[i].value.l; break;
+                case OS_USHORT: tconv.us = (os_ushort)vv[i].value.l; break;
+                case OS_INT:    tconv.i = (os_int)vv[i].value.l; break;
+                case OS_UINT:   tconv.ui = (os_uint)vv[i].value.l; break;
+                case OS_INT64:
+                case OS_LONG:   tconv.l = vv[i].value.l; break;
+                case OS_FLOAT:  tconv.f = (os_float)vv[i].value.d; break;
+                case OS_DOUBLE: tconv.d = vv[i].value.d; break;
+            }
+
+            ioc_byte_ordered_copy(p, (os_char*)&tconv, type_sz, type_sz);
             ioc_mblk_invalidate(mblk, addr, (os_int)(addr + type_sz) /* no -1, we need also state byte */);
         }
         else

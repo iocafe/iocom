@@ -50,6 +50,13 @@ typedef struct dinfoResMonState
 #if OSAL_RESOURCE_MONITOR
     dinfoResMonSignals sigs;
     os_timer update_timer;
+
+    os_timer loop_timer;
+    os_int maxloop_ms;
+    os_int loop_count;
+    os_int prev_loop_period_100us;
+    os_int prev_maxloop_ms;
+    os_boolean initialized;
 #endif
 }
 dinfoResMonState;
