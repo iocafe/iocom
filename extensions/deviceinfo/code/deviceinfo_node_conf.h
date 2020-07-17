@@ -44,7 +44,7 @@ typedef enum dinfoNodeConfSigEnum
     IOC_DINFO_NC_SEND_UDP_MULTICASTS_2,
     IOC_DINFO_NC_MAC_2,
     IOC_DINFO_NC_STATUS,
-    IOC_DINFO_NRO_SIGNALS
+    IOC_DINFO_NC_NRO_SIGNALS
 }
 dinfoNodeConfSigEnum;
 
@@ -80,7 +80,7 @@ typedef enum dinfoNodeConfSetSigEnum
     IOC_DINFO_SET_NC_FACTORY_RST,
     IOC_DINFO_SET_NC_COMLOOP,
 
-    IOC_DINFO_NRO_SET_SIGNALS
+    IOC_DINFO_NRO_SET_NC_SIGNALS
 }
 dinfoNodeConfSetSigEnum;
 
@@ -89,8 +89,8 @@ dinfoNodeConfSetSigEnum;
 typedef struct dinfoNodeConfSignals
 {
     const iocSignal
-        *sig[IOC_DINFO_NRO_SIGNALS],
-        *set_sig[IOC_DINFO_NRO_SET_SIGNALS];
+        *sig[IOC_DINFO_NC_NRO_SIGNALS],
+        *set_sig[IOC_DINFO_NRO_SET_NC_SIGNALS];
 }
 dinfoNodeConfSignals;
 

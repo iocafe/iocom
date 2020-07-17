@@ -125,6 +125,7 @@ osalStatus osal_main(
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
     dinfoNodeConfSignals nc_sigs;
+    dinfoSystemSpeSignals si_sigs;
     OSAL_UNUSED(argc);
     OSAL_UNUSED(argv);
 
@@ -225,6 +226,8 @@ osalStatus osal_main(
     /* Initialize up device information.
      */
     dinfo_set_node_conf(&dinfo_nc, device_id, connconf, nics, wifis, security);
+    DINFO_SET_COMMON_SYSTEM_SPECS_SIGNALS(si_sigs, candy);
+    dinfo_set_system_specs(&si_sigs);
 
     /* Set callback to pass communcation to pins.
      */
@@ -384,7 +387,6 @@ osalStatus osal_loop(
 
     ioc_autosave_parameters();
     dinfo_run_node_conf(&dinfo_nc, &ti);
-
 
     return s;
 }

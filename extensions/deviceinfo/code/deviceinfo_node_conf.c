@@ -223,7 +223,7 @@ void dinfo_set_node_conf(
 
     mina = 0x7FFFFFFF;
     maxa = -1;
-    for (i = 0; i<IOC_DINFO_NRO_SET_SIGNALS; i++) {
+    for (i = 0; i<IOC_DINFO_NRO_SET_NC_SIGNALS; i++) {
         if (dinfo_nc->sigs.set_sig[i] == OS_NULL) {
             continue;
         }
