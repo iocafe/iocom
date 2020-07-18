@@ -93,12 +93,14 @@ static void dinfo_nc_net_state_notification_handler(
 
   @brief Initialize and store IO signal pointers.
 
-  Called at startup.
+  Called from initialization code during program startup.
 
-  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
-  @return  sigs Structure containing signal pointers to set. Macros like
+  @param   dinfo_nc Pointer to device's network configuration state structure.
+           This pointer is used as "handle".
+  @param   sigs Structure containing signal pointers to set. Macros like
            DINFO_SET_COMMON_NET_CONF_SIGNALS_FOR_WIFI can be used to initialize typical
            signal pointers.
+  @return  None
 
 ****************************************************************************************************
 */
@@ -120,7 +122,8 @@ void dinfo_initialize_node_conf(
   notification handler to detect changes run time. The nodeconf library provides pointers
   to initialized decice_id, connconf, nics... structure.
 
-  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
+  @param   dinfo_nc Pointer to device's network configuration state structure.
+           This pointer is used as "handle".
   @param   device_id Device identification structure.
   @param   connconf Connection configuration structure.
   @param   nics Information about network interface "cards".
@@ -260,7 +263,7 @@ void dinfo_set_node_conf(
   changes. Shows the items automatically detected in device infomration.
 
   @param   net_state Network state structure.
-  @param   context Pointer to network device info structure.
+  @param   context Pointer to network device's network configuration state structure.
   @return  None.
 
 ****************************************************************************************************
@@ -344,7 +347,8 @@ static void dinfo_nc_net_state_notification_handler(
   The dinfo_node_conf_callback() function is called by communication callback to process
   changes to "set_" signals to configure the IO device.
 
-  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
+  @param   dinfo_nc Pointer to device's network configuration state structure.
+           This pointer is used as "handle".
   @param   check_signals Array of signals which may have changed.
   @param   n_signals Number of items in check_signals array.
   @param   flags Flags of communication callback forwarded.
@@ -436,7 +440,8 @@ void dinfo_node_conf_callback(
   The dinfo_run_node_conf() function is called repeatedly to check if we need to save
   configuration changes to persistent storage or reboot.
 
-  @param   dinfo_nc Pointer to device info structure. This pointer is used as "handle".
+  @param   dinfo_nc Pointer to device's network configuration state structure.
+           This pointer is used as "handle".
   @param   ti Current timer value, If OS_NULL timer is read by function call.
   @return  None.
 

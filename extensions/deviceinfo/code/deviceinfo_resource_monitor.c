@@ -6,6 +6,8 @@
   @version 1.0
   @date    15.7.2020
 
+  Publish main loop timing and resource counters collected by EOSAL as IO signals.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -24,34 +26,48 @@ typedef struct dinfoResMonMapItem
 }
 dinfoResMonMapItem;
 
-static OS_FLASH_MEM dinfoResMonMapItem dinfo_rm_map[] = {
-    {IOC_DINFO_RM_MALLOC, OSAL_RMON_SYSTEM_MEMORY_ALLOCATION},
-    {IOC_DINFO_RM_MUSE, OSAL_RMON_SYSTEM_MEMORY_USE},
-    {IOC_DINFO_RM_THREADS ,OSAL_RMON_THREAD_COUNT},
-    {IOC_DINFO_RM_EVENTS, OSAL_RMON_EVENT_COUNT},
-    {IOC_DINFO_RM_MUTEXES, OSAL_RMON_MUTEX_COUNT},
-    {IOC_DINFO_RM_SOCKETS, OSAL_RMON_SOCKET_COUNT},
-    {IOC_DINFO_RM_CONNECTS, OSAL_RMON_SOCKET_CONNECT_COUNT},
-    {IOC_DINFO_RM_TX_TCP, OSAL_RMON_TX_TCP},
-    {IOC_DINFO_RM_RX_TCP, OSAL_RMON_RX_TCP},
-    {IOC_DINFO_RM_TX_UDP, OSAL_RMON_TX_UDP},
-    {IOC_DINFO_RM_RX_UDP, OSAL_RMON_RX_UDP},
-    {IOC_DINFO_RM_TX_SERIAL, OSAL_RMON_TX_SERIAL},
-    {IOC_DINFO_RM_RX_SERIAL, OSAL_RMON_RX_SERIAL}};
+static OS_FLASH_MEM dinfoResMonMapItem dinfo_rm_map[] =
+{
+     {IOC_DINFO_RM_MALLOC, OSAL_RMON_SYSTEM_MEMORY_ALLOCATION}
+    ,{IOC_DINFO_RM_MUSE, OSAL_RMON_SYSTEM_MEMORY_USE}
+#if OSAL_MULTITHREAD_SUPPORT
+    ,{IOC_DINFO_RM_THREADS ,OSAL_RMON_THREAD_COUNT}
+    ,{IOC_DINFO_RM_EVENTS, OSAL_RMON_EVENT_COUNT}
+    ,{IOC_DINFO_RM_MUTEXES, OSAL_RMON_MUTEX_COUNT}
+#endif
+#if OSAL_FILESYS_SUPPORT
+    ,{IOC_DINFO_RM_FILE_HANDLES, OSAL_RMON_FILE_HANDLE_COUNT}
+#endif
+#if OSAL_SOCKET_SUPPORT
+    ,{IOC_DINFO_RM_SOCKETS, OSAL_RMON_SOCKET_COUNT}
+    ,{IOC_DINFO_RM_CONNECTS, OSAL_RMON_SOCKET_CONNECT_COUNT}
+    ,{IOC_DINFO_RM_TX_TCP, OSAL_RMON_TX_TCP}
+    ,{IOC_DINFO_RM_RX_TCP, OSAL_RMON_RX_TCP}
+    ,{IOC_DINFO_RM_TX_UDP, OSAL_RMON_TX_UDP}
+    ,{IOC_DINFO_RM_RX_UDP, OSAL_RMON_RX_UDP}
+#endif
+#if OSAL_SERIAL_SUPPORT
+    ,{IOC_DINFO_RM_TX_SERIAL, OSAL_RMON_TX_SERIAL}
+    ,{IOC_DINFO_RM_RX_SERIAL, OSAL_RMON_RX_SERIAL}
+#endif
+};
 
 #define DINFO_RM_MAP_LEN (sizeof( dinfo_rm_map)/sizeof(dinfoResMonMapItem))
+
 
 /**
 ****************************************************************************************************
 
   @brief Initialize resource monitor state structure and store IO signal pointers.
 
-  X
+  Called from initialization code during program startup.
 
-  This mu
-
-  @param   X
-  @return  X
+  @param   dinfo_rm Pointer to published resource monitor state structure.
+           This pointer is used as "handle".
+  @param   sigs Structure containing signal pointers to set. Macros like
+           DINFO_SET_COMMON_RESOURCE_MONITOR_SIGNALS can be used to initialize typical
+           signal pointers.
+  @return  None
 
 ****************************************************************************************************
 */
@@ -64,8 +80,24 @@ void dinfo_initialize_resource_monitor(
     os_get_timer(&dinfo_rm->update_timer);
 }
 
-/* Move changes to resource monitor data to signals. Must be called from application main loop.
- */
+
+/**
+****************************************************************************************************
+
+  @brief Check if we need to save or reboot
+  @anchor dinfo_run_node_conf
+
+  The dinfo_run_resource_monitor() function is called repeatedly to move changes to resource
+  monitor data to signals. This must be be called from application main loop, on every loop
+  since the function handles main loop timing.
+
+  @param   dinfo_rm Pointer to published resource monitor state structure.
+           This pointer is used as "handle".
+  @param   ti Current timer value, If OS_NULL timer is read by function call.
+  @return  None.
+
+****************************************************************************************************
+*/
 void dinfo_run_resource_monitor(
     dinfoResMonState *dinfo_rm,
     os_timer *ti)
@@ -116,10 +148,6 @@ void dinfo_run_resource_monitor(
                 if (sig) ioc_set(sig, rs->current[si]);
                 rs->changed[si] = OS_FALSE;
             }
-
-            /** Peak resource counter values
-             */
-            // os_memsz peak[OSAL_RMON_COUNTERS_SZ];
         }
     }
 

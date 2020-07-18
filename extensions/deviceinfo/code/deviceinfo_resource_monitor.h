@@ -6,6 +6,8 @@
   @version 1.0
   @date    15.7.2020
 
+  Publish main loop timing and resource counters collected by EOSAL as IO signals.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -23,6 +25,7 @@ typedef enum dinfoResMonSigEnum
     IOC_DINFO_RM_THREADS,
     IOC_DINFO_RM_EVENTS,
     IOC_DINFO_RM_MUTEXES,
+    IOC_DINFO_RM_FILE_HANDLES,
     IOC_DINFO_RM_SOCKETS,
     IOC_DINFO_RM_CONNECTS,
     IOC_DINFO_RM_TX_TCP,
