@@ -34,6 +34,7 @@
           {"name": "set_nc_wifi", "type": "str", "array": 16},
           {"name": "set_nc_pass", "type": "str", "array": 16},
           {"name": "reboot", "type": "boolean"},
+          {"name": "forget_it", "type": "boolean"},
           {"name": "factory_rst", "type": "boolean"}
         ]
       }

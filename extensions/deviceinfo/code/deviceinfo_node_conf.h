@@ -77,6 +77,7 @@ typedef enum dinfoNodeConfSetSigEnum
     IOC_DINFO_SET_NC_DNS2_2,
     IOC_DINFO_SET_NC_SEND_UDP_MULTICASTS_2,
     IOC_DINFO_SET_NC_REBOOT,
+    IOC_DINFO_SET_NC_FORGET_IT,
     IOC_DINFO_SET_NC_FACTORY_RST,
     IOC_DINFO_SET_NC_COMLOOP,
 
@@ -134,6 +135,7 @@ typedef struct dinfoNodeConfState
     os_boolean
         modified_common,
         reboot,
+        forget_it,
         factory_reset;
 
     os_timer

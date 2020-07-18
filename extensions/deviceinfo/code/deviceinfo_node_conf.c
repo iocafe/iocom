@@ -110,6 +110,10 @@ void dinfo_initialize_node_conf(
 {
     os_memclear(dinfo_nc, sizeof(dinfoNodeConfState));
     os_memcpy(&dinfo_nc->sigs, sigs, sizeof(dinfoNodeConfSignals));
+
+#if OSAL_SUPPORT_STATIC_NETWORK_CONF == 0
+    dinfo_nc->dhcp = dinfo_nc->dhcp_2 = OS_TRUE;
+#endif
 }
 
 
@@ -175,6 +179,7 @@ void dinfo_set_node_conf(
         dinfo_nc->connect_to_set = (os_boolean)(p[0] != '\0' && os_strcmp(p, osal_str_asterisk));
     }
 
+#if OSAL_SUPPORT_WIFI_NETWORK_CONF
     /* Wifi
      * WE COULD IFDEF OSAL_WIFI_SUPPORT, ETC
      */
@@ -194,9 +199,11 @@ void dinfo_set_node_conf(
         }
 #endif
     }
+#endif
 
     /* NICs
      */
+#if OSAL_SUPPORT_STATIC_NETWORK_CONF
     if (nics) if (nics->n_nics >= 1)
     {
         dhcp = !nics->nic[0].no_dhcp;
@@ -230,6 +237,7 @@ void dinfo_set_node_conf(
         }
 #endif
     }
+#endif
 
     mina = 0x7FFFFFFF;
     maxa = -1;
@@ -281,6 +289,7 @@ static void dinfo_nc_net_state_notification_handler(
     code = osal_network_state_to_morse_code(net_state);
     ioc_set(dinfo_nc->sigs.sig[IOC_DINFO_NC_STATUS], code);
 
+#if OSAL_SOCKET_SUPPORT
     /* IP address of the first NIC.
      */
     if (dinfo_nc->dhcp) {
@@ -308,6 +317,7 @@ static void dinfo_nc_net_state_notification_handler(
         }
     }
 #endif
+#endif
 
     /* IO network name.
      */
@@ -320,6 +330,7 @@ static void dinfo_nc_net_state_notification_handler(
         }
     }
 
+#if OSAL_SOCKET_SUPPORT
     /* Connect to by lighhouse.
      */
     if (!dinfo_nc->connect_to_set) {
@@ -330,6 +341,7 @@ static void dinfo_nc_net_state_notification_handler(
             ioc_set_str(sig, buf);
         }
     }
+#endif
 
     /* Status code.
      */
@@ -378,6 +390,8 @@ void dinfo_node_conf_callback(
         return;
     }
 
+#if OSAL_PERSISTENT_SUPPORT
+
     sigs = dinfo_nc->sigs.sig;
     set_sigs = dinfo_nc->sigs.set_sig;
 
@@ -411,20 +425,33 @@ void dinfo_node_conf_callback(
         }
     }
 
-    ss = dinfo_nc->sigs.set_sig[IOC_DINFO_SET_NC_REBOOT];
+#if OSAL_SECRET_SUPPORT
+    ss = dinfo_nc->sigs.set_sig[IOC_DINFO_SET_NC_FORGET_IT];
     if (ss) {
         x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
         if (x && (state_bits & OSAL_STATE_CONNECTED)) {
-            dinfo_nc->reboot = OS_TRUE;
+            dinfo_nc->forget_it = OS_TRUE;
             os_get_timer(&dinfo_nc->modified_timer);
         }
     }
+#endif
 
     ss = dinfo_nc->sigs.set_sig[IOC_DINFO_SET_NC_FACTORY_RST];
     if (ss) {
         x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
         if (x && (state_bits & OSAL_STATE_CONNECTED)) {
             dinfo_nc->factory_reset = OS_TRUE;
+            os_get_timer(&dinfo_nc->modified_timer);
+        }
+    }
+#endif
+
+
+    ss = dinfo_nc->sigs.set_sig[IOC_DINFO_SET_NC_REBOOT];
+    if (ss) {
+        x = (os_int)ioc_get_ext(ss, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+        if (x && (state_bits & OSAL_STATE_CONNECTED)) {
+            dinfo_nc->reboot = OS_TRUE;
             os_get_timer(&dinfo_nc->modified_timer);
         }
     }
@@ -468,6 +495,8 @@ void dinfo_run_node_conf(
     if (!os_has_elapsed_since(&dinfo_nc->modified_timer, ti, 500)) {
         return;
     }
+
+#if OSAL_PERSISTENT_SUPPORT
 
     if (dinfo_nc->modified_common)
     {
@@ -519,6 +548,15 @@ void dinfo_run_node_conf(
         osal_forget_secret();
         osal_reboot(0);
     }
+
+#if OSAL_SECRET_SUPPORT
+    if (dinfo_nc->forget_it)
+    {
+        osal_forget_secret();
+        osal_reboot(0);
+    }
+#endif
+#endif
 
     if (dinfo_nc->reboot) {
         osal_reboot(0);

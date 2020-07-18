@@ -227,7 +227,7 @@ osalStatus osal_main(
     ioc_initialize_parameters(OS_PBNR_CUST_A);
     ioc_load_parameters();
 
-    /* Initialize up device information.
+    /* Set up device information.
      */
     dinfo_set_node_conf(&dinfo_nc, device_id, connconf, nics, wifis, security);
     DINFO_SET_COMMON_SYSTEM_SPECS_SIGNALS(si_sigs, candy);
