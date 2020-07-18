@@ -102,13 +102,15 @@ def merge_jsons(default_file, confdir):
     rval, ext = os.path.splitext(rval)
     cmd = MERGEJSON
     for f in merge_list:
-        path = get_exact_path(f, confdir)
-        if path == None:
-            if merge_data == None:
-                return None
-            print("File '" + f + "' not found for '" + confdir + "'.")
-            exit()
-        cmd += ' ' + path
+        rval2, ext2 = os.path.splitext(f)
+        if ext2 == '.json':
+            path = get_exact_path(f, confdir)
+            if path == None:
+                if merge_data == None:
+                    return None
+                print("File '" + f + "' not found for '" + confdir + "'.")
+                exit()
+            cmd += ' ' + path
     cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + rval + '-merged.json'
     runcmd(cmd)
     return rval
