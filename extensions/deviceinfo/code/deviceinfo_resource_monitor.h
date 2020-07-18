@@ -25,10 +25,15 @@ typedef enum dinfoResMonSigEnum
     IOC_DINFO_RM_MUTEXES,
     IOC_DINFO_RM_SOCKETS,
     IOC_DINFO_RM_CONNECTS,
-    IOC_DINFO_RM_TXBYTES,
-    IOC_DINFO_RM_RXBYTES,
+    IOC_DINFO_RM_TX_TCP,
+    IOC_DINFO_RM_RX_TCP,
+    IOC_DINFO_RM_TX_UDP,
+    IOC_DINFO_RM_RX_UDP,
+    IOC_DINFO_RM_TX_SERIAL,
+    IOC_DINFO_RM_RX_SERIAL,
     IOC_DINFO_RM_AVELOOP,
     IOC_DINFO_RM_MAXLOOP,
+    IOC_DINFO_RM_BOOTTIME,
 
     IOC_DINFO_RM_NRO_SIGNALS
 }
@@ -49,6 +54,7 @@ typedef struct dinfoResMonState
 {
 #if OSAL_RESOURCE_MONITOR
     dinfoResMonSignals sigs;
+    os_timer boot_timer;
     os_timer update_timer;
 
     os_timer loop_timer;
@@ -56,6 +62,7 @@ typedef struct dinfoResMonState
     os_int loop_count;
     os_int prev_loop_period_100us;
     os_int prev_maxloop_ms;
+    os_int minutes_since_boot;
     os_boolean initialized;
 #endif
 }
@@ -74,10 +81,13 @@ dinfoResMonState;
     sigs.sig[IOC_DINFO_RM_MUTEXES] = &staticsigs.exp.rm_mutexes; \
     sigs.sig[IOC_DINFO_RM_SOCKETS] = &staticsigs.exp.rm_sockets; \
     sigs.sig[IOC_DINFO_RM_CONNECTS] = &staticsigs.exp.rm_connects; \
-    sigs.sig[IOC_DINFO_RM_TXBYTES] = &staticsigs.exp.rm_txbytes; \
-    sigs.sig[IOC_DINFO_RM_RXBYTES] = &staticsigs.exp.rm_rxbytes; \
+    sigs.sig[IOC_DINFO_RM_TX_TCP] = &staticsigs.exp.rm_tx_tcp; \
+    sigs.sig[IOC_DINFO_RM_RX_TCP] = &staticsigs.exp.rm_rx_tcp; \
+    sigs.sig[IOC_DINFO_RM_TX_UDP] = &staticsigs.exp.rm_tx_udp; \
+    sigs.sig[IOC_DINFO_RM_RX_UDP] = &staticsigs.exp.rm_rx_udp; \
     sigs.sig[IOC_DINFO_RM_AVELOOP] = &staticsigs.exp.rm_aveloop; \
-    sigs.sig[IOC_DINFO_RM_MAXLOOP] = &staticsigs.exp.rm_maxloop;
+    sigs.sig[IOC_DINFO_RM_MAXLOOP] = &staticsigs.exp.rm_maxloop; \
+    sigs.sig[IOC_DINFO_RM_BOOTTIME] = &staticsigs.exp.rm_boottime;
 
 
 /* Initialize resource monitor state structure and store IO signal pointers.

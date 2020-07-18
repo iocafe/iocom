@@ -32,8 +32,12 @@ static OS_FLASH_MEM dinfoResMonMapItem dinfo_rm_map[] = {
     {IOC_DINFO_RM_MUTEXES, OSAL_RMON_MUTEX_COUNT},
     {IOC_DINFO_RM_SOCKETS, OSAL_RMON_SOCKET_COUNT},
     {IOC_DINFO_RM_CONNECTS, OSAL_RMON_SOCKET_CONNECT_COUNT},
-    {IOC_DINFO_RM_TXBYTES, OSAL_RMON_TRANSMITTED_BYTES},
-    {IOC_DINFO_RM_RXBYTES, OSAL_RMON_RECEIVED_BYTES}};
+    {IOC_DINFO_RM_TX_TCP, OSAL_RMON_TX_TCP},
+    {IOC_DINFO_RM_RX_TCP, OSAL_RMON_RX_TCP},
+    {IOC_DINFO_RM_TX_UDP, OSAL_RMON_TX_UDP},
+    {IOC_DINFO_RM_RX_UDP, OSAL_RMON_RX_UDP},
+    {IOC_DINFO_RM_TX_SERIAL, OSAL_RMON_TX_SERIAL},
+    {IOC_DINFO_RM_RX_SERIAL, OSAL_RMON_RX_SERIAL}};
 
 #define DINFO_RM_MAP_LEN (sizeof( dinfo_rm_map)/sizeof(dinfoResMonMapItem))
 
@@ -70,7 +74,7 @@ void dinfo_run_resource_monitor(
     const iocSignal *sig;
     os_timer tmp_ti;
     os_int elapsed_ms, loop_ms, i, si, di;
-    os_int loop_period_100us, maxloop_ms;
+    os_int loop_period_100us, maxloop_ms, minutes_since_boot;
 
     if (ti == OS_NULL) {
         os_get_timer(&tmp_ti);
@@ -79,6 +83,7 @@ void dinfo_run_resource_monitor(
 
     if (!dinfo_rm->initialized)
     {
+        dinfo_rm->boot_timer = *ti;
         dinfo_rm->loop_timer = *ti;
         dinfo_rm->initialized = OS_TRUE;
         return;
@@ -138,6 +143,15 @@ void dinfo_run_resource_monitor(
     {
         ioc_set(sig, maxloop_ms);
         dinfo_rm->prev_maxloop_ms = maxloop_ms;
+    }
+
+    elapsed_ms = os_get_ms_elapsed(&dinfo_rm->boot_timer, ti);
+    minutes_since_boot = elapsed_ms / (60 * 1000);
+    sig = dinfo_rm->sigs.sig[IOC_DINFO_RM_BOOTTIME];
+    if (sig && minutes_since_boot != dinfo_rm->minutes_since_boot)
+    {
+        ioc_set(sig, minutes_since_boot);
+        dinfo_rm->minutes_since_boot = minutes_since_boot;
     }
 
     dinfo_rm->loop_count = 0;

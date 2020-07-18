@@ -15,10 +15,15 @@
           {"name": "rm_mutexes", "type": "ushort"},
           {"name": "rm_sockets", "type": "ushort"},
           {"name": "rm_connects", "type": "ushort"},
-          {"name": "rm_txbytes", "type": "long"},
-          {"name": "rm_rxbytes", "type": "long"},
+          {"name": "rm_tx_tcp", "type": "long"},
+          {"name": "rm_rx_tcp", "type": "long"},
+          {"name": "rm_tx_udp", "type": "long"},
+          {"name": "rm_rx_udp", "type": "long"},
+          {"name": "rm_tx_serial", "type": "long"},
+          {"name": "rm_rx_serial", "type": "long"},
           {"name": "rm_aveloop", "type": "float"},
-          {"name": "rm_maxloop", "type": "float"}
+          {"name": "rm_maxloop", "type": "float"},
+          {"name": "rm_boottime", "type": "uint"}
         ]
       }
     ]
