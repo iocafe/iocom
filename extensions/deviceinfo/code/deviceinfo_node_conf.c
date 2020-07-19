@@ -148,9 +148,11 @@ void dinfo_set_node_conf(
     iocMemoryBlock *mblk;
     const os_char *p;
     os_int addr, mina, maxa, i;
-    os_boolean dhcp;
     os_char nbuf[OSAL_NBUF_SZ];
+#if OSAL_SUPPORT_STATIC_NETWORK_CONF
     static OS_FLASH_MEM os_char one[] = "1", zero[] = "0";
+    os_boolean dhcp;
+#endif
     OSAL_UNUSED(security);
 
     /* Device identification.
@@ -402,6 +404,7 @@ void dinfo_node_conf_callback(
 
         ds = sigs[(int)m->signal_nr];
         if (ds == OS_NULL) continue;
+        state_bits = 0;
         if (m->sz < 0) {
             state_bits = ioc_get_str(ss, buf, sizeof(buf));
             ioc_get_str(ds, buf2, sizeof(buf2));
