@@ -77,7 +77,6 @@ void dinfo_initialize_resource_monitor(
 {
     os_memclear(dinfo_rm, sizeof(dinfoResMonState));
     os_memcpy(&dinfo_rm->sigs, sigs, sizeof(dinfoResMonSignals));
-    os_get_timer(&dinfo_rm->update_timer);
 }
 
 
@@ -117,6 +116,7 @@ void dinfo_run_resource_monitor(
     {
         dinfo_rm->boot_timer = *ti;
         dinfo_rm->loop_timer = *ti;
+        dinfo_rm->update_timer = *ti;
         dinfo_rm->initialized = OS_TRUE;
         return;
     }
