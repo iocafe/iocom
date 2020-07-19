@@ -12,7 +12,7 @@
           {"name": "si_eosal", "type": "str", "array": 7},
           {"name": "si_iocom", "type": "str", "array": 7},
           {"name": "si_os", "type": "str", "array": 8},
-          {"name": "si_arch", "type": "str", "array": 6},
+          {"name": "si_arch", "type": "str", "array": 8},
           {"name": "si_hw", "type": "str", "array": 17}
         ]
       }
