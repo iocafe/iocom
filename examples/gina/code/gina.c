@@ -255,7 +255,6 @@ osalStatus osal_main(
     pinsCameraParams camera_prm;
     PINS_CAMERA_IFACE.initialize();
     os_memclear(&camera_prm, sizeof(camera_prm));
-    camera_prm.camera_nr = 0;
 #ifdef PINS_CAMERAS_CCD
     camera_prm.camera_pin = &pins.cameras.ccd;
     camera_prm.timer_pin = &pins.timers.ccd_data;

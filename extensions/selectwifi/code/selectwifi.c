@@ -242,6 +242,7 @@ static void ioc_selectfiwi_load(
 
     os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
+#if OSAL_SUPPORT_WIFI_NETWORK_CONF
     ioc_set_str(&selectwifi.exp.net_1, block.wifi[0].wifi_net_name);
 
 #ifdef SELECTWIFI_IMP_SET_NET_2_ARRAY_SZ
@@ -254,6 +255,7 @@ static void ioc_selectfiwi_load(
 
 #ifdef SELECTWIFI_IMP_SET_NET_4_ARRAY_SZ
     ioc_set_str(&selectwifi.exp.net_4, block.wifi[3].wifi_net_name);
+#endif
 #endif
 }
 
@@ -272,9 +274,11 @@ static void ioc_selectfiwi_save(
     void)
 {
     osalNodeConfOverrides block;
-    os_char str[OSAL_WIFI_PRM_SZ];
 
     os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
+
+#if OSAL_SUPPORT_WIFI_NETWORK_CONF
+    os_char str[OSAL_WIFI_PRM_SZ];
 
     ioc_get_str(&selectwifi.imp.set_net_1, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[0].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
@@ -300,6 +304,7 @@ static void ioc_selectfiwi_save(
     if (str[0]) os_strncpy(block.wifi[3].wifi_net_name, str, OSAL_WIFI_PRM_SZ);
     ioc_get_str(&selectwifi.imp.set_password_4, str, OSAL_WIFI_PRM_SZ);
     if (str[0]) os_strncpy(block.wifi[3].wifi_net_password, str, OSAL_WIFI_PRM_SZ);
+#endif
 #endif
 
     os_save_persistent(OS_PBNR_NODE_CONF, (const os_char*)&block, sizeof(block), OS_FALSE);

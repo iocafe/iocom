@@ -121,7 +121,7 @@ void dinfo_run_resource_monitor(
         return;
     }
 
-    loop_ms = os_get_ms_elapsed(&dinfo_rm->loop_timer, ti);
+    loop_ms = (os_int)os_get_ms_elapsed(&dinfo_rm->loop_timer, ti);
     if (loop_ms > dinfo_rm->maxloop_ms) {
         dinfo_rm->maxloop_ms = loop_ms;
     }
@@ -131,7 +131,7 @@ void dinfo_run_resource_monitor(
     if (!os_has_elapsed_since(&dinfo_rm->update_timer, ti, OSAL_RESOURCE_MONITOR_PERIOD)) {
         return;
     }
-    elapsed_ms = os_get_ms_elapsed(&dinfo_rm->update_timer, ti);
+    elapsed_ms = (os_int)os_get_ms_elapsed(&dinfo_rm->update_timer, ti);
     dinfo_rm->update_timer = *ti;
 
     rs = &osal_global->resstate;
@@ -173,7 +173,7 @@ void dinfo_run_resource_monitor(
         dinfo_rm->prev_maxloop_ms = maxloop_ms;
     }
 
-    elapsed_ms = os_get_ms_elapsed(&dinfo_rm->boot_timer, ti);
+    elapsed_ms = (os_int)os_get_ms_elapsed(&dinfo_rm->boot_timer, ti);
     minutes_since_boot = elapsed_ms / (60 * 1000);
     sig = dinfo_rm->sigs.sig[IOC_DINFO_RM_BOOTTIME];
     if (sig && minutes_since_boot != dinfo_rm->minutes_since_boot)

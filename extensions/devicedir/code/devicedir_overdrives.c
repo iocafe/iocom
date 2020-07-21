@@ -65,7 +65,7 @@ osalStatus devicedir_overrides(
         osal_stream_print_str(list, "{", 0);
     }
 
-#if OSAL_MAX_NRO_WIFI_NETWORKS > 0
+#if OSAL_SUPPORT_WIFI_NETWORK_CONF
     devicedir_override_prm("wifi", block.wifi[0].wifi_net_name, list, flags, OS_TRUE);
     devicedir_override_prm("pass", block.wifi[0].wifi_net_password[0]
         ? hidden_password : osal_str_empty, list, flags, OS_FALSE);

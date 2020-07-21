@@ -19,7 +19,7 @@
 /* Forward referred static functions.
  */
 static osalStatus devicedir_get_config_item(
-    os_char *param_name,
+    const os_char *param_name,
     os_char *field,
     os_memsz field_sz,
     os_char *line_buf);
@@ -45,7 +45,7 @@ osalStatus devicedir_save_config(
 
     os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
-#if OSAL_MAX_NRO_WIFI_NETWORKS > 0
+#if OSAL_SUPPORT_WIFI_NETWORK_CONF
     os_char buf[32], nbuf[OSAL_NBUF_SZ];
     os_int i;
     for (i = 0; i<OSAL_MAX_NRO_WIFI_NETWORKS; i++)
@@ -106,7 +106,7 @@ osalStatus devicedir_save_config(
 ****************************************************************************************************
 */
 static osalStatus devicedir_get_config_item(
-    os_char *param_name,
+    const os_char *param_name,
     os_char *field,
     os_memsz field_sz,
     os_char *line_buf)
