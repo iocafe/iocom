@@ -13,13 +13,13 @@
         "name": "outputs",
         "pins": [
           {"name": "led_morse", "addr": 15},
-          {"name": "led_builtin", "addr": 33}
+          {"name": "led_builtin", "addr": 2}
         ]
       },
       {
         "name": "pwm",
         "pins": [
-          {"name": "headlight", "timer": 1, "bank": 1, "addr": 4, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
+          {"name": "headlight", "timer": 1, "bank": 1, "addr": 1, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
         ]
       },
       {
