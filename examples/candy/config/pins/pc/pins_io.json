@@ -1,0 +1,14 @@
+{
+  "io": [{
+    "name": "candy",
+    "title": "IO pin setup for the 'candy' camera application on generic PC hardware",
+    "groups": [
+      {
+        "name": "cameras",
+        "pins": [
+          {"name": "camera"}
+        ]
+      }
+    ]
+  }]
+}

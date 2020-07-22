@@ -3,11 +3,19 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "candy")
-set(E_HW "espcam")
 project(${E_PROJECT})
 
 # include build information common to all projects.
 include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
+
+# Select hardware setup to use (IO pins, etc)
+if ($ENV{E_OS} MATCHES "esp32")
+  set(E_HW "espcam")
+elseif ($ENV{E_OSVER} MATCHES "pi")
+  set(E_HW "pipcam")
+else()
+  set(E_HW "pc")
+endif()
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")

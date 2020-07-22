@@ -58,7 +58,9 @@ IO_DEVICE_CONSOLE(ioconsole);
 
 /* Blink LED morse code to indicate boot errors.
  */
-static MorseCode morse;
+#if IOCOM_USE_MORSE
+    static MorseCode morse;
+#endif
 
 /* Device information.
  */
@@ -278,8 +280,10 @@ osalStatus osal_main(
 
     /* Setup to blink LED to indicate boot errors, etc.
      */
+#if IOCOM_USE_MORSE
     initialize_morse_code(&morse, &pins.outputs.led_morse, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
+#endif
 
     /* Start communication.
      */
@@ -337,7 +341,9 @@ osalStatus osal_loop(
 
     /* Keep the morse code LED alive. These indicates boot issues, etc, to user.
      */
+#if IOCOM_USE_MORSE
     blink_morse_code(&morse, &ti);
+#endif
 
     /* Keep the communication alive. Move data data synchronously
        to incoming memory block and keep control stream alive.

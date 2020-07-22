@@ -22,11 +22,27 @@
 struct pinsPhoto;
 
 /* Use Gazerbeamm library to enable wifi configuration by Android phone's flash light and
-   phototransistor connected to microcontroller (0 or 1).
+   phototransistor connected to microcontroller (0 or 1). If not defined for build, check
+   if we have "gazerbeam" input pin.
  */
 #ifndef IOCOM_USE_GAZERBEAM
-#define IOCOM_USE_GAZERBEAM 1
+  #ifdef PINS_INPUTS_GAZERBEAM
+    #define IOCOM_USE_GAZERBEAM 1
+  #else
+    #define IOCOM_USE_GAZERBEAM 0
+  #endif
 #endif
+
+/* Blink network status as morse code if we have an IO pin named "led_morse"
+ */
+#ifndef IOCOM_USE_MORSE
+  #ifdef PINS_OUTPUTS_LED_MORSE
+    #define IOCOM_USE_MORSE 1
+  #else
+    #define IOCOM_USE_MORSE 0
+  #endif
+#endif
+
 
 /* Get controller IP address from UDP multicast (0 or 1) ?.
  */
