@@ -40,7 +40,8 @@ void dinfo_set_system_specs(
     ioc_set_str(sigs->sig[IOC_DINFO_SI_EOSAL], EOSAL_VERSION);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_IOCOM], IOCOM_VERSION);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_OS], OSAL_OS_NAME);
-    ioc_set_str(sigs->sig[IOC_DINFO_SI_ARCH], OSAL_ARCH_NAME);
+    ioc_set_str(sigs->sig[IOC_DINFO_SI_OSVER], OSAL_OSVER);
+    ioc_set_str(sigs->sig[IOC_DINFO_SI_ARCH], OSAL_ARCH);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_HW], hw);
 }
 

@@ -24,6 +24,7 @@ typedef enum dinfoSystemSpecSigEnum
     IOC_DINFO_SI_EOSAL,
     IOC_DINFO_SI_IOCOM,
     IOC_DINFO_SI_OS,
+    IOC_DINFO_SI_OSVER,
     IOC_DINFO_SI_ARCH,
     IOC_DINFO_SI_HW,
 
@@ -48,6 +49,7 @@ dinfoSystemSpeSignals;
     sigs.sig[IOC_DINFO_SI_EOSAL] = &staticsigs.exp.si_eosal; \
     sigs.sig[IOC_DINFO_SI_IOCOM] = &staticsigs.exp.si_iocom; \
     sigs.sig[IOC_DINFO_SI_OS] = &staticsigs.exp.si_os; \
+    sigs.sig[IOC_DINFO_SI_OSVER] = &staticsigs.exp.si_osver; \
     sigs.sig[IOC_DINFO_SI_ARCH] = &staticsigs.exp.si_arch; \
     sigs.sig[IOC_DINFO_SI_HW] = &staticsigs.exp.si_hw;
 

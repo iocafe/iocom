@@ -14,10 +14,6 @@
 ****************************************************************************************************
 */
 #define IOCOM_IOBOARD
-
-#define PINS_CAMERA 0
-
-
 #include "iocom.h"
 #include "pinsx.h"
 #include "nodeconf.h"
