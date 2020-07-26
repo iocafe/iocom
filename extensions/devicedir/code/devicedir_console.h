@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef DEVICEDIR_CONSOLE_H_
+#define DEVICEDIR_CONSOLE_H_
+#include "devicedir.h"
 
 #if OS_CONTROL_CONSOLE_SUPPORT
 
@@ -59,4 +63,4 @@ osalStatus devicedir_save_config(
 #define io_run_device_console(r) (OSAL_SUCCESS)
 
 #endif
-
+#endif

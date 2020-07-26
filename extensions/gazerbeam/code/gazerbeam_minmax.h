@@ -15,6 +15,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef GAZERBEAM_MINMAX_H_
+#define GAZERBEAM_MINMAX_H_
+#include "gazerbeam.h"
 
 /* Filtering buffer size.
  */
@@ -56,3 +60,5 @@ GAZERBEAM_VALUE gazerbeam_minmax(
 void gazerbeam_fill_minmax(
     GazerbeamBuffer *gbb,
     GAZERBEAM_VALUE x);
+
+#endif

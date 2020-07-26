@@ -13,9 +13,14 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef NODECONF_CONNECT_H_
+#define NODECONF_CONNECT_H_
+#include "nodeconf.h"
 
 osalStatus ioc_connect_node(
     iocRoot *root,
     iocConnectionConfig *connconf,
     os_short additional_flags);
 
+#endif

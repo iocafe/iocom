@@ -20,9 +20,10 @@
 
 ****************************************************************************************************
 */
-#ifndef IOCOM_INCLUDED
-#include "iocom.h"
-#endif
+#pragma once
+#ifndef LIGHTHOUSE_CLIENT_H_
+#define LIGHTHOUSE_CLIENT_H_
+#include "lighthouse.h"
 
 /**
 ****************************************************************************************************
@@ -148,3 +149,5 @@ osalStatus ioc_get_lighthouse_connectstr(
     os_short flags,
     os_char *connectstr,
     os_memsz connectstr_sz);
+
+#endif

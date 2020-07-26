@@ -17,11 +17,9 @@
 
 ****************************************************************************************************
 */
-#ifndef GAZERBEAM_INCLUDED
-#define GAZERBEAM_INCLUDED
-
-/* Include iocom and operating system abstraction layer.
- */
+#pragma once
+#ifndef GAZERBEAM_H_
+#define GAZERBEAM_H_
 #include "iocom.h"
 
 /* Do we want to include code for pins library support (GPIO input for

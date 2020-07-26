@@ -15,6 +15,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef DEVICEINFO_SYSTEM_SPECS_H_
+#define DEVICEINFO_SYSTEM_SPECS_H_
+#include "deviceinfo.h"
 
 /** Enumeration of published system specification items.
  */
@@ -58,3 +62,5 @@ dinfoSystemSpeSignals;
 void dinfo_set_system_specs(
     dinfoSystemSpeSignals *sigs,
     os_char *hw);
+
+#endif

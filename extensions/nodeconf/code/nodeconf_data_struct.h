@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef NODECONF_DATA_STRUCT_H_
+#define NODECONF_DATA_STRUCT_H_
+#include "nodeconf.h"
 
 /* Maximum number of connection points
  */
@@ -168,3 +172,5 @@ osalSecurityConfig *ioc_get_security_conf(
  */
 iocConnectionConfig *ioc_get_connection_conf(
     iocNodeConf *node);
+
+#endif

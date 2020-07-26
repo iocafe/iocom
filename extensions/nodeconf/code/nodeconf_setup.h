@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef NODECONF_SETUP_H_
+#define NODECONF_SETUP_H_
+#include "nodeconf.h"
 
 struct iocNodeConf;
 
@@ -33,3 +37,5 @@ void ioc_load_node_config(
  */
 void ioc_release_node_config(
     iocNodeConf *node);
+
+#endif

@@ -16,11 +16,9 @@
 
 ****************************************************************************************************
 */
-#ifndef NODECONF_INCLUDED
-#define NODECONF_INCLUDED
-
-/* Include iocom and operating system abstraction layer.
- */
+#pragma once
+#ifndef NODECONF_H_
+#define NODECONF_H_
 #include "iocom.h"
 
 /* If C++ compilation, all functions, etc. from this point on in included headers are

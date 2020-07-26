@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef DEVICEDIR_SHARED_H_
+#define DEVICEDIR_SHARED_H_
+#include "devicedir.h"
 
 #if OS_CONTROL_CONSOLE_SUPPORT
     osalStatus io_device_console(iocRoot *root);
@@ -103,3 +107,5 @@ void devicedir_info(
     iocRoot *root,
     osalStream list,
     os_short flags);
+
+#endif

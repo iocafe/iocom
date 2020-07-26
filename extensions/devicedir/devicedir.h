@@ -16,11 +16,9 @@
 
 ****************************************************************************************************
 */
-#ifndef DEVICEDIR_INCLUDED
-#define DEVICEDIR_INCLUDED
-
-/* Include iocom and operating system abstraction layer.
- */
+#pragma once
+#ifndef DEVICEDIR_H_
+#define DEVICEDIR_H_
 #include "iocom.h"
 
 /* If C++ compilation, all functions, etc. from this point on in included headers are

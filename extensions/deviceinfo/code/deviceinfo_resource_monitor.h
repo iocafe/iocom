@@ -15,6 +15,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef DEVICEINFO_RESOURCE_MONITOR_H_
+#define DEVICEINFO_RESOURCE_MONITOR_H_
+#include "deviceinfo.h"
 
 /** Enumeration of resource monitor items.
  */
@@ -111,4 +115,5 @@ void dinfo_run_resource_monitor(
 #define dinfo_initialize_resource_monitor(dinfo_rm,s)
 #define dinfo_run_resource_monitor(dinfo_rm,ti)
 
+#endif
 #endif

@@ -22,6 +22,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef GAZERBEAM_RECEIVE_H_
+#define GAZERBEAM_RECEIVE_H_
+#include "gazerbeam.h"
 
 struct Pin;
 
@@ -100,3 +104,5 @@ os_memsz gazerbeam_get_message(
     os_char *buf,
     os_memsz buf_sz,
     os_short flags);
+
+#endif

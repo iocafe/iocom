@@ -13,6 +13,9 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef DEVICEDIR_GET_JSON_H_
+#define DEVICEDIR_GET_JSON_H_
 #include "devicedir.h"
 
 /* Select what information to present as JSON.
@@ -37,3 +40,5 @@ osalStatus devicedir_get_json(
     const os_char *iopath,
     os_short flags,
     const os_char **plabel);
+
+#endif

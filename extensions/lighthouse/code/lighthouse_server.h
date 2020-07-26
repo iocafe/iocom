@@ -16,9 +16,10 @@
 
 ****************************************************************************************************
 */
-#ifndef IOCOM_INCLUDED
-#include "iocom.h"
-#endif
+#pragma once
+#ifndef LIGHTHOUSE_SERVER_H_
+#define LIGHTHOUSE_SERVER_H_
+#include "lighthouse.h"
 
 struct osalLighthouseInfo;
 
@@ -103,3 +104,5 @@ void ioc_release_lighthouse_server(
 osalStatus ioc_run_lighthouse_server(
     LighthouseServer *c,
     os_timer *ti);
+
+#endif

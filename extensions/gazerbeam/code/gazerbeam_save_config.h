@@ -15,6 +15,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef GAZERBEAM_SAVE_CONFIG_H_
+#define GAZERBEAM_SAVE_CONFIG_H_
+#include "gazerbeam.h"
 
 typedef enum gazerbeamFieldId
 {
@@ -51,3 +55,4 @@ osalStatus gazerbeam_get_config_item(
     os_memsz message_sz,
     os_short flags);
 
+#endif

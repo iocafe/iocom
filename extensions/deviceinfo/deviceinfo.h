@@ -16,11 +16,9 @@
 
 ****************************************************************************************************
 */
-#ifndef DEVICEINFO_INCLUDED
-#define DEVICEINFO_INCLUDED
-
-/* Include iocom and operating system abstraction layer.
- */
+#pragma once
+#ifndef DEVICEINFO_H_
+#define DEVICEINFO_H_
 #include "nodeconf.h"
 
 /* If C++ compilation, all functions, etc. from this point on in included headers are

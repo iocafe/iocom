@@ -13,10 +13,15 @@
 
 ****************************************************************************************************
 */
-
+#pragma once
+#ifndef NODECONF_LIGHTHOUSE_H_
+#define NODECONF_LIGHTHOUSE_H_
+#include "nodeconf.h"
 
 /* Get listening socket port number and transport.
  */
 osalStatus ioc_get_lighthouse_info(
     iocConnectionConfig *connconf,
     osalLighthouseInfo *info);
+
+#endif

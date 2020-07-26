@@ -13,11 +13,9 @@
 
 ****************************************************************************************************
 */
-#ifndef LIGHTHOUSE_INCLUDED
-#define LIGHTHOUSE_INCLUDED
-
-/* Include iocom and operating system abstraction layer.
- */
+#pragma once
+#ifndef LIGHTHOUSE_H_
+#define LIGHTHOUSE_H_
 #include "iocom.h"
 
 /* Lighthouse multicast IP and port

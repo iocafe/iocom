@@ -13,7 +13,10 @@
 
 ****************************************************************************************************
 */
-
+#pragma once
+#ifndef DEVICEINFO_NODE_CONF_H_
+#define DEVICEINFO_NODE_CONF_H_
+#include "deviceinfo.h"
 
 /** Enumeration of published network state items.
  */
@@ -173,3 +176,4 @@ void dinfo_node_conf_callback(
     os_int n_signals,
     os_ushort flags);
 
+#endif
