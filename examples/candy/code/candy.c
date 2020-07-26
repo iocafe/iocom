@@ -4,14 +4,7 @@
   @brief   Candy camera IO example.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    22.4.2020
-
-  IOBOARD_CTRL_CON define selects how this IO device connects to control computer. One of
-  IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
-
-  Serial port can be selected using Windows style using "COM1", "COM2"... These are mapped
-  to hardware/operating system in device specific manner. On Linux port names like
-  "ttyS30,baud=115200" or "ttyUSB0" can be also used.
+  @date    22.7.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -20,68 +13,57 @@
 
 ****************************************************************************************************
 */
-/* Select socket, TLS or serial communication before including candy.h.
+/* Select IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL
+ * before including candy.h.
  */
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
 #include "candy.h"
 
-/* The devicedir is here for testing only, take away.
- */
-#include "devicedir.h"
-
+/* Gazerbeamm enables wifi configuration by Android phone's flash light */
 #if IOCOM_USE_GAZERBEAM
-#include "gazerbeam.h"
-static GazerbeamReceiver gazerbeam;
+    #include "gazerbeam.h"
+    static GazerbeamReceiver gazerbeam;
 #endif
 
 #if IOCOM_USE_LIGHTHOUSE
-#include "lighthouse.h"
-static os_boolean lighthouse_on;
-static os_boolean is_ipv6_wildcard;
-static LighthouseClient lighthouse;
+    #include "lighthouse.h"
+    static os_boolean lighthouse_on;
+    static os_boolean is_ipv6_wildcard;
+    static LighthouseClient lighthouse;
 #endif
 
-/* IO device configuration.
- */
-iocNodeConf ioapp_device_conf;
-
-/* Camera state and camera output.
- */
+/* Camera state and camera output */
 #if PINS_CAMERA
     static pinsCamera pins_camera;
     static iocBrickBuffer video_output;
+    /* Camera control parameter has changed, camera on/off */
+    static os_boolean camera_on_or_off;
+    static os_boolean camera_is_on;
 #endif
 
-/* IO console state (for development/testing)
- */
+/* IO console for wifi configuration and development testing over serial port */
 IO_DEVICE_CONSOLE(ioconsole);
 
-/* Blink LED morse code to indicate boot errors.
- */
+/* Blink LED - morse code to indicate network status */
 #if IOCOM_USE_MORSE
     static MorseCode morse;
 #endif
 
-/* Device information.
- */
+/* Device configuration and information (nc = network configuration, rm resource monitor). */
+iocNodeConf ioapp_device_conf;
 static dinfoNodeConfState dinfo_nc;
 static dinfoResMonState dinfo_rm;
 
-/* Maximum number of sockets, etc.
+/* Timer for sending */
+static os_timer send_timer;
+
+/* Memory pool. We use fixed size Pool. If the system has dynamic memory allocation, fixes
+   size memory pool will be allocate by initialization. This is preferrable so executable
+   size stays smaller. If we have no dynamic memory allocation, we just allocate a static pool.
+   IOBOARD_MAX_CONNECTIONS is maximum number of sockets, etc, connections.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
 
-/* Timer for sending
- */
-static os_timer send_timer;
-
-/* Camera control parameter has changed, camera on/off */
-static os_boolean camera_control_changed;
-
-/* Memory pool. We use fixed size Pool. If the system has dynamic memory allocation, fixes
- * size memory pool will be allocate by initialization. This is preferrable so executable
- * size stays smaller. If we have no dynamic memory allocation, we just allocate a static pool.
- */
 #define MY_POOL_SZ \
     (IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, \
      CANDY_EXP_MBLK_SZ, CANDY_IMP_MBLK_SZ) \
@@ -95,14 +77,29 @@ static os_boolean camera_control_changed;
     static os_char ioboard_pool[MY_POOL_SZ];
 #endif
 
-/* Streamer for transferring IO device configuration and flash program. The streamer is used
-   to transfer a stream using buffer within memory block. This static structure selects which
-   signals are used for straming data between the controller and IO device.
+/* The iocStreamerParams structure sets which signals are used for transferring IO device
+   configuration and flash program.
  */
 static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM(candy,
     ioapp_network_defaults, sizeof(ioapp_network_defaults));
 
 static iocControlStreamState ioc_ctrl_state;
+
+
+/* Prototypes of forward referred static functions.
+ */
+static void ioboard_communication_callback(
+    struct iocHandle *handle, os_int start_addr, os_int end_addr,
+    os_ushort flags, void *context);
+
+#if PINS_CAMERA
+    static void ioboard_camera_callback(
+        struct pinsPhoto *photo,
+        void *context);
+
+    static void ioboard_configure_camera(void);
+    static void ioapp_turn_camera_on_or_off(void);
+#endif
 
 
 /**
@@ -269,7 +266,9 @@ osalStatus osal_main(
     camera_prm.callback_func = ioboard_camera_callback;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
     ioboard_configure_camera();
-    PINS_CAMERA_IFACE.start(&pins_camera);
+    // PINS_CAMERA_IFACE.start(&pins_camera);
+    camera_on_or_off = camera_is_on = OS_FALSE;
+    ioapp_turn_camera_on_or_off();
 #endif
 
     /* Initialize library to receive wifi configuration by phototransostor.
@@ -290,7 +289,6 @@ osalStatus osal_main(
     ioboard_start_communication(&prm);
 
     os_get_timer(&send_timer);
-    camera_control_changed = OS_FALSE;
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -306,12 +304,12 @@ osalStatus osal_main(
 
   @brief Loop function to be called repeatedly.
 
-  The osal_loop() function maintains communication, reads IO pins (reading forwards input states
-  to communication) and runs the IO device functionality.
+  The osal_loop() function maintains communication, reads IO pins, etc and runs the IO device
+  functionality.
 
   @param   app_context Void pointer, to pass application context structure, etc.
   @return  The function returns OSAL_SUCCESS to continue running. Other return values are
-           to be interprened as reboot on micro-controller or quit the program on PC computer.
+           to be interprened as "reboot" on micro-controller or "exit the program" on PC computer.
 
 ****************************************************************************************************
 */
@@ -325,7 +323,7 @@ osalStatus osal_loop(
 
     os_get_timer(&ti);
 
-    /* Run light house.
+    /* Run light house to detect server in LAN.
      */
 #if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
@@ -362,25 +360,11 @@ osalStatus osal_loop(
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
 
-//static int u;
-// ioc_set(&candy.exp.headlight, (u++ / 200) % 2);
-//pin_set(&pins.pwm.headlight, ((u++ / 200) % 4) * 1000);
-
     /* The call is here for development testing.
      */
     s = io_run_device_console(&ioconsole);
 
-    /* Send changed data synchronously from outgoing memory blocks every 100 ms. If we need
-       very low latency IO in local network we can have interval like 1 ms, or just call send
-       unconditionally.
-       If we are not in such hurry, we can save network resources by merging multiple changes.
-       to be sent together in TCP package and use value like 100 ms.
-       Especially in IoT we may want to minimize number of transferred TCP packets to
-       cloud server. In this case it is best to use to two timers and flush ioboard_exp and
-       ioboard_conf_exp separately. We could evenu use value like 2000 ms or higher for
-       ioboard_exp. For ioboard_conf_exp we need to use relatively short value, like 100 ms
-       even then to keep software updates, etc. working. This doesn't generate much
-       communication tough, conf_export doesn't change during normal operation.
+    /* Send changed data synchronously from outgoing memory blocks.
      */
     if (os_timer_hit(&send_timer, &ti, send_freq_ms))
     {
@@ -389,12 +373,15 @@ osalStatus osal_loop(
     }
 
 #if PINS_CAMERA
-    if (camera_control_changed) {
-        camera_control_changed = OS_FALSE;
-        ioboard_control_camera();
+    if (camera_on_or_off) {
+        camera_on_or_off = OS_FALSE;
+        ioapp_turn_camera_on_or_off();
     }
 #endif
 
+    /* Check for tasks, like saving parameters, changes in network node configuration and
+       keep resource monitor signals alive.
+     */
     ioc_autosave_parameters();
     dinfo_run_node_conf(&dinfo_nc, &ti);
     dinfo_run_resource_monitor(&dinfo_rm, &ti);
@@ -466,18 +453,19 @@ void osal_main_cleanup(
 
 ****************************************************************************************************
 */
-void ioboard_communication_callback(
+static void ioboard_communication_callback(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,
     os_ushort flags,
     void *context)
 {
-// #if IOC_DEVICE_PARAMETER_SUPPORT
     const iocSignal *sig, *pin_sig;
     os_int n_signals;
     osalStatus s;
-    os_boolean configuration_changed;
+#if PINS_CAMERA
+    os_boolean configuration_changed = OS_FALSE;
+#endif
     OSAL_UNUSED(context);
 
     /* If this memory block is not written by communication, no need to do anything.
@@ -496,34 +484,37 @@ void ioboard_communication_callback(
      */
     dinfo_node_conf_callback(&dinfo_nc, sig, n_signals, flags);
 
-    configuration_changed = OS_FALSE;
     while (n_signals-- > 0)
     {
         if (sig->flags & IOC_PIN_PTR) {
             forward_signal_change_to_io_pin(sig, IOC_SIGNAL_DEFAULT);
         }
+#if IOC_DEVICE_PARAMETER_SUPPORT
         else if (sig->flags & IOC_PFLAG_IS_PRM) {
             s = ioc_set_parameter_by_signal(sig, &pin_sig);
             if (s == OSAL_COMPLETED) {
                 if (pin_sig) {
                     forward_signal_change_to_io_pin(pin_sig, IOC_SIGNAL_NO_TBUF_CHECK);
                 }
+#if PINS_CAMERA
                 if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
                     configuration_changed = OS_TRUE;
                 }
                 else {
-                    camera_control_changed = OS_TRUE;
+                    camera_on_or_off = OS_TRUE;
                 }
+#endif
             }
         }
+#endif
         sig++;
     }
 
-    if (configuration_changed) {
 #if PINS_CAMERA
+    if (configuration_changed) {
         ioboard_configure_camera();
-#endif
     }
+#endif
 }
 
 
@@ -543,7 +534,7 @@ void ioboard_communication_callback(
 
 ****************************************************************************************************
 */
-void ioboard_camera_callback(
+static void ioboard_camera_callback(
     struct pinsPhoto *photo,
     void *context)
 {
@@ -613,12 +604,11 @@ static void ioboard_get_camera_prm(
 
   The ioboard_set_camera_parameters function sets all camera parameters from signals in
   "exp" memory block to camera API.
-
   @return  None.
 
 ****************************************************************************************************
 */
-void ioboard_configure_camera(void)
+static void ioboard_configure_camera(void)
 {
 #ifdef CANDY_EXP_CAM_NR
     ioboard_set_camera_prm(PINS_CAM_NR, &candy.exp.cam_nr);
@@ -645,15 +635,30 @@ void ioboard_configure_camera(void)
 #endif
 }
 
-/* Turn camera on/off.
- */
-void ioboard_control_camera(void)
+
+/**
+****************************************************************************************************
+
+  @brief Turn camera on/off.
+
+  The ioapp_turn_camera_on_or_off function calls pins library to start or stop the camera.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioapp_turn_camera_on_or_off(void)
 {
-    if (ioc_get(&candy.exp.on)) {
-        PINS_CAMERA_IFACE.start(&pins_camera);
-    }
-    else {
-        PINS_CAMERA_IFACE.stop(&pins_camera);
+    os_boolean turn_on;
+
+    turn_on = (os_boolean)ioc_get(&candy.exp.on);
+    if (turn_on != camera_is_on) {
+        if (ioc_get(&candy.exp.on)) {
+            PINS_CAMERA_IFACE.start(&pins_camera);
+        }
+        else {
+            PINS_CAMERA_IFACE.stop(&pins_camera);
+        }
+        camera_is_on = turn_on;
     }
 }
 
