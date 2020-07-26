@@ -19,6 +19,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_ROOT_H_
+#define IOC_ROOT_H_
+#include "iocom.h"
 
 /* Structures which are defined later in headers.
  */
@@ -382,4 +386,5 @@ void ioc_unlock(
   #define ioc_set_mt_root(r,p)
 /*@}*/
 
+#endif
 #endif

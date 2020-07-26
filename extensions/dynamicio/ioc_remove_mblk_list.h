@@ -27,6 +27,11 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_REMOVE_MBLK_LIST_H_
+#define IOC_REMOVE_MBLK_LIST_H_
+#include "iocomx.h"
+
 #if IOC_DYNAMIC_MBLK_CODE
 
 struct iocConnection;
@@ -129,4 +134,5 @@ osalStatus ioc_process_remove_mblk_req_frame(
 
 /*@}*/
 
+#endif
 #endif

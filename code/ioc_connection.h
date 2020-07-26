@@ -17,6 +17,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_CONNECTION_H_
+#define IOC_CONNECTION_H_
+#include "iocom.h"
 
 /** Frame sizes for socket and serial connections. These can never be modified, otherwise
  *  communication compatibility will break. Notice that socket frame size is not same as
@@ -812,3 +816,4 @@ osalStatus ioc_establish_serial_connection(
     iocConnection *con);
 /*@}*/
 
+#endif

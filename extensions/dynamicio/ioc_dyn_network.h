@@ -16,6 +16,11 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_DYN_NETWORK_H_
+#define IOC_DYN_NETWORK_H_
+#include "iocomx.h"
+
 #if IOC_DYNAMIC_MBLK_CODE
 
 struct iocMblkShortcut;
@@ -91,4 +96,5 @@ void ioc_network_mblk_is_deleted(
     iocDynamicNetwork *dnetwork,
     iocMemoryBlock *mblk);
 
+#endif
 #endif

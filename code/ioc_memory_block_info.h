@@ -19,6 +19,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_MEMORY_BLOCK_INFO_H_
+#define IOC_MEMORY_BLOCK_INFO_H_
+#include "iocom.h"
 
 /** Maximum signal name string length.
  */
@@ -169,3 +173,5 @@ void ioc_mbinfo_received(
     iocMemoryBlockInfo *info);
 
 /*@}*/
+
+#endif

@@ -16,6 +16,11 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_HANDLE_H_
+#define IOC_HANDLE_H_
+#include "iocom.h"
+
 struct iocRoot;
 struct iocMemoryBlock;
 
@@ -79,8 +84,4 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     iocHandle *handle,
     struct iocRoot **proot);
 
-/* For testing
- */
-// void ioc_validate_handle(
-//    iocHandle *handle);
-
+#endif

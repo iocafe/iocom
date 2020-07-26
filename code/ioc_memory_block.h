@@ -18,6 +18,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_MEMORY_BLOCK_H_
+#define IOC_MEMORY_BLOCK_H_
+#include "iocom.h"
 
 /** Flags for ioc_initialize_memory_block() function. Bit fields.
     - The IOC_ALLOW_RESIZE flag allows resizing memory block to match memory block
@@ -493,3 +497,5 @@ void ioc_byte_ordered_copy(
     os_memsz type_sz);
 
 /*@}*/
+
+#endif

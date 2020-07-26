@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_INDENTIFIERS_H_
+#define IOC_INDENTIFIERS_H_
+#include "iocomx.h"
 
 /** IO path fields. Empty string means unspefied.
  */
@@ -70,3 +74,5 @@ os_boolean ioc_get_part_of_iopath(
     const os_char **iopath,
     os_char *buf,
     os_memsz buf_sz);
+
+#endif

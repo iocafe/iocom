@@ -13,6 +13,9 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_IOBOARD_H_
+#define IOC_IOBOARD_H_
 #include "iocom.h"
 
 /* Include ioboard header. This is behind define avoid copy/paste errors.
@@ -246,4 +249,5 @@ void ioboard_start_communication(
  */
 void ioboard_end_communication(void);
 
+#endif
 #endif

@@ -21,6 +21,11 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_DYN_ROOT_H_
+#define IOC_DYN_ROOT_H_
+#include "iocomx.h"
+
 #if IOC_DYNAMIC_MBLK_CODE
 
 struct iocDynamicRoot;
@@ -101,4 +106,5 @@ void ioc_droot_mblk_is_deleted(
 os_uint ioc_hash(
     const os_char *key_str);
 
+#endif
 #endif

@@ -19,7 +19,10 @@
 
 ****************************************************************************************************
 */
-
+#pragma once
+#ifndef IOC_DEBUG_H_
+#define IOC_DEBUG_H_
+#include "iocom.h"
 
 #if OSAL_DEBUG == 0
   #define IOC_DEBUG_ID
@@ -28,5 +31,7 @@
 #else
   #define IOC_DEBUG_ID os_char debug_id;
   #define IOC_SET_DEBUG_ID(o,c) (o)->debug_id = c;
+
+#endif
 
 #endif

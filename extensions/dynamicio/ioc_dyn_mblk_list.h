@@ -18,6 +18,11 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_DYN_MBLK_LIST_H_
+#define IOC_DYN_MBLK_LIST_H_
+#include "iocomx.h"
+
 #if IOC_DYNAMIC_MBLK_CODE
 
 /**
@@ -76,4 +81,5 @@ void ioc_clean_mblk_shortcuts(
     iocDynamicNetwork *dnetwork,
     iocMemoryBlock *deleting_mblk);
 
+#endif
 #endif

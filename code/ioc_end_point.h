@@ -16,6 +16,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_END_POINT_H_
+#define IOC_END_POINT_H_
+#include "iocom.h"
 
 /* Maximum parameter string length for end point.
  */
@@ -179,3 +183,5 @@ osalStatus ioc_terminate_end_point_thread(
 #endif
 
 /*@}*/
+
+#endif

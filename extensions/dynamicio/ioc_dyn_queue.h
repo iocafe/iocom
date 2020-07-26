@@ -21,6 +21,11 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_DYN_QUEUE_H_
+#define IOC_DYN_QUEUE_H_
+#include "iocomx.h"
+
 #if IOC_DYNAMIC_MBLK_CODE
 
 /**
@@ -143,4 +148,5 @@ iocQueuedEvent *ioc_get_event(
 os_boolean ioc_pop_event(
     iocRoot *root);
 
+#endif
 #endif

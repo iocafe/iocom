@@ -16,6 +16,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_SIGNAL_ADDR_H_
+#define IOC_SIGNAL_ADDR_H_
+#include "iocom.h"
 
 struct iocSignal;
 struct iocHandle;
@@ -51,3 +55,5 @@ const iocSignal *ioc_get_signal_range(
 
 
 /*@}*/
+
+#endif

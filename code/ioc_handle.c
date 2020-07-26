@@ -18,6 +18,15 @@
 */
 #include "iocom.h"
 
+/* For testing
+ */
+#define IOC_VALIDATE_HANDLE 0
+#if IOC_VALIDATE_HANDLE
+    static void ioc_validate_handle(iocHandle *handle);
+#else
+    #define ioc_validate_handle(h)
+#endif
+
 /* Set up a memory block handle (synchronization lock must be on).
  */
 void ioc_setup_handle(
@@ -47,8 +56,7 @@ void ioc_setup_handle(
      */
     else
     {
-// ioc_validate_handle(&mblk->handle);
-
+        ioc_validate_handle(&mblk->handle);
         handle->prev = mblk->handle.prev;
         handle->next = &mblk->handle;
         mblk->handle.prev = handle;
@@ -59,8 +67,7 @@ void ioc_setup_handle(
     osal_debug_assert(handle->flags != 0);
 
     IOC_SET_DEBUG_ID(handle, 'H')
-
-// ioc_validate_handle(handle);
+    ioc_validate_handle(handle);
 }
 
 /* Release a memory block handle (calls synchronization).
@@ -71,7 +78,7 @@ void ioc_release_handle(
     if (handle->root == OS_NULL) return;
 
     ioc_lock(handle->root);
-// ioc_validate_handle(handle);
+    ioc_validate_handle(handle);
 
     if (handle->next != handle)
     {
@@ -102,7 +109,7 @@ void ioc_duplicate_handle(
      */
     osal_debug_assert(source_handle->debug_id == 'H');
 
-// ioc_validate_handle(handle);
+    ioc_validate_handle(handle);
     root = source_handle->root;
     if (root)
     {
@@ -113,9 +120,10 @@ void ioc_duplicate_handle(
 }
 
 
+#if IOC_VALIDATE_HANDLE
 /* Called when memory block is deleted (synchronization lock must be on).
  */
-/* void ioc_validate_handle(
+void ioc_validate_handle(
     iocHandle *handle)
 {
     iocHandle *h;
@@ -133,7 +141,7 @@ void ioc_duplicate_handle(
         h = h->next;
     }
 }
-*/
+#endif
 
 /* Called when memory block is deleted (synchronization lock must be on).
  */
@@ -142,10 +150,9 @@ void ioc_terminate_handles(
 {
     iocHandle *h, *nexth;
 
-// ioc_validate_handle(handle);
-
     /* Check that mblk is valid pointer.
      */
+    ioc_validate_handle(handle);
     osal_debug_assert(handle->debug_id == 'H');
 
     h = handle;
@@ -190,8 +197,7 @@ struct iocMemoryBlock *ioc_handle_lock_to_mblk(
     /* Synchronize.
      */
     ioc_lock(root);
-
-// ioc_validate_handle(handle);
+    ioc_validate_handle(handle);
 
     /* Get memory block pointer. If none, unlock and return NULL to indicate failure.
      */

@@ -13,6 +13,9 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_PARAMETERS_H_
+#define IOC_PARAMETERS_H_
 #include "iocom.h"
 
 #if IOC_DEVICE_PARAMETER_SUPPORT
@@ -36,4 +39,5 @@ osalStatus ioc_set_parameter_by_signal(
     const struct iocSignal **pin_sig);
 
 
+#endif
 #endif

@@ -18,8 +18,8 @@
 ****************************************************************************************************
 */
 #pragma once
-#ifndef IOCOM_INCLUDED
-#define IOCOM_INCLUDED
+#ifndef IOCOM_H_
+#define IOCOM_H_
 
 /* Include operating system abstraction layer with extension headers.
  */
@@ -161,6 +161,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_memory_block.h"
 #include "code/ioc_signal.h"
 #include "code/ioc_signal_addr.h"
+#include "code/ioc_streamer.h"
 #if IOC_DYNAMIC_MBLK_CODE
   #include "extensions/dynamicio/ioc_remove_mblk_list.h"
 #endif
@@ -170,7 +171,6 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_target_buffer.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
-#include "code/ioc_streamer.h"
 #include "code/ioc_brick.h"
 #include "code/ioc_parameters.h"
 #include "code/ioc_ioboard.h"

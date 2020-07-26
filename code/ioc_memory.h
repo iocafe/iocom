@@ -16,6 +16,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_MEMORY_H_
+#define IOC_MEMORY_H_
+#include "iocom.h"
 
 /* Setup buffer to use as memory pool.
 */
@@ -42,3 +46,5 @@ void ioc_free(
     iocRoot *root,
     void *memory_block,
     os_memsz bytes);
+
+#endif

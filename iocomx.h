@@ -17,8 +17,9 @@
 
 ****************************************************************************************************
 */
-#ifndef IOCOMX_INCLUDED
-#define IOCOMX_INCLUDED
+#pragma once
+#ifndef IOCOMX_H_
+#define IOCOMX_H_
 
 /* Include base iocom headers.
  */

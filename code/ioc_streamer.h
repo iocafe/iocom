@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_STREAMER_H_
+#define IOC_STREAMER_H_
+#include "iocom.h"
 
 #if IOC_STREAMER_SUPPORT
 
@@ -327,8 +331,7 @@ osalStatus ioc_run_control_stream(
     iocStreamerParams *params);
 #endif
 
-
-
 /*@}*/
 
+#endif
 #endif

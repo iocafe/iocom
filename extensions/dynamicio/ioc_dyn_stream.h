@@ -32,6 +32,11 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_DYN_STREAM_H_
+#define IOC_DYN_STREAM_H_
+#include "iocomx.h"
+
 #if IOC_DYNAMIC_MBLK_CODE
 
 /* Structure to allocate memory for signals.
@@ -198,5 +203,5 @@ osalStatus ioc_stream_initconf(
  */
 #define ioc_stream_nro_bytes_moved(st) ((st)->bytes_moved)
 
-
+#endif
 #endif

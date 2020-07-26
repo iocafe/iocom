@@ -18,6 +18,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_TIMING_H_
+#define IOC_TIMING_H_
+#include "iocom.h"
 
 /* Long timeouts for tracing test. We cannot run in normal speed and print messages.
  */
@@ -68,4 +72,6 @@
  */
 #ifndef IOC_SERIAL_SILENCE_MS
 #define IOC_SERIAL_SILENCE_MS 250
+#endif
+
 #endif
