@@ -18,6 +18,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_AUTHENTICATION_H_
+#define IOC_AUTHENTICATION_H_
+#include "iocom.h"
 
 struct iocRoot;
 struct iocConnection;
@@ -161,3 +165,4 @@ os_boolean ioc_is_network_authorized(
 
 /*@}*/
 
+#endif

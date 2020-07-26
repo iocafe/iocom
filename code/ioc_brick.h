@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_BRICK_H_
+#define IOC_BRICK_H_
+#include "iocom.h"
 
 struct iocBrickBuffer;
 
@@ -239,4 +243,5 @@ void ioc_adjust_jpeg_compression_quality(
  */
 #define ioc_get_jpeg_compression_quality(b) ((os_int)((b)->compression_quality))
 
+#endif
 #endif
