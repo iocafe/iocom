@@ -374,7 +374,7 @@ void ioc_add_allowed_network(
 
     /* Allocate (more) memory if needed.
      */
-    needed = (count + 1) * sizeof(iocAllowedNetwork);
+    needed = (os_memsz)(count + 1) * sizeof(iocAllowedNetwork);
     if (needed > allowed_networks->bytes)
     {
         n = (iocAllowedNetwork*)os_malloc(needed, &bytes);
