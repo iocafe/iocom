@@ -75,6 +75,12 @@ typedef struct
     os_int signal_addr;             /* Signal address specified in JSON */
     os_int signal_array_n;          /* Number of elements in array, 1 if not array */
     os_int ncolumns;                /* Number of columns when array holds matrix, 1 otherwise. */
+
+    /** Trick to get memory block name before processing signals. "groups" position
+        is stored here to return to signals after memory block name has been received.
+     */
+    osalJsonIndex mblk_groups_jindex;
+    os_boolean mblk_groups_jindex_set;
 }
 iocAddDinfoState;
 
@@ -346,6 +352,12 @@ static osalStatus ioc_dinfo_process_array(
             return OSAL_SUCCESS;
         }
 
+        if (!os_strcmp(array_tag, "mblk"))
+        {
+            state->mblk_name = OS_NULL;
+            state->mblk_groups_jindex_set = OS_FALSE;
+        }
+
         state->tag = item.tag_name;
 
         switch (item.code)
@@ -577,10 +589,13 @@ static osalStatus ioc_dinfo_process_block(
     {
         if (item.code == OSAL_JSON_END_BLOCK)
         {
-            /* If end of signal block, generate the signal
+            /* If end of signal block and we got memory block name, generate the signal
              */
             if (is_signal_block)
             {
+                if (state->mblk_name == OS_NULL) {
+                    return OSAL_SUCCESS;
+                }
                 return ioc_new_signal_by_info(state);
             }
             if (is_mblk_block && state->resize_mblks)
@@ -605,6 +620,10 @@ static osalStatus ioc_dinfo_process_block(
 
             case OSAL_JSON_START_ARRAY:
                 os_strncpy(array_tag_buf, state->tag, sizeof(array_tag_buf));
+                if (!os_strcmp(array_tag_buf, "groups") && state->mblk_name == OS_NULL) {
+                    state->mblk_groups_jindex = *jindex;
+                    state->mblk_groups_jindex_set = OS_TRUE;
+                }
                 s = ioc_dinfo_process_array(droot, state, array_tag_buf, jindex);
                 if (s) return s;
                 break;
@@ -615,6 +634,11 @@ static osalStatus ioc_dinfo_process_block(
                     if (!os_strcmp(array_tag, "mblk"))
                     {
                         state->mblk_name = item.value.s;
+
+                        if (state->mblk_groups_jindex_set) {
+                            s = ioc_dinfo_process_array(droot, state, "groups", &state->mblk_groups_jindex);
+                            if (s) return s;
+                        }
                     }
 
                     else if (!os_strcmp(array_tag, "groups"))
