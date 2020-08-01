@@ -1583,7 +1583,7 @@ osalStatus ioc_run_control_stream(
                     ctrl->fdr_persistent_ok = (ctrl->fdr_persistent != OS_NULL);
                     if (ctrl->fdr_persistent == OS_NULL)
                     {
-                        osal_debug_error_int("Reading persistent block failed", select);
+                        osal_debug_error_int("Reading persistent block failed, select=", select);
                         ioc_set_streamer_error(ctrl->frd, OSAL_STATUS_READING_FILE_FAILED,
                             IOC_STREAMER_MODE_SET_ERROR);
                     }
