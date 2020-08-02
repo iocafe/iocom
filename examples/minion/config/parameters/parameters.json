@@ -1,0 +1,35 @@
+{
+  "name": "minion",
+  "persistent": 
+  {
+    "title": "camera pamameters",
+    "groups": [
+      {
+        "name": "camera parameters",
+        "parameters": [
+          {"name": "cam_nr", "type": "char", "init":1},
+          {"name": "img_width", "type": "short", "init":640},
+          {"name": "img_height", "type": "short", "init":480},
+          {"name": "framerate", "type": "short", "init":30},
+          {"name": "brightness", "type": "char", "init":50},
+          {"name": "saturation", "type": "char", "init":50}
+        ]
+      }
+    ]
+  },
+
+ "volatile": 
+  {
+    "title": "camera control",
+    "groups": [
+      {
+        "name": "camera control",
+        "parameters": [
+          {"name": "headlight", "type": "uint", "max": 4095},
+          {"name": "on", "type": "boolean", "init":1}
+        ]
+      }
+    ]
+  }
+}
+

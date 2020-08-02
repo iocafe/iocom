@@ -1,0 +1,43 @@
+{
+    "network": {
+        "title": "Network configuration defaults",
+        "device_nr": "*",
+        "network_name": "iocafenet",
+        "publish": "iocafenet",
+        "password": "",
+
+        "connect": [{
+                "transport": "tls",
+                "parameters": "*",
+                "flags": "connect,up"
+            },
+            {
+                "transport": "socket",
+                "parameters": "*:6368",
+                "flags": "listen,down"
+            },
+            {
+                "transport": "none",
+                "parameters": "[*]:6369",
+                "flags": "listen,down"
+            }
+        ],
+
+        "nic": [{
+            "send_udp": 1,
+            "dhcp": 1,
+            "ip": "192.168.1.211",
+            "subnet": "255.255.255.0",
+            "gateway": "192.168.1.254",
+            "dns": "8.8.4.4",
+            "dns2": "8.8.8.8",
+            "mac": "36:12:64:A4:B4:C4"
+        }],
+
+        "wifi": [{
+                "network": "*",
+                "password": "*"
+            }
+        ]
+    }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "buster",
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Exported by the IO controller",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "state",
+        "signals": [
+          {"name": "nro_devices", "type": "int"},
+          {"name": "test", "type": "boolean"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "Imported by the IO controller",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "control",
+        "signals": [
+           {"name": "restart", "type": "boolean"}
+         ]
+      }
+    ]
+  }
+  ]
+}
+

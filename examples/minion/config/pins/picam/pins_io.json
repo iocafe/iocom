@@ -1,0 +1,39 @@
+{
+  "io": [{
+    "name": "minion",
+    "title": "IO pin setup for the 'minion' camera application on 'picam' hardware",
+    "groups": [
+      {
+        "name": "inputs",
+        "pins": [
+          {"name": "gazerbeam", "addr": 12, "interrupt": 1}
+        ]
+      },
+      {
+        "name": "outputs",
+        "pins": [
+          {"name": "led_morse", "addr": 15},
+          {"name": "led_builtin", "addr": 27}
+        ]
+      },
+      {
+        "name": "pwm",
+        "pins": [
+          {"name": "headlight", "timer": 1, "bank": 1, "addr": 1, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
+        ]
+      },
+      {
+        "name": "cameras",
+        "pins": [
+          {"name": "camera"}
+        ]
+      },
+      {
+        "name": "uart",
+        "pins": [
+          {"name": "comport", "addr": 0, "rx": 16, "tx": 2, "speed": 1152}
+        ]
+      }
+    ]
+  }]
+}
