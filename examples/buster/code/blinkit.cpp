@@ -92,7 +92,8 @@ void BlinkLedSequence::run(os_timer *ti)
         ioc_set_ext(&gina1->imp.myoutput, m_led_on, OSAL_STATE_CONNECTED);
         ioc_set_ext(&gina2->imp.myoutput, m_led_on, OSAL_STATE_CONNECTED);
 
-        /* Blink also local output pin */
+        /* Blink also local output pin.
+         */
         pin_set(&pins.outputs.led_builtin, m_led_on);
     }
 }

@@ -1,7 +1,7 @@
 /**
 
   @file    minion.c
-  @brief   Minion camera IO example.
+  @brief   Minion example.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    22.7.2020
@@ -13,8 +13,7 @@
 
 ****************************************************************************************************
 */
-/* Select IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL
- * before including minion.h.
+/* Select IOBOARD_CTRL_CONNECT_SOCKET before including minion.h.
  */
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
 #include "minion.h"
@@ -147,12 +146,7 @@ osalStatus osal_main(
      */
     nics = ioc_get_nics(&ioapp_device_conf);
     wifis = ioc_get_wifis(&ioapp_device_conf);
-#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-    security = ioc_get_security_conf(&ioapp_device_conf);
-    osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
-#else
     osal_socket_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi);
-#endif
 
     /* Initialize up device information.
      */
@@ -229,11 +223,7 @@ osalStatus osal_main(
      */
 #if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
-#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-        ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_TRUE, OS_NULL);
-#else
         ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_FALSE, OS_NULL);
-#endif
     }
 #endif
 
@@ -404,11 +394,7 @@ void osal_main_cleanup(
 #endif
 
     ioboard_end_communication();
-#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-    osal_tls_shutdown();
-#else
     osal_socket_shutdown();
-#endif
 
 #if PINS_CAMERA
     PINS_CAMERA_IFACE.close(&pins_camera);

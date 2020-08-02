@@ -48,21 +48,7 @@ public:
      */
     iocBServer m_bmain;
 
-    /* Structure holding signals for the IO node.
-     */
-    buster_t m_signals;
-
     /* Network name.
      */
     os_char m_network_name[IOC_NETWORK_NAME_SZ];
-
-    GinaIoDevice m_gina1;
-    GinaIoDevice m_gina2;
-    gina_t *m_gina1_def;
-    gina_t *m_gina2_def;
-    CandyIoDevice m_candy1;
-    candy_t *m_candy1_def;
-
-    BlinkLedSequence m_test_seq1;
-
 };

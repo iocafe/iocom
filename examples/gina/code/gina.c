@@ -218,7 +218,11 @@ osalStatus osal_main(
      */
 #if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
-        ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_NULL);
+#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
+        ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_TRUE, OS_NULL);
+#else
+        ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_FALSE, OS_NULL);
+#endif
     }
 #endif
 
