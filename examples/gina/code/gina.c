@@ -35,10 +35,6 @@
  */
 #include "devicedir.h"
 
-#if GINA_USE_SELECTWIFI
-#include "selectwifi.h"
-#endif
-
 #if IOCOM_USE_GAZERBEAM
 #include "gazerbeam.h"
 static GazerbeamReceiver gazerbeam;
@@ -216,12 +212,6 @@ osalStatus osal_main(
     /* Make sure that control stream state is clear even after soft reboot.
      */
     ioc_init_control_stream(&ioc_ctrl_state, &ioc_ctrl_stream_params);
-
-    /* Enable wifi selection by blue tooth.
-     */
-#if GINA_USE_SELECTWIFI
-    ioc_initialize_selectwifi(OS_NULL);
-#endif
 
     /* Listen for UDP broadcasts with server address. Select IPv6 is our socket connection
        string starts with '[' (indicates IPv6 address).
@@ -418,10 +408,6 @@ void osal_main_cleanup(
 {
 #if IOCOM_USE_LIGHTHOUSE
     ioc_release_lighthouse_client(&lighthouse);
-#endif
-
-#if GINA_USE_SELECTWIFI
-    ioc_release_selectwifi();
 #endif
 
     ioboard_end_communication();
