@@ -23,8 +23,8 @@
 static void ioc_initialize_lighthouse_server_one(
     LighthouseServerOne *c,
     const os_char *publish,
-    iocTransportEnum transport,
-    os_int port,
+    os_int tls_port,
+    os_int tcp_port,
     os_boolean is_ipv6);
 
 static void ioc_release_lighthouse_server_one(
@@ -61,8 +61,13 @@ void ioc_initialize_lighthouse_server(
 {
     osalLighthouseEndPointInfo *ep;
     os_int i;
-    iocTransportEnum ipv4_transport = 0, ipv6_transport = 0;
-    os_int ipv4_port = 0, ipv6_port = 0;
+    iocTransportEnum transport;
+
+    // iocTransportEnum ipv4_transport = IOC_DEFAULT_TRANSPORT,
+    //    ipv6_transport = IOC_DEFAULT_TRANSPORT;
+
+    os_int port, ipv4_tls_port = 0, ipv6_tls_port = 0;
+    os_int ipv4_tcp_port = 0, ipv6_tcp_port = 0;
 
     os_memclear(c, sizeof(LighthouseServer));
 
@@ -71,38 +76,42 @@ void ioc_initialize_lighthouse_server(
     for (i = 0; i<lighthouse_info->n_epoints; i++)
     {
         ep = &lighthouse_info->epoint[i];
-        if (ep->is_ipv6)
-        {
-            if (ep->transport == IOC_TLS_SOCKET || !ipv6_port)
-            {
-                ipv6_transport = ep->transport;
-                ipv6_port = ep->port_nr;
+        transport = ep->transport;
+        port = ep->port_nr;
+
+        if (ep->is_ipv6) {
+            if (transport == IOC_TLS_SOCKET && ipv6_tls_port == 0) {
+                ipv6_tls_port = port;
+            }
+            if (transport == IOC_TCP_SOCKET && ipv6_tcp_port == 0) {
+                ipv6_tcp_port = port;
             }
         }
         else {
-            if (ep->transport == IOC_TLS_SOCKET || !ipv4_port)
-            {
-                ipv4_transport = ep->transport;
-                ipv4_port = ep->port_nr;
+            if (transport == IOC_TLS_SOCKET && ipv4_tls_port == 0) {
+                ipv4_tls_port = port;
+            }
+            if (transport == IOC_TCP_SOCKET && ipv4_tcp_port == 0) {
+                ipv4_tcp_port = port;
             }
         }
     }
 
-    if (ipv4_port) {
+    if (ipv4_tls_port || ipv4_tcp_port) {
         ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4],
-            publish, ipv4_transport, ipv4_port, OS_FALSE);
+            publish, ipv4_tls_port, ipv4_tcp_port, OS_FALSE);
     }
-    if (ipv6_port) {
+    if (ipv6_tls_port || ipv6_tcp_port) {
         ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6],
-            publish, ipv6_transport, ipv6_port, OS_TRUE);
+            publish, ipv6_tls_port, ipv6_tcp_port, OS_TRUE);
     }
 }
 
 static void ioc_initialize_lighthouse_server_one(
     LighthouseServerOne *c,
     const os_char *publish,
-    iocTransportEnum transport,
-    os_int port,
+    os_int tls_port,
+    os_int tcp_port,
     os_boolean is_ipv6)
 {
     c->multicast_ip = is_ipv6 ? LIGHTHOUSE_IP_IPV6 : LIGHTHOUSE_IP_IPV4;
@@ -114,9 +123,11 @@ static void ioc_initialize_lighthouse_server_one(
 
     c->msg.hdr.msg_id = LIGHTHOUSE_MSG_ID;
     c->msg.hdr.hdr_sz = (os_uchar)sizeof(LighthouseMessageHdr);
-    c->msg.hdr.port_nr_low = (os_uchar)port;
-    c->msg.hdr.port_nr_high = (os_uchar)(port >> 8);
-    c->msg.hdr.transport = (os_uchar)transport;
+    c->msg.hdr.tls_port_nr_low = (os_uchar)tls_port;
+    c->msg.hdr.tls_port_nr_high = (os_uchar)(tls_port >> 8);
+    c->msg.hdr.tcp_port_nr_low = (os_uchar)tcp_port;
+    c->msg.hdr.tcp_port_nr_high = (os_uchar)(tcp_port >> 8);
+    c->msg.hdr.transport = (os_uchar)1;
     os_strncpy(c->msg.publish, publish, LIGHTHOUSE_PUBLISH_SZ);
     c->msg.hdr.publish_sz = (os_uchar)os_strlen(c->msg.publish); /* Use this, may be cut */
 

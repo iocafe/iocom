@@ -107,6 +107,11 @@ typedef struct LighthouseClient
     /** Lighthouse if used for real in this device (no static IP settings, etc)
      */
     os_boolean lighthouse_really_needed;
+
+    /** Set to select connection with transport layer security. OS_FALSE to select
+        plain unsecure socket.
+     */
+    os_boolean select_tls;
 }
 LighthouseClient;
 
@@ -121,6 +126,7 @@ LighthouseClient;
 void ioc_initialize_lighthouse_client(
     LighthouseClient *c,
     os_boolean is_ipv6,
+    os_boolean is_tls,
     void *reserved);
 
 /* Release resources allocated for lighthouse client.

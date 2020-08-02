@@ -43,6 +43,8 @@ static void ioc_delete_expired_lighthouse_nets(
   The ioc_initialize_lighthouse_client() function initializes light house client structure.
 
   @param   c Pointer to the light house client object structure.
+  @param   is_ipv6 Set OS_TRUE to look for IPv6 address. OS_FALSE for IPv4 address.
+  @param   is_tls Set OS_TRUE for TLS connection. OS_FALSE for plain unsecure socket.
   @param   reserved Reserved for future, set OS_NULL.
   @return  None.
 
@@ -51,6 +53,7 @@ static void ioc_delete_expired_lighthouse_nets(
 void ioc_initialize_lighthouse_client(
     LighthouseClient *c,
     os_boolean is_ipv6,
+    os_boolean is_tls,
     void *reserved)
 {
     OSAL_UNUSED(reserved);
@@ -58,6 +61,7 @@ void ioc_initialize_lighthouse_client(
     os_get_timer(&c->socket_error_timer);
     c->socket_error_timeout = 100;
     c->multicast_ip = is_ipv6 ? LIGHTHOUSE_IP_IPV6 : LIGHTHOUSE_IP_IPV4;
+    c->select_tls = is_tls;
 }
 
 
@@ -248,21 +252,30 @@ osalStatus ioc_run_lighthouse_client(
 
         /* Add networks.
          */
-        port_nr = msg.hdr.port_nr_high;
-        port_nr = (port_nr << 8) | msg.hdr.port_nr_low;
-        os_get_timer(&received_timer);
-        p = msg.publish;
-        while (*p != '\0')
-        {
-            e = os_strchr(p, ',');
-            if (e == OS_NULL) e = os_strchr(p, '\0');
-            n = e - p + 1;
-            if (n > (os_memsz)sizeof(network_name)) n = sizeof(network_name);
-            os_strncpy(network_name, p, n);
-            ioc_add_lighthouse_net(c, remote_addr, port_nr,
-                msg.hdr.transport, network_name, &received_timer);
-            if (*e == '\0') break;
-            p = e + 1;
+        if (c->select_tls) {
+            port_nr = msg.hdr.tls_port_nr_high;
+            port_nr = (port_nr << 8) | msg.hdr.tls_port_nr_low;
+        }
+        else {
+            port_nr = msg.hdr.tcp_port_nr_high;
+            port_nr = (port_nr << 8) | msg.hdr.tcp_port_nr_low;
+        }
+        if (port_nr) {
+            os_get_timer(&received_timer);
+            p = msg.publish;
+            while (*p != '\0')
+            {
+                e = os_strchr(p, ',');
+                if (e == OS_NULL) e = os_strchr(p, '\0');
+                n = e - p + 1;
+                if (n > (os_memsz)sizeof(network_name)) n = sizeof(network_name);
+                os_strncpy(network_name, p, n);
+                ioc_add_lighthouse_net(c, remote_addr, port_nr,
+                    c->select_tls ? IOC_TLS_SOCKET : IOC_TCP_SOCKET,
+                    network_name, &received_timer);
+                if (*e == '\0') break;
+                p = e + 1;
+            }
         }
     }
 

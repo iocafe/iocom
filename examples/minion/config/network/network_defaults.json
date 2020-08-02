@@ -1,11 +1,11 @@
 {
     "network": {
-        "title": "Network configuration for 'minion' IO device",
-        "device_nr": "*",
-        "network_name": "*",
+        "title": "Network configuration for the Minion",
+        "device_nr": "1",
+        "network_name": "grumpy1",
 
         "connect": [{
-            "transport": "tls",
+            "transport": "socket",
             "parameters": "*",
             "flags": "connect,up"
         }],

@@ -8,7 +8,7 @@
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -52,20 +52,20 @@ typedef struct LighthouseMessageHdr
     os_uchar checksum_low;
     os_uchar checksum_high;
 
-    os_uchar port_nr_low;
-    os_uchar port_nr_high;
+    os_uchar tls_port_nr_low;
+    os_uchar tls_port_nr_high;
     os_uchar random_nr_low;
     os_uchar random_nr_high;
 
     os_uchar publish_sz;
     os_uchar transport;
+    os_uchar tcp_port_nr_low;
+    os_uchar tcp_port_nr_high;
+
     os_uchar reserved_1;
     os_uchar reserved_2;
-
     os_uchar reserved_3;
     os_uchar reserved_4;
-    os_uchar reserved_5;
-    os_uchar reserved_6;
 }
 LighthouseMessageHdr;
 

@@ -3,22 +3,22 @@
         "title": "Network configuration defaults",
         "device_nr": "*",
         "network_name": "iocafenet",
-        "publish": "iocafenet,asteroidnet",
+        "publish": "iocafenet,grumpy1",
         "password": "",
 
         "connect": [{
                 "transport": "none",
                 "parameters": "127.0.0.1:6367",
-                "flags": "connect,down,cloud"
+                "flags": "connect,up"
             },
             {
                 "transport": "tls",
-                "parameters": "*:6369",
+                "parameters": "*",
                 "flags": "listen,down"
             },
             {
-                "transport": "none",
-                "parameters": "[*]:6369",
+                "transport": "socket",
+                "parameters": "*",
                 "flags": "listen,down"
             }
         ],

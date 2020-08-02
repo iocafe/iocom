@@ -3,23 +3,23 @@
         "title": "Network configuration defaults",
         "device_nr": "*",
         "network_name": "iocafenet",
-        "publish": "iocafenet",
+        "publish": "iocafenet,grumpy1",
         "password": "",
 
         "connect": [{
-                "transport": "tls",
+                "transport": "none",
                 "parameters": "*",
                 "flags": "connect,up"
             },
             {
-                "transport": "socket",
-                "parameters": "*:6368",
+                "transport": "tls",
+                "parameters": "*",
                 "flags": "listen,down"
             },
             {
-                "transport": "serial",
-                "parameters": "COM3:rxpin=16,txpin=17",
-                "flags": "connect,up"
+                "transport": "socket",
+                "parameters": "*",
+                "flags": "listen,down"
             }
         ],
 
