@@ -1,10 +1,10 @@
 /**
 
-  @file    controller_root.h
-  @brief   Root class for Buster application.
+  @file    application.h
+  @brief   Buster application's main class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -15,7 +15,6 @@
 */
 
 
-
 /**
 ****************************************************************************************************
 
@@ -23,42 +22,30 @@
 
 ****************************************************************************************************
 */
-class ApplicationRoot
+class Application : public AbstractApplication
 {
 public:
-    /* Constructor.
+    /* Constructor and destructor.
      */
-    ApplicationRoot(
-        const os_char *device_name,
-        os_int device_nr,
-        const os_char *network_name,
-        const os_char *publish);
-
-    /* Virtual destructor.
-     */
-    virtual ~ApplicationRoot();
+    Application() {};
+    // ~Application();
 
     /* Functions to start, stop and thread function to run the application.
      */
-    void start(const os_char *network_name, os_uint device_nr);
+    void start(os_int argc, const os_char *argv[]);
     void stop();
     osalStatus run(os_timer *ti);
+
+    /* Structure holding signals for the Buster.
+     */
+    buster_t m_signals;
 
     /* Basic server (ioserver extension) structure.
      */
     iocBServer m_bmain;
 
-    /* Structure holding signals for the IO node.
-     */
-    buster_t m_signals;
-
-    /* Network name.
-     */
-    os_char m_network_name[IOC_NETWORK_NAME_SZ];
-
-    GinaIoDevice m_minion;
-    gina_t *m_minion_def;
+    Minion m_minion1;
+    minion_t *m_minion1_def;
 
     BlinkLedSequence m_test_seq1;
-
 };

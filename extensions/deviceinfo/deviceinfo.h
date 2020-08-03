@@ -1,6 +1,6 @@
 /**
 
-  @file    deviceinfo_node_conf.h
+  @file    deviceinfo.h
   @brief   Publish device information.
   @author  Pekka Lehtikoski
   @version 1.0

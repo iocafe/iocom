@@ -195,3 +195,18 @@ osalStatus ioc_run_bserver(
     (bmain).ctrl_stream_params.tod.to_device = OS_TRUE; \
     ioc_init_control_stream(&(bmain).ctrl_stream, &(bmain).ctrl_stream_params);
 
+
+#define IOC_SETUP_BSERVER_PARAMS(prm, sig, name, nr, netname, sigconfig, netconfig) \
+    os_memclear(&(prm), sizeof(prm)); \
+    (prm).device_name = (name); \
+    (prm).device_nr = (nr); \
+    (prm).network_name = (netname); \
+    (prm).signals_exp_hdr = &sig.exp.hdr; \
+    (prm).signals_imp_hdr = &sig.imp.hdr; \
+    (prm).signals_conf_exp_hdr = &sig.conf_exp.hdr; \
+    (prm).signals_conf_imp_hdr = &sig.conf_imp.hdr; \
+    (prm).signal_config = (sigconfig); \
+    (prm).signal_config_sz = sizeof(sigconfig); \
+    (prm).network_defaults = netconfig; \
+    (prm).network_defaults_sz = sizeof(netconfig);
+

@@ -1,10 +1,10 @@
 /**
 
-  @file    iodevice_base_class.cpp
-  @brief   Base class for a IO device class.
+  @file    abstract_slave_device.cpp
+  @brief   Base class for an abstract slave device.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +13,9 @@
 
 ****************************************************************************************************
 */
-#include "controller_main.h"
+#include "iodevice.h"
+
+using IoDevice::AbstractSlaveDevice;
 
 
 /**
@@ -27,6 +29,6 @@
 
 ****************************************************************************************************
 */
-AppIoDevice::~AppIoDevice()
+AbstractSlaveDevice::~AbstractSlaveDevice()
 {
 }

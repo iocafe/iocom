@@ -75,7 +75,7 @@ static osalStatus ioc_nconf_setup_structure(
   @param   node Node (IO device) configuration to set up.
   @param   default_config Congifuration as packed JSON.
   @param   default_config_sz Default configuration size in bytes.
-  @param   flags 0 for default operation. IOC_LOAD_PBNR_WIFI = Optionally load wifi from separate
+  @param   flags 0 for default operation. IOC_LOAD_PBNR_NODE_CONF = Optionally load wifi from separate
            memory block (use with selectwifi library).
   @return  None.
 
@@ -163,7 +163,7 @@ gotit:
        If we can have wifi, etc additional configuration as separate persistent block, try
        to load it and use it if it was set up.
      */
-    if (flags & IOC_LOAD_PBNR_WIFI)
+    if (flags & IOC_LOAD_PBNR_NODE_CONF)
     {
         os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&node->overrides, sizeof(osalNodeConfOverrides));
 #if OSAL_SUPPORT_WIFI_NETWORK_CONF
@@ -178,7 +178,7 @@ gotit:
             }
         }
 #endif
-        
+
         /* Network name.
          */
         if (node->overrides.network_name_override[0])

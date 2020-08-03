@@ -1,10 +1,10 @@
 /**
 
-  @file    controller_main.c
-  @brief   Program entry point, Buster IO controller set up.
+  @file    main.cpp
+  @brief   Program entry point, Buster IO device set up.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Code here is general program setup code. It initializes iocom library to be used as automation
   device controller. This example code uses eosal functions everywhere, including the program
@@ -22,28 +22,10 @@
 
 ****************************************************************************************************
 */
-#include "controller_main.h"
+#include "buster.h"
 
-/* The devicedir is here for testing only, take away.
- */
-#include "devicedir.h"
-
-iocRoot iocom_root;
-static ApplicationRoot *app_root;
-
-/* IO device/network configuration.
- */
-static iocNodeConf app_device_conf;
-
-/* IO console state (for development/testing)
- */
-IO_DEVICE_CONSOLE(ioconsole);
-
-/* Light house state structure. The lighthouse sends periodic UDP broadcards
-   to so that this service can be detected in network.
- */
-static LighthouseServer lighthouse;
-
+/* Buster application object. */
+Application app;
 
 /**
 ****************************************************************************************************
@@ -62,91 +44,10 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    const os_char *device_name = "buster";
-    osPersistentParams persistentprm;
-    iocConnectionConfig *connconf;
-    osalSecurityConfig *security;
-    iocNetworkInterfaces *nics;
-    iocWifiNetworks *wifis;
-    iocDeviceId *device_id;
-    osalLighthouseInfo lighthouse_info;
-
-    /* Setup error handling. Here we select to keep track of network state. We could also
-       set application specific error handler callback by calling osal_set_error_handler().
-     */
-    osal_initialize_net_state();
-
-    /* Initialize persistent storage
-     */
-    os_memclear(&persistentprm, sizeof(persistentprm));
-    persistentprm.device_name = device_name;
-    os_persistent_initialze(&persistentprm);
-
-    /* Initialize communication root object.
-     */
-    ioc_initialize_root(&iocom_root);
-
-    /* If we are using devicedir for development testing, initialize.
-     */
-    io_initialize_device_console(&ioconsole, &iocom_root);
-
-    /* Setup IO pins.
-     */
-#if PINS_LIBRARY
-    pins_setup(&pins_hdr, PINS_DEFAULT);
-#endif
-
-    /* Load device/network configuration and device/user account congiguration
-       (persistent storage is typically either file system or micro-controller's flash).
-       Defaults are set in network-defaults.json and in account-defaults.json.
-     */
-    ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
-        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
-    device_id = ioc_get_device_id(&app_device_conf);
-    ioc_set_iodevice_id(&iocom_root, device_name, device_id->device_nr,
-        device_id->password, device_id->network_name);
-
-    /* Get service TCP port number and transport (IOC_TLS_SOCKET or IOC_TCP_SOCKET).
-     */
-    connconf = ioc_get_connection_conf(&app_device_conf);
-    ioc_get_lighthouse_info(connconf, &lighthouse_info);
-
-    /* Setup network interface configuration and initialize transport library. This is
-       partyly ignored if network interfaces are managed by operating system
-       (Linux/Windows,etc),
-     */
-    nics = ioc_get_nics(&app_device_conf);
-    wifis = ioc_get_wifis(&app_device_conf);
-    security = ioc_get_security_conf(&app_device_conf);
-    osal_tls_initialize(nics->nic, nics->n_nics, wifis->wifi, wifis->n_wifi, security);
-    osal_serial_initialize();
-
-#if PINS_LIBRARY
-    /* Connect PINS library to IOCOM library
-     */
-    pins_connect_iocom_library(&pins_hdr);
-#endif
-
-     /* Connect to network.
-     */
-    ioc_connect_node(&iocom_root, connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD_COND);
-
-    /* Initialize light house. Sends periodic UDP broadcards to so that this service
-       can be detected in network.
-     */
-    ioc_initialize_lighthouse_server(&lighthouse, device_id->publish, &lighthouse_info, OS_NULL);
-
-    /* Create buster main object and start listening for clients.
-     */
-    app_root = new ApplicationRoot(device_name, device_id->device_nr, device_id->network_name,
-        device_id->publish);
-
-    /* When emulating micro-controller on PC, run loop. Just save context pointer on
-       real micro-controller.
-     */
-    osal_simulated_loop(OS_NULL);
+    app.start(argc, (const os_char**)argv);
     return OSAL_SUCCESS;
 }
+
 
 
 /**
@@ -166,22 +67,10 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
-    osalStatus s;
     os_timer ti;
 
     os_get_timer(&ti);
-
-    /* The call is here for development/testing.
-     */
-    s = io_run_device_console(&ioconsole);
-    if (s) return s;
-
-    /* Run light house (send periodic UDP broadcasts so that this service can be detected)
-     */
-    ioc_run_lighthouse_server(&lighthouse, &ti);
-
-    s = app_root->run(&ti);
-    return s;
+    return app.run(&ti);
 }
 
 
@@ -204,15 +93,5 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-    /* Finished with lighthouse.
-     */
-    ioc_release_lighthouse_server(&lighthouse);
-
-    delete app_root;
-
-    pins_shutdown(&pins_hdr);
-
-    ioc_release_root(&iocom_root);
-    osal_tls_shutdown();
-    osal_serial_shutdown();
+    app.stop();
 }

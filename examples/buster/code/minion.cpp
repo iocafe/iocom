@@ -1,10 +1,10 @@
 /**
 
-  @file    app_iodevice_gina.cpp
-  @brief   Wrapper representing Gina IO device interface.
+  @file    minion.cpp
+  @brief   Wrapper representing Minion IO device interface.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "controller_main.h"
+#include "buster.h"
 
 
 /**
@@ -27,7 +27,7 @@
 
 ****************************************************************************************************
 */
-GinaIoDevice::GinaIoDevice() : AppIoDevice()
+Minion::Minion() : AbstractSlaveDevice()
 {
     os_strncpy(m_device_name, "gina", IOC_NAME_SZ);
     m_initialized = OS_FALSE;
@@ -45,16 +45,17 @@ GinaIoDevice::GinaIoDevice() : AppIoDevice()
 
 ****************************************************************************************************
 */
-GinaIoDevice::~GinaIoDevice()
+Minion::~Minion()
 {
     release();
 }
 
 
-gina_t *GinaIoDevice::inititalize(
+minion_t *Minion::inititalize(
     const os_char *network_name,
     os_uint device_nr)
 {
+#if 0
     iocMemoryBlockParams blockprm;
 
     if (m_initialized) return &m_gina_def;
@@ -121,12 +122,13 @@ gina_t *GinaIoDevice::inititalize(
     // ioc_add_callback(&ctx.inputs, iocontroller_callback, &ctx);
 
     m_initialized = OS_TRUE;
+#endif
 
-    return &m_gina_def;
+    return &m_minion_def;
 }
 
 
-void GinaIoDevice::release()
+void Minion::release()
 {
     if (!m_initialized) return;
     ioc_release_brick_buffer(&m_camera_buffer);

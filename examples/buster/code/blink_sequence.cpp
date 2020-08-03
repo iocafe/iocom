@@ -1,10 +1,10 @@
 /**
 
-  @file    app_seq_blink_led.cpp
+  @file    blink_sequence.cpp
   @brief   Some example sequence as own thread.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,7 +13,7 @@
 
 ****************************************************************************************************
 */
-#include "controller_main.h"
+#include "buster.h"
 
 
 /**
@@ -26,9 +26,9 @@
 
 ****************************************************************************************************
 */
-BlinkLedSequence::BlinkLedSequence() : AppSequence()
+BlinkLedSequence::BlinkLedSequence() : AbstractSequence()
 {
-    gina1 = 0;
+    minion1 = 0;
 }
 
 
@@ -47,24 +47,24 @@ BlinkLedSequence::~BlinkLedSequence()
 }
 
 
-void BlinkLedSequence::start(ApplicationRoot *app)
+void BlinkLedSequence::start(AbstractApplication *app)
 {
     if (m_started) return;
 
-    gina1 = app->m_gina1_def;
+    /* gina1 = app->m_gina1_def;
     gina2 = app->m_gina2_def;
 
     os_get_timer(&m_timer);
     m_led_on = OS_FALSE;
 
-    AppSequence::start(app);
+    AppSequence::start(app); */
 }
 
 
 void BlinkLedSequence::stop()
 {
-    if (!m_started) return;
-    AppSequence::stop();
+    /* if (!m_started) return;
+    AppSequence::stop(); */
 }
 
 
@@ -89,8 +89,7 @@ void BlinkLedSequence::run(os_timer *ti)
 
         /* Blink IO ping on gina1 and gina2 boards.
          */
-        ioc_set_ext(&gina1->imp.myoutput, m_led_on, OSAL_STATE_CONNECTED);
-        ioc_set_ext(&gina2->imp.myoutput, m_led_on, OSAL_STATE_CONNECTED);
+        ioc_set_ext(&minion1->imp.set_headlight, m_led_on, OSAL_STATE_CONNECTED);
 
         /* Blink also local output pin.
          */

@@ -11,8 +11,8 @@ else:
 
 # Slave device hardware, like espcam, specifies from which HW subfolder signals are taken. Use '*' for same HW as in this device.
 MYAPPCONFIG = MYCODEROOT + '/iocom/examples/buster/config'
-MYSLAVEDEVICES = ' -d ' + MYCODEROOT + '/iocom/examples/candy,espcam'
-MYSLAVEDEVICES += ' -d '+ MYCODEROOT + '/iocom/examples/gina,carol'
+MYSLAVEDEVICES = ' -d ' + MYCODEROOT + '/iocom/examples/minion,picam'
+# MYSLAVEDEVICES += ' -d '+ MYCODEROOT + '/iocom/examples/gina,carol'
 MYCONFSCRIPTS = ' -l ' + MYCODEROOT + '/iocom/extensions/ioserver'
 
 def runcmd(cmd):

@@ -1,10 +1,10 @@
 /**
 
-  @file    sequence_base_class.cpp
-  @brief   Sequence base class.
+  @file    abstract_sequence.cpp
+  @brief   Abstract sequence base class.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -13,11 +13,11 @@
 
 ****************************************************************************************************
 */
-#include "controller_main.h"
+#include "iodevice.h"
 
-#if OSAL_MULTITHREAD_SUPPORT
+using IoDevice::AbstractSequence;
+
 static void buster_test_sequence_thread_func(void *prm, osalEvent done);
-#endif
 
 /**
 ****************************************************************************************************
@@ -30,11 +30,9 @@ static void buster_test_sequence_thread_func(void *prm, osalEvent done);
 
 ****************************************************************************************************
 */
-AppSequence::AppSequence()
+AbstractSequence::AbstractSequence()
 {
-#if OSAL_MULTITHREAD_SUPPORT
     m_event = osal_event_create();
-#endif
     m_started = OS_FALSE;
 }
 
@@ -50,14 +48,14 @@ AppSequence::AppSequence()
 
 ****************************************************************************************************
 */
-AppSequence::~AppSequence()
+AbstractSequence::~AbstractSequence()
 {
     stop();
     osal_event_delete(m_event);
 }
 
 
-void AppSequence::start(ApplicationRoot *app)
+void AbstractSequence::start(AbstractApplication *app)
 {
     if (m_started) return;
 
@@ -74,7 +72,7 @@ void AppSequence::start(ApplicationRoot *app)
 
 /* Join worker thread to this thread.
  */
-void AppSequence::stop()
+void AbstractSequence::stop()
 {
     if (!m_started) return;
 
@@ -90,7 +88,7 @@ void AppSequence::stop()
 #if OSAL_MULTITHREAD_SUPPORT
 static void buster_test_sequence_thread_func(void *prm, osalEvent done)
 {
-    AppSequence *seq = (AppSequence*)prm;
+    AbstractSequence *seq = (AbstractSequence*)prm;
     osal_event_set(done);
     seq->task();
 }

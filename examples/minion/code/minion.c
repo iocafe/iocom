@@ -136,7 +136,7 @@ osalStatus osal_main(
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults,
-        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
+        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_NODE_CONF);
     device_id = ioc_get_device_id(&ioapp_device_conf);
     connconf = ioc_get_connection_conf(&ioapp_device_conf);
 
@@ -240,7 +240,6 @@ osalStatus osal_main(
     camera_prm.callback_func = ioboard_camera_callback;
     PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
     ioboard_configure_camera();
-    // PINS_CAMERA_IFACE.start(&pins_camera);
     camera_on_or_off = camera_is_on = OS_FALSE;
     ioapp_turn_camera_on_or_off();
 #endif

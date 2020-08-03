@@ -1,10 +1,10 @@
 /**
 
-  @file    app_seq_blink_led.h
+  @file    blink_sequence.h
   @brief   Some example sequence as own thread.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -17,11 +17,11 @@
 /**
 ****************************************************************************************************
 
-  Application instance running one IO network.
+  X...
 
 ****************************************************************************************************
 */
-class BlinkLedSequence : public AppSequence
+class BlinkLedSequence : public AbstractSequence
 {
 public:
     /* Constructor and virtual destructor.
@@ -32,10 +32,9 @@ public:
     os_timer m_timer;
     os_boolean m_led_on;
 
-    gina_t *gina1;
-    gina_t *gina2;
+    minion_t *minion1;
 
-    virtual void start(ApplicationRoot *app);
+    virtual void start(AbstractApplication *app);
     virtual void stop();
     virtual void run(os_timer *ti);
     virtual void task();

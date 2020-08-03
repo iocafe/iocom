@@ -115,7 +115,7 @@ osalStatus osal_main(
        Defaults are set in network-defaults.json and in account-defaults.json.
      */
     ioc_load_node_config(&app_device_conf, ioapp_network_defaults,
-        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_WIFI);
+        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_NODE_CONF);
     device_id = ioc_get_device_id(&app_device_conf);
     ioc_set_iodevice_id(&iocom_root, device_name, device_id->device_nr,
         device_id->password, device_id->network_name);

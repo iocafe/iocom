@@ -1,10 +1,10 @@
 /**
 
-  @file    app_iodevice_gina.g
-  @brief   Wrapper representing Gina IO device interface.
+  @file    minion.h
+  @brief   Wrapper representing Minion IO device interface.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    30.4.2020
+  @date    2.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eobjects project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -19,15 +19,15 @@
   IO device interface wrapper class.
 ****************************************************************************************************
 */
-class GinaIoDevice : public AppIoDevice
+class Minion : public AbstractSlaveDevice
 {
 public:
     /* Constructor and virtual destructor.
      */
-    GinaIoDevice();
-    virtual ~GinaIoDevice();
+    Minion();
+    virtual ~Minion();
 
-    gina_t *inititalize(const os_char *network_name, os_uint device_nr);
+    minion_t *inititalize(const os_char *network_name, os_uint device_nr);
     virtual void release();
 
     os_boolean
@@ -43,8 +43,8 @@ public:
 
     /* Gina IO definition structure.
      */
-    gina_t
-        m_gina_def;
+    minion_t
+        m_minion_def;
 
     /* Buffer for incoming camera photo.
      */

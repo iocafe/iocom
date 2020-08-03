@@ -17,14 +17,19 @@ set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 
 # Add include paths.
 include_directories("$ENV{E_ROOT}/iocom")
+include_directories("$ENV{E_ROOT}/pins")
 include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
+include_directories("$ENV{E_ROOT}/iocom/extensions/deviceinfo")
+include_directories("$ENV{E_ROOT}/iocom/extensions/ioserver")
+include_directories("$ENV{E_ROOT}/iocom/extensions/lighthouse")
+include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
 include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 
 # Add main headers.
 set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
 
 # Add source files common to all operating systems.
-file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
+file(GLOB BB_CM_SOURCES "${BACKBONE}/*.cpp")
 file(GLOB BB_CM_HEADERS "${BACKBONE}/*.h")
 
 # Generate the static library.

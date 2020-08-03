@@ -1,13 +1,10 @@
 /**
 
-  @file    iodevice_node_conf.h
+  @file    iodevice.h
   @brief   Publish device information.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    15.7.2020
-
-  iodevice is iocom extension library to publish device's network configuration and state,
-  software versions, used operating system and hardware, and resource/performance counters.
+  @date    1.8.2020
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -17,23 +14,20 @@
 ****************************************************************************************************
 */
 #pragma once
-#ifndef DEVICEINFO_H_
-#define DEVICEINFO_H_
+#ifndef IODEVICE_H_
+#define IODEVICE_H_
+#include "iocomx.h"
+#include "pinsx.h"
 #include "nodeconf.h"
-
-/* If C++ compilation, all functions, etc. from this point on in included headers are
-   plain C and must be left undecorated.
- */
-OSAL_C_HEADER_BEGINS
+#include "ioserver.h"
+#include "lighthouse.h"
+#include "deviceinfo.h"
+#include "devicedir.h"
 
 /* Include all iodevice headers.
  */
-#include "code/iodevice_node_conf.h"
-#include "code/iodevice_system_specs.h"
-#include "code/iodevice_resource_monitor.h"
-
-/* If C++ compilation, end the undecorated code.
- */
-OSAL_C_HEADER_ENDS
+#include "code/abstract_application.h"
+#include "code/abstract_slave_device.h"
+#include "code/abstract_sequence.h"
 
 #endif
