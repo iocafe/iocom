@@ -27,8 +27,7 @@ class Application : public AbstractApplication
 public:
     /* Constructor and destructor.
      */
-    Application() {};
-    // ~Application();
+//    Application() {};
 
     /* Functions to start, stop and thread function to run the application.
      */

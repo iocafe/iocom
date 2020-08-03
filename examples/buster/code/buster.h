@@ -20,6 +20,7 @@
 #include "json_io_config.h"
 
 using IoDevice::AbstractApplication;
+using IoDevice::AbstractAppParams;
 using IoDevice::AbstractSlaveDevice;
 using IoDevice::AbstractSequence;
 

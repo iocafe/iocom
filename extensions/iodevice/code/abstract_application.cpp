@@ -37,11 +37,7 @@ using IoDevice::AbstractApplication;
 */
 void AbstractApplication::init_application_basics(
     const os_char *device_name,
-    const os_char *network_defaults,
-    os_memsz network_defaults_sz,
-    const IoPinsHdr *pins_header,
-    os_int argc,
-    const os_char *argv[])
+    AbstractAppParams *prm)
 {
     osPersistentParams persistentprm;
     os_char buf4[4];
@@ -56,10 +52,10 @@ void AbstractApplication::init_application_basics(
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.device_name = device_name;
 #if OSAL_MICROCONTROLLER == 0
-    for (os_int i = 1; i<argc; i++) {
-        os_strncpy(buf4, argv[i], sizeof(buf4));
+    for (os_int i = 1; i < prm->argc; i++) {
+        os_strncpy(buf4, prm->argv[i], sizeof(buf4));
         if (!os_strcmp(buf4, "-p=")) {
-            persistentprm.path = argv[i] + 3;
+            persistentprm.path = prm->argv[i] + 3;
         }
     }
 #endif
@@ -75,15 +71,15 @@ void AbstractApplication::init_application_basics(
 
     /* Setup IO pins.
      */
-    m_pins_header = pins_header;
-    pins_setup(pins_header, PINS_DEFAULT);
+    m_pins_header = prm->pins_header;
+    pins_setup(m_pins_header, PINS_DEFAULT);
 
     /* Load device/network configuration and device/user account congiguration
        (persistent storage is typically either file system or micro-controller's flash).
        Defaults are set in network-defaults.json and in account-defaults.json.
      */
-    ioc_load_node_config(&m_nodeconf, network_defaults,
-        sizeof(network_defaults_sz), IOC_LOAD_PBNR_NODE_CONF);
+    ioc_load_node_config(&m_nodeconf, prm->network_defaults,
+        prm->network_defaults_sz, IOC_LOAD_PBNR_NODE_CONF);
     m_device_id = ioc_get_device_id(&m_nodeconf);
     ioc_set_iodevice_id(&m_root, device_name, m_device_id->device_nr,
         m_device_id->password, m_device_id->network_name);
@@ -105,11 +101,11 @@ void AbstractApplication::init_application_basics(
 
     /* Connect PINS library to IOCOM library
      */
-    pins_connect_iocom_library(pins_header);
+    pins_connect_iocom_library(m_pins_header);
 }
 
 
-void AbstractApplication::connect_it()
+void AbstractApplication::connect_application()
 {
      /* Connect to network.
      */
@@ -122,7 +118,7 @@ void AbstractApplication::connect_it()
 }
 
 
-void AbstractApplication::cleanup_app_basics()
+void AbstractApplication::application_cleanup()
 {
 
     /* Finished with lighthouse.
@@ -141,7 +137,7 @@ void AbstractApplication::cleanup_app_basics()
 }
 
 
-osalStatus AbstractApplication::run_app_library(
+osalStatus AbstractApplication::run_appplication(
     os_timer *ti)
 {
     osalStatus s;

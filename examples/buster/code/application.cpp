@@ -23,12 +23,19 @@
 
 void Application::start(os_int argc, const os_char *argv[])
 {
-    iocBServerParams prm;
+    AbstractAppParams aprm;
+    iocBServerParams sprm;
 
     /* Initialize IOCOM basics.
      */
-    init_application_basics("buster", ioapp_network_defaults, sizeof(ioapp_network_defaults),
-        &pins_hdr, argc, argv);
+    os_memclear(&aprm, sizeof(aprm));
+    aprm.network_defaults = ioapp_network_defaults;
+    aprm.network_defaults_sz = sizeof(ioapp_network_defaults);
+    aprm.pins_header = &pins_hdr;
+    aprm.argc = argc;
+    aprm.argv = argv;
+
+    init_application_basics("buster", &aprm);
 
     /* Initialize signal structure for this device.
      */
@@ -36,9 +43,9 @@ void Application::start(os_int argc, const os_char *argv[])
 
     /* Setup IO server
      */
-    IOC_SETUP_BSERVER_PARAMS(prm, m_signals, m_device_id->device_name, m_device_id->device_nr,
+    IOC_SETUP_BSERVER_PARAMS(sprm, m_signals, m_device_id->device_name, m_device_id->device_nr,
         m_device_id->network_name, ioapp_signals_config, ioapp_network_defaults)
-    ioc_initialize_ioserver(&m_bmain, &m_root, &prm);
+    ioc_initialize_ioserver(&m_bmain, &m_root, &sprm);
     IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
 
     /* Publish IO networks hosted by frank, such as "iocafenet" or "asteroidnet"
@@ -55,7 +62,7 @@ void Application::start(os_int argc, const os_char *argv[])
      */
     ioc_enable_user_authentication(&m_root, ioc_authorize, &m_bmain);
 
-    connect_it();
+    connect_application();
 
     m_minion1_def = m_minion1.inititalize(m_device_id->network_name, 1);
 
@@ -68,7 +75,7 @@ void Application::start(os_int argc, const os_char *argv[])
 void Application::stop()
 {
     m_test_seq1.stop();
-    cleanup_app_basics();
+    application_cleanup();
 }
 
 osalStatus Application::run(os_timer *ti)
@@ -79,7 +86,7 @@ osalStatus Application::run(os_timer *ti)
     /* Call basic server implementation to maintain control streams. */
     ioc_run_bserver(&m_bmain);
 
-    run_app_library(ti);
+    run_appplication(ti);
 
     ioc_send_all(&m_root);
     return OSAL_SUCCESS;

@@ -16,6 +16,16 @@
 
 namespace IoDevice
 {
+    typedef struct AbstractAppParams {
+        const os_char *device_name;
+        const os_char *network_defaults;
+        os_memsz network_defaults_sz;
+        const IoPinsHdr *pins_header;
+        os_int argc;
+        const os_char **argv;
+    }
+    AbstractAppParams;
+
     /**
     ************************************************************************************************
 
@@ -26,41 +36,34 @@ namespace IoDevice
     class AbstractApplication
     {
     public:
-
-        /* Member functions called from application.
-         */
+        /* Member functions called from actual IO device application. */
         void init_application_basics(
             const os_char *device_name,
-            const os_char *network_defaults,
-            os_memsz network_defaults_sz,
-            const IoPinsHdr *pins_header,
-            os_int argc,
-            const os_char *argv[]);
+            AbstractAppParams *prm);
 
-        void connect_it();
-        void cleanup_app_basics();
-        osalStatus run_app_library(os_timer *ti);
+        void connect_application();
+
+        void application_cleanup();
+
+        osalStatus run_appplication(
+            os_timer *ti);
 
         /* IOCOM root object */
         iocRoot m_root;
 
+        IO_DEVICE_CONSOLE(m_console);
 
-    #if OS_CONTROL_CONSOLE_SUPPORT
-        ioDeviceConsole m_console;
-    #endif
-
-        /* IO device/network configuration.  */
+        /* IO device/network, etc configuration. */
         iocNodeConf m_nodeconf;
-
         iocDeviceId *m_device_id;
         iocConnectionConfig *m_connconf;
         osalSecurityConfig *m_security;
         iocNetworkInterfaces *m_nics;
         iocWifiNetworks *m_wifis;
 
+        /* Lighthouse for IO device discovery by UDP multicasts. */
         osalLighthouseInfo m_lighthouse_server_info;
         LighthouseServer m_lighthouse_server;
         const IoPinsHdr *m_pins_header;
     };
-
 }
