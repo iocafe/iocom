@@ -48,10 +48,6 @@ void Application::start(os_int argc, const os_char *argv[])
     ioc_initialize_ioserver(&m_bmain, &m_root, &sprm);
     IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
 
-    /* Publish IO networks hosted by frank, such as "iocafenet" or "asteroidnet"
-     */
-    ioc_publish_bserver_networks(&m_bmain, m_device_id->publish);
-
     /* Set callback to detect received data and connection status changes.
      */
     ioc_add_callback(&m_bmain.imp, pins_default_iocom_callback, &m_signals.hdr);
@@ -63,6 +59,10 @@ void Application::start(os_int argc, const os_char *argv[])
     ioc_enable_user_authentication(&m_root, ioc_authorize, &m_bmain);
 
     connect_application();
+
+    /* Publish IO networks hosted by frank, such as "iocafenet" or "asteroidnet"
+     */
+    ioc_publish_bserver_networks(&m_bmain, m_device_id->publish);
 
     m_minion1_def = m_minion1.inititalize(m_device_id->network_name, 1);
 
@@ -81,12 +81,12 @@ void Application::stop()
 osalStatus Application::run(os_timer *ti)
 {
     ioc_receive_all(&m_root);
-    ioc_run_brick_receive(&m_minion1.m_camera_buffer);
+    // ioc_run_brick_receive(&m_minion1.m_camera_buffer);
 
     /* Call basic server implementation to maintain control streams. */
     ioc_run_bserver(&m_bmain);
 
-    run_appplication(ti);
+    run_appplication_basics(ti);
 
     ioc_send_all(&m_root);
     return OSAL_SUCCESS;

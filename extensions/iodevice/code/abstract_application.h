@@ -45,7 +45,7 @@ namespace IoDevice
 
         void application_cleanup();
 
-        osalStatus run_appplication(
+        osalStatus run_appplication_basics(
             os_timer *ti);
 
         /* IOCOM root object */

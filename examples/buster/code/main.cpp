@@ -27,12 +27,16 @@
 /* Buster application object. */
 Application app;
 
+
 /**
 ****************************************************************************************************
 
   @brief The controller program entry point.
 
   Initialize IOCOM and start the IO controller application.
+
+  - osal_simulated_loop: When emulating micro-controller on PC, run loop. Just save context
+    pointer on real micro-controller.
 
   @oaran   argc Number of command line arguments (PC only)
   @oaran   argv Array of command line argument pointers (PC only)
@@ -45,9 +49,9 @@ osalStatus osal_main(
     os_char *argv[])
 {
     app.start(argc, (const os_char**)argv);
+    osal_simulated_loop(OS_NULL);
     return OSAL_SUCCESS;
 }
-
 
 
 /**

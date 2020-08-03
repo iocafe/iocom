@@ -32,6 +32,7 @@ void ioc_load_node_config(
     iocNodeConf *node,
     const os_char *default_config,
     os_memsz default_config_sz,
+    const os_char *default_device_name,
     os_int flags);
 
 /* Release any memory allocated for node configuration.

@@ -79,7 +79,7 @@ void AbstractApplication::init_application_basics(
        Defaults are set in network-defaults.json and in account-defaults.json.
      */
     ioc_load_node_config(&m_nodeconf, prm->network_defaults,
-        prm->network_defaults_sz, IOC_LOAD_PBNR_NODE_CONF);
+        prm->network_defaults_sz, device_name, IOC_LOAD_PBNR_NODE_CONF);
     m_device_id = ioc_get_device_id(&m_nodeconf);
     ioc_set_iodevice_id(&m_root, device_name, m_device_id->device_nr,
         m_device_id->password, m_device_id->network_name);
@@ -97,7 +97,6 @@ void AbstractApplication::init_application_basics(
     m_wifis = ioc_get_wifis(&m_nodeconf);
     m_security = ioc_get_security_conf(&m_nodeconf);
     osal_tls_initialize(m_nics->nic, m_nics->n_nics, m_wifis->wifi, m_wifis->n_wifi, m_security);
-    osal_serial_initialize();
 
     /* Connect PINS library to IOCOM library
      */
@@ -125,19 +124,18 @@ void AbstractApplication::application_cleanup()
      */
     ioc_release_lighthouse_server(&m_lighthouse_server);
 
-     /* Release any memory allocated for node configuration.
+    pins_shutdown(m_pins_header);
+
+    /* Release any memory allocated for node configuration.
     */
     ioc_release_node_config(&m_nodeconf);
 
-    pins_shutdown(m_pins_header);
-
     ioc_release_root(&m_root);
     osal_tls_shutdown();
-    osal_serial_shutdown();
 }
 
 
-osalStatus AbstractApplication::run_appplication(
+osalStatus AbstractApplication::run_appplication_basics(
     os_timer *ti)
 {
     osalStatus s;

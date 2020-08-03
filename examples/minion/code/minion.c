@@ -136,7 +136,7 @@ osalStatus osal_main(
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults,
-        sizeof(ioapp_network_defaults), IOC_LOAD_PBNR_NODE_CONF);
+        sizeof(ioapp_network_defaults), persistentprm.device_name, IOC_LOAD_PBNR_NODE_CONF);
     device_id = ioc_get_device_id(&ioapp_device_conf);
     connconf = ioc_get_connection_conf(&ioapp_device_conf);
 

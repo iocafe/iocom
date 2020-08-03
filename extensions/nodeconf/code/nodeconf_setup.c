@@ -75,6 +75,9 @@ static osalStatus ioc_nconf_setup_structure(
   @param   node Node (IO device) configuration to set up.
   @param   default_config Congifuration as packed JSON.
   @param   default_config_sz Default configuration size in bytes.
+  @param   default_device_name Default device name pointer to store in node structure (string
+           must stay in memory). Used if device name is not read from file or configuration.
+           Can be OS_NULL if not needed.
   @param   flags 0 for default operation. IOC_LOAD_PBNR_NODE_CONF = Optionally load wifi from separate
            memory block (use with selectwifi library).
   @return  None.
@@ -85,6 +88,7 @@ void ioc_load_node_config(
     iocNodeConf *node,
     const os_char *default_config,
     os_memsz default_config_sz,
+    const os_char *default_device_name,
     os_int flags)
 {
     const os_char *block;
@@ -209,6 +213,12 @@ gotit:
                 = node->overrides.connect_to_override[1].parameters;
         }
 #endif
+    }
+
+    /* If device name is not specified in JSON, etc, use default device name.
+     */
+    if (node->device_id.device_name == OS_NULL) {
+        node->device_id.device_name = default_device_name;
     }
 }
 
