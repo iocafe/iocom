@@ -37,11 +37,20 @@ extern iocHandle
     ioboard_imp,
     ioboard_exp;
 
+#if IOC_STREAMER_SUPPORT
+/* Data transfer (camera, etc).
+ */
+extern iocHandle
+    ioboard_dimp,
+    ioboard_dexp;
+
 /* Configuration memory block handles.
  */
 extern iocHandle
     ioboard_conf_imp,
     ioboard_conf_exp;
+
+#endif
 
 #endif
 
@@ -88,6 +97,17 @@ extern iocHandle
 #define IOC_SBUF_SZ_NOBID(SEND_BLOCK_SZ) \
     (sizeof(iocSourceBuffer) + SEND_BLOCK_SZ * sizeof(ioc_sbuf_item))
 
+/* Macro to calculate how much additional memory pool is needed by an additional memory block pair.
+ */
+#define IOBOARD_POOL_IMP_EXP_PAIR(MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
+    2 * sizeof(iocMemoryBlock) \
+    + MAX_CONNECTIONS * IOC_SBUF_SZ_NOBID(SEND_BLOCK_SZ) \
+    + MAX_CONNECTIONS * IOC_TBUF_SZ(RECEIVE_BLOCK_SZ) \
+    + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
+    + IOC_BIDSZ(SEND_BLOCK_SZ) \
+    + IOC_BIDSZ(RECEIVE_BLOCK_SZ)
+
+
 /* If using static pool, the pool size must be calculated.If too small, program will not work.
    If too big, memory is wasted.The IOC_POOL_SIZE_LSOCK macro calculates pool size from number
    of connectionsand size of memory blocks for sendingand receiving data for an IO board listening
@@ -97,27 +117,19 @@ extern iocHandle
 #define IOBOARD_POOL_SIZE(CTRL_TYPE, MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
     MAX_CONNECTIONS * sizeof(iocConnection) \
   + MAX_CONNECTIONS * 2 * ((CTRL_TYPE & IOBOARD_CTRL_IS_SOCKET) ? IOC_SOCKET_FRAME_SZ : IOC_SERIAL_FRAME_SZ) \
-  + MAX_CONNECTIONS * IOC_SBUF_SZ_NOBID(SEND_BLOCK_SZ) \
-  + MAX_CONNECTIONS * IOC_TBUF_SZ(RECEIVE_BLOCK_SZ) \
-  + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
   + (((CTRL_TYPE & IOBOARD_CTRL_BASIC_MASK) == IOBOARD_CTRL_LISTEN_SOCKET) ? sizeof(iocEndPoint) : 0) \
-  + IOC_BIDSZ(SEND_BLOCK_SZ) \
-  + IOC_BIDSZ(RECEIVE_BLOCK_SZ)
+  + IOBOARD_POOL_IMP_EXP_PAIR(MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ)
 
 /* Macro to calculate how much additional memory pool we need to publish static device information.
  */
 #define IOBOARD_POOL_DEVICE_INFO(MAX_CONNECTIONS) \
     sizeof(iocMemoryBlock) + MAX_CONNECTIONS * sizeof(iocSourceBuffer)
 
-/* Macro to calculate how much additional memory pool is needed for conf_imp and conf_exp memory blocks.
+/* Backwards compatibility. Macro to calculate how much additional memory pool is needed for
+   conf_imp and conf_exp memory blocks. Replace with IOBOARD_POOL_IMP_EXP_PAIR.
  */
 #define IOBOARD_POOL_IMP_EXP_CONF(MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ) \
-    2 * sizeof(iocMemoryBlock) \
-    + MAX_CONNECTIONS * IOC_SBUF_SZ_NOBID(SEND_BLOCK_SZ) \
-    + MAX_CONNECTIONS * IOC_TBUF_SZ(RECEIVE_BLOCK_SZ) \
-    + (IOC_EXTRA_SBUFS * MAX_CONNECTIONS) * IOC_SBUF_SZ(RECEIVE_BLOCK_SZ) \
-    + IOC_BIDSZ(SEND_BLOCK_SZ) \
-    + IOC_BIDSZ(RECEIVE_BLOCK_SZ)
+    IOBOARD_POOL_IMP_EXP_PAIR(MAX_CONNECTIONS, SEND_BLOCK_SZ, RECEIVE_BLOCK_SZ)
 
 #ifdef IOCOM_IOBOARD
 
@@ -191,8 +203,18 @@ typedef struct
     const os_char *serial_con_str;
 
     os_int max_connections;
-    os_int send_block_sz;
-    os_int receive_block_sz;
+
+    /* Import/export memory block pair size.
+     */
+    os_int exp_mblk_sz;
+    os_int imp_mblk_sz;
+
+#if IOC_STREAMER_SUPPORT
+    /* Data import/export memory block pair size (camera, etc).
+     */
+    os_int dexp_mblk_sz;
+    os_int dimp_mblk_sz;
+#endif
 
     /** Static memory pool.
      */
@@ -207,18 +229,24 @@ typedef struct
      */
     os_int device_info_sz;
 
+#if IOC_STREAMER_SUPPORT
     /** Enable configuration import and export memory blocks by setting
         nonzero block sizes.
      */
-     os_int conf_send_block_sz;
-     os_int conf_receive_block_sz;
+     os_int conf_exp_mblk_sz;
+     os_int conf_imp_mblk_sz;
+#endif
 
     /** Signal header pointers for memory blocks.
      */
     const struct iocMblkSignalHdr *exp_signal_hdr;
     const struct iocMblkSignalHdr *imp_signal_hdr;
+#if IOC_STREAMER_SUPPORT
+    const struct iocMblkSignalHdr *dexp_signal_hdr;
+    const struct iocMblkSignalHdr *dimp_signal_hdr;
     const struct iocMblkSignalHdr *conf_exp_signal_hdr;
     const struct iocMblkSignalHdr *conf_imp_signal_hdr;
+#endif
 
     /** Light house "run" function, used to get IP address to connect to by UDP multicast.
      */

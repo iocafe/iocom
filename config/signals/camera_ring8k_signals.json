@@ -3,15 +3,15 @@
     {
       "name": "camera",
       "type": "cam_ring",
-      "exp": "exp.rec_",
-      "imp": "imp.rec_"
+      "exp": "dexp.rec_",
+      "imp": "dimp.rec_"
     }
   ],
 
   "mblk": [
   {
-    "name": "exp",
-    "title": "IO device's signal exports",
+    "name": "dexp",
+    "title": "data exports signals",
     "flags": "up",
     "groups": [
       {
@@ -28,8 +28,8 @@
   },
 
   {
-    "name": "imp",
-    "title": "IO device's signal imports",
+    "name": "dimp",
+    "title": "data import signals",
     "flags": "down",
     "groups": [
       {

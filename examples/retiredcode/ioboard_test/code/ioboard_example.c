@@ -184,8 +184,8 @@ osalStatus osal_main(
 #endif
     prm.serial_con_str = EXAMPLE_SERIAL_PORT;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = IOBOARD_EXPORT_MBLK_SZ;
-    prm.receive_block_sz = IOBOARD_IMPORT_MBLK_SZ;
+    prm.exp_mblk_sz = IOBOARD_EXPORT_MBLK_SZ;
+    prm.imp_mblk_sz = IOBOARD_IMPORT_MBLK_SZ;
     prm.auto_synchronization = OS_TRUE;
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);

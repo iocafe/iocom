@@ -68,8 +68,10 @@ static os_timer send_timer;
     (IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, \
      CANDY_EXP_MBLK_SZ, CANDY_IMP_MBLK_SZ) \
      + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS) \
-     + IOBOARD_POOL_IMP_EXP_CONF(IOBOARD_MAX_CONNECTIONS, \
-        CANDY_CONF_EXP_MBLK_SZ, CANDY_CONF_IMP_MBLK_SZ))
+     + IOBOARD_POOL_IMP_EXP_PAIR(IOBOARD_MAX_CONNECTIONS, \
+        CANDY_CONF_EXP_MBLK_SZ, CANDY_CONF_IMP_MBLK_SZ) \
+     + IOBOARD_POOL_IMP_EXP_PAIR(IOBOARD_MAX_CONNECTIONS, \
+        CANDY_DEXP_MBLK_SZ, CANDY_DIMP_MBLK_SZ))
 
 #define ALLOCATE_STATIC_POOL (OSAL_DYNAMIC_MEMORY_ALLOCATION == 0)
 
@@ -193,18 +195,23 @@ osalStatus osal_main(
     prm.socket_con_str = connconf->connection[0].parameters;
     prm.serial_con_str = prm.socket_con_str;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = CANDY_EXP_MBLK_SZ;
-    prm.receive_block_sz = CANDY_IMP_MBLK_SZ;
+    prm.exp_mblk_sz = CANDY_EXP_MBLK_SZ;
+    prm.imp_mblk_sz = CANDY_IMP_MBLK_SZ;
+    prm.dexp_mblk_sz = CANDY_DEXP_MBLK_SZ;
+    prm.dimp_mblk_sz = CANDY_DIMP_MBLK_SZ;
+
 #if ALLOCATE_STATIC_POOL
     prm.pool = ioboard_pool;
 #endif
     prm.pool_sz = MY_POOL_SZ;
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
-    prm.conf_send_block_sz = CANDY_CONF_EXP_MBLK_SZ;
-    prm.conf_receive_block_sz = CANDY_CONF_IMP_MBLK_SZ;
+    prm.conf_exp_mblk_sz = CANDY_CONF_EXP_MBLK_SZ;
+    prm.conf_imp_mblk_sz = CANDY_CONF_IMP_MBLK_SZ;
     prm.exp_signal_hdr = &candy.exp.hdr;
     prm.imp_signal_hdr = &candy.imp.hdr;
+    prm.dexp_signal_hdr = &candy.dexp.hdr;
+    prm.dimp_signal_hdr = &candy.dimp.hdr;
     prm.conf_exp_signal_hdr = &candy.conf_exp.hdr;
     prm.conf_imp_signal_hdr = &candy.conf_imp.hdr;
 

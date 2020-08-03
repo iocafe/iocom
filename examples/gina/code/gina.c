@@ -86,8 +86,10 @@ static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
         GINA_EXP_MBLK_SZ, GINA_IMP_MBLK_SZ)
         + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)
-        + IOBOARD_POOL_IMP_EXP_CONF(IOBOARD_MAX_CONNECTIONS,
-            GINA_CONF_EXP_MBLK_SZ, GINA_CONF_IMP_MBLK_SZ)];
+        + IOBOARD_POOL_IMP_EXP_PAIR(IOBOARD_MAX_CONNECTIONS, \
+            GINA_CONF_EXP_MBLK_SZ, GINA_CONF_IMP_MBLK_SZ) \
+        + IOBOARD_POOL_IMP_EXP_PAIR(IOBOARD_MAX_CONNECTIONS, \
+            GINA_DEXP_MBLK_SZ, GINA_DIMP_MBLK_SZ)];
 
 /* Streamer for transferring IO device configuration and flash program. The streamer is used
    to transfer a stream using buffer within memory block. This static structure selects which
@@ -181,14 +183,27 @@ osalStatus osal_main(
     prm.socket_con_str = connconf->connection[0].parameters;
     prm.serial_con_str = prm.socket_con_str;
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
-    prm.send_block_sz = GINA_EXP_MBLK_SZ;
-    prm.receive_block_sz = GINA_IMP_MBLK_SZ;
+    prm.exp_mblk_sz = GINA_EXP_MBLK_SZ;
+    prm.imp_mblk_sz = GINA_IMP_MBLK_SZ;
+#if IOC_STREAMER_SUPPORT
+    prm.dexp_mblk_sz = GINA_DEXP_MBLK_SZ;
+    prm.dimp_mblk_sz = GINA_DIMP_MBLK_SZ;
+#endif
     prm.pool = ioboard_pool;
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
-    prm.conf_send_block_sz = GINA_CONF_EXP_MBLK_SZ;
-    prm.conf_receive_block_sz = GINA_CONF_IMP_MBLK_SZ;
+    prm.exp_signal_hdr = &candy.exp.hdr;
+    prm.imp_signal_hdr = &candy.imp.hdr;
+#if IOC_STREAMER_SUPPORT
+    prm.conf_exp_mblk_sz = GINA_CONF_EXP_MBLK_SZ;
+    prm.conf_imp_mblk_sz = GINA_CONF_IMP_MBLK_SZ;
+    prm.dexp_signal_hdr = &candy.dexp.hdr;
+    prm.dimp_signal_hdr = &candy.dimp.hdr;
+    prm.conf_exp_signal_hdr = &candy.conf_exp.hdr;
+    prm.conf_imp_signal_hdr = &candy.conf_imp.hdr;
+#endif
+
 #if IOCOM_USE_LIGHTHOUSE
     lighthouse_on = ioc_is_lighthouse_used(prm.socket_con_str, &is_ipv6_wildcard);
     if (lighthouse_on) {
