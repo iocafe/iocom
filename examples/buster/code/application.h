@@ -25,10 +25,6 @@
 class Application : public AbstractApplication
 {
 public:
-    /* Constructor and destructor.
-     */
-//    Application() {};
-
     /* Functions to start, stop and thread function to run the application.
      */
     void start(os_int argc, const os_char *argv[]);

@@ -16,11 +16,6 @@
 #include "buster.h"
 
 
-/* static osalStatus app_gina1_photo_received(
-    struct iocBrickBuffer *b,
-    void *context); */
-
-
 void Application::start(os_int argc, const os_char *argv[])
 {
     AbstractAppParams aprm;
