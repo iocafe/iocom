@@ -319,12 +319,16 @@ osalStatus ioc_publish_bserver_networks(
         n->accounts_stream_params.frd.head = &n->asignals.conf_exp.frd_head;
         n->accounts_stream_params.frd.tail = &n->asignals.conf_imp.frd_tail;
         n->accounts_stream_params.frd.state = &n->asignals.conf_exp.frd_state;
+        n->accounts_stream_params.frd.err = &n->asignals.conf_exp.frd_err;
+        n->accounts_stream_params.frd.cs = &n->asignals.conf_exp.frd_cs;
         n->accounts_stream_params.frd.to_device = OS_FALSE;
         n->accounts_stream_params.tod.cmd = &n->asignals.conf_imp.tod_cmd;
         n->accounts_stream_params.tod.select = &n->asignals.conf_imp.tod_select;
         n->accounts_stream_params.tod.buf = &n->asignals.conf_imp.tod_buf;
         n->accounts_stream_params.tod.head = &n->asignals.conf_imp.tod_head;
         n->accounts_stream_params.tod.tail = &n->asignals.conf_exp.tod_tail;
+        n->accounts_stream_params.tod.err =&n->asignals.conf_exp.tod_err;
+        n->accounts_stream_params.tod.cs =&n->asignals.conf_imp.tod_cs;
         n->accounts_stream_params.tod.state = &n->asignals.conf_exp.tod_state;
         n->accounts_stream_params.tod.to_device = OS_TRUE;
         ioc_init_control_stream(&n->accounts_stream, &n->accounts_stream_params);
