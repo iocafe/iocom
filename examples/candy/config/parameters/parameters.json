@@ -26,6 +26,10 @@
         "name": "camera control",
         "parameters": [
           {"name": "headlight", "type": "uint", "max": 4095},
+          {"name": "pwm1", "type": "uint", "max": 4095},
+          {"name": "pwm2", "type": "uint", "max": 4095},
+          {"name": "pwm3", "type": "uint", "max": 4095},
+          {"name": "pwm4", "type": "uint", "max": 4095},
           {"name": "on", "type": "boolean", "init":1}
         ]
       }

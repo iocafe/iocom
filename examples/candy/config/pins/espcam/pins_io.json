@@ -12,20 +12,17 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_morse", "addr": 15},
+          {"name": "led_morse", "addr": 16},
           {"name": "led_builtin", "addr": 33}
-        ]
-      },
-      {
-        "name": "analog_inputs",
-        "pins": [
-          {"name": "ambient", "addr": 13, "max": 4095},
-          {"name": "unused_pin", "addr": 14, "max": 4095}
         ]
       },
       {
         "name": "pwm",
         "pins": [
+          {"name": "pwm1", "timer": 1, "bank": 1, "addr": 2, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
+          {"name": "pwm2", "timer": 1, "bank": 1, "addr": 13, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
+          {"name": "pwm3", "timer": 1, "bank": 1, "addr": 15, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
+          {"name": "pwm4", "timer": 1, "bank": 1, "addr": 14, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
           {"name": "headlight", "timer": 1, "bank": 1, "addr": 4, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
         ]
       },
@@ -36,18 +33,8 @@
         ]
       },
       {
-        "name": "uart",
-        "pins": [
-          {"name": "comport", "addr": 0, "rx": 16, "tx": 2, "speed": 1152}
-        ]
-      },
-      {
         "name": "debugger",
         "pins": [
-            {"name": "AD1_TDI", "addr": 12},
-            {"name": "AD0_TCK", "addr": 13},
-            {"name": "AD3_TMS", "addr": 14},
-            {"name": "AD2_TDO", "addr": 15},
             {"name": "U0_TXD", "addr": 1},
             {"name": "U0_RXD", "addr": 3}
           ]

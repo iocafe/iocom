@@ -1439,18 +1439,24 @@ void ioc_set_streamer_error(
         if (mode != IOC_STREAMER_MODE_SET_ERROR || OSAL_IS_ERROR(s))
         {
             sig = (streamer->flags & OSAL_STREAM_READ) ? prm->tod.err : prm->frd.err;
-            osal_debug_assert(sig != OS_NULL); /* If stops here, check stream's JSON configuration */
-            if (sig) if (sig->handle) {
-                if (mode == IOC_STREAMER_MODE_COMPLETED) {
-                    old_s = ioc_get_ext(sig, OS_NULL, IOC_SIGNAL_NO_TBUF_CHECK);
-                    if (!OSAL_IS_ERROR(old_s)) {
+            if (sig) {
+                if (sig->handle) {
+                    if (mode == IOC_STREAMER_MODE_COMPLETED) {
+                        old_s = ioc_get_ext(sig, OS_NULL, IOC_SIGNAL_NO_TBUF_CHECK);
+                        if (!OSAL_IS_ERROR(old_s)) {
+                            ioc_set(sig, s);
+                        }
+                    }
+                    else {
                         ioc_set(sig, s);
                     }
                 }
-                else {
-                    ioc_set(sig, s);
-                }
             }
+#if OSAL_DEBUG
+            else {
+                osal_debug_assert("NULL signal, check streamer JSON conf");
+            }
+#endif
         }
     }
 }
