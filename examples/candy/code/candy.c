@@ -223,6 +223,7 @@ osalStatus osal_main(
     }
 #endif
 
+
     /* Initialize IOCOM and set up memory blocks for the ioboard.
      */
     ioboard_setup_communication(&prm);

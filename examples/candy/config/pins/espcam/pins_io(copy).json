@@ -12,7 +12,7 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_morse", "addr": 15},
+          {"name": "led_morse", "addr": 16},
           {"name": "led_builtin", "addr": 33}
         ]
       },
@@ -21,6 +21,7 @@
         "pins": [
           {"name": "pwm1", "timer": 1, "bank": 1, "addr": 2, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
           {"name": "pwm2", "timer": 1, "bank": 1, "addr": 13, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
+          {"name": "pwm3", "timer": 1, "bank": 1, "addr": 15, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
           {"name": "pwm4", "timer": 1, "bank": 1, "addr": 14, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
           {"name": "headlight", "timer": 1, "bank": 1, "addr": 4, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
         ]
