@@ -54,14 +54,16 @@ public class MainActivity extends AppCompatActivity
             m_wifi_password_layout,
             io_network_name_layout,
             m_device_number_layout,
-            m_connect_ip_layout;
+            m_connect_ip_layout,
+            m_command_layout;
 
     protected TextInputEditText
             m_wifi_network_edit,
             m_wifi_password_edit,
             io_network_name_edit,
             m_device_number_edit,
-            m_connect_ip_edit;
+            m_connect_ip_edit,
+            m_command_edit;
 
     protected ToggleButton
             m_blink_button;
@@ -79,7 +81,8 @@ public class MainActivity extends AppCompatActivity
             m_wifi_password,
             io_network_name,
             m_device_number,
-            m_connect_ip;
+            m_connect_ip,
+            m_command;
 
     protected SharedPreferences
             m_pref;
@@ -144,12 +147,14 @@ public class MainActivity extends AppCompatActivity
         io_network_name_layout = findViewById(R.id.io_network_name_layout);
         m_device_number_layout = findViewById(R.id.device_number_layout);
         m_connect_ip_layout = findViewById(R.id.connect_ip_layout);
+        m_command_layout = findViewById(R.id.command_layout);
 
         m_wifi_network_edit = findViewById(R.id.wifi_network_edit);
         m_wifi_password_edit = findViewById(R.id.wifi_password_edit);
         io_network_name_edit = findViewById(R.id.io_network_name_edit);
         m_device_number_edit = findViewById(R.id.device_number_edit);
         m_connect_ip_edit = findViewById(R.id.connect_ip_edit);
+        m_command_edit = findViewById(R.id.command_edit);
 
         m_button_color_lst = ColorStateList.valueOf(Color.parseColor("#FFE2E6EF"));
         m_button_pressed_color_lst = ColorStateList.valueOf(Color.parseColor("#FFFFBF00"));
@@ -257,6 +262,7 @@ public class MainActivity extends AppCompatActivity
         io_network_name = io_network_name_edit.getText().toString();
         m_device_number = m_device_number_edit.getText().toString();
         m_connect_ip = m_connect_ip_edit.getText().toString();
+        m_command = m_command_edit.getText().toString();
     }
 
     protected void setUiState()
@@ -266,6 +272,7 @@ public class MainActivity extends AppCompatActivity
         io_network_name_edit.setText(io_network_name);
         m_device_number_edit.setText(m_device_number);
         m_connect_ip_edit.setText(m_connect_ip);
+        m_command_edit.setText(m_command);
     }
 
     protected void enableUiState(boolean enable) {
@@ -300,11 +307,12 @@ public class MainActivity extends AppCompatActivity
     {
         int wn[] = convertString(m_wifi_network, 1);   // GAZERBEAM_ID_WIFI_NETWORK
         int wp[] = convertString(m_wifi_password, 2);  // GAZERBEAM_ID_WIFI_PASSWORD
+        int cmd[] = convertString(m_command, 9);       // GAZERBEAM_ID_COMMAND
         int nn[] = convertString(io_network_name, 10); // GAZERBEAM_ID_NETWORK_NAME_OVERRIDE
         int dn[] = convertString(m_device_number, 11); // GAZERBEAM_ID_DEVICE_NR_OVERRIDE
         int ip[] = convertString(m_connect_ip, 12);    // GAZERBEAM_ID_CONNECT_IP_OVERRIDE
 
-        int n = wn.length + wp.length + nn.length + dn.length + ip.length;
+        int n = wn.length + wp.length + cmd.length + nn.length + dn.length + ip.length;
         int data[] = new int [n];
         int pos = 0;
         int item[];
@@ -316,6 +324,12 @@ public class MainActivity extends AppCompatActivity
         }
 
         item = wp;
+        if (item.length > 2) {
+            appendItem(data, pos, item);
+            pos += item.length;
+        }
+
+        item = cmd;
         if (item.length > 2) {
             appendItem(data, pos, item);
             pos += item.length;

@@ -90,12 +90,26 @@
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/command_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/command_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="command"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <View
                 android:id="@+id/divider"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?android:attr/listDivider"
                 tools:visibility="visible" />
+
 
             <ToggleButton
                 android:id="@+id/blink_button"
@@ -108,6 +122,8 @@
                 android:textAllCaps="false"
                 android:textOff="blink"
                 android:textOn="stop blinking" />
+
+
             <!--android:backgroundTint="#FFFFFF" -->
 
 
