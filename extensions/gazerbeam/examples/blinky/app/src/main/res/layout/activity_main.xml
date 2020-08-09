@@ -24,6 +24,18 @@
                 android:backgroundTint="#3D26C1"
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
 
+            <ToggleButton
+                android:id="@+id/blink_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:backgroundTint="#FFBF00"
+                android:state_pressed="true"
+                android:text="ToggleButton"
+                android:textAllCaps="false"
+                android:textOff="blink"
+                android:textOn="stop blinking" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/wifi_network_layout"
                 android:layout_width="match_parent"
@@ -109,19 +121,6 @@
                 android:layout_height="wrap_content"
                 android:background="?android:attr/listDivider"
                 tools:visibility="visible" />
-
-
-            <ToggleButton
-                android:id="@+id/blink_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-
-                android:backgroundTint="#FFBF00"
-                android:state_pressed="true"
-                android:text="ToggleButton"
-                android:textAllCaps="false"
-                android:textOff="blink"
-                android:textOn="stop blinking" />
 
 
             <!--android:backgroundTint="#FFFFFF" -->

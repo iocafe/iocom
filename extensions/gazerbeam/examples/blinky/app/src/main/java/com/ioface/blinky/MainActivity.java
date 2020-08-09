@@ -281,6 +281,7 @@ public class MainActivity extends AppCompatActivity
         io_network_name_edit.setEnabled(enable);
         m_device_number_edit.setEnabled(enable);
         m_connect_ip_edit.setEnabled(enable);
+        m_command_edit.setEnabled(enable);
     }
 
     protected void saveState()
