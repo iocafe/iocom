@@ -87,10 +87,33 @@ osalStatus gazerbeam_save_config(
 {
     osalNodeConfOverrides block;
     osalStatus s, rval = OSAL_NOTHING_TO_DO;
+    os_char command[16];
 
     os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
 #if OSAL_SUPPORT_WIFI_NETWORK_CONF
+
+    command[0] = '\0';
+    s = gazerbeam_get_config_item(GAZERBEAM_ID_COMMAND,
+        command, sizeof(command),
+        message, message_sz, GAZERBEAM_DEFAULT);
+    if (s == OSAL_SUCCESS) {
+        if (!os_strcmp(command, "reset")) {
+            os_persistent_delete(-1, OSAL_PERSISTENT_DELETE_ALL);
+            os_memclear(&block, sizeof(block));
+            rval = s;
+        }
+        else if (!os_strcmp(command, "reboot")) {
+            rval = s;
+        }
+#if OSAL_SECRET_SUPPORT
+        else if (!os_strcmp(command, "forget")) {
+            osal_forget_secret();
+            rval = s;
+        }
+#endif
+    }
+
     s = gazerbeam_get_config_item(GAZERBEAM_ID_WIFI_NETWORK,
         block.wifi[0].wifi_net_name, OSAL_WIFI_PRM_SZ,
         message, message_sz, GAZERBEAM_DEFAULT);
@@ -170,6 +193,7 @@ osalStatus gazerbeam_get_config_item(
 {
     os_uchar *p, *next_p, *e;
     os_uint sz;
+    OSAL_UNUSED(flags);
 
     p = (os_uchar*)message;
     e = p + message_sz;

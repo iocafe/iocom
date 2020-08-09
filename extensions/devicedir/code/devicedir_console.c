@@ -203,7 +203,7 @@ static osalStatus io_console_line_edit(
              */
             if (!os_strnicmp(console->line_buf, "reset", -1))
             {
-                os_persistent_delete(OSAL_PERSISTENT_DELETE_ALL);
+                os_persistent_delete(-1, OSAL_PERSISTENT_DELETE_ALL);
                 osal_console_write("\nFactory reset done. Reboot the device with 'x'.\n");
             }
 

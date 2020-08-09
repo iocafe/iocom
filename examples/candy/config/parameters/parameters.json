@@ -14,6 +14,13 @@
           {"name": "brightness", "type": "char", "init":50},
           {"name": "saturation", "type": "char", "init":50}
         ]
+      },
+      {
+        "name": "device parameters",
+        "parameters": [
+          {"name": "hlight_blink", "type": "ushort", "init":40},
+          {"name": "hlight_lvl", "type": "ushort", "init":0}
+        ]
       }
     ]
   },
@@ -25,7 +32,7 @@
       {
         "name": "device control",
         "parameters": [
-          {"name": "headlight", "type": "uint", "max": 4095},
+          {"name": "headlight", "type": "ushort", "max": 4095},
           {"name": "pwm1", "type": "uint", "max": 4095},
           {"name": "pwm2", "type": "uint", "max": 4095},
           {"name": "pwm3", "type": "uint", "max": 4095},

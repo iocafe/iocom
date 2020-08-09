@@ -296,8 +296,9 @@ osalStatus osal_main(
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
 #endif
 #if IOCOM_USE_MORSE==2
-    morse.value_blink_ok[0] = 3;
-    morse.value_blink_attention[0] = 3000;
+    morse.blink_attention_level[0] = 3000;
+    morse.blink_level[0] = (os_short)ioc_get(&candy.exp.hlight_blink);
+    morse.steady_hdlight_level[0] = (os_short)ioc_get(&candy.exp.hlight_lvl);
 #endif
 
     /* Start communication.
@@ -521,6 +522,16 @@ static void ioboard_communication_callback(
                 }
 #endif
             }
+
+#if IOCOM_USE_MORSE==2
+            if (sig == &candy.imp.set_hlight_lvl) {
+                morse.steady_hdlight_level[0] = ioc_get(sig);
+            }
+            if (sig == &candy.imp.set_hlight_blink) {
+                morse.blink_level[0] = ioc_get(sig);
+            }
+#endif
+
         }
 #endif
         sig++;
@@ -554,6 +565,8 @@ static void ioboard_camera_callback(
     struct pinsPhoto *photo,
     void *context)
 {
+    OSAL_UNUSED(context);
+
     if (ioc_ready_for_new_brick(&video_output) && ioc_is_brick_connected(&video_output))
     {
         pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION);
