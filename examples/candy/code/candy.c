@@ -296,7 +296,7 @@ osalStatus osal_main(
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
 #endif
 #if IOCOM_USE_MORSE==2
-    morse.value_blink_ok[0] = 10;
+    morse.value_blink_ok[0] = 3;
     morse.value_blink_attention[0] = 3000;
 #endif
 

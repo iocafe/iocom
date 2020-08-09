@@ -143,10 +143,10 @@ OSAL_C_HEADER_BEGINS
 #endif
 
 /* Security and testing is difficult with security on, define to turn much of it off.
-   By default iocom's define follows EOSAL_RELAX_SECURITY in eosal.h.
+   By default iocom's define follows OSAL_RELAX_SECURITY in eosal.h.
  */
 #ifndef IOC_RELAX_SECURITY
-#define IOC_RELAX_SECURITY EOSAL_RELAX_SECURITY
+#define IOC_RELAX_SECURITY OSAL_RELAX_SECURITY
 #endif
 
 

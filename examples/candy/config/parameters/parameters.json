@@ -2,7 +2,7 @@
   "name": "candy",
   "persistent": 
   {
-    "title": "camera pamameters",
+    "title": "camera parameters",
     "groups": [
       {
         "name": "camera parameters",
@@ -20,10 +20,10 @@
 
  "volatile": 
   {
-    "title": "camera control",
+    "title": "device control",
     "groups": [
       {
-        "name": "camera control",
+        "name": "device control",
         "parameters": [
           {"name": "headlight", "type": "uint", "max": 4095},
           {"name": "pwm1", "type": "uint", "max": 4095},
