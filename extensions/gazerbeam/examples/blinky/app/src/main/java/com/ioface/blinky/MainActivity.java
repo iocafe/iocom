@@ -291,6 +291,7 @@ public class MainActivity extends AppCompatActivity
         editor.putString("io_network_name", io_network_name);
         editor.putString("device_number", m_device_number);
         editor.putString("connect_ip", m_connect_ip);
+        editor.putString("command", m_command);
         editor.commit();
     }
 
@@ -301,6 +302,7 @@ public class MainActivity extends AppCompatActivity
         io_network_name = m_pref.getString("io_network_name", "");
         m_device_number = m_pref.getString("device_number", "");
         m_connect_ip = m_pref.getString("connect_ip", "");
+        m_command = m_pref.getString("command", "");
     }
 
     protected int[] makeMessageData()
