@@ -12,7 +12,7 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_morse", "addr": 15}
+          {"name": "led_builtin", "addr": 33}
         ]
       },
       {

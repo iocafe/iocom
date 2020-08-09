@@ -288,11 +288,16 @@ osalStatus osal_main(
     initialize_gazerbeam_receiver(&gazerbeam, &pins.inputs.gazerbeam, GAZERBEAM_DEFAULT);
 #endif
 
-    /* Setup to blink LED to indicate boot errors, etc.
+    /* Setup to blink LED to indicate boot errors, etc. IOCOM_USE_MORSE value 2 indicates that
+       we are using PWM output for morse code. Set up PWM levels.
      */
 #if IOCOM_USE_MORSE
-    initialize_morse_code(&morse, &pins.outputs.led_morse, &pins.outputs.led_builtin,
+    initialize_morse_code(&morse, IOCOM_MORSEPPIN, &pins.outputs.led_builtin,
         MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
+#endif
+#if IOCOM_USE_MORSE==2
+    morse.value_blink_ok[0] = 200;
+    morse.value_blink_attention[0] = 3000;
 #endif
 
     /* Start communication.

@@ -37,14 +37,24 @@ struct pinsPhoto;
   #endif
 #endif
 
-/* Blink network status as morse code if we have an output IO pin named "led_morse".
+/* Blink network status as morse code if we have an output IO pin named "led_morse". Either PWM
+   or normal digital output is fine, define IOCOM_MORSEPPIN as pin to use. PWM is marked with
+   define value 2.
  */
 #ifndef IOCOM_USE_MORSE
   #ifdef PINS_OUTPUTS_LED_MORSE
     #define IOCOM_USE_MORSE 1
   #else
-    #define IOCOM_USE_MORSE 0
+    #ifdef PINS_PWM_LED_MORSE
+      #define IOCOM_USE_MORSE 2
+      #define IOCOM_MORSEPPIN &pins.pwm.led_morse
+    #else
+      #define IOCOM_USE_MORSE 0
+    #endif
   #endif
+#endif
+#ifndef IOCOM_MORSEPPIN
+  #define IOCOM_MORSEPPIN &pins.outputs.led_morse
 #endif
 
 /* Use lighthouse library to get server's IP address from UDP multicast (0 or 1) in same LAN segment?
