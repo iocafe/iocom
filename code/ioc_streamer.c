@@ -1878,6 +1878,7 @@ static void ioc_ctrl_stream_to_device(
 
     else if (ctrl->tod_persistent)
     {
+
         ctrl->transfer_status = IOC_BLOCK_WRITTEN;
         os_persistent_close(ctrl->tod_persistent, stream_flags);
         ctrl->tod_persistent = OS_NULL;

@@ -86,10 +86,10 @@ osalStatus gazerbeam_save_config(
     os_memsz message_sz)
 {
     osalNodeConfOverrides block;
-    osalStatus s, rval = OSAL_NOTHING_TO_DO;
+    osalStatus s, sload, rval = OSAL_NOTHING_TO_DO;
     os_char command[16];
 
-    os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
+    sload = os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
 #if OSAL_SUPPORT_WIFI_NETWORK_CONF
 
@@ -101,7 +101,8 @@ osalStatus gazerbeam_save_config(
         if (!os_strcmp(command, "reset")) {
             os_persistent_delete(-1, OSAL_PERSISTENT_DELETE_ALL);
             os_memclear(&block, sizeof(block));
-            rval = s;
+            if (sload == OSAL_SUCCESS) rval = s;
+            return s;
         }
         else if (!os_strcmp(command, "reboot")) {
             rval = s;
