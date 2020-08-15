@@ -32,7 +32,6 @@
       {
         "name": "device control",
         "parameters": [
-          {"name": "headlight", "type": "ushort", "max": 4095},
           {"name": "pwm1", "type": "uint", "max": 4095},
           {"name": "pwm2", "type": "uint", "max": 4095},
           {"name": "pwm3", "type": "uint", "max": 4095},
