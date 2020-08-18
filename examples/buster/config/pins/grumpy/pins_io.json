@@ -1,0 +1,39 @@
+{
+  "io": [{
+    "name": "buster",
+    "title": "IO pin setup for the 'buster' application on 'grumpy' hardware",
+    "groups": [
+      {
+        "name": "inputs",
+        "pins": [
+          {"name": "gazerbeam", "addr": 39, "interrupt": 1}
+        ]
+      },
+      {
+        "name": "outputs",
+        "pins": [
+          {"name": "led_builtin", "addr": 33}
+        ]
+      },
+      {
+        "name": "analog_inputs",
+        "pins": [
+          {"name": "ambient", "device": "spi.adc1", "addr": 0, "max": 4095},
+          {"name": "sig2", "device": "spi.adc1", "addr": 2, "max": 4095}
+        ]
+      },
+      {
+        "name": "uart",
+        "pins": [
+          {"name": "comport", "addr": 2, "rx": 16, "tx": 17, "speed": 1152}
+        ]
+      },
+      {
+        "name": "spi",
+        "pins": [
+          {"name": "adc1", "driver":"mcp3208", "miso": 16, "mosi": 17, "sclk": 18, "cs": 19, "speed": 80}
+        ]
+      }
+    ]
+  }]
+}

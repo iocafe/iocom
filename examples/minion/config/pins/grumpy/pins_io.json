@@ -1,7 +1,7 @@
 {
   "io": [{
     "name": "minion",
-    "title": "IO pin setup for the 'minion' camera application on 'picam' hardware",
+    "title": "IO pin setup for the 'minion' camera application on 'grumpy' hardware",
     "groups": [
       {
         "name": "inputs",

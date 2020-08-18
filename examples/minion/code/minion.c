@@ -181,8 +181,8 @@ osalStatus osal_main(
     prm.conf_imp_mblk_sz = MINION_CONF_IMP_MBLK_SZ;
     prm.exp_signal_hdr = &minion.exp.hdr;
     prm.imp_signal_hdr = &minion.imp.hdr;
-    prm.dexp_signal_hdr = &candy.dexp.hdr;
-    prm.dimp_signal_hdr = &candy.dimp.hdr;
+    prm.dexp_signal_hdr = &minion.dexp.hdr;
+    prm.dimp_signal_hdr = &minion.dimp.hdr;
     prm.conf_exp_signal_hdr = &minion.conf_exp.hdr;
     prm.conf_imp_signal_hdr = &minion.conf_imp.hdr;
 

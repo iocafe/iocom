@@ -32,21 +32,25 @@ osal_typeinfo = {
 
 def check_valid_name(label, name, sz, allow_numbers):
     if name == None:
-        print(label + " name is not defined.")
-        exit()
+        all_failed(label + " name is not defined.")
 
     if len(name) >= sz:
-        print(label + " name '" + name + "' is too long. Maximum is " + str(sz - 1) + "characters.")
-        exit()
+        all_failed(label + " name '" + name + "' is too long. Maximum is " + str(sz - 1) + "characters.")
 
     if allow_numbers:
         if not re.match(r'^[A-Za-z0-9_]+$', name):
-            print(label + " name '" + name + "' may contain only characters 'A' - 'Z', 'a' - 'z', '0' -'9' and underscore '_'.")
-            exit()
+            all_failed(label + " name '" + name + "' may contain only characters 'A' - 'Z', 'a' - 'z', '0' -'9' and underscore '_'.")
     else:
         if not re.match(r'^[A-Za-z_]+$', name):
-            print(label + " name '" + name + "' may contain only characters 'A' - 'Z', 'a' - 'z', and underscore '_'.")
-            exit()
+            all_failed(label + " name '" + name + "' may contain only characters 'A' - 'Z', 'a' - 'z', and underscore '_'.")
+
+def all_failed(message):
+    global cfile, hfile
+    print(message)
+    cfile.write("FAILED: " + message)
+    hfile.write("FAILED: " + message)
+    finish_c_files()
+    exit()
 
 def start_c_files():
     global cfile, hfile, cfilepath, hfilepath
@@ -179,8 +183,7 @@ def process_signal(signal):
     global block_name
     signal_name = signal.get("name", None)
     if signal_name == None:
-        print("'name' not found for signal in '" + block_name + "'")
-        exit()
+        all_failed("'name' not found for signal in '" + block_name + "'")
 
     check_valid_name("Signal", signal_name, IOC_SIGNAL_NAME_SZ, True)
 
@@ -211,8 +214,7 @@ def process_mblk(mblk):
 
     signals = mblk.get("signals", None)
     if signals == None:
-        print("'signals' not found for " + block_name)
-        exit()
+        all_failed("'signals' not found for " + block_name)
 
     mblk_list.append(device_name + '.' + block_name)
    
@@ -305,8 +307,7 @@ def process_assembly(assembly):
             cfile.write('  s->' + assembly_name + '.flat_buffer = OS_TRUE;\n')
 
     else:
-        print("Assembly '" + assembly_name + "' type '" + assembly_type + "' is uknown")
-        exit()
+        all_failed("Assembly '" + assembly_name + "' type '" + assembly_type + "' is uknown")
 
 
 # Preprocess signal
@@ -411,100 +412,100 @@ def preprocess_json(preprocessed, data):
 def process_source_file(path):
     global cfile, hfile, array_list, signal_list
     global device_name, hw, define_list, mblk_nr, nro_mblks, mblk_list
-    read_file = open(path, "r")
-    if read_file:
-        data = json.load(read_file)
+    try:
+        read_file = open(path, "r")
+    except:
+        all_failed("Opening file " + path + " failed")
 
-        if device_name == None:
-            device_name = data.get("name", "unnameddevice")
+    data = json.load(read_file)
 
-        preprocessed = {}
-        preprocess_json(preprocessed, data)
-        data = preprocessed
+    if device_name == None:
+        device_name = data.get("name", "unnameddevice")
 
-        check_valid_name("Device", device_name, IOC_NAME_SZ, False)
+    preprocessed = {}
+    preprocess_json(preprocessed, data)
+    data = preprocessed
 
-        mblks = data.get("mblk", None)
-        if mblks == None:
-            print("'mblk' not found")
-            exit()
+    check_valid_name("Device", device_name, IOC_NAME_SZ, False)
 
-        mblk_nr = 1
-        nro_mblks = len(mblks)
+    mblks = data.get("mblk", None)
+    if mblks == None:
+        all_failed("'mblk' not found")
 
-        struct_name = device_name + '_t'
-        define_list = []
-        hfile.write('typedef struct ' + struct_name + '\n{')
+    mblk_nr = 1
+    nro_mblks = len(mblks)
 
-        if is_controller:
-            hfile.write('\n  iocDeviceHdr hdr;\n')
-            hfile.write('  iocMblkSignalHdr *mblk_list[' + str(nro_mblks) + '];\n')
+    struct_name = device_name + '_t'
+    define_list = []
+    hfile.write('typedef struct ' + struct_name + '\n{')
 
-            cfile.write('void ' + device_name + '_init_signal_struct(' + struct_name + ' *s)\n{\n')
-            cfile.write('  os_memclear(s, sizeof(' + struct_name + '));\n')
+    if is_controller:
+        hfile.write('\n  iocDeviceHdr hdr;\n')
+        hfile.write('  iocMblkSignalHdr *mblk_list[' + str(nro_mblks) + '];\n')
 
-        else:
-            cfile.write('OS_FLASH_MEM struct ' + struct_name + ' ' + device_name + ' = \n{')
-
-        mblk_list = []
-        array_list = []
-        signal_list = []
-
-        for mblk in mblks:
-            process_mblk(mblk)
-
-        assemblies = data.get("assembly", None)
-        if assemblies != None:
-            for assembly in assemblies:
-                process_assembly(assembly)
-
-        cfile.write('\n')
-
-        if is_controller:
-            cfile.write('  s->hdr.n_mblk_hdrs = ' + str(nro_mblks) + ';\n')
-            cfile.write('  s->hdr.mblk_hdr = s->mblk_list;\n')
-            cfile.write('}\n')
-        else:
-            cfile.write('};\n')
-
-        hfile.write('}\n' + struct_name + ';\n\n')
-
-        for d in define_list:
-            hfile.write(d)
-
-        if not is_controller:
-            hfile.write('\nextern OS_FLASH_MEM_H ' + struct_name + ' ' + device_name + ';\n')
-
-            list_name = device_name + "_mblk_list"
-            cfile.write('\nstatic OS_FLASH_MEM iocMblkSignalHdr * OS_FLASH_MEM ' + list_name + '[] =\n{\n  ')
-            isfirst = True
-            for p in mblk_list:
-                if not isfirst:
-                    cfile.write(',\n  ')
-                isfirst = False
-                cfile.write('&' + p + '.hdr')
-            cfile.write('\n};\n\n')
-            cfile.write('OS_FLASH_MEM iocDeviceHdr ' + device_name + '_hdr = {(iocMblkSignalHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
-            hfile.write('extern OS_FLASH_MEM_H iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
-
-        else:
-            hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s);\n')
-
-        hfile.write('\n/* IO device hardware version. */\n')
-        hfile.write('#define ' + device_name.upper() + '_HW \"' + hw + '\"\n')
-
-        if len(array_list) > 0:
-            hfile.write('\n/* Array length defines. */\n')
-            for p in array_list:
-                hfile.write(p + '\n')
-
-        if len(signal_list) > 0:
-            hfile.write('\n/* Defines to check in code with #ifdef to know if signal is configured in JSON. */\n')
-            for p in signal_list:
-                hfile.write(p + '\n')
+        cfile.write('void ' + device_name + '_init_signal_struct(' + struct_name + ' *s)\n{\n')
+        cfile.write('  os_memclear(s, sizeof(' + struct_name + '));\n')
 
     else:
-        print("Opening file " + path + " failed")
+        cfile.write('OS_FLASH_MEM struct ' + struct_name + ' ' + device_name + ' = \n{')
+
+    mblk_list = []
+    array_list = []
+    signal_list = []
+
+    for mblk in mblks:
+        process_mblk(mblk)
+
+    assemblies = data.get("assembly", None)
+    if assemblies != None:
+        for assembly in assemblies:
+            process_assembly(assembly)
+
+    cfile.write('\n')
+
+    if is_controller:
+        cfile.write('  s->hdr.n_mblk_hdrs = ' + str(nro_mblks) + ';\n')
+        cfile.write('  s->hdr.mblk_hdr = s->mblk_list;\n')
+        cfile.write('}\n')
+    else:
+        cfile.write('};\n')
+
+    hfile.write('}\n' + struct_name + ';\n\n')
+
+    for d in define_list:
+        hfile.write(d)
+
+    if not is_controller:
+        hfile.write('\nextern OS_FLASH_MEM_H ' + struct_name + ' ' + device_name + ';\n')
+
+        list_name = device_name + "_mblk_list"
+        cfile.write('\nstatic OS_FLASH_MEM iocMblkSignalHdr * OS_FLASH_MEM ' + list_name + '[] =\n{\n  ')
+        isfirst = True
+        for p in mblk_list:
+            if not isfirst:
+                cfile.write(',\n  ')
+            isfirst = False
+            cfile.write('&' + p + '.hdr')
+        cfile.write('\n};\n\n')
+        cfile.write('OS_FLASH_MEM iocDeviceHdr ' + device_name + '_hdr = {(iocMblkSignalHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
+        hfile.write('extern OS_FLASH_MEM_H iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
+
+    else:
+        hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s);\n')
+
+    hfile.write('\n/* IO device hardware version. */\n')
+    hfile.write('#define ' + device_name.upper() + '_HW \"' + hw + '\"\n')
+
+    if len(array_list) > 0:
+        hfile.write('\n/* Array length defines. */\n')
+        for p in array_list:
+            hfile.write(p + '\n')
+
+    if len(signal_list) > 0:
+        hfile.write('\n/* Defines to check in code with #ifdef to know if signal is configured in JSON. */\n')
+        for p in signal_list:
+            hfile.write(p + '\n')
+
 
 def list_pins_rootblock(rootblock):
     global pinlist
@@ -523,19 +524,18 @@ def list_pins_rootblock(rootblock):
                     pinlist.update({name : '&' + prins_prefix + '.' + pingroup_name + '.' + name})
 
 def list_pins_in_pinsfile(path):
-    pins_file = open(path, "r")
-    if pins_file:
-        data = json.load(pins_file)
-        rootblocks = data.get("io", None)
-        if rootblocks == None:
-            print("'io' not found")
-            exit()
+    try:
+        pins_file = open(path, "r")
+    except:
+        all_failed("Opening file " + path + " failed")
 
-        for rootblock in rootblocks:
-            list_pins_rootblock(rootblock)
+    data = json.load(pins_file)
+    rootblocks = data.get("io", None)
+    if rootblocks == None:
+        all_failed("'io' not found")
 
-    else:
-        print("Opening file " + path + " failed")
+    for rootblock in rootblocks:
+        list_pins_rootblock(rootblock)
 
 def mymain():
     global cfilepath, hfilepath, pinlist, device_name, hw, is_controller, is_dynamic
@@ -584,9 +584,9 @@ def mymain():
         print("No source files")
         exit()
 
-#    sourcefiles.append('/coderoot/iocom/examples/candy/config/signals/signals.json')
+#    sourcefiles.append('/coderoot/iocom/examples/minion/config/signals/signals.json')
+#    outpath = '/coderoot/iocom/examples/minion/config/include/grumpy/signals.c'
 #    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/signals.json')
-#    outpath = '/coderoot/iocom/examples/gina/config/include/carol/signals.c'
 #    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
 #    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
 #    application_type = "controller-static"
