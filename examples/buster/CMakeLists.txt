@@ -6,6 +6,13 @@ set(E_PROJECT "buster")
 set(E_HW "grumpy")
 project(${E_PROJECT})
 
+# Select libraries to link with application.
+set(E_APPLIBS "iodevice${E_POSTFIX};ioserver${E_POSTFIX};devicedir${E_POSTFIX};gazerbeam${E_POSTFIX};deviceinfo${E_POSTFIX};nodeconf${E_POSTFIX};lighthouse${E_POSTFIX};pins${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS}")
+if ($ENV{E_OSVER} MATCHES "pi")
+  set(E_APPLIBS "${E_APPLIBS};pigpio;raspicam;rt")
+endif()
+set(E_APPLIBS "${E_APPLIBS};$ENV{OSAL_TLS_APP_LIBS}")
+
 # include build information common to all projects.
 include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
@@ -58,4 +65,4 @@ file(GLOB_RECURSE SOURCES "${E_SOURCE_PATH}/*.c" "${E_SOURCE_PATH}/*.cpp")
 # Build executable. Set library folder and libraries to link with.
 link_directories($ENV{E_LIB})
 add_executable(${E_PROJECT}${E_POSTFIX} ${HEADERS} ${SOURCES})
-target_link_libraries(${E_PROJECT}${E_POSTFIX} iodevice${E_POSTFIX};ioserver${E_POSTFIX};devicedir${E_POSTFIX};deviceinfo${E_POSTFIX};lighthouse${E_POSTFIX};nodeconf${E_POSTFIX};pins${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS})
+target_link_libraries(${E_PROJECT}${E_POSTFIX} ${E_APPLIBS})
