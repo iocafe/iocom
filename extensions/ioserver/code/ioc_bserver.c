@@ -128,6 +128,7 @@ void ioc_release_bserver(
   functionality responsive.
 
   @param   m Pointer to basic server structure.
+  @param   ti Timner value now, OS_NULL to get the timer by function.
   @return  If working in something, the function returns OSAL_SUCCESS. Return value
            OSAL_NOTHING_TO_DO indicates that this thread can be switched to slow
            idle mode as far as the bserver knows.
@@ -135,19 +136,26 @@ void ioc_release_bserver(
 ****************************************************************************************************
 */
 osalStatus ioc_run_bserver(
-    iocBServer *m)
+    iocBServer *m,
+    os_timer *ti)
 {
+    os_timer tnow;
     os_int i;
     osalStatus s;
+
+    if (ti == OS_NULL) {
+        os_get_timer(&tnow);
+        ti = &tnow;
+    }
 
     s = ioc_run_control_stream(&m->ctrl_stream, &m->ctrl_stream_params);
 
     /* Run security about twice per second and move set flag check_cert_chain_etc from root
        to bserver.
      */
-    if (os_has_elapsed(&m->sec_timer, 522))
+    if (os_has_elapsed_since(&m->sec_timer, ti, 522))
     {
-        os_get_timer(&m->sec_timer);
+        m->sec_timer = *ti;
         ioc_run_security(m);
 
         /* This is used by ioc_upload_cert_chain_or_flash_prog() to trigger check for missing

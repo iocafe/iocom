@@ -79,7 +79,7 @@ osalStatus Application::run(os_timer *ti)
     // ioc_run_brick_receive(&m_minion1.m_camera_buffer);
 
     /* Call basic server implementation to maintain control streams. */
-    ioc_run_bserver(&m_bmain);
+    ioc_run_bserver(&m_bmain, ti);
 
     run_appplication_basics(ti);
 

@@ -169,7 +169,8 @@ osalStatus ioc_publish_bserver_networks(
 /* Keep basic server functionality alive.
  */
 osalStatus ioc_run_bserver(
-    iocBServer *m);
+    iocBServer *m,
+    os_timer *ti);
 
 /* Macro to set up a control stream by typical signal configuration.
  */

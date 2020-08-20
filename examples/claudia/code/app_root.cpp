@@ -116,7 +116,7 @@ osalStatus AppRoot::run()
 
     /* Call basic server implementation to maintain control streams.
      */
-    s = ioc_run_bserver(&m_bmain);
+    s = ioc_run_bserver(&m_bmain, OS_NULL);
 
     /* Run applications.
      */

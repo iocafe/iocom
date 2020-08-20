@@ -130,7 +130,7 @@ osalStatus ApplicationRoot::run(os_timer *ti)
 
     /* Call basic server implementation to maintain control streams.
      */
-    ioc_run_bserver(&m_bmain);
+    ioc_run_bserver(&m_bmain, ti);
 
 #if OSAL_MULTITHREAD_SUPPORT == 0
     m_test_seq1.run(ti);
