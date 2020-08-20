@@ -1454,7 +1454,7 @@ void ioc_set_streamer_error(
             }
 #if OSAL_DEBUG
             else {
-                osal_debug_assert("NULL signal, check streamer JSON conf");
+                osal_debug_error("NULL signal, check streamer JSON conf");
             }
 #endif
         }
