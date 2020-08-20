@@ -101,6 +101,13 @@ void AbstractApplication::init_application_basics(
     /* Connect PINS library to IOCOM library
      */
     pins_connect_iocom_library(m_pins_header);
+
+    /* If we are have multithreading and SPI or I2C support, try to start SPI thread.
+       If no SPI ir I2C chips are configured (in JSON, etc), the function does nothing.
+     */
+#if OSAL_MULTITHREAD_SUPPORT && (PINS_SPI || PINS_I2C)
+    pins_start_multithread_devicebus(0);
+#endif
 }
 
 
@@ -123,6 +130,12 @@ void AbstractApplication::application_cleanup()
     /* Finished with lighthouse.
      */
     ioc_release_lighthouse_server(&m_lighthouse_server);
+
+    /* Stop SPI and I2C threads.
+     */
+#if OSAL_MULTITHREAD_SUPPORT && (PINS_SPI || PINS_I2C)
+    pins_stop_multithread_devicebus();
+#endif
 
     pins_shutdown(m_pins_header);
 
