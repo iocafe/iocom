@@ -91,9 +91,11 @@ void BlinkLedSequence::run(os_timer *ti)
          */
         ioc_set_ext(&minion1->imp.set_headlight, m_led_on, OSAL_STATE_CONNECTED);
 
-        /* Blink also local output pin.
+        /* Blink also local output pin (if we got one).
          */
+#ifdef PINS_OUTPUTS_LED_BUILTIN
         pin_set(&pins.outputs.led_builtin, m_led_on);
+#endif
     }
 }
 

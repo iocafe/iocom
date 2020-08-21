@@ -6,13 +6,13 @@
       {
         "name": "inputs",
         "pins": [
-          {"name": "gazerbeam", "addr": 39, "interrupt": 1}
+          {"name": "gazerbeam", "addr": 12, "interrupt": 1}
         ]
       },
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_builtin", "addr": 33}
+          {"name": "led_morse", "addr": 15}
         ]
       },
       {
@@ -20,6 +20,12 @@
         "pins": [
           {"name": "ambient", "device": "spi.adc1", "addr": 0, "max": 4095},
           {"name": "sig2", "device": "spi.adc1", "addr": 1, "max": 4095}
+        ]
+      },
+      {
+        "name": "pwm",
+        "pins": [
+          {"name": "headlight", "timer": 1, "bank": 1, "addr": 1, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
         ]
       },
       {
