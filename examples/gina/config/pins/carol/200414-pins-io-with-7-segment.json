@@ -27,7 +27,7 @@
       {
         "name": "analog_inputs",
         "pins": [
-          {"name": "potentiometer", "addr": 26, "speed": 3, "max": 4095}
+          {"name": "potentiometer", "addr": 26, "max": 4095}
         ]
       },
       {
@@ -46,7 +46,7 @@
       {
         "name": "uart",
         "pins": [
-          {"name": "comport", "addr": 2, "rx": 16, "tx": 17, "speed": 1152}
+          {"name": "comport", "addr": 2, "rx": 16, "tx": 17, "speed": 115200}
         ]
       },
       {

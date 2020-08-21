@@ -31,13 +31,13 @@
       {
         "name": "uart",
         "pins": [
-          {"name": "comport", "addr": 2, "rx": 16, "tx": 17, "speed": 1152}
+          {"name": "comport", "addr": 2, "rx": 16, "tx": 17, "speed": 115200}
         ]
       },
       {
         "name": "spi",
         "pins": [
-          {"name": "adc1", "driver":"mcp3208", "miso": 16, "mosi": 17, "sclk": 18, "cs": 19, "speed": 80}
+          {"name": "adc1", "driver":"mcp3208", "miso": 12, "mosi": 13, "sclk": 14, "cs": 8, "speed": 20000}
         ]
       }
     ]
