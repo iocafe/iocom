@@ -1,0 +1,45 @@
+{
+  "name": "candy",
+  "persistent": 
+  {
+    "title": "camera parameters",
+    "groups": [
+      {
+        "name": "camera parameters",
+        "parameters": [
+          {"name": "cam_nr", "type": "char", "init":1},
+          {"name": "img_width", "type": "short", "init":640},
+          {"name": "img_height", "type": "short", "init":480},
+          {"name": "framerate", "type": "short", "init":30},
+          {"name": "brightness", "type": "char", "init":50},
+          {"name": "saturation", "type": "char", "init":50}
+        ]
+      },
+      {
+        "name": "device parameters",
+        "parameters": [
+          {"name": "hlight_blink", "type": "ushort", "init":40},
+          {"name": "hlight_lvl", "type": "ushort", "init":0}
+        ]
+      }
+    ]
+  },
+
+ "volatile": 
+  {
+    "title": "device control",
+    "groups": [
+      {
+        "name": "device control",
+        "parameters": [
+          {"name": "pwm1", "type": "uint", "max": 4095},
+          {"name": "pwm2", "type": "uint", "max": 4095},
+          {"name": "pwm3", "type": "uint", "max": 4095},
+          {"name": "pwm4", "type": "uint", "max": 4095},
+          {"name": "on", "type": "boolean", "init":1}
+        ]
+      }
+    ]
+  }
+}
+
