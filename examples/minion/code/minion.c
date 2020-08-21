@@ -201,7 +201,7 @@ osalStatus osal_main(
     /* Initialize defaults and try to load camera parameters from persistent storage
        to "exp" memory buffer.
      */
-    ioc_initialize_parameters(OS_PBNR_CUST_A);
+    ioc_initialize_parameters(&candy, OS_PBNR_CUST_A);
     ioc_load_parameters();
 
     /* Set up device information.

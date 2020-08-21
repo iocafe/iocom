@@ -1,7 +1,7 @@
 {
   "io": [{
-    "name": "candy",
-    "title": "IO pin setup for the 'candy' camera application on 'espcam' hardware",
+    "name": "gina",
+    "title": "IO pin setup for the 'gina' example application on 'espcam' hardware",
     "groups": [
       {
         "name": "inputs",

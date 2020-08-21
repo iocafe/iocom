@@ -317,10 +317,10 @@ def mymain():
 
     if len(sourcefiles) < 1:
         print("No source files")
-#        exit()
+        exit()
 
-    sourcefiles.append('/coderoot/iocom/examples/candy/config/parameters/parameters.json')
-    outpath = '/coderoot/iocom/examples/candy/config/include/espcam/parameters.c'
+#    sourcefiles.append('/coderoot/iocom/examples/candy/config/parameters/parameters.json')
+#    outpath = '/coderoot/iocom/examples/candy/config/include/espcam/parameters.c'
 
     if outpath is None:
         outpath = sourcefiles[0]

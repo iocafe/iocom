@@ -77,8 +77,6 @@ def set_offset_and_type(parameter):
 
 
 def append_init_parameter_to_c(parameter):
-    global device_name;
-
     init = parameter.get('init', None);
     if init == None:
         return;
@@ -95,7 +93,7 @@ def append_init_parameter_to_c(parameter):
 
     if array_n > 1:
         if type == 'str':
-            cfile.write('ioc_set_str(&' + device_name + '.exp.' + name + ', "' + str(init) + '");\n')
+            cfile.write('ioc_set_str(&sigs->.exp.' + name + ', "' + str(init) + '");\n')
         else:
             cfile.write('static OS_FLASH_MEM os_' + type + ' ioc_idata_' + name + '[] = {')
             init_list = init.split(',')
@@ -106,29 +104,25 @@ def append_init_parameter_to_c(parameter):
                 is_first = False
                 cfile.write(str(i))
             cfile.write('};\n  ')
-            cfile.write('ioc_set_array(&' + device_name + '.exp.' + name + ', ' + 'ioc_idata_' + name + ');\n')
+            cfile.write('ioc_set_array(&sigs->exp.' + name + ', ' + 'ioc_idata_' + name + ');\n')
     else:
-        cfile.write('ioc_set(&' + device_name + '.exp.' + name + ', ' + str(init) + ');\n')
+        cfile.write('ioc_set(&sigs->exp.' + name + ', ' + str(init) + ');\n')
 
 
 def append_load_parameter_to_c(parameter):
-    global device_name;
-
     name = parameter.get("name", None);
     if name == None:
         return
 
-    dsig = device_name + '.exp.' + name
+    dsig ='sigs->exp.' + name
     cfile.write('    ioc_write(' + dsig + '.handle, ' + dsig + '.addr, buf + ' + str(parameter['my_offset']) + ', ' + str(parameter['my_bytes']) + ', 0);\n')
 
 def append_save_parameter_to_c(parameter):
-    global device_name;
-
     name = parameter.get("name", None);
     if name == None:
         return
 
-    dsig = device_name + '.exp.' + name
+    dsig = 'sigs->exp.' + name
     cfile.write('  ioc_read(' + dsig + '.handle, ' + dsig + '.addr, buf + ' + str(parameter['my_offset']) + ', ' + str(parameter['my_bytes']) + ', 0);\n')
 
 def process_struct(step, data):
@@ -237,28 +231,37 @@ def mymain():
     process_source_data('setoffsets', sourcedata)
     
     # Write initialization function, set offset and size for 
-    cfile.write('void ioc_initialize_parameters(os_int block_nr)\n{\n')
+    cfile.write('void ioc_initialize_parameters(const struct ' + device_name + '_t *sigs, os_int block_nr)\n{\n')
     cfile.write('  os_memclear(&ioc_prm_storage, sizeof(ioc_prm_storage));\n')
     cfile.write('  ioc_prm_storage.block_nr = block_nr;\n')
+    cfile.write('  ioc_prm_storage.sigs = (const void*)sigs;\n')
     process_source_data('init', sourcedata)
     cfile.write('}\n\n')
 
     # Write persistent load function
     cfile.write('osalStatus ioc_load_parameters(void)\n{\n')
+    cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
+    cfile.write('  const ' + device_name + '_t *sigs = (const ' + device_name + '_t*)ioc_prm_storage.sigs;\n')
     cfile.write('  os_char buf[' + str(persistent_struct_sz) + '];\n')
     cfile.write('  osalStatus s;\n\n')
+    cfile.write('  osal_debug_assert(sigs != OS_NULL);\n')
     cfile.write('  s = os_load_persistent(ioc_prm_storage.block_nr, buf, sizeof(buf));\n')
     cfile.write('  if (!OSAL_IS_ERROR(s)) {\n')
     process_source_data('load', sourcedata)
     cfile.write('  }\n')
     cfile.write('  return s;\n')
+    cfile.write('#else\n')
+    cfile.write('  return OSAL_STATUS_NOT_SUPPORTED;\n')
+    cfile.write('#endif\n')
     cfile.write('}\n\n')
 
     # Write persistent save function
     cfile.write('osalStatus ioc_save_parameters(void)\n{\n')
     cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
+    cfile.write('  const ' + device_name + '_t *sigs = (const ' + device_name + '_t*)ioc_prm_storage.sigs;\n')
     cfile.write('  os_char buf[' + str(persistent_struct_sz) + '];\n')
     cfile.write('  osalStatus s;\n\n')
+    cfile.write('  osal_debug_assert(sigs != OS_NULL);\n')
     process_source_data('save', sourcedata)
     cfile.write('  s = os_save_persistent(ioc_prm_storage.block_nr, buf, sizeof(buf), OS_FALSE);\n')
     cfile.write('  ioc_prm_storage.changed = OS_FALSE;\n')
@@ -283,7 +286,8 @@ def mymain():
     cfile.write('}\n\n')
 
     # Write heade file
-    hfile.write('void ioc_initialize_parameters(os_int block_nr);\n')
+    hfile.write('struct ' + device_name + '_t;\n')
+    hfile.write('void ioc_initialize_parameters(const struct ' + device_name + '_t *sigs, os_int block_nr);\n')
     hfile.write('osalStatus ioc_load_parameters(void);\n')
     hfile.write('osalStatus ioc_save_parameters(void);\n')
     hfile.write('osalStatus ioc_autosave_parameters(void);\n')
