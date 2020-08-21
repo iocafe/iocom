@@ -6,7 +6,7 @@
       {
         "name": "inputs",
         "pins": [
-          {"name": "gazerbeam", "addr": 12, "interrupt": 1}
+          {"name": "gazerbeam", "addr": 10, "interrupt": 1}
         ]
       },
       {
