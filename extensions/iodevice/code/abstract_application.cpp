@@ -160,7 +160,7 @@ osalStatus AbstractApplication::run_appplication_basics(
 
     /* Run light house (send periodic UDP broadcasts so that this service can be detected)
      */
-    ioc_run_lighthouse_server(&m_lighthouse_server, ti);
+    // ioc_run_lighthouse_server(&m_lighthouse_server, ti);
 
     return OSAL_SUCCESS;
 }
