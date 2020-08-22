@@ -37,7 +37,7 @@
       {
         "name": "spi",
         "pins": [
-          {"name": "adc1", "driver":"mcp3208", "miso": 12, "mosi": 13, "sclk": 14, "cs": 8, "speed": 20000}
+          {"name": "adc1", "driver":"mcp3208", "miso": 12, "mosi": 13, "sclk": 14, "cs": 8, "frequency-kHz": 200}
         ]
       }
     ]

@@ -231,20 +231,18 @@ def mymain():
     process_source_data('setoffsets', sourcedata)
     
     # Write initialization function, set offset and size for 
-    cfile.write('void ioc_initialize_parameters(const struct ' + device_name + '_t *sigs, os_int block_nr)\n{\n')
+    cfile.write('void ioc_initialize_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs, os_int block_nr, void *reserved)\n{\n')
     cfile.write('  os_memclear(&ioc_prm_storage, sizeof(ioc_prm_storage));\n')
     cfile.write('  ioc_prm_storage.block_nr = block_nr;\n')
-    cfile.write('  ioc_prm_storage.sigs = (const void*)sigs;\n')
     process_source_data('init', sourcedata)
     cfile.write('}\n\n')
 
     # Write persistent load function
-    cfile.write('osalStatus ioc_load_parameters(void)\n{\n')
+    cfile.write('osalStatus ioc_load_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs)\n{\n')
     cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
-    cfile.write('  const ' + device_name + '_t *sigs = (const ' + device_name + '_t*)ioc_prm_storage.sigs;\n')
     cfile.write('  os_char buf[' + str(persistent_struct_sz) + '];\n')
     cfile.write('  osalStatus s;\n\n')
-    cfile.write('  osal_debug_assert(sigs != OS_NULL);\n')
+    cfile.write('  ioc_prm_storage.changed = OS_FALSE;\n')
     cfile.write('  s = os_load_persistent(ioc_prm_storage.block_nr, buf, sizeof(buf));\n')
     cfile.write('  if (!OSAL_IS_ERROR(s)) {\n')
     process_source_data('load', sourcedata)
@@ -256,12 +254,10 @@ def mymain():
     cfile.write('}\n\n')
 
     # Write persistent save function
-    cfile.write('osalStatus ioc_save_parameters(void)\n{\n')
+    cfile.write('osalStatus ioc_save_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs)\n{\n')
     cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
-    cfile.write('  const ' + device_name + '_t *sigs = (const ' + device_name + '_t*)ioc_prm_storage.sigs;\n')
     cfile.write('  os_char buf[' + str(persistent_struct_sz) + '];\n')
     cfile.write('  osalStatus s;\n\n')
-    cfile.write('  osal_debug_assert(sigs != OS_NULL);\n')
     process_source_data('save', sourcedata)
     cfile.write('  s = os_save_persistent(ioc_prm_storage.block_nr, buf, sizeof(buf), OS_FALSE);\n')
     cfile.write('  ioc_prm_storage.changed = OS_FALSE;\n')
@@ -272,11 +268,11 @@ def mymain():
     cfile.write('}\n\n')
 
     # Write autosave function
-    cfile.write('osalStatus ioc_autosave_parameters(void)\n{\n')
+    cfile.write('osalStatus ioc_autosave_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs)\n{\n')
     cfile.write('#if OSAL_PERSISTENT_SUPPORT\n')
     cfile.write('  if (ioc_prm_storage.changed) {\n')
     cfile.write('    if (os_has_elapsed(&ioc_prm_storage.ti, 3000)) {\n')
-    cfile.write('       ioc_save_parameters();\n')
+    cfile.write('       ioc_save_' + device_name + '_parameters(sigs);\n')
     cfile.write('    }\n')
     cfile.write('  }\n')
     cfile.write('  return OSAL_SUCCESS;\n')
@@ -287,10 +283,10 @@ def mymain():
 
     # Write heade file
     hfile.write('struct ' + device_name + '_t;\n')
-    hfile.write('void ioc_initialize_parameters(const struct ' + device_name + '_t *sigs, os_int block_nr);\n')
-    hfile.write('osalStatus ioc_load_parameters(void);\n')
-    hfile.write('osalStatus ioc_save_parameters(void);\n')
-    hfile.write('osalStatus ioc_autosave_parameters(void);\n')
+    hfile.write('void ioc_initialize_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs, os_int block_nr, void *reserved);\n')
+    hfile.write('osalStatus ioc_load_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs);\n')
+    hfile.write('osalStatus ioc_save_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs);\n')
+    hfile.write('osalStatus ioc_autosave_' + device_name + '_parameters(const struct ' + device_name + '_t *sigs);\n')
 
     finish_c_files()
 

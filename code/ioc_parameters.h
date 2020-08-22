@@ -24,7 +24,6 @@ struct iocSignal;
 
 typedef struct iocParameterStorage
 {
-    const void *sigs; /* Pointer to application's signal structure */
     os_int block_nr;
     os_boolean changed;
     os_timer ti;

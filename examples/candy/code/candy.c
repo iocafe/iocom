@@ -231,8 +231,8 @@ osalStatus osal_main(
     /* Initialize defaults and try to load camera parameters from persistent storage
        to "exp" memory buffer.
      */
-    ioc_initialize_parameters(&candy, OS_PBNR_CUST_A);
-    ioc_load_parameters();
+    ioc_initialize_candy_parameters(&candy, OS_PBNR_CUST_A, OS_NULL);
+    ioc_load_candy_parameters(&candy);
 
     /* Set up device information.
      */
@@ -399,7 +399,7 @@ osalStatus osal_loop(
     /* Check for tasks, like saving parameters, changes in network node configuration and
        keep resource monitor signals alive.
      */
-    ioc_autosave_parameters();
+    ioc_autosave_candy_parameters(&candy);
     dinfo_run_node_conf(&dinfo_nc, &ti);
     dinfo_run_resource_monitor(&dinfo_rm, &ti);
 
