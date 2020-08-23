@@ -41,6 +41,7 @@
       {
         "name": "spi",
         "pins": [
+          {"name": "adc1", "driver":"mcp3208", "bank": 0, "addr":0, "miso": 9, "mosi": 10, "sclk": 11, "cs": 8, "frequency-kHz": 10, "flags":3},
           {"name": "adc1", "driver":"mcp3208", "bank": 10, "miso": 12, "mosi": 13, "sclk": 14, "cs": 8, "frequency-kHz": 10}
         ]
       }
