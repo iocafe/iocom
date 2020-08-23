@@ -19,7 +19,11 @@
         "name": "analog_inputs",
         "pins": [
           {"name": "ambient", "device": "spi.adc1", "addr": 0, "max": 4095},
-          {"name": "sig2", "device": "spi.adc1", "addr": 1, "max": 4095}
+          {"name": "sig1", "device": "spi.adc1", "addr": 1, "max": 4095}
+          {"name": "sig2", "device": "spi.adc1", "addr": 2, "max": 4095}
+          {"name": "sig3", "device": "spi.adc1", "addr": 3, "max": 4095}
+          {"name": "sig4", "device": "spi.adc1", "addr": 4, "max": 4095}
+          {"name": "sig5", "device": "spi.adc1", "addr": 5, "max": 4095}
         ]
       },
       {
@@ -37,7 +41,7 @@
       {
         "name": "spi",
         "pins": [
-          {"name": "adc1", "driver":"mcp3208", "bank": 10, "miso": 12, "mosi": 13, "sclk": 14, "cs": 8, "frequency-kHz": 20}
+          {"name": "adc1", "driver":"mcp3208", "bank": 10, "miso": 12, "mosi": 13, "sclk": 14, "cs": 8, "frequency-kHz": 10}
         ]
       }
     ]
