@@ -15,4 +15,11 @@
 
 ****************************************************************************************************
 */
+
+/* Global signals. This allows mapping IO pins directly to signals from JSON, but we can have only
+   one application instance.
+ */
+struct buster_t;
+extern struct buster_t buster;
+
 #include "json_io_config.c"

@@ -97,7 +97,11 @@ void AbstractApplication::init_application_basics(
     m_wifis = ioc_get_wifis(&m_nodeconf);
     m_security = ioc_get_security_conf(&m_nodeconf);
     osal_tls_initialize(m_nics->nic, m_nics->n_nics, m_wifis->wifi, m_wifis->n_wifi, m_security);
+}
 
+
+void AbstractApplication::connect_application()
+{
     /* Connect PINS library to IOCOM library
      */
     pins_connect_iocom_library(m_pins_header);
@@ -108,11 +112,7 @@ void AbstractApplication::init_application_basics(
 #if OSAL_MULTITHREAD_SUPPORT && (PINS_SPI || PINS_I2C)
     pins_start_multithread_devicebus(0);
 #endif
-}
 
-
-void AbstractApplication::connect_application()
-{
      /* Connect to network.
      */
     ioc_connect_node(&m_root, m_connconf, IOC_DYNAMIC_MBLKS|IOC_CREATE_THREAD_COND);

@@ -15,6 +15,10 @@
 */
 #include "buster.h"
 
+/* Global signals. This allows mapping IO pins directly to signals from JSON, but we can have only
+   one application instance.
+ */
+buster_t buster;
 
 void Application::start(os_int argc, const os_char *argv[])
 {
@@ -34,18 +38,19 @@ void Application::start(os_int argc, const os_char *argv[])
 
     /* Initialize signal structure for this device.
      */
-    buster_init_signal_struct(&m_signals);
+    m_signals = &buster;
+    buster_init_signal_struct(m_signals);
 
     /* Setup IO server
      */
-    IOC_SETUP_BSERVER_PARAMS(sprm, m_signals, m_device_id->device_name, m_device_id->device_nr,
+    IOC_SETUP_BSERVER_PARAMS(sprm, buster, m_device_id->device_name, m_device_id->device_nr,
         m_device_id->network_name, ioapp_signals_config, ioapp_network_defaults)
     ioc_initialize_ioserver(&m_bmain, &m_root, &sprm);
-    IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
+    IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, buster)
 
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&m_bmain.imp, pins_default_iocom_callback, &m_signals.hdr);
+    ioc_add_callback(&m_bmain.imp, pins_default_iocom_callback, &m_signals->hdr);
 
     /* Enable user authentication. Basic server pointer (m_bmain) is set as context, this
      * is needed to pass notifications (like "new device", or "wrong password") to server

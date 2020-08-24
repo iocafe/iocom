@@ -22,8 +22,10 @@
           {"name": "sig1", "device": "spi.adc1", "addr": 1, "max": 4095},
           {"name": "sig2", "device": "spi.adc1", "addr": 2, "max": 4095},
           {"name": "sig3", "device": "spi.adc1", "addr": 3, "max": 4095},
-          {"name": "sig4", "device": "spi.adc1", "addr": 4, "max": 4095},
-          {"name": "sig5", "device": "spi.adc1", "addr": 5, "max": 4095}
+          {"name": "pwm1", "device": "i2c.pwmboard", "addr": 0, "max": 4095},
+          {"name": "pwm2", "device": "i2c.pwmboard", "addr": 1, "max": 4095},
+          {"name": "pwm3", "device": "i2c.pwmboard", "addr": 2, "max": 4095},
+          {"name": "pwm4", "device": "i2c.pwmboard", "addr": 3, "max": 4095}
         ]
       },
       {
@@ -42,6 +44,12 @@
         "name": "spi",
         "pins": [
           {"name": "adc1", "driver":"mcp3208", "bank": 0, "addr":0, "miso": 9, "mosi": 10, "sclk": 11, "cs": 8, "frequency-kHz": 1000, "flags": 3}
+        ]
+      },
+      {
+        "name": "i2c",
+        "pins": [
+          {"name": "pwmboard", "driver":"pca9685", "bank": 0, "addr":0, "sda": 0, "scl": 1, "frequency-kHz": 1000, "flags": 0}
         ]
       }
     ]

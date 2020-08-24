@@ -14,6 +14,11 @@
 ****************************************************************************************************
 */
 
+/* Global signals. This allows mapping IO pins directly to signals from JSON, but we can have only
+   one application instance.
+ */
+extern struct buster_t buster;
+
 /**
 ****************************************************************************************************
 
@@ -32,7 +37,7 @@ public:
 
     /* Structure holding signals for the Buster.
      */
-    buster_t m_signals;
+    buster_t *m_signals;
 
     /* Basic server (ioserver extension) structure.
      */
