@@ -28,10 +28,10 @@
         "name": "pwm",
         "pins": [
           {"name": "headlight", "timer": 1, "bank": 1, "addr": 1, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
-          {"name": "pwm1", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 3800, "max": 4095},
-          {"name": "pwm2", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 3800, "max": 4095},
-          {"name": "pwm3", "device": "i2c.pwmboard", "addr": 2, "frequency": 60, "init": 3800, "max": 4095},
-          {"name": "pwm4", "device": "i2c.pwmboard", "addr": 3, "frequency": 60, "init": 3800, "max": 4095}
+          {"name": "pwm1", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 300, "max": 4095},
+          {"name": "pwm2", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 300, "max": 4095},
+          {"name": "pwm3", "device": "i2c.pwmboard", "addr": 2, "frequency": 60, "init": 300, "max": 4095},
+          {"name": "pwm4", "device": "i2c.pwmboard", "addr": 3, "frequency": 60, "init": 300, "max": 4095}
         ]
       },
       {
