@@ -21,17 +21,17 @@
           {"name": "ambient", "device": "spi.adc1", "addr": 0, "max": 4095},
           {"name": "sig1", "device": "spi.adc1", "addr": 1, "max": 4095},
           {"name": "sig2", "device": "spi.adc1", "addr": 2, "max": 4095},
-          {"name": "sig3", "device": "spi.adc1", "addr": 3, "max": 4095},
-          {"name": "pwm1", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 3800, "max": 4095},
-          {"name": "pwm2", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 3800, "max": 4095},
-          {"name": "pwm3", "device": "i2c.pwmboard", "addr": 2, "frequency": 60, "init": 3800, "max": 4095},
-          {"name": "pwm4", "device": "i2c.pwmboard", "addr": 3, "frequency": 60, "init": 3800, "max": 4095}
+          {"name": "sig3", "device": "spi.adc1", "addr": 3, "max": 4095}
         ]
       },
       {
         "name": "pwm",
         "pins": [
-          {"name": "headlight", "timer": 1, "bank": 1, "addr": 1, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
+          {"name": "headlight", "timer": 1, "bank": 1, "addr": 1, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
+          {"name": "pwm1", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 3800, "max": 4095},
+          {"name": "pwm2", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 3800, "max": 4095},
+          {"name": "pwm3", "device": "i2c.pwmboard", "addr": 2, "frequency": 60, "init": 3800, "max": 4095},
+          {"name": "pwm4", "device": "i2c.pwmboard", "addr": 3, "frequency": 60, "init": 3800, "max": 4095}
         ]
       },
       {
@@ -49,7 +49,7 @@
       {
         "name": "i2c",
         "pins": [
-          {"name": "pwmboard", "driver":"pca9685", "bank": 0, "addr":64, "sda": 0, "scl": 1}
+          {"name": "pwmboard", "driver":"pca9685", "bank": 1, "addr":64, "sda": 0, "scl": 1}
         ]
       }
     ]
