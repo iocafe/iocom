@@ -49,7 +49,7 @@
       {
         "name": "i2c",
         "pins": [
-          {"name": "pwmboard", "driver":"pca9685", "bank": 0, "addr":0, "sda": 0, "scl": 1, "frequency-kHz": 1000, "flags": 0}
+          {"name": "pwmboard", "driver":"pca9685", "bank": 0, "addr":0, "sda": 0, "scl": 1}
         ]
       }
     ]
