@@ -212,7 +212,7 @@ void Application::communication_callback(
 
 #if PINS_CAMERA
     if (configuration_changed) {
-        ioboard_configure_camera();
+        // ioboard_configure_camera();
     }
 #endif
 }
