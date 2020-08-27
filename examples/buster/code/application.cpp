@@ -46,6 +46,17 @@ void Application::start(os_int argc, const os_char *argv[])
     m_signals = &buster;
     buster_init_signal_struct(m_signals);
 
+    /* Setup IO server
+     */
+    IOC_SETUP_BSERVER_PARAMS(sprm, buster, m_device_id->device_name, m_device_id->device_nr,
+        m_device_id->network_name, ioapp_signals_config, ioapp_network_defaults)
+    ioc_initialize_ioserver(&m_bmain, &m_root, &sprm);
+    IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, buster)
+
+    /* Call communication_callback() when data is received, etc..
+     */
+    ioc_add_callback(&m_bmain.imp, iocom_application_communication_callback, this);
+
 // xxxxxxxxxx
     /* Initialize up device information.
      */
@@ -61,16 +72,6 @@ void Application::start(os_int argc, const os_char *argv[])
     ioc_load_buster_parameters(m_signals);
 // xxxxxxxxxx
 
-    /* Setup IO server
-     */
-    IOC_SETUP_BSERVER_PARAMS(sprm, buster, m_device_id->device_name, m_device_id->device_nr,
-        m_device_id->network_name, ioapp_signals_config, ioapp_network_defaults)
-    ioc_initialize_ioserver(&m_bmain, &m_root, &sprm);
-    IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, buster)
-
-    /* Call communication_callback() when data is received, etc..
-     */
-    ioc_add_callback(&m_bmain.imp, iocom_application_communication_callback, this);
 
     /* Enable user authentication. Basic server pointer (m_bmain) is set as context, this
      * is needed to pass notifications (like "new device", or "wrong password") to server
