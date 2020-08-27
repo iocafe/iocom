@@ -57,4 +57,14 @@ public:
     minion_t *m_minion1_def;
 
     BlinkLedSequence m_test_seq1;
+
+/* Camera state and camera output */
+#if PINS_CAMERA
+    // static pinsCamera pins_camera;
+    // static iocBrickBuffer video_output;
+    /* Camera control parameter has changed, camera on/off */
+    static os_boolean camera_on_or_off;
+    // static os_boolean camera_is_on;
+#endif
+
 };

@@ -24,6 +24,10 @@ using IoDevice::AbstractAppParams;
 using IoDevice::AbstractSlaveDevice;
 using IoDevice::AbstractSequence;
 
+/* No morse code for now
+ */
+#define IOCOM_USE_MORSE 0
+
 /* Include application headers.
  */
 #include "minion.h"
