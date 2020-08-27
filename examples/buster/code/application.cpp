@@ -18,7 +18,7 @@
 /* Global signals. This allows mapping IO pins directly to signals from JSON, but we can have only
    one application instance.
  */
-buster_t buster;
+struct buster_t buster;
 
 void Application::start(os_int argc, const os_char *argv[])
 {
@@ -60,7 +60,6 @@ void Application::start(os_int argc, const os_char *argv[])
     ioc_initialize_buster_parameters(m_signals, OS_PBNR_CUST_A, OS_NULL);
     ioc_load_buster_parameters(m_signals);
 // xxxxxxxxxx
-
 
     /* Setup IO server
      */

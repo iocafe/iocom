@@ -162,7 +162,8 @@ def slave_device_signals_to_c(slavepath, hw):
     if hw == '*':
         hw = MYHW
     path, slavedevicename = os.path.split(slavepath)
-    cmd = SIGNALSTOC + ' -a controller-static ' + slavepath + '/config/intermediate/' + hw + '/signals-merged.json '
+    cmd = SIGNALSTOC + ' -a slave-device ' + slavepath + '/config/intermediate/' + hw + '/signals-merged.json '
+    # cmd = SIGNALSTOC + ' -a controller-static ' + slavepath + '/config/intermediate/' + hw + '/signals-merged.json '
     cmd += '-o ' + MYINCLUDE + '/' + MYHW + '/' + slavedevicename + '_signals.c'
     CFILES.append(slavedevicename + '_signals')
     runcmd(cmd)

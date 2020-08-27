@@ -24,6 +24,7 @@ cmd = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPP
 cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON
 cmd += MYSLAVEDEVICES + MYCONFSCRIPTS
 cmd += ' -a controller-static'
+# cmd += ' -a iodevice'
 runcmd(cmd)
 
 print("*** Check that output files have been generated (error checks are imperfect).")

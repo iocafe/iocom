@@ -47,8 +47,10 @@ def check_valid_name(label, name, sz, allow_numbers):
 def all_failed(message):
     global cfile, hfile
     print(message)
-    cfile.write("FAILED: " + message)
-    hfile.write("FAILED: " + message)
+    if cfile != None:
+        cfile.write("FAILED: " + message)
+    if hfile != None:
+        hfile.write("FAILED: " + message)
     finish_c_files()
     exit()
 
@@ -67,10 +69,13 @@ def start_c_files():
 
 def finish_c_files():
     global cfile, hfile
-    hfile.write('\nOSAL_C_HEADER_ENDS\n')
-    hfile.write('#endif\n')
-    cfile.close()
-    hfile.close()
+    if hfile != None:
+        hfile.write('\nOSAL_C_HEADER_ENDS\n')
+        hfile.write('#endif\n')
+        hfile.close()
+
+    if cfile != None:        
+        cfile.close()
 
 def write_signal_to_c_header(signal_name):
     global hfile
@@ -172,7 +177,27 @@ def write_signal_to_c_source_for_controller(signal_name, signal):
     if not is_dynamic:
         cfile.write(my_name + '.addr = ' + str(addr) + ';\n')
         cfile.write(my_name + '.n = ' + str(array_n) + ';\n')
-        cfile.write(my_name + '.flags = OS_' + type.upper() + ';\n')
+        
+        my_flags = 'OS_' + type.upper()
+        if not is_dynamic:
+            if signal_name in pinlist:
+                my_flags += '|IOC_PIN_PTR'
+                cfile.write(my_name + '.ptr = ' + pinlist[signal_name] + ';\n')
+
+            elif not is_slave_device:
+                pflag = signal.get('pflag', 0)
+                if pflag & 64:
+                    my_flags += '|IOC_PFLAG_IS_PRM'
+                if pflag & 128:
+                    my_flags += '|IOC_PFLAG_IS_PERSISTENT'
+                
+                if pflag & 192:
+                    paddr = signal.get('paddr', None)
+                    if paddr != None:
+                        cfile.write(my_name + '.ptr = ' + paddr + ';\n')
+
+
+        cfile.write(my_name + '.flags = ' + my_flags + ';\n')
 
     if is_dynamic:
         cfile.write(my_name + '.ptr = \"' + signal_name + '\";\n')
@@ -538,7 +563,10 @@ def list_pins_in_pinsfile(path):
         list_pins_rootblock(rootblock)
 
 def mymain():
-    global cfilepath, hfilepath, pinlist, device_name, hw, is_controller, is_dynamic
+    global cfile, hfile, cfilepath, hfilepath, pinlist, device_name, hw, is_controller, is_dynamic, is_slave_device
+
+    cfile = None
+    hfile = None
 
     # Get command line arguments
     n = len(sys.argv)
@@ -584,18 +612,29 @@ def mymain():
         print("No source files")
         exit()
 
+#    sourcefiles.append('/coderoot/iocom/examples/buster/config/intermediate/grumpy/signals-merged.json')
+#    outpath = '/coderoot/iocom/examples/buster/config/include/grumpy/signals.c'
+#    pinspath = '/coderoot/iocom/examples/buster/config/pins/grumpy/pins_io.json'
+#    application_type = "controller-static"
+
 #    sourcefiles.append('/coderoot/iocom/examples/minion/config/signals/signals.json')
 #    outpath = '/coderoot/iocom/examples/minion/config/include/grumpy/signals.c'
+
 #    sourcefiles.append('/coderoot/iocom/examples/gina/config/signals/signals.json')
 #    outpath = '/coderoot/iocom/examples/tito/config/include/gina-for-tito.c'
-#    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/gina-io.json'
+#    pinspath = '/coderoot/iocom/examples/gina/config/pins/carol/pins_io.json'
 #    application_type = "controller-static"
 #    application_type = "controller-dynamic"
 
     is_controller = False
     is_dynamic = False
+    is_slave_device = False
     if application_type == "controller-static":
         is_controller = True
+
+    if application_type == "slave-device":
+        is_controller = True
+        is_slave_device = True
 
     if application_type == "controller-dynamic":
         is_controller = True

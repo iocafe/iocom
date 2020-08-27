@@ -425,7 +425,7 @@ void ioc_generate_del_mblk_request(
 */
 void ioc_mblk_set_signal_header(
     iocHandle *handle,
-    struct iocMblkSignalHdr *hdr)
+    const struct iocMblkSignalHdr *hdr)
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
