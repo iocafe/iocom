@@ -34,7 +34,7 @@
 */
 void dinfo_set_system_specs(
     dinfoSystemSpeSignals *sigs,
-    os_char *hw)
+    const os_char *hw)
 {
     ioc_set_str(sigs->sig[IOC_DINFO_SI_PACKAGE], OSAL_BUILD_DATETIME);
     ioc_set_str(sigs->sig[IOC_DINFO_SI_EOSAL], EOSAL_VERSION);

@@ -48,6 +48,13 @@ namespace IoDevice
         osalStatus run_appplication_basics(
             os_timer *ti);
 
+        virtual void communication_callback(
+            struct iocHandle *handle,
+            os_int start_addr,
+            os_int end_addr,
+            os_ushort flags);
+
+
         /* IOCOM root object */
         iocRoot m_root;
 
@@ -67,3 +74,11 @@ namespace IoDevice
         const IoPinsHdr *m_pins_header;
     };
 }
+
+
+void iocom_application_communication_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context);

@@ -17,12 +17,6 @@
 
 using IoDevice::AbstractApplication;
 
-/* static osalStatus app_gina1_photo_received(
-    struct iocBrickBuffer *b,
-    void *context);
-*/
-
-
 
 /**
 ****************************************************************************************************
@@ -164,6 +158,30 @@ osalStatus AbstractApplication::run_appplication_basics(
 
     return OSAL_SUCCESS;
 }
+
+void AbstractApplication::communication_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags)
+{
+    osal_debug_error("communication_callback not implemented by application");
+}
+
+
+void iocom_application_communication_callback(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context)
+{
+    AbstractApplication *app;
+    app = (AbstractApplication*)context;
+
+    app->communication_callback(handle, start_addr, end_addr, flags);
+}
+
 
 /* static osalStatus app_gina1_photo_received(
     struct iocBrickBuffer *b,

@@ -381,7 +381,7 @@ void dinfo_node_conf_callback(
     os_char buf[OSAL_HOST_BUF_SZ], buf2[OSAL_HOST_BUF_SZ], state_bits;
     os_int x;
 
-    if ((flags & IOC_MBLK_CALLBACK_RECEIVE) == 0) {
+    if ((flags & IOC_MBLK_CALLBACK_RECEIVE) == 0 || check_signals == OS_NULL) {
         return;
     }
 

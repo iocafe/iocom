@@ -222,21 +222,25 @@ static void ioc_setup_bserver_mblks(
     blockprm.nbytes = prm->signals_exp_hdr->mblk_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_FLOOR;
     ioc_initialize_memory_block(&m->exp, OS_NULL, m->root, &blockprm);
+    ioc_mblk_set_signal_header(&m->exp, prm->signals_exp_hdr);
 
     blockprm.mblk_name = prm->signals_imp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_imp_hdr->mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN|IOC_FLOOR;
     ioc_initialize_memory_block(&m->imp, OS_NULL, m->root, &blockprm);
+    ioc_mblk_set_signal_header(&m->imp, prm->signals_imp_hdr);
 
     blockprm.mblk_name = prm->signals_conf_exp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_conf_exp_hdr->mblk_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_FLOOR;
     ioc_initialize_memory_block(&m->conf_exp, OS_NULL, m->root, &blockprm);
+    ioc_mblk_set_signal_header(&m->conf_exp, prm->signals_conf_exp_hdr);
 
     blockprm.mblk_name = prm->signals_conf_imp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_conf_imp_hdr->mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN|IOC_FLOOR;
     ioc_initialize_memory_block(&m->conf_imp, OS_NULL, m->root, &blockprm);
+    ioc_mblk_set_signal_header(&m->conf_imp, prm->signals_conf_imp_hdr);
 
     blockprm.mblk_name = "info";
     blockprm.buf = (char*)prm->signal_config;

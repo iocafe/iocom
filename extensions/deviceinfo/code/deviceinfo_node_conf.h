@@ -102,20 +102,20 @@ dinfoNodeConfSignals;
  */
 #define DINFO_SET_COMMON_NET_CONF_SIGNALS_FOR_WIFI(sigs, staticsigs)  \
     os_memclear(&sigs, sizeof(dinfoNodeConfSignals)); \
-    sigs.sig[IOC_DINFO_NC_NR] = &staticsigs.exp.nc_nr; \
-    sigs.sig[IOC_DINFO_NC_NET] = &staticsigs.exp.nc_net; \
-    sigs.sig[IOC_DINFO_NC_CONNECT] = &staticsigs.exp.nc_connect; \
-    sigs.sig[IOC_DINFO_NC_WIFI] = &staticsigs.exp.nc_wifi; \
-    sigs.sig[IOC_DINFO_NC_PASS] = &staticsigs.exp.nc_pass; \
-    sigs.sig[IOC_DINFO_NC_IP] = &staticsigs.exp.nc_ip; \
-    sigs.sig[IOC_DINFO_NC_STATUS] = &staticsigs.exp.nc_status; \
-    sigs.set_sig[IOC_DINFO_SET_NC_NR] = &staticsigs.imp.set_nc_nr; \
-    sigs.set_sig[IOC_DINFO_SET_NC_NET] = &staticsigs.imp.set_nc_net; \
-    sigs.set_sig[IOC_DINFO_SET_NC_CONNECT] = &staticsigs.imp.set_nc_connect; \
-    sigs.set_sig[IOC_DINFO_SET_NC_WIFI] = &staticsigs.imp.set_nc_wifi; \
-    sigs.set_sig[IOC_DINFO_SET_NC_PASS] = &staticsigs.imp.set_nc_pass; \
-    sigs.set_sig[IOC_DINFO_SET_NC_REBOOT] = &staticsigs.imp.reboot; \
-    sigs.set_sig[IOC_DINFO_SET_NC_FACTORY_RST] = &staticsigs.imp.factory_rst;
+    (sigs).sig[IOC_DINFO_NC_NR] = &(staticsigs).exp.nc_nr; \
+    (sigs).sig[IOC_DINFO_NC_NET] = &(staticsigs).exp.nc_net; \
+    (sigs).sig[IOC_DINFO_NC_CONNECT] = &(staticsigs).exp.nc_connect; \
+    (sigs).sig[IOC_DINFO_NC_WIFI] = &(staticsigs).exp.nc_wifi; \
+    (sigs).sig[IOC_DINFO_NC_PASS] = &(staticsigs).exp.nc_pass; \
+    (sigs).sig[IOC_DINFO_NC_IP] = &(staticsigs).exp.nc_ip; \
+    (sigs).sig[IOC_DINFO_NC_STATUS] = &(staticsigs).exp.nc_status; \
+    (sigs).set_sig[IOC_DINFO_SET_NC_NR] = &(staticsigs).imp.set_nc_nr; \
+    (sigs).set_sig[IOC_DINFO_SET_NC_NET] = &(staticsigs).imp.set_nc_net; \
+    (sigs).set_sig[IOC_DINFO_SET_NC_CONNECT] = &(staticsigs).imp.set_nc_connect; \
+    (sigs).set_sig[IOC_DINFO_SET_NC_WIFI] = &(staticsigs).imp.set_nc_wifi; \
+    (sigs).set_sig[IOC_DINFO_SET_NC_PASS] = &(staticsigs).imp.set_nc_pass; \
+    (sigs).set_sig[IOC_DINFO_SET_NC_REBOOT] = &(staticsigs).imp.reboot; \
+    (sigs).set_sig[IOC_DINFO_SET_NC_FACTORY_RST] = &(staticsigs).imp.factory_rst;
 
 /* Node configuration state
  */

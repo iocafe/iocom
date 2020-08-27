@@ -246,6 +246,12 @@ const iocSignal *ioc_get_signal_range(
     if (mblk->signal_hdr) {
         sig = ioc_get_signal_range_by_hdr(mblk->signal_hdr, start_addr, end_addr, n_signals);
     }
+#ifdef OSAL_DEBUG
+    else
+    {
+        osal_debug_error("mblk->signal_hdr not set");
+    }
+#endif
 
     /* End syncronization.
      */

@@ -35,9 +35,19 @@ public:
     void stop();
     osalStatus run(os_timer *ti);
 
+    virtual void communication_callback(
+        struct iocHandle *handle,
+        os_int start_addr,
+        os_int end_addr,
+        os_ushort flags);
+
     /* Structure holding signals for the Buster.
      */
     buster_t *m_signals;
+
+    /* Device information (nc = network configuration, rm resource monitor). */
+    dinfoNodeConfState m_dinfo_nc;
+    dinfoResMonState m_dinfo_rm;
 
     /* Basic server (ioserver extension) structure.
      */

@@ -49,18 +49,18 @@ dinfoSystemSpeSignals;
  */
 #define DINFO_SET_COMMON_SYSTEM_SPECS_SIGNALS(sigs, staticsigs)  \
     os_memclear(&sigs, sizeof(dinfoSystemSpecSigEnum)); \
-    sigs.sig[IOC_DINFO_SI_PACKAGE] = &staticsigs.exp.si_package; \
-    sigs.sig[IOC_DINFO_SI_EOSAL] = &staticsigs.exp.si_eosal; \
-    sigs.sig[IOC_DINFO_SI_IOCOM] = &staticsigs.exp.si_iocom; \
-    sigs.sig[IOC_DINFO_SI_OS] = &staticsigs.exp.si_os; \
-    sigs.sig[IOC_DINFO_SI_OSVER] = &staticsigs.exp.si_osver; \
-    sigs.sig[IOC_DINFO_SI_ARCH] = &staticsigs.exp.si_arch; \
-    sigs.sig[IOC_DINFO_SI_HW] = &staticsigs.exp.si_hw;
+    (sigs).sig[IOC_DINFO_SI_PACKAGE] = &(staticsigs).exp.si_package; \
+    (sigs).sig[IOC_DINFO_SI_EOSAL] = &(staticsigs).exp.si_eosal; \
+    (sigs).sig[IOC_DINFO_SI_IOCOM] = &(staticsigs).exp.si_iocom; \
+    (sigs).sig[IOC_DINFO_SI_OS] = &(staticsigs).exp.si_os; \
+    (sigs).sig[IOC_DINFO_SI_OSVER] = &(staticsigs).exp.si_osver; \
+    (sigs).sig[IOC_DINFO_SI_ARCH] = &(staticsigs).exp.si_arch; \
+    (sigs).sig[IOC_DINFO_SI_HW] = &(staticsigs).exp.si_hw;
 
 /* Publish specification in memory block signals.
  */
 void dinfo_set_system_specs(
     dinfoSystemSpeSignals *sigs,
-    os_char *hw);
+    const os_char *hw);
 
 #endif

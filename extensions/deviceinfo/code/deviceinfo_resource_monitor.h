@@ -81,20 +81,20 @@ dinfoResMonState;
  */
 #define DINFO_SET_COMMON_RESOURCE_MONITOR_SIGNALS(sigs, staticsigs)  \
     os_memclear(&sigs, sizeof(dinfoSystemSpecSigEnum)); \
-    sigs.sig[IOC_DINFO_RM_MALLOC] = &staticsigs.exp.rm_malloc; \
-    sigs.sig[IOC_DINFO_RM_MUSE] = &staticsigs.exp.rm_muse; \
-    sigs.sig[IOC_DINFO_RM_THREADS] = &staticsigs.exp.rm_threads; \
-    sigs.sig[IOC_DINFO_RM_EVENTS] = &staticsigs.exp.rm_events; \
-    sigs.sig[IOC_DINFO_RM_MUTEXES] = &staticsigs.exp.rm_mutexes; \
-    sigs.sig[IOC_DINFO_RM_SOCKETS] = &staticsigs.exp.rm_sockets; \
-    sigs.sig[IOC_DINFO_RM_CONNECTS] = &staticsigs.exp.rm_connects; \
-    sigs.sig[IOC_DINFO_RM_TX_TCP] = &staticsigs.exp.rm_tx_tcp; \
-    sigs.sig[IOC_DINFO_RM_RX_TCP] = &staticsigs.exp.rm_rx_tcp; \
-    sigs.sig[IOC_DINFO_RM_TX_UDP] = &staticsigs.exp.rm_tx_udp; \
-    sigs.sig[IOC_DINFO_RM_RX_UDP] = &staticsigs.exp.rm_rx_udp; \
-    sigs.sig[IOC_DINFO_RM_AVELOOP] = &staticsigs.exp.rm_aveloop; \
-    sigs.sig[IOC_DINFO_RM_MAXLOOP] = &staticsigs.exp.rm_maxloop; \
-    sigs.sig[IOC_DINFO_RM_BOOTTIME] = &staticsigs.exp.rm_boottime;
+    (sigs).sig[IOC_DINFO_RM_MALLOC] = &(staticsigs).exp.rm_malloc; \
+    (sigs).sig[IOC_DINFO_RM_MUSE] = &(staticsigs).exp.rm_muse; \
+    (sigs).sig[IOC_DINFO_RM_THREADS] = &(staticsigs).exp.rm_threads; \
+    (sigs).sig[IOC_DINFO_RM_EVENTS] = &(staticsigs).exp.rm_events; \
+    (sigs).sig[IOC_DINFO_RM_MUTEXES] = &(staticsigs).exp.rm_mutexes; \
+    (sigs).sig[IOC_DINFO_RM_SOCKETS] = &(staticsigs).exp.rm_sockets; \
+    (sigs).sig[IOC_DINFO_RM_CONNECTS] = &(staticsigs).exp.rm_connects; \
+    (sigs).sig[IOC_DINFO_RM_TX_TCP] = &(staticsigs).exp.rm_tx_tcp; \
+    (sigs).sig[IOC_DINFO_RM_RX_TCP] = &(staticsigs).exp.rm_rx_tcp; \
+    (sigs).sig[IOC_DINFO_RM_TX_UDP] = &(staticsigs).exp.rm_tx_udp; \
+    (sigs).sig[IOC_DINFO_RM_RX_UDP] = &(staticsigs).exp.rm_rx_udp; \
+    (sigs).sig[IOC_DINFO_RM_AVELOOP] = &(staticsigs).exp.rm_aveloop; \
+    (sigs).sig[IOC_DINFO_RM_MAXLOOP] = &(staticsigs).exp.rm_maxloop; \
+    (sigs).sig[IOC_DINFO_RM_BOOTTIME] = &(staticsigs).exp.rm_boottime;
 
 
 /* Initialize resource monitor state structure and store IO signal pointers.

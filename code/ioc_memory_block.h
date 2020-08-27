@@ -394,11 +394,11 @@ void ioc_generate_del_mblk_request(
     iocMemoryBlock *mblk,
     struct iocConnection *deleting_con);
 
-/* Save pointer to signal header "remove memory block" requests.
+/* Save pointer to signal header.
  */
-/* void mblk_set_signal_header(
+void ioc_mblk_set_signal_header(
     iocHandle *handle,
-    struct iocMblkSignalHdr *hdr); */
+    struct iocMblkSignalHdr *hdr);
 #endif
 
 /* Set memory block parameter.
