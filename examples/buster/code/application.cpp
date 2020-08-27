@@ -191,7 +191,7 @@ void Application::communication_callback(
                     configuration_changed = OS_TRUE;
                 }
                 else {
-                    camera_on_or_off = OS_TRUE;
+                    m_camera_on_or_off = OS_TRUE;
                 }
 #endif
             }

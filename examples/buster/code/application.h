@@ -60,11 +60,11 @@ public:
 
 /* Camera state and camera output */
 #if PINS_CAMERA
-    // static pinsCamera pins_camera;
-    // static iocBrickBuffer video_output;
+    // pinsCamera pins_camera;
+    // iocBrickBuffer video_output;
     /* Camera control parameter has changed, camera on/off */
-    static os_boolean camera_on_or_off;
-    // static os_boolean camera_is_on;
+    os_boolean m_camera_on_or_off;
+    // os_boolean camera_is_on;
 #endif
 
 };
