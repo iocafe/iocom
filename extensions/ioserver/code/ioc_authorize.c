@@ -400,7 +400,7 @@ static osalStatus ioc_authorize_process_block(
 
   @param   a First IP address. IP address is byte array, most significant byte first format highest.
   @param   b Second IP address
-  @return  -1 if a < b, 0 if a == b, 1 if a > b.
+  @return  OS_TRUE if white listed, OS_FALSE if not.
 
 ****************************************************************************************************
 */

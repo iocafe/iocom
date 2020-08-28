@@ -23,10 +23,10 @@
 
 typedef struct dinfoSetSignalMapping
 {
-    os_char set_signal_nr;              /* Imported set value for signal. */
-    os_char signal_nr;                  /* Exported signal value to display. */
-    os_char net_state_item;             /* Net state item. */
-    os_char net_state_index;            /* Nwt state index, like wifi nr, nic nr, connection number. */
+    os_schar set_signal_nr;             /* Imported set value for signal. Notice that here char must be signed */
+    os_schar signal_nr;                 /* Exported signal value to display. */
+    os_schar net_state_item;            /* Net state item. */
+    os_schar net_state_index;           /* Net state index, like wifi nr, nic nr, connection number. */
     os_short offset;                    /* Position within persistent block */
     os_short sz;                        /* Negative values: size in persistent block, positive values: data type */
 }
@@ -397,7 +397,7 @@ void dinfo_node_conf_callback(
     sigs = dinfo_nc->sigs.sig;
     set_sigs = dinfo_nc->sigs.set_sig;
 
-    for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
+    for (m = dinfo_sigmap; m->set_signal_nr != -1; m++)
     {
         ss = set_sigs[(int)m->set_signal_nr];
         if (ss == OS_NULL) continue;
@@ -508,7 +508,7 @@ void dinfo_run_node_conf(
         save_now = OS_FALSE;
         set_sigs = dinfo_nc->sigs.set_sig;
 
-        for (m = dinfo_sigmap; m->set_signal_nr >= 0; m++)
+        for (m = dinfo_sigmap; m->set_signal_nr != -1; m++)
         {
             ss = set_sigs[(int)m->set_signal_nr];
             if (ss == OS_NULL) continue;
