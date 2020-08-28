@@ -38,7 +38,7 @@ osalStatus ioc_set_parameter_by_signal(
     const struct iocSignal **pin_sig)
 {
     os_char *buf1ptr, *buf2ptr, *tmpbuf = OS_NULL;
-    os_char buf1[64], buf2[62];
+    os_char buf1[64], buf2[64];
     iocSignal *dsig;
     osalTypeId type;
     os_memsz type_sz, sz, n;
