@@ -35,7 +35,7 @@ public:
     void stop();
     osalStatus run(os_timer *ti);
 
-    virtual void communication_callback(
+    virtual void communication_callback_1(
         struct iocHandle *handle,
         os_int start_addr,
         os_int end_addr,

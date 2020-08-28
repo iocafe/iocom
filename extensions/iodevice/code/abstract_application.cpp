@@ -18,6 +18,22 @@
 using IoDevice::AbstractApplication;
 
 
+static void iocom_application_communication_callback_1(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context);
+
+static void iocom_application_communication_callback_2(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context);
+
+
+
 /**
 ****************************************************************************************************
 
@@ -154,22 +170,54 @@ osalStatus AbstractApplication::run_appplication_basics(
 
     /* Run light house (send periodic UDP broadcasts so that this service can be detected)
      */
-    // ioc_run_lighthouse_server(&m_lighthouse_server, ti);
+    ioc_run_lighthouse_server(&m_lighthouse_server, ti);
 
     return OSAL_SUCCESS;
 }
 
-void AbstractApplication::communication_callback(
+
+/* Enable communication callback 1 for a memory block.
+   Multiple memory block can be connected to the same callback function.
+ */
+void AbstractApplication::enable_communication_callback_1(
+    struct iocHandle *handle)
+{
+    /* Call communication_callback() when data is received, etc..
+     */
+    ioc_add_callback(handle, iocom_application_communication_callback_1, this);
+}
+
+void AbstractApplication::communication_callback_1(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,
     os_ushort flags)
 {
-    osal_debug_error("communication_callback not implemented by application");
+    osal_debug_error("communication_callback_1 not implemented by application");
 }
 
 
-void iocom_application_communication_callback(
+/* Enable communication callback 2 for a memory block.
+   Multiple memory block can be connected to the same callback function.
+ */
+void AbstractApplication::enable_communication_callback_2(
+    struct iocHandle *handle)
+{
+    /* Call communication_callback() when data is received, etc..
+     */
+    ioc_add_callback(handle, iocom_application_communication_callback_2, this);
+}
+
+void AbstractApplication::communication_callback_2(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags)
+{
+    osal_debug_error("communication_callback_1 not implemented by application");
+}
+
+static void iocom_application_communication_callback_1(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,
@@ -178,8 +226,19 @@ void iocom_application_communication_callback(
 {
     AbstractApplication *app;
     app = (AbstractApplication*)context;
+    app->communication_callback_1(handle, start_addr, end_addr, flags);
+}
 
-    app->communication_callback(handle, start_addr, end_addr, flags);
+static void iocom_application_communication_callback_2(
+    struct iocHandle *handle,
+    os_int start_addr,
+    os_int end_addr,
+    os_ushort flags,
+    void *context)
+{
+    AbstractApplication *app;
+    app = (AbstractApplication*)context;
+    app->communication_callback_2(handle, start_addr, end_addr, flags);
 }
 
 

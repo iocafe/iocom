@@ -53,9 +53,12 @@ void Application::start(os_int argc, const os_char *argv[])
     ioc_initialize_ioserver(&m_bmain, &m_root, &sprm);
     IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, buster)
 
-    /* Call communication_callback() when data is received, etc..
+    /* Call communication_callback_1() for "imp" memory block, when data is received, etc..
      */
-    ioc_add_callback(&m_bmain.imp, iocom_application_communication_callback, this);
+    enable_communication_callback_1(&m_bmain.imp);
+
+    /* ioc_add_callback(&m_bmain.imp, iocom_application_communication_callback, this); */
+
 
 // xxxxxxxxxx
     /* Initialize up device information.
@@ -121,6 +124,13 @@ osalStatus Application::run(os_timer *ti)
 
     run_appplication_basics(ti);
 
+    /* Check for tasks, like saving parameters, changes in network node configuration and
+       keep resource monitor signals alive.
+     */
+    ioc_autosave_buster_parameters(m_signals);
+    dinfo_run_node_conf(&m_dinfo_nc, ti);
+    dinfo_run_resource_monitor(&m_dinfo_rm, ti);
+
     ioc_send_all(&m_root);
     return OSAL_SUCCESS;
 }
@@ -144,7 +154,7 @@ osalStatus Application::run(os_timer *ti)
 
 ****************************************************************************************************
 */
-void Application::communication_callback(
+void Application::communication_callback_1(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,
