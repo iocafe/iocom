@@ -51,6 +51,12 @@
         "pins": [
           {"name": "pwmboard", "driver":"pca9685", "bank": 1, "addr":64, "sda": 2, "scl": 3}
         ]
+      },
+      {
+        "name": "cameras",
+        "pins": [
+          {"name": "camera"}
+        ]
       }
     ]
   }]

@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_APPLICATION_H_
+#define IOC_APPLICATION_H_
+#include "buster.h"
 
 /* Global signals. This allows mapping IO pins directly to signals from JSON, but we can have only
    one application instance.
@@ -58,13 +62,10 @@ public:
 
     BlinkLedSequence m_test_seq1;
 
-/* Camera state and camera output */
 #if PINS_CAMERA
-    // pinsCamera pins_camera;
-    // iocBrickBuffer video_output;
-    /* Camera control parameter has changed, camera on/off */
-    os_boolean m_camera_on_or_off;
-    // os_boolean camera_is_on;
+    Camera m_camera1;
 #endif
 
 };
+
+#endif

@@ -262,7 +262,7 @@ osalStatus osal_main(
     ioc_initialize_brick_buffer(&video_output, &gina.camera, &ioboard_root, 4000, IOC_BRICK_DEVICE);
 
     pinsCameraParams camera_prm;
-    PINS_CAMERA_IFACE.initialize();
+    PINS_LINEAR_CAMERA_IFACE.initialize();
     os_memclear(&camera_prm, sizeof(camera_prm));
 #ifdef PINS_CAMERAS_CCD
     camera_prm.camera_pin = &pins.cameras.ccd;
@@ -272,8 +272,8 @@ osalStatus osal_main(
     camera_prm.camera_pin = &pins.cameras.camera;
 #endif
     camera_prm.callback_func = ioboard_camera_callback;
-    PINS_CAMERA_IFACE.open(&pins_camera, &camera_prm);
-    PINS_CAMERA_IFACE.start(&pins_camera);
+    PINS_LINEAR_CAMERA_IFACE.open(&pins_camera, &camera_prm);
+    PINS_LINEAR_CAMERA_IFACE.start(&pins_camera);
 #endif
 
     /* Setup to blink LED to indicate boot errors, etc.
@@ -439,7 +439,7 @@ void osal_main_cleanup(
     osal_serial_shutdown();
 
 #if PINS_CAMERA
-    PINS_CAMERA_IFACE.close(&pins_camera);
+    PINS_LINEAR_CAMERA_IFACE.close(&pins_camera);
 #endif
     pins_shutdown(&pins_hdr);
 

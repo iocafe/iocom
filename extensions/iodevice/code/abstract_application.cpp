@@ -33,7 +33,6 @@ static void iocom_application_communication_callback_2(
     void *context);
 
 
-
 /**
 ****************************************************************************************************
 
@@ -106,7 +105,8 @@ void AbstractApplication::init_application_basics(
     m_nics = ioc_get_nics(&m_nodeconf);
     m_wifis = ioc_get_wifis(&m_nodeconf);
     m_security = ioc_get_security_conf(&m_nodeconf);
-    osal_tls_initialize(m_nics->nic, m_nics->n_nics, m_wifis->wifi, m_wifis->n_wifi, m_security);
+    osal_tls_initialize(m_nics->nic, m_nics->n_nics, m_wifis->wifi,
+        m_wifis->n_wifi, m_security);
 }
 
 
@@ -130,7 +130,8 @@ void AbstractApplication::connect_application()
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
      */
-    ioc_initialize_lighthouse_server(&m_lighthouse_server, m_device_id->publish, &m_lighthouse_server_info, OS_NULL);
+    ioc_initialize_lighthouse_server(&m_lighthouse_server, m_device_id->publish,
+        &m_lighthouse_server_info, OS_NULL);
 }
 
 
@@ -240,12 +241,3 @@ static void iocom_application_communication_callback_2(
     app = (AbstractApplication*)context;
     app->communication_callback_2(handle, start_addr, end_addr, flags);
 }
-
-
-/* static osalStatus app_gina1_photo_received(
-    struct iocBrickBuffer *b,
-    void *context)
-{
-    osal_debug_error("NEW PHOTO");
-    return OSAL_SUCCESS;
-} */

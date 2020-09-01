@@ -41,6 +41,13 @@ void Application::start(os_int argc, const os_char *argv[])
      */
     init_application_basics("buster", &aprm);
 
+    /* Add memory blocks for camera
+     */
+    m_camera1.add_mblks(m_device_id->device_name, m_device_id->device_nr,
+        m_device_id->network_name,
+        "dexp", &buster.dexp.hdr, BUSTER_DEXP_MBLK_SZ,
+        "dimp", &buster.dimp.hdr, BUSTER_DIMP_MBLK_SZ, &m_root);
+
     /* Initialize signal structure for this device.
      */
     m_signals = &buster;
@@ -82,6 +89,12 @@ void Application::start(os_int argc, const os_char *argv[])
      */
     ioc_enable_user_authentication(&m_root, ioc_authorize, &m_bmain);
 
+    /* Setup and start cameras
+     */
+#if PINS_CAMERA
+    m_camera1.setup_camera(&PINS_CAMERA_IFACE, &m_signals->camera, &pins.cameras.camera, &m_root);
+#endif
+
     /* Call base class application to do much of setup work.
      */
     connect_application();
@@ -102,8 +115,11 @@ void Application::start(os_int argc, const os_char *argv[])
 
     m_minion1_def = m_minion1.inititalize(m_device_id->network_name, 1);
 
-    // ioc_set_brick_received_callback(&m_gina1.m_camera_buffer, app_gina1_photo_received, this);
-    // ioc_brick_set_receive(&m_gina1.m_camera_buffer, OS_TRUE);
+    /* Setup and start cameras
+     */
+#if PINS_CAMERA
+    m_camera1.start();
+#endif
 
     m_test_seq1.start(this);
 }
@@ -123,6 +139,10 @@ osalStatus Application::run(os_timer *ti)
     ioc_run_bserver(&m_bmain, ti);
 
     run_appplication_basics(ti);
+
+#if PINS_CAMERA
+    m_camera1.run();
+#endif
 
     /* Check for tasks, like saving parameters, changes in network node configuration and
        keep resource monitor signals alive.
@@ -167,8 +187,6 @@ void Application::communication_callback_1(
     os_boolean configuration_changed = OS_FALSE;
 #endif
 
-// &m_signals->hdr
-
     /* If this memory block is not written by communication, no need to do anything.
      */
     if ((handle->flags & IOC_MBLK_DOWN) == 0 ||
@@ -202,7 +220,7 @@ void Application::communication_callback_1(
                     configuration_changed = OS_TRUE;
                 }
                 else {
-                    m_camera_on_or_off = OS_TRUE;
+                    m_camera1.m_camera_on_or_off = OS_TRUE;
                 }
 #endif
             }
@@ -227,13 +245,3 @@ void Application::communication_callback_1(
     }
 #endif
 }
-
-
-
-/* static osalStatus app_gina1_photo_received(
-    struct iocBrickBuffer *b,
-    void *context)
-{
-    osal_debug_error("NEW PHOTO");
-    return OSAL_SUCCESS;
-} */

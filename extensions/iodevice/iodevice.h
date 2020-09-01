@@ -27,6 +27,7 @@
 /* Include all iodevice headers.
  */
 #include "code/abstract_application.h"
+#include "code/abstract_camera.h"
 #include "code/abstract_slave_device.h"
 #include "code/abstract_sequence.h"
 

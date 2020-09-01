@@ -223,6 +223,7 @@ static void ioc_setup_bserver_mblks(
     blockprm.flags = IOC_MBLK_UP|IOC_FLOOR;
     ioc_initialize_memory_block(&m->exp, OS_NULL, m->root, &blockprm);
     ioc_mblk_set_signal_header(&m->exp, prm->signals_exp_hdr);
+    /* m->exp.mblk->signal_hdr = exp_mblk_signal_hdr; COULD BE */
 
     blockprm.mblk_name = prm->signals_imp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_imp_hdr->mblk_sz;

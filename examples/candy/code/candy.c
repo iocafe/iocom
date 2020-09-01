@@ -681,7 +681,7 @@ static void ioapp_turn_camera_on_or_off(void)
 
     turn_on = (os_boolean)ioc_get(&candy.exp.on);
     if (turn_on != camera_is_on) {
-        if (ioc_get(&candy.exp.on)) {
+        if (turn_on) {
             PINS_CAMERA_IFACE.start(&pins_camera);
         }
         else {

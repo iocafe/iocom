@@ -13,6 +13,10 @@
 
 ****************************************************************************************************
 */
+#pragma once
+#ifndef IOC_BLINK_SEQUENCE_H_
+#define IOC_BLINK_SEQUENCE_H_
+#include "buster.h"
 
 /**
 ****************************************************************************************************
@@ -39,3 +43,5 @@ public:
     virtual void run(os_timer *ti);
     virtual void task();
 };
+
+#endif
