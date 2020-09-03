@@ -36,6 +36,8 @@ namespace IoDevice
     class AbstractApplication
     {
     public:
+        virtual ~AbstractApplication() {};
+
         /* Member functions called from actual IO device application. */
         void init_application_basics(
             const os_char *device_name,

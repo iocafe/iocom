@@ -50,14 +50,26 @@ AbstractCamera::AbstractCamera()
     m_started = OS_FALSE;
     m_event = OS_NULL;
 #endif
+    m_iface = OS_NULL;
+    m_camera_on_or_off = m_camera_is_on = OS_FALSE;
 }
 
+
+/**
+****************************************************************************************************
+
+  The destructor stops running threads in multithread mode and closes camera.
+
+****************************************************************************************************
+*/
 AbstractCamera::~AbstractCamera()
 {
-#if OSAL_MULTITHREAD_SUPPORT
-    stop_thread();
-#endif
+    /* If this assert tricks, camera object is deleted before camera is closed. This is
+       a potentical "crash" hazard.
+     */
+    osal_debug_assert(m_iface == OS_NULL);
 }
+
 
 /**
 ****************************************************************************************************
@@ -163,6 +175,28 @@ void AbstractCamera::setup_camera(
     configure();
 
     m_camera_on_or_off = m_camera_is_on = OS_FALSE;
+}
+
+
+/**
+****************************************************************************************************
+
+  Stops running threads. This function must be called before releasing memory, etc..
+
+****************************************************************************************************
+*/
+void AbstractCamera::close()
+{
+#if OSAL_MULTITHREAD_SUPPORT
+    stop_thread();
+#else
+    turn_camera_on_or_off(OS_FALSE);
+#endif
+
+    if (m_iface) {
+        m_iface->close(&m_pins_camera);
+        m_iface = OS_NULL;
+    }
 }
 
 
@@ -300,7 +334,7 @@ void AbstractCamera::get_camera_prm(
 void AbstractCamera::turn_camera_on_or_off(
     os_boolean turn_on)
 {
-    if (turn_on != m_camera_is_on) {
+    if (turn_on != m_camera_is_on && m_iface) {
         if (turn_on) {
             m_iface->start(&m_pins_camera);
         }
@@ -354,12 +388,9 @@ void AbstractCamera::processing_thread(
     ioc_add_callback(&m_dimp, iocom_camera_command_callback, this);
 
     osal_event_set(m_event);
-//    os_timer ti;
     while (!m_stop_thread && osal_go())
     {
         ioc_receive(&m_dimp);
-  //      os_get_timer(&ti);
-
         run();
         ioc_send(&m_dexp);
         os_timeslice();

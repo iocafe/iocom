@@ -32,8 +32,7 @@ namespace IoDevice
     {
     public:
         AbstractCamera();
-        virtual ~AbstractCamera();
-
+        ~AbstractCamera();
 
         void add_mblks(
             const os_char *device_name,
@@ -59,6 +58,7 @@ namespace IoDevice
         virtual void configure();
         virtual void run();
         virtual void callback(pinsPhoto *photo);
+        virtual void close();
 
         void set_camera_prm(
             pinsCameraParamIx ix,

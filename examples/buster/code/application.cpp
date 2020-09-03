@@ -20,6 +20,7 @@
  */
 struct buster_t buster;
 
+
 void Application::start(os_int argc, const os_char *argv[])
 {
     AbstractAppParams aprm;
@@ -127,6 +128,13 @@ void Application::start(os_int argc, const os_char *argv[])
 
 void Application::stop()
 {
+    /* Cameras need to be closed explicitely so that that they are not running
+       after memory is released...
+     */
+#if PINS_CAMERA
+    m_camera1.close();
+#endif
+
     m_test_seq1.stop();
     application_cleanup();
 }
