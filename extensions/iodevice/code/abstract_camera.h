@@ -31,6 +31,10 @@ namespace IoDevice
     class AbstractCamera
     {
     public:
+        AbstractCamera();
+        virtual ~AbstractCamera();
+
+
         void add_mblks(
             const os_char *device_name,
             os_int device_nr,
@@ -49,8 +53,10 @@ namespace IoDevice
             const Pin *pin,
             iocRoot *root);
 
+        virtual void turn_camera_on_or_off(
+            os_boolean turn_on);
+
         virtual void configure();
-        virtual void start();
         virtual void run();
         virtual void callback(pinsPhoto *photo);
 
@@ -62,7 +68,21 @@ namespace IoDevice
             pinsCameraParamIx ix,
             const iocSignal *sig);
 
-        virtual void turn_camera_on_or_off(void);
+
+#if OSAL_MULTITHREAD_SUPPORT
+        void start_thread();
+        void stop_thread();
+        virtual void processing_thread(
+            osalEvent done);
+
+        virtual void camera_command_callback(
+            struct iocHandle *handle,
+            os_int start_addr,
+            os_int end_addr,
+            os_ushort flags);
+
+
+#endif
 
         /* Camera state and camera output */
         pinsCamera m_pins_camera;
@@ -75,6 +95,13 @@ namespace IoDevice
         const pinsCameraInterface *m_iface;
 
         iocHandle m_dexp, m_dimp;
+
+#if OSAL_MULTITHREAD_SUPPORT
+        osalEvent m_event;
+        osalThread *m_thread;
+        os_boolean m_stop_thread;
+        os_boolean m_started;
+#endif
     };
 }
 

@@ -1109,6 +1109,61 @@ void ioc_add_callback(
 }
 
 
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+/**
+****************************************************************************************************
+
+  @brief Remove a callback function.
+  @anchor ioc_remove_callback
+
+  The ioc_remove_callback() function removed a callback function to memory block. Both function
+  pointer and context must be exact match.
+
+  This function is included only if define OSAL_DYNAMIC_MEMORY_ALLOCATION is nonzero. Even the
+  function has doesnt' have much to do with dynamic memory allocation, this disables including
+  the function is small microcontroller builds.
+
+  @param   handle Memory block handle.
+  @param   func Pointer to a callback function.
+  @param   context Application specific context pointer.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_remove_callback(
+    iocHandle *handle,
+    ioc_callback func,
+    void *context)
+{
+    iocRoot *root;
+    iocMemoryBlock *mblk;
+    os_int i;
+
+    /* Get memory block pointer and start synchronization.
+     */
+    mblk = ioc_handle_lock_to_mblk(handle, &root);
+    if (mblk == OS_NULL) return;
+
+    /* Find and remove callback function.
+     */
+    for (i = 0; i < IOC_MBLK_MAX_CALLBACK_FUNCS; i++)
+    {
+        if (mblk->func[i] == func &&
+            mblk->context[i] == context)
+        {
+            mblk->func[i] = OS_NULL;
+            mblk->context[i] = OS_NULL;
+            ioc_unlock(root);
+            return;
+        }
+    }
+
+    osal_debug_error("ioc_remove_callback: no callback to remove?");
+    ioc_unlock(root);
+}
+#endif
+
+
 /**
 ****************************************************************************************************
 

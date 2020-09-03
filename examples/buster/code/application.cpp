@@ -41,17 +41,17 @@ void Application::start(os_int argc, const os_char *argv[])
      */
     init_application_basics("buster", &aprm);
 
-    /* Add memory blocks for camera
-     */
-    m_camera1.add_mblks(m_device_id->device_name, m_device_id->device_nr,
-        m_device_id->network_name,
-        "dexp", &buster.dexp.hdr, BUSTER_DEXP_MBLK_SZ,
-        "dimp", &buster.dimp.hdr, BUSTER_DIMP_MBLK_SZ, &m_root);
-
     /* Initialize signal structure for this device.
      */
     m_signals = &buster;
     buster_init_signal_struct(m_signals);
+
+    /* Add memory blocks for camera
+     */
+    m_camera1.add_mblks(m_device_id->device_name, m_device_id->device_nr,
+        m_device_id->network_name,
+        "dexp", &m_signals->dexp.hdr, BUSTER_DEXP_MBLK_SZ,
+        "dimp", &m_signals->dimp.hdr, BUSTER_DIMP_MBLK_SZ, &m_root);
 
     /* Setup IO server
      */
@@ -118,7 +118,8 @@ void Application::start(os_int argc, const os_char *argv[])
     /* Setup and start cameras
      */
 #if PINS_CAMERA
-    m_camera1.start();
+    m_camera1.turn_camera_on_or_off((os_boolean)ioc_get(&buster.exp.on));
+    m_camera1.start_thread(); /* Use if running camera in separate thread */
 #endif
 
     m_test_seq1.start(this);
@@ -141,7 +142,8 @@ osalStatus Application::run(os_timer *ti)
     run_appplication_basics(ti);
 
 #if PINS_CAMERA
-    m_camera1.run();
+    /* Use if running camera with application thread */
+    /* m_camera1.run(); */
 #endif
 
     /* Check for tasks, like saving parameters, changes in network node configuration and

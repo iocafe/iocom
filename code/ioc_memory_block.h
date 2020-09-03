@@ -469,6 +469,15 @@ void ioc_add_callback(
     ioc_callback func,
     void *context);
 
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+/* Remove a callback function.
+ */
+void ioc_remove_callback(
+    iocHandle *handle,
+    ioc_callback func,
+    void *context);
+#endif
+
 /* Mark address range of changed values.
  */
 void ioc_mblk_invalidate(
