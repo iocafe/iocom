@@ -469,7 +469,7 @@ void ioc_add_callback(
     ioc_callback func,
     void *context);
 
-#if OSAL_MINIMALISTIC
+#if OSAL_MINIMALISTIC==0
 /* Remove a callback function.
  */
 void ioc_remove_callback(
