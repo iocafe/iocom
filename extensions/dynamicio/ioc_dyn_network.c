@@ -119,7 +119,7 @@ void ioc_release_dynamic_network(
   @param   n For strings n can be number of bytes in memory block for the string. For arrays n is
            number of elements reserved in memory block. Use value 1 for single variables.
   @param   ncolumns If a matrix of data is stored as an array, number of matrix columns.
-           Othervise value 1.
+           Otherwise value 1.
   @param   flags: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT,
            OS_LONG, OS_FLOAT, OS_DOUBLE, or OS_STR.
 

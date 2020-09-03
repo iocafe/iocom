@@ -10,7 +10,7 @@
   thread or as independent thread.
   - To run from other thread: Call add_mblks(), setup_camera() and turn_camera_on_or_off() to
     once to get everything setup, then call run() repeatedly to move data. Calling thread
-    is responsivle for sending dexp and receiving dimp memory blocks.
+    is responsible for sending dexp and receiving dimp memory blocks.
   - To run as individual thread. Set up is the same: add_mblks(), setup_camera() and
     turn_camera_on_or_off(). But instead of run() call start_thread() function once.
 
@@ -44,6 +44,13 @@ static void iocom_camera_thread_starter(
     osalEvent done);
 
 
+/**
+****************************************************************************************************
+
+  The constructor clears camera state member variables, which need to be 0 at start.
+
+****************************************************************************************************
+*/
 AbstractCamera::AbstractCamera()
 {
 #if OSAL_MULTITHREAD_SUPPORT
@@ -58,15 +65,13 @@ AbstractCamera::AbstractCamera()
 /**
 ****************************************************************************************************
 
-  The destructor stops running threads in multithread mode and closes camera.
+  The destructor is only an assert to ensure thet the camera's close() function has been called
+  before the camera object is deleted. Doing otherwise is a potentical "crash at exit" hazard.
 
 ****************************************************************************************************
 */
 AbstractCamera::~AbstractCamera()
 {
-    /* If this assert tricks, camera object is deleted before camera is closed. This is
-       a potentical "crash" hazard.
-     */
     osal_debug_assert(m_iface == OS_NULL);
 }
 
@@ -74,7 +79,7 @@ AbstractCamera::~AbstractCamera()
 /**
 ****************************************************************************************************
 
-  @brief Create memory blocks for this camera.
+  @brief Create memory blocks for this camera's data transfer.
 
   The mblks function creates "dexp" and "dimp", etc, memory blocks for camera data transfer
   and sets memory block handle for signals associated with camera data transfer.
@@ -140,7 +145,7 @@ void AbstractCamera::add_mblks(
 /**
 ****************************************************************************************************
 
-  @brief Set up cameras.
+  @brief Set up camera.
 
   The setup_camera function sets up camera data sturctures for use, but doesn't yet connect to
   actual camera.
@@ -181,7 +186,12 @@ void AbstractCamera::setup_camera(
 /**
 ****************************************************************************************************
 
-  Stops running threads. This function must be called before releasing memory, etc..
+  @brief Stop and close the camera.
+
+  The close function stops threads related to camera and closes camera connection. This function
+  must be called before releasing memory, etc.
+
+  @return  None.
 
 ****************************************************************************************************
 */
@@ -203,11 +213,11 @@ void AbstractCamera::close()
 /**
 ****************************************************************************************************
 
-  @brief Set up cameras.
+  @brief Set camera parameters.
 
-  The configure function should be owerridden by application to transfer camera parameters
-  to camera. The function here is just placeholder to generate message if function is
-  unimplemented.
+  The configure function should be overridden by application to transfer camera parameters
+  to camera. The function here is just placeholder to generate warning if application's configure
+  function has not been implemented.
 
   @return  None.
 
@@ -224,8 +234,9 @@ void AbstractCamera::configure()
 
   @brief Run camera data transfer.
 
-  The run function needs to be called repeatedy to keep camera data transfer alive,
-  if own thread is nor created for the camera.
+  If the camera doesn't have it's dedicated processing thread, the run function needs to be
+  called repeatedy to keep camera data transfer alive. In this case application is also
+  responsible for sending dexp and receiving dimp memory blocks.
 
   @return  None.
 
@@ -242,9 +253,9 @@ void AbstractCamera::run()
 
   @brief "New frame from camera" callback.
 
-  The callback function is called when a camera frame is captured.
-  If video transfer buffer is empty and vido output stream is open, the camera data is  moved
-  to video outout buffer. Othervise camera data is dropped.
+  The callback function is called when a camera frame (picture) is captured. If video transfer
+  buffer is empty and vido output stream is open, the camera data is  moved to video outout buffer.
+  Otherwise camera frame data is dropped.
 
   @param   photo Pointer to a frame captured by camera.
   @return  None.
@@ -270,7 +281,7 @@ void AbstractCamera::callback(
 /**
 ****************************************************************************************************
 
-  @brief Configure one camera parameter.
+  @brief Set one camera parameter.
 
   The set_camera_prm function sets a camera parameter to camera API wrapper. The
   value to set is taken from a signal in "exp" memory block.
@@ -298,7 +309,7 @@ void AbstractCamera::set_camera_prm(
 /**
 ****************************************************************************************************
 
-  @brief Get camera parameter from camera driver.
+  @brief Get camera parameter from camera wrapper.
 
   The get_camera_prm function reads a camera parameter from camera wrapper and
   stores the value in signal in "exp" memory block.
@@ -324,7 +335,7 @@ void AbstractCamera::get_camera_prm(
 
   @brief Turn camera on/off.
 
-  The ioapp_turn_camera_on_or_off function calls pins library to start or stop the camera.
+  The ioapp_turn_camera_on_or_off function calls pins library camera to start or stop the camera.
 
   @param   turn_on OS_TRUE to start the camera, OS_FALSE to stop it.
   @return  None.
@@ -347,6 +358,18 @@ void AbstractCamera::turn_camera_on_or_off(
 
 
 #if OSAL_MULTITHREAD_SUPPORT
+
+/**
+****************************************************************************************************
+
+  @brief Start camera processing thread.
+
+  The start_thread function starts independent processing thread to run the camera. The camera
+  thread can be stopped by calling stop_thread.
+  @return  None.
+
+****************************************************************************************************
+*/
 void AbstractCamera::start_thread()
 {
     if (m_started) return;
@@ -362,8 +385,17 @@ void AbstractCamera::start_thread()
 }
 
 
-/* Join worker thread to this thread.
- */
+/**
+****************************************************************************************************
+
+  @brief Stop camera processing thread.
+
+  The stop_thread function stops camera processing thread started by start_thread() function
+  and does some cleanup.
+  @return  None.
+
+****************************************************************************************************
+*/
 void AbstractCamera::stop_thread()
 {
     if (!m_started) return;
@@ -378,30 +410,66 @@ void AbstractCamera::stop_thread()
     m_started = OS_FALSE;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Default camera processing thread.
+
+  The default processing_thread function implementation just moves video to comminication.
+  This and callback() functions can be overriden to do image processing in this thread, or
+  to forward captured images to multiple processing threads. The callback would save received
+  image and processing thread could analyze it.
+
+  @param   done Even to set when the thread which started this one may proceed.
+  @return  None.
+
+****************************************************************************************************
+*/
 void AbstractCamera::processing_thread(
     osalEvent done)
 {
     osal_event_set(done);
 
-    /* Call communication_callback() when data is received, etc..
+    /* Set communication_callback() when data is received, etc..
      */
     ioc_add_callback(&m_dimp, iocom_camera_command_callback, this);
 
+    /* Loop here as long as we run camera's processing thread.
+     */
     osal_event_set(m_event);
     while (!m_stop_thread && osal_go())
     {
+        osal_event_wait(m_event, 5000);
         ioc_receive(&m_dimp);
         run();
         ioc_send(&m_dexp);
         os_timeslice();
     }
 
-
     ioc_remove_callback(&m_dimp, iocom_camera_command_callback, this);
 }
 
 
-void AbstractCamera::camera_command_callback(
+/**
+****************************************************************************************************
+
+  @brief C++ callback function when someone wants to receive video.
+
+  When an application wants to receive data, it sets command signal to always new value.
+  Change of command signal will result this callback. Here we set event for processing thread
+  to continue immediately and take appropriate action.
+
+  @param   handle Memory block handle.
+  @param   start_addr First changed memory block address.
+  @param   end_addr Last changed memory block address.
+  @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
+           IOC_MBLK_CALLBACK_RECEIVE change by data received.
+  @return  None.
+
+****************************************************************************************************
+*/
+void AbstractCamera::command_callback(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,
@@ -418,10 +486,10 @@ void AbstractCamera::camera_command_callback(
 
   The iocom_application_camera_callback_1 function is called when a camera frame is captured.
   If video transfer buffer is empty and vido output stream is open, the camera data is  moved
-  to video outout buffer. Othervise camera data is dropped.
+  to video outout buffer. Otherwise camera data is dropped.
 
   @param   photo Pointer to a frame captured by camera.
-  @param   context Application context, not used (NULL).
+  @param   context Application context, pointer to camera object.
   @return  None.
 
 ****************************************************************************************************
@@ -436,6 +504,25 @@ static void iocom_camera_callback(
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief IOCOM C API callback function when someone wants to receive video.
+
+  The basic IOCOM callback setting takes C function pointer and context. Here we forward the
+  callback to C++ so that context is camera object pointer. The function also filters callbacks
+  so that only callbacks due to received data get through.
+
+  @param   handle Memory block handle.
+  @param   start_addr First changed memory block address.
+  @param   end_addr Last changed memory block address.
+  @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
+           IOC_MBLK_CALLBACK_RECEIVE change by data received.
+  @param   context Callback context, pointer to camera object.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void iocom_camera_command_callback(
     struct iocHandle *handle,
     os_int start_addr,
@@ -448,9 +535,24 @@ static void iocom_camera_command_callback(
     if ((flags & IOC_MBLK_CALLBACK_RECEIVE) == 0) return;
 
     AbstractCamera *cam = (AbstractCamera*)context;
-    cam->camera_command_callback(handle, start_addr, end_addr, flags);
+    cam->command_callback(handle, start_addr, end_addr, flags);
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief EOSAL C API callback function to start a thread.
+
+  When a thread is created by EOSAL library, it takes C punction pointer. This function forwards
+  the callback to C++ so that prm is camera object pointer.
+
+  @param   prm Parameter for creating thread, here camera object pointer.
+  @param   done Even to set when the thread which started this one may proceed.
+  @return  None.
+
+****************************************************************************************************
+*/
 static void iocom_camera_thread_starter(void *prm, osalEvent done)
 {
     AbstractCamera *cam = (AbstractCamera*)prm;
@@ -459,6 +561,5 @@ static void iocom_camera_thread_starter(void *prm, osalEvent done)
 }
 
 #endif
-
 
 #endif

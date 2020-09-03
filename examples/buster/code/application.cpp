@@ -179,7 +179,6 @@ osalStatus Application::run(os_timer *ti)
   @param   end_addr Last changed memory block address.
   @param   flags IOC_MBLK_CALLBACK_WRITE indicates change by local write,
            IOC_MBLK_CALLBACK_RECEIVE change by data received.
-  @param   context Callback context, not used by "gina" example.
   @return  None.
 
 ****************************************************************************************************

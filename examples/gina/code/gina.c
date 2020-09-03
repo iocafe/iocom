@@ -531,7 +531,7 @@ void ioboard_communication_callback(
 
   The ioboard_camera_callback function is called when a camera frame is captured.
   If video transfer buffer is empty and vido output stream is open, the camera data is  moved
-  to video outout buffer. Othervise camera data is dropped.
+  to video outout buffer. Otherwise camera data is dropped.
 
   @param   photo Pointer to a frame captured by camera.
   @param   context Application context, not used (NULL).
