@@ -26,7 +26,7 @@
 
 using IoDevice::AbstractCamera;
 
-/* Forward referred callback function.
+/* Forward referred static functions.
  */
 static void iocom_camera_callback(
     struct pinsPhoto *photo,
@@ -553,7 +553,9 @@ static void iocom_camera_command_callback(
 
 ****************************************************************************************************
 */
-static void iocom_camera_thread_starter(void *prm, osalEvent done)
+static void iocom_camera_thread_starter(
+    void *prm,
+    osalEvent done)
 {
     AbstractCamera *cam = (AbstractCamera*)prm;
     osal_thread_set_priority(OSAL_THREAD_PRIORITY_LOW);

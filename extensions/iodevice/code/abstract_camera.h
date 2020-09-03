@@ -89,7 +89,6 @@ namespace IoDevice
             pinsCameraParamIx ix,
             const iocSignal *sig);
 
-
 #if OSAL_MULTITHREAD_SUPPORT
         /* Start thread to run camera processing independently.
          */

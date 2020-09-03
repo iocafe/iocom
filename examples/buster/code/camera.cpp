@@ -1,7 +1,7 @@
 /**
 
-  @file    application_cameras.cpp
-  @brief   Application class'es camera support code.
+  @file    camera.cpp
+  @brief   Buster's camera class.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    1.9.2020
