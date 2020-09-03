@@ -1109,7 +1109,7 @@ void ioc_add_callback(
 }
 
 
-#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+#if OSAL_MINIMALISTIC
 /**
 ****************************************************************************************************
 
@@ -1119,9 +1119,8 @@ void ioc_add_callback(
   The ioc_remove_callback() function removed a callback function to memory block. Both function
   pointer and context must be exact match.
 
-  This function is included only if define OSAL_DYNAMIC_MEMORY_ALLOCATION is nonzero. Even the
-  function has doesnt' have much to do with dynamic memory allocation, this disables including
-  the function is small microcontroller builds.
+  This function is included only if define OSAL_MINIMALISTIC is nonzero. This disables including
+  the function in smallest microcontroller builds.
 
   @param   handle Memory block handle.
   @param   func Pointer to a callback function.
