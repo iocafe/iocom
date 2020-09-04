@@ -289,7 +289,9 @@ void AbstractCamera::callback(
 
             if (m_motion_res.movement > 100 && os_has_elapsed(&ti, 10000))
             {
-                if (ti) system ("espeak -g15 -s6 -p80 </coderoot/uke.txt");
+                // if (ti) system ("espeak -g15 -s6 -p80 </coderoot/uke.txt");
+                // if (ti) system ("festival --tts /coderoot/uke.txt");
+
                 os_get_timer(&ti);
 
             }
