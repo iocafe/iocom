@@ -24,6 +24,8 @@
 #include "iodevice.h"
 #if PINS_CAMERA
 
+ #include <stdlib.h> // TEMP for espeak joke
+
 using IoDevice::AbstractCamera;
 
 /* Forward referred static functions.
@@ -63,7 +65,7 @@ AbstractCamera::AbstractCamera()
     os_memclear(&m_motion_prm, sizeof(MotionDetectionParameters));
     m_motion_prm.min_interval_ms = 10;
     m_motion_prm.max_interval_ms = 5000;
-    m_motion_prm.movement_limit = 16;
+    m_motion_prm.movement_limit = 30;
 }
 
 
@@ -283,6 +285,15 @@ void AbstractCamera::callback(
                 osal_event_set(m_event);
             }
 #endif
+            static os_timer ti;
+
+            if (m_motion_res.movement > 100 && os_has_elapsed(&ti, 10000))
+            {
+                if (ti) system ("espeak -g15 -s6 -p80 </coderoot/uke.txt");
+                os_get_timer(&ti);
+
+            }
+
         }
     }
 }
