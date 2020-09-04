@@ -151,6 +151,12 @@ namespace IoDevice
         /* Flag indicating that camera has been started.
          */
         os_boolean m_started;
+
+        /* Motion detection.
+         */
+        DetectMotion m_motion;
+        MotionDetectionParameters m_motion_prm;
+        MotionDetectionResults m_motion_res;
 #endif
     };
 }

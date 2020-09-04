@@ -47,7 +47,7 @@ static void iocom_camera_thread_starter(
 /**
 ****************************************************************************************************
 
-  The constructor clears camera state member variables, which need to be 0 at start.
+  The constructor clears camera state member variables, and sets up some parameters.
 
 ****************************************************************************************************
 */
@@ -59,6 +59,11 @@ AbstractCamera::AbstractCamera()
 #endif
     m_iface = OS_NULL;
     m_camera_on_or_off = m_camera_is_on = OS_FALSE;
+    initialize_motion_detection(&m_motion);
+    os_memclear(&m_motion_prm, sizeof(MotionDetectionParameters));
+    m_motion_prm.min_interval_ms = 10;
+    m_motion_prm.max_interval_ms = 5000;
+    m_motion_prm.movement_limit = 16;
 }
 
 
@@ -67,12 +72,14 @@ AbstractCamera::AbstractCamera()
 
   The destructor is only an assert to ensure thet the camera's close() function has been called
   before the camera object is deleted. Doing otherwise is a potentical "crash at exit" hazard.
+  The function also releases memory allocated for motion detection, if any.
 
 ****************************************************************************************************
 */
 AbstractCamera::~AbstractCamera()
 {
     osal_debug_assert(m_iface == OS_NULL);
+    release_motion_detection(&m_motion);
 }
 
 
@@ -267,13 +274,16 @@ void AbstractCamera::callback(
 {
     if (ioc_ready_for_new_brick(&m_video_output) && ioc_is_brick_connected(&m_video_output))
     {
-        pins_store_photo_as_brick(photo, &m_video_output, IOC_DEFAULT_COMPRESSION);
+        if (detect_motion(&m_motion, photo, &m_motion_prm, &m_motion_res) != OSAL_NOTHING_TO_DO)
+        {
+            pins_store_photo_as_brick(photo, &m_video_output, IOC_DEFAULT_COMPRESSION);
 
 #if OSAL_MULTITHREAD_SUPPORT
-        if (m_event) {
-            osal_event_set(m_event);
-        }
+            if (m_event) {
+                osal_event_set(m_event);
+            }
 #endif
+        }
     }
 }
 
