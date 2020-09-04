@@ -39,6 +39,12 @@
     /* Camera control parameter has changed, camera on/off */
     static os_boolean camera_on_or_off;
     static os_boolean camera_is_on;
+
+    /* Motion detection.
+     */
+    static DetectMotion motion;
+    static MotionDetectionParameters motion_prm;
+    static MotionDetectionResults motion_res;
 #endif
 
 /* IO console for wifi configuration and development testing over serial port */
@@ -268,6 +274,12 @@ osalStatus osal_main(
     /* Set up video output stream and the camera
      */
 #if PINS_CAMERA
+    initialize_motion_detection(&motion);
+    os_memclear(&motion_prm, sizeof(MotionDetectionParameters));
+    motion_prm.min_interval_ms = 10;
+    motion_prm.max_interval_ms = 5000;
+    motion_prm.movement_limit = 30;
+
     ioc_initialize_brick_buffer(&video_output, &candy.camera,
         &ioboard_root, 4000, IOC_BRICK_DEVICE);
 
@@ -445,6 +457,7 @@ void osal_main_cleanup(
 
 #if PINS_CAMERA
     PINS_CAMERA_IFACE.close(&pins_camera);
+    release_motion_detection(&motion);
 #endif
     pins_shutdown(&pins_hdr);
 
@@ -569,7 +582,10 @@ static void ioboard_camera_callback(
 
     if (ioc_ready_for_new_brick(&video_output) && ioc_is_brick_connected(&video_output))
     {
-        pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION);
+        if (detect_motion(&motion, photo, &motion_prm, &motion_res) != OSAL_NOTHING_TO_DO)
+        {
+            pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION);
+        }
     }
 }
 
