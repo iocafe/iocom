@@ -91,10 +91,10 @@ class Item(GridLayout):
             if self.my_state_bits == -1: 
                 return;
 
-            if self.my_state_bits & 2 == 0: 
-                Color(0.5, 0.5, 0.5, 1)
-            elif self.my_state_bits & 12 == 12:
+            if self.my_state_bits & 12 == 12:
                 Color(1.0, 0, 0, 1)
+            elif self.my_state_bits & 2 == 0: 
+                Color(0.5, 0.5, 0.5, 1)
             elif self.my_state_bits & 8 == 8:
                 Color(1.0, 1.0, 0, 1)
             elif self.my_state_bits & 4 == 4:

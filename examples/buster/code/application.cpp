@@ -167,6 +167,7 @@ osalStatus Application::run(os_timer *ti)
     dinfo_run_resource_monitor(&m_dinfo_rm, ti);
 
     ioc_send_all(&m_root);
+    os_timeslice();
     return OSAL_SUCCESS;
 }
 
