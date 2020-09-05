@@ -144,6 +144,11 @@ osalStatus Application::run(os_timer *ti)
     ioc_receive_all(&m_root);
     // ioc_run_brick_receive(&m_minion1.m_camera_buffer);
 
+    /* Read all input pins from hardware into global pins structures. Reading will forward
+       input states to communication.
+     */
+    pins_read_all(&pins_hdr, PINS_DEFAULT);
+
     /* Call basic server implementation to maintain control streams. */
     ioc_run_bserver(&m_bmain, ti);
 
