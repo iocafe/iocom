@@ -285,15 +285,31 @@ void AbstractCamera::callback(
                 osal_event_set(m_event);
             }
 #endif
+            /* Joke */
             static os_timer ti;
-
-            if (m_motion_res.movement > 100 && os_has_elapsed(&ti, 10000))
+            static int poem_nr = 1;
+            os_char nbuf[OSAL_NBUF_SZ], tmp[128];
+            if (m_motion_res.movement > 100 && os_has_elapsed(&ti, 12000))
             {
-                // if (ti) system ("espeak -g15 -s6 -p80 </coderoot/uke.txt");
-                // if (ti) system ("festival --tts /coderoot/uke.txt");
+                if (ti) {
+                    // system ("espeak -g15 -s6 -p80 </coderoot/uke.txt");
+                    // system ("festival --tts /coderoot/uke.txt");
 
+                    os_strncpy(tmp, "/coderoot/iocom/examples/buster/wisecrack/poem", sizeof(tmp));
+                    osal_int_to_str(nbuf, sizeof(nbuf), poem_nr);
+                    os_strncat(tmp, nbuf, sizeof(tmp));
+                    os_strncat(tmp, ".txt", sizeof(tmp));
+                    if (++poem_nr > 7) poem_nr = 1;
+
+                    os_char * argv[4];
+                    argv[0] = "festival";
+                    argv[1] = "--tts";
+                    argv[2] = tmp;
+                    argv[3] = OS_NULL;
+
+                    osal_create_process("festival", argv, OS_NULL, OSAL_PROCESS_DEFAULT);
+                }
                 os_get_timer(&ti);
-
             }
 
         }
