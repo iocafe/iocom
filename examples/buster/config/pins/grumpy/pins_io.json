@@ -18,7 +18,6 @@
       {
         "name": "analog_inputs",
         "pins": [
-          {"name": "ambient", "device": "spi.adc1", "addr": 0, "max": 4095},
           {"name": "sig0", "device": "spi.adc1", "addr": 0, "max": 4095},
           {"name": "sig1", "device": "spi.adc1", "addr": 1, "max": 4095},
           {"name": "sig2", "device": "spi.adc1", "addr": 2, "max": 4095},
