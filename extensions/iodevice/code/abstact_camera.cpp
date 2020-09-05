@@ -302,8 +302,8 @@ void AbstractCamera::callback(
                     if (++poem_nr > 7) poem_nr = 1;
 
                     os_char * argv[4];
-                    argv[0] = "festival";
-                    argv[1] = "--tts";
+                    argv[0] = (os_char*)"festival";
+                    argv[1] = (os_char*)"--tts";
                     argv[2] = tmp;
                     argv[3] = OS_NULL;
 
