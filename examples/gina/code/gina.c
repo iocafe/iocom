@@ -545,6 +545,7 @@ void ioboard_camera_callback(
 {
     if (ioc_ready_for_new_brick(&video_output) && ioc_is_brick_connected(&video_output))
     {
+        photo->iface->finalize_photo(photo);
         pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION);
     }
 }

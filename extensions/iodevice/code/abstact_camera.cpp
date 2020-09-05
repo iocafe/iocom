@@ -276,6 +276,8 @@ void AbstractCamera::callback(
 {
     if (ioc_ready_for_new_brick(&m_video_output) && ioc_is_brick_connected(&m_video_output))
     {
+        photo->iface->finalize_photo(photo);
+
         if (detect_motion(&m_motion, photo, &m_motion_prm, &m_motion_res) != OSAL_NOTHING_TO_DO)
         {
             pins_store_photo_as_brick(photo, &m_video_output, IOC_DEFAULT_COMPRESSION);
