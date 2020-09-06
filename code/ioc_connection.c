@@ -997,6 +997,8 @@ static void ioc_connection_thread(
      */
     while (!con->worker.stop_thread && osal_go())
     {
+static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo connection\n"); ulledoo = 0;}
+
         /* If stream is not open, then connect it now. Do not try if two secons have not
            passed since last failed open try.
          */

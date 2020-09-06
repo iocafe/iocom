@@ -36,8 +36,8 @@ namespace IoDevice
 
         virtual void start(AbstractApplication *app);
         virtual void stop();
-        virtual void run(os_timer *ti) {};
-        virtual void task() {};
+        virtual void run(os_timer *ti) {os_timeslice();}
+        virtual void task() {os_timeslice();}
 
     #if OSAL_MULTITHREAD_SUPPORT
         osalEvent m_event;

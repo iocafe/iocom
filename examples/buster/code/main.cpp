@@ -73,6 +73,8 @@ osalStatus osal_loop(
 {
     os_timer ti;
 
+static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo app\n"); ulledoo = 0;}
+
     os_get_timer(&ti);
     return app.run(&ti);
 }
