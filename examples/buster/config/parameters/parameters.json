@@ -36,8 +36,10 @@
           {"name": "right_wheel", "type": "ushort", "max": 4095},
           {"name": "left_motor", "type": "ushort", "max": 4095},
           {"name": "right_motor", "type": "ushort", "max": 4095},
-          {"name": "electr_power", "type": "boolean", "max": 4095},
-          {"name": "motor_power", "type": "boolean", "max": 4095},
+          {"name": "left_dir", "type": "boolean"},
+          {"name": "right_dir", "type": "boolean"},
+          {"name": "electr_power", "type": "boolean"},
+          {"name": "motor_power", "type": "boolean"},
           {"name": "led_morse", "type": "boolean"},
           {"name": "laser", "type": "boolean"},
           {"name": "on", "type": "boolean", "init":1}
