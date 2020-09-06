@@ -143,7 +143,6 @@ void AbstractApplication::connect_application()
 
 void AbstractApplication::application_cleanup()
 {
-
     /* Finished with lighthouse.
      */
     ioc_release_lighthouse_server(&m_lighthouse_server);

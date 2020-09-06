@@ -291,7 +291,7 @@ void AbstractCamera::callback(
             static os_timer ti;
             static int poem_nr = 1;
             os_char nbuf[OSAL_NBUF_SZ], tmp[128];
-            if (m_motion_res.movement > 100 && os_has_elapsed(&ti, 12000))
+            if (m_motion_res.movement >= m_motion_prm.movement_limit && os_has_elapsed(&ti, 12000))
             {
                 if (ti) {
                     // system ("espeak -g15 -s6 -p80 </coderoot/uke.txt");
