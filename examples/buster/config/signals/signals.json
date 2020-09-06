@@ -9,8 +9,8 @@
       {
         "name": "state",
         "signals": [
-          {"name": "electrV", "type": "short"},
-          {"name": "motorV", "type": "short"}
+          {"name": "electrV", "type": "float"},
+          {"name": "motorV", "type": "float"}
         ]
       }
     ]

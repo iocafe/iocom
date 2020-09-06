@@ -6,8 +6,8 @@
       {
         "name": "inputs",
         "pins": [
-          {"name": "options_button", "addr": 26},
-          {"name": "shutdown_button", "addr": 27},
+          {"name": "options_button", "addr": 12},
+          {"name": "shutdown_button", "addr": 15},
           {"name": "gazerbeam", "addr": 20, "interrupt": 1},
           {"name": "reserved_in1", "addr": 21}
         ]
@@ -21,7 +21,7 @@
           {"name": "motor_power", "addr": 19},
           {"name": "fourth_smallout", "addr": 22},
           {"name": "left_dir", "addr": 23},
-          {"name": "right_dir", "addr": 24},
+          {"name": "right_dir", "addr": 24},                                                                
           {"name": "led_morse", "addr": 25},
           {"name": "electr_power", "addr": 26},
           {"name": "laser", "addr": 27}
@@ -30,18 +30,18 @@
       {
         "name": "analog_inputs",
         "pins": [
-          {"name": "electrV", "device": "spi.adc1", "addr": 3, "max": 4095, "group" : "analogs"},
-          {"name": "motorV", "device": "spi.adc1", "addr": 4, "max": 4095, "group" : "analogs"}
+          {"name": "electrV", "device": "spi.adc1", "addr": 3, "max": 4095, "smax": 24700, "digs" : 3, "group" : "analogs"},
+          {"name": "motorV", "device": "spi.adc1", "addr": 4, "max": 4095, "smax": 24700, "digs" : 3, "group" : "analogs"}
         ]
       },
       {
         "name": "pwm",
         "pins": [
           {"name": "headlight", "timer": 1, "bank": 1, "addr": 1, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095},
-          {"name": "left_wheel", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 300, "max": 4095},
-          {"name": "right_wheel", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 300, "max": 4095},
-          {"name": "right_motor", "device": "i2c.pwmboard", "addr": 4, "frequency": 60, "init": 300, "max": 4095},
-          {"name": "left_motor", "device": "i2c.pwmboard", "addr": 5, "frequency": 60, "init": 300, "max": 4095}
+          {"name": "left_wheel", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 335, "max": 4095},
+          {"name": "right_wheel", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 335, "max": 4095},
+          {"name": "right_motor", "device": "i2c.pwmboard", "addr": 4, "frequency": 60, "init": 0, "max": 4095},
+          {"name": "left_motor", "device": "i2c.pwmboard", "addr": 5, "frequency": 60, "init": 0, "max": 4095}
         ]
       },
       {
