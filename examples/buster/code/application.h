@@ -57,6 +57,8 @@ public:
      */
     iocBServer m_bmain;
 
+    os_timer m_analogs_timer;
+
     Minion m_minion1;
     minion_t *m_minion1_def;
 
