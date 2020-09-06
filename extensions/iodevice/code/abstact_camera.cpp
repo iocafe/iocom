@@ -65,7 +65,7 @@ AbstractCamera::AbstractCamera()
     os_memclear(&m_motion_prm, sizeof(MotionDetectionParameters));
     m_motion_prm.min_interval_ms = 10;
     m_motion_prm.max_interval_ms = 5000;
-    m_motion_prm.movement_limit = 30;
+    m_motion_prm.movement_limit = 60;
 }
 
 

@@ -96,6 +96,11 @@ void Application::start(os_int argc, const os_char *argv[])
     m_camera1.setup_camera(&PINS_CAMERA_IFACE, &m_signals->camera, &pins.cameras.camera, &m_root);
 #endif
 
+#if IOCOM_USE_MORSE
+    initialize_morse_code(&m_morse, IOCOM_MORSEPPIN, OS_NULL,
+        MORSE_HANDLE_NET_STATE_NOTIFICATIONS);
+#endif
+
     /* Call base class application to do much of setup work.
      */
     connect_application();
@@ -162,6 +167,12 @@ osalStatus Application::run(os_timer *ti)
 #if PINS_CAMERA
     /* Use if running camera with application thread */
     /* m_camera1.run(); */
+#endif
+
+#if IOCOM_USE_MORSE
+    /* Keep the morse code LED alive. These indicates boot issues, etc, to user.
+     */
+    blink_morse_code(&m_morse, ti);
 #endif
 
     /* Check for tasks, like saving parameters, changes in network node configuration and
@@ -246,10 +257,10 @@ void Application::communication_callback_1(
             }
 
 #if IOCOM_USE_MORSE==2
-            if (sig == &candy.imp.set_hlight_lvl) {
+            if (sig == &buster.imp.set_hlight_lvl) {
                 morse.steady_hdlight_level[0] = ioc_get(sig);
             }
-            if (sig == &candy.imp.set_hlight_blink) {
+            if (sig == &buster.imp.set_hlight_blink) {
                 morse.blink_level[0] = ioc_get(sig);
             }
 #endif

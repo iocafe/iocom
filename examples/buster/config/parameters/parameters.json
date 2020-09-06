@@ -38,6 +38,8 @@
           {"name": "right_motor", "type": "ushort", "max": 4095},
           {"name": "electr_power", "type": "boolean", "max": 4095},
           {"name": "motor_power", "type": "boolean", "max": 4095},
+          {"name": "led_morse", "type": "boolean"},
+          {"name": "laser", "type": "boolean"},
           {"name": "on", "type": "boolean", "init":1}
         ]
       }

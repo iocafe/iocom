@@ -57,6 +57,11 @@ public:
      */
     iocBServer m_bmain;
 
+/* Blink LED - morse code to indicate network status */
+#if IOCOM_USE_MORSE
+    MorseCode m_morse;
+#endif
+
     os_timer m_analogs_timer;
 
     Minion m_minion1;

@@ -12,9 +12,10 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_morse", "addr": 15},
           {"name": "motor_power", "addr": 19},
-          {"name": "electr_power", "addr": 26}
+          {"name": "electr_power", "addr": 26},
+          {"name": "led_morse", "addr": 25},
+          {"name": "laser", "addr": 27}
         ]
       },
       {

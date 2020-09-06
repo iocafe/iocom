@@ -22,15 +22,23 @@
  */
 #include "json_io_config.h"
 
+/* Blink network status as morse code if we have an output IO pin named "led_morse". Either PWM
+   or normal digital output is fine, define IOCOM_MORSEPPIN as pin to use. PWM is marked with
+   define value 2.
+ */
+#ifndef IOCOM_USE_MORSE
+  #ifdef PINS_OUTPUTS_LED_MORSE
+    #define IOCOM_USE_MORSE 1
+    #define IOCOM_MORSEPPIN &pins.outputs.led_morse
+  #endif
+#endif
+
 using IoDevice::AbstractApplication;
 using IoDevice::AbstractCamera;
 using IoDevice::AbstractAppParams;
 using IoDevice::AbstractSlaveDevice;
 using IoDevice::AbstractSequence;
 
-/* No morse code for now
- */
-#define IOCOM_USE_MORSE 0
 
 /* Include application headers.
  */
