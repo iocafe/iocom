@@ -32,10 +32,12 @@
       {
         "name": "device control",
         "parameters": [
-          {"name": "pwm1", "type": "uint", "max": 4095},
-          {"name": "pwm2", "type": "uint", "max": 4095},
-          {"name": "pwm3", "type": "uint", "max": 4095},
-          {"name": "pwm4", "type": "uint", "max": 4095},
+          {"name": "left_wheel", "type": "ushort", "max": 4095},
+          {"name": "right_wheel", "type": "ushort", "max": 4095},
+          {"name": "left_motor", "type": "ushort", "max": 4095},
+          {"name": "right_motor", "type": "ushort", "max": 4095},
+          {"name": "electr_power", "type": "boolean", "max": 4095},
+          {"name": "motor_power", "type": "boolean", "max": 4095},
           {"name": "on", "type": "boolean", "init":1}
         ]
       }

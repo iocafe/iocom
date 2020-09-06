@@ -9,16 +9,8 @@
       {
         "name": "state",
         "signals": [
-          {"name": "nro_devices", "type": "int"},
-          {"name": "test", "type": "boolean"},
-          {"name": "sig0", "type": "short"},
-          {"name": "sig1", "type": "short"},
-          {"name": "sig2", "type": "short"},
-          {"name": "sig3", "type": "short"},
-          {"name": "sig4", "type": "short"},
-          {"name": "sig5", "type": "short"},
-          {"name": "sig6", "type": "short"},
-          {"name": "sig7", "type": "short"}
+          {"name": "electrV", "type": "short"},
+          {"name": "motorV", "type": "short"}
         ]
       }
     ]
