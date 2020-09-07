@@ -32,10 +32,10 @@
       {
         "name": "device control",
         "parameters": [
-          {"name": "left_wheel", "type": "ushort", "max": 4095},
-          {"name": "right_wheel", "type": "ushort", "max": 4095},
-          {"name": "left_motor", "type": "ushort", "max": 4095},
-          {"name": "right_motor", "type": "ushort", "max": 4095},
+          {"name": "left_wheel", "type": "float", "min": -90, "max": 90, "digs": 2},
+          {"name": "right_wheel", "type": "float", "min": -90, "max": 90},
+          {"name": "left_motor", "type": "ushort", "min": 0, "max": 100},
+          {"name": "right_motor", "type": "ushort", "min": 0, "max": 100},
           {"name": "left_dir", "type": "boolean"},
           {"name": "right_dir", "type": "boolean"},
           {"name": "electr_power", "type": "boolean"},
