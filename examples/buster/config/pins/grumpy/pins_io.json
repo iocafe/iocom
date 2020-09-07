@@ -30,8 +30,8 @@
       {
         "name": "analog_inputs",
         "pins": [
-          {"name": "electrV", "device": "spi.adc1", "addr": 3, "max": 4095, "smax": 24700, "digs" : 3, "group" : "analogs"},
-          {"name": "motorV", "device": "spi.adc1", "addr": 4, "max": 4095, "smax": 24700, "digs" : 3, "group" : "analogs"}
+          {"name": "electrV", "device": "spi.adc1", "addr": 3, "max": 4095, "smax": 25170, "digs" : 3, "group" : "analogs"},
+          {"name": "motorV", "device": "spi.adc1", "addr": 4, "max": 4095, "smax": 25170, "digs" : 3, "group" : "analogs"}
         ]
       },
       {
