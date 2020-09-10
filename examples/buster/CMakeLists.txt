@@ -16,7 +16,6 @@ set(E_APPLIBS "iodevice${E_POSTFIX};ioserver${E_POSTFIX};devicedir${E_POSTFIX};g
 if ($ENV{E_OSVER} MATCHES "pi")
   set(E_APPLIBS "${E_APPLIBS};pigpio;raspicam;rt")
 endif()
-set(E_APPLIBS "${E_APPLIBS};$ENV{OSAL_TLS_APP_LIBS}")
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
@@ -47,7 +46,7 @@ endif()
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
 
-# Add iocom, nodeconf, deviceinfo, ioserver, iodevice, lighthouse and devicedir libraries to include path.
+# Add iocom, nodeconf, deviceinfo, ioserver, iodevice, lighthouse and devicedir libraries.
 include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/pins")
 include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
