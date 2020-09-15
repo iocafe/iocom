@@ -100,6 +100,10 @@ static iocStreamerParams ioc_ctrl_stream_params = IOBOARD_DEFAULT_CTRL_STREAM(gi
 
 static iocControlStreamState ioc_ctrl_state;
 
+/* If needed for the operating system, EOSAL_C_MAIN macro generates the actual C main() function.
+ */
+EOSAL_C_MAIN
+
 
 /**
 ****************************************************************************************************
