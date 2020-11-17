@@ -38,7 +38,7 @@ void Application::start(os_int argc, const os_char *argv[])
     aprm.argc = argc;
     aprm.argv = argv;
 
-    /* Call base class to set yp the application.
+    /* Call base class to set up the application.
      */
     init_application_basics("buster", &aprm);
 
