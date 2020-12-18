@@ -25,6 +25,8 @@
 #define LIGHTHOUSE_CLIENT_H_
 #include "lighthouse.h"
 
+struct LighthouseClient;
+
 /**
 ****************************************************************************************************
   Lighthouse client data structures
@@ -56,6 +58,16 @@ typedef struct LightHouseNetwork
     os_timer received_timer;
 }
 LightHouseNetwork;
+
+
+typedef void ioc_lighthouse_client_callback(
+    struct LighthouseClient *c,
+    os_char *ip_addr,
+    os_int tls_port_nr,
+    os_int tcp_port_nr,
+    os_char *network_name,
+    void *context);
+
 
 /** How many networks we can remember.
  */
@@ -112,6 +124,11 @@ typedef struct LighthouseClient
         plain unsecure socket.
      */
     os_boolean select_tls;
+
+    /** Callback function and context.
+     */
+    ioc_lighthouse_client_callback *func;
+    void *context;
 }
 LighthouseClient;
 
@@ -134,6 +151,13 @@ void ioc_initialize_lighthouse_client(
 void ioc_release_lighthouse_client(
     LighthouseClient *c);
 
+/* Set callback function when new connection is established.
+ */
+void ioc_set_lighthouse_client_callback(
+    LighthouseClient *c,
+    ioc_lighthouse_client_callback func,
+    void *context);
+
 /* Check if lighthouse is to be used with this host name.
  */
 os_boolean ioc_is_lighthouse_used(
@@ -143,7 +167,8 @@ os_boolean ioc_is_lighthouse_used(
 /* Keep lighthouse client functionality alive.
  */
 osalStatus ioc_run_lighthouse_client(
-    LighthouseClient *c);
+    LighthouseClient *c,
+    osalEvent trigger);
 
 /* Get server (controller) IP address and port by transport,
  * if received by UDP broadcast.
@@ -155,5 +180,6 @@ osalStatus ioc_get_lighthouse_connectstr(
     os_short flags,
     os_char *connectstr,
     os_memsz connectstr_sz);
+
 
 #endif

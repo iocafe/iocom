@@ -90,6 +90,18 @@ void ioc_release_lighthouse_client(
 }
 
 
+/* Set callback function when new connection is established.
+ */
+void ioc_set_lighthouse_client_callback(
+    LighthouseClient *c,
+    ioc_lighthouse_client_callback func,
+    void *context)
+{
+    c->func = func;
+    c->context = context;
+}
+
+
 /**
 ****************************************************************************************************
 
@@ -141,21 +153,30 @@ os_boolean ioc_is_lighthouse_used(
   the lighthouse client structure.
 
   @param   c Pointer to the light house client object structure.
+  @param   trigger To return always immediately, give 0 here. If event is given here,
+           the funcion waits for event once all messages have been successfully processed.
+           When the wait breaks, the runction returns OSAL_SUCCESS. If this function returns
+           OSAL_PENDING or error code, caller may want to call os_sleep() to save processor time.
   @return  OSAL_SUCCESS or OSAL_PENDING if all is fine. Latter indicates that we are waiting
            for next time to try to open a socket. Other values indicate a network error.
 
 ****************************************************************************************************
 */
 osalStatus ioc_run_lighthouse_client(
-    LighthouseClient *c)
+    LighthouseClient *c,
+    osalEvent trigger)
 {
     osalStatus s;
     LighthouseMessage msg;
     os_char remote_addr[OSAL_IPADDR_SZ];
     os_memsz n_read, bytes, n;
-    os_ushort checksum, port_nr;
+    os_ushort checksum, port_nr, tls_port_nr, tcp_port_nr;
     os_char network_name[IOC_NETWORK_NAME_SZ], *p, *e;
     os_timer received_timer;
+#if OSAL_SOCKET_SELECT_SUPPORT
+    osalStream streams[1];
+    osalSelectData selectdata;
+#endif
 
     /* If UDP socket is not open
      */
@@ -235,7 +256,7 @@ osalStatus ioc_run_lighthouse_client(
             n_read < bytes)
         {
             osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
-            return OSAL_SUCCESS;
+            continue;
         }
 
         /* Verify checksum
@@ -247,19 +268,21 @@ osalStatus ioc_run_lighthouse_client(
         if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
         {
             osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
-            break;
+            continue;
         }
 
         /* Add networks.
          */
-        if (c->select_tls) {
-            port_nr = msg.hdr.tls_port_nr_high;
-            port_nr = (port_nr << 8) | msg.hdr.tls_port_nr_low;
+        tls_port_nr = msg.hdr.tls_port_nr_high;
+        tls_port_nr = (tls_port_nr << 8) | msg.hdr.tls_port_nr_low;
+        tcp_port_nr = msg.hdr.tcp_port_nr_high;
+        tcp_port_nr = (tcp_port_nr << 8) | msg.hdr.tcp_port_nr_low;
+        port_nr = c->select_tls ? tls_port_nr : tcp_port_nr;
+
+        if (c->func) {
+            c->func(c, remote_addr, tls_port_nr, tcp_port_nr, network_name, c->context);
         }
-        else {
-            port_nr = msg.hdr.tcp_port_nr_high;
-            port_nr = (port_nr << 8) | msg.hdr.tcp_port_nr_low;
-        }
+
         if (port_nr) {
             os_get_timer(&received_timer);
             p = msg.publish;
@@ -291,6 +314,17 @@ osalStatus ioc_run_lighthouse_client(
         }
     }
 */
+
+#if OSAL_SOCKET_SELECT_SUPPORT
+    if (trigger) {
+        streams[0] = c->udp_socket;
+        if (osal_stream_select(streams, 1, trigger, &selectdata,
+            0, OSAL_STREAM_DEFAULT) == OSAL_STATUS_NOT_SUPPORTED)
+        {
+            return OSAL_STATUS_NOT_SUPPORTED;
+        }
+    }
+#endif
 
     return OSAL_SUCCESS;
 }
@@ -325,7 +359,9 @@ static void ioc_add_lighthouse_net(
 {
     LightHouseNetwork *n;
     os_int i, selected_i;
-    os_boolean update_iface;
+    os_boolean update_iface, is_right_net;
+
+    os_lock();
 
     /* If we already have network with this name, update it.
      */
@@ -385,8 +421,8 @@ static void ioc_add_lighthouse_net(
          os_strcmp(ip_addr, "127.0.0.1") &&
          os_strcmp(ip_addr, "::1"))
     {
-        if (!os_has_elapsed_since(&n->received_timer, received_timer, 10000))
-        {
+        if (!os_has_elapsed_since(&n->received_timer, received_timer, 10000)) {
+            os_unlock();
             return;
         }
     }
@@ -401,7 +437,9 @@ static void ioc_add_lighthouse_net(
 
     /* Show lighthouse connect/no in network state
      */
-    if (!os_strcmp(network_name, c->network_name)) {
+    is_right_net = (os_boolean) !os_strcmp(network_name, c->network_name);
+    os_unlock();
+    if (is_right_net) {
         osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, OSAL_LIGHTHOUSE_OK);
     }
 }
@@ -490,6 +528,8 @@ osalStatus ioc_get_lighthouse_connectstr(
     if ((flags & IOC_SOCKET) == 0) return OSAL_STATUS_FAILED;
     transport = (flags & IOC_SECURE_CONNECTION) ? IOC_TLS_SOCKET : IOC_TCP_SOCKET;
 
+    os_lock();
+
     /* Mark that we are really using light house in this configuration.
      */
     c->lighthouse_really_needed = OS_TRUE;
@@ -530,6 +570,7 @@ osalStatus ioc_get_lighthouse_connectstr(
      */
     if (selected_i < 0)
     {
+        os_unlock();
         osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, lighthouse_visible
             ?  OSAL_NO_LIGHTHOUSE_FOR_THIS_IO_NETWORK : OSAL_LIGHTHOUSE_NOT_VISIBLE);
         return OSAL_STATUS_FAILED;
@@ -546,6 +587,7 @@ osalStatus ioc_get_lighthouse_connectstr(
      */
     os_strncpy(c->network_name, c->net[selected_i].network_name, IOC_NETWORK_NAME_SZ);
 
+    os_unlock();
     osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, OSAL_LIGHTHOUSE_OK);
     return OSAL_SUCCESS;
 }
