@@ -279,11 +279,11 @@ osalStatus ioc_run_lighthouse_client(
         tcp_port_nr = (tcp_port_nr << 8) | msg.hdr.tcp_port_nr_low;
         port_nr = c->select_tls ? tls_port_nr : tcp_port_nr;
 
-        if (c->func) {
+        /* if (c->func) {
             c->func(c, remote_addr, tls_port_nr, tcp_port_nr, network_name, c->context);
-        }
+        } */
 
-        if (port_nr) {
+        if (tls_port_nr || tcp_port_nr) {
             os_get_timer(&received_timer);
             p = msg.publish;
             while (*p != '\0')
@@ -293,9 +293,16 @@ osalStatus ioc_run_lighthouse_client(
                 n = e - p + 1;
                 if (n > (os_memsz)sizeof(network_name)) n = sizeof(network_name);
                 os_strncpy(network_name, p, n);
-                ioc_add_lighthouse_net(c, remote_addr, port_nr,
-                    c->select_tls ? IOC_TLS_SOCKET : IOC_TCP_SOCKET,
-                    network_name, &received_timer);
+
+                if (c->func) {
+                    c->func(c, remote_addr, tls_port_nr, tcp_port_nr, network_name, c->context);
+                }
+
+                if (port_nr) {
+                    ioc_add_lighthouse_net(c, remote_addr, port_nr,
+                        c->select_tls ? IOC_TLS_SOCKET : IOC_TCP_SOCKET,
+                        network_name, &received_timer);
+                }
                 if (*e == '\0') break;
                 p = e + 1;
             }
