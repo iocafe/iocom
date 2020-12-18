@@ -32,6 +32,7 @@ static void ioc_release_lighthouse_server_one(
 
 static osalStatus ioc_run_lighthouse_server_one(
     LighthouseServerOne *c,
+    os_ushort counter,
     os_timer *ti);
 
 
@@ -203,19 +204,29 @@ osalStatus ioc_run_lighthouse_server(
 
     if (c->f[LIGHTHOUSE_IPV4].msg.hdr.msg_id)
     {
-        s4 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4], ti);
+        s4 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4], c->counter, ti);
     }
 
     if (c->f[LIGHTHOUSE_IPV6].msg.hdr.msg_id)
     {
-        s6 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6], ti);
+        s6 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6], c->counter, ti);
+    }
+
+    /* If multicast was sent using either protocol, increment multicast counter
+     */
+    if (s4 == OSAL_SUCCESS || s6 == OSAL_SUCCESS) {
+        c->counter++;
     }
 
     return s4 ? s4 : s6;
 }
 
+/* OSAL_SUCCESS is returned only if multicast is sent. OSAL_PENDING indicates
+ * that all is fine now, but no multicast yet sent
+ */
 static osalStatus ioc_run_lighthouse_server_one(
     LighthouseServerOne *c,
+    os_ushort counter,
     os_timer *ti)
 {
     osalStatus s;
@@ -261,7 +272,7 @@ static osalStatus ioc_run_lighthouse_server_one(
      */
     if (!os_has_elapsed_since(&c->multicast_timer, ti, c->multicast_interval))
     {
-        return OSAL_SUCCESS;
+        return OSAL_PENDING;
     }
     c->multicast_timer = *ti;
     c->multicast_interval = 4000;
@@ -269,6 +280,9 @@ static osalStatus ioc_run_lighthouse_server_one(
     random_nr = (os_ushort)osal_rand(0, 65535);
     c->msg.hdr.random_nr_low = (os_uchar)random_nr;
     c->msg.hdr.random_nr_high = (os_uchar)(random_nr >> 8);
+
+    c->msg.hdr.counter_low = (os_uchar)counter;
+    c->msg.hdr.counter_high = (os_uchar)(counter >> 8);
 
 #if OSAL_TIME_SUPPORT
 #if OSAL_LONG_IS_64_BITS

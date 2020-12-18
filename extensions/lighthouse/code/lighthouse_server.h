@@ -69,6 +69,7 @@ typedef struct LighthouseServerOne
 }
 LighthouseServerOne;
 
+
 /**
 ****************************************************************************************************
   Lighthouse server structure
@@ -77,6 +78,10 @@ LighthouseServerOne;
 typedef struct LighthouseServer
 {
     LighthouseServerOne f[LIGHTHOUSE_NRO_ADDR_FAMILIES];
+
+    /** Number of multicast messages sent. Wraps around at 65535, needs to be 16 bit unsigned.
+     */
+    os_ushort counter;
 }
 LighthouseServer;
 
