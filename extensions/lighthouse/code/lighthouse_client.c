@@ -399,10 +399,9 @@ static void ioc_add_lighthouse_net(
     os_strncpy(n->network_name, network_name, OSAL_IPADDR_SZ);
     n->received_timer = *received_timer;
 
-    /* Provide faster infication of connects
+    /* Show lighthouse connect/no in network state
      */
-    if (!os_strcmp(network_name, c->network_name))
-    {
+    if (!os_strcmp(network_name, c->network_name)) {
         osal_set_network_state_int(OSAL_NS_LIGHTHOUSE_STATE, 0, OSAL_LIGHTHOUSE_OK);
     }
 }
