@@ -76,7 +76,7 @@ osalStatus osal_main(
     osalLighthouseInfo lighthouse_info;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
-       set application specific error handler callback by calling osal_set_error_handler().
+       set application specific event handler callback by calling osal_set_net_event_handler().
      */
     osal_initialize_net_state();
 

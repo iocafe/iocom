@@ -52,14 +52,14 @@ void AbstractApplication::init_application_basics(
     os_char buf4[4];
 
     /* Setup error handling. Here we select to keep track of network state. We could also
-       set application specific error handler callback by calling osal_set_error_handler().
+       set application specific event handler callback by calling osal_set_net_event_handler().
      */
     osal_initialize_net_state();
 
     /* Initialize persistent storage
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
-    persistentprm.device_name = device_name;
+    persistentprm.subdirectory = device_name;
 #if OSAL_MICROCONTROLLER == 0
     for (os_int i = 1; i < prm->argc; i++) {
         os_strncpy(buf4, prm->argv[i], sizeof(buf4));
