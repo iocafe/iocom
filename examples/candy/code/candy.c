@@ -27,7 +27,7 @@
 
 #if IOCOM_USE_LIGHTHOUSE
     #include "lighthouse.h"
-    static os_boolean lighthouse_on;
+    static os_boolean lighthouse_used;
     static os_boolean is_ipv6_wildcard;
     static LighthouseClient lighthouse;
 #endif
@@ -150,7 +150,7 @@ osalStatus osal_main(
     /* Initialize persistent storage (typically flash is running in micro-controller)
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
-    persistentprm.device_name = IOBOARD_DEVICE_NAME;
+    persistentprm.subdirectory = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
 
     /* If we are using devicedir for development testing, initialize.
@@ -165,7 +165,7 @@ osalStatus osal_main(
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults,
-        sizeof(ioapp_network_defaults), persistentprm.device_name, IOC_LOAD_PBNR_NODE_CONF);
+        sizeof(ioapp_network_defaults), persistentprm.subdirectory, IOC_LOAD_PBNR_NODE_CONF);
     device_id = ioc_get_device_id(&ioapp_device_conf);
     connconf = ioc_get_connection_conf(&ioapp_device_conf);
 
@@ -226,8 +226,8 @@ osalStatus osal_main(
     prm.conf_imp_signal_hdr = &candy.conf_imp.hdr;
 
 #if IOCOM_USE_LIGHTHOUSE
-    lighthouse_on = ioc_is_lighthouse_used(prm.socket_con_str, &is_ipv6_wildcard);
-    if (lighthouse_on) {
+    lighthouse_used = ioc_is_lighthouse_used(prm.socket_con_str, &is_ipv6_wildcard);
+    if (lighthouse_used) {
         prm.lighthouse = &lighthouse;
         prm.lighthouse_func = ioc_get_lighthouse_connectstr;
     }
@@ -266,7 +266,7 @@ osalStatus osal_main(
        string starts with '[' (indicates IPv6 address).
      */
 #if IOCOM_USE_LIGHTHOUSE
-    if (lighthouse_on) {
+    if (lighthouse_used) {
 #if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
         ioc_initialize_lighthouse_client(&lighthouse, is_ipv6_wildcard, OS_TRUE, OS_NULL);
 #else
@@ -359,8 +359,8 @@ osalStatus osal_loop(
     /* Run light house to detect server in LAN.
      */
 #if IOCOM_USE_LIGHTHOUSE
-    if (lighthouse_on) {
-        ioc_run_lighthouse_client(&lighthouse);
+    if (lighthouse_used) {
+        ioc_run_lighthouse_client(&lighthouse, OS_NULL);
     }
 #endif
 
