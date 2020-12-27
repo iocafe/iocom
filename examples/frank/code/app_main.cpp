@@ -102,7 +102,7 @@ osalStatus osal_main(
     /* Initialize persistent storage
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
-    persistentprm.device_name = device_name;
+    persistentprm.subdirectory = device_name;
     os_persistent_initialze(&persistentprm);
 
     /* Initialize communication root and dymanic structure data root objects.

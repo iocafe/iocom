@@ -129,6 +129,8 @@ osalStatus osal_main(
     ioboardParams prm;
     const osalStreamInterface *iface;
     osPersistentParams persistentprm;
+    OSAL_UNUSED(argc);
+    OSAL_UNUSED(argv);
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific event handler callback by calling osal_set_net_event_handler().
@@ -138,7 +140,7 @@ osalStatus osal_main(
     /* Initialize persistent storage (typically flash is running in micro-controller)
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
-    persistentprm.device_name = IOBOARD_DEVICE_NAME;
+    persistentprm.subdirectory = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
 
     /* If we are using devicedir for development testing, initialize.
@@ -153,7 +155,7 @@ osalStatus osal_main(
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults,
-        sizeof(ioapp_network_defaults), persistentprm.device_name, IOC_LOAD_PBNR_NODE_CONF);
+        sizeof(ioapp_network_defaults), persistentprm.subdirectory, IOC_LOAD_PBNR_NODE_CONF);
     device_id = ioc_get_device_id(&ioapp_device_conf);
     connconf = ioc_get_connection_conf(&ioapp_device_conf);
 
@@ -197,15 +199,15 @@ osalStatus osal_main(
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
-    prm.exp_signal_hdr = &candy.exp.hdr;
-    prm.imp_signal_hdr = &candy.imp.hdr;
+    prm.exp_signal_hdr = &gina.exp.hdr;
+    prm.imp_signal_hdr = &gina.imp.hdr;
 #if IOC_STREAMER_SUPPORT
     prm.conf_exp_mblk_sz = GINA_CONF_EXP_MBLK_SZ;
     prm.conf_imp_mblk_sz = GINA_CONF_IMP_MBLK_SZ;
-    prm.dexp_signal_hdr = &candy.dexp.hdr;
-    prm.dimp_signal_hdr = &candy.dimp.hdr;
-    prm.conf_exp_signal_hdr = &candy.conf_exp.hdr;
-    prm.conf_imp_signal_hdr = &candy.conf_imp.hdr;
+    prm.dexp_signal_hdr = &gina.dexp.hdr;
+    prm.dimp_signal_hdr = &gina.dimp.hdr;
+    prm.conf_exp_signal_hdr = &gina.conf_exp.hdr;
+    prm.conf_imp_signal_hdr = &gina.conf_imp.hdr;
 #endif
 
 #if IOCOM_USE_LIGHTHOUSE
@@ -321,6 +323,7 @@ osalStatus osal_loop(
     static os_float f[5] = {1, 2, 3, 4, 5};
     static os_int i = 0;
     static os_char *test_str;
+    OSAL_UNUSED(app_context);
 
     os_get_timer(&ti);
 
@@ -328,7 +331,7 @@ osalStatus osal_loop(
      */
 #if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
-        ioc_run_lighthouse_client(&lighthouse);
+        ioc_run_lighthouse_client(&lighthouse, OS_NULL);
     }
 #endif
 
@@ -429,6 +432,8 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
+    OSAL_UNUSED(app_context);
+
 #if IOCOM_USE_LIGHTHOUSE
     ioc_release_lighthouse_client(&lighthouse);
 #endif
@@ -476,6 +481,8 @@ void ioboard_communication_callback(
     os_ushort flags,
     void *context)
 {
+    OSAL_UNUSED(context);
+
 #undef PINS_SEGMENT7_GROUP
 
     /* '#ifdef' is used to compile code in only if 7-segment display is configured
@@ -547,6 +554,8 @@ void ioboard_camera_callback(
     struct pinsPhoto *photo,
     void *context)
 {
+    OSAL_UNUSED(context);
+
     if (ioc_ready_for_new_brick(&video_output) && ioc_is_brick_connected(&video_output))
     {
         photo->iface->finalize_photo(photo);
