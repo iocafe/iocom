@@ -589,7 +589,11 @@ static void ioboard_camera_callback(
         photo->iface->finalize_photo(photo);
         if (detect_motion(&motion, photo, &motion_prm, &motion_res) != OSAL_NOTHING_TO_DO)
         {
-            pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION);
+            if (pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION) ==
+                OSAL_STATUS_OUT_OF_BUFFER)
+            {
+                trigger_motion_detect(&motion);
+            }
         }
     }
 }

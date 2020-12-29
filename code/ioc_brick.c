@@ -272,7 +272,8 @@ void ioc_free_brick_buffer(
   @param  h Source image height in pixels, etc.
   @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or 
           IOC_NORMAL_JPEG.
-  @return OSAL_SUCCESS (0) if all is fine. Other values indicate an error.
+  @return OSAL_SUCCESS (0) if brick is stored. OSAL_STATUS_OUT_OF_BUFFER if data data doesn't
+          firt into given buffer. Other values indicate an error.
 
 ****************************************************************************************************
 */

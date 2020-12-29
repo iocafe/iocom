@@ -280,7 +280,11 @@ void AbstractCamera::callback(
 
         if (detect_motion(&m_motion, photo, &m_motion_prm, &m_motion_res) != OSAL_NOTHING_TO_DO)
         {
-            pins_store_photo_as_brick(photo, &m_video_output, IOC_DEFAULT_COMPRESSION);
+            if (pins_store_photo_as_brick(photo, &m_video_output, IOC_DEFAULT_COMPRESSION) ==
+                OSAL_STATUS_OUT_OF_BUFFER)
+            {
+                trigger_motion_detect(&motion);
+            }
 
 #if OSAL_MULTITHREAD_SUPPORT
             if (m_event) {
