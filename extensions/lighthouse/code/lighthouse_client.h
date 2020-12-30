@@ -59,13 +59,21 @@ typedef struct LightHouseNetwork
 }
 LightHouseNetwork;
 
+typedef struct LightHouseClientCallbackData
+{
+    os_char *ip_addr;
+    os_int tls_port_nr;
+    os_int tcp_port_nr;
+    os_char *network_name;
+
+    os_ushort counter; /* Broadcast counter by this service */
+}
+LightHouseClientCallbackData;
+
 
 typedef void ioc_lighthouse_client_callback(
     struct LighthouseClient *c,
-    os_char *ip_addr,
-    os_int tls_port_nr,
-    os_int tcp_port_nr,
-    os_char *network_name,
+    LightHouseClientCallbackData *data,
     void *context);
 
 

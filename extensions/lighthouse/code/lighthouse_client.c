@@ -170,13 +170,14 @@ osalStatus ioc_run_lighthouse_client(
     LighthouseMessage msg;
     os_char remote_addr[OSAL_IPADDR_SZ];
     os_memsz n_read, bytes, n;
-    os_ushort checksum, port_nr, tls_port_nr, tcp_port_nr;
+    os_ushort checksum, port_nr, tls_port_nr, tcp_port_nr, counter;
     os_char network_name[IOC_NETWORK_NAME_SZ], *p, *e;
     os_timer received_timer;
 #if OSAL_SOCKET_SELECT_SUPPORT
     osalStream streams[1];
     osalSelectData selectdata;
 #endif
+    LightHouseClientCallbackData callbackdata;
 
     /* If UDP socket is not open
      */
@@ -271,18 +272,19 @@ osalStatus ioc_run_lighthouse_client(
             continue;
         }
 
-        /* Add networks.
+        /* Get network ports and counter.
          */
         tls_port_nr = msg.hdr.tls_port_nr_high;
         tls_port_nr = (tls_port_nr << 8) | msg.hdr.tls_port_nr_low;
         tcp_port_nr = msg.hdr.tcp_port_nr_high;
         tcp_port_nr = (tcp_port_nr << 8) | msg.hdr.tcp_port_nr_low;
         port_nr = c->select_tls ? tls_port_nr : tcp_port_nr;
+        counter = msg.hdr.counter_high;
+        counter = (counter << 8) | msg.hdr.counter_low;
 
-        /* if (c->func) {
-            c->func(c, remote_addr, tls_port_nr, tcp_port_nr, network_name, c->context);
-        } */
 
+        /* Add network.
+         */
         if (tls_port_nr || tcp_port_nr) {
             os_get_timer(&received_timer);
             p = msg.publish;
@@ -295,7 +297,14 @@ osalStatus ioc_run_lighthouse_client(
                 os_strncpy(network_name, p, n);
 
                 if (c->func) {
-                    c->func(c, remote_addr, tls_port_nr, tcp_port_nr, network_name, c->context);
+                    os_memclear(&callbackdata, sizeof(LightHouseClientCallbackData));
+                    callbackdata.ip_addr = remote_addr;
+                    callbackdata.tls_port_nr = tls_port_nr;
+                    callbackdata.tcp_port_nr = tcp_port_nr;
+                    callbackdata.network_name = network_name;
+                    callbackdata.counter = counter;
+
+                    c->func(c, &callbackdata, c->context);
                 }
 
                 if (port_nr) {
