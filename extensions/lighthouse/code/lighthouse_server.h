@@ -31,6 +31,9 @@ typedef enum
 }
 LighthouseAddressFamily;
 
+/* Maximum published item string size.
+ */
+#define LIGHTHOUSE_ITEM_SZ (OSAL_IPADDR_AND_PORT_SZ + 4)
 
 /**
 ****************************************************************************************************

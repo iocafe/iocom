@@ -169,10 +169,14 @@ osalStatus ioc_run_lighthouse_client(
     osalStatus s;
     LighthouseMessage msg;
     os_char remote_addr[OSAL_IPADDR_SZ];
-    os_memsz n_read, bytes, n;
+    os_memsz n_read, bytes, n, count;
     os_ushort checksum, port_nr, tls_port_nr, tcp_port_nr, counter;
-    os_char network_name[IOC_NETWORK_NAME_SZ], *p, *e;
+    os_ushort my_tls_port_nr, my_tcp_port_nr;
+    os_char network_item[IOC_NETWORK_NAME_SZ + 4], *p, *e;
+    os_char *network_name, *protocol, protocol_buf[16], *q;
     os_timer received_timer;
+    os_memsz sz;
+    os_boolean is_tls, is_ipv6;
 #if OSAL_SOCKET_SELECT_SUPPORT
     osalStream streams[1];
     osalSelectData selectdata;
@@ -278,10 +282,8 @@ osalStatus ioc_run_lighthouse_client(
         tls_port_nr = (tls_port_nr << 8) | msg.hdr.tls_port_nr_low;
         tcp_port_nr = msg.hdr.tcp_port_nr_high;
         tcp_port_nr = (tcp_port_nr << 8) | msg.hdr.tcp_port_nr_low;
-        port_nr = c->select_tls ? tls_port_nr : tcp_port_nr;
         counter = msg.hdr.counter_high;
         counter = (counter << 8) | msg.hdr.counter_low;
-
 
         /* Add network.
          */
@@ -293,25 +295,79 @@ osalStatus ioc_run_lighthouse_client(
                 e = os_strchr(p, ',');
                 if (e == OS_NULL) e = os_strchr(p, '\0');
                 n = e - p + 1;
-                if (n > (os_memsz)sizeof(network_name)) n = sizeof(network_name);
-                os_strncpy(network_name, p, n);
+                if (n > (os_memsz)sizeof(network_item)) n = sizeof(network_item);
+                os_strncpy(network_item, p, n);
+
+                protocol = os_strchr(network_item, ':');
+                if (protocol == OS_NULL) goto goon;
+                protocol++;
+
+                network_name = os_strchr(protocol, ':');
+                if (network_name == OS_NULL) goto goon;
+                network_name++;
+
+                sz = network_name - protocol;
+                if (sz > sizeof(protocol_buf)) {
+                    sz = sizeof(protocol_buf);
+                }
+                os_strncpy(protocol_buf, protocol, sz);
+
+                my_tls_port_nr = 0;
+                my_tcp_port_nr = 0;
+                q = network_item;
+                while (q + 1 < protocol) {
+                    switch (*q) {
+                        case 'T':
+                        case 't':
+                            is_tls = OS_TRUE;
+                            is_ipv6 = (*q == 'T');
+                            break;
+
+                        case 'S':
+                        case 's':
+                            is_tls = OS_FALSE;
+                            is_ipv6 = (*q == 'S');
+                            break;
+
+                        default:
+                            osal_debug_error("Unknown lighthouse TLS/IPv6 mark");
+                            goto goon;
+                    }
+                    q++;
+
+                    port_nr = 0;
+                    if (osal_char_isdigit(*q)) {
+                        port_nr = osal_str_to_int(q, &count);
+                        q += count;
+                    }
+
+                    if (is_tls) {
+                        my_tls_port_nr = port_nr ? port_nr : tls_port_nr;
+                    }
+                    else {
+                        my_tcp_port_nr = port_nr ? port_nr : tcp_port_nr;
+                    }
+                }
+                port_nr = c->select_tls ? my_tls_port_nr : my_tcp_port_nr;
 
                 if (c->func) {
                     os_memclear(&callbackdata, sizeof(LightHouseClientCallbackData));
                     callbackdata.ip_addr = remote_addr;
-                    callbackdata.tls_port_nr = tls_port_nr;
-                    callbackdata.tcp_port_nr = tcp_port_nr;
+                    callbackdata.protocol = protocol_buf;
+                    callbackdata.tls_port_nr = my_tls_port_nr;
+                    callbackdata.tcp_port_nr = my_tcp_port_nr;
                     callbackdata.network_name = network_name;
                     callbackdata.counter = counter;
 
                     c->func(c, &callbackdata, c->context);
                 }
 
-                if (port_nr) {
+                if (port_nr && !os_strcmp(protocol_buf, "i")) {
                     ioc_add_lighthouse_net(c, remote_addr, port_nr,
                         c->select_tls ? IOC_TLS_SOCKET : IOC_TCP_SOCKET,
                         network_name, &received_timer);
                 }
+goon:
                 if (*e == '\0') break;
                 p = e + 1;
             }

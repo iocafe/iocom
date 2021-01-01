@@ -65,6 +65,7 @@ typedef struct LightHouseClientCallbackData
     os_int tls_port_nr;
     os_int tcp_port_nr;
     os_char *network_name;
+    os_char *protocol;
 
     os_ushort counter; /* Broadcast counter by this service */
 }

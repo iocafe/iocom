@@ -58,14 +58,14 @@ typedef struct LighthouseMessageHdr
     os_uchar random_nr_high;
 
     os_uchar publish_sz;
-    os_uchar transport;
+    os_uchar reserved_1;
     os_uchar tcp_port_nr_low;
     os_uchar tcp_port_nr_high;
 
     os_uchar counter_low;
     os_uchar counter_high;
-    os_uchar reserved_1;
     os_uchar reserved_2;
+    os_uchar reserved_3;
 }
 LighthouseMessageHdr;
 
