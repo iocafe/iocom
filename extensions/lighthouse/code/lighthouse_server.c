@@ -287,6 +287,7 @@ osalStatus ioc_run_lighthouse_server(
 {
     os_timer tval;
     osalStatus s4 = OSAL_SUCCESS, s6 = OSAL_SUCCESS;
+    os_boolean inc_counter = OS_FALSE;
 
     if (ti == OS_NULL)
     {
@@ -297,16 +298,18 @@ osalStatus ioc_run_lighthouse_server(
     if (c->f[LIGHTHOUSE_IPV4].msg.hdr.msg_id)
     {
         s4 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4], c->counter, ti);
+        if (s4 == OSAL_SUCCESS) inc_counter = OS_TRUE;
     }
 
     if (c->f[LIGHTHOUSE_IPV6].msg.hdr.msg_id)
     {
         s6 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6], c->counter, ti);
+        if (s6 == OSAL_SUCCESS) inc_counter = OS_TRUE;
     }
 
     /* If multicast was sent using either protocol, increment multicast counter
      */
-    if (s4 == OSAL_SUCCESS || s6 == OSAL_SUCCESS) {
+    if (inc_counter) {
         c->counter++;
     }
 
