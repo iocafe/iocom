@@ -138,7 +138,9 @@ osalStatus osal_main(
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
      */
-    ioc_initialize_lighthouse_server(&lighthouse, device_id->publish, &lighthouse_info, OS_NULL);
+    ioc_initialize_lighthouse_server(&lighthouse);
+    ioc_lighthouse_start_endpoints(&lighthouse, OS_NULL /* nickname */ );
+    ioc_lighthouse_add_iocom_endpoints(&lighthouse, device_id->publish, &lighthouse_info);
 
     /* Create tito main object and start listening for clients.
      */

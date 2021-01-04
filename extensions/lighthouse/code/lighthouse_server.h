@@ -66,6 +66,10 @@ typedef struct LighthouseServerOne
      */
     os_int multicast_interval;
 
+    /** This server has data to broadcast.
+     */
+    os_boolean is_configured;
+
     /** Outgoing message buffer.
      */
     LighthouseMessage msg;
@@ -97,10 +101,28 @@ LighthouseServer;
 /* Initialize the lighthouse server.
  */
 void ioc_initialize_lighthouse_server(
+    LighthouseServer *c);
+
+/* Start end point information setup.
+ */
+void ioc_lighthouse_start_endpoints(
+    LighthouseServer *c,
+    const os_char *nickname);
+
+/* Add information about IOCOM protocol end points.
+ */
+void ioc_lighthouse_add_iocom_endpoints(
     LighthouseServer *c,
     const os_char *publish,
-    struct osalLighthouseInfo *lighthouse_info,
-    const os_char *nickname);
+    struct osalLighthouseInfo *end_point_info);
+
+void ioc_lighthouse_add_endpoint(
+    LighthouseServer *c,
+    const os_char *publish,
+    const os_char *protocol,
+    os_int tls_port,
+    os_int tcp_port,
+    os_boolean is_ipv6);
 
 /* Release resources allocated for lighthouse server.
  */

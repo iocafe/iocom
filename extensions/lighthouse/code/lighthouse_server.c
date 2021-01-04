@@ -20,21 +20,11 @@
 
 /* Forward referred static functions.
  */
-static void ioc_initialize_lighthouse_server_one(
-    LighthouseServerOne *c,
-    const os_char *publish,
-    const os_char *nickname,
-    os_int tls_port,
-    os_int tcp_port,
-    os_boolean is_ipv6);
-
-static void ioc_lighthouse_publish_one(
-    LighthouseServerOne *c,
-    const os_char *publish,
-    const os_char *protocol,
-    os_int tls_port,
-    os_int tcp_port,
-    os_boolean is_ipv6);
+static void ioc_lighthouse_try_set_default_ports(
+    LighthouseServer *c,
+    os_int port,
+    iocTransportEnum transport,
+    LighthouseAddressFamily ipfamily);
 
 static void ioc_release_lighthouse_server_one(
     LighthouseServerOne *c);
@@ -48,117 +38,175 @@ static osalStatus ioc_run_lighthouse_server_one(
 /**
 ****************************************************************************************************
 
-  @brief Initialize the lighthouse server.
+  @brief Initialize the lighthouse server structure.
 
-  The ioc_initialize_lighthouse_server() function initializes light house server structure
-  and stores static information about the service to multicast.
+  The ioc_initialize_lighthouse_server() function sets up light house server structure for use.
 
   @param   c Pointer to the light house server object structure.
-  @param   publish List of network names to publish, separated by comma.
-           For example "iocafenet,asteroidnet".
-  @param   ep_port_nr Listening TCP port number.
-  @param   ep_transport Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET.
-  @param   nickname Nickname for this process or device.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_initialize_lighthouse_server(
-    LighthouseServer *c,
-    const os_char *publish,
-    struct osalLighthouseInfo *lighthouse_info,
-    const os_char *nickname)
+    LighthouseServer *c)
 {
-    osalLighthouseEndPointInfo *ep;
+    LighthouseServerOne *f;
+    os_timer ti;
     os_int i;
-    iocTransportEnum transport;
-
-    // iocTransportEnum ipv4_transport = IOC_DEFAULT_TRANSPORT,
-    //    ipv6_transport = IOC_DEFAULT_TRANSPORT;
-
-    os_int port, ipv4_tls_port = 0, ipv6_tls_port = 0;
-    os_int ipv4_tcp_port = 0, ipv6_tcp_port = 0;
 
     os_memclear(c, sizeof(LighthouseServer));
 
-    /* Select port number and transport separatelt for IPv4 and IPv6. Choose TLS over plain TCP.
-     */
-    for (i = 0; i<lighthouse_info->n_epoints; i++)
+    os_get_timer(&ti);
+    for (i = 0; i < LIGHTHOUSE_NRO_ADDR_FAMILIES; i++)
     {
-        ep = &lighthouse_info->epoint[i];
-        transport = ep->transport;
-        port = ep->port_nr;
-
-        if (ep->is_ipv6) {
-            if (transport == IOC_TLS_SOCKET && ipv6_tls_port == 0) {
-                ipv6_tls_port = port;
-            }
-            if (transport == IOC_TCP_SOCKET && ipv6_tcp_port == 0) {
-                ipv6_tcp_port = port;
-            }
-        }
-        else {
-            if (transport == IOC_TLS_SOCKET && ipv4_tls_port == 0) {
-                ipv4_tls_port = port;
-            }
-            if (transport == IOC_TCP_SOCKET && ipv4_tcp_port == 0) {
-                ipv4_tcp_port = port;
-            }
-        }
+        f = &c->f[i];
+        f->socket_error_timer = ti;
+        f->socket_error_timeout = 100;
+        f->multicast_timer = ti;
+        f->multicast_interval = 400;
+        f->msg.hdr.msg_id = LIGHTHOUSE_MSG_ID;
+        f->msg.hdr.hdr_sz = (os_uchar)sizeof(LighthouseMessageHdr);
+        ti += 50;
     }
 
-    if (ipv4_tls_port || ipv4_tcp_port) {
-        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4],
-            publish, nickname, ipv4_tls_port, ipv4_tcp_port, OS_FALSE);
-    }
-    if (ipv6_tls_port || ipv6_tcp_port) {
-        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6],
-            publish, nickname, ipv6_tls_port, ipv6_tcp_port, OS_TRUE);
-    }
+    c->f[LIGHTHOUSE_IPV4].multicast_ip = LIGHTHOUSE_IP_IPV4;
+    c->f[LIGHTHOUSE_IPV6].multicast_ip = LIGHTHOUSE_IP_IPV6;
 }
 
 
-static void ioc_initialize_lighthouse_server_one(
-    LighthouseServerOne *c,
-    const os_char *publish,
-    const os_char *nickname,
-    os_int tls_port,
-    os_int tcp_port,
-    os_boolean is_ipv6)
+/**
+****************************************************************************************************
+
+  @brief Start end point information setup.
+
+  The ioc_lighthouse_start_endpoints() function starts (or restarts) the end point data setup.
+  The function must be called after ioc_initialize_lighthouse_server() and before adding
+  iocom end points ioc_lighthouse_add_iocom_endpoints.
+
+  @param   c Pointer to the light house server object structure.
+  @param   nickname Nickname for this process or device.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_lighthouse_start_endpoints(
+    LighthouseServer *c,
+    const os_char *nickname)
 {
-    c->multicast_ip = is_ipv6 ? LIGHTHOUSE_IP_IPV6 : LIGHTHOUSE_IP_IPV4;
+    LighthouseServerOne *f;
+    os_int i;
 
-    os_get_timer(&c->socket_error_timer);
-    c->socket_error_timeout = 100;
-    os_get_timer(&c->multicast_timer);
-    c->multicast_interval = 400;
+    for (i = 0; i < LIGHTHOUSE_NRO_ADDR_FAMILIES; i++)
+    {
+        f = &c->f[i];
+        os_strncpy(f->msg.publish, nickname, LIGHTHOUSE_PUBLISH_SZ);
+        f->msg.hdr.tls_port_nr_low = f->msg.hdr.tls_port_nr_high = 0;
+        f->msg.hdr.tcp_port_nr_low = f->msg.hdr.tcp_port_nr_high = 0;
+        f->is_configured = OS_FALSE;
+    }
 
-    c->msg.hdr.msg_id = LIGHTHOUSE_MSG_ID;
-    c->msg.hdr.hdr_sz = (os_uchar)sizeof(LighthouseMessageHdr);
-    c->msg.hdr.tls_port_nr_low = (os_uchar)tls_port;
-    c->msg.hdr.tls_port_nr_high = (os_uchar)(tls_port >> 8);
-    c->msg.hdr.tcp_port_nr_low = (os_uchar)tcp_port;
-    c->msg.hdr.tcp_port_nr_high = (os_uchar)(tcp_port >> 8);
-    // c->msg.hdr.transport = (os_uchar)1;
-
-    os_strncpy(c->msg.publish, nickname, LIGHTHOUSE_PUBLISH_SZ);
-
-    ioc_lighthouse_publish_one(c, publish, "i", tls_port, tcp_port, is_ipv6);
+    c->f[LIGHTHOUSE_IPV4].multicast_ip = LIGHTHOUSE_IP_IPV4;
+    c->f[LIGHTHOUSE_IPV6].multicast_ip = LIGHTHOUSE_IP_IPV6;
 }
 
 
-static void ioc_lighthouse_publish_one(
-    LighthouseServerOne *c,
+/**
+****************************************************************************************************
+
+  @brief Add information about IOCOM protocol end points.
+
+  The ioc_lighthouse_add_iocom_endpoints() function stores static information about the IOCOM
+  end points for UDP multicasts.
+
+  @param   c Pointer to the light house server object structure.
+  @param   publish List of network names to publish, separated by comma.
+           For example "iocafenet,asteroidnet".
+  @param   end_point_info Information about end points.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_lighthouse_add_iocom_endpoints(
+    LighthouseServer *c,
+    const os_char *publish,
+    struct osalLighthouseInfo *end_point_info)
+{
+    osalLighthouseEndPointInfo *ep;
+    LighthouseServerOne *f;
+    LighthouseAddressFamily ipfamily;
+    os_int port_nrs[LIGHTHOUSE_NRO_ADDR_FAMILIES][2], port_nr;
+    os_int i;
+
+    os_memclear(port_nrs, sizeof(port_nrs));
+    for (i = 0; i<end_point_info->n_epoints; i++)
+    {
+        ep = &end_point_info->epoint[i];
+        ipfamily = ep->is_ipv6 ? LIGHTHOUSE_IPV6 : LIGHTHOUSE_IPV4;
+        ioc_lighthouse_try_set_default_ports(c, ep->port_nr, ep->transport, ipfamily);
+
+        f = &c->f[ipfamily];
+        port_nr = f->msg.hdr.tcp_port_nr_high;
+        port_nr = (port_nr << 8) | f->msg.hdr.tcp_port_nr_low;
+        if (port_nr && port_nrs[ipfamily][0] == 0) {
+            port_nrs[ipfamily][0] = port_nr;
+        }
+
+        port_nr = f->msg.hdr.tls_port_nr_high;
+        port_nr = (port_nr << 8) | f->msg.hdr.tls_port_nr_low;
+        if (port_nr && port_nrs[ipfamily][1] == 0) {
+            port_nrs[ipfamily][1] = port_nr;
+        }
+    }
+
+    for (i = 0; i < LIGHTHOUSE_NRO_ADDR_FAMILIES; i++)
+    {
+        ioc_lighthouse_add_endpoint(c, publish, "i", port_nrs[i][1],
+            port_nrs[i][0], i == LIGHTHOUSE_IPV6);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Add information about an end point or end points.
+
+  The ioc_lighthouse_add_endpoint() function stores information about the end points
+  for UDP multicasts.
+
+  @param   c Pointer to the light house server object structure.
+  @param   publish List of network names to publish, or eobjects device name.
+  @param   protocol "i" for IOCOM, "o" for eobjects.
+  @param   tls_port TLS port number, 0 if unused.
+  @param   tcp_port TCPS port number, 0 if unused.
+  @param   is_ipv6 OS_TRUE to use IPv6 addressess or OS_FALSE for IPv4 addressess.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_lighthouse_add_endpoint(
+    LighthouseServer *c,
     const os_char *publish,
     const os_char *protocol,
     os_int tls_port,
     os_int tcp_port,
     os_boolean is_ipv6)
 {
+    LighthouseServerOne *f;
+    LighthouseAddressFamily ipfamily;
     os_char buf[LIGHTHOUSE_ITEM_SZ], nbuf[OSAL_NBUF_SZ];
     const os_char *e;
     os_memsz sz;
     os_ushort tls_port_nr, tcp_port_nr;
+
+    if (tcp_port == 0 && tls_port == 0) {
+        return;
+    }
+
+    ipfamily = is_ipv6 ? LIGHTHOUSE_IPV6 : LIGHTHOUSE_IPV4;
+    ioc_lighthouse_try_set_default_ports(c, tls_port, IOC_TLS_SOCKET, ipfamily);
+    ioc_lighthouse_try_set_default_ports(c, tcp_port, IOC_TCP_SOCKET, ipfamily);
+    f = &c->f[ipfamily];
 
     while (*publish != '\0')
     {
@@ -170,8 +218,8 @@ static void ioc_lighthouse_publish_one(
         os_strncpy(buf, ",", sizeof(buf));
         if (tls_port) {
             os_strncat(buf, is_ipv6 ? "T" : "t", sizeof(buf));
-            tls_port_nr = c->msg.hdr.tls_port_nr_high;
-            tls_port_nr = (tls_port_nr << 8) | c->msg.hdr.tls_port_nr_low;
+            tls_port_nr = f->msg.hdr.tls_port_nr_high;
+            tls_port_nr = (tls_port_nr << 8) | f->msg.hdr.tls_port_nr_low;
             if (tls_port != tls_port_nr) {
                 osal_int_to_str(nbuf, sizeof(nbuf), tls_port);
                 os_strncat(buf, nbuf, sizeof(buf));
@@ -179,8 +227,8 @@ static void ioc_lighthouse_publish_one(
         }
         if (tcp_port) {
             os_strncat(buf, is_ipv6 ? "S" : "s", sizeof(buf));
-            tcp_port_nr = c->msg.hdr.tcp_port_nr_high;
-            tcp_port_nr = (tcp_port_nr << 8) | c->msg.hdr.tcp_port_nr_low;
+            tcp_port_nr = f->msg.hdr.tcp_port_nr_high;
+            tcp_port_nr = (tcp_port_nr << 8) | f->msg.hdr.tcp_port_nr_low;
             if (tcp_port != tcp_port_nr) {
                 osal_int_to_str(nbuf, sizeof(nbuf), tcp_port);
                 os_strncat(buf, nbuf, sizeof(buf));
@@ -196,14 +244,48 @@ static void ioc_lighthouse_publish_one(
         }
         os_strncat(buf, publish, sz);
 
-        if (os_strncat(c->msg.publish, buf, LIGHTHOUSE_PUBLISH_SZ)) {
+        if (os_strncat(f->msg.publish, buf, LIGHTHOUSE_PUBLISH_SZ)) {
             osal_debug_error("lighthouse: \"publish\" buffer overflow");
         }
 
         if (*e == '\0') break;
         publish = e + 1;
     }
-    c->msg.hdr.publish_sz = (os_uchar)os_strlen(c->msg.publish);
+    f->msg.hdr.publish_sz = (os_uchar)os_strlen(f->msg.publish);
+}
+
+
+static void ioc_lighthouse_try_set_default_ports(
+    LighthouseServer *c,
+    os_int port,
+    iocTransportEnum transport,
+    LighthouseAddressFamily ipfamily)
+{
+    LighthouseServerOne *f;
+
+    if (port == 0) return;
+    f = &c->f[ipfamily];
+
+    /* Default port must be not set
+     */
+    switch (transport) {
+        case IOC_TLS_SOCKET:
+            if (f->msg.hdr.tls_port_nr_high || f->msg.hdr.tls_port_nr_low) return;
+            f->msg.hdr.tls_port_nr_low = (os_uchar)port;
+            f->msg.hdr.tls_port_nr_high = (os_uchar)(port >> 8);
+            break;
+
+        case IOC_TCP_SOCKET:
+            if (f->msg.hdr.tcp_port_nr_high || f->msg.hdr.tcp_port_nr_low) return;
+            f->msg.hdr.tcp_port_nr_low = (os_uchar)port;
+            f->msg.hdr.tcp_port_nr_high = (os_uchar)(port >> 8);
+            break;
+
+        default:
+            return;
+    }
+
+    f->is_configured = OS_TRUE;
 }
 
 
@@ -265,7 +347,9 @@ osalStatus ioc_run_lighthouse_server(
     LighthouseServer *c,
     os_timer *ti)
 {
+    LighthouseServerOne *f;
     os_timer tval;
+    os_int i;
     osalStatus s4 = OSAL_SUCCESS, s6 = OSAL_SUCCESS;
     os_boolean inc_counter = OS_FALSE;
 
@@ -275,16 +359,13 @@ osalStatus ioc_run_lighthouse_server(
         ti = &tval;
     }
 
-    if (c->f[LIGHTHOUSE_IPV4].msg.hdr.msg_id)
+    for (i = 0; i < LIGHTHOUSE_NRO_ADDR_FAMILIES; i++)
     {
-        s4 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4], c->counter, ti);
-        if (s4 == OSAL_SUCCESS) inc_counter = OS_TRUE;
-    }
-
-    if (c->f[LIGHTHOUSE_IPV6].msg.hdr.msg_id)
-    {
-        s6 = ioc_run_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6], c->counter, ti);
-        if (s6 == OSAL_SUCCESS) inc_counter = OS_TRUE;
+        f = &c->f[i];
+        if (f->is_configured) {
+            s4 = ioc_run_lighthouse_server_one(f, c->counter, ti);
+            if (s4 == OSAL_SUCCESS) inc_counter = OS_TRUE;
+        }
     }
 
     /* If multicast was sent using either protocol, increment multicast counter
