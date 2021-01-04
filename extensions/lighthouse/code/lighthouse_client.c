@@ -172,11 +172,10 @@ osalStatus ioc_run_lighthouse_client(
     os_memsz n_read, bytes, n, count;
     os_ushort checksum, port_nr, tls_port_nr, tcp_port_nr, counter;
     os_ushort my_tls_port_nr, my_tcp_port_nr;
-    os_char network_item[IOC_NETWORK_NAME_SZ + 4], *p, *e;
-    os_char *network_name, *protocol, protocol_buf[16], *q;
+    os_char network_item[IOC_NETWORK_NAME_SZ + IOC_NAME_SZ + 10], *p, *e;
+    os_char *network_name, *protocol, nickname[IOC_NAME_SZ], *justincase, *q;
     os_timer received_timer;
-    os_memsz sz;
-    os_boolean is_tls, is_ipv6;
+    os_boolean is_tls;
 #if OSAL_SOCKET_SELECT_SUPPORT
     osalStream streams[1];
     osalSelectData selectdata;
@@ -213,7 +212,7 @@ osalStatus ioc_run_lighthouse_client(
         os_get_timer(&c->multicast_received);
     }
 
-    while (1)
+    while (OS_TRUE)
     {
         /* Try to read multicast received from UDP stream
          */
@@ -260,7 +259,8 @@ osalStatus ioc_run_lighthouse_client(
             msg.hdr.hdr_sz !=  sizeof(LighthouseMessageHdr) ||
             n_read < bytes)
         {
-            osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
+            osal_error(OSAL_WARNING, iocom_mod,
+                OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "content");
             continue;
         }
 
@@ -272,7 +272,8 @@ osalStatus ioc_run_lighthouse_client(
         msg.hdr.checksum_high = msg.hdr.checksum_low = 0;
         if (checksum != os_checksum((const os_char*)&msg, bytes, OS_NULL))
         {
-            osal_error(OSAL_WARNING, iocom_mod, OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
+            osal_error(OSAL_WARNING, iocom_mod,
+                OSAL_STATUS_UNKNOWN_LIGHTHOUSE_MULTICAST, "checksum");
             continue;
         }
 
@@ -285,17 +286,30 @@ osalStatus ioc_run_lighthouse_client(
         counter = msg.hdr.counter_high;
         counter = (counter << 8) | msg.hdr.counter_low;
 
-        /* Add network.
+        /* Add/update device network or process name.
          */
         if (tls_port_nr || tcp_port_nr) {
             os_get_timer(&received_timer);
-            p = msg.publish;
+
+            p = os_strchr(msg.publish, ',');
+            if (p == OS_NULL) {
+                p = os_strchr(msg.publish, '\0');
+            }
+            n = p - msg.publish + 1;
+            if (n > (os_memsz)sizeof(nickname)) {
+                n = sizeof(nickname);
+            }
+            os_strncpy(nickname, msg.publish, n);
+            p++;
+
             while (*p != '\0')
             {
                 e = os_strchr(p, ',');
                 if (e == OS_NULL) e = os_strchr(p, '\0');
                 n = e - p + 1;
-                if (n > (os_memsz)sizeof(network_item)) n = sizeof(network_item);
+                if (n > (os_memsz)sizeof(network_item)) {
+                    n = sizeof(network_item);
+                }
                 os_strncpy(network_item, p, n);
 
                 protocol = os_strchr(network_item, ':');
@@ -304,13 +318,12 @@ osalStatus ioc_run_lighthouse_client(
 
                 network_name = os_strchr(protocol, ':');
                 if (network_name == OS_NULL) goto goon;
-                network_name++;
+                *(network_name++) = '\0';
 
-                sz = network_name - protocol;
-                if (sz > sizeof(protocol_buf)) {
-                    sz = sizeof(protocol_buf);
+                justincase = os_strchr(network_name, ':');
+                if (justincase) {
+                    *justincase = '\0';
                 }
-                os_strncpy(protocol_buf, protocol, sz);
 
                 my_tls_port_nr = 0;
                 my_tcp_port_nr = 0;
@@ -320,13 +333,13 @@ osalStatus ioc_run_lighthouse_client(
                         case 'T':
                         case 't':
                             is_tls = OS_TRUE;
-                            is_ipv6 = (*q == 'T');
+                            // is_ipv6 = (*q == 'T');
                             break;
 
                         case 'S':
                         case 's':
                             is_tls = OS_FALSE;
-                            is_ipv6 = (*q == 'S');
+                            // is_ipv6 = (*q == 'S');
                             break;
 
                         default:
@@ -350,19 +363,23 @@ osalStatus ioc_run_lighthouse_client(
                 }
                 port_nr = c->select_tls ? my_tls_port_nr : my_tcp_port_nr;
 
-                if (c->func) {
-                    os_memclear(&callbackdata, sizeof(LightHouseClientCallbackData));
-                    callbackdata.ip_addr = remote_addr;
-                    callbackdata.protocol = protocol_buf;
-                    callbackdata.tls_port_nr = my_tls_port_nr;
-                    callbackdata.tcp_port_nr = my_tcp_port_nr;
-                    callbackdata.network_name = network_name;
-                    callbackdata.counter = counter;
+                os_memclear(&callbackdata, sizeof(LightHouseClientCallbackData));
+                callbackdata.ip_addr = remote_addr;
+                callbackdata.protocol = protocol;
+                callbackdata.tls_port_nr = my_tls_port_nr;
+                callbackdata.tcp_port_nr = my_tcp_port_nr;
+                callbackdata.network_name = network_name;
+                callbackdata.nickname = nickname;
+                callbackdata.counter = counter;
 
+                if (c->func) {
                     c->func(c, &callbackdata, c->context);
                 }
 
-                if (port_nr && !os_strcmp(protocol_buf, "i")) {
+                if (port_nr && !os_strcmp(protocol, "i")) {
+                    /* SWITCH THIS TO USE CALLBACKDATA and select_tls flag.
+                     * And to use counter to select fastest of multiple IPs.
+                     */
                     ioc_add_lighthouse_net(c, remote_addr, port_nr,
                         c->select_tls ? IOC_TLS_SOCKET : IOC_TCP_SOCKET,
                         network_name, &received_timer);

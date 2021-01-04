@@ -23,6 +23,7 @@
 static void ioc_initialize_lighthouse_server_one(
     LighthouseServerOne *c,
     const os_char *publish,
+    const os_char *nickname,
     os_int tls_port,
     os_int tcp_port,
     os_boolean is_ipv6);
@@ -57,7 +58,7 @@ static osalStatus ioc_run_lighthouse_server_one(
            For example "iocafenet,asteroidnet".
   @param   ep_port_nr Listening TCP port number.
   @param   ep_transport Transport, either IOC_TLS_SOCKET or IOC_TCP_SOCKET.
-  @param   reserved Reserved for future, set OS_NULL for now.
+  @param   nickname Nickname for this process or device.
   @return  None.
 
 ****************************************************************************************************
@@ -66,7 +67,7 @@ void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
     struct osalLighthouseInfo *lighthouse_info,
-    void *reserved)
+    const os_char *nickname)
 {
     osalLighthouseEndPointInfo *ep;
     os_int i;
@@ -108,35 +109,19 @@ void ioc_initialize_lighthouse_server(
 
     if (ipv4_tls_port || ipv4_tcp_port) {
         ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4],
-            publish, ipv4_tls_port, ipv4_tcp_port, OS_FALSE);
+            publish, nickname, ipv4_tls_port, ipv4_tcp_port, OS_FALSE);
     }
     if (ipv6_tls_port || ipv6_tcp_port) {
         ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6],
-            publish, ipv6_tls_port, ipv6_tcp_port, OS_TRUE);
+            publish, nickname, ipv6_tls_port, ipv6_tcp_port, OS_TRUE);
     }
 }
 
-
-void ioc_lighthouse_publish(
-    LighthouseServer *c,
-    const os_char *publish,
-    os_int tls_port,
-    os_int tcp_port,
-    os_boolean is_ipv6)
-{
-    /* if (ipv4_tls_port || ipv4_tcp_port) {
-        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV4],
-            publish, ipv4_tls_port, ipv4_tcp_port, OS_FALSE);
-    }
-    if (ipv6_tls_port || ipv6_tcp_port) {
-        ioc_initialize_lighthouse_server_one(&c->f[LIGHTHOUSE_IPV6],
-            publish, ipv6_tls_port, ipv6_tcp_port, OS_TRUE);
-    } */
-}
 
 static void ioc_initialize_lighthouse_server_one(
     LighthouseServerOne *c,
     const os_char *publish,
+    const os_char *nickname,
     os_int tls_port,
     os_int tcp_port,
     os_boolean is_ipv6)
@@ -155,11 +140,10 @@ static void ioc_initialize_lighthouse_server_one(
     c->msg.hdr.tcp_port_nr_low = (os_uchar)tcp_port;
     c->msg.hdr.tcp_port_nr_high = (os_uchar)(tcp_port >> 8);
     // c->msg.hdr.transport = (os_uchar)1;
-    // os_strncpy(c->msg.publish, publish, LIGHTHOUSE_PUBLISH_SZ);
-    // c->msg.hdr.publish_sz = (os_uchar)os_strlen(c->msg.publish); /* Use this, may be cut */
+
+    os_strncpy(c->msg.publish, nickname, LIGHTHOUSE_PUBLISH_SZ);
 
     ioc_lighthouse_publish_one(c, publish, "i", tls_port, tcp_port, is_ipv6);
-
 }
 
 
@@ -183,7 +167,7 @@ static void ioc_lighthouse_publish_one(
             e = os_strchr(publish, '\0');
         }
 
-        buf[0] = '\0';
+        os_strncpy(buf, ",", sizeof(buf));
         if (tls_port) {
             os_strncat(buf, is_ipv6 ? "T" : "t", sizeof(buf));
             tls_port_nr = c->msg.hdr.tls_port_nr_high;
@@ -211,10 +195,6 @@ static void ioc_lighthouse_publish_one(
             sz = sizeof(buf);
         }
         os_strncat(buf, publish, sz);
-
-        if (c->msg.publish[0] != '\0') {
-            os_strncat(c->msg.publish, ",", LIGHTHOUSE_PUBLISH_SZ);
-        }
 
         if (os_strncat(c->msg.publish, buf, LIGHTHOUSE_PUBLISH_SZ)) {
             osal_debug_error("lighthouse: \"publish\" buffer overflow");

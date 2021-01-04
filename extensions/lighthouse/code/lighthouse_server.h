@@ -100,7 +100,7 @@ void ioc_initialize_lighthouse_server(
     LighthouseServer *c,
     const os_char *publish,
     struct osalLighthouseInfo *lighthouse_info,
-    void *reserved);
+    const os_char *nickname);
 
 /* Release resources allocated for lighthouse server.
  */
