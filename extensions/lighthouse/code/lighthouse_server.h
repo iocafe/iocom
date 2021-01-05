@@ -66,6 +66,10 @@ typedef struct LighthouseServerOne
      */
     os_int multicast_interval;
 
+    /** Longest interval to send UDP multicasts, ms.
+     */
+    os_int multicast_interval_max;
+
     /** This server has data to broadcast.
      */
     os_boolean is_configured;
@@ -101,7 +105,8 @@ LighthouseServer;
 /* Initialize the lighthouse server.
  */
 void ioc_initialize_lighthouse_server(
-    LighthouseServer *c);
+    LighthouseServer *c,
+    os_int interval_ms);
 
 /* Start end point information setup.
  */

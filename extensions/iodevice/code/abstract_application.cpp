@@ -136,7 +136,7 @@ void AbstractApplication::connect_application()
     /* Initialize light house. Sends periodic UDP broadcards to so that this service
        can be detected in network.
      */
-    ioc_initialize_lighthouse_server(&m_lighthouse_server);
+    ioc_initialize_lighthouse_server(&m_lighthouse_server, 4000);
     ioc_lighthouse_start_endpoints(&m_lighthouse_server, OS_NULL /* nickname */ );
     ioc_lighthouse_add_iocom_endpoints(&m_lighthouse_server, m_device_id->publish,
         &m_lighthouse_server_info);

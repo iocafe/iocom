@@ -43,12 +43,16 @@ static osalStatus ioc_run_lighthouse_server_one(
   The ioc_initialize_lighthouse_server() function sets up light house server structure for use.
 
   @param   c Pointer to the light house server object structure.
+  @param   interval_ms Time between sent between UDP multicasts, ms. Multicasts will not be sent
+           faster than this, but can be sent at maximun at run call rate.
+
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_initialize_lighthouse_server(
-    LighthouseServer *c)
+    LighthouseServer *c,
+    os_int interval_ms)
 {
     LighthouseServerOne *f;
     os_timer ti;
@@ -57,21 +61,28 @@ void ioc_initialize_lighthouse_server(
     os_memclear(c, sizeof(LighthouseServer));
 
     os_get_timer(&ti);
+    ti -= interval_ms;
     for (i = 0; i < LIGHTHOUSE_NRO_ADDR_FAMILIES; i++)
     {
+        ti -= 20;
         f = &c->f[i];
         f->socket_error_timer = ti;
         f->socket_error_timeout = 100;
         f->multicast_timer = ti;
-        f->multicast_interval = 400;
+        f->multicast_interval = 200;
+        if (f->multicast_interval > interval_ms) {
+            f->multicast_interval = interval_ms;
+        }
+        f->multicast_interval_max = interval_ms;
         f->msg.hdr.msg_id = LIGHTHOUSE_MSG_ID;
         f->msg.hdr.hdr_sz = (os_uchar)sizeof(LighthouseMessageHdr);
-        ti += 50;
     }
+
 
     c->f[LIGHTHOUSE_IPV4].multicast_ip = LIGHTHOUSE_IP_IPV4;
     c->f[LIGHTHOUSE_IPV6].multicast_ip = LIGHTHOUSE_IP_IPV6;
 }
+
 
 
 /**
@@ -431,7 +442,7 @@ static osalStatus ioc_run_lighthouse_server_one(
         return OSAL_PENDING;
     }
     c->multicast_timer = *ti;
-    c->multicast_interval = 4000;
+    c->multicast_interval = c->multicast_interval_max;
 
     random_nr = (os_ushort)osal_rand(0, 65535);
     c->msg.hdr.random_nr_low = (os_uchar)random_nr;
@@ -471,3 +482,4 @@ static osalStatus ioc_run_lighthouse_server_one(
 
     return OSAL_SUCCESS;
 }
+
