@@ -333,13 +333,11 @@ osalStatus ioc_run_lighthouse_client(
                         case 'T':
                         case 't':
                             is_tls = OS_TRUE;
-                            // is_ipv6 = (*q == 'T');
                             break;
 
                         case 'S':
                         case 's':
                             is_tls = OS_FALSE;
-                            // is_ipv6 = (*q == 'S');
                             break;
 
                         default:
