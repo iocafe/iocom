@@ -984,7 +984,6 @@ static void ioc_connection_thread(
     {
         silence_ms = IOC_SERIAL_SILENCE_MS;
         check_timeouts_ms = IOC_SERIAL_CHECK_TIMEOUTS_MS;
-
     }
     else
     {
