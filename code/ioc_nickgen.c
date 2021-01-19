@@ -18,9 +18,10 @@
 
 /* Parts of nick name
  */
-OS_FLASH_MEM os_char *ioc_nick1[] = {"low", "ho", "go", "meg", "max", "go", "gin", "bin", "dow", "bit", "do", OS_NULL};
-OS_FLASH_MEM os_char *ioc_nick2[] = {"hawk", "ant", "yellow", "bone", "ink", "mighty", "dog", "red", "god", "oak", "air", "two", OS_NULL};
-OS_FLASH_MEM os_char *ioc_nick3[] = {"eye", "ear", "hand", "belly", "feet", "brain", "nose", "but", "gut", "nut", OS_NULL};
+OS_FLASH_MEM os_char *ioc_nick1[] = {"hey", "ant", "yaw", "bot", "ink", "mic", "dog", "red",
+    "god", "oak", "air", "fir", "two", "top", "hawk", "blue", OS_NULL};
+OS_FLASH_MEM os_char *ioc_nick2[] = {"eye", "ear", "rat", "dot", "meg", "dir", "cat", "how",
+    "hat", "but", "gut", "gun", "nut", "tap", "brain", "leg", "jack", "tail", "head", OS_NULL};
 
 
 /**
@@ -43,8 +44,8 @@ static const os_char *ioc_get_nick_part(
     n = 0;
     for (name = nick_part; *name; name++) n++;
 
-    i = (os_int)osal_rand(0, n-1);
-    return nick_part[i];
+    i = (os_int)osal_rand(0, 100000);
+    return nick_part[i%n];
 }
 
 
@@ -54,7 +55,7 @@ static const os_char *ioc_get_nick_part(
   @brief Generate a nick name
   @anchor ioc_generate_nickname
 
-  @param   buf Pointer to buffer where store the nick name.
+  @param   buf Pointer to buffer where store the nick name. Recommended size IOC_NAME_SZ bytes.
   @param   buf_sz Buffer size in bytes.
 
 ****************************************************************************************************
@@ -67,11 +68,10 @@ void ioc_generate_nickname(
 
     n = ioc_get_nick_part(ioc_nick1);
     os_strncpy(buf, n, buf_sz);
-    os_strncat(buf, "-", buf_sz);
     n = ioc_get_nick_part(ioc_nick2);
     os_strncat(buf, n, buf_sz);
-    n = ioc_get_nick_part(ioc_nick3);
-    os_strncat(buf, n, buf_sz);
+    os_strncat(buf, "-", buf_sz);
+    os_strncat(buf, OSAL_BIN_NAME, buf_sz);
 }
 
 #endif
