@@ -149,6 +149,19 @@ OSAL_C_HEADER_BEGINS
 #define IOC_RELAX_SECURITY OSAL_RELAX_SECURITY
 #endif
 
+/* Decide wether to include nick name generator
+ */
+#ifndef IOC_NICKGEN_SUPPORT
+  #if OSAL_MINIMALISTIC == 0
+    #if OSAL_SOCKET_SUPPORT
+      #define IOC_NICKGEN_SUPPORT 1
+    #endif
+  #endif
+#endif
+#ifndef IOC_NICKGEN_SUPPORT
+  #define IOC_NICKGEN_SUPPORT 0
+#endif
+
 
 /* Include all base iocom headers and some extension headers needed early.
  */
@@ -174,6 +187,9 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_brick.h"
 #include "code/ioc_parameters.h"
 #include "code/ioc_ioboard.h"
+#if IOC_NICKGEN_SUPPORT
+#include "code/ioc_nickgen.h"
+#endif
 
 /* If C++ compilation, end the undecorated code.
  */

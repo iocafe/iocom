@@ -1,6 +1,6 @@
 /**
 
-  @file    common/ioc_brick.c
+  @file    ioc_brick.c
   @brief   Structres and functions related to brick transfer.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -82,7 +82,7 @@ void ioc_initialize_brick_buffer(
         os_memcpy(b->signals, signals, sizeof(iocStreamerSignals));
     }
     b->prm.is_device = (os_boolean)((flags & IOC_BRICK_CONTROLLER) == 0);
-    
+
     /* Initial JPEG compression quality
      */
     b->compression_quality = 30.0;
@@ -270,7 +270,7 @@ void ioc_free_brick_buffer(
   @param  format Source data format, set IOC_BYTE_BRICK, IOC_RGB24_BRICK, IOC_GRAYSCALE8_BRICK...
   @param  w Source image width in pixels, etc.
   @param  h Source image height in pixels, etc.
-  @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or 
+  @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or
           IOC_NORMAL_JPEG.
   @return OSAL_SUCCESS (0) if brick is stored. OSAL_STATUS_OUT_OF_BUFFER if data data doesn't
           firt into given buffer. Other values indicate an error.
@@ -379,7 +379,7 @@ osalStatus ioc_compress_brick(
         }
     }
 
-    else 
+    else
     {
         sz = w * (os_memsz)h * OSAL_BITMAP_BYTES_PER_PIX(format);
         osal_debug_assert(sz == data_sz);
@@ -457,7 +457,7 @@ getout:
   @param  format Source data format, set IOC_BYTE_BRICK, IOC_RGB24_BRICK, IOC_GRAYSCALE8_BRICK...
   @param  w Source image width in pixels, etc.
   @param  h Source image height in pixels, etc.
-  @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or 
+  @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or
           IOC_NORMAL_JPEG.
   @return OSAL_SUCCESS (0) if all is fine. Other values indicate an error.
 
@@ -530,7 +530,7 @@ osalStatus ioc_compress_brick_ring(
             if (OSAL_IS_ERROR(s)) {
                 goto getout;
             }
-            
+
             dhdr->compression = IOC_JPEG;
 #else
             osal_debug_error("JPEG is not included in build");
@@ -591,7 +591,7 @@ getout:
   @param  format Source data format, set IOC_BYTE_BRICK, IOC_RGB24_BRICK, IOC_GRAYSCALE8_BRICK...
   @param  w Source image width in pixels, etc.
   @param  h Source image height in pixels, etc.
-  @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or 
+  @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or
           IOC_NORMAL_JPEG.
   @return OSAL_SUCCESS (0) if all is fine. Other values indicate an error.
 
@@ -1250,7 +1250,7 @@ void ioc_adjust_jpeg_compression_quality(
     iocBrickBuffer *b,
     osalBitmapFormat format,
     os_int w,
-    os_int h, 
+    os_int h,
     os_int compression_quality,
     osalStatus compression_status,
     os_memsz compressed_sz)
@@ -1260,7 +1260,7 @@ void ioc_adjust_jpeg_compression_quality(
     const os_double compression_ratio_target = 0.05; /* Try to reduce bitmap size by 95% -> comressed size 5% of original */
     os_double ratio, calc_quality; //, lim , max_change;
     os_int max_sz, desired_sz, limit_sz;
-    
+
     /* If we failed, drop quality bu 30%.
      */
     if (compression_status)

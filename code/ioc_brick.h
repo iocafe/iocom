@@ -1,6 +1,6 @@
 /**
 
-  @file    common/ioc_brick.h
+  @file    ioc_brick.h
   @brief   Structres and functions related to brick transfer.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -21,7 +21,7 @@
 struct iocBrickBuffer;
 
 
-/* Do not change enumeration values, breaks compatibility. Future compressions should be marked 
+/* Do not change enumeration values, breaks compatibility. Future compressions should be marked
    with nonzero value 1 - 126 (highest bit zero, nonzero value). JPEG quality 0 means that
    quality is not set.
  */
@@ -122,12 +122,12 @@ typedef struct iocBrickBuffer
 
     /* Rimeout for streamer continuous data transfer, -1 = no timeout
      */
-    os_int timeout_ms; 
+    os_int timeout_ms;
 
     /* Previous value to detecta change (edge)
      */
-    os_int prev_cmd; 
-    os_int prev_state; 
+    os_int prev_cmd;
+    os_int prev_state;
 
     os_timer err_timer;
     os_boolean err_timer_set;
@@ -222,7 +222,7 @@ void ioc_brick_set_receive(
 osalStatus ioc_run_brick_receive(
     iocBrickBuffer *b);
 
-/* Get integer value from brick header (take care of endianess) 
+/* Get integer value from brick header (take care of endianess)
  */
 os_ulong ioc_get_brick_hdr_int(
     os_uchar *data,
@@ -234,7 +234,7 @@ void ioc_adjust_jpeg_compression_quality(
     iocBrickBuffer *b,
     osalBitmapFormat format,
     os_int w,
-    os_int h, 
+    os_int h,
     os_int compression_quality,
     osalStatus compression_status,
     os_memsz compressed_sz);
