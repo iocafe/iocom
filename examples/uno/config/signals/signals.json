@@ -1,0 +1,39 @@
+{
+  "name": "uno",
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Exported by 'uno' IO device",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "device state",
+        "signals": [
+          {"name": "LEFT", "type": "boolean"},
+          {"name": "RIGHT", "type": "boolean"},
+          {"name": "FORWARD", "type": "boolean"},
+          {"name": "BACKWARD", "type": "boolean"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "Imported by 'uno' IO device",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "controls",
+        "signals": [
+          {"name": "LeftTurn", "type": "boolean"},
+          {"name": "RightTurn", "type": "boolean"},
+          {"name": "StraightForward", "type": "boolean"},
+          {"name": "ForwardBackward", "type": "boolean"}
+        ]
+      }
+    ]
+  }
+  ]
+}
+
