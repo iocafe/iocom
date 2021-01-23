@@ -107,7 +107,7 @@ typedef struct iocEndPoint
         Zero if socket has not been tried or it has succeeded the
         last time.
      */
-    os_timer socket_open_fail_timer;
+    os_timer stream_open_fail_timer;
 
     /** Timer for accepting new incoming TCP socket connections. We do not do accept on
         every run, because we do not know how heavy the socket library accept function

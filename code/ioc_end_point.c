@@ -398,9 +398,9 @@ static osalStatus ioc_try_to_open_endpoint(
 
     /* If two seconds have not passed since last failed try.
      */
-    if (!osal_int64_is_zero(&epoint->socket_open_fail_timer))
+    if (!osal_int64_is_zero(&epoint->stream_open_fail_timer))
     {
-        if (!os_has_elapsed(&epoint->socket_open_fail_timer, 2000)) return OSAL_PENDING;
+        if (!os_has_elapsed(&epoint->stream_open_fail_timer, 2000)) return OSAL_PENDING;
     }
 
     /* Try to open listening socket port.
@@ -410,13 +410,13 @@ static osalStatus ioc_try_to_open_endpoint(
     if (epoint->socket == OS_NULL)
     {
         osal_debug_error("Opening listening socket failed");
-        os_get_timer(&epoint->socket_open_fail_timer);
+        os_get_timer(&epoint->stream_open_fail_timer);
         return status;
     }
 
     /* Success.
      */
-    osal_int64_set_zero(&epoint->socket_open_fail_timer);
+    osal_int64_set_zero(&epoint->stream_open_fail_timer);
     osal_int64_set_zero(&epoint->try_accept_timer);
     osal_trace("end point: listening");
     return OSAL_SUCCESS;

@@ -195,7 +195,11 @@ iocSystemFrameType;
 
 /* Maximum parameter string length for end point.
  */
-#define IOC_CONNECTION_PRMSTR_SZ 48
+#if OSAL_MINIMALISTIC
+  #define IOC_CONNECTION_PRMSTR_SZ 16
+#else
+  #define IOC_CONNECTION_PRMSTR_SZ 64
+#endif
 
 /* Frame count runs normally from 1 to IOC_MAX_FRAME_NR. Exception is when the connection
    is established, the first frame count 0 zero, which never repeats. The IOC_MAX_FRAME_NR
@@ -548,12 +552,12 @@ typedef struct iocConnection
         Zero if stream has not been tried or it has succeeded the
         last time.
      */
-    os_timer socket_open_fail_timer;
+    os_timer stream_open_fail_timer;
 
     /** Timer when last open was done. This timer is used to slow down opening
         a bit if open succeeds but read/write fails immediately.
      */
-    os_timer socket_open_try_timer;
+    os_timer stream_open_try_timer;
 
     /** Timer of the last successful receive.
      */

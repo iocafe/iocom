@@ -130,9 +130,11 @@ void AbstractCamera::add_mblks(
     iocMemoryBlockParams blockprm;
     os_memclear(&blockprm, sizeof(blockprm));
 
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     blockprm.device_name = device_name;
     blockprm.device_nr = device_nr;
     blockprm.network_name = network_name;
+#endif
 
     blockprm.mblk_name = exp_mblk_name;
     blockprm.nbytes = exp_mblk_sz;

@@ -111,9 +111,11 @@ void ioc_initialize_selectwifi(
     /* Generate memory blocks.
      */
     os_memclear(&blockprm, sizeof(blockprm));
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     blockprm.device_name = device_name;
     blockprm.device_nr = device_nr;
     blockprm.network_name = network_name;
+#endif
 
     blockprm.mblk_name = selectwifi.exp.hdr.mblk_name;
     blockprm.nbytes = SELECTWIFI_EXP_MBLK_SZ;

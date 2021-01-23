@@ -220,7 +220,7 @@ osalStatus ioc_connection_receive(
              */
             if (status == OSAL_STATUS_CONNECTION_REFUSED)
             {
-                os_get_timer(&con->socket_open_fail_timer);
+                os_get_timer(&con->stream_open_fail_timer);
             }
             ioc_unlock(root);
             osal_trace_int("Reading stream failed, status=", status);

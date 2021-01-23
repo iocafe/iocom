@@ -690,7 +690,7 @@ static osalStatus ioc_write_to_stream(
     if (status == OSAL_STATUS_CONNECTION_REFUSED)
     {
         osal_debug_error("late connect refused");
-        os_get_timer(&con->socket_open_fail_timer);
+        os_get_timer(&con->stream_open_fail_timer);
     }
 
     /* If not all data was sent, set pending status

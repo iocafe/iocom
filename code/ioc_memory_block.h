@@ -98,6 +98,8 @@ struct iocSourceBuffer;
 */
 typedef struct
 {
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
+
     /** Device name, max 15 characters from 'a' - 'z' or 'A' - 'Z'. This
         identifies IO device type, like "TEMPCTRL".
      */
@@ -109,13 +111,14 @@ typedef struct
      */
     os_uint device_nr;
 
-    /** Memory block name, max 15 characters.
-     */
-    const os_char *mblk_name;
-
     /** Network name.
      */
     const os_char *network_name;
+#endif
+
+    /** Memory block name, max 15 characters.
+     */
+    const os_char *mblk_name;
 
     /** Buffer for memory block content. If dynamic memory allocation is supported,
         this argument can be OS_NULL, and the buffer will be allcated by the function.

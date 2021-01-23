@@ -153,7 +153,7 @@ osalStatus osal_loop(
 
     os_sleep(300);
 
-    osal_sysconsole_write("HEHE X0\n");
+//    osal_sysconsole_write("HEHE X0\n");
 
    /* static os_boolean test_toggle; */
 

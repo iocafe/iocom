@@ -67,13 +67,7 @@ static iocConnection
 void ioboard_setup_communication(
     ioboardParams *prm)
 {
-    ioboardParams defaultprm;
     iocMemoryBlockParams blockprm;
-
-    if (prm == OS_NULL)
-    {
-        prm = &defaultprm;
-    }
 
 #if IOC_DEVICE_STREAMER
     ioc_streamer_initialize();
@@ -88,9 +82,11 @@ void ioboard_setup_communication(
     }
 
     os_memclear(&blockprm, sizeof(blockprm));
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     blockprm.device_name = prm->device_name;
     blockprm.device_nr = prm->device_nr;
     blockprm.network_name = prm->network_name;
+#endif
 
     blockprm.mblk_name = "exp";
     blockprm.nbytes = prm->exp_mblk_sz;

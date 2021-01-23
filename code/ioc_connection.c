@@ -773,11 +773,13 @@ osalStatus ioc_terminate_connection_thread(
   @brief Try to connect the stream.
   @anchor ioc_try_to_connect
 
-  The ioc_try_to_connect() function tries to open listening TCP socket. Do not try if
-  f two secons have not passed since last failed open try.
+  The ioc_try_to_connect() function tries to connect TCP socket, TLS socket or serial port.
+  If two secons have not passed since last failed try, the function does noting and
+  returns OSAL_PENDING.
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if we have succesfully opened the stream. Othervalues indicate
+  @return  OSAL_SUCCESS: Ssuccesfully opened the stream.
+           OSAL_PENDING: Two seconds have not passed since last try, the fOthervalues indicate
            failure  or delay.
 
 ****************************************************************************************************
@@ -797,13 +799,13 @@ static osalStatus ioc_try_to_connect(
 
     /* If two seconds have not passed since last failed try.
      */
-    if (!osal_int64_is_zero(&con->socket_open_fail_timer))
+    if (!osal_int64_is_zero(&con->stream_open_fail_timer))
     {
-        if (!os_has_elapsed(&con->socket_open_fail_timer, 2000)) return OSAL_PENDING;
+        if (!os_has_elapsed(&con->stream_open_fail_timer, 2000)) return OSAL_PENDING;
     }
-    if (!osal_int64_is_zero(&con->socket_open_try_timer))
+    if (!osal_int64_is_zero(&con->stream_open_try_timer))
     {
-        if (!os_has_elapsed(&con->socket_open_try_timer, 500)) return OSAL_PENDING;
+        if (!os_has_elapsed(&con->stream_open_try_timer, 500)) return OSAL_PENDING;
     }
 
     /* Save stream interface pointer.
@@ -815,20 +817,20 @@ static osalStatus ioc_try_to_connect(
     osal_trace3("connection: opening stream...");
     flags = OSAL_STREAM_CONNECT|OSAL_STREAM_TCP_NODELAY;
     flags |= ((con->flags & IOC_DISABLE_SELECT) ? OSAL_STREAM_NO_SELECT : OSAL_STREAM_SELECT);
-    os_get_timer(&con->socket_open_try_timer);
+    os_get_timer(&con->stream_open_try_timer);
 
     con->stream = osal_stream_open(iface, parameters, OS_NULL, &status, flags);
     if (con->stream == OS_NULL)
     {
-        osal_debug_error("Opening stream failed");
-        os_get_timer(&con->socket_open_fail_timer);
+        osal_debug_error_str("Opening stream failed: ", parameters);
+        os_get_timer(&con->stream_open_fail_timer);
         return status;
     }
 
     /* Success.
      */
-    osal_int64_set_zero(&con->socket_open_fail_timer);
-    osal_trace2("connection: stream opened");
+    osal_int64_set_zero(&con->stream_open_fail_timer);
+    osal_trace2_str("connection: stream opened", parameters);
     return OSAL_SUCCESS;
 }
 

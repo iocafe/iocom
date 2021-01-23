@@ -214,9 +214,11 @@ static void ioc_setup_bserver_mblks(
     /* Generate memory blocks.
      */
     os_memclear(&blockprm, sizeof(blockprm));
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     blockprm.device_name = m->device_name;
     blockprm.device_nr = m->device_nr;
     blockprm.network_name = m->network_name;
+#endif
 
     blockprm.mblk_name = prm->signals_exp_hdr->mblk_name;
     blockprm.nbytes = prm->signals_exp_hdr->mblk_sz;
