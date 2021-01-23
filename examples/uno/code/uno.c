@@ -64,7 +64,6 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-
     ioboardParams prm;
     const osalStreamInterface *iface;
 
@@ -255,7 +254,6 @@ osalStatus osal_loop(
 void osal_main_cleanup(
     void *app_context)
 {
-
     OSAL_UNUSED(app_context);
 
     ioboard_end_communication();
@@ -288,7 +286,6 @@ void ioboard_root_callback(
     os_ushort flags,
     void *context)
 {
-
     OSAL_UNUSED(context);
 
     if (flags & IOC_MBLK_CALLBACK_RECEIVE)

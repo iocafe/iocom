@@ -67,7 +67,7 @@ osalStatus ioc_set_parameter_by_signal(
 
     buf1ptr = buf1;
     buf2ptr = buf2;
-    if (sz > sizeof(buf1)) {
+    if (sz > (os_memsz)sizeof(buf1)) {
         tmpbuf = os_malloc(2*sz, OS_NULL);
         if (tmpbuf== OS_NULL)
         {

@@ -498,6 +498,10 @@ os_char ioc_move_str(
             break;
 
         case OS_FLOAT:
+#if OSAL_MINIMALISTIC
+            if ((flags & IOC_SIGNAL_WRITE) == 0) *str = '\0';
+            return 0;
+#else
             if (flags & IOC_SIGNAL_WRITE)
             {
                 return ioc_set_double_ext(signal, osal_str_to_double(str, OS_NULL), state_bits);
@@ -508,6 +512,7 @@ os_char ioc_move_str(
                 osal_double_to_str(str, str_sz, dvalue, 4, OSAL_FLOAT_DEFAULT);
                 return state_bits;
             }
+#endif
 
         default:
             if (flags & IOC_SIGNAL_WRITE)
