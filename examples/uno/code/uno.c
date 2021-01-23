@@ -65,32 +65,29 @@ osalStatus osal_main(
     os_char *argv[])
 {
     ioboardParams prm;
-    const osalStreamInterface *iface;
 
     OSAL_UNUSED(argc);
     OSAL_UNUSED(argv);
 
+    osal_quiet(OS_TRUE);
+
     /* Setup IO pins.
      */
-    pins_setup(&pins_hdr, PINS_DEFAULT);
+    // pins_setup(&pins_hdr, PINS_DEFAULT);
 
     osal_serial_initialize();
 
-osal_sysconsole_write("HEHE 3\n");
-
-    /* Get stream interface by IOBOARD_CTRL_CON define.
-     */
-    iface = IOBOARD_IFACE;
+// osal_sysconsole_write("HEHE 3\n");
 
     /* Set up parameters for the IO board.
      */
     os_memclear(&prm, sizeof(prm));
-    prm.iface = iface;
+    prm.iface = IOBOARD_IFACE;
     prm.device_name = IOBOARD_DEVICE_NAME; /* or device_id->device name to allow change */
     prm.device_nr = 1;
-    prm.network_name = "iocafenet";
+    prm.network_name = "cafenet";
     prm.ctrl_type = IOBOARD_CTRL_CON;
-    prm.serial_con_str = "tnt4";
+    prm.serial_con_str = "ttyS30:";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.exp_mblk_sz = UNO_EXP_MBLK_SZ;
     prm.imp_mblk_sz = UNO_IMP_MBLK_SZ;
@@ -99,11 +96,14 @@ osal_sysconsole_write("HEHE 3\n");
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
 
+    prm.exp_signal_hdr = &uno.exp.hdr;
+    prm.imp_signal_hdr = &uno.imp.hdr;
+
     /* Start communication.
      */
     ioboard_start_communication(&prm);
 
-osal_sysconsole_write("HEHE 4\n");
+// osal_sysconsole_write("HEHE 4\n");
 
     /* Set callback to detect received data and connection status changes.
      */
@@ -114,7 +114,7 @@ osal_sysconsole_write("HEHE 4\n");
 // THIS GETS LOCKED UP!
 //    pins_connect_iocom_library(&pins_hdr);
 
-osal_sysconsole_write("HEHE 5\n");
+// osal_sysconsole_write("HEHE 5\n");
 
     os_get_timer(&send_timer);
 
@@ -123,7 +123,7 @@ osal_sysconsole_write("HEHE 5\n");
      */
     osal_simulated_loop(OS_NULL);
 
-osal_sysconsole_write("HEHE 6\n");
+// osal_sysconsole_write("HEHE 6\n");
 
     return OSAL_SUCCESS;
 }
@@ -150,13 +150,17 @@ osalStatus osal_loop(
 
     OSAL_UNUSED(app_context);
 
-osal_sysconsole_write("HEHE X0\n");
+
+    os_sleep(300);
+
+    osal_sysconsole_write("HEHE X0\n");
 
    /* static os_boolean test_toggle; */
 
     os_get_timer(&ti);
 
-osal_sysconsole_write("HEHE X1\n");
+
+ os_sleep(300);
 
     /* Keep the communication alive. If data is received from communication, the
        ioboard_callback() will be called. Move data data synchronously
@@ -164,17 +168,23 @@ osal_sysconsole_write("HEHE X1\n");
      */
     ioc_run(&ioboard_root);
 
-osal_sysconsole_write("HEHE X2\n");
+// osal_sysconsole_write("HEHE X2\n");
 
     ioc_receive(&ioboard_imp);
-    /* ioc_receive(&ioboard_conf_imp); */
 
-osal_sysconsole_write("HEHE X\n");
+// osal_sysconsole_write("HEHE X\n");
 
+    static int i;
+    ioc_set(&uno.exp.LEFT, i++);
+
+
+#if 0
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
     pins_read_all(&pins_hdr, PINS_DEFAULT);
+
+
 
     int LeftTurn = ioc_get(&uno.imp.LeftTurn);
     int RightTurn = ioc_get(&uno.imp.RightTurn);
@@ -229,6 +239,7 @@ osal_sysconsole_write("HEHE X\n");
         pin_set(&pins.outputs.FORWARD,0);
         pin_set(&pins.outputs.BACKWARD,0);
     }
+#endif
 
     /* Send changed data synchronously from outgoing memory blocks every 50 ms. If we need
        very low latency IO in local network we can have interval like 1 ms, or just call send
@@ -242,7 +253,7 @@ osal_sysconsole_write("HEHE X\n");
        even then to keep software updates, etc. working. This doesn't generate much
        communication tough, conf_export doesn't change during normal operation.
      */
-    if (os_timer_hit(&send_timer, &ti, 10))
+    // if (os_timer_hit(&send_timer, &ti, 10))
     {
         ioc_send(&ioboard_exp);
         /* ioc_send(&ioboard_conf_exp); */
@@ -310,6 +321,6 @@ void ioboard_callback(
     {
         /* Call pins library extension to forward communication signal changes to IO pins.
          */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &uno_hdr, flags);
+//        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &uno_hdr, flags);
     }
 }

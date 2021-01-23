@@ -12,8 +12,6 @@
  */
 void setup() 
 {  
-     Serial.begin(115200);
-
    /* Initialize the eosal library.
     */
     osal_initialize(OSAL_INIT_DEFAULT);

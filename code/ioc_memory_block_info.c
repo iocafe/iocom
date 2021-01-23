@@ -683,11 +683,12 @@ goon:
     iocMemoryBlockInfo *info,
     os_short bdflags)
 {
-    iocRoot *root;
     iocSourceBuffer *sbuf;
 
+#if IOC_ROOT_CALLBACK_SUPPORT
+    iocRoot *root;
     root = con->link.root;
-
+#endif
     /* Check if we already have subscription for this connection.
      */
     for (sbuf = con->sbuf.first;
@@ -711,8 +712,10 @@ goon:
 
     /* Application may want to know that the memory block has been connected.
      */
+#if IOC_ROOT_CALLBACK_SUPPORT
     ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_SOURCE, OS_NULL, mblk,
         root->callback_context);
+#endif
 
     /* Mark that we need to send memory block info back. If pointer is
        set, do nothing because the source buffer was added to last in list.
@@ -762,10 +765,12 @@ static void ioc_mbinfo_new_tbuf(
     iocMemoryBlockInfo *info,
     os_short bdflags)
 {
-    iocRoot *root;
     iocTargetBuffer *tbuf, *next_tbuf;
 
+#if IOC_ROOT_CALLBACK_SUPPORT
+    iocRoot *root;
     root = con->link.root;
+#endif
 
     /* Check if we already have target buffer for this connection.
      */
@@ -809,8 +814,10 @@ static void ioc_mbinfo_new_tbuf(
 
     /* Application may want to know that the memory block has been connected.
      */
+#if IOC_ROOT_CALLBACK_SUPPORT
     ioc_new_root_event(root, IOC_MBLK_CONNECTED_AS_TARGET, OS_NULL, mblk,
         root->callback_context);
+#endif
 
     /* Mark that we need to send memory block info back. If pointer is
        set, do nothing because the source buffer was added to last in list.
