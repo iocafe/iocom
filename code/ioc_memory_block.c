@@ -130,10 +130,12 @@ osalStatus ioc_initialize_memory_block(
     }
     mblk->local_flags = prm->local_flags;
 
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     os_strncpy(mblk->device_name, prm->device_name, IOC_NAME_SZ);
     mblk->device_nr = prm->device_nr;
-    os_strncpy(mblk->mblk_name, prm->mblk_name, IOC_NAME_SZ);
     os_strncpy(mblk->network_name, prm->network_name, IOC_NETWORK_NAME_SZ);
+#endif
+    os_strncpy(mblk->mblk_name, prm->mblk_name, IOC_NAME_SZ);
 
     /* Setup handle within memory block structure and one given as argument.
      */
@@ -454,11 +456,13 @@ void ioc_mblk_set_signal_header(
 
 ****************************************************************************************************
 */
+#if 0
 void ioc_memory_block_set_int_param(
     iocHandle *handle,
     iocMemoryBlockParamIx param_ix,
     os_int value)
 {
+
 #if 0
     iocRoot *root;
     iocMemoryBlock *mblk;
@@ -473,6 +477,7 @@ void ioc_memory_block_set_int_param(
     ioc_unlock(root);
 #endif
 }
+#endif
 
 
 /**
@@ -506,7 +511,11 @@ os_int ioc_memory_block_get_int_param(
     switch (param_ix)
     {
         case IOC_DEVICE_NR:
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
             value = mblk->device_nr;
+#else
+            value = mblk->link.root->device_nr;
+#endif
             break;
 
         case IOC_MBLK_SZ:
@@ -565,7 +574,11 @@ void ioc_memory_block_get_string_param(
     switch (param_ix)
     {
         case IOC_DEVICE_NAME:
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
             os_strncpy(buf, mblk->device_name, buf_sz);
+#else
+            os_strncpy(buf, mblk->link.root->device_name, buf_sz);
+#endif
             break;
 
         case IOC_MBLK_NAME:
@@ -573,11 +586,19 @@ void ioc_memory_block_get_string_param(
             break;
 
         case IOC_NETWORK_NAME:
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
             os_strncpy(buf, mblk->network_name, buf_sz);
+#else
+            os_strncpy(buf, mblk->link.root->network_name, buf_sz);
+#endif
             break;
 
         case IOC_DEVICE_NR:
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
             value = mblk->device_nr;
+#else
+            value = mblk->link.root->device_nr;
+#endif
             break;
 
         case IOC_MBLK_SZ:

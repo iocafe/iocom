@@ -21,7 +21,7 @@
  */
 #include "json_io_config.h"
 
-void ioboard_root_callback(
+void ioboard_callback(
     struct iocHandle *mblk,
     os_int start_addr,
     os_int end_addr,

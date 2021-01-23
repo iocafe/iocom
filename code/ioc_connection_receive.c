@@ -425,6 +425,7 @@ static osalStatus ioc_process_received_data_frame(
     }
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     /* If network is not authorized, report error. This may be intrusion attempt.
        IS THIS AN UNNECESSARY DOUBLE CHECK? WHEN WE ASSIGN TRANSFER BUFFER TO CONNECTION DO
        WE CHECK THIS ALREADY. MAKE SURE BEFORE REMOVING THIS. NO HARM IF HERE, MAY BE
@@ -436,6 +437,7 @@ static osalStatus ioc_process_received_data_frame(
             "attempt to access an unauthorized network");
         return OSAL_SUCCESS;
     }
+#endif
 #endif
 
     /* Store data to target buffer and optionally directly to memory block.

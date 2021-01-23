@@ -366,6 +366,10 @@ static void ioc_make_mblk_info_frame(
     os_uint
         device_nr;
 
+    os_char
+        *device_name,
+        *network_name;
+
     /* Set frame header.
      */
     ioc_generate_header(con, con->frame_out.buf, &ptrs,
@@ -382,7 +386,15 @@ static void ioc_make_mblk_info_frame(
     /* Set device number. If we are sending to device with automatically
      * number, mark device number with IOC_TO_AUTO_DEVICE_NR.
      */
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     device_nr = mblk->device_nr;
+    device_name = mblk->device_name;
+    network_name = mblk->network_name;
+#else
+    device_nr = con->link.root->device_nr;
+    device_name = con->link.root->device_name;
+    network_name = con->link.root->network_name;
+#endif
     if (device_nr > IOC_AUTO_DEVICE_NR)
     {
         if (device_nr == con->auto_device_nr && (mblk->local_flags & IOC_MBLK_LOCAL_AUTO_ID))
@@ -394,13 +406,13 @@ static void ioc_make_mblk_info_frame(
     ioc_msg_set_uint(device_nr, &p, iflags, IOC_INFO_D_2BYTES, iflags, IOC_INFO_D_4BYTES);
     ioc_msg_set_uint(mblk->nbytes, &p, iflags, IOC_INFO_N_2BYTES, iflags, IOC_INFO_N_4BYTES);
     if (ioc_msg_set_ushort(mblk->flags, &p)) *iflags |= IOC_INFO_F_2BYTES;
-    if (mblk->device_name[0])
+    if (device_name[0])
     {
-        ioc_msg_setstr(mblk->device_name, &p);
-        ioc_msg_setstr(mblk->network_name, &p);
+        ioc_msg_setstr(device_name, &p);
+        ioc_msg_setstr(network_name, &p);
         *iflags |= IOC_INFO_HAS_DEVICE_NAME;
     }
-    if (mblk->mblk_name[0] || mblk->network_name[0])
+    if (mblk->mblk_name[0] /* || network_name[0] */)
     {
         ioc_msg_setstr(mblk->mblk_name, &p);
         *iflags |= IOC_INFO_HAS_MBLK_NAME;
@@ -446,7 +458,7 @@ osalStatus ioc_send_acknowledge(
 
     IOC_MT_ROOT_PTR;
 
-    os_char
+    os_uchar
         *p;
 
     os_uint
@@ -465,7 +477,7 @@ osalStatus ioc_send_acknowledge(
 
     /* Generate acknowledge/keepalive message
      */
-    p = con->frame_out.buf;
+    p = (os_uchar*)con->frame_out.buf;
     *(p++) = IOC_ACKNOWLEDGE;
     rbytes = con->bytes_received;
     *(p++) = (os_uchar)rbytes;

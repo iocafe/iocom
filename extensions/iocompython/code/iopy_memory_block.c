@@ -365,7 +365,7 @@ static PyObject *MemoryBlock_set_param(
         return NULL;
     /* } */
 
-    ioc_memory_block_set_int_param(&self->mblk_handle, param_ix, param_value);
+    // ioc_memory_block_set_int_param(&self->mblk_handle, param_ix, param_value);
 
     Py_RETURN_NONE;
 }

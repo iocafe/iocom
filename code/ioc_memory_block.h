@@ -81,7 +81,7 @@
 
 /* Minimum memory block size in bytes.
  */
-#define IOC_MIN_MBLK_SZ 32
+#define IOC_MIN_MBLK_SZ 24
 
 /* Minumin value for unique memory block identifier.
  */
@@ -239,7 +239,11 @@ typedef void ioc_callback(
     void *context);
 
 #ifndef IOC_MBLK_MAX_CALLBACK_FUNCS
-#define IOC_MBLK_MAX_CALLBACK_FUNCS 2
+    #if OSAL_MINIMALISTIC
+        #define IOC_MBLK_MAX_CALLBACK_FUNCS 1
+    #else
+        #define IOC_MBLK_MAX_CALLBACK_FUNCS 2
+    #endif
 #endif
 
 /* Flag for ioc_resize_mblk() function.
@@ -286,6 +290,7 @@ typedef struct iocMemoryBlock
      */
     os_int nbytes;
 
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     /** Network name.
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
@@ -300,6 +305,7 @@ typedef struct iocMemoryBlock
         context as device name, like "TEMPCTRL1".
      */
     os_uint device_nr;
+#endif
 
     /** Unique memory block identifier (unique for this memory block among
         all memory blocks of this iocRoot).
@@ -403,10 +409,10 @@ void ioc_mblk_set_signal_header(
 
 /* Set memory block parameter.
  */
-void ioc_memory_block_set_int_param(
+/* void ioc_memory_block_set_int_param(
     iocHandle *handle,
     iocMemoryBlockParamIx param_ix,
-    os_int value);
+    os_int value); */
 
 /* Get memory block parameter value as integer.
  */

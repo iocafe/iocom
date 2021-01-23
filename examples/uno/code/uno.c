@@ -76,6 +76,8 @@ osalStatus osal_main(
 
     osal_serial_initialize();
 
+osal_sysconsole_write("HEHE 3\n");
+
     /* Get stream interface by IOBOARD_CTRL_CON define.
      */
     iface = IOBOARD_IFACE;
@@ -101,13 +103,18 @@ osalStatus osal_main(
      */
     ioboard_start_communication(&prm);
 
+osal_sysconsole_write("HEHE 4\n");
+
     /* Set callback to detect received data and connection status changes.
      */
-    ioc_add_callback(&ioboard_imp, ioboard_root_callback, OS_NULL);
+    ioc_add_callback(&ioboard_imp, ioboard_callback, OS_NULL);
 
     /* Connect PINS library to IOCOM library
      */
-    pins_connect_iocom_library(&pins_hdr);
+// THIS GETS LOCKED UP!
+//    pins_connect_iocom_library(&pins_hdr);
+
+osal_sysconsole_write("HEHE 5\n");
 
     os_get_timer(&send_timer);
 
@@ -115,6 +122,8 @@ osalStatus osal_main(
        real micro-controller.
      */
     osal_simulated_loop(OS_NULL);
+
+osal_sysconsole_write("HEHE 6\n");
 
     return OSAL_SUCCESS;
 }
@@ -141,17 +150,26 @@ osalStatus osal_loop(
 
     OSAL_UNUSED(app_context);
 
+osal_sysconsole_write("HEHE X0\n");
+
    /* static os_boolean test_toggle; */
 
     os_get_timer(&ti);
 
+osal_sysconsole_write("HEHE X1\n");
+
     /* Keep the communication alive. If data is received from communication, the
-       ioboard_root_callback() will be called. Move data data synchronously
+       ioboard_callback() will be called. Move data data synchronously
        to incomong memory block.
      */
     ioc_run(&ioboard_root);
+
+osal_sysconsole_write("HEHE X2\n");
+
     ioc_receive(&ioboard_imp);
     /* ioc_receive(&ioboard_conf_imp); */
+
+osal_sysconsole_write("HEHE X\n");
 
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
@@ -266,7 +284,7 @@ void osal_main_cleanup(
 
   @brief Callback function when data has been received from communication.
 
-  The ioboard_root_callback function reacts to data from communication. Here we treat
+  The ioboard_callback function reacts to data from communication. Here we treat
   memory block as set of communication signals, and mostly just forward these to IO.
 
   @param   handle Memory block handle.
@@ -279,7 +297,7 @@ void osal_main_cleanup(
 
 ****************************************************************************************************
 */
-void ioboard_root_callback(
+void ioboard_callback(
     struct iocHandle *handle,
     os_int start_addr,
     os_int end_addr,

@@ -168,6 +168,12 @@ OSAL_C_HEADER_BEGINS
 #define IOC_ROOT_CALLBACK_SUPPORT (OSAL_MINIMALISTIC == 0)
 #endif
 
+/* Decide wether to include nick name generator
+ */
+#ifndef IOC_MBLK_SPECIFIC_DEVICE_NAME
+  #define IOC_MBLK_SPECIFIC_DEVICE_NAME (OSAL_MINIMALISTIC == 0)
+#endif
+
 /* Include all base iocom headers and some extension headers needed early.
  */
 #include "code/ioc_timing.h"

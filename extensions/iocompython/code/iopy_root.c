@@ -608,7 +608,7 @@ static PyObject *Root_set_mblk_param(
     }
     else
     {
-        ioc_memory_block_set_int_param(handle, param_ix, param_value);
+        // ioc_memory_block_set_int_param(handle, param_ix, param_value);
     }
     ioc_unlock(iocroot);
 

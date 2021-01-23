@@ -69,6 +69,7 @@ void devicedir_memory_blocks(
          mblk = mblk->link.next)
     {
 #if IOC_DYNAMIC_MBLK_CODE
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
         if (ids.network_name[0] != '\0')
         {
             if (os_strcmp(ids.network_name, mblk->network_name)) continue;
@@ -86,12 +87,14 @@ void devicedir_memory_blocks(
             if (os_strcmp(ids.mblk_name, mblk->mblk_name)) continue;
         }
 #endif
+#endif
         osal_stream_print_str(list, sep, 0);
         devicedir_append_str_param(list, "mblk_name", mblk->mblk_name, OS_TRUE);
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
         devicedir_append_str_param(list, "dev_name", mblk->device_name, OS_FALSE);
         devicedir_append_int_param(list, "dev_nr", mblk->device_nr, OS_FALSE);
         devicedir_append_str_param(list, "net_name", mblk->network_name, OS_FALSE);
-
+#endif
         devicedir_append_int_param(list, "mblk_id", mblk->mblk_id, OS_FALSE);
         devicedir_append_int_param(list, "size", mblk->nbytes, OS_FALSE);
 
@@ -160,6 +163,8 @@ void devicedir_append_target_buffer(
     osalStream list,
     os_short flags)
 {
+    OSAL_UNUSED(flags);
+
     /* Check that root object is valid pointer.
      */
     osal_debug_assert(tbuf->debug_id == 'T');

@@ -500,14 +500,22 @@ static void ioc_resize_memory_block_by_info(
     sz = state->max_addr;
     if (sz < IOC_MIN_MBLK_SZ) sz = IOC_MIN_MBLK_SZ;
 
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME==0
+    if (root->device_nr != state->device_nr) return;
+    if (os_strcmp(root->device_name, state->device_name)) return;
+    /* if (os_strcmp(root->network_name, state->network_name)) return; */
+#endif
+
     for (mblk = root->mblk.first;
          mblk;
          mblk = mblk->link.next)
     {
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
         if (mblk->device_nr != state->device_nr) continue;
-        if (os_strcmp(mblk->mblk_name, state->mblk_name)) continue;
         if (os_strcmp(mblk->device_name, state->device_name)) continue;
-        if (os_strcmp(mblk->network_name, mblk->network_name)) continue;
+        /* if (os_strcmp(mblk->network_name, state->network_name)) continue;  */
+#endif
+        if (os_strcmp(mblk->mblk_name, state->mblk_name)) continue;
 
         if (sz > mblk->nbytes)
         {
@@ -733,8 +741,13 @@ osalStatus ioc_add_dynamic_info(
 
     os_memclear(&state, sizeof(state));
     state.root = root;
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     os_strncpy(state.device_name, mblk->device_name, IOC_NAME_SZ);
     state.device_nr = mblk->device_nr;
+#else
+    os_strncpy(state.device_name, root->device_name, IOC_NAME_SZ);
+    state.device_nr = root->device_nr;
+#endif
     state.resize_mblks = resize_mblks;
 
     s = osal_create_json_indexer(&jindex, mblk->buf, mblk->nbytes, 0);
@@ -742,7 +755,11 @@ osalStatus ioc_add_dynamic_info(
 
     /* Make sure that we have network with this name.
      */
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     state.dnetwork = ioc_add_dynamic_network(droot, mblk->network_name);
+#else
+    state.dnetwork = ioc_add_dynamic_network(droot, root->network_name);
+#endif
     if (state.dnetwork == OS_NULL)
     {
         s = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
@@ -754,8 +771,13 @@ osalStatus ioc_add_dynamic_info(
 
     /* Add info block to dynamic shortcuts (if not somehow already there)
      */
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     if (ioc_find_mblk_shortcut(state.dnetwork, mblk->mblk_name,
         mblk->device_name, mblk->device_nr) == OS_NULL)
+#else
+    if (ioc_find_mblk_shortcut(state.dnetwork, mblk->mblk_name,
+        root->device_name, root->device_nr) == OS_NULL)
+#endif
     {
         ioc_add_mblk_shortcut(state.dnetwork, mblk);
     }
@@ -808,7 +830,11 @@ void ioc_droot_mblk_is_deleted(
 
     if (droot == OS_NULL) return;
 
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     dnetwork = ioc_find_dynamic_network(droot, mblk->network_name);
+#else
+    dnetwork = ioc_find_dynamic_network(droot, mblk->link.root->network_name);
+#endif
     if (dnetwork)
     {
         ioc_network_mblk_is_deleted(dnetwork, mblk);

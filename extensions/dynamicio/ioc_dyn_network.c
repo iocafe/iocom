@@ -294,9 +294,15 @@ void ioc_network_mblk_is_deleted(
         {
             next_dsignal = dsignal->next;
 
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
             if (!os_strcmp(dsignal->mblk_name, mblk->mblk_name) &&
                 !os_strcmp(dsignal->device_name, mblk->device_name) &&
                 dsignal->device_nr == mblk->device_nr)
+#else
+            if (!os_strcmp(dsignal->mblk_name, mblk->mblk_name) &&
+                !os_strcmp(dsignal->device_name, root->device_name) &&
+                dsignal->device_nr == root->device_nr)
+#endif
             {
                 if (prev_dsignal) prev_dsignal->next = dsignal->next;
                 else dnetwork->hash[i] = dsignal->next;

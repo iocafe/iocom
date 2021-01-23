@@ -386,7 +386,7 @@ def preprocess_mblk(p_mblk, mblk):
 
     current_type = "ushort"
     current_addr = 0
-    max_addr = 32
+    max_addr = 24
     reserved_addrs = []
 
     # Remove group layer and assign addressess to signals.

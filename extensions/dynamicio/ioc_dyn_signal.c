@@ -318,9 +318,11 @@ iocDynamicSignal *ioc_setup_signal_by_identifiers(
          mblk;
          mblk = mblk->link.next)
     {
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
         if (os_strcmp(mblk->network_name, identifiers->network_name)) continue;
         if (os_strcmp(mblk->device_name, dsignal->device_name)) continue;
         if (mblk->device_nr != dsignal->device_nr) continue;
+#endif
         if (os_strcmp(mblk->mblk_name, dsignal->mblk_name)) continue;
 
         ioc_release_handle(signal->handle);

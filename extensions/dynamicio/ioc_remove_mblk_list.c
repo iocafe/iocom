@@ -340,6 +340,7 @@ static void ioc_remove_mblk_by_request(
     iocConnection *con)
 {
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     /* If network is not authorized, report error. This may be intrusion attempt.
        IS THIS AN UNNECESSARY DOUBLE CHECK? WHEN WE ASSIGN TRANSFER BUFFER TO CONNECTION DO
        WE CHECK THIS ALREADY. MAKE SURE BEFORE REMOVING THIS. NO HARM IF HERE, MAY BE
@@ -351,6 +352,7 @@ static void ioc_remove_mblk_by_request(
             "attempt to remove memory block in unauthorized network");
         return;
     }
+#endif
 #endif
 
     /* Send delete request to upper levels of hierarcy and delete the memory block.

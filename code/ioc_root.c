@@ -464,9 +464,15 @@ void ioc_new_root_event(
         }
         if (mblk)
         {
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
             network_name = mblk->network_name;
             device_name = mblk->device_name;
             device_nr = mblk->device_nr;
+#else
+            network_name = root->network_name;
+            device_name = root->device_name;
+            device_nr = root->device_nr;
+#endif
             mblk_name = mblk->mblk_name;
         }
         else
@@ -556,6 +562,7 @@ os_uint ioc_get_unique_device_id(
 void ioc_set_network_name(
     iocRoot *root)
 {
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
     iocMemoryBlock *mblk;
 
     ioc_lock(root);
@@ -569,6 +576,7 @@ void ioc_set_network_name(
     }
 
     ioc_unlock(root);
+#endif
 
     osal_set_network_state_str(OSAL_NS_IO_NETWORK_NAME, 0, root->network_name);
 }

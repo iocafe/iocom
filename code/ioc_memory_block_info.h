@@ -24,19 +24,28 @@
 #define IOC_MEMORY_BLOCK_INFO_H_
 #include "iocom.h"
 
+
 /** Maximum signal name string length.
  */
-#define IOC_SIGNAL_NAME_SZ 32
+#if OSAL_MINIMALISTIC
+    #define IOC_SIGNAL_NAME_SZ 16
+#else
+    #define IOC_SIGNAL_NAME_SZ 32
+#endif
 
 /** Maximum device and memory block name string length.
  */
-#define IOC_NAME_SZ 16
+#if OSAL_MINIMALISTIC
+    #define IOC_NAME_SZ 8
+#else
+    #define IOC_NAME_SZ 16
+#endif
 
 /** Maximum device identification string length (device name and number together).
     Theoretical maximum device number is 2^32, which is 10 characters, with name totals
     26 characters. Rounded up to four byte boundary, thus 28.
  */
-#define IOC_DEVICE_ID_SZ 28
+#define IOC_DEVICE_ID_SZ IOC_NAME_SZ + 10
 
 /** Maximum password string length. We use SHA-256 to encrypt passwords, and convert
     result to string, so we need 11 * 4 + 2 = 46 bytes. 11 = SHA hash is 32 bytes, we have

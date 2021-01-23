@@ -6,40 +6,18 @@
       {
         "name": "inputs",
         "pins": [
-          {"name": "gazerbeam", "addr": 39, "interrupt": 1}
+          {"name": "myin", "addr": 17}
         ]
       },
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_builtin", "addr": 2},
-          {"name": "RIGHT", "addr": 32},
-          {"name": "LEFT", "addr": 33},
-          {"name": "FORWARD", "addr": 25},
-          {"name": "BACKWARD", "addr": 26}
+          {"name": "led_builtin", "addr": 3},
+          {"name": "RIGHT", "addr": 4},
+          {"name": "LEFT", "addr": 5},
+          {"name": "FORWARD", "addr": 6},
+          {"name": "BACKWARD", "addr": 7}
         ]
-      },
-      {
-        "name": "debugger",
-        "pins": [
-            {"name": "AD1_TDI", "addr": 12},
-            {"name": "AD0_TCK", "addr": 13},
-            {"name": "AD3_TMS", "addr": 14},
-            {"name": "AD2_TDO", "addr": 15},
-            {"name": "U0_TXD", "addr": 1},
-            {"name": "U0_RXD", "addr": 3}
-          ]
-      },
-      {
-        "name": "devboard",
-        "pins": [
-            {"name": "DEV_SCK", "addr": 6},
-            {"name": "DEV_SDO", "addr": 7},
-            {"name": "DEV_SDI", "addr": 8},
-            {"name": "DEV_SHD", "addr": 9},
-            {"name": "DEV_SWP", "addr": 10},
-            {"name": "DEV_CSC", "addr": 11}
-          ]
       }
     ]
   }]

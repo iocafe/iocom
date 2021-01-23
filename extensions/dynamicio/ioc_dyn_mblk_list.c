@@ -154,6 +154,7 @@ iocHandle *ioc_find_mblk_shortcut(
         }
         else
         {
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
             if (device_nr == mblk->device_nr)
             {
                 if (!os_strcmp(mblk_name, mblk->mblk_name) &&
@@ -162,6 +163,16 @@ iocHandle *ioc_find_mblk_shortcut(
                     return &item->mblk_handle;
                 }
             }
+#else
+            if (device_nr == mblk->link.root->device_nr)
+            {
+                if (!os_strcmp(mblk_name, mblk->mblk_name) &&
+                    !os_strcmp(device_name, mblk->link.root->device_name))
+                {
+                    return &item->mblk_handle;
+                }
+            }
+#endif
         }
     }
 

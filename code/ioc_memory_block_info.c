@@ -204,12 +204,14 @@ struct iocMemoryBlock *ioc_get_mbinfo_to_send(
 #endif
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
         /* If network is not authorized, just drop skip the memory block.
          */
         if (!ioc_is_network_authorized(con, mblk->network_name, 0))
         {
             goto skipit;
         }
+#endif
 #endif
 
         if (con->flags & IOC_CONNECT_UP) break;
@@ -581,10 +583,16 @@ void ioc_mbinfo_received(
            Notice that accepting empty names needs to be treated the same way for
            both ends.
          */
-        if (info->device_nr != mblk->device_nr) goto goon;
         if (os_strcmp(info->mblk_name, mblk->mblk_name)) goto goon;
+#if IOC_MBLK_SPECIFIC_DEVICE_NAME
+        if (info->device_nr != mblk->device_nr) goto goon;
         if (os_strcmp(info->device_name, mblk->device_name)) goto goon;
         if (os_strcmp(info->network_name, mblk->network_name)) goto goon;
+#else
+        if (info->device_nr != root->device_nr) goto goon;
+        if (os_strcmp(info->device_name, root->device_name)) goto goon;
+        if (os_strcmp(info->network_name, root->network_name)) goto goon;
+#endif
 
         osal_trace_str("~MBinfo matched, dev name=", info->device_name);
         osal_trace_int("~, dev nr=", info->device_nr);
@@ -852,6 +860,10 @@ static void ioc_mbinfo_info_callback(
     os_ushort flags,
     void *context)
 {
+    OSAL_UNUSED(start_addr);
+    OSAL_UNUSED(flags);
+    OSAL_UNUSED(context);
+
     /* If actual data received (not connection status change).
      */
     if (end_addr >= 0)
