@@ -8,7 +8,7 @@ def main():
     device_nr = 3
     full_device_name = device_name + str(device_nr)
 
-    root = Root(device_name, device_nr=device_nr, network_name='iocafenet', security='certchainfile=myhome-bundle.crt')
+    root = Root(device_name, device_nr=device_nr, network_name='cafenet', security='certchainfile=myhome-bundle.crt')
     root.queue_events()
     ioterminal.start(root)
     exp = MemoryBlock(root, 'up', 'exp')

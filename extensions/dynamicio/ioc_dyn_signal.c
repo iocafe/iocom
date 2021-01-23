@@ -105,9 +105,9 @@ void ioc_release_dynamic_signal(
   left uninitialized and signal->handle->mblk will be OS_NULL.
 
   @param   root IOCOM root structure.
-  @param   iopath IO path to the signal, like "lighton.imp.mydev.iocafenet", etc.
+  @param   iopath IO path to the signal, like "lighton.imp.mydev.cafenet", etc.
   @param   network_name Network name can also be given separate from IO path, for example
-           "iocafenet". Sometimes this is convinient.
+           "cafenet". Sometimes this is convinient.
   @param   psignal Pointer to signal pointer. At entry, the signal pointer can be either
            OS_NULL and signal structure will be allocated, or pointer to already allocated
            signal structure. At exit this is set to pointer to signal structure, unless

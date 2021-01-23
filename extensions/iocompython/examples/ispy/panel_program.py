@@ -425,7 +425,7 @@ class ProgramPanel(GridLayout):
 class MainApp(App):
     def build(self):
         self.root = ProgramPanel()
-        self.root.set_device(Root('testwidget'), "gina2.iocafenet")
+        self.root.set_device(Root('testwidget'), "gina2.cafenet")
         return self.root
 
 if __name__ == '__main__':

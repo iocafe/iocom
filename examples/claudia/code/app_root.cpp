@@ -68,7 +68,7 @@ AppRoot::AppRoot(
      */
     IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
 
-    /* Publish IO networks hosted by claudia, such as "iocafenet" or "asteroidnet"
+    /* Publish IO networks hosted by claudia, such as "cafenet" or "asteroidnet"
      */
     ioc_publish_bserver_networks(&m_bmain, publish);
 

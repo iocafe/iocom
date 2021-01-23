@@ -68,11 +68,11 @@ iocUser;
 /**
 ****************************************************************************************************
   Networks allowed tough a specific connection.
-  When a device connects to server it identifies itself as "gina3.iocafenet", etc. This
+  When a device connects to server it identifies itself as "gina3.cafenet", etc. This
   identification is matched to user accounts in server, resulting accepted or terminated
   connection and set of IO networks which can be accessed tough this connection.
   This list is stored in iocConnection structure as iocAllowedNetworkConf.
-  The iocAllowedNetwork names one allowed network, like "iocafenet". Allowed privileges
+  The iocAllowedNetwork names one allowed network, like "cafenet". Allowed privileges
   are stored in flags. IOC_AUTH_ADMINISTRATOR bit indicates that administrative
   (configuration and software update) privileges.
 ****************************************************************************************************

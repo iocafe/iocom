@@ -64,7 +64,7 @@ ApplicationRoot::ApplicationRoot(
      */
     IOC_SETUP_BSERVER_CTRL_STREAM_MACRO(m_bmain, m_signals)
 
-    /* Publish IO networks hosted by frank, such as "iocafenet" or "asteroidnet"
+    /* Publish IO networks hosted by frank, such as "cafenet" or "asteroidnet"
      */
     ioc_publish_bserver_networks(&m_bmain, publish);
 

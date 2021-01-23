@@ -85,9 +85,9 @@ static osalStatus ioc_stream_setup_one(
            controller to IO device, typically "tod_buf".
   @param   exp_mblk_path IO path to memory block expored by IO device and used for transfer.
            An device end, this could simply be "conf_exp" or in controller end more
-           precisely "conf_exp.gina7.iocafenet", etc.
+           precisely "conf_exp.gina7.cafenet", etc.
   @param   imp_mblk_path IO path to memory block imported by IO device and used for transfer,
-           An device end, this could be "conf_imp" or "conf_imp.gina7.iocafenet" in controller.
+           An device end, this could be "conf_imp" or "conf_imp.gina7.cafenet" in controller.
 
   @param   device_name Optional: Sometimes it is more convinient to give device_name,
            device_number and network name as separate arguments. Device name without serial

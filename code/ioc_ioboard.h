@@ -178,7 +178,7 @@ typedef struct
      */
     const os_char *password;
 
-    /** IO device network name, like "iocafenet". Devices in same "network" can speak to each
+    /** IO device network name, like "cafenet". Devices in same "network" can speak to each
         others.
      */
     const os_char *network_name;

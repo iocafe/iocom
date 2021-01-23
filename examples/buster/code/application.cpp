@@ -115,7 +115,7 @@ void Application::start(os_int argc, const os_char *argv[])
 // xxxxxxxxx
 
 
-    /* Publish IO networks hosted by frank, such as "iocafenet" or "asteroidnet"
+    /* Publish IO networks hosted by frank, such as "cafenet" or "asteroidnet"
      */
     ioc_publish_bserver_networks(&m_bmain, m_device_id->publish);
 

@@ -48,7 +48,7 @@ typedef struct LightHouseNetwork
      */
     iocTransportEnum transport;
 
-    /** IO network name, like "iocafenet"
+    /** IO network name, like "cafenet"
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
 

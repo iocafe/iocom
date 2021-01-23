@@ -431,7 +431,7 @@ goon:
   @param   ip_address Something like "192.168.1.220".
   @param   port_nr TCP port number, for example 6369.
   @param   transport Either IOC_TCP_SOCKET or IOC_TLS_SOCKET.
-  @param   network_name Network name, like "iocafenet".
+  @param   network_name Network name, like "cafenet".
   @param   received_timer os_get_timer() value to drop oldest information first when
            lighthouse client structure can hold no more information.
   @return  None.

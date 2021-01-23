@@ -2,8 +2,8 @@
     "network": {
         "title": "Network configuration defaults",
         "device_nr": "*",
-        "network_name": "iocafenet",
-        "publish": "iocafenet",
+        "network_name": "cafenet",
+        "publish": "cafenet",
         "password": "",
 
         "connect": [{

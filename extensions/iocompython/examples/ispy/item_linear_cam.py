@@ -199,7 +199,7 @@ class MainApp(App):
     def build(self):
         assembly_data = {}
         self.root = LinearCameraItem("lcam_flat")
-        self.root.set_device(Root('testwidget'), "gina2.iocafenet", assembly_data)
+        self.root.set_device(Root('testwidget'), "gina2.cafenet", assembly_data)
     
         return self.root
 

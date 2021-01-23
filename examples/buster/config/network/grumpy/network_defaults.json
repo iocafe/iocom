@@ -2,8 +2,8 @@
     "network": {
         "title": "Network configuration defaults",
         "device_nr": "*",
-        "network_name": "iocafenet",
-        "publish": "iocafenet,grumpy1",
+        "network_name": "cafenet",
+        "publish": "cafenet,grumpy1",
         "password": "",
 
         "connect": [{

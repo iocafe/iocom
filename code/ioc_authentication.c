@@ -80,7 +80,7 @@ void ioc_make_authentication_frame(
 
 #if IOC_AUTHENTICATION_CODE
     /* If we have user name, we use it instead of device name. User name
-       may have also network name, like ispy.iocafenet.
+       may have also network name, like ispy.cafenet.
      */
     if (con->user_override[0] != '\0')
     {

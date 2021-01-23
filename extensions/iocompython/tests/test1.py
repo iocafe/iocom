@@ -40,7 +40,7 @@ signal_conf = ('{'
 
 
 def main():
-    root = Root('mydevice', device_nr=10000, network_name='iocafenet', security='certchainfile=myhome-bundle.crt')
+    root = Root('mydevice', device_nr=10000, network_name='cafenet', security='certchainfile=myhome-bundle.crt')
     root.queue_events()
     ioterminal.start(root)
     myinputs = MemoryBlock(root, 'up,auto', 'exp', nbytes=256)

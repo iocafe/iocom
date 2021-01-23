@@ -120,7 +120,7 @@ class MyConnectDialog(SettingsWithNoMenu):
 
         config = ConfigParser()
         config.setdefaults('common', {'conf_role': 'SERVER', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1'})
-        config.setdefaults('client', {'conf_user': 'ispy.iocafenet', 'conf_cert_chain': 'myhome-bundle.crt'})
+        config.setdefaults('client', {'conf_user': 'ispy.cafenet', 'conf_cert_chain': 'myhome-bundle.crt'})
         config.setdefaults('server', {'conf_serv_cert': 'rootca.crt', 'conf_serv_key': 'secret/rootca.key'})
         self.myconfig = config;
         try:

@@ -98,7 +98,7 @@ AbstractCamera::~AbstractCamera()
 
   @param   device_name Device name, like "buster".
   @param   device_number Number of the buster device.
-  @param   network_name Network name the buster is connected to, like "iocafenet".
+  @param   network_name Network name the buster is connected to, like "cafenet".
   @param   exp_mblk_name Name of the camera data transfer memory block to be exported by Buster,
            "dexp", etc.
   @param   exp_mblk_signal_hdr Pointer to signal header for "dexp" memory block. Handle

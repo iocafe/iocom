@@ -85,7 +85,7 @@ void ioc_initialize_selectwifi(
 {
     const os_char device_name[] = "wifi";
     os_int device_nr = IOC_AUTO_DEVICE_NR;
-    const os_char network_name[] = "iocafenet";
+    const os_char network_name[] = "cafenet";
     const os_char *parameters;
     iocMemoryBlockParams blockprm;
     iocConnectionParams conprm;

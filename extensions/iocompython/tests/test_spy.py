@@ -4,7 +4,7 @@ import time
 
 
 def main():
-    root = Root('spy', device_nr=10000, network_name='iocafenet', security='certchainfile=myhome-bundle.crt')
+    root = Root('spy', device_nr=10000, network_name='cafenet', security='certchainfile=myhome-bundle.crt')
     root.queue_events()
     ioterminal.start(root)
     

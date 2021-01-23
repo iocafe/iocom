@@ -8,7 +8,7 @@
 				"privileges": "admin"
 			},
 			{
-				"user": "frank*.iocafenet",
+                                "user": "frank*.cafenet",
 				"password": "pass",
 				"privileges": "server"
 			}

@@ -131,7 +131,7 @@ void ioc_lighthouse_start_endpoints(
 
   @param   c Pointer to the light house server object structure.
   @param   publish List of network names to publish, separated by comma.
-           For example "iocafenet,asteroidnet".
+           For example "cafenet,asteroidnet".
   @param   end_point_info Information about end points.
   @return  None.
 

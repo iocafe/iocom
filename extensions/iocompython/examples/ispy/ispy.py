@@ -42,21 +42,21 @@ class MainApp(App):
 
         if self.ioc_params['role'] == "CLIENT":
             if transport_flag == 'tls':
-                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='cafenet', security='certchainfile=' + self.ioc_params['cert_chain'])
                 self.ioc_root.queue_events()
                 self.ioc_connection = Connection(self.ioc_root, parameters=parameters, flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user, password=ioc_password)
             else:
-                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet')
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='cafenet')
                 self.ioc_root.queue_events()
                 self.ioc_connection = Connection(self.ioc_root, parameters=parameters, flags=transport_flag + ',down,dynamic,bidirectional', user=ioc_user)
 
         else:
             if transport_flag == 'tls':
-                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='cafenet', security='certfile=' + self.ioc_params['serv_cert'] + ',keyfile=' + self.ioc_params['serv_key'])
                 self.ioc_root.queue_events()
                 self.ioc_epoint = EndPoint(self.ioc_root, flags=transport_flag + ',dynamic')
             else:
-                self.ioc_root = Root('ispy', device_nr=9000, network_name='iocafenet')
+                self.ioc_root = Root('ispy', device_nr=9000, network_name='cafenet')
                 self.ioc_root.queue_events()
                     
                 if transport_flag == 'serial':
