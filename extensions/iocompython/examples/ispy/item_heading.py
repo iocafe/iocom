@@ -10,7 +10,7 @@ class HeadingItem(GridLayout):
         super(HeadingItem, self).__init__(**kwargs)
         self.cols = 2
         self.padding = [8, 6]
-        self.orientation='horizontal'
+        # self.orientation='horizontal'
         self.size_hint_y = None
         self.height = 50 
 

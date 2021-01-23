@@ -87,7 +87,7 @@ osalStatus osal_main(
     prm.device_nr = 1;
     prm.network_name = "cafenet";
     prm.ctrl_type = IOBOARD_CTRL_CON;
-    prm.serial_con_str = "ttyS30:";
+    prm.serial_con_str = "ttyS30";
     prm.max_connections = IOBOARD_MAX_CONNECTIONS;
     prm.exp_mblk_sz = UNO_EXP_MBLK_SZ;
     prm.imp_mblk_sz = UNO_IMP_MBLK_SZ;
@@ -151,16 +151,12 @@ osalStatus osal_loop(
     OSAL_UNUSED(app_context);
 
 
-    os_sleep(300);
-
 //    osal_sysconsole_write("HEHE X0\n");
 
    /* static os_boolean test_toggle; */
 
     os_get_timer(&ti);
 
-
- os_sleep(300);
 
     /* Keep the communication alive. If data is received from communication, the
        ioboard_callback() will be called. Move data data synchronously
