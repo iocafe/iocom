@@ -162,6 +162,11 @@ OSAL_C_HEADER_BEGINS
   #define IOC_NICKGEN_SUPPORT 0
 #endif
 
+/* Support root event callback unless this is minimalistic build
+ */
+#ifndef IOC_ROOT_CALLBACK_SUPPORT
+#define IOC_ROOT_CALLBACK_SUPPORT (OSAL_MINIMALISTIC == 0)
+#endif
 
 /* Include all base iocom headers and some extension headers needed early.
  */

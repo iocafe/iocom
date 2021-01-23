@@ -64,6 +64,7 @@ void ioc_initialize_root(
 }
 
 
+#if OSAL_PROCESS_CLEANUP_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -100,7 +101,10 @@ void ioc_release_root(
     /* Synchronize, no more callbacks.
      */
     ioc_lock(root);
+
+#if IOC_ROOT_CALLBACK_SUPPORT
     root->callback_func = OS_NULL;
+#endif
 
 
 #if OSAL_MULTITHREAD_SUPPORT
@@ -196,7 +200,7 @@ void ioc_release_root(
      */
     IOC_SET_DEBUG_ID(root, 0)
 }
-
+#endif
 
 /**
 ****************************************************************************************************
@@ -375,6 +379,7 @@ void ioc_unlock(
 #endif
 
 
+#if IOC_ROOT_CALLBACK_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -476,6 +481,7 @@ void ioc_new_root_event(
     }
 #endif
 }
+#endif
 
 
 /**

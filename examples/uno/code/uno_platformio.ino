@@ -12,9 +12,12 @@
  */
 void setup() 
 {  
+     Serial.begin(115200);
+
    /* Initialize the eosal library.
     */
     osal_initialize(OSAL_INIT_DEFAULT);
+    Serial.print("HEHE");
     osal_main(0, 0);
 }
 

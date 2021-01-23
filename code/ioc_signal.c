@@ -477,11 +477,14 @@ os_char ioc_move_str(
     iocRoot *root = OS_NULL;
     iocMemoryBlock *mblk;
     os_char *p;
-    os_double dvalue;
     os_int addr;
     os_long value;
     os_memsz len;
     iocHandle *handle;
+
+#if OSAL_MINIMALISTIC == 0
+    os_double dvalue;
+#endif
 
     if (signal == OS_NULL) return 0;
     handle = signal->handle;

@@ -214,11 +214,6 @@ typedef struct iocRoot
     osalMutex mutex;
 #endif
 
-    /** How many times stream (socket, etc) has been dropped.
-        Global diagnostics counter.
-     */
-    os_int drop_count;
-
     /** Callback function pointer. OS_NULL if not used.
      */
     ioc_root_callback *callback_func;
@@ -227,13 +222,9 @@ typedef struct iocRoot
      */
     void *callback_context;
 
-    /** Pointer to static structure defining signals (for pins library).
-     */
-    // const struct iocDeviceHdr *device_signal_hdr;
-
     /** Automatic device number, used if device number is 0
      */
-    os_int auto_device_nr;
+    os_uint auto_device_nr;
 
     /** Next unique memory block identifier to reserve.
      */
@@ -256,10 +247,12 @@ typedef struct iocRoot
     void *authorization_context;
 #endif
 
+#if IOC_DYNAMIC_MBLK_CODE
     /** Flag for basic server (iocBServer). Check for missing certificate chain and
         flash program versions. This is optimization flag for automatic uploader.
      */
     os_boolean check_cert_chain_etc;
+#endif
 }
 iocRoot;
 
@@ -284,8 +277,12 @@ void ioc_initialize_root(
 
 /* Release communication root object.
  */
-void ioc_release_root(
-    iocRoot *root);
+#if OSAL_PROCESS_CLEANUP_SUPPORT
+    void ioc_release_root(
+        iocRoot *root);
+#else
+    #define ioc_release_root(r)
+#endif
 
 /* Set network name for the IOCOM root.
  */
@@ -312,19 +309,26 @@ void ioc_run(
 
 /* Set callback function for iocRoot object.
  */
-void ioc_set_root_callback(
-    iocRoot *root,
-    ioc_root_callback func,
-    void *context);
+#if IOC_ROOT_CALLBACK_SUPPORT
+    void ioc_set_root_callback(
+        iocRoot *root,
+        ioc_root_callback func,
+        void *context);
+#endif
 
 /* Inform application about a communication event.
  */
-void ioc_new_root_event(
-    iocRoot *root,
-    iocEvent event,
-    struct iocDynamicNetwork *dnetwork,
-    struct iocMemoryBlock *mblk,
-    void *context);
+#if IOC_ROOT_CALLBACK_SUPPORT
+    void ioc_new_root_event(
+        iocRoot *root,
+        iocEvent event,
+        struct iocDynamicNetwork *dnetwork,
+        struct iocMemoryBlock *mblk,
+        void *context);
+#else
+    #define ioc_new_root_event(r,e,d,m,c)
+#endif
+
 
 /* Create unique identifier for device.
  */

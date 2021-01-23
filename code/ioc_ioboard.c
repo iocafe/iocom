@@ -235,6 +235,7 @@ void ioboard_start_communication(
 }
 
 
+#if OSAL_PROCESS_CLEANUP_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -250,3 +251,4 @@ void ioboard_end_communication(void)
 {
     ioc_release_root(&ioboard_root);
 }
+#endif

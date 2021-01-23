@@ -275,7 +275,11 @@ void ioboard_start_communication(
 
 /* Shut down the communication.
  */
-void ioboard_end_communication(void);
+#if OSAL_PROCESS_CLEANUP_SUPPORT
+    void ioboard_end_communication(void);
+#else
+    #define ioboard_end_communication()
+#endif
 
 #endif
 #endif
