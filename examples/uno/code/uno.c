@@ -73,8 +73,6 @@ osalStatus osal_main(
 
     osal_serial_initialize();
 
-// osal_sysconsole_write("HEHE 3\n");
-
     /* Set up parameters for the IO board.
      */
     os_memclear(&prm, sizeof(prm));
@@ -99,8 +97,6 @@ osalStatus osal_main(
      */
     ioboard_start_communication(&prm);
 
-// osal_sysconsole_write("HEHE 4\n");
-
     /* Set callback to detect received data and connection status changes.
      */
     ioc_add_callback(&ioboard_imp, ioboard_callback, OS_NULL);
@@ -110,14 +106,12 @@ osalStatus osal_main(
 // THIS GETS LOCKED UP!
 //    pins_connect_iocom_library(&pins_hdr);
 
-// osal_sysconsole_write("HEHE 5\n");
-
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
     osal_simulated_loop(OS_NULL);
 
-osal_sysconsole_write("HEHE X0\n");
+// osal_sysconsole_write("HEHE X0\n");
 
     return OSAL_SUCCESS;
 }
@@ -140,16 +134,16 @@ osal_sysconsole_write("HEHE X0\n");
 osalStatus osal_loop(
     void *app_context)
 {
-    os_timer ti;
+    // os_timer ti;
 
     OSAL_UNUSED(app_context);
 
 
-    os_sleep(10);
+    // os_sleep(10);
 
    /* static os_boolean test_toggle; */
 
-    os_get_timer(&ti);
+    // os_get_timer(&ti);
 
 
     /* Keep the communication alive. If data is received from communication, the
@@ -157,8 +151,6 @@ osalStatus osal_loop(
        to incomong memory block.
      */
     ioc_run(&ioboard_root);
-
- //osal_sysconsole_write("HEHE X2\n");
 
     ioc_receive(&ioboard_imp);
 
@@ -233,7 +225,7 @@ osalStatus osal_loop(
 
     /* Send changed data */
     ioc_send(&ioboard_exp);
-    ioc_run(&ioboard_root);
+//     ioc_run(&ioboard_root);
 
     return OSAL_SUCCESS;
 }

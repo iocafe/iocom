@@ -592,8 +592,6 @@ osalStatus ioc_run_connection(
      */
     if (con->stream == OS_NULL)
     {
-        // osal_sysconsole_write("HEHECOM\n");
-
         /* Do nothing if ioc_connect() has not been called.
          */
         parameters = con->parameters;
@@ -713,12 +711,12 @@ osalStatus ioc_run_connection(
         osal_stream_flush(con->stream, 0);
     }
 
-osal_sysconsole_write("HEHE COM OK\n");
+// osal_sysconsole_write("HEHE COM OK\n");
 
     return OSAL_SUCCESS;
 
 failed:
-osal_sysconsole_write("HEHE COM FAILED\n");
+// osal_sysconsole_write("HEHE COM FAILED\n");
 
     /* If this is flagged connected, turn the flag off.
      */
@@ -828,14 +826,12 @@ static osalStatus ioc_try_to_connect(
     flags |= ((con->flags & IOC_DISABLE_SELECT) ? OSAL_STREAM_NO_SELECT : OSAL_STREAM_SELECT);
     os_get_timer(&con->open_try_timer);
 
-    osal_sysconsole_write("HEHE****\n");
     con->stream = osal_stream_open(iface, parameters, OS_NULL, &status, flags);
     if (con->stream == OS_NULL)
     {
         osal_debug_error_str("Opening stream failed: ", parameters);
         con->open_fail_timer = con->open_try_timer;
         con->open_fail_timer_set = OS_TRUE;
-osal_sysconsole_write("HEHE**FAILED\n");
         return status;
     }
 
@@ -843,7 +839,6 @@ osal_sysconsole_write("HEHE**FAILED\n");
      */
     con->open_fail_timer_set = OS_FALSE;
     osal_trace2_str("connection: stream opened", parameters);
-osal_sysconsole_write("HEHE**SUCCESS\n");
     return OSAL_SUCCESS;
 }
 
