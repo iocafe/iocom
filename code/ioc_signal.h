@@ -18,6 +18,15 @@
 #define IOC_SIGNAL_H_
 #include "iocom.h"
 
+
+#if OSAL_MINIMALISTIC
+    typedef os_ushort osal_mblk_sz;
+    typedef os_char osal_signal_addr;
+#else
+    typedef os_uint osal_mblk_sz;
+    typedef os_int osal_signal_addr;
+#endif
+
 /**
 ****************************************************************************************************
   We may have multiple iocSignal structures within one app defined structure. This is common
@@ -31,8 +40,8 @@ typedef struct iocMblkSignalHdr
     const os_char *mblk_name;
     iocHandle *handle;
 
-    os_int n_signals;
-    os_uint mblk_sz;
+    osal_signal_addr n_signals;
+    osal_mblk_sz mblk_sz;
 
     struct iocSignal *first_signal;
 }
@@ -42,7 +51,7 @@ iocMblkSignalHdr;
 typedef struct iocDeviceHdr
 {
     iocMblkSignalHdr **mblk_hdr;
-    os_short n_mblk_hdrs;
+    os_char n_mblk_hdrs;
 }
 iocDeviceHdr;
 
@@ -66,13 +75,12 @@ typedef struct iocSignal
 {
     /** Starting address in memory block.
      */
-    os_int addr;
+    osal_signal_addr addr;
 
     /** For strings n can be number of bytes in memory block for the string. For arrays n is
         number of elements reserved in memory block. Either 0 or 1 for single variables.
-        Unsigned type used for reason, we want to have max 65535 items.
      */
-    os_int n;
+    osal_signal_addr n;
 
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
         or OS_STR.

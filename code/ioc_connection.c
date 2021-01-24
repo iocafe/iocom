@@ -817,6 +817,7 @@ static osalStatus ioc_try_to_connect(
 
     /* Save stream interface pointer.
      */
+    OSAL_UNUSED(iface);
     iface = con->iface;
 
     /* Try to open listening socket port.
