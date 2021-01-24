@@ -65,7 +65,15 @@ osalStatus osal_main(
     OSAL_UNUSED(argc);
     OSAL_UNUSED(argv);
 
+#if OSAL_CHECKSUM_TEST
+    if (!osal_test_checksum()) {
+        osal_debug_error("Checksum calc test failed");
+    }
+#endif
+
+#if OSAL_MINIMALISTIC
     osal_quiet(OS_TRUE);
+#endif
 
     /* Setup IO pins.
      */
