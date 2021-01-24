@@ -119,8 +119,6 @@ osalStatus osal_main(
      */
     osal_simulated_loop(OS_NULL);
 
-// osal_sysconsole_write("HEHE X0\n");
-
     return OSAL_SUCCESS;
 }
 
@@ -142,99 +140,56 @@ osalStatus osal_main(
 osalStatus osal_loop(
     void *app_context)
 {
-    // os_timer ti;
-
+    os_timer ti;
+    static os_timer start_t = 0;
+    static os_char state = 0;
+    os_int timeout_ms;
     OSAL_UNUSED(app_context);
-
-
-    // os_sleep(10);
-
-   /* static os_boolean test_toggle; */
-
-    // os_get_timer(&ti);
-
 
     /* Keep the communication alive. If data is received from communication, the
        ioboard_callback() will be called. Move data data synchronously
        to incomong memory block.
      */
+    os_get_timer(&ti);
     ioc_run(&ioboard_root);
-
     ioc_receive(&ioboard_imp);
 
- //osal_sysconsole_write("HEHE X3\n");
-
-    static int i;
-    ioc_set(&uno.exp.LEFT, i++);
-
-
-#if 0
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
-    pins_read_all(&pins_hdr, PINS_DEFAULT);
+    // pins_read_all(&pins_hdr, PINS_DEFAULT);
 
-
-
+    /* Get inputs we are using.
+     */
     int LeftTurn = ioc_get(&uno.imp.LeftTurn);
     int RightTurn = ioc_get(&uno.imp.RightTurn);
     int StraightForward = ioc_get(&uno.imp.StraightForward);
     int ForwardBackward = ioc_get(&uno.imp.ForwardBackward);
 
-    if (StraightForward && ForwardBackward && !LeftTurn && !RightTurn) {
-        pin_set(&pins.outputs.LEFT,0);
-        pin_set(&pins.outputs.RIGHT,0);
-        pin_set(&pins.outputs.FORWARD,1);
-        pin_set(&pins.outputs.BACKWARD,0);
+    /* Modify state.
+     */
+    timeout_ms = 1000;
+    if (LeftTurn) timeout_ms = 200;
+    if (RightTurn) timeout_ms = 80;
+    if (StraightForward) timeout_ms = 30;
+    if (ForwardBackward) timeout_ms = 5;
+
+    if (os_has_elapsed_since(&start_t, &ti, timeout_ms)) {
+        if (++state > 3) state = 0;
+        start_t = ti;
     }
 
-    if (StraightForward && !ForwardBackward && !LeftTurn && !RightTurn) {
-        pin_set(&pins.outputs.LEFT,0);
-        pin_set(&pins.outputs.RIGHT,0);
-        pin_set(&pins.outputs.FORWARD,0);
-        pin_set(&pins.outputs.BACKWARD,1);
-    }
+    /* Set outputs.
+     */
+    ioc_set(&uno.exp.LEFT, state == 0);
+    ioc_set(&uno.exp.RIGHT, state == 1);
+    ioc_set(&uno.exp.FORWARD, state == 2);
+    ioc_set(&uno.exp.BACKWARD, state == 3);
 
-    if (LeftTurn && ForwardBackward && !StraightForward && !RightTurn) {
-        pin_set(&pins.outputs.LEFT,1);
-        pin_set(&pins.outputs.RIGHT,0);
-        pin_set(&pins.outputs.FORWARD,1);
-        pin_set(&pins.outputs.BACKWARD,0);
-    }
-
-    if (LeftTurn && !ForwardBackward && !StraightForward && !RightTurn) {
-        pin_set(&pins.outputs.LEFT,1);
-        pin_set(&pins.outputs.RIGHT,0);
-        pin_set(&pins.outputs.FORWARD,0);
-        pin_set(&pins.outputs.BACKWARD,1);
-    }
-
-    if (RightTurn && ForwardBackward && !StraightForward && !LeftTurn) {
-        pin_set(&pins.outputs.RIGHT,1);
-        pin_set(&pins.outputs.LEFT,0);
-        pin_set(&pins.outputs.FORWARD,1);
-        pin_set(&pins.outputs.BACKWARD,0);
-    }
-
-    if (RightTurn && !ForwardBackward && !StraightForward && !LeftTurn) {
-        pin_set(&pins.outputs.RIGHT,1);
-        pin_set(&pins.outputs.LEFT,0);
-        pin_set(&pins.outputs.FORWARD,0);
-        pin_set(&pins.outputs.BACKWARD,1);
-    }
-
-    if (!RightTurn && !StraightForward && !LeftTurn) {
-        pin_set(&pins.outputs.LEFT,0);
-        pin_set(&pins.outputs.RIGHT,0);
-        pin_set(&pins.outputs.FORWARD,0);
-        pin_set(&pins.outputs.BACKWARD,0);
-    }
-#endif
-
-    /* Send changed data */
+    /* Send changed data to iocom.
+     */
     ioc_send(&ioboard_exp);
-//     ioc_run(&ioboard_root);
-
+    ioc_run(&ioboard_root);
     return OSAL_SUCCESS;
 }
 
@@ -296,6 +251,6 @@ void ioboard_callback(
     {
         /* Call pins library extension to forward communication signal changes to IO pins.
          */
-//        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &uno_hdr, flags);
+//       forward_signal_change_to_io_pins(handle, start_addr, end_addr, &uno_hdr, flags);
     }
 }
