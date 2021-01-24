@@ -552,12 +552,14 @@ typedef struct iocConnection
         Zero if stream has not been tried or it has succeeded the
         last time.
      */
-    os_timer stream_open_fail_timer;
+    os_timer open_fail_timer;
 
     /** Timer when last open was done. This timer is used to slow down opening
         a bit if open succeeds but read/write fails immediately.
      */
-    os_timer stream_open_try_timer;
+    os_timer open_try_timer;
+
+    os_boolean open_fail_timer_set;
 
     /** Timer of the last successful receive.
      */

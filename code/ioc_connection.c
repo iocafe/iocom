@@ -581,6 +581,9 @@ osalStatus ioc_run_connection(
     osalStatus status;
     os_timer tnow;
     os_int silence_ms, count;
+#if OSAL_SOCKET_SUPPORT
+    os_char connectstr[OSAL_HOST_BUF_SZ];
+#endif
 
     osal_debug_assert(con->debug_id == 'C');
 
@@ -589,6 +592,8 @@ osalStatus ioc_run_connection(
      */
     if (con->stream == OS_NULL)
     {
+        // osal_sysconsole_write("HEHECOM\n");
+
         /* Do nothing if ioc_connect() has not been called.
          */
         parameters = con->parameters;
@@ -603,7 +608,6 @@ osalStatus ioc_run_connection(
          */
         if (parameters[0] == '\0' || !os_strcmp(parameters, osal_str_asterisk))
         {
-            os_char connectstr[OSAL_HOST_BUF_SZ];
             if (con->lighthouse_func == OS_NULL) return OSAL_SUCCESS;
             status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
                 con->link.root->network_name, con->flags, connectstr, sizeof(connectstr));
@@ -709,9 +713,13 @@ osalStatus ioc_run_connection(
         osal_stream_flush(con->stream, 0);
     }
 
+osal_sysconsole_write("HEHE COM OK\n");
+
     return OSAL_SUCCESS;
 
 failed:
+osal_sysconsole_write("HEHE COM FAILED\n");
+
     /* If this is flagged connected, turn the flag off.
      */
     if (con->connected)
@@ -797,15 +805,16 @@ static osalStatus ioc_try_to_connect(
     os_int
         flags;
 
+    os_timer
+        t_now;
+
     /* If two seconds have not passed since last failed try.
      */
-    if (!osal_int64_is_zero(&con->stream_open_fail_timer))
+    os_get_timer(&t_now);
+    if ((con->open_fail_timer_set && !os_has_elapsed_since(&con->open_fail_timer, &t_now, 2000)) ||
+        !os_has_elapsed_since(&con->open_try_timer, &t_now, 500))
     {
-        if (!os_has_elapsed(&con->stream_open_fail_timer, 2000)) return OSAL_PENDING;
-    }
-    if (!osal_int64_is_zero(&con->stream_open_try_timer))
-    {
-        if (!os_has_elapsed(&con->stream_open_try_timer, 500)) return OSAL_PENDING;
+        return OSAL_PENDING;
     }
 
     /* Save stream interface pointer.
@@ -817,20 +826,24 @@ static osalStatus ioc_try_to_connect(
     osal_trace3("connection: opening stream...");
     flags = OSAL_STREAM_CONNECT|OSAL_STREAM_TCP_NODELAY;
     flags |= ((con->flags & IOC_DISABLE_SELECT) ? OSAL_STREAM_NO_SELECT : OSAL_STREAM_SELECT);
-    os_get_timer(&con->stream_open_try_timer);
+    os_get_timer(&con->open_try_timer);
 
+    osal_sysconsole_write("HEHE****\n");
     con->stream = osal_stream_open(iface, parameters, OS_NULL, &status, flags);
     if (con->stream == OS_NULL)
     {
         osal_debug_error_str("Opening stream failed: ", parameters);
-        os_get_timer(&con->stream_open_fail_timer);
+        con->open_fail_timer = con->open_try_timer;
+        con->open_fail_timer_set = OS_TRUE;
+osal_sysconsole_write("HEHE**FAILED\n");
         return status;
     }
 
     /* Success.
      */
-    osal_int64_set_zero(&con->stream_open_fail_timer);
+    con->open_fail_timer_set = OS_FALSE;
     osal_trace2_str("connection: stream opened", parameters);
+osal_sysconsole_write("HEHE**SUCCESS\n");
     return OSAL_SUCCESS;
 }
 

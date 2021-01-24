@@ -398,9 +398,10 @@ static osalStatus ioc_try_to_open_endpoint(
 
     /* If two seconds have not passed since last failed try.
      */
-    if (!osal_int64_is_zero(&epoint->stream_open_fail_timer))
-    {
-        if (!os_has_elapsed(&epoint->stream_open_fail_timer, 2000)) return OSAL_PENDING;
+    if (epoint->open_fail_timer_set) {
+        if (!os_has_elapsed(&epoint->open_fail_timer, 2000)) {
+            return OSAL_PENDING;
+        }
     }
 
     /* Try to open listening socket port.
@@ -410,14 +411,15 @@ static osalStatus ioc_try_to_open_endpoint(
     if (epoint->socket == OS_NULL)
     {
         osal_debug_error("Opening listening socket failed");
-        os_get_timer(&epoint->stream_open_fail_timer);
+        os_get_timer(&epoint->open_fail_timer);
+        epoint->open_fail_timer_set = OS_TRUE;
         return status;
     }
 
     /* Success.
      */
-    osal_int64_set_zero(&epoint->stream_open_fail_timer);
-    osal_int64_set_zero(&epoint->try_accept_timer);
+    epoint->open_fail_timer_set = OS_FALSE;
+    epoint->try_accept_timer_set = OS_FALSE;
     osal_trace("end point: listening");
     return OSAL_SUCCESS;
 }
@@ -456,14 +458,16 @@ static osalStatus ioc_try_accept_new_sockets(
 #if OSAL_MULTITHREAD_SUPPORT
     if (!epoint->worker_thread_running)
     {
-        if (!osal_int64_is_zero(&epoint->try_accept_timer) &&
+        if (epoint->try_accept_timer_set &&
             !os_has_elapsed(&epoint->try_accept_timer, 50)) return OSAL_SUCCESS;
         os_get_timer(&epoint->try_accept_timer);
+        epoint->try_accept_timer_set = OS_TRUE;
     }
 #else
-    if (!osal_int64_is_zero(&epoint->try_accept_timer) &&
+    if (epoint->try_accept_timer_set &&
         !os_has_elapsed(&epoint->try_accept_timer, 50)) return OSAL_SUCCESS;
     os_get_timer(&epoint->try_accept_timer);
+    epoint->try_accept_timer_set = OS_TRUE;
 #endif
 
     /* Try to accept an incoming socket connection.

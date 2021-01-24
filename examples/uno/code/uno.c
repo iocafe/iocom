@@ -35,10 +35,6 @@
  */
 #define IOBOARD_MAX_CONNECTIONS 1
 
-/* Timer for sending
- */
-static os_timer send_timer;
-
 /* Use static memory pool
  */
 static os_char
@@ -116,14 +112,12 @@ osalStatus osal_main(
 
 // osal_sysconsole_write("HEHE 5\n");
 
-    os_get_timer(&send_timer);
-
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
      */
     osal_simulated_loop(OS_NULL);
 
-// osal_sysconsole_write("HEHE 6\n");
+osal_sysconsole_write("HEHE X0\n");
 
     return OSAL_SUCCESS;
 }
@@ -151,7 +145,7 @@ osalStatus osal_loop(
     OSAL_UNUSED(app_context);
 
 
-//    osal_sysconsole_write("HEHE X0\n");
+    os_sleep(10);
 
    /* static os_boolean test_toggle; */
 
@@ -164,11 +158,11 @@ osalStatus osal_loop(
      */
     ioc_run(&ioboard_root);
 
-// osal_sysconsole_write("HEHE X2\n");
+ //osal_sysconsole_write("HEHE X2\n");
 
     ioc_receive(&ioboard_imp);
 
-// osal_sysconsole_write("HEHE X\n");
+ //osal_sysconsole_write("HEHE X3\n");
 
     static int i;
     ioc_set(&uno.exp.LEFT, i++);
@@ -237,24 +231,9 @@ osalStatus osal_loop(
     }
 #endif
 
-    /* Send changed data synchronously from outgoing memory blocks every 50 ms. If we need
-       very low latency IO in local network we can have interval like 1 ms, or just call send
-       unconditionally.
-       If we are not in such hurry, we can save network resources by merging multiple changes.
-       to be sent together in TCP package and use value like 100 ms.
-       Especially in IoT we may want to minimize number of transferred TCP packets to
-       cloud server. In this case it is best to use to two timers and flush ioboard_exp and
-       ioboard_conf_exp separately. We could evenu use value like 2000 ms or higher for
-       ioboard_exp. For ioboard_conf_exp we need to use relatively short value, like 100 ms
-       even then to keep software updates, etc. working. This doesn't generate much
-       communication tough, conf_export doesn't change during normal operation.
-     */
-    // if (os_timer_hit(&send_timer, &ti, 10))
-    {
-        ioc_send(&ioboard_exp);
-        /* ioc_send(&ioboard_conf_exp); */
-        ioc_run(&ioboard_root);
-    }
+    /* Send changed data */
+    ioc_send(&ioboard_exp);
+    ioc_run(&ioboard_root);
 
     return OSAL_SUCCESS;
 }
