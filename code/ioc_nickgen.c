@@ -18,9 +18,9 @@
 
 /* Parts of nick name
  */
-OS_FLASH_MEM os_char *ioc_nick1[] = {"hey", "ant", "yaw", "bot", "ink", "mic", "dog", "red",
+OS_CONST os_char *ioc_nick1[] = {"hey", "ant", "yaw", "bot", "ink", "mic", "dog", "red",
     "god", "oak", "air", "fir", "two", "top", "hawk", "blue", OS_NULL};
-OS_FLASH_MEM os_char *ioc_nick2[] = {"eye", "ear", "rat", "dot", "meg", "dir", "cat", "how",
+OS_CONST os_char *ioc_nick2[] = {"eye", "ear", "rat", "dot", "meg", "dir", "cat", "how",
     "hat", "but", "gut", "gun", "nut", "tap", "brain", "leg", "jack", "tail", "head", OS_NULL};
 
 

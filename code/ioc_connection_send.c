@@ -222,6 +222,10 @@ static void ioc_make_data_frame(
     os_ushort
         crc;
 
+#if IOC_MBLK_STATIC_IN_PROGMEN
+    os_boolean is_static = OS_FALSE;
+#endif
+
     /* Set frame header
      */
     saved_start_addr = sbuf->syncbuf.start_addr;
@@ -240,7 +244,12 @@ static void ioc_make_data_frame(
     start_addr = saved_start_addr;
     if (delta == OS_NULL) /* IOC_STATIC -> delta=0 */
     {
+#if IOC_MBLK_STATIC_IN_PROGMEN
+        is_static = OS_TRUE;
+#endif
         delta = sbuf->mlink.mblk->buf;
+        compressed_bytes = -1;
+        goto skip_for_static;
     }
     else if (!sbuf->syncbuf.is_keyframe)
     {
@@ -258,6 +267,7 @@ static void ioc_make_data_frame(
         sbuf->syncbuf.end_addr,
         dst, max_dst_bytes);
 
+skip_for_static:
     src_bytes = sbuf->syncbuf.end_addr - saved_start_addr + 1;
     if (src_bytes > max_dst_bytes) src_bytes = max_dst_bytes;
     used_bytes = (compressed_bytes < 0 ? src_bytes : compressed_bytes)
@@ -286,7 +296,16 @@ static void ioc_make_data_frame(
 
     if (compressed_bytes < 0)
     {
+#if IOC_MBLK_STATIC_IN_PROGMEN
+        if (is_static) {
+            memcpy_P(dst, delta + saved_start_addr, src_bytes);
+        }
+        else {
+            os_memcpy(dst, delta + saved_start_addr, src_bytes);
+        }
+#else
         os_memcpy(dst, delta + saved_start_addr, src_bytes);
+#endif
         sbuf->syncbuf.start_addr += src_bytes;
     }
     else

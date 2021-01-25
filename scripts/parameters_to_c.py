@@ -95,7 +95,7 @@ def append_init_parameter_to_c(parameter):
         if type == 'str':
             cfile.write('ioc_set_str(&sigs->.exp.' + name + ', "' + str(init) + '");\n')
         else:
-            cfile.write('static OS_FLASH_MEM os_' + type + ' ioc_idata_' + name + '[] = {')
+            cfile.write('static OS_CONST os_' + type + ' ioc_idata_' + name + '[] = {')
             init_list = init.split(',')
             is_first = True
             for i in init_list:

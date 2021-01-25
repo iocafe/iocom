@@ -26,7 +26,7 @@ typedef struct dinfoResMonMapItem
 }
 dinfoResMonMapItem;
 
-static OS_FLASH_MEM dinfoResMonMapItem dinfo_rm_map[] =
+static OS_CONST dinfoResMonMapItem dinfo_rm_map[] =
 {
      {IOC_DINFO_RM_MALLOC, OSAL_RMON_SYSTEM_MEMORY_ALLOCATION}
     ,{IOC_DINFO_RM_MUSE, OSAL_RMON_SYSTEM_MEMORY_USE}

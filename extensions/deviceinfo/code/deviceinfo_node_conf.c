@@ -33,7 +33,7 @@ typedef struct dinfoSetSignalMapping
 dinfoSetSignalMapping;
 
 
-static OS_FLASH_MEM dinfoSetSignalMapping dinfo_sigmap[] = {
+static OS_CONST dinfoSetSignalMapping dinfo_sigmap[] = {
     {IOC_DINFO_SET_NC_NR, IOC_DINFO_NC_NR, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, device_nr_override), -OSAL_DEVICE_NR_STR_SZ},
     {IOC_DINFO_SET_NC_NET, IOC_DINFO_NC_NET, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, network_name_override), -OSAL_NETWORK_NAME_SZ},
     {IOC_DINFO_SET_NC_CONNECT, IOC_DINFO_NC_CONNECT, -1, 0, (os_ushort)offsetof(struct osalNodeConfOverrides, connect_to_override[0].parameters), -OSAL_HOST_BUF_SZ},
@@ -150,7 +150,7 @@ void dinfo_set_node_conf(
     os_int addr, mina, maxa, i;
     os_char nbuf[OSAL_NBUF_SZ];
 #if OSAL_SUPPORT_STATIC_NETWORK_CONF
-    static OS_FLASH_MEM os_char one[] = "1", zero[] = "0";
+    static OS_CONST os_char one[] = "1", zero[] = "0";
     os_boolean dhcp;
 #endif
     OSAL_UNUSED(security);

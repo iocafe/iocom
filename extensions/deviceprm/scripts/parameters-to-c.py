@@ -263,10 +263,10 @@ def process_source_file(path):
         for d in define_list:
             hfile.write(d)
 
-        hfile.write('\nextern OS_FLASH_MEM_H ' + struct_name + ' ' + device_name + ';\n')
+        hfile.write('\nextern OS_CONST_H ' + struct_name + ' ' + device_name + ';\n')
 
         list_name = device_name + "_pblk_list"
-        cfile.write('\nstatic OS_FLASH_MEM iocpblkparameterHdr * OS_FLASH_MEM ' + list_name + '[] =\n{\n  ')
+        cfile.write('\nstatic OS_CONST iocpblkparameterHdr * OS_CONST ' + list_name + '[] =\n{\n  ')
         isfirst = True
         for p in pblk_list:
             if not isfirst:
@@ -274,8 +274,8 @@ def process_source_file(path):
             isfirst = False
             cfile.write('&' + p + '.hdr')
         cfile.write('\n};\n\n')
-        cfile.write('OS_FLASH_MEM iocDeviceHdr ' + device_name + '_hdr = {(iocpblkparameterHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocpblkparameterHdr*)};\n')
-        hfile.write('extern OS_FLASH_MEM_H iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
+        cfile.write('OS_CONST iocDeviceHdr ' + device_name + '_hdr = {(iocpblkparameterHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocpblkparameterHdr*)};\n')
+        hfile.write('extern OS_CONST_H iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
 
         if len(array_list) > 0:
             hfile.write('\n/* Array length defines. */\n')
@@ -340,7 +340,7 @@ def mymain():
     struct_name = device_name + '_t'
         define_list = []
         hfile.write('typedef struct ' + struct_name + '\n{')
-        cfile.write('OS_FLASH_MEM struct ' + struct_name + ' ' + device_name + ' = \n{')
+        cfile.write('OS_CONST struct ' + struct_name + ' ' + device_name + ' = \n{')
     '''
 
     hfile.write('\n#ifndef IOBOARD_DEVICE_NAME\n')
