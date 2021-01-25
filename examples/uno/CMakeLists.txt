@@ -35,7 +35,7 @@ include_directories("$ENV{E_ROOT}/pins")
 file(GLOB_RECURSE HEADERS "${E_SOURCE_PATH}/*.h")
 
 # Add source files.
-file(GLOB_RECURSE SOURCES "${E_SOURCE_PATH}/*.c")
+file(GLOB_RECURSE SOURCES "${E_SOURCE_PATH}/*.c" "${E_SOURCE_PATH}/*.cpp")
  
 # Build executable. Set library folder and libraries to link with.
 link_directories($ENV{E_LIB})

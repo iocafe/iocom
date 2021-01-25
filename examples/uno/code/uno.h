@@ -1,10 +1,10 @@
 /**
 
   @file    uno.h
-  @brief   Uno IO board example featuring  IoT device.
+  @brief   Arduino Uno IO board as IOCOM device.
   @author  Pekka Lehtikoski, Markku Nissinen
   @version 1.0
-  @date    6.4.2020
+  @date    22.1.2021
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -21,6 +21,8 @@
  */
 #include "json_io_config.h"
 
+/* Function prototypes here, just to keep uno.cpp more readable.
+ */
 void ioboard_callback(
     struct iocHandle *mblk,
     os_int start_addr,

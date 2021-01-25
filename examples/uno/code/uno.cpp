@@ -1,23 +1,10 @@
 /**
 
   @file    uno.c
-  @brief   Uno IO board example featuring  IoT device.
+  @brief   Arduino Uno IO board as IOCOM device.
   @author  Pekka Lehtikoski, Markku Nissinen
   @version 1.0
-  @date    6.4.2020
-
-  IOBOARD_CTRL_CON define selects how this IO device connects to control computer. One of
-  IOBOARD_CTRL_CONNECT_SOCKET, IOBOARD_CTRL_CONNECT_TLS or IOBOARD_CTRL_CONNECT_SERIAL.
-
-  Serial port can be selected using Windows style using "COM1", "COM2"... These are mapped
-  to hardware/operating system in device specific manner. On Linux port names like
-  "ttyS30,baud=115200" or "ttyUSB0" can be also used.
-
-  IOBOARD_MAX_CONNECTIONS sets maximum number of connections. IO board needs one connection.
-
-  Notes:
-
-  - ON MULTITHREADING ENVIRONMENT WITH SELECTS LOOP THREAD CAN WAIT FOR TIMEOUT OR EVENT
+  @date    22.1.2021
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -26,16 +13,29 @@
 
 ****************************************************************************************************
 */
-/* Select socket, TLS or serial communication before including uno.h.
+
+/* Select serial communication before including uno.h.
  */
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SERIAL
 #include "uno.h"
+
+/* Do we want this test code to control IO though PINS API? 
+   PINS API is portability wrapper, which here maps to Arduino IO functions. PINS API is
+   optional, the regular Arduino IO functions can be used as well. Include pins/unoboard
+   in platformio.ini to build with pins library, or pins/generic to build without it.
+   That effects IOC_PINS_IO_INCLUDED define.
+ */
+#ifdef IOC_PINS_IO_INCLUDED
+    #define IOBOARD_USE_PINS_IO 1
+#else
+    #define IOBOARD_USE_PINS_IO 0
+#endif
 
 /* Maximum number of sockets, etc.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
 
-/* Use static memory pool
+/* Use static memory pool. 
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
@@ -49,9 +49,7 @@ EOSAL_C_MAIN
 /**
 ****************************************************************************************************
 
-  @brief Set up the communication.
-
-  Sets up network and Initialize transport
+  @brief Initialize communication and other stuff.
   @return  OSAL_SUCCESS if all fine, other values indicate an error.
 
 ****************************************************************************************************
@@ -71,13 +69,18 @@ osalStatus osal_main(
     }
 #endif
 
+    /* We use quiet mode. Since Arduino UNO has only one serial port, we need it for
+       communication. We cannot have any trace, etc. prints to serial port. 
+     */
 #if OSAL_MINIMALISTIC
     osal_quiet(OS_TRUE);
 #endif
 
+#if IOBOARD_USE_PINS_IO
     /* Setup IO pins.
      */
-    // pins_setup(&pins_hdr, PINS_DEFAULT);
+     pins_setup(&pins_hdr, PINS_DEFAULT);
+#endif     
 
     osal_serial_initialize();
 
@@ -109,10 +112,11 @@ osalStatus osal_main(
      */
     ioc_add_callback(&ioboard_imp, ioboard_callback, OS_NULL);
 
+#if IOBOARD_USE_PINS_IO
     /* Connect PINS library to IOCOM library
      */
-// THIS GETS LOCKED UP!
-//    pins_connect_iocom_library(&pins_hdr);
+    pins_connect_iocom_library(&pins_hdr);
+#endif
 
     /* When emulating micro-controller on PC, run loop. Just save context pointer on
        real micro-controller.
@@ -126,10 +130,10 @@ osalStatus osal_main(
 /**
 ****************************************************************************************************
 
-  @brief Loop function to be called repeatedly.
+  @brief Loop function, called repeatedly.
 
-  The osal_loop() function maintains communication, reads IO pins (reading forwards input states
-  to communication) and runs the IO device functionality.
+  The osal_loop() function maintains communication, reads IO pins and runs the IO device 
+  functionality.
 
   @param   app_context Void pointer, to pass application context structure, etc.
   @return  The function returns OSAL_SUCCESS to continue running. Other return values are
@@ -154,10 +158,12 @@ osalStatus osal_loop(
     ioc_run(&ioboard_root);
     ioc_receive(&ioboard_imp);
 
+#if IOBOARD_USE_PINS_IO
     /* Read all input pins from hardware into global pins structures. Reading will forward
        input states to communication.
      */
-    // pins_read_all(&pins_hdr, PINS_DEFAULT);
+    pins_read_all(&pins_hdr, PINS_DEFAULT);
+#endif
 
     /* Get inputs we are using.
      */
@@ -200,10 +206,8 @@ osalStatus osal_loop(
   @brief Finished with the application, clean up.
 
   The osal_main_cleanup() function ends IO board communication, cleans up and finshes with the
-  socket and serial port libraries.
-
-  On real IO device we may not need to take care about this, since these are often shut down
-  only by turning or power or by microcontroller reset.
+  socket and serial port libraries. On real IO device we may not need to take care about this, 
+  since these are often shut down only by turning or power or by microcontroller reset.
 
   @param   app_context Void pointer, to pass application context structure, etc.
   @return  None.
@@ -247,10 +251,17 @@ void ioboard_callback(
 {
     OSAL_UNUSED(context);
 
+#if IOBOARD_USE_PINS_IO
     if (flags & IOC_MBLK_CALLBACK_RECEIVE)
     {
         /* Call pins library extension to forward communication signal changes to IO pins.
          */
-//       forward_signal_change_to_io_pins(handle, start_addr, end_addr, &uno_hdr, flags);
+        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &uno_hdr, flags);
     }
+#else
+    OSAL_UNUSED(handle);
+    OSAL_UNUSED(start_addr);
+    OSAL_UNUSED(end_addr);
+    OSAL_UNUSED(flags);
+#endif    
 }
