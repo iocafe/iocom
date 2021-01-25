@@ -63,12 +63,6 @@ osalStatus osal_main(
     OSAL_UNUSED(argc);
     OSAL_UNUSED(argv);
 
-#if OSAL_CHECKSUM_TEST
-    if (!osal_test_checksum()) {
-        osal_debug_error("Checksum calc test failed");
-    }
-#endif
-
     /* We use quiet mode. Since Arduino UNO has only one serial port, we need it for
        communication. We cannot have any trace, etc. prints to serial port. 
      */
