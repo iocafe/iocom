@@ -222,7 +222,7 @@ static void ioc_make_data_frame(
     os_ushort
         crc;
 
-#if IOC_MBLK_STATIC_IN_PROGMEN
+#if IOC_STATIC_MBLK_IN_PROGMEN
     os_boolean is_static = OS_FALSE;
 #endif
 
@@ -244,7 +244,7 @@ static void ioc_make_data_frame(
     start_addr = saved_start_addr;
     if (delta == OS_NULL) /* IOC_STATIC -> delta=0 */
     {
-#if IOC_MBLK_STATIC_IN_PROGMEN
+#if IOC_STATIC_MBLK_IN_PROGMEN
         is_static = OS_TRUE;
 #endif
         delta = sbuf->mlink.mblk->buf;
@@ -296,9 +296,9 @@ skip_for_static:
 
     if (compressed_bytes < 0)
     {
-#if IOC_MBLK_STATIC_IN_PROGMEN
+#if IOC_STATIC_MBLK_IN_PROGMEN
         if (is_static) {
-            memcpy_P(dst, delta + saved_start_addr, src_bytes);
+            os_memcpy_P(dst, delta + saved_start_addr, src_bytes);
         }
         else {
             os_memcpy(dst, delta + saved_start_addr, src_bytes);
