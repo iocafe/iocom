@@ -1,0 +1,37 @@
+{
+  "name": "arduino",
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Exported by 'arduino' IO device",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "device state",
+        "signals": [
+          {"name": "SENSOR", "type": "short"},
+          {"name": "SWITCH", "type": "boolean"},
+          {"name": "WHATEVER", "type": "boolean"}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "Imported by 'arduino' IO device",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "controls",
+        "signals": [
+          {"name": "LED", "type": "boolean"},
+          {"name": "RUN", "type": "boolean"},
+          {"name": "SPEED", "type": "short"}
+        ]
+      }
+    ]
+  }
+  ]
+}
+

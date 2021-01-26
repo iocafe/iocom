@@ -189,7 +189,6 @@ osalStatus osal_loop(
     /* Send changed data to iocom.
      */
     ioc_send(&ioboard_exp);
-    ioc_run(&ioboard_root);
     return OSAL_SUCCESS;
 }
 
