@@ -95,7 +95,7 @@ void loop()
      */
     ioc_set(&arduino.exp.SENSOR, state);
     ioc_set(&arduino.exp.SWITCH, !state);
-    ioc_set(&arduino.exp.SWITCH, osal_rand(0, 10000));
+    ioc_set(&arduino.exp.WHATEVER, osal_rand(0, 10000));
 
     /* Send changed data to iocom.
      */

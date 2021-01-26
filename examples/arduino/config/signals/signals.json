@@ -11,7 +11,7 @@
         "signals": [
           {"name": "SENSOR", "type": "short"},
           {"name": "SWITCH", "type": "boolean"},
-          {"name": "WHATEVER", "type": "boolean"}
+          {"name": "WHATEVER", "type": "short"}
         ]
       }
     ]
