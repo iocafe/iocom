@@ -36,6 +36,7 @@ os_boolean ioc_is_my_address(
     os_int start_addr,
     os_int end_addr);
 
+#if IOC_SIGNAL_RANGE_SUPPORT
 /* Which signals are effected by changes in memory address range (use memory block signal
    header pointer).
  */
@@ -52,7 +53,7 @@ const iocSignal *ioc_get_signal_range(
     os_int start_addr,
     os_int end_addr,
     os_int *n_signals);
-
+#endif
 
 /*@}*/
 

@@ -503,17 +503,24 @@ def process_source_file(path):
     if not is_controller:
         hfile.write('\nextern OS_CONST_H ' + struct_name + ' ' + device_name + ';\n')
 
+        cfile.write('\n#if IOC_SIGNAL_RANGE_SUPPORT\n')
         list_name = device_name + "_mblk_list"
-        cfile.write('\nstatic OS_CONST iocMblkSignalHdr * OS_CONST ' + list_name + '[] =\n{\n  ')
+        cfile.write('static OS_CONST iocMblkSignalHdr * OS_CONST ' + list_name + '[] =\n{\n  ')
         isfirst = True
         for p in mblk_list:
             if not isfirst:
                 cfile.write(',\n  ')
             isfirst = False
             cfile.write('&' + p + '.hdr')
-        cfile.write('\n};\n\n')
+        cfile.write('\n};\n')
+        cfile.write('#endif\n\n')
+        
+        cfile.write('#if IOC_SIGNAL_RANGE_SUPPORT\n')
         cfile.write('OS_CONST iocDeviceHdr ' + device_name + '_hdr = {(iocMblkSignalHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
-        hfile.write('extern OS_CONST_H iocDeviceHdr ' + device_name + '_' + 'hdr;\n\n')
+        cfile.write('#endif\n')
+        hfile.write('#if IOC_SIGNAL_RANGE_SUPPORT\n')
+        hfile.write('extern OS_CONST_H iocDeviceHdr ' + device_name + '_' + 'hdr;\n')
+        hfile.write('#endif\n\n')
 
     else:
         hfile.write('\nvoid ' + device_name + '_init_signal_struct(' + struct_name + ' *s);\n')

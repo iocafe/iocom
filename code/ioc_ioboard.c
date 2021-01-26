@@ -92,13 +92,16 @@ void ioboard_setup_communication(
     blockprm.nbytes = prm->exp_mblk_sz;
     blockprm.flags = IOC_MBLK_UP;
     ioc_initialize_memory_block(&ioboard_exp, &ioboard_export_mblk, &ioboard_root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
     ioboard_export_mblk.signal_hdr = prm->exp_signal_hdr;
-
+#endif
     blockprm.mblk_name = "imp";
     blockprm.nbytes = prm->imp_mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN;
     ioc_initialize_memory_block(&ioboard_imp, &ioboard_import_mblk, &ioboard_root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
     ioboard_import_mblk.signal_hdr = prm->imp_signal_hdr;
+#endif
 
 #if IOC_STREAMER_SUPPORT
     if (prm->dexp_mblk_sz) {
@@ -106,7 +109,9 @@ void ioboard_setup_communication(
         blockprm.nbytes = prm->dexp_mblk_sz;
         blockprm.flags = IOC_MBLK_UP;
         ioc_initialize_memory_block(&ioboard_dexp, OS_NULL, &ioboard_root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
         ioboard_dexp.mblk->signal_hdr = prm->dexp_signal_hdr;
+#endif
     }
 
     if (prm->dimp_mblk_sz) {
@@ -114,7 +119,9 @@ void ioboard_setup_communication(
         blockprm.nbytes = prm->dimp_mblk_sz;
         blockprm.flags = IOC_MBLK_DOWN;
         ioc_initialize_memory_block(&ioboard_dimp, OS_NULL, &ioboard_root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
         ioboard_dimp.mblk->signal_hdr = prm->dimp_signal_hdr;
+#endif
     }
 
     if (prm->conf_exp_mblk_sz)
@@ -123,7 +130,9 @@ void ioboard_setup_communication(
         blockprm.nbytes = prm->conf_exp_mblk_sz;
         blockprm.flags = IOC_MBLK_UP;
         ioc_initialize_memory_block(&ioboard_conf_exp, OS_NULL, &ioboard_root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
         ioboard_conf_exp.mblk->signal_hdr = prm->conf_exp_signal_hdr;
+#endif
     }
 
     if (prm->conf_imp_mblk_sz)
@@ -132,7 +141,9 @@ void ioboard_setup_communication(
         blockprm.nbytes = prm->conf_imp_mblk_sz;
         blockprm.flags = IOC_MBLK_DOWN;
         ioc_initialize_memory_block(&ioboard_conf_imp, OS_NULL, &ioboard_root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
         ioboard_conf_imp.mblk->signal_hdr = prm->conf_imp_signal_hdr;
+#endif
     }
 #endif
 

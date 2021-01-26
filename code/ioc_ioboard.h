@@ -237,6 +237,7 @@ typedef struct
      os_int conf_imp_mblk_sz;
 #endif
 
+#if IOC_SIGNAL_RANGE_SUPPORT
     /** Signal header pointers for memory blocks.
      */
     const struct iocMblkSignalHdr *exp_signal_hdr;
@@ -246,6 +247,7 @@ typedef struct
     const struct iocMblkSignalHdr *dimp_signal_hdr;
     const struct iocMblkSignalHdr *conf_exp_signal_hdr;
     const struct iocMblkSignalHdr *conf_imp_signal_hdr;
+#endif
 #endif
 
     /** Light house "run" function, used to get IP address to connect to by UDP multicast.

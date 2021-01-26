@@ -95,6 +95,7 @@ os_boolean ioc_is_my_address(
     return (os_boolean)(start_addr < addr + ioc_nro_signal_bytes(signal));
 }
 
+#if IOC_SIGNAL_RANGE_SUPPORT
 
 /**
 ****************************************************************************************************
@@ -258,3 +259,5 @@ const iocSignal *ioc_get_signal_range(
     ioc_unlock(root);
     return sig;
 }
+
+#endif

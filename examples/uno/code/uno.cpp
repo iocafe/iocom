@@ -95,8 +95,8 @@ osalStatus osal_main(
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
 
-    prm.exp_signal_hdr = &uno.exp.hdr;
-    prm.imp_signal_hdr = &uno.imp.hdr;
+    //prm.exp_signal_hdr = &uno.exp.hdr;
+    //prm.imp_signal_hdr = &uno.imp.hdr;
 
     /* Start communication.
      */

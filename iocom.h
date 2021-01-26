@@ -120,6 +120,13 @@ OSAL_C_HEADER_BEGINS
 #define IOC_DEVICE_PARAMETER_SUPPORT (OSAL_PERSISTENT_SUPPORT && OSAL_MINIMALISTIC == 0)
 #endif
 
+/* Support gettings signal number ranges at callback, and dynamic configuration stuff.
+   Not used in minimal configuration to save memory.
+ */
+#ifndef IOC_SIGNAL_RANGE_SUPPORT
+#define IOC_SIGNAL_RANGE_SUPPORT (OSAL_MINIMALISTIC == 0)
+#endif
+
 /* Support for bidirectional memory blocks.
  */
 #ifndef IOC_BIDIRECTIONAL_MBLK_CODE

@@ -423,6 +423,7 @@ void ioc_tbuf_synchronize(
 
 
 #if IOC_DYNAMIC_MBLK_CODE
+#if IOC_SIGNAL_RANGE_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -477,4 +478,5 @@ void ioc_tbuf_synchronize(
         }
     }
 } */
+#endif
 #endif

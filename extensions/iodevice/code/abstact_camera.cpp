@@ -140,13 +140,17 @@ void AbstractCamera::add_mblks(
     blockprm.nbytes = exp_mblk_sz;
     blockprm.flags = IOC_MBLK_UP|IOC_FLOOR;
     ioc_initialize_memory_block(&m_dexp, OS_NULL, root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
     m_dexp.mblk->signal_hdr = exp_mblk_signal_hdr;
+#endif
 
     blockprm.mblk_name = imp_mblk_name;
     blockprm.nbytes = imp_mblk_sz;
     blockprm.flags = IOC_MBLK_DOWN|IOC_FLOOR;
     ioc_initialize_memory_block(&m_dimp, OS_NULL, root, &blockprm);
+#if IOC_SIGNAL_RANGE_SUPPORT
     m_dimp.mblk->signal_hdr = imp_mblk_signal_hdr;
+#endif
 
     ioc_set_handle_to_signals(exp_mblk_signal_hdr, &m_dexp);
     ioc_set_handle_to_signals(imp_mblk_signal_hdr, &m_dimp);
