@@ -223,7 +223,7 @@ typedef struct
 
     /** Pointer to static device information.
      */
-    const os_char *device_info;
+    const os_uchar *device_info;
 
     /** Size of static device information in bytes.
      */

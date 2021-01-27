@@ -242,14 +242,16 @@ void ioboard_callback(
     os_ushort flags,
     void *context)
 {
+    const iocSignal *sig;
     OSAL_UNUSED(context);
 
 #if IOBOARD_USE_PINS_IO
     if (flags & IOC_MBLK_CALLBACK_RECEIVE)
     {
-        /* Call pins library extension to forward communication signal changes to IO pins.
-         */
-        forward_signal_change_to_io_pins(handle, start_addr, end_addr, &uno_hdr, flags);
+        sig = &uno.imp.LED;
+        if (ioc_is_my_address(sig, start_addr, end_addr)) {
+            forward_signal_change_to_io_pin(sig, IOC_SIGNAL_DEFAULT);
+        }
     }
 #else
     OSAL_UNUSED(handle);

@@ -19,14 +19,6 @@
 #include "iocom.h"
 
 
-#if OSAL_MINIMALISTIC
-    typedef os_ushort osal_mblk_sz;
-    typedef os_char osal_signal_addr;
-#else
-    typedef os_uint osal_mblk_sz;
-    typedef os_int osal_signal_addr;
-#endif
-
 /**
 ****************************************************************************************************
   We may have multiple iocSignal structures within one app defined structure. This is common
@@ -40,8 +32,8 @@ typedef struct iocMblkSignalHdr
     const os_char *mblk_name;
     iocHandle *handle;
 
-    osal_signal_addr n_signals;
-    osal_mblk_sz mblk_sz;
+    ioc_sig_addr n_signals;
+    ioc_mblk_sz mblk_sz;
 
     struct iocSignal *first_signal;
 }
@@ -75,12 +67,12 @@ typedef struct iocSignal
 {
     /** Starting address in memory block.
      */
-    osal_signal_addr addr;
+    ioc_sig_addr addr;
 
     /** For strings n can be number of bytes in memory block for the string. For arrays n is
         number of elements reserved in memory block. Either 0 or 1 for single variables.
      */
-    osal_signal_addr n;
+    ioc_sig_addr n;
 
     /** One of: OS_BOOLEAN, OS_CHAR, OS_UCHAR, OS_SHORT, OS_USHORT, OS_INT, OS_UINT, OS_FLOAT
         or OS_STR.

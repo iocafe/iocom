@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "uno")
-set(E_HW "generic")
+set(E_HW "unoboard")
 project(${E_PROJECT})
 
 # include build information common to all projects.

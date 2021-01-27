@@ -50,8 +50,6 @@ void setup()
     prm.pool_sz = sizeof(ioboard_pool);
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
-    prm.exp_signal_hdr = &arduino.exp.hdr;
-    prm.imp_signal_hdr = &arduino.imp.hdr;
 
     /* Start communication.
      */

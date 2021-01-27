@@ -181,6 +181,16 @@ OSAL_C_HEADER_BEGINS
   #define IOC_MBLK_SPECIFIC_DEVICE_NAME (OSAL_MINIMALISTIC == 0)
 #endif
 
+
+#if OSAL_MINIMALISTIC
+    typedef os_char ioc_mblk_sz;
+    typedef os_char ioc_sig_addr;
+#else
+    typedef os_int ioc_mblk_sz;
+    typedef os_int ioc_sig_addr;
+#endif
+
+
 /* Include all base iocom headers and some extension headers needed early.
  */
 #include "code/ioc_timing.h"

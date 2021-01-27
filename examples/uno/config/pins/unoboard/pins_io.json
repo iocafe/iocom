@@ -12,7 +12,7 @@
       {
         "name": "outputs",
         "pins": [
-          {"name": "led_builtin", "addr": 3},
+          {"name": "LED", "addr": 3},
           {"name": "RIGHT", "addr": 4},
           {"name": "LEFT", "addr": 5},
           {"name": "FORWARD", "addr": 6},

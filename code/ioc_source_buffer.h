@@ -60,7 +60,7 @@ typedef struct
 
     /** Synchronized bytes size in bytes
      */
-    os_int nbytes;
+    ioc_mblk_sz nbytes;
 
     /** Synchronized buffer used flag.
      */
@@ -76,19 +76,19 @@ typedef struct
 
     /** Synchronization buffer, start of modifications.
      */
-    os_int start_addr;
+    ioc_sig_addr start_addr;
 
     /** Synchronization buffer end address.
      */
-    os_int end_addr;
+    ioc_sig_addr end_addr;
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
 
     /** Bidirectional address range to be transferred.
      *  if not set, bidir_range_set is OS_FALSE (0).
      */
-    os_int bidir_start_addr;
-    os_int bidir_end_addr;
+    ioc_sig_addr bidir_start_addr;
+    ioc_sig_addr bidir_end_addr;
     os_boolean bidir_range_set;
 
     /** IOC_BIDIRECTIONAL bit indicates bidirectional transfer.
@@ -98,7 +98,7 @@ typedef struct
     /** Number of data bytes. If this is not bidirectional transfer, ndata equals nbytes.
         Otherwise nbytes = ndata + (ndata + 7)/8 (one "ivalidate" bit for each bit daya byte)
      */
-    os_int ndata;
+    ioc_mblk_sz ndata;
 
 #endif
 }

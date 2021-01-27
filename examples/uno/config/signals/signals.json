@@ -29,7 +29,8 @@
           {"name": "LeftTurn", "type": "boolean"},
           {"name": "RightTurn", "type": "boolean"},
           {"name": "StraightForward", "type": "boolean"},
-          {"name": "ForwardBackward", "type": "boolean"}
+          {"name": "ForwardBackward", "type": "boolean"},
+          {"name": "LED", "type": "boolean"}
         ]
       }
     ]
