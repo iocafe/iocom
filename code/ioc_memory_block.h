@@ -129,7 +129,7 @@ typedef struct
 
     /** Memory block size in bytes.
      */
-    ioc_mblk_sz nbytes;
+    ioc_addr nbytes;
 
     /** Flags, bit fields: IOC_MBLK_DOWN, IOC_MBLK_UP.
      */
@@ -291,7 +291,7 @@ typedef struct iocMemoryBlock
 
     /** Memory block (data buffer) size in bytes.
      */
-    ioc_mblk_sz nbytes;
+    ioc_addr nbytes;
 
 #if IOC_MBLK_SPECIFIC_DEVICE_NAME
     /** Network name.

@@ -32,8 +32,8 @@ typedef struct iocMblkSignalHdr
     const os_char *mblk_name;
     iocHandle *handle;
 
-    ioc_sig_addr n_signals;
-    ioc_mblk_sz mblk_sz;
+    ioc_addr n_signals;
+    ioc_addr mblk_sz;
 
     struct iocSignal *first_signal;
 }

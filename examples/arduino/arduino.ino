@@ -59,9 +59,10 @@ void setup()
 void loop() 
 {
     os_timer ti;
+    os_int timeout_ms, led, run, speed;
     static os_timer start_t = 0;
     static os_char state = 0;
-    os_int timeout_ms;
+    static os_int whatever = 0;
 
     /* Keep the communication alive. If data is received from communication, the
        ioboard_callback() will be called. Move data data synchronously
@@ -73,9 +74,9 @@ void loop()
 
     /* Get inputs we are using.
      */
-    int led = ioc_get(&arduino.imp.LED);
-    int run = ioc_get(&arduino.imp.RUN);
-    int speed = ioc_get(&arduino.imp.SPEED);
+    led = ioc_get(&arduino.imp.LED);
+    run = ioc_get(&arduino.imp.RUN);
+    speed = ioc_get(&arduino.imp.SPEED);
 
     /* Modify state.
      */
@@ -83,17 +84,17 @@ void loop()
     if (speed > 0) {
         timeout_ms = 1000 / speed;
     }
-
-    if (os_has_elapsed_since(&start_t, &ti, timeout_ms)) {
+    if (run) if (os_has_elapsed_since(&start_t, &ti, timeout_ms)) {
         if (++state > 3) state = 0;
         start_t = ti;
+        whatever = osal_rand(0, 30000);
     }
 
     /* Set outputs.
      */
     ioc_set(&arduino.exp.SENSOR, state);
     ioc_set(&arduino.exp.SWITCH, !state);
-    ioc_set(&arduino.exp.WHATEVER, osal_rand(0, 10000));
+    ioc_set(&arduino.exp.WHATEVER, whatever);
 
     /* Send changed data to iocom.
      */

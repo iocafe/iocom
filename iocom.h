@@ -183,10 +183,10 @@ OSAL_C_HEADER_BEGINS
 
 
 #if OSAL_MINIMALISTIC
-    typedef os_char ioc_mblk_sz;
+    typedef os_short ioc_addr;
     typedef os_char ioc_sig_addr;
 #else
-    typedef os_int ioc_mblk_sz;
+    typedef os_int ioc_addr;
     typedef os_int ioc_sig_addr;
 #endif
 
