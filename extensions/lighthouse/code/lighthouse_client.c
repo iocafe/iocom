@@ -348,7 +348,7 @@ osalStatus ioc_run_lighthouse_client(
 
                     port_nr = 0;
                     if (osal_char_isdigit(*q)) {
-                        port_nr = osal_str_to_int(q, &count);
+                        port_nr = (os_ushort)osal_str_to_int(q, &count);
                         q += count;
                     }
 

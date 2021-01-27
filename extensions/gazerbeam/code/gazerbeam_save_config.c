@@ -87,12 +87,12 @@ osalStatus gazerbeam_save_config(
 {
     osalNodeConfOverrides block;
     osalStatus s, sload, rval = OSAL_NOTHING_TO_DO;
+#if OSAL_SUPPORT_WIFI_NETWORK_CONF
     os_char command[16];
-
+#endif
     sload = os_load_persistent(OS_PBNR_NODE_CONF, (os_char*)&block, sizeof(block));
 
 #if OSAL_SUPPORT_WIFI_NETWORK_CONF
-
     command[0] = '\0';
     s = gazerbeam_get_config_item(GAZERBEAM_ID_COMMAND,
         command, sizeof(command),

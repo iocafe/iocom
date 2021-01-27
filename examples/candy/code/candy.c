@@ -542,10 +542,10 @@ static void ioboard_communication_callback(
 
 #if IOCOM_USE_MORSE==2
             if (sig == &candy.imp.set_hlight_lvl) {
-                morse.steady_hdlight_level[0] = ioc_get(sig);
+                morse.steady_hdlight_level[0] = (os_short)ioc_get(sig);
             }
             if (sig == &candy.imp.set_hlight_blink) {
-                morse.blink_level[0] = ioc_get(sig);
+                morse.blink_level[0] = (os_short)ioc_get(sig);
             }
 #endif
 
