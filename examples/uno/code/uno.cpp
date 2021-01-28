@@ -139,6 +139,7 @@ osalStatus osal_loop(
     void *app_context)
 {
     os_timer ti;
+    os_int LeftTurn, RightTurn, StraightForward, ForwardBackward;
     static os_timer start_t = 0;
     static os_char state = 0;
     os_int timeout_ms;
@@ -161,10 +162,10 @@ osalStatus osal_loop(
 
     /* Get inputs we are using.
      */
-    int LeftTurn = ioc_get(&uno.imp.LeftTurn);
-    int RightTurn = ioc_get(&uno.imp.RightTurn);
-    int StraightForward = ioc_get(&uno.imp.StraightForward);
-    int ForwardBackward = ioc_get(&uno.imp.ForwardBackward);
+    LeftTurn = (os_int)ioc_get(&uno.imp.LeftTurn);
+    RightTurn = (os_int)ioc_get(&uno.imp.RightTurn);
+    StraightForward = (os_int)ioc_get(&uno.imp.StraightForward);
+    ForwardBackward = (os_int)ioc_get(&uno.imp.ForwardBackward);
 
     /* Modify state.
      */

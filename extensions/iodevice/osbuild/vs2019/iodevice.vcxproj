@@ -19,15 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\deviceinfo_node_conf.h" />
-    <ClInclude Include="..\..\code\deviceinfo_resource_monitor.h" />
-    <ClInclude Include="..\..\code\deviceinfo_system_specs.h" />
-    <ClInclude Include="..\..\deviceinfo.h" />
+    <ClInclude Include="..\..\code\abstract_application.h" />
+    <ClInclude Include="..\..\code\abstract_camera.h" />
+    <ClInclude Include="..\..\code\abstract_sequence.h" />
+    <ClInclude Include="..\..\code\abstract_slave_device.h" />
+    <ClInclude Include="..\..\iodevice.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\deviceinfo_node_conf.c" />
-    <ClCompile Include="..\..\code\deviceinfo_resource_monitor.c" />
-    <ClCompile Include="..\..\code\deviceinfo_system_specs.c" />
+    <ClCompile Include="..\..\code\abstact_camera.cpp" />
+    <ClCompile Include="..\..\code\abstract_application.cpp" />
+    <ClCompile Include="..\..\code\abstract_sequence.cpp" />
+    <ClCompile Include="..\..\code\abstract_slave_device.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

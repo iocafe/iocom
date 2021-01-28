@@ -20,10 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\code\config.c" />
-    <ClCompile Include="..\..\code\candy.c" />
+    <ClCompile Include="..\..\code\minion.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\candy.h" />
+    <ClInclude Include="..\..\code\minion.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -95,7 +95,7 @@
       </PrecompiledHeader>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\candy\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\minion\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,7 +103,7 @@
       <AdditionalDependencies>nodeconfd.lib;lighthoused.lib;devicedird.lib;deviceinfod.lib;selectwifid.lib;pinsd.lib;gazerbeamd.lib;ep_usbcamerad.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\candy\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\minion\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -112,7 +112,7 @@
       </PrecompiledHeader>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\candy\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\minion\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,7 +120,7 @@
       <AdditionalDependencies>nodeconfd.lib;lighthoused.lib;devicedird.lib;deviceinfod.lib;selectwifid.lib;pinsd.lib;gazerbeamd.lib;ep_usbcamerad.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\candy\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\minion\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -131,7 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\candy\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\minion\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,7 +141,7 @@
       <AdditionalDependencies>nodeconf.lib;lighthouse.lib;deviceinfo.lib;devicedir.lib;selectwifi.lib;pins.lib;gazerbeam.lib;ep_usbcamera.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\candy\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\minion\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\candy\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\minion\config\include\espcam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -162,7 +162,7 @@
       <AdditionalDependencies>nodeconf.lib;lighthouse.lib;deviceinfo.lib;devicedir.lib;selectwifi.lib;pins.lib;gazerbeam.lib;ep_usbcamera.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\candy\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\minion\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

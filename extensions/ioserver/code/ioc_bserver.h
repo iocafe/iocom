@@ -43,11 +43,11 @@ typedef struct iocBServerParams
     iocMblkSignalHdr *signals_imp_hdr;
     iocMblkSignalHdr *signals_conf_exp_hdr;
     iocMblkSignalHdr *signals_conf_imp_hdr;
-    const os_char *signal_config;
+    const os_uchar *signal_config;
     os_memsz signal_config_sz;
-    const os_char *network_defaults;
+    const os_uchar *network_defaults;
     os_memsz network_defaults_sz;
-    const os_char *account_defaults;
+    const os_uchar *account_defaults;
     os_memsz account_defaults_sz;
 }
 iocBServerParams;
@@ -94,7 +94,7 @@ typedef struct iocBServer
 
     /* Saved pointers from parameters.
      */
-    const os_char *account_defaults;
+    const os_uchar *account_defaults;
     os_memsz account_defaults_sz;
 
     /** Pointer to persistent writer object, if currently uploading client certificate

@@ -18,7 +18,7 @@ namespace IoDevice
 {
     typedef struct AbstractAppParams {
         const os_char *device_name;
-        const os_char *network_defaults;
+        const os_uchar *network_defaults;
         os_memsz network_defaults_sz;
         const IoPinsHdr *pins_header;
         os_int argc;

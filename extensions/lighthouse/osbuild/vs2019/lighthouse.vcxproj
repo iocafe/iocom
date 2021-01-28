@@ -27,9 +27,6 @@
     <ClCompile Include="..\..\code\lighthouse_client.c" />
     <ClCompile Include="..\..\code\lighthouse_server.c" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\nodeconf\osbuild\vs2019\nodeconf.vcxproj" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{B30A5557-566E-4062-A585-80466FBA7A56}</ProjectGuid>

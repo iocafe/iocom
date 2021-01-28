@@ -69,26 +69,27 @@ void ioc_initialize_brick_buffer(
     os_memclear(b, sizeof(iocBrickBuffer));
     b->root = root;
     b->timeout_ms = timeout_ms;
-
-    if (signals) {
-        if (signals->to_device)
-        {
-            b->signals = &b->prm.tod;
-        }
-        else
-        {
-            b->signals = &b->prm.frd;
-        }
-        os_memcpy(b->signals, signals, sizeof(iocStreamerSignals));
-    }
     b->prm.is_device = (os_boolean)((flags & IOC_BRICK_CONTROLLER) == 0);
-
-    /* Initial JPEG compression quality
-     */
     b->compression_quality = 30.0;
 
+    if (signals == OS_NULL) {
+        osal_debug_error("ioc_initialize_brick_buffer: NULL signals");
+        return;
+    }
+
+    if (signals->to_device)
+    {
+        b->signals = &b->prm.tod;
+    }
+    else
+    {
+        b->signals = &b->prm.frd;
+    }
+    os_memcpy(b->signals, signals, sizeof(iocStreamerSignals));
+
+
     /* In device end, we need to set IDLE status with connected state bit */
-    if (b->prm.is_device && !signals->flat_buffer) {
+    if (b->prm.is_device && signals->flat_buffer == OS_NULL) {
         ioc_set(signals->state, IOC_STREAM_IDLE);
     }
 }
@@ -1289,7 +1290,7 @@ void ioc_adjust_jpeg_compression_quality(
 
     /* Looking at image size and format, what we would like image size to be 3% of uncompressed bitmap size
      */
-    desired_sz = (os_int)(compression_ratio_target * (w * h * OSAL_BITMAP_BYTES_PER_PIX(format)));
+    desired_sz = (os_int)(compression_ratio_target * (w * (os_long)h * OSAL_BITMAP_BYTES_PER_PIX(format)));
 
     /* Limit desired size to 80% of the maximum size
      */

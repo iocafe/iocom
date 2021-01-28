@@ -125,7 +125,7 @@ osalStatus osal_main(
     /* Initialize persistent storage (typically flash is running in micro-controller)
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
-    persistentprm.device_name = IOBOARD_DEVICE_NAME;
+    persistentprm.subdirectory = IOBOARD_DEVICE_NAME;
     os_persistent_initialze(&persistentprm);
 
     /* If we are using devicedir for development testing, initialize.
@@ -140,7 +140,7 @@ osalStatus osal_main(
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).
      */
     ioc_load_node_config(&ioapp_device_conf, ioapp_network_defaults,
-        sizeof(ioapp_network_defaults), persistentprm.device_name, IOC_LOAD_PBNR_NODE_CONF);
+        sizeof(ioapp_network_defaults), IOBOARD_DEVICE_NAME, IOC_LOAD_PBNR_NODE_CONF);
     device_id = ioc_get_device_id(&ioapp_device_conf);
     connconf = ioc_get_connection_conf(&ioapp_device_conf);
 
@@ -205,8 +205,8 @@ osalStatus osal_main(
     /* Initialize defaults and try to load camera parameters from persistent storage
        to "exp" memory buffer.
      */
-    ioc_initialize_parameters(&candy, OS_PBNR_CUST_A);
-    ioc_load_parameters();
+    // ioc_initialize_minion_parameters(&minion, OS_PBNR_CUST_A);
+    // ioc_load_parameters();
 
     /* Set up device information.
      */
@@ -308,7 +308,7 @@ osalStatus osal_loop(
      */
 #if IOCOM_USE_LIGHTHOUSE
     if (lighthouse_on) {
-        ioc_run_lighthouse_client(&lighthouse);
+        ioc_run_lighthouse_client(&lighthouse, OS_NULL);
     }
 #endif
 
@@ -363,7 +363,7 @@ osalStatus osal_loop(
     /* Check for tasks, like saving parameters, changes in network node configuration and
        keep resource monitor signals alive.
      */
-    ioc_autosave_parameters();
+    //ioc_autosave_minion_parameters();
     dinfo_run_node_conf(&dinfo_nc, &ti);
     dinfo_run_resource_monitor(&dinfo_rm, &ti);
 

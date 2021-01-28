@@ -86,7 +86,7 @@ static osalStatus ioc_nconf_setup_structure(
 */
 void ioc_load_node_config(
     iocNodeConf *node,
-    const os_char *default_config,
+    const os_uchar *default_config,
     os_memsz default_config_sz,
     const os_char *default_device_name,
     os_int flags)

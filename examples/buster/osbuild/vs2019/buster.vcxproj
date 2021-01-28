@@ -19,23 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\application_root.cpp" />
-    <ClCompile Include="..\..\code\app_iodevice_candy.cpp" />
-    <ClCompile Include="..\..\code\app_iodevice_gina.cpp" />
-    <ClCompile Include="..\..\code\app_seq_blink_led.cpp" />
-    <ClCompile Include="..\..\code\controller_config.c" />
-    <ClCompile Include="..\..\code\controller_main.cpp" />
-    <ClCompile Include="..\..\code\iodevice_base_class.cpp" />
-    <ClCompile Include="..\..\code\sequence_base_class.cpp" />
+    <ClCompile Include="..\..\code\application.cpp" />
+    <ClCompile Include="..\..\code\blink_sequence.cpp" />
+    <ClCompile Include="..\..\code\camera.cpp" />
+    <ClCompile Include="..\..\code\config.c" />
+    <ClCompile Include="..\..\code\main.cpp" />
+    <ClCompile Include="..\..\code\minion.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\application_root.h" />
-    <ClInclude Include="..\..\code\app_iodevice_candy.h" />
-    <ClInclude Include="..\..\code\app_iodevice_gina.h" />
-    <ClInclude Include="..\..\code\app_seq_blink_led.h" />
-    <ClInclude Include="..\..\code\controller_main.h" />
-    <ClInclude Include="..\..\code\iodevice_base_class.h" />
-    <ClInclude Include="..\..\code\sequence_base_class.h" />
+    <ClInclude Include="..\..\code\application.h" />
+    <ClInclude Include="..\..\code\blink_sequence.h" />
+    <ClInclude Include="..\..\code\buster.h" />
+    <ClInclude Include="..\..\code\camera.h" />
+    <ClInclude Include="..\..\code\minion.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -107,15 +103,15 @@
       </PrecompiledHeader>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\tito\config\include\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\buster\config\include\grumpy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;iodeviced.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\tito\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -124,15 +120,15 @@
       </PrecompiledHeader>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\tito\config\include\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\buster\config\include\grumpy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;iodeviced.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\tito\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,17 +139,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\tito\config\include\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\buster\config\include\grumpy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;iodevice.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\tito\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -164,17 +160,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\tito\config\include\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\examples\buster\config\include\grumpy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;iodevice.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>python C:\coderoot\iocom\examples\tito\scripts\config_to_c_code.py</Command>
+      <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
