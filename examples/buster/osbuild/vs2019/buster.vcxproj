@@ -108,7 +108,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;iodeviced.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;iodeviced.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;ep_usbcamerad.lib;deviceinfod.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>
@@ -125,7 +125,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;iodeviced.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosald.lib;iocomd.lib;ioserverd.lib;iodeviced.lib;devicedird.lib;pinsd.lib;nodeconfd.lib;lighthoused.lib;ep_usbcamerad.lib;deviceinfod.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>
@@ -146,7 +146,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;iodevice.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;iodevice.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;ep_usbcamera.lib;deviceinfo.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>
@@ -167,7 +167,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;iodevice.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>eosal.lib;iocom.lib;ioserver.lib;iodevice.lib;devicedir.lib;pins.lib;nodeconf.lib;lighthouse.lib;ep_usbcamera.lib;deviceinfo.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>python C:\coderoot\iocom\examples\buster\scripts\config_to_c_code.py</Command>

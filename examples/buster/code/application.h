@@ -18,10 +18,15 @@
 #define IOC_APPLICATION_H_
 #include "buster.h"
 
+
 /* Global signals. This allows mapping IO pins directly to signals from JSON, but we can have only
-   one application instance.
+   one application instance. OSAL_C_HEADER_BEGINS/OSAL_C_HEADER_ENDS is used to keep the global
+   symbol same in C and C++.
  */
+OSAL_C_HEADER_BEGINS
 extern struct buster_t buster;
+OSAL_C_HEADER_ENDS
+
 
 /**
 ****************************************************************************************************

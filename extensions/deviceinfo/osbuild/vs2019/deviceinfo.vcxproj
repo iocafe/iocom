@@ -31,7 +31,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{E54534F6-30CF-4951-8394-76006662F159}</ProjectGuid>
+    <ProjectGuid>{E7FCD099-4DF2-42AD-BDA4-EA6B4D5AB92D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>iocom</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>

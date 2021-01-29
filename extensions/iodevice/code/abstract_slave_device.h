@@ -27,7 +27,7 @@ namespace IoDevice
     public:
         /* Constructor and virtual destructor.
          */
-        AbstractSlaveDevice() {};
+        AbstractSlaveDevice();
         virtual ~AbstractSlaveDevice();
 
         virtual void release () {};
