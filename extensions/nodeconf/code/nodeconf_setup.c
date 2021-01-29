@@ -149,7 +149,7 @@ void ioc_load_node_config(
 
     /* No success with persistent storage: Use default configuration.
      */
-    block = default_config;
+    block = (const os_char *)default_config;
     block_sz = default_config_sz;
 
     /* Fill in pointers within node structure to access configuation data.
@@ -158,9 +158,9 @@ void ioc_load_node_config(
      */
 gotit:
     if (ioc_nconf_setup_structure(node, block, block_sz) != OSAL_SUCCESS &&
-        block != default_config)
+        block != (const os_char *)default_config)
     {
-        ioc_nconf_setup_structure(node, default_config, default_config_sz);
+        ioc_nconf_setup_structure(node, (const os_char *)default_config, default_config_sz);
     }
 
     /* Process configuration overrides.
