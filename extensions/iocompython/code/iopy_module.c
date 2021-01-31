@@ -136,7 +136,7 @@ void iocom_python_initialize(const char *security)
     secprm.server_cert_file = iocom_get_security_param("certfile", &dst, &dst_sz, security);
     secprm.server_key_file = iocom_get_security_param("keyfile", &dst, &dst_sz, security);
     secprm.root_cert_file = iocom_get_security_param("rootca", &dst, &dst_sz, security);
-    secprm.client_cert_chain_file = iocom_get_security_param("certchainfile", &dst, &dst_sz, security);
+    secprm.trusted_cert_file = iocom_get_security_param("certchainfile", &dst, &dst_sz, security);
     osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &secprm);
 #else
   #if OSAL_SOCKET_SUPPORT

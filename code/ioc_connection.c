@@ -839,7 +839,7 @@ static osalStatus ioc_try_to_connect(
     /* Success.
      */
     con->open_fail_timer_set = OS_FALSE;
-    osal_trace2_str("connection: stream opened", parameters);
+    osal_trace2_str("connection: stream opened: ", parameters);
     return OSAL_SUCCESS;
 }
 

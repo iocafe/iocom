@@ -552,7 +552,7 @@ static osalStatus ioc_nconf_process_block(
                     }
                     else if (!os_strcmp(state->tag, "certchainfile"))
                     {
-                        node->security_conf.client_cert_chain_file = item.value.s;
+                        node->security_conf.trusted_cert_file = item.value.s;
                     }
 #endif
                 }
