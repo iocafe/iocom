@@ -52,6 +52,7 @@ cmake_install.cmake
 .vs
 x64
 *.VC.db
+enc_temp_folder
 CMakeFiles
 *.dir
 *.vcxproj.*
