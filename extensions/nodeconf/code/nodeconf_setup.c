@@ -548,9 +548,9 @@ static osalStatus ioc_nconf_process_block(
                     }
                     else if (!os_strcmp(state->tag, "rootcertfile"))
                     {
-                        node->security_conf.root_cert_file = item.value.s;
+                        node->security_conf.share_cert_file = item.value.s;
                     }
-                    else if (!os_strcmp(state->tag, "certchainfile"))
+                    else if (!os_strcmp(state->tag, "trustcertfile"))
                     {
                         node->security_conf.trusted_cert_file = item.value.s;
                     }

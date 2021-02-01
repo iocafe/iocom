@@ -29,9 +29,9 @@
         }],
 
         "security": [{
-            "certchainfile": "myhome-bundle.crt",
             "certfile": "myhome.crt",
-            "keyfile": "secret/myhome.key"
+            "keyfile": "secret/myhome.key",
+            "trustcertfile": "rootca.crt"
         }]
     }
 }
