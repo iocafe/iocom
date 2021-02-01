@@ -120,7 +120,7 @@ typedef struct iocStreamerParams
 
     /* Default network config, OS_NULL if none.
      */
-    const os_char *default_config;
+    const os_uchar *default_config;
     os_memsz default_config_sz;
 }
 iocStreamerParams;
