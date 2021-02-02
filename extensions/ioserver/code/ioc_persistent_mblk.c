@@ -38,12 +38,12 @@
 osalStatus ioc_load_persistent_into_mblk(
     iocHandle *handle,
     os_int select,
-    const os_char *default_data,
+    const os_uchar *default_data,
     os_memsz default_data_sz)
 {
     iocRoot *root;
     iocMemoryBlock *mblk;
-    const os_char *block = OS_NULL;
+    const os_uchar *block = OS_NULL;
     os_memsz block_sz, n_read = -1;
     osalStatus s;
     osPersistentHandle *h = OS_NULL;

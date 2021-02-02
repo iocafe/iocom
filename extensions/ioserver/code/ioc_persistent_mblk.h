@@ -19,5 +19,5 @@
 osalStatus ioc_load_persistent_into_mblk(
     iocHandle *handle,
     os_int select,
-    const os_char *default_data,
+    const os_uchar *default_data,
     os_memsz default_data_sz);

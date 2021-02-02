@@ -379,7 +379,7 @@ static void ioc_setup_bserver_network(
     const os_char *network_name)
 {
     iocMemoryBlockParams blockprm;
-    const os_char *account_defaults;
+    const os_uchar *account_defaults;
     os_memsz account_defaults_sz;
 
     os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
