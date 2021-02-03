@@ -222,7 +222,7 @@ void AbstractApplication::communication_callback_2(
     os_int end_addr,
     os_ushort flags)
 {
-    osal_debug_error("communication_callback_1 not implemented by application");
+    osal_debug_error("communication_callback_2 not implemented by application");
 }
 
 static void iocom_application_communication_callback_1(
