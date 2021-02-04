@@ -553,11 +553,21 @@ void ioc_mbinfo_received(
                 {
                     dnetwork = ioc_add_dynamic_network(root->droot, mbprm.network_name);
 
+#if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
+                    if (((iocAbstractDynamicRoot*)root->droot)->iface == &ioc_default_dynamic_iface) {
+                        if (ioc_find_mblk_shortcut(dnetwork, mbprm.mblk_name,
+                            mbprm.device_name, mbprm.device_nr) == OS_NULL)
+                        {
+                            ioc_add_mblk_shortcut(dnetwork, mblk);
+                        }
+                    }
+#else
                     if (ioc_find_mblk_shortcut(dnetwork, mbprm.mblk_name,
                         mbprm.device_name, mbprm.device_nr) == OS_NULL)
                     {
                         ioc_add_mblk_shortcut(dnetwork, mblk);
                     }
+#endif
 
                     /* If this is info memory block, add callback to receive dynamic info.
                      */
@@ -867,6 +877,8 @@ static void ioc_mbinfo_info_callback(
     os_ushort flags,
     void *context)
 {
+    iocRoot *root;
+
     OSAL_UNUSED(start_addr);
     OSAL_UNUSED(flags);
     OSAL_UNUSED(context);
@@ -875,7 +887,10 @@ static void ioc_mbinfo_info_callback(
      */
     if (end_addr >= 0)
     {
-        ioc_add_dynamic_info(handle, OS_FALSE);
+        root = handle->mblk->link.root;
+        if (root) if (root->droot) {
+            ioc_add_dynamic_info(root->droot, handle, OS_FALSE);
+        }
     }
 }
 #endif

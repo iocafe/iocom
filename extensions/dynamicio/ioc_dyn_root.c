@@ -726,11 +726,11 @@ static osalStatus ioc_dinfo_process_block(
 ****************************************************************************************************
 */
 osalStatus ioc_add_dynamic_info(
+    iocDynamicRoot *droot,
     iocHandle *mblk_handle,
     os_boolean resize_mblks)
 {
     iocRoot *root;
-    iocDynamicRoot *droot;
     iocMemoryBlock *mblk;
     osalJsonIndex jindex;
     osalStatus s;
@@ -811,9 +811,9 @@ getout:
 ****************************************************************************************************
 
   @brief Delete all dynamic signal information related to a memory block.
-  @anchor ioc_droot_mblk_is_deleted
+  @anchor ioc_dynamic_mblk_is_deleted
 
-  The ioc_droot_mblk_is_deleted() is called when a memory block is about to be deleted from
+  The ioc_dynamic_mblk_is_deleted() is called when a memory block is about to be deleted from
   the IO device network by ioc_release_memory_block() function. All dynamic signal information
   related to the memory block is deleted.
 
@@ -825,7 +825,7 @@ getout:
 
 ****************************************************************************************************
 */
-void ioc_droot_mblk_is_deleted(
+void ioc_dynamic_mblk_is_deleted(
     iocDynamicRoot *droot,
     iocMemoryBlock *mblk)
 {

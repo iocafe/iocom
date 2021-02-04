@@ -20,6 +20,9 @@
   blocks to remove from higher level. The list is kept for each connection and records
   memory block identifiers (of the top level software) to remove.
 
+  Note: The functions implemented here are used regardless if dynamic IO network structure
+  is maintainded by default code or custom implementation.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept

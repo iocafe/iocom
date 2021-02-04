@@ -48,6 +48,16 @@ typedef void abstract_remove_dynamic_network(
     iocAbstractDynamicRoot *droot,
     iocAbstractDynamicNetwork *dnetwork);
 
+typedef osalStatus abstract_add_dynamic_info(
+    iocAbstractDynamicRoot *droot,
+    iocHandle *mblk_handle,
+    os_boolean resize_mblks);
+
+typedef void abstract_dynamic_mblk_is_deleted(
+    iocAbstractDynamicRoot *droot,
+    iocMemoryBlock *mblk);
+
+
 
 /**
 ****************************************************************************************************
@@ -67,27 +77,13 @@ typedef struct iocDynamicInterface
      */
     abstract_remove_dynamic_network *remove_dynamic_network;
 
+    /* Add dynamic memory block/signal information.
+     */
+    abstract_add_dynamic_info *add_dynamic_info;
 
-#if 0
-/* Find a dynamic network.
- */
-iocDynamicNetwork *ioc_find_dynamic_network(
-    iocDynamicRoot *droot,
-    const os_char *network_name);
-
-/* Add dynamic memory block/signal information.
- */
-osalStatus ioc_add_dynamic_info(
-    iocHandle *mblk_handle,
-    os_boolean resize_mblks);
-
-/* Memory block is being deleted, remove any references to it from dynamic configuration.
- */
-void ioc_droot_mblk_is_deleted(
-    iocDynamicRoot *droot,
-    iocMemoryBlock *mblk);
-#endif
-
+    /* Memory block is being deleted, remove any references to it from dynamic configuration.
+     */
+    abstract_dynamic_mblk_is_deleted *dynamic_mblk_is_deleted;
 }
 iocDynamicInterface;
 
@@ -102,12 +98,17 @@ iocAbstractDynamicNetwork *ioc_gen_add_dynamic_network(
     const os_char *network_name);
 
 #else
-
+    /* IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT is zero -> Map ioc_gen_* functions and
+       pointers directly to default implementations.
+     */
     #define iocAbstractDynamicRoot iocDynamicRoot
     #define iocAbstractDynamicNetwork iocDynamicNetwork
 
     #define ioc_gen_add_dynamic_network ioc_add_dynamic_network
     #define ioc_gen_remove_dynamic_network ioc_remove_dynamic_network
+    #define ioc_gen_add_dynamic_info ioc_add_dynamic_info
+    #define ioc_gen_dynamic_mblk_is_deleted ioc_dynamic_mblk_is_deleted
+
 
 #endif
 #endif

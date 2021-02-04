@@ -28,8 +28,9 @@
 OS_CONST iocDynamicInterface ioc_default_dynamic_iface = {
 
     (abstract_add_dynamic_network*)ioc_add_dynamic_network,
-    (abstract_remove_dynamic_network*)ioc_remove_dynamic_network
-
+    (abstract_remove_dynamic_network*)ioc_remove_dynamic_network,
+    (abstract_add_dynamic_info*)ioc_add_dynamic_info,
+    (abstract_dynamic_mblk_is_deleted*)ioc_dynamic_mblk_is_deleted
 };
 
 
