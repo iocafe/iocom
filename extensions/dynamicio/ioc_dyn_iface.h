@@ -97,6 +97,20 @@ iocAbstractDynamicNetwork *ioc_gen_add_dynamic_network(
     iocAbstractDynamicRoot *droot,
     const os_char *network_name);
 
+void ioc_gen_remove_dynamic_network(
+    iocAbstractDynamicRoot *droot,
+    iocAbstractDynamicNetwork *dnetwork);
+
+osalStatus ioc_gen_add_dynamic_info(
+    iocAbstractDynamicRoot *droot,
+    iocHandle *mblk_handle,
+    os_boolean resize_mblks);
+
+void ioc_gen_dynamic_mblk_is_deleted(
+    iocAbstractDynamicRoot *droot,
+    iocMemoryBlock *mblk);
+
+
 #else
     /* IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT is zero -> Map ioc_gen_* functions and
        pointers directly to default implementations.

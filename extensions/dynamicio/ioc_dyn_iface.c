@@ -60,5 +60,38 @@ iocAbstractDynamicNetwork *ioc_gen_add_dynamic_network(
     return droot->iface->add_dynamic_network(droot, network_name);
 }
 
+
+void ioc_gen_remove_dynamic_network(
+    iocAbstractDynamicRoot *droot,
+    iocAbstractDynamicNetwork *dnetwork)
+{
+    osal_debug_assert(droot != OS_NULL);
+    osal_debug_assert(droot->iface != OS_NULL);
+    osal_debug_assert(droot->iface->add_dynamic_network != OS_NULL);
+    droot->iface->remove_dynamic_network(droot, dnetwork);
+}
+
+osalStatus ioc_gen_add_dynamic_info(
+    iocAbstractDynamicRoot *droot,
+    iocHandle *mblk_handle,
+    os_boolean resize_mblks)
+{
+    osal_debug_assert(droot != OS_NULL);
+    osal_debug_assert(droot->iface != OS_NULL);
+    osal_debug_assert(droot->iface->add_dynamic_network != OS_NULL);
+    return droot->iface->add_dynamic_info(droot, mblk_handle, resize_mblks);
+}
+
+void ioc_gen_dynamic_mblk_is_deleted(
+    iocAbstractDynamicRoot *droot,
+    iocMemoryBlock *mblk)
+{
+    osal_debug_assert(droot != OS_NULL);
+    osal_debug_assert(droot->iface != OS_NULL);
+    osal_debug_assert(droot->iface->add_dynamic_network != OS_NULL);
+    droot->iface->dynamic_mblk_is_deleted(droot, mblk);
+}
+
+
 #endif
 #endif
