@@ -39,11 +39,11 @@
 /* Forward referred static functions.
  */
 static void ioc_remove_mblk_req_processed(
-    iocDeleteMblkReqList *drl);
+    struct iocConnection *con);
 
 static void ioc_remove_mblk_by_request(
-    iocMemoryBlock *mblk,
-    iocConnection *con);
+    struct  iocConnection *con,
+    iocMemoryBlock *mblk);
 
 
 /**
@@ -51,15 +51,15 @@ static void ioc_remove_mblk_by_request(
 
   @brief Initialize the "remove memory block request" list root structure to as empty list.
 
-  @param   dlr Pointer to root structure of the "remove memory block request" list.
+  @param   con Pointer to the connection object.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_initialize_remove_mblk_req_list(
-    iocDeleteMblkReqList *drl)
+    struct iocConnection *con)
 {
-    os_memclear(drl, sizeof(iocDeleteMblkReqList));
+    os_memclear(&con->del_mlk_req_list, sizeof(iocDeleteMblkReqList));
 }
 
 
@@ -68,23 +68,22 @@ void ioc_initialize_remove_mblk_req_list(
 
   @brief Release memory allocated for the "remove memory block request" list.
 
-  @param   dlr Pointer to root structure of the "remove memory block request" list. Memory
-           allocated for the root structure itself is not freed.
+  @param   con Pointer to the connection object.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_release_remove_mblk_req_list(
-    iocDeleteMblkReqList *drl)
+    struct iocConnection *con)
 {
     iocDeleteMblkRequest *r, *next_r;
 
-    for (r = drl->first; r; r = next_r)
+    for (r = con->del_mlk_req_list.first; r; r = next_r)
     {
         next_r = r->next;
         os_free(r, sizeof(iocDeleteMblkRequest));
     }
-    os_memclear(drl, sizeof(iocDeleteMblkReqList));
+    os_memclear(&con->del_mlk_req_list, sizeof(iocDeleteMblkReqList));
 }
 
 
@@ -93,21 +92,21 @@ void ioc_release_remove_mblk_req_list(
 
   @brief Add "remove memory block" request to list.
 
-  @param   dlr Pointer to root structure of the "remove memory block request" list. Memory
-           allocated for the root structure itself is not freed.
+  @param   con Pointer to the connection object.
+  @param   remote_mblk_id Remote memory block identifier.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_add_request_to_remove_mblk(
-    iocDeleteMblkReqList *drl,
+    struct iocConnection *con,
     os_int remote_mblk_id)
 {
     iocDeleteMblkRequest *r;
 
     /* See if we can merge this to the last one
      */
-    r = drl->last;
+    r = con->del_mlk_req_list.last;
     if (r) if (r->n_requests < IOC_PACK_N_REQUESTS)
     {
         r->remote_mblk_id[r->n_requests++] = remote_mblk_id;
@@ -115,9 +114,10 @@ void ioc_add_request_to_remove_mblk(
     }
 
 #if OSAL_DEBUG
-    if (drl->count >= IOC_MAX_REMOVE_MBLK_REQS)
+    if (con->del_mlk_req_list.count >= IOC_MAX_REMOVE_MBLK_REQS)
     {
-        osal_debug_error_int("ioc_add_request_to_remove_mblk: Too many items on list ", drl->count);
+        osal_debug_error_int("ioc_add_request_to_remove_mblk: Too many items on list: ",
+            con->del_mlk_req_list.count);
         return;
     }
 #endif
@@ -128,17 +128,17 @@ void ioc_add_request_to_remove_mblk(
     r->remote_mblk_id[0] = remote_mblk_id;
     r->n_requests = 1;
 
-    r->prev = drl->last;
-    if (drl->last) {
-        drl->last->next = r;
+    r->prev = con->del_mlk_req_list.last;
+    if (con->del_mlk_req_list.last) {
+        con->del_mlk_req_list.last->next = r;
     }
     else {
-        drl->first = r;
+        con->del_mlk_req_list.first = r;
     }
-    drl->last = r;
+    con->del_mlk_req_list.last = r;
 
 #if OSAL_DEBUG
-    drl->count++;
+    con->del_mlk_req_list.count++;
 #endif
 }
 
@@ -151,18 +151,17 @@ void ioc_add_request_to_remove_mblk(
   Called when renice memory block request block request has been sent to the connection.
   Removes the first item from the request list.
 
-  @param   dlr Pointer to root structure of the "remove memory block request" list. Memory
-           allocated for the root structure itself is not freed.
+  @param   con Pointer to the connection object.
   @return  None.
 
 ****************************************************************************************************
 */
 static void ioc_remove_mblk_req_processed(
-    iocDeleteMblkReqList *drl)
+    struct iocConnection *con)
 {
     iocDeleteMblkRequest *r;
 
-    r = drl->first;
+    r = con->del_mlk_req_list.first;
     if (r == OS_NULL) {
         osal_debug_error("ioc_remove_mblk_req_processed() called on empty list");
         return;
@@ -172,14 +171,14 @@ static void ioc_remove_mblk_req_processed(
         r->next->prev = OS_NULL;
     }
     else {
-        drl->last = OS_NULL;
+        con->del_mlk_req_list.last = OS_NULL;
     }
-    drl->first = r->next;
+    con->del_mlk_req_list.first = r->next;
 
     os_free(r, sizeof(iocDeleteMblkRequest));
 
 #if OSAL_DEBUG
-    drl->count--;
+    con->del_mlk_req_list.count--;
 #endif
 }
 
@@ -243,7 +242,7 @@ osalStatus ioc_make_remove_mblk_req_frame(
 
     /* We have processed this remove request block, remove from queue.
      */
-    ioc_remove_mblk_req_processed(&con->del_mlk_req_list);
+    ioc_remove_mblk_req_processed(con);
 
     osal_trace("remove mblk request sent");
     return OSAL_SUCCESS;
@@ -296,7 +295,7 @@ osalStatus ioc_process_remove_mblk_req_frame(
         {
             if (mblk_id == tbuf->mlink.mblk->mblk_id)
             {
-                ioc_remove_mblk_by_request(tbuf->mlink.mblk, con);
+                ioc_remove_mblk_by_request(con, tbuf->mlink.mblk);
                 goto next_req;
             }
         }
@@ -307,7 +306,7 @@ osalStatus ioc_process_remove_mblk_req_frame(
         {
             if (mblk_id == sbuf->mlink.mblk->mblk_id)
             {
-                ioc_remove_mblk_by_request(sbuf->mlink.mblk, con);
+                ioc_remove_mblk_by_request(con, sbuf->mlink.mblk);
                 goto next_req;
             }
         }
@@ -336,8 +335,8 @@ next_req:;
 ****************************************************************************************************
 */
 static void ioc_remove_mblk_by_request(
-    iocMemoryBlock *mblk,
-    iocConnection *con)
+    struct iocConnection *con,
+    iocMemoryBlock *mblk)
 {
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
 #if IOC_MBLK_SPECIFIC_DEVICE_NAME

@@ -386,7 +386,7 @@ void ioc_generate_del_mblk_request(
         {
             if (con->flags & IOC_CONNECT_UP)
             {
-                ioc_add_request_to_remove_mblk(&con->del_mlk_req_list, sbuf->remote_mblk_id);
+                ioc_add_request_to_remove_mblk(con, sbuf->remote_mblk_id);
             }
         }
     }
@@ -400,7 +400,7 @@ void ioc_generate_del_mblk_request(
         {
             if (con->flags & IOC_CONNECT_UP)
             {
-                ioc_add_request_to_remove_mblk(&con->del_mlk_req_list, tbuf->remote_mblk_id);
+                ioc_add_request_to_remove_mblk(con, tbuf->remote_mblk_id);
             }
         }
     }
@@ -437,47 +437,6 @@ void ioc_mblk_set_signal_header(
     if (mblk == OS_NULL) return;
     mblk->signal_hdr = hdr;
     ioc_unlock(root);
-}
-#endif
-
-
-/**
-****************************************************************************************************
-
-  @brief Set memory block parameter at run time.
-  @anchor ioc_memory_block_set_int_param
-
-  The ioc_memory_block_set_int_param() function modifies memory block parameter.
-
-  THIS FUNCTION DOES NOTHING, KEPT IN CASE NEEDED IN FUTURE.
-
-  @param   handle Memory block handle.
-  @param   param_ix Parameter index.
-  @param   value If flag, zero to disable or nonzero to enable.
-  @return  None.
-
-****************************************************************************************************
-*/
-#if 0
-void ioc_memory_block_set_int_param(
-    iocHandle *handle,
-    iocMemoryBlockParamIx param_ix,
-    os_int value)
-{
-
-#if 0
-    iocRoot *root;
-    iocMemoryBlock *mblk;
-
-    /* Get memory block pointer and start synchronization.
-     */
-    mblk = ioc_handle_lock_to_mblk(handle, &root);
-    if (mblk == OS_NULL) return;
-
-    /* End syncronization.
-     */
-    ioc_unlock(root);
-#endif
 }
 #endif
 

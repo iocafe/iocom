@@ -413,13 +413,6 @@ void ioc_mblk_set_signal_header(
     const struct iocMblkSignalHdr *hdr);
 #endif
 
-/* Set memory block parameter.
- */
-/* void ioc_memory_block_set_int_param(
-    iocHandle *handle,
-    iocMemoryBlockParamIx param_ix,
-    os_int value); */
-
 /* Get memory block parameter value as integer.
  */
 os_int ioc_memory_block_get_int_param(

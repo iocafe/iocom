@@ -22,7 +22,7 @@
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -97,7 +97,7 @@ typedef struct iocDeleteMblkReqList
 iocDeleteMblkReqList;
 
 
-/** 
+/**
 ****************************************************************************************************
   Functions for managing memory block information
 ****************************************************************************************************
@@ -107,17 +107,17 @@ iocDeleteMblkReqList;
 /* Initialize the "remove memory block request" list root structure to as empty list.
  */
 void ioc_initialize_remove_mblk_req_list(
-    iocDeleteMblkReqList *drl);
+    struct iocConnection *con);
 
 /* Release memory allocated for the "remove memory block request" list.
  */
 void ioc_release_remove_mblk_req_list(
-    iocDeleteMblkReqList *drl);
+    struct iocConnection *con);
 
 /* Add "remove memory block" request to list.
  */
 void ioc_add_request_to_remove_mblk(
-    iocDeleteMblkReqList *drl,
+    struct iocConnection *con,
     os_int remote_mblk_id);
 
 /* Make remove memory block request frame.

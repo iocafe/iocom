@@ -104,7 +104,7 @@ iocConnection *ioc_initialize_connection(
     /* Initialize the "remove memory block request" list root structure to as empty list.
      */
 #if IOC_DYNAMIC_MBLK_CODE
-    ioc_initialize_remove_mblk_req_list(&con->del_mlk_req_list);
+    ioc_initialize_remove_mblk_req_list(con);
 #endif
 
     /* Mark connection structure as initialized connection object (for debugging).
@@ -199,7 +199,7 @@ void ioc_release_connection(
     /* Release memory allocated for the "remove memory block request" list.
      */
 #if IOC_DYNAMIC_MBLK_CODE
-    ioc_release_remove_mblk_req_list(&con->del_mlk_req_list);
+    ioc_release_remove_mblk_req_list(con);
 #endif
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
@@ -909,8 +909,8 @@ void ioc_reset_connection_state(
     }
 
 #if IOC_DYNAMIC_MBLK_CODE
-    ioc_release_remove_mblk_req_list(&con->del_mlk_req_list);
-    ioc_initialize_remove_mblk_req_list(&con->del_mlk_req_list);
+    ioc_release_remove_mblk_req_list(con);
+    ioc_initialize_remove_mblk_req_list(con);
 #endif
 }
 

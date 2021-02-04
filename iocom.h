@@ -49,6 +49,14 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+/* Do we want to be able to interface to dynamic IO network implementation code
+   outside the iocom library? If so, define both IOC_DYNAMIC_MBLK_CODE
+   and IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT as 1.
+ */
+#ifndef IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
+  #define IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT IOC_DYNAMIC_MBLK_CODE
+#endif
+
 /* If we are using dynamic memory allocation, include code to
  * resize memory blocks.
  */
