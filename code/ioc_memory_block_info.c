@@ -501,7 +501,7 @@ void ioc_mbinfo_received(
 #if IOC_DYNAMIC_MBLK_CODE
     iocHandle handle;
     iocMemoryBlockParams mbprm;
-    iocDynamicNetwork *dnetwork;
+    iocAbstractDynamicNetwork *dnetwork;
 #endif
 
     root = con->link.root;
@@ -551,14 +551,14 @@ void ioc_mbinfo_received(
                  */
                 if (root->droot)
                 {
-                    dnetwork = ioc_add_dynamic_network(root->droot, mbprm.network_name);
+                    dnetwork = ioc_gen_add_dynamic_network(root->droot, mbprm.network_name);
 
 #if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
-                    if (((iocAbstractDynamicRoot*)root->droot)->iface == &ioc_default_dynamic_iface) {
-                        if (ioc_find_mblk_shortcut(dnetwork, mbprm.mblk_name,
+                    if (root->droot->iface == &ioc_default_dynamic_iface) {
+                        if (ioc_find_mblk_shortcut((iocDynamicNetwork*)dnetwork, mbprm.mblk_name,
                             mbprm.device_name, mbprm.device_nr) == OS_NULL)
                         {
-                            ioc_add_mblk_shortcut(dnetwork, mblk);
+                            ioc_add_mblk_shortcut((iocDynamicNetwork*)dnetwork, mblk);
                         }
                     }
 #else
@@ -889,7 +889,7 @@ static void ioc_mbinfo_info_callback(
     {
         root = handle->mblk->link.root;
         if (root) if (root->droot) {
-            ioc_add_dynamic_info(root->droot, handle, OS_FALSE);
+            ioc_gen_add_dynamic_info(root->droot, handle, OS_FALSE);
         }
     }
 }

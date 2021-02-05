@@ -110,7 +110,8 @@ static osalStatus ioc_dinfo_process_block(
 ****************************************************************************************************
 */
 iocDynamicRoot *ioc_initialize_dynamic_root(
-    iocRoot *root)
+    iocRoot *root,
+    const struct iocDynamicInterface *iface)
 {
     iocDynamicRoot *droot;
 
@@ -120,8 +121,16 @@ iocDynamicRoot *ioc_initialize_dynamic_root(
     droot->root = root;
     root->droot = droot;
 #if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
-    droot->hdr.iface = &ioc_default_dynamic_iface;
+    if (iface == OS_NULL || iface == &ioc_default_dynamic_iface) {
+        iface = &ioc_default_dynamic_iface;
+        droot->hash = (iocDynamicNetwork**)os_malloc(IOC_DROOT_HASH_TAB_SZ * sizeof(iocDynamicNetwork*), OS_NULL);
+        os_memclear(droot->hash, IOC_DROOT_HASH_TAB_SZ * sizeof(iocDynamicNetwork*));
+    }
+    droot->iface = iface;
+#else
+    droot->hash = os_malloc(IOC_DROOT_HASH_TAB_SZ * sizeof(iocDynamicNetwork*), OS_NULL);
 #endif
+
     return droot;
 }
 
@@ -164,6 +173,11 @@ void ioc_release_dynamic_root(
     if (droot->root)
     {
         droot->root->droot = OS_NULL;
+    }
+
+    if (droot->hash) {
+        os_free(droot->hash, IOC_DROOT_HASH_TAB_SZ * sizeof(iocDynamicNetwork*));
+        droot->hash = OS_NULL;
     }
 
     os_free(droot, sizeof(iocDynamicRoot));
@@ -740,7 +754,7 @@ osalStatus ioc_add_dynamic_info(
      */
     mblk = ioc_handle_lock_to_mblk(mblk_handle, &root);
     if (mblk == OS_NULL) return OSAL_STATUS_FAILED;
-    droot = root->droot;
+    // droot = root->droot;
 
     os_memclear(&state, sizeof(state));
     state.root = root;
@@ -877,5 +891,6 @@ os_uint ioc_hash(
 
     return hash_sum;
 }
+
 
 #endif

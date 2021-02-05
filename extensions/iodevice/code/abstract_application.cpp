@@ -93,7 +93,7 @@ void AbstractApplication::init_application_basics(
     ioc_set_iodevice_id(&m_root, device_name, m_device_id->device_nr,
         m_device_id->password, m_device_id->network_name);
 
-    ioc_initialize_dynamic_root(&m_root);
+    ioc_initialize_dynamic_root(&m_root, OS_NULL);
 
     /* Set callback function to receive information about new dynamic memory blocks.
      */

@@ -30,6 +30,7 @@
 
 struct iocDynamicRoot;
 struct iocDynamicNetwork;
+struct iocDynamicInterface;
 
 
 /**
@@ -41,17 +42,24 @@ struct iocDynamicNetwork;
 /** We use fixed hash table size for now. Memory use/performance ratio can be improved
     in futute by adopting hash table memory allocation to number of signals.
  */
-#define IOC_DROOT_HASH_TAB_SZ 128
+#if OSAL_MICROCONTROLLER
+    #define IOC_DROOT_HASH_TAB_SZ 32
+#else
+    #define IOC_DROOT_HASH_TAB_SZ 128
+#endif
 
 /** The dynamic root class structure.
  */
 typedef struct iocDynamicRoot
 {
 #if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
-    iocAbstractDynamicRoot hdr;
+    const struct iocDynamicInterface *iface;
 #endif
 
-    iocDynamicNetwork *hash[IOC_DROOT_HASH_TAB_SZ];
+    /** Hash table used by default IO network hierarchy implementations, Array of
+        IOC_DROOT_HASH_TAB_SZ pointers.
+     */
+    iocDynamicNetwork **hash;
 
     /** Pointer back to root object.
      */
@@ -68,7 +76,8 @@ iocDynamicRoot;
 /* Allocate and initialize dynamic root object.
  */
 iocDynamicRoot *ioc_initialize_dynamic_root(
-    iocRoot *root);
+    iocRoot *root,
+    const struct iocDynamicInterface *iface);
 
 /* Release dynamic root structure.
  */

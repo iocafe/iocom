@@ -28,12 +28,8 @@
 #if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
 
 struct iocDynamicInterface;
+struct iocDynamicRoot;
 
-typedef struct iocAbstractDynamicRoot
-{
-    const struct iocDynamicInterface *iface;
-}
-iocAbstractDynamicRoot;
 
 typedef struct iocAbstractDynamicNetwork
 {
@@ -41,20 +37,20 @@ typedef struct iocAbstractDynamicNetwork
 iocAbstractDynamicNetwork;
 
 typedef iocAbstractDynamicNetwork *abstract_add_dynamic_network(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     const os_char *network_name);
 
-typedef void abstract_remove_dynamic_network(
-    iocAbstractDynamicRoot *droot,
-    iocAbstractDynamicNetwork *dnetwork);
+/* typedef void abstract_remove_dynamic_network(
+    iocDynamicRoot *droot,
+    iocAbstractDynamicNetwork *dnetwork); */
 
 typedef osalStatus abstract_add_dynamic_info(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     iocHandle *mblk_handle,
     os_boolean resize_mblks);
 
 typedef void abstract_dynamic_mblk_is_deleted(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     iocMemoryBlock *mblk);
 
 
@@ -75,7 +71,7 @@ typedef struct iocDynamicInterface
 
     /* Remove a dynamic network.
      */
-    abstract_remove_dynamic_network *remove_dynamic_network;
+    // abstract_remove_dynamic_network *remove_dynamic_network;
 
     /* Add dynamic memory block/signal information.
      */
@@ -94,20 +90,20 @@ extern OS_CONST_H iocDynamicInterface ioc_default_dynamic_iface;
 
 
 iocAbstractDynamicNetwork *ioc_gen_add_dynamic_network(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     const os_char *network_name);
 
-void ioc_gen_remove_dynamic_network(
-    iocAbstractDynamicRoot *droot,
-    iocAbstractDynamicNetwork *dnetwork);
+/* void ioc_gen_remove_dynamic_network(
+    iocDynamicRoot *droot,
+    iocAbstractDynamicNetwork *dnetwork); */
 
 osalStatus ioc_gen_add_dynamic_info(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     iocHandle *mblk_handle,
     os_boolean resize_mblks);
 
 void ioc_gen_dynamic_mblk_is_deleted(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     iocMemoryBlock *mblk);
 
 
@@ -115,11 +111,11 @@ void ioc_gen_dynamic_mblk_is_deleted(
     /* IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT is zero -> Map ioc_gen_* functions and
        pointers directly to default implementations.
      */
-    #define iocAbstractDynamicRoot iocDynamicRoot
+    #define iocDynamicRoot iocDynamicRoot
     #define iocAbstractDynamicNetwork iocDynamicNetwork
 
     #define ioc_gen_add_dynamic_network ioc_add_dynamic_network
-    #define ioc_gen_remove_dynamic_network ioc_remove_dynamic_network
+//    #define ioc_gen_remove_dynamic_network ioc_remove_dynamic_network
     #define ioc_gen_add_dynamic_info ioc_add_dynamic_info
     #define ioc_gen_dynamic_mblk_is_deleted ioc_dynamic_mblk_is_deleted
 
@@ -127,3 +123,4 @@ void ioc_gen_dynamic_mblk_is_deleted(
 #endif
 #endif
 #endif
+

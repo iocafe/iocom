@@ -28,12 +28,10 @@
 OS_CONST iocDynamicInterface ioc_default_dynamic_iface = {
 
     (abstract_add_dynamic_network*)ioc_add_dynamic_network,
-    (abstract_remove_dynamic_network*)ioc_remove_dynamic_network,
+    // (abstract_remove_dynamic_network*)ioc_remove_dynamic_network,
     (abstract_add_dynamic_info*)ioc_add_dynamic_info,
     (abstract_dynamic_mblk_is_deleted*)ioc_dynamic_mblk_is_deleted
 };
-
-
 
 /**
 ****************************************************************************************************
@@ -51,7 +49,7 @@ OS_CONST iocDynamicInterface ioc_default_dynamic_iface = {
 ****************************************************************************************************
 */
 iocAbstractDynamicNetwork *ioc_gen_add_dynamic_network(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     const os_char *network_name)
 {
     osal_debug_assert(droot != OS_NULL);
@@ -60,19 +58,18 @@ iocAbstractDynamicNetwork *ioc_gen_add_dynamic_network(
     return droot->iface->add_dynamic_network(droot, network_name);
 }
 
-
-void ioc_gen_remove_dynamic_network(
-    iocAbstractDynamicRoot *droot,
+/* void ioc_gen_remove_dynamic_network(
+    iocDynamicRoot *droot,
     iocAbstractDynamicNetwork *dnetwork)
 {
     osal_debug_assert(droot != OS_NULL);
     osal_debug_assert(droot->iface != OS_NULL);
     osal_debug_assert(droot->iface->add_dynamic_network != OS_NULL);
     droot->iface->remove_dynamic_network(droot, dnetwork);
-}
+} */
 
 osalStatus ioc_gen_add_dynamic_info(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     iocHandle *mblk_handle,
     os_boolean resize_mblks)
 {
@@ -83,7 +80,7 @@ osalStatus ioc_gen_add_dynamic_info(
 }
 
 void ioc_gen_dynamic_mblk_is_deleted(
-    iocAbstractDynamicRoot *droot,
+    struct iocDynamicRoot *droot,
     iocMemoryBlock *mblk)
 {
     osal_debug_assert(droot != OS_NULL);
@@ -91,7 +88,6 @@ void ioc_gen_dynamic_mblk_is_deleted(
     osal_debug_assert(droot->iface->add_dynamic_network != OS_NULL);
     droot->iface->dynamic_mblk_is_deleted(droot, mblk);
 }
-
 
 #endif
 #endif

@@ -56,6 +56,8 @@ void devicedir_dynamic_signals(
      */
     osal_debug_assert(root->debug_id == 'R');
 
+    osal_stream_print_str(list, "{\"signal\": [", 0);
+
     /* Synchronize.
      */
     ioc_lock(root);
@@ -63,13 +65,14 @@ void devicedir_dynamic_signals(
     droot = root->droot;
     if (droot == OS_NULL)
     {
-        osal_stream_print_str(list, "{\"error\":\"Dynamic signal information not used by the application\"}\n", 0);
-        ioc_unlock(root);
-        return;
+        osal_stream_print_str(list, "{\"error\":\"Dynamic signal infor not available\"}\n", 0);
+        goto getout;
     }
-
-    osal_stream_print_str(list, "{\"signal\": [", 0);
-
+    if (droot->hash == OS_NULL)
+    {
+        osal_stream_print_str(list, "{\"error\":\"Default dynamic IO network implementation not used\"}\n", 0);
+        goto getout;
+    }
 
     is_first = OS_TRUE;
     for (i = 0; i < IOC_DROOT_HASH_TAB_SZ; i++)
@@ -82,6 +85,7 @@ void devicedir_dynamic_signals(
         }
     }
 
+getout:
     /* End synchronization.
      */
     ioc_unlock(root);

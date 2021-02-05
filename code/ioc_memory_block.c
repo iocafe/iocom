@@ -213,7 +213,7 @@ void ioc_release_memory_block(
 #if IOC_DYNAMIC_MBLK_CODE
     /* Memory block is being deleted, remove it from dynamic configuration.
      */
-    ioc_dynamic_mblk_is_deleted(root->droot, mblk);
+    ioc_gen_dynamic_mblk_is_deleted(root->droot, mblk);
 #endif
 
     /* Application may want to know that the memory block is being deleted.
