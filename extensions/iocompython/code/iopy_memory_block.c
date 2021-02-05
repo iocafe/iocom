@@ -491,7 +491,6 @@ static PyObject *MemoryBlock_publish(
     PyObject *kwds)
 {
     PyObject *pydata = NULL;
-    iocRoot *root;
     int pyaddr = 0;
 
     char *buffer;
@@ -520,10 +519,7 @@ static PyObject *MemoryBlock_publish(
 
     /* Publish block content as dynamic structure. Resize memory block (make bigger only).
      */
-    root = self->mblk_handle.root;
-    if (root) if (root->droot) {
-        ioc_add_dynamic_info(root->droot, &self->mblk_handle, OS_TRUE);
-    }
+    ioc_add_dynamic_info(&self->mblk_handle, OS_TRUE);
 
     Py_RETURN_NONE;
 }

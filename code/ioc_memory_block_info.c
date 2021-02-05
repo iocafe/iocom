@@ -867,8 +867,6 @@ static void ioc_mbinfo_info_callback(
     os_ushort flags,
     void *context)
 {
-    iocRoot *root;
-
     OSAL_UNUSED(start_addr);
     OSAL_UNUSED(flags);
     OSAL_UNUSED(context);
@@ -877,10 +875,7 @@ static void ioc_mbinfo_info_callback(
      */
     if (end_addr >= 0)
     {
-        root = handle->mblk->link.root;
-        if (root) if (root->droot) {
-            ioc_add_dynamic_info(root->droot, handle, OS_FALSE);
-        }
+        ioc_add_dynamic_info(handle, OS_FALSE);
     }
 }
 #endif

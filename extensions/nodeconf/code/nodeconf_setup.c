@@ -106,7 +106,7 @@ void ioc_load_node_config(
     /* If persistant storage is in micro-controller's flash, we can just get pointer to data block
        and data size.
      */
-    s = os_persistent_get_ptr(OS_PBNR_CONFIG, &block, &block_sz, OSAL_PERSISTENT_DEFAULT);
+    s = os_persistent_get_ptr(OS_PBNR_CONFIG, (const os_uchar**)&block, &block_sz, OSAL_PERSISTENT_DEFAULT);
     if (s == OSAL_SUCCESS) goto gotit;
 
     /* No success with direct pointer to flash, try loading from persisten storage.

@@ -92,7 +92,6 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 /* Add dynamic memory block/signal information.
  */
 osalStatus ioc_add_dynamic_info(
-    iocDynamicRoot *droot,
     iocHandle *mblk_handle,
     os_boolean resize_mblks);
 

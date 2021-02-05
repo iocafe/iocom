@@ -723,11 +723,11 @@ static osalStatus ioc_dinfo_process_block(
 ****************************************************************************************************
 */
 osalStatus ioc_add_dynamic_info(
-    iocDynamicRoot *droot,
     iocHandle *mblk_handle,
     os_boolean resize_mblks)
 {
     iocRoot *root;
+    iocDynamicRoot *droot;
     iocMemoryBlock *mblk;
     osalJsonIndex jindex;
     osalStatus s;
