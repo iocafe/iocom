@@ -119,9 +119,6 @@ iocDynamicRoot *ioc_initialize_dynamic_root(
     os_memclear(droot, sizeof(iocDynamicRoot));
     droot->root = root;
     root->droot = droot;
-#if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
-    droot->hdr.iface = &ioc_default_dynamic_iface;
-#endif
     return droot;
 }
 

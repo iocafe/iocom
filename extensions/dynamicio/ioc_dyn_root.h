@@ -47,10 +47,6 @@ struct iocDynamicNetwork;
  */
 typedef struct iocDynamicRoot
 {
-#if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
-    iocAbstractDynamicRoot hdr;
-#endif
-
     iocDynamicNetwork *hash[IOC_DROOT_HASH_TAB_SZ];
 
     /** Pointer back to root object.

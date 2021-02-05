@@ -553,21 +553,11 @@ void ioc_mbinfo_received(
                 {
                     dnetwork = ioc_add_dynamic_network(root->droot, mbprm.network_name);
 
-#if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
-                    if (((iocAbstractDynamicRoot*)root->droot)->iface == &ioc_default_dynamic_iface) {
-                        if (ioc_find_mblk_shortcut(dnetwork, mbprm.mblk_name,
-                            mbprm.device_name, mbprm.device_nr) == OS_NULL)
-                        {
-                            ioc_add_mblk_shortcut(dnetwork, mblk);
-                        }
-                    }
-#else
                     if (ioc_find_mblk_shortcut(dnetwork, mbprm.mblk_name,
                         mbprm.device_name, mbprm.device_nr) == OS_NULL)
                     {
                         ioc_add_mblk_shortcut(dnetwork, mblk);
                     }
-#endif
 
                     /* If this is info memory block, add callback to receive dynamic info.
                      */
