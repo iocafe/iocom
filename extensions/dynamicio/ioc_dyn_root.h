@@ -54,6 +54,7 @@ typedef struct iocDynamicRoot
 {
 #if IOC_ABSTRACT_DYNAMIC_MBLK_SUPPORT
     const struct iocDynamicInterface *iface;
+    void *context;
 #endif
 
     /** Hash table used by default IO network hierarchy implementations, Array of
