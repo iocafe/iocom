@@ -642,7 +642,7 @@ goon:
 #endif
     }
 
-    /* If we have memory block which can be a target  and the other end matches?
+    /* If we have memory block which can be a target and the other end matches?
      */
     if ((mblk->flags & target_flag) && (info->flags & target_flag))
     {
@@ -653,7 +653,6 @@ goon:
             ioc_mbinfo_new_sbuf(con, mblk, info, bdflag);
         }
 #endif
-
         ioc_mbinfo_new_tbuf(con, mblk, info, bdflag);
     }
 }
