@@ -545,7 +545,7 @@ static void ioc_resize_memory_block_by_info(
 
   @brief Processing packed JSON, handle {} blocks.
 
-  The ioc_ioc_dinfo_process_block() function is called to process a block in packed JSON. General
+  The ioc_dinfo_process_block() function is called to process a block in packed JSON. General
   goal here is to move IO signals information from packed JSON to dynamic information structures,
   so this information can be seached quickly when needed. Synchronization ioc_lock() must be on
   when this function is called.
