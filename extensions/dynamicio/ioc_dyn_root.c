@@ -334,7 +334,7 @@ iocDynamicNetwork *ioc_find_dynamic_network(
 static osalStatus ioc_dinfo_process_array(
     iocDynamicRoot *droot,
     iocAddDinfoState *state,
-    os_char *array_tag,
+    const os_char *array_tag,
     osalJsonIndex *jindex)
 {
     osalJsonItem item;

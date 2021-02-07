@@ -1,5 +1,5 @@
 {
-  "network": 
+  "network":
   {
     "title": "network pamameters",
     "groups": [
@@ -18,7 +18,7 @@
         ]
       },
       {
-        "name": "server_connection",
+        "name": "server_con",
         "parameters": [
           {"name": "connect_to", "type": "str", "array": 60, "init":"*"}
         ]

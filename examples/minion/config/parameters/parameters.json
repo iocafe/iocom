@@ -1,11 +1,11 @@
 {
   "name": "minion",
-  "persistent": 
+  "persistent":
   {
     "title": "camera pamameters",
     "groups": [
       {
-        "name": "camera parameters",
+        "name": "camera_parameters",
         "parameters": [
           {"name": "cam_nr", "type": "char", "init":1},
           {"name": "img_width", "type": "short", "init":640},
@@ -18,12 +18,12 @@
     ]
   },
 
- "volatile": 
+ "volatile":
   {
     "title": "camera control",
     "groups": [
       {
-        "name": "camera control",
+        "name": "camera_control",
         "parameters": [
           {"name": "headlight", "type": "uint", "max": 4095},
           {"name": "on", "type": "boolean", "init":1}

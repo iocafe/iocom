@@ -6,7 +6,7 @@
     "flags": "up,conf",
     "groups": [
       {
-        "name": "configuration transfer",
+        "name": "conf_transfer",
         "signals": [
           {"name": "tod_state", "type": "char"},
           {"name": "tod_err", "type": "uchar"},
@@ -27,7 +27,7 @@
     "flags": "down,conf",
     "groups": [
       {
-        "name": "configuration transfer",
+        "name": "conf_transfer",
         "signals": [
           {"name": "tod_cmd", "type": "char"},
           {"name": "tod_select", "type": "char"},

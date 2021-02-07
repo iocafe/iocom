@@ -15,7 +15,7 @@
     "flags": "up",
     "groups": [
       {
-        "name": "camera data transfer",
+        "name": "camera_data",
         "signals": [
           {"name": "rec_state", "type": "char"},
           {"name": "rec_err", "type": "uchar"},
@@ -33,7 +33,7 @@
     "flags": "down",
     "groups": [
       {
-        "name": "camera data transfer",
+        "name": "camera_data",
         "signals": [
           {"name": "rec_cmd", "type": "char"},
           {"name": "rec_select", "type": "uchar"},

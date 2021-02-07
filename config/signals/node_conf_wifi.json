@@ -6,7 +6,7 @@
     "flags": "up",
     "groups": [
       {
-        "name": "net conf",
+        "name": "net_conf",
         "signals": [
           {"name": "nc_nr", "type": "str", "array": 8},
           {"name": "nc_net", "type": "str", "array": 25},
@@ -26,7 +26,7 @@
     "flags": "down",
     "groups": [
       {
-        "name": "net conf",
+        "name": "net_conf",
         "signals": [
           {"name": "set_nc_nr", "type": "str", "array": 7},
           {"name": "set_nc_net", "type": "str", "array": 24},

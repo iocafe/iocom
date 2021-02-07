@@ -5,7 +5,7 @@
     "title": "camera parameters",
     "groups": [
       {
-        "name": "camera parameters",
+        "name": "camera_param",
         "parameters": [
           {"name": "cam_nr", "type": "char", "init":1},
           {"name": "img_width", "type": "short", "init":640},
@@ -16,7 +16,7 @@
         ]
       },
       {
-        "name": "device parameters",
+        "name": "device_param",
         "parameters": [
           {"name": "hlight_blink", "type": "ushort", "init":40},
           {"name": "hlight_lvl", "type": "ushort", "init":0}
@@ -30,7 +30,7 @@
     "title": "device control",
     "groups": [
       {
-        "name": "device control",
+        "name": "device_control",
         "parameters": [
           {"name": "left_wheel", "type": "float", "min": -90, "max": 90, "digs": 2},
           {"name": "right_wheel", "type": "float", "min": -90, "max": 90},

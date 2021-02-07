@@ -35,7 +35,7 @@
     "flags": "down",
     "groups": [
       {
-        "name": "node conf",
+        "name": "node_conf",
         "signals": [
           {"name": "set_rm_comloop", "type": "char"}
         ]

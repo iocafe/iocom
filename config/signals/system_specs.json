@@ -6,7 +6,7 @@
     "flags": "up",
     "groups": [
       {
-        "name": "sys specs",
+        "name": "sys_specs",
         "signals": [
           {"name": "si_package", "type": "str", "array": 12},
           {"name": "si_eosal", "type": "str", "array": 7},

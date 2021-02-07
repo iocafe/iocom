@@ -1,11 +1,11 @@
 {
   "name": "candy",
-  "persistent": 
+  "persistent":
   {
     "title": "camera parameters",
     "groups": [
       {
-        "name": "camera parameters",
+        "name": "camera_param",
         "parameters": [
           {"name": "cam_nr", "type": "char", "init":1},
           {"name": "img_width", "type": "short", "init":640},
@@ -16,7 +16,7 @@
         ]
       },
       {
-        "name": "device parameters",
+        "name": "device_param",
         "parameters": [
           {"name": "hlight_blink", "type": "ushort", "init":40},
           {"name": "hlight_lvl", "type": "ushort", "init":0}
@@ -25,12 +25,12 @@
     ]
   },
 
- "volatile": 
+ "volatile":
   {
     "title": "device control",
     "groups": [
       {
-        "name": "device control",
+        "name": "device_control",
         "parameters": [
           {"name": "pwm1", "type": "uint", "max": 4095},
           {"name": "pwm2", "type": "uint", "max": 4095},
