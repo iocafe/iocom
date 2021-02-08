@@ -69,7 +69,6 @@ typedef struct
      */
     const os_char *tag;             /* Latest tag or key, '-' for array elements */
     const os_char *mblk_name;       /* The memory block we are now parsing */
-    const os_char *group_name;      /* The group we are now parsing */
     const os_char *signal_name;     /* Name of the signal */
     const os_char *signal_type_str; /* Signal type specified in JSON, like "short" */
     os_int signal_addr;             /* Signal address specified in JSON */
@@ -646,16 +645,6 @@ static osalStatus ioc_dinfo_process_block(
                         if (state->mblk_groups_jindex_set) {
                             s = ioc_dinfo_process_array(droot, state, "groups", &state->mblk_groups_jindex);
                             if (s) return s;
-                        }
-                    }
-
-                    else if (!os_strcmp(array_tag, "groups"))
-                    {
-                        state->group_name = item.value.s;
-                        if (!os_strcmp(state->group_name, "inputs") ||
-                            !os_strcmp(state->group_name, "outputs"))
-                        {
-                            state->current_type_id = OS_BOOLEAN;
                         }
                     }
 
