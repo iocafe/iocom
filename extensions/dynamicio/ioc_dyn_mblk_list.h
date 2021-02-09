@@ -21,7 +21,7 @@
 #pragma once
 #ifndef IOC_DYN_MBLK_LIST_H_
 #define IOC_DYN_MBLK_LIST_H_
-#include "iocomx.h"
+#include "iocom.h"
 
 #if IOC_DYNAMIC_MBLK_CODE
 

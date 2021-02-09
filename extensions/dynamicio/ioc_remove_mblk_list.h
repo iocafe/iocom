@@ -33,7 +33,7 @@
 #pragma once
 #ifndef IOC_REMOVE_MBLK_LIST_H_
 #define IOC_REMOVE_MBLK_LIST_H_
-#include "iocomx.h"
+#include "iocom.h"
 
 #if IOC_DYNAMIC_MBLK_CODE
 

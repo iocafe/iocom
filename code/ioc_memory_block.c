@@ -18,7 +18,7 @@
 
 ****************************************************************************************************
 */
-#include "iocom.h"
+#include "iocomx.h"
 
 /* Forward referred static functions.
  */

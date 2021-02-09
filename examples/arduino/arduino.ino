@@ -1,6 +1,6 @@
 #define IOCOM_IOBOARD
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SERIAL
-#include "iocomx.h"
+#include "iocom.h"
 #include "config/include/generic/signals.h"
 #include "config/include/generic/signals_info_mblk.h"
 
@@ -13,20 +13,20 @@
  */
 #define IOBOARD_MAX_CONNECTIONS 1
 
-/* Use static memory pool. 
+/* Use static memory pool.
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
         ARDUINO_EXP_MBLK_SZ, ARDUINO_IMP_MBLK_SZ)
         + IOBOARD_POOL_DEVICE_INFO(IOBOARD_MAX_CONNECTIONS)];
-        
-void setup() 
+
+void setup()
 {
     ioboardParams prm;
     osal_initialize(OSAL_INIT_DEFAULT);
 
     /* We use quiet mode. Since Arduino UNO has only one serial port, we need it for
-       communication. We cannot have any trace, etc. prints to serial port. 
+       communication. We cannot have any trace, etc. prints to serial port.
      */
     osal_quiet(OS_TRUE);
 
@@ -56,7 +56,7 @@ void setup()
     ioboard_start_communication(&prm);
 }
 
-void loop() 
+void loop()
 {
     os_timer ti;
     os_int timeout_ms, led, run, speed;

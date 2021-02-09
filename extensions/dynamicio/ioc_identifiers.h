@@ -16,7 +16,7 @@
 #pragma once
 #ifndef IOC_INDENTIFIERS_H_
 #define IOC_INDENTIFIERS_H_
-#include "iocomx.h"
+#include "iocom.h"
 
 /** IO path fields. Empty string means unspefied.
  */

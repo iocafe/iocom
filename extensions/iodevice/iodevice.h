@@ -16,7 +16,7 @@
 #pragma once
 #ifndef IODEVICE_H_
 #define IODEVICE_H_
-#include "iocomx.h"
+#include "iocom.h"
 #include "pinsx.h"
 #include "nodeconf.h"
 #include "ioserver.h"

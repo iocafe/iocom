@@ -18,7 +18,7 @@
  */
 #define PINS_LIBRARY 1
 
-#include "iocomx.h"
+#include "iocom.h"
 #include "pinsx.h"
 #include "nodeconf.h"
 #include "ioserver.h"

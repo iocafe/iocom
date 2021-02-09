@@ -19,7 +19,7 @@
 #pragma once
 #ifndef IOC_DYN_NETWORK_H_
 #define IOC_DYN_NETWORK_H_
-#include "iocomx.h"
+#include "iocom.h"
 
 #if IOC_DYNAMIC_MBLK_CODE
 

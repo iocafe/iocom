@@ -35,7 +35,7 @@
 #pragma once
 #ifndef IOC_DYN_STREAM_H_
 #define IOC_DYN_STREAM_H_
-#include "iocomx.h"
+#include "iocom.h"
 
 #if IOC_DYNAMIC_MBLK_CODE
 

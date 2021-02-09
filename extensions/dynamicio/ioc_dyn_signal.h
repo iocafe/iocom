@@ -19,7 +19,7 @@
 #pragma once
 #ifndef IOC_DYN_SIGNAL_H_
 #define IOC_DYN_SIGNAL_H_
-#include "iocomx.h"
+#include "iocom.h"
 
 #if IOC_DYNAMIC_MBLK_CODE
 
