@@ -104,7 +104,7 @@ void ioc_initialize_selectwifi(
         parameters = prm->parameters;
     }
 
-    ioc_initialize_root(&swf.root);
+    ioc_initialize_root(&swf.root, IOC_CREATE_OWN_MUTEX);
     ioc_set_memory_pool(&swf.root, swf_pool, sizeof(swf_pool));
     ioc_set_iodevice_id(&swf.root, device_name, device_nr, OS_NULL, network_name);
 

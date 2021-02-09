@@ -62,7 +62,7 @@ osalStatus osal_main(
     /* Initialize the socket library and root structure.
      */
     osal_socket_initialize(OS_NULL, 0);
-    ioc_initialize_root(&root);
+    ioc_initialize_root(&root, IOC_CREATE_OWN_MUTEX);
 
     /* Create memory blocks for inputs and outputs.
      */

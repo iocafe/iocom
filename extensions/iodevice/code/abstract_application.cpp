@@ -72,7 +72,7 @@ void AbstractApplication::init_application_basics(
 
     /* Initialize communication root object.
      */
-    ioc_initialize_root(&m_root);
+    ioc_initialize_root(&m_root, IOC_CREATE_OWN_MUTEX);
 
     /* Use devicedir library for development testing, initialize.
      */

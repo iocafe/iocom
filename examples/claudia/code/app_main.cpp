@@ -100,7 +100,7 @@ osalStatus osal_main(
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.
      */
-    ioc_initialize_root(&iocom_root);
+    ioc_initialize_root(&iocom_root, IOC_CREATE_OWN_MUTEX);
 
     /* If we are using devicedir for development testing, initialize.
      */

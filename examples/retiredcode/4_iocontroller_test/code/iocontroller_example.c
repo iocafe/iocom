@@ -220,7 +220,7 @@ osalStatus osal_main(
     flags = IOC_SERIAL | IOC_CREATE_THREAD;
 #endif
 
-    ioc_initialize_root(&root);
+    ioc_initialize_root(&root, IOC_CREATE_OWN_MUTEX);
     os_memclear(&ctx, sizeof(ctx));
     ctx.root = &root;
 

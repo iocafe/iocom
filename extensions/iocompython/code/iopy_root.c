@@ -82,7 +82,7 @@ static PyObject *Root_new(
      * This demo uses dynamic signal configuration.
      */
     self->root = (iocRoot*)os_malloc(sizeof(iocRoot), OS_NULL);
-    ioc_initialize_root(self->root);
+    ioc_initialize_root(self->root, IOC_CREATE_OWN_MUTEX);
     ioc_set_iodevice_id(self->root, device_name, device_nr, password, network_name);
     ioc_initialize_dynamic_root(self->root);
 

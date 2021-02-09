@@ -88,7 +88,7 @@ osalStatus osal_main(
 
     /* Initialize communication root object.
      */
-    ioc_initialize_root(&iocom_root);
+    ioc_initialize_root(&iocom_root, IOC_CREATE_OWN_MUTEX);
 
     /* If we are using devicedir for development testing, initialize.
      */
