@@ -94,6 +94,9 @@ osalStatus ioc_connection_receive(
 #if OSAL_MULTITHREAD_SUPPORT
     iocRoot *root;
     root = con->link.root;
+    if (root == OS_NULL) {
+        return OSAL_STATUS_FAILED;
+    }
     ioc_lock(root);
 #endif
 

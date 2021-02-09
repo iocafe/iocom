@@ -961,14 +961,8 @@ void ioc_receive_nolock(
 
             tbuf->syncbuf.buf_used = OS_FALSE;
 
-            for (i = 0; i < IOC_MBLK_MAX_CALLBACK_FUNCS; i++)
-            {
-                if (mblk->func[i])
-                {
-                    mblk->func[i](&mblk->handle, start_addr, end_addr,
-                        IOC_MBLK_CALLBACK_RECEIVE, mblk->context[i]);
-                }
-            }
+            ioc_do_callback(mblk, IOC_MBLK_CALLBACK_RECEIVE,
+                start_addr, end_addr);
 
             /* If the memory block is also data source, echo received data there.
              * Except if we are connected downwards to same memory block from
@@ -1025,6 +1019,56 @@ void ioc_receive_nolock(
 #endif
 
             }
+        }
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Call memory block specific callback function.
+  @anchor ioc_do_callback
+
+  This function calls a callback function set by ioc_add_callback().
+
+  The IOC_MBLK_CALLBACK_WRITE and IOC_MBLK_CALLBACK_RECEIVE are from inside ioc_send() and
+  ioc_receive() functions.
+
+  The trigger callbacks IOC_MBLK_CALLBACK_WRITE_TRIGGER and IOC_MBLK_CALLBACK_RECEIVE_TRIGGER
+  can be called by other threads, and can trigger event to run call communication.
+  Trigger callback are enabled only if multithreading is supported.
+
+  @param   mblk Pointer to memory block structure.
+  @param   callback_flags
+            - IOC_MBLK_CALLBACK_WRITE: Local application writes to communication.
+            - IOC_MBLK_CALLBACK_RECEIVE: Data received from communication.
+            - IOC_MBLK_CALLBACK_WRITE_TRIGGER: Memory block is ready to receive more data.
+            - IOC_MBLK_CALLBACK_RECEIVE_TRIGGER: Callback to indicate data received from stream.
+
+  @param   start_address Address of first changed value in memory block, 0 for trigger callbacks.
+  @param   end_address Address of last changed value.
+
+****************************************************************************************************
+*/
+void ioc_do_callback(
+    iocMemoryBlock *mblk,
+    os_ushort callback_flags,
+    os_int start_addr,
+    os_int end_addr)
+{
+    os_short i;
+
+    if (mblk == OS_NULL) {
+        return;
+    }
+
+    for (i = 0; i < IOC_MBLK_MAX_CALLBACK_FUNCS; i++)
+    {
+        if (mblk->func[i])
+        {
+            mblk->func[i](&mblk->handle, start_addr, end_addr,
+                callback_flags, mblk->context[i]);
         }
     }
 }

@@ -302,6 +302,12 @@ void ioc_tbuf_invalidate(
         if (end_addr > tbuf->syncbuf.newdata_end_addr)
             tbuf->syncbuf.newdata_end_addr = end_addr;
     }
+
+    /* Do trigger callback
+     */
+#if OSAL_MULTITHREAD_SUPPORT
+    ioc_do_callback(tbuf->mlink.mblk, IOC_MBLK_CALLBACK_RECEIVE_TRIGGER, 0, 0);
+#endif
 }
 
 
@@ -401,7 +407,6 @@ void ioc_tbuf_synchronize(
         {
             *(dst++) |= *(src++);
         }
-        /* os_memcpy(syncbuf + pos, newdata + pos, be - bs + 1); */
     }
 #endif
 

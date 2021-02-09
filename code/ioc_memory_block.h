@@ -225,10 +225,18 @@ iocMemoryBlockLink;
 ****************************************************************************************************
 */
 
-/* Flags
+/* Callback ioc_callback() flags.  The IOC_MBLK_CALLBACK_WRITE and IOC_MBLK_CALLBACK_RECEIVE
+   calls are from inside ioc_send() and ioc_receive() functions.
+   The trigger callbacks IOC_MBLK_CALLBACK_WRITE_TRIGGER and IOC_MBLK_CALLBACK_RECEIVE_TRIGGER
+   can be called by other threads, and can trigger event to run call communication.
+   Trigger callback are enabled only if multithreading is supported.
  */
-#define IOC_MBLK_CALLBACK_WRITE 1   /* Changed by local write */
-#define IOC_MBLK_CALLBACK_RECEIVE 2 /* Changed by received data */
+// #define IOC_MBLK_CALLBACK_WRITE 1               /* Changed by local write NOT USED FOR NOW */
+#define IOC_MBLK_CALLBACK_RECEIVE 2             /* Changed by received data */
+#define IOC_MBLK_CALLBACK_WRITE_TRIGGER 4       /* Memory block is ready to receive more data.
+                                                   (can trigger trigger event, etc) */
+#define IOC_MBLK_CALLBACK_RECEIVE_TRIGGER 8     /* Callback to indicate data received from stream
+                                                   (can trigger trigger event, etc) */
 
 typedef void ioc_callback(
     struct iocHandle *handle,
@@ -462,6 +470,14 @@ void ioc_receive(
  */
 void ioc_receive_nolock(
     iocMemoryBlock *mblk);
+
+/* Call memory block specific callback function.
+ */
+void ioc_do_callback(
+    iocMemoryBlock *mblk,
+    os_ushort callback_flags,
+    os_int start_addr,
+    os_int end_addr);
 
 /* Add callback function.
  */

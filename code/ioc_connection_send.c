@@ -337,10 +337,17 @@ skip_for_static:
         {
             sbuf->syncbuf.used = OS_FALSE;
             *ptrs.flags |= IOC_SYNC_COMPLETE;
+
+#if OSAL_MULTITHREAD_SUPPORT
+            ioc_do_callback(sbuf->mlink.mblk, IOC_MBLK_CALLBACK_WRITE_TRIGGER, 0, 0);
+#endif
         }
 #else
         sbuf->syncbuf.used = OS_FALSE;
         *ptrs.flags |= IOC_SYNC_COMPLETE;
+#if OSAL_MULTITHREAD_SUPPORT
+        ioc_do_callback(sbuf->mlink.mblk, IOC_MBLK_CALLBACK_WRITE_TRIGGER, 0, 0);
+#endif
 #endif
     }
 
