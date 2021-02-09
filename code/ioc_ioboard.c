@@ -72,7 +72,7 @@ void ioboard_setup_communication(
 #if IOC_DEVICE_STREAMER
     ioc_streamer_initialize();
 #endif
-    ioc_initialize_root(&ioboard_root);
+    ioc_initialize_root(&ioboard_root, IOC_CREATE_OWN_MUTEX);
     ioc_set_iodevice_id(&ioboard_root, prm->device_name, prm->device_nr,
         prm->password, prm->network_name);
 

@@ -32,18 +32,28 @@ const os_char iocom_mod[] = "iocom";
   be allocated as global variable or by other means by application. It must exist until
   ioc_release_root() is called.
 
-  @param   root Pointer to root structure to be initialized.
+  @param   root  Pointer to root structure to be initialized.
+  @param   flags Zero for default operation. IOC_USE_EOSAL_MUTEX specifies to use
+           eosal mutex for synchronization. In more complex interaction, this can be used
+           to avoid deadlock, with small performance penalty.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_initialize_root(
-    iocRoot *root)
+    iocRoot *root,
+    os_char flags)
 {
     os_memclear(root, sizeof(iocRoot));
 
 #if OSAL_MULTITHREAD_SUPPORT
-    root->mutex = osal_mutex_create();
+    root->init_flags = flags;
+    if (flags & IOC_USE_EOSAL_MUTEX) {
+        root->mutex = osal_global->system_mutex;
+    }
+    else {
+        root->mutex = osal_mutex_create();
+    }
 #endif
 
     /* Start automatic device enumeration from 10001 and start unique memory block
@@ -186,7 +196,9 @@ void ioc_release_root(
 #if OSAL_MULTITHREAD_SUPPORT
     /* Delete synchronization mutex.
      */
-    osal_mutex_delete(root->mutex);
+    if ((root->init_flags & IOC_USE_EOSAL_MUTEX) == 0) {
+        osal_mutex_delete(root->mutex);
+    }
 #endif
 
 #if OSAL_DYNAMIC_MEMORY_ALLOCATION

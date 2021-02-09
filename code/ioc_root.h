@@ -58,6 +58,13 @@ const extern os_char iocom_mod[];
 #endif
 #define IOC_TO_AUTO_DEVICE_NR (IOC_AUTO_DEVICE_NR-1)
 
+/** Flag for ioc_initialize_root() to use EOSAL system mutex for synchronization, instead
+    of creating own one.
+ */
+#define IOC_USE_EOSAL_MUTEX 1
+#define IOC_CREATE_OWN_MUTEX 0
+
+
 /**
 ****************************************************************************************************
     Linked list of root's memory blocks
@@ -209,6 +216,13 @@ typedef struct iocRoot
 #endif
 
 #if OSAL_MULTITHREAD_SUPPORT
+    /** Flags given to ioc_initialize_root, bit fields. Flag IOC_USE_EOSAL_MUTEX (1)
+        indicates that iocom used EOSAL system mutex for thread synchronization.
+        IOC_CREATE_OWN_MUTEX is defines as 0 and can be used to mark that own
+        mutex is created.
+     */
+    os_char init_flags;
+
     /** Mutex to synchronize access to communication object hierarchy.
      */
     osalMutex mutex;
@@ -273,7 +287,8 @@ iocRoot;
 /* Initialize communication root object.
  */
 void ioc_initialize_root(
-    iocRoot *root);
+    iocRoot *root,
+    os_char flags);
 
 /* Release communication root object.
  */
