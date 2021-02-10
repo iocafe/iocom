@@ -19,9 +19,9 @@
 /* Parts of nick name
  */
 OS_CONST os_char *ioc_nick1[] = {"hey", "ant", "yaw", "bot", "ink", "mic", "dog", "red",
-    "god", "oak", "air", "fir", "two", "top", "hawk", "blue", OS_NULL};
-OS_CONST os_char *ioc_nick2[] = {"eye", "ear", "rat", "dot", "meg", "dir", "cat", "how",
-    "hat", "but", "gut", "gun", "nut", "tap", "brain", "leg", "jack", "tail", "head", OS_NULL};
+    "god", "oak", "air", "fir", "two", "top", "awe", "blu", "woo", "hoo"
+    "eye", "ear", "rat", "dot", "meg", "dir", "cat", "how", "pin", "pot"
+    "hat", "but", "gut", "gun", "nut", "tap", "bra", "leg", "jaw", "kit", "pit", OS_NULL};
 
 
 /**
@@ -68,7 +68,7 @@ void ioc_generate_nickname(
 
     n = ioc_get_nick_part(ioc_nick1);
     os_strncpy(buf, n, buf_sz);
-    n = ioc_get_nick_part(ioc_nick2);
+    n = ioc_get_nick_part(ioc_nick1);
     os_strncat(buf, n, buf_sz);
     os_strncat(buf, "-", buf_sz);
     os_strncat(buf, OSAL_BIN_NAME, buf_sz);
