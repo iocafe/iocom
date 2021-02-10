@@ -19,8 +19,8 @@
 /* Parts of nick name
  */
 OS_CONST os_char *ioc_nick1[] = {"hey", "ant", "yaw", "bot", "ink", "mic", "dog", "red",
-    "god", "oak", "air", "fir", "two", "top", "awe", "blu", "woo", "hoo"
-    "eye", "ear", "rat", "dot", "meg", "dir", "cat", "how", "pin", "pot"
+    "god", "oak", "air", "fir", "two", "top", "awe", "blu", "woo", "hoo",
+    "eye", "ear", "rat", "dot", "meg", "dir", "cat", "how", "pin", "pot",
     "hat", "but", "gut", "gun", "nut", "tap", "bra", "leg", "jaw", "kit", "pit", OS_NULL};
 
 
