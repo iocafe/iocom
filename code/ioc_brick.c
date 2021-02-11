@@ -448,8 +448,8 @@ getout:
 /**
 ****************************************************************************************************
 
-  @brief Store/compress data to send into brick buffer.
-  @anchor ioc_compress_brick
+  @brief Store/compress data to send into brick buffer (ring buffer implementation).
+  @anchor ioc_compress_brick_ring
 
   @param  b Pointer to brick buffer.
   @param  hdr Brick header to save.
