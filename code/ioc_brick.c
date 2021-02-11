@@ -295,7 +295,7 @@ osalStatus ioc_compress_brick(
     iocBrickHdr *dhdr, dhdr_tmp;
     os_uchar *buf;
     os_memsz sz, buf_sz;
-    os_int quality;
+    os_int quality, row_nbytes;
     os_ushort checksum;
     os_boolean lock_on = OS_FALSE;
     osalStatus s = OSAL_SUCCESS;
@@ -357,7 +357,8 @@ osalStatus ioc_compress_brick(
             }
 
             quality = ioc_get_jpeg_compression_quality(b);
-            s = os_compress_JPEG(data, w, h, format, quality,
+            row_nbytes = w * OSAL_BITMAP_BYTES_PER_PIX(format);
+            s = os_compress_JPEG(data, w, h, row_nbytes, format, quality,
                 OS_NULL, buf, buf_sz, &sz, OSAL_JPEG_DEFAULT);
             ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, s, sz);
             if (s)  {
@@ -479,7 +480,7 @@ osalStatus ioc_compress_brick_ring(
     os_memsz sz, buf_sz;
     os_ushort checksum = 0;
     osalStatus s = OSAL_SUCCESS;
-    os_int quality;
+    os_int quality, row_nbytes;
 
     buf = b->buf;
     buf_sz = b->buf_sz;
@@ -524,8 +525,9 @@ osalStatus ioc_compress_brick_ring(
 
 #if IOC_USE_JPEG_COMPRESSION
             quality = ioc_get_jpeg_compression_quality(b);
+            row_nbytes = w * OSAL_BITMAP_BYTES_PER_PIX(format);
 
-            s = os_compress_JPEG(data, w, h, format, quality,
+            s = os_compress_JPEG(data, w, h, row_nbytes, format, quality,
                 OS_NULL, buf + sizeof(iocBrickHdr), buf_sz - sizeof(iocBrickHdr), &sz, OSAL_JPEG_DEFAULT);
             ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, s, sz);
             if (OSAL_IS_ERROR(s)) {
