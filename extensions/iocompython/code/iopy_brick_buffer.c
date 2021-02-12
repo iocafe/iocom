@@ -553,7 +553,7 @@ static PyObject *BrickBuffer_get(
     {
         os_memclear(&alloc_context, sizeof(alloc_context));
 
-        s = os_uncompress_JPEG(data, data_sz, OS_NULL, &alloc_context, OSAL_JPEG_DEFAULT);
+        s = os_uncompress_JPEG(data, data_sz, &alloc_context, OSAL_JPEG_DEFAULT);
         if (s) {
             os_free(alloc_context.buf, alloc_context.buf_sz);
             ioc_unlock(iocroot);
