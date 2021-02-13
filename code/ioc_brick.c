@@ -96,19 +96,23 @@ void ioc_initialize_brick_buffer(
 
 
 /* Release brick buffer which has been initialized by ioc_initialize_brick_buffer
+ * if b->root is OS_NULL, brick buffer has not been initialized.
  */
 void ioc_release_brick_buffer(
     iocBrickBuffer *b)
 {
-    ioc_lock(b->root);
-    ioc_free_brick_buffer(b);
+    if (b->root)
+    {
+        ioc_lock(b->root);
+        ioc_free_brick_buffer(b);
 
-    if (b->stream) {
-        ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
-        b->stream = OS_NULL;
+        if (b->stream) {
+            ioc_streamer_close(b->stream, OSAL_STREAM_DEFAULT);
+            b->stream = OS_NULL;
+        }
+
+        ioc_unlock(b->root);
     }
-
-    ioc_unlock(b->root);
 }
 
 

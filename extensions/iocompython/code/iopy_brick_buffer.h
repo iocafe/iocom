@@ -55,12 +55,21 @@ typedef struct
 
     os_char prefix[IOPY_BB_PREFIX_SZ];
 
-    /** Flags. The is_device indicates that this python code is acting as device and
-        of brick data transfer. The from_device flag indicates that the device is the
-        data source and controller is target.
+    /** The "is_device" flag indicates that this python code is acting as device end
+        of brick data transfer, and the other end is controlling the transfer.
+        If not set, the python code is controlling the transfer.
      */
     os_boolean is_device;
+
+    /** The "from_device" sets transfer direction. If this flag is set, the transfer is
+        from device to controller, otherwise from controller to the device. The "is_device"
+        flag sets if this python code is device or controller.
+     */
     os_boolean from_device;
+
+    /** The "flag_buffer" flag indicates flat buffer transfer. If not set, the ring buffer
+        transfer is used.
+     */
     os_boolean flat_buffer;
 
     /** Connection initialization status: 0 = all good, other values are errors.
