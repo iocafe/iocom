@@ -160,7 +160,6 @@ void ioc_terminate_handles(
         nexth = h->next;
         h->next = h->prev = h;
         h->mblk = OS_NULL;
-        // h->root = OS_NULL;
         h = nexth;
     }
     while (h != handle);

@@ -334,14 +334,12 @@ static void bb_init_signal(
 /**
 ****************************************************************************************************
 
-  Set memory block handle for a signal.
+  Try to setup signal stucture for use.
 
-  Lock must be on
+  Lock must be on.
 
   @param   sig Pointer to signal structure to set up.
-  @param   handle Pointer to memory block handle structure. Handle doesn't have to be initialized,
-           just pointer is saved within the signal structure.
-  @return  None.
+  @return  OSAL_SUCCESS if all is successfull, OSAL_STATUS_FAILED otherwise.
 
 ****************************************************************************************************
 */
@@ -366,13 +364,10 @@ static osalStatus bb_try_signal_setup(
 /**
 ****************************************************************************************************
 
-  Initialize all signal structires needed.
+  Initialize all needed signal structures.
 
   Lock must be on
 
-  @param   sig Pointer to signal structure to initialize.
-  @param   sig Pointer to memory block handle structure. Handle doesn't have to be initialized,
-           just pointer is saved within the signal structure.
   @return  None.
 
 ****************************************************************************************************
@@ -381,23 +376,22 @@ static osalStatus bb_try_setup(
     BrickBuffer *self,
     iocRoot *iocroot)
 {
-    /* If setup is already good. We check head and cmd because they are in different
+    /* If setup is already good. We check state and cmd because they are in different
        memory blocks and last to be set up.
      */
-    if (self->sig_head.handle->mblk && self->sig_head.flags &&
-        self->sig_cmd.handle->mblk &&(self->sig_cmd.flags))
+    if (self->sig_state.handle->mblk && self->sig_state.flags &&
+        self->sig_cmd.handle->mblk && self->sig_cmd.flags)
     {
         return OSAL_SUCCESS;
     }
-    self->sig_head.flags = 0;
-    self->sig_tail.flags = 0;
+    self->sig_state.flags = 0;
+    self->sig_cmd.flags = 0;
 
     if (!self->flat_buffer) {
         if (bb_try_signal_setup(&self->sig_select, "select", self->prefix, &self->imp_ids, iocroot))
             goto getout;
     }
     if (bb_try_signal_setup(&self->sig_err, "err", self->prefix, &self->exp_ids, iocroot)) goto getout;
-    if (bb_try_signal_setup(&self->sig_state, "state", self->prefix, &self->exp_ids, iocroot)) goto getout;
 
     if (self->from_device) {
         if (bb_try_signal_setup(&self->sig_cs, "cs", self->prefix, &self->exp_ids, iocroot)) goto getout;
@@ -418,6 +412,7 @@ static osalStatus bb_try_setup(
         }
     }
 
+    if (bb_try_signal_setup(&self->sig_state, "state", self->prefix, &self->exp_ids, iocroot)) goto getout;
     if (bb_try_signal_setup(&self->sig_cmd, "cmd", self->prefix, &self->imp_ids, iocroot)) goto getout;
 
     return OSAL_COMPLETED;
