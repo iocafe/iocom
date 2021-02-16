@@ -1172,6 +1172,7 @@ failed:
         {
             break;
         }
+        os_timeslice();
     }
 
     /* Delete trigger event and mark that this thread is no longer running.
