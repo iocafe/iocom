@@ -139,8 +139,6 @@ osalStatus osal_main(
     dinfoNodeConfSignals nc_sigs;
     dinfoSystemSpeSignals si_sigs;
     dinfoResMonSignals rm_sigs;
-    OSAL_UNUSED(argc);
-    OSAL_UNUSED(argv);
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific event handler callback by calling osal_set_net_event_handler().
@@ -198,7 +196,7 @@ osalStatus osal_main(
     os_memclear(&prm, sizeof(prm));
     prm.iface = iface;
     prm.device_name = IOBOARD_DEVICE_NAME; /* or device_id->device name to allow change */
-    prm.device_nr = device_id->device_nr;
+    prm.device_nr = osal_command_line_device_nr(device_id->device_nr, argc, argv);
     prm.password = device_id->password;
     prm.network_name = device_id->network_name;
     prm.ctrl_type = IOBOARD_CTRL_CON;
