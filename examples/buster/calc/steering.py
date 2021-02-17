@@ -74,7 +74,7 @@ def simulate(plt, myrange):
         plt.text(f_wheel_x, f_wheel_y - f_wheel_d - 0.1, str(int(r_dir)), horizontalalignment='center',verticalalignment='top')
         plt.text(-f_wheel_x, f_wheel_y - f_wheel_d - 0.1, str(int(l_dir)), horizontalalignment='center',verticalalignment='top')
 
-        # Calculate motor speeds
+        # Calculate motor speeds, sl is left motor speed and sr right motor. Positive values forward and negative back.
         if center_x > b_wheel_x:
             sl = speed
             sr = sl * (center_x - b_wheel_x) /  (center_x + b_wheel_x)
@@ -95,6 +95,7 @@ def simulate(plt, myrange):
         plt.ylabel('grimpy wheel direction and speed')
         plt.gca().set_aspect('equal', adjustable='box')
         plt.xlim([-50, 50])
+        plt.ylim([-10, 30])
         plt.pause(0.05)
 
 
