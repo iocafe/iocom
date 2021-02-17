@@ -1,0 +1,54 @@
+{
+  "assembly": [
+    {
+      "name": "gamecontrol",
+      "type": "gamecontrol",
+      "exp": "exp.gc_",
+      "imp": "imp.gc_"
+    }
+  ],
+
+  "mblk": [
+  {
+    "name": "exp",
+    "title": "Game controller",
+    "flags": "up",
+    "groups": [
+      {
+        "name": "gamecontrols",
+        "signals": [
+          {"name": "gc_msg", "type": "str", "array": 25},
+          {"name": "gc_color", "type": "uchar", "array": 3}
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "imp",
+    "title": "Game controller",
+    "flags": "down",
+    "groups": [
+      {
+        "name": "gamecontrols",
+        "signals": [
+          {"name": "gc_alive", "type": "ushort"},
+          {"name": "gc_speed", "type": "short"},
+          {"name": "gc_turn", "type": "short"},
+          {"name": "gc_L1", "type": "boolean"},
+          {"name": "gc_L2", "type": "boolean"},
+          {"name": "gc_R1", "type": "boolean"},
+          {"name": "gc_R2", "type": "boolean"},
+          {"name": "gc_triang", "type": "boolean"},
+          {"name": "gc_circle", "type": "boolean"},
+          {"name": "gc_cross", "type": "boolean"},
+          {"name": "gc_square", "type": "boolean"},
+          {"name": "gc_stickx", "type": "short"},
+          {"name": "gc_sticky", "type": "short"}
+        ]
+      }
+    ]
+  }
+  ]
+}
+

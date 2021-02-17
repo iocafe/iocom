@@ -74,7 +74,7 @@ def finish_c_files():
         hfile.write('#endif\n')
         hfile.close()
 
-    if cfile != None:        
+    if cfile != None:
         cfile.close()
 
 def write_signal_to_c_header(signal_name):
@@ -177,7 +177,7 @@ def write_signal_to_c_source_for_controller(signal_name, signal):
     if not is_dynamic:
         cfile.write(my_name + '.addr = ' + str(addr) + ';\n')
         cfile.write(my_name + '.n = ' + str(array_n) + ';\n')
-        
+
         my_flags = 'OS_' + type.upper()
         if not is_dynamic:
             if signal_name in pinlist:
@@ -190,7 +190,7 @@ def write_signal_to_c_source_for_controller(signal_name, signal):
                     my_flags += '|IOC_PFLAG_IS_PRM'
                 if pflag & 128:
                     my_flags += '|IOC_PFLAG_IS_PERSISTENT'
-                
+
                 if pflag & 192:
                     paddr = signal.get('paddr', None)
                     if paddr != None:
@@ -242,7 +242,7 @@ def process_mblk(mblk):
         all_failed("'signals' not found for " + block_name)
 
     mblk_list.append(device_name + '.' + block_name)
-   
+
     signal_nr = 1
     nro_signals = len(signals)
     max_addr = mblk['max_addr']
@@ -291,7 +291,7 @@ def process_assembly(assembly):
         hfile.write('\n  iocStreamerSignals ' + assembly_name + ';\n')
 
         if is_controller:
-            cfile.write('  /* ' + assembly_type + " '" + assembly_name + "' */\n")
+            cfile.write('\n /* ' + assembly_type + " '" + assembly_name + "' */\n")
         else:
             cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
         write_assembly_item(imp, "cmd", assembly_name)
@@ -312,7 +312,7 @@ def process_assembly(assembly):
         hfile.write('\n  iocStreamerSignals ' + assembly_name + ';\n')
 
         if is_controller:
-            cfile.write('  /* ' + assembly_type + " '" + assembly_name + "' */\n")
+            cfile.write('\n /* ' + assembly_type + " '" + assembly_name + "' */\n")
         else:
             cfile.write(',\n\n  /* Signals for ' + assembly_type + " '" + assembly_name + "' */\n  {")
         write_assembly_item(imp, "cmd", assembly_name)
@@ -327,13 +327,12 @@ def process_assembly(assembly):
         write_assembly_item(exp, "state", assembly_name)
         if not is_controller:
             cfile.write('OS_FALSE, OS_TRUE}')
-        
-        else:        
+
+        else:
             cfile.write('  s->' + assembly_name + '.flat_buffer = OS_TRUE;\n')
 
     else:
-        all_failed("Assembly '" + assembly_name + "' type '" + assembly_type + "' is uknown")
-
+        cfile.write("\n /* Assembly '" + assembly_name + "' type '" + assembly_type + "' generates no code */\n")
 
 # Preprocess signal
 # Assign addresses to signal
@@ -398,7 +397,7 @@ def preprocess_mblk(p_mblk, mblk):
             for group in groups:
                 signals = group.get("signals", None)
                 if signals != None:
-                    for signal in signals: 
+                    for signal in signals:
                         preprocess_signal(p_signals, signal)
 
         else:
@@ -408,7 +407,7 @@ def preprocess_mblk(p_mblk, mblk):
     unsorted_signals = p_mblk.get('signals', None)
     if unsorted_signals != None:
         sorted_signals = []
-        for i in sorted(unsorted_signals): 
+        for i in sorted(unsorted_signals):
             sorted_signals.append(unsorted_signals[i])
 
         p_mblk['signals'] = sorted_signals
@@ -514,7 +513,7 @@ def process_source_file(path):
             cfile.write('&' + p + '.hdr')
         cfile.write('\n};\n')
         cfile.write('#endif\n\n')
-        
+
         cfile.write('#if IOC_SIGNAL_RANGE_SUPPORT\n')
         cfile.write('OS_CONST iocDeviceHdr ' + device_name + '_hdr = {(iocMblkSignalHdr**)' + list_name + ', sizeof(' + list_name + ')/' + 'sizeof(iocMblkSignalHdr*)};\n')
         cfile.write('#endif\n')
