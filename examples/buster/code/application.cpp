@@ -193,8 +193,8 @@ osalStatus Application::run(os_timer *ti)
 void Application::steering(
     os_timer *ti)
 {
-    os_double speed, a, center_x, ar, al, l_dir, r_dir, sl, sr;
-    os_char state_bits, steering;
+    os_double speed, steering, a, center_x, ar, al, l_dir, r_dir, sl, sr;
+    os_char state_bits;
     os_ushort alive;
     os_int l_forward, r_forward;
     const os_double
@@ -202,7 +202,6 @@ void Application::steering(
         b_wheel_x = 5.5 * 2.54,
         f_wheel_x = 4.6 * 2.54,
         f_wheel_y = (7 + 1/2) * 2.54;
-
 
     alive = ioc_get_ext(&m_signals->imp.gc_alive, &state_bits, IOC_SIGNAL_DEFAULT);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto halt_motors;
@@ -260,9 +259,9 @@ void Application::steering(
         sl = -sr * (b_wheel_x + center_x) /(b_wheel_x - center_x);
     }
 
-osal_trace_int("~HERE steering", steering);
+/* osal_trace_int("~HERE steering", steering);
 osal_trace_int("~HERE l_dir ", l_dir);
-osal_trace_int("HERE r_dir ", r_dir);
+osal_trace_int("HERE r_dir ", r_dir); */
 
     if (sl < 0) { sl = -sl; l_forward = 0; } else { l_forward = 1; }
     if (sr < 0) { sr = -sr; r_forward = 0; } else { r_forward = 1; }
