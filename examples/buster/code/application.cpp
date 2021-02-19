@@ -218,7 +218,7 @@ void Application::steering(
      */
     speed = 0.01 * ioc_get_ext(&m_signals->imp.gc_LY, &state_bits, IOC_SIGNAL_DEFAULT);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto halt_motors;
-    steering = -0.009 * ioc_get_ext(&m_signals->imp.gc_LX, &state_bits, IOC_SIGNAL_DEFAULT);
+    steering = 0.009 * ioc_get_ext(&m_signals->imp.gc_LX, &state_bits, IOC_SIGNAL_DEFAULT);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto halt_motors;
     if (speed < -100) speed = -100;
     if (speed > 100) speed = 100;
