@@ -33,18 +33,27 @@
         "name": "gamecontrols",
         "signals": [
           {"name": "gc_alive", "type": "ushort"},
-          {"name": "gc_speed", "type": "short"},
-          {"name": "gc_turn", "type": "short"},
+          {"name": "gc_LX", "type": "short"},
+          {"name": "gc_LY", "type": "short"},
+          {"name": "gc_L", "type": "boolean"},
           {"name": "gc_L1", "type": "boolean"},
           {"name": "gc_L2", "type": "boolean"},
+          {"name": "gc_RX", "type": "short"},
+          {"name": "gc_RY", "type": "short"},
+          {"name": "gc_R", "type": "boolean"},
           {"name": "gc_R1", "type": "boolean"},
           {"name": "gc_R2", "type": "boolean"},
-          {"name": "gc_triang", "type": "boolean"},
-          {"name": "gc_circle", "type": "boolean"},
-          {"name": "gc_cross", "type": "boolean"},
-          {"name": "gc_square", "type": "boolean"},
-          {"name": "gc_stickx", "type": "short"},
-          {"name": "gc_sticky", "type": "short"}
+          {"name": "gc_Y", "type": "boolean"},
+          {"name": "gc_X", "type": "boolean"},
+          {"name": "gc_A", "type": "boolean"},
+          {"name": "gc_B", "type": "boolean"},
+          {"name": "gc_DU", "type": "boolean"},
+          {"name": "gc_DL", "type": "boolean"},
+          {"name": "gc_DR", "type": "boolean"},
+          {"name": "gc_DD", "type": "boolean"},
+          {"name": "gc_back", "type": "boolean"},
+          {"name": "gc_start", "type": "boolean"},
+          {"name": "gc_guide", "type": "boolean"}
         ]
       }
     ]
