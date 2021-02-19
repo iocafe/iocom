@@ -21,11 +21,9 @@ def plot_line(plt, x1, y1, x2, y2):
 
 def simulate(plt, myrange):
     b_wheel_d = 9.6
-    # b_wheel_d = (3 + 3/4) *2.54
     b_wheel_w = 2.3
     b_wheel_x = 5.5 * 2.54
     f_wheel_d = 7.6
-    # f_wheel_d = 3 * 2.54
     f_wheel_w = 2.3
     f_wheel_x = 4.6 * 2.54
     f_wheel_y = (7 + 1/2) * 2.54

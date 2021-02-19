@@ -196,6 +196,7 @@ void Application::steering(
     os_double speed, a, center_x, ar, al, l_dir, r_dir, sl, sr;
     os_char state_bits, steering;
     os_ushort alive;
+    os_int l_forward, r_forward;
     const os_double
         coeff = 2.0 * 3.1415 / 360, /* We use randians and degrees */
         b_wheel_x = 5.5 * 2.54,
@@ -259,29 +260,21 @@ void Application::steering(
         sl = -sr * (b_wheel_x + center_x) /(b_wheel_x - center_x);
     }
 
-    if (sl >= 0) {
-        pin_set_scaled(&pins.pwm.left_motor, sl, PIN_FORWARD_TO_IOCOM);
-        pin_set(&pins.outputs.left_dir, OS_TRUE);
-    }
-    else {
-        pin_set_scaled(&pins.pwm.left_motor, -sl, PIN_FORWARD_TO_IOCOM);
-        pin_set(&pins.outputs.left_dir, OS_FALSE);
-    }
-    if (sr >= 0) {
-        pin_set_scaled(&pins.pwm.right_motor, sr, PIN_FORWARD_TO_IOCOM);
-        pin_set(&pins.outputs.right_dir, OS_TRUE);
-    }
-    else {
-        pin_set_scaled(&pins.pwm.right_motor, -sr, PIN_FORWARD_TO_IOCOM);
-        pin_set(&pins.outputs.right_dir, OS_FALSE);
-    }
+osal_trace_int("~HERE steering", steering);
+osal_trace_int("~HERE l_dir ", l_dir);
+osal_trace_int("HERE r_dir ", r_dir);
 
+    if (sl < 0) { sl = -sl; l_forward = 0; } else { l_forward = 1; }
+    if (sr < 0) { sr = -sr; r_forward = 0; } else { r_forward = 1; }
+    pin_set(&pins.outputs.left_dir, l_forward);
+    pin_set(&pins.outputs.right_dir, r_forward);
+    pin_set_scaled(&pins.pwm.left_motor, sl, PIN_FORWARD_TO_IOCOM);
+    pin_set_scaled(&pins.pwm.right_motor, sr, PIN_FORWARD_TO_IOCOM);
     pin_set_scaled(&pins.pwm.left_wheel, l_dir, PIN_FORWARD_TO_IOCOM);
     pin_set_scaled(&pins.pwm.right_wheel, r_dir, PIN_FORWARD_TO_IOCOM);
-
     return;
 
-halt_motors:;
+halt_motors:
     pin_set_ext(&pins.pwm.left_motor, 0, PIN_FORWARD_TO_IOCOM);
     pin_set_ext(&pins.pwm.right_motor, 0, PIN_FORWARD_TO_IOCOM);
 }
