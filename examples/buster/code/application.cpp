@@ -14,6 +14,7 @@
 ****************************************************************************************************
 */
 #include "buster.h"
+#include <math.h>
 
 /* Global signals. This allows mapping IO pins directly to signals from JSON, but we can have only
    one application instance.
@@ -128,6 +129,10 @@ void Application::start(os_int argc, const os_char *argv[])
     m_camera1.start_thread(); /* Use if running camera in separate thread */
 #endif
 
+    os_get_timer(&m_analogs_timer);
+    m_gamecontroller_timer = m_analogs_timer;
+    m_gamecontroller_alive = 0;
+
     m_test_seq1.start(this);
 }
 
@@ -164,16 +169,13 @@ osalStatus Application::run(os_timer *ti)
 
     run_appplication_basics(ti);
 
-#if PINS_CAMERA
-    /* Use if running camera with application thread */
-    /* m_camera1.run(); */
-#endif
-
 #if IOCOM_USE_MORSE
     /* Keep the morse code LED alive. These indicates boot issues, etc, to user.
      */
     blink_morse_code(&m_morse, ti);
 #endif
+
+    steering(ti);
 
     /* Check for tasks, like saving parameters, changes in network node configuration and
        keep resource monitor signals alive.
@@ -187,6 +189,109 @@ osalStatus Application::run(os_timer *ti)
     return OSAL_SUCCESS;
 }
 
+
+void Application::steering(
+    os_timer *ti)
+{
+    os_double speed, a, center_x, ar, al, l_dir, r_dir, sl, sr;
+    os_char state_bits, steering;
+    os_ushort alive;
+    const os_double
+        coeff = 2.0 * 3.1415 / 360, /* We use randians and degrees */
+        b_wheel_x = 5.5 * 2.54,
+        f_wheel_x = 4.6 * 2.54,
+        f_wheel_y = (7 + 1/2) * 2.54;
+
+
+    alive = ioc_get_ext(&m_signals->imp.gc_alive, &state_bits, IOC_SIGNAL_DEFAULT);
+ //   if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto halt_motors;
+    if (alive == m_gamecontroller_alive) {
+        if (os_has_elapsed_since(&m_gamecontroller_timer, ti, 800)) goto halt_motors;
+    }
+    else if (alive) {
+        m_gamecontroller_timer = *ti;
+        m_gamecontroller_alive = alive;
+    }
+
+    /* "steering" input from -90 degrees (left) to 90 degrees (right) is for direction. 0 = straight forward.
+       "speed" is movement speed from -100% (backwards) to 100% (forward).
+     */
+    speed = 0.01 * ioc_get_ext(&m_signals->imp.gc_LY, &state_bits, IOC_SIGNAL_DEFAULT);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto halt_motors;
+    steering = 0.009 * ioc_get_ext(&m_signals->imp.gc_LX, &state_bits, IOC_SIGNAL_DEFAULT);
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto halt_motors;
+    if (speed < -100) speed = -100;
+    if (speed > 100) speed = 100;
+    if (steering < -90) steering = -90;
+    if (steering > 90) steering = 90;
+
+    /* Calculate center_x on back wheel axis as rotation center.
+     */
+    a = coeff * steering;
+    if (fabs(a) < 0.001) center_x = 1000000.0;
+    else center_x = f_wheel_y / tan(a);
+
+    /* Calculate wheel directins in radians and convert to degrees
+     */
+    ar = atan2(f_wheel_y, (center_x - f_wheel_x));
+    al = atan2(f_wheel_y, (center_x + f_wheel_x));
+    r_dir = ar/coeff;
+    l_dir = al/coeff;
+    set_angle_to_range(&r_dir);
+    set_angle_to_range(&l_dir);
+
+    /* Calculate motor speeds, sl is left motor speed and sr right motor. Positive values forward and negative back.
+     */
+    if (center_x >= b_wheel_x) {
+        sl = speed;
+        sr = sl * (center_x - b_wheel_x) /  (center_x + b_wheel_x);
+    }
+    else if (center_x <= -b_wheel_x) {
+        sr = speed;
+        sl = sr * (-center_x - b_wheel_x) /  (-center_x + b_wheel_x);
+    }
+    else if (center_x > 0) {
+        sl = speed * (center_x + b_wheel_x) / (2 * b_wheel_x);
+        sr = -sl * (b_wheel_x - center_x) /(b_wheel_x + center_x);
+    }
+    else {
+        sr = speed * (-center_x + b_wheel_x) / (2 * b_wheel_x);
+        sl = -sr * (b_wheel_x + center_x) /(b_wheel_x - center_x);
+    }
+
+    if (sl >= 0) {
+        pin_set_scaled(&pins.pwm.left_motor, sl, PIN_FORWARD_TO_IOCOM);
+        pin_set(&pins.outputs.left_dir, OS_TRUE);
+    }
+    else {
+        pin_set_scaled(&pins.pwm.left_motor, -sl, PIN_FORWARD_TO_IOCOM);
+        pin_set(&pins.outputs.left_dir, OS_FALSE);
+    }
+    if (sr >= 0) {
+        pin_set_scaled(&pins.pwm.right_motor, sr, PIN_FORWARD_TO_IOCOM);
+        pin_set(&pins.outputs.right_dir, OS_TRUE);
+    }
+    else {
+        pin_set_scaled(&pins.pwm.right_motor, -sr, PIN_FORWARD_TO_IOCOM);
+        pin_set(&pins.outputs.right_dir, OS_FALSE);
+    }
+
+    pin_set_scaled(&pins.pwm.left_wheel, l_dir, PIN_FORWARD_TO_IOCOM);
+    pin_set_scaled(&pins.pwm.right_wheel, r_dir, PIN_FORWARD_TO_IOCOM);
+
+    return;
+
+halt_motors:;
+    pin_set_ext(&pins.pwm.left_motor, 0, PIN_FORWARD_TO_IOCOM);
+    pin_set_ext(&pins.pwm.right_motor, 0, PIN_FORWARD_TO_IOCOM);
+}
+
+void Application::set_angle_to_range(
+    os_double *d)
+{
+    while (*d > 90.0) *d -= 180.0;
+    while (*d < -90.0) *d += 180.0;
+}
 
 /**
 ****************************************************************************************************

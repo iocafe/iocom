@@ -44,6 +44,12 @@ public:
     void stop();
     osalStatus run(os_timer *ti);
 
+    void steering(
+        os_timer *ti);
+
+    void set_angle_to_range(
+        os_double *d);
+
     virtual void communication_callback_1(
         struct iocHandle *handle,
         os_int start_addr,
@@ -68,6 +74,8 @@ public:
 #endif
 
     os_timer m_analogs_timer;
+    os_timer m_gamecontroller_timer;
+    os_ushort m_gamecontroller_alive;
 
     Minion m_minion1;
     minion_t *m_minion1_def;

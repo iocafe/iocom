@@ -30,8 +30,8 @@ def simulate(plt, myrange):
     f_wheel_x = 4.6 * 2.54
     f_wheel_y = (7 + 1/2) * 2.54
 
-    # We use randians and degrees to opposite direction
-    coeff = -2.0 * 3.1415 / 360
+    # We use randians and degrees 
+    coeff = 2.0 * 3.1415 / 360
 
     # for steering in range(-91,91,2):
     for steering in myrange:
@@ -92,7 +92,7 @@ def simulate(plt, myrange):
         plt.text(b_wheel_x, -b_wheel_d - 0.1, str(int(sr)) + "%", horizontalalignment='center',verticalalignment='top')
         plt.text(-b_wheel_x, -b_wheel_d - 0.1, str(int(sl)) + "%", horizontalalignment='center',verticalalignment='top')
 
-        plt.ylabel('grimpy wheel direction and speed')
+        plt.ylabel('grumpy wheel direction and speed')
         plt.gca().set_aspect('equal', adjustable='box')
         plt.xlim([-50, 50])
         plt.ylim([-10, 30])
