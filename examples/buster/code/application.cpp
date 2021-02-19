@@ -269,8 +269,8 @@ osal_trace_int("HERE r_dir ", r_dir); */
     pin_set(&pins.outputs.right_dir, r_forward);
     pin_set_scaled(&pins.pwm.left_motor, sl, PIN_FORWARD_TO_IOCOM);
     pin_set_scaled(&pins.pwm.right_motor, sr, PIN_FORWARD_TO_IOCOM);
-    pin_set_scaled(&pins.pwm.left_wheel, l_dir, PIN_FORWARD_TO_IOCOM);
-    pin_set_scaled(&pins.pwm.right_wheel, r_dir, PIN_FORWARD_TO_IOCOM);
+    pin_set_scaled(&pins.pwm.left_wheel, -l_dir, PIN_FORWARD_TO_IOCOM);
+    pin_set_scaled(&pins.pwm.right_wheel, -r_dir, PIN_FORWARD_TO_IOCOM);
     return;
 
 halt_motors:
