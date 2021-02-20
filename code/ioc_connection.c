@@ -975,8 +975,6 @@ static void ioc_connection_thread(
     os_int check_timeouts_ms, silence_ms, count;
     os_boolean is_serial;
 
-    osal_trace("connection: worker thread started");
-
     /* Parameters point to the connection object.
      */
     con = (iocConnection*)prm;
@@ -985,6 +983,8 @@ static void ioc_connection_thread(
     /* Let thread which created this one proceed.
      */
     osal_event_set(done);
+
+    osal_trace("connection: worker thread started");
 
     /* Select of time interval how often to check for timeouts, etc.
        Serial connections need to be monitored much more often than

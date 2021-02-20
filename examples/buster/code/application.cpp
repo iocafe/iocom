@@ -203,7 +203,7 @@ void Application::steering(
         f_wheel_x = 4.6 * 2.54,
         f_wheel_y = (7 + 1/2) * 2.54;
 
-    alive = ioc_get_ext(&m_signals->imp.gc_alive, &state_bits, IOC_SIGNAL_DEFAULT);
+    alive = (os_ushort)ioc_get_ext(&m_signals->imp.gc_alive, &state_bits, IOC_SIGNAL_DEFAULT);
     if ((state_bits & OSAL_STATE_CONNECTED) == 0) goto halt_motors;
     if (alive == m_gamecontroller_alive) {
         if (os_has_elapsed_since(&m_gamecontroller_timer, ti, 800)) goto halt_motors;
