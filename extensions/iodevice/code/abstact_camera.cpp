@@ -66,6 +66,7 @@ AbstractCamera::AbstractCamera()
     m_motion_prm.min_interval_ms = 10;
     m_motion_prm.max_interval_ms = 5000;
     m_motion_prm.movement_limit = 60;
+    m_camera_info = OS_NULL;
 }
 
 
@@ -82,6 +83,7 @@ AbstractCamera::~AbstractCamera()
 {
     osal_debug_assert(m_iface == OS_NULL);
     release_motion_detection(&m_motion);
+    pins_release_camera_info(m_camera_info);
 }
 
 

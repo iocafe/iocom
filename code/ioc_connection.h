@@ -27,7 +27,8 @@
  *  TCP frame size, signle tcp frame can hold multiple communication frames.
  */
 /*@{*/
-#define IOC_SOCKET_FRAME_SZ 464
+/* #define IOC_SOCKET_FRAME_SZ 464 *** This was the initial value. At 19.1.2021 testing performance with larger frame size */
+#define IOC_SOCKET_FRAME_SZ 1392
 #define IOC_SERIAL_FRAME_SZ 96
 /*@}*/
 

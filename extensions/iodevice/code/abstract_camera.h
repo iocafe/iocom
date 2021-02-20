@@ -152,6 +152,10 @@ namespace IoDevice
          */
         os_boolean m_started;
 
+        /* Camera information chain.
+         */
+        pinsCameraInfo *m_camera_info;
+
         /* Motion detection.
          */
         DetectMotion m_motion;
