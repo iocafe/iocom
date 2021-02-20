@@ -1,7 +1,7 @@
 [Unit]
 Description=Grumpy Borg
 
-Wants=network.target
+Wants=network-online.target
 After=syslog.target network-online.target
 
 [Service]
