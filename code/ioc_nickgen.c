@@ -16,12 +16,17 @@
 #include "iocom.h"
 #if IOC_NICKGEN_SUPPORT
 
-/* Parts of nick name
+/* Nick name is simply two random 2/3 three letter words put together.
  */
-OS_CONST os_char *ioc_nick1[] = {"hey", "ant", "yaw", "bot", "ink", "mic", "dog", "red",
-    "god", "oak", "air", "fir", "two", "top", "awe", "blu", "woo", "hoo",
+OS_CONST os_char *ioc_nick1[] = {"hey", "ant", "jam", "bot", "ink", "mic", "dog",
+    "red", "god", "oak", "air", "fir", "two", "top", "awe", "blu", "woo", "hoo",
     "eye", "ear", "rat", "dot", "meg", "dir", "cat", "how", "pin", "pot",
-    "hat", "but", "gut", "gun", "nut", "tap", "bra", "leg", "jaw", "kit", "pit", OS_NULL};
+    "hat", "but", "gut", "gun", "nut", "tap", "bra", "leg", "jaw", "kit", "pit",
+    "hot", "jar", "egg", "sun", "run", "pun", "mad", "min", "max", "ice", "hug",
+    "hog", "ham", "meg", "get", "git", "put", "set", "you", "bug", "rug", "jim",
+    "gin", "bob", "ace", "xi", "ox", "old", "one", "two", "yin", "ape", "bet",
+    "daw", "dow", "cop", "elk", "eel", "fun", "cut", "hex", "guy", "pea", "zoo",
+    "sad", "it", "we", "me", "ax", OS_NULL};
 
 
 /**
