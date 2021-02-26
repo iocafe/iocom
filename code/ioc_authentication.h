@@ -112,7 +112,7 @@ iocAllowedNetworkConf;
 void ioc_make_authentication_frame(
     struct iocConnection *con);
 
-/* Process received athentication data frame.
+/* Process received authentication data frame.
  */
 osalStatus ioc_process_received_authentication_frame(
     struct iocConnection *con,

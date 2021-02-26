@@ -1,15 +1,15 @@
 /**
 
-  @file    ioc_authentication.c
-  @brief   Device/user authentication.
+
+  @file    ioc_switchbox_auth_frame.c
+  @brief   Device/user authentication for switchbox and ecom.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
 
-  Low level of user authentication and authorization. Handles serialization of authentication
-  frames over connection and on server (IOC_FULL_AUTHENTICATION) works as interface between
-  iocom and authentication code. Notice that ioserver extension library contains default
-  server authentication which should be sufficient for simpler applications.
+  Low level handling of authentication frames for ecom and switchbox communication. The base
+  iocom library contains it's own authentication frame related code, this implementation is
+  intended for switchbox and ecom, to use interchangable IOCOM compatible authentication frames.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -19,27 +19,41 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
+#if IOC_DYNAMIC_MBLK_CODE
+
 
 /**
 ****************************************************************************************************
 
-  @brief Make authentication data frame.
-  @anchor ioc_make_authentication_frame
+  @brief Send switchbox/ecom authentication frame to stream.
+  @anchor send_authentication_frame
 
-  The ioc_make_authentication_frame() generates outgoing data frame which contains information
-  to authenticate this IO device, etc.
+  The send_authentication_frame() generates outgoing data frame which contains information
+  to authenticate the user, etc. This follows the IOCOM authentication frame format, so
+  same switchbox process can handle both IOCOM and ECOM protocols.
 
-  @param   con Pointer to the connection object.
-  @return  None.
+  This call should be called repeatedly (as triggered by select) until authentication frame
+  is sent or an error occurs. The function will return OSAL_COMPLETED once authentication
+  frame is sent.
+
+  Note: Now IOCOM function ioc_generate_header is called to generate header. This is not really
+  pretty, we should perhaps make our own copy as part of eobjects. But this is left for now as is,
+  in case IOCOM protocol is still modified, we wish to carry the changes here.
+
+  @param   abuf Buffer structure for creating and sending the authentication frame. Zero this
+           structure before calling this function the first time.
+
+  @return  OSAL_COMPLETED Authentication frame completely sent.
+           OSAL_PENDING Authentication frame not yet send, but no error thus far.
+           Other return values indicate an error.
 
 ****************************************************************************************************
 */
-void ioc_make_authentication_frame(
-    iocConnection *con)
+osalStatus icom_switchbox_send_authentication_frame(
+    osalStream stream,
+    iocSwitchboxAuthenticationFrameBuffer *abuf,
+    iocSwitchboxAuthenticationParameters *prm)
 {
-    iocRoot
-        *root;
-
     iocSendHeaderPtrs
         ptrs;
 
@@ -50,6 +64,9 @@ void ioc_make_authentication_frame(
         *start;
 
     os_char
+        buf[IOC_SOCKET_FRAME_SZ];
+
+    const os_char
         *network_name,
         *user_name;
 
@@ -57,28 +74,31 @@ void ioc_make_authentication_frame(
         *password;
 
     os_int
-        device_nr;
+        content_bytes,
+        used_bytes;
 
-    root = con->link.root;
 
-    /* Set frame header.
+    os_ushort
+        crc;
+
+    /* Generate IOCOM frame header.
      */
-    ioc_generate_header(con, con->frame_out.buf, &ptrs, 0, 0);
+    ioc_generate_header(OS_NULL, buf, &ptrs, 0, 0);
 
     /* Generate frame content. Here we do not check for buffer overflow,
        we know (and trust) that it fits within one frame.
      */
-    p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
+    p = start = (os_uchar*)buf + ptrs.header_sz;
     *(p++) = IOC_AUTHENTICATION_DATA;
     flags = 0;
     auth_flags_ptr = p;
     *(p++) = 0;
 
-    network_name = root->network_name;
-    user_name = root->device_name;
-    device_nr = root->device_nr;
+    network_name = prm->network_name;
+    user_name = prm->user_name;
 
-#if IOC_AUTHENTICATION_CODE
+#if 0
+// #if IOC_AUTHENTICATION_CODE
     /* If we have user name, we use it instead of device name. User name
        may have also network name, like ispy.cafenet.
      */
@@ -88,19 +108,19 @@ void ioc_make_authentication_frame(
         os_strncpy(user_name_buf, con->user_override, sizeof(user_name_buf));
         q = os_strchr(user_name_buf, '.');
         if (q) *q = '\0';
-        device_nr = 0;
         q = os_strchr(con->user_override, '.');
         if (q) network_name = q + 1;
     }
 #endif
 
     ioc_msg_setstr(user_name, &p);
-    ioc_msg_set_uint(device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0,
+    ioc_msg_set_uint(0 /* device_nr */,
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
     ioc_msg_setstr(network_name, &p);
 
     password = osal_str_empty;
-#if IOC_AUTHENTICATION_CODE
+#if 0
+// #if IOC_AUTHENTICATION_CODE
     if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION)) == IOC_SECURE_CONNECTION)
     {
         /* If we have password given by user
@@ -125,82 +145,95 @@ void ioc_make_authentication_frame(
 
     /* Set connect up and bidirectional flags.
      */
-    if (con->flags & IOC_CONNECT_UP)
+    /* if (con->flags & IOC_CONNECT_UP)
     {
         flags |= IOC_AUTH_CONNECT_UP;
-    }
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-    if (con->flags & IOC_BIDIRECTIONAL_MBLKS)
-    {
-        flags |= IOC_AUTH_BIDIRECTIONAL_COM;
-    }
-#endif
-    if (con->flags & IOC_CLOUD_CONNECTION)
-    {
-        flags |= IOC_AUTH_CLOUD_CON;
-    }
+    } */
 
     *auth_flags_ptr = flags;
 
     /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
        if transmission is blocked by flow control.
      */
-    if (ioc_finish_frame(con, &ptrs, start, p))
-        return;
+    content_bytes = (os_int)(p - start);
+    used_bytes = content_bytes + ptrs.header_sz;
 
-    con->authentication_sent = OS_TRUE;
+    /* Fill in data size and flag as system frame.
+     */
+    *ptrs.data_sz_low = (os_uchar)content_bytes;
+    if (ptrs.data_sz_high)
+    {
+        content_bytes >>= 8;
+        *ptrs.data_sz_high = (os_uchar)content_bytes;
+    }
+    *ptrs.flags |= IOC_SYSTEM_FRAME;
+
+    /* Calculate check sum out of whole used frame buffer. Notice that check sum
+     * position within frame is zeros when calculating the check sum.
+     */
+    if (ptrs.checksum_low)
+    {
+        crc = os_checksum(buf, used_bytes, OS_NULL);
+        *ptrs.checksum_low = (os_uchar)crc;
+        *ptrs.checksum_high = (os_uchar)(crc >> 8);
+    }
+
+//     m_authentication_sent = OS_TRUE;
+    return OSAL_COMPLETED;
 }
-
 
 /**
 ****************************************************************************************************
 
-  @brief Process complete authentication data frame received from socket or serial port.
-  @anchor ioc_process_received_authentication_frame
+  @brief Receive and process swtchbox/ecom authentication frame from stream.
+  @anchor ecom_process_received_authentication_frame
 
-  The ioc_process_received_authentication_frame() function is called once a complete system frame
+  The ecom_receive_authentication_frame() function is called once a complete system frame
   containing authentication data for a device has been received. The authentication data
   identifies the device (device name, number and network name), optionally identifies the user
   with user name and can have password for the connection.
   If user authentication is enabled (by ioc_enable_user_authentication() function), the
   user is authenticated.
 
-  The secondary task of authentication frame is to inform server side of the accepted connection
-  is upwards or downwards in IO device hierarchy.
+  This call should be called repeatedly (as triggered by select) until authentication frame
+  is completely received and processed, or an error occurs. The function will return
+  OSAL_COMPLETED once authentication
+  frame is sent.
+
+
 
   @param   con Pointer to the connection object.
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate unauthenticated device or user,
-           or a corrupted frame.
+  @return  OSAL_COMPLETED Authentication frame has been received and processed.
+           OSAL_PENDING Authentication frame not yet send, but no error thus far.
+           Other return values indicate an error.
 
 ****************************************************************************************************
 */
-osalStatus ioc_process_received_authentication_frame(
-    struct iocConnection *con,
-    os_uint mblk_id,
-    os_char *data)
+osalStatus icom_switchbox_process_authentication_frame(
+    osalStream stream,
+    iocSwitchboxAuthenticationFrameBuffer *abuf,
+    iocAuthenticationResults *results)
 {
     iocUser user;
-    iocRoot *root;
     os_uchar *p, auth_flags;
     osalStatus s;
-#if OSAL_SECRET_SUPPORT
-    os_char tmp_password[IOC_PASSWORD_SZ];
-#endif
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
+    // os_char tmp_password[IOC_PASSWORD_SZ];
     os_char nbuf[OSAL_NBUF_SZ];
     os_uint device_nr;
-#endif
 
-    root = con->link.root;
+    os_char data[IOC_SOCKET_FRAME_SZ];
+
+//     root = con->link.root;
     p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
 
     os_memclear(&user, sizeof(user));
     user.flags = auth_flags;
 
+#if 0
     /* If listening end of connection (server).
      */
     if (con->flags & IOC_LISTENER)
@@ -217,17 +250,6 @@ osalStatus ioc_process_received_authentication_frame(
                 ioc_add_con_to_global_mbinfo(con);
             }
         }
-
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (auth_flags & IOC_AUTH_BIDIRECTIONAL_COM)
-        {
-            con->flags |= IOC_BIDIRECTIONAL_MBLKS;
-        }
-        else
-        {
-            con->flags &= ~IOC_BIDIRECTIONAL_MBLKS;
-        }
-#endif
     }
     if (auth_flags & IOC_AUTH_CLOUD_CON)
     {
@@ -238,11 +260,11 @@ osalStatus ioc_process_received_authentication_frame(
     {
         con->flags |= IOC_NO_CERT_CHAIN;
     }
+#endif
 
     s = ioc_msg_getstr(user.user_name, IOC_DEVICE_ID_SZ, &p);
-    if (s) return s;
+    if (s) return OSAL_STATUS_FAILED;
 
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     device_nr = ioc_msg_get_uint(&p,
         auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
         auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
@@ -251,18 +273,13 @@ osalStatus ioc_process_received_authentication_frame(
         osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
         os_strncat(user.user_name, nbuf, IOC_DEVICE_ID_SZ);
     }
-#else
-    ioc_msg_get_uint(&p,
-        auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
-        auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
-#endif
 
     s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
-    if (s) return s;
+    if (s) return OSAL_STATUS_FAILED;
 
     /* Get password and hash it
      */
-#if OSAL_SECRET_SUPPORT
+/* #if OSAL_SECRET_SUPPORT
     s = ioc_msg_getstr(tmp_password, IOC_PASSWORD_SZ, &p);
     if (s) return s;
     if (tmp_password[0])
@@ -273,15 +290,12 @@ osalStatus ioc_process_received_authentication_frame(
     {
         os_strncpy(user.password, tmp_password, IOC_PASSWORD_SZ);
     }
-#else
-    s = ioc_msg_getstr(user.password, IOC_PASSWORD_SZ, &p);
-    if (s) return s;
 #endif
+*/
 
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     /* Check user autorization.
      */
-    if (root->authorization_func &&
+/*    if (root->authorization_func &&
         (con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
          == (IOC_LISTENER|IOC_SECURE_CONNECTION))
     {
@@ -290,21 +304,23 @@ osalStatus ioc_process_received_authentication_frame(
             &user, con->parameters, root->authorization_context);
         if (s) return s;
     }
-#endif // IOC_FULL_AUTHENTICATION
+*/
 
     /** If we are automatically setting for a device (root network name is "*" or ""
      */
-    if (!os_strcmp(root->network_name, osal_str_asterisk) || root->network_name[0] == '\0')
+/*     if (!os_strcmp(root->network_name, osal_str_asterisk) || root->network_name[0] == '\0')
     {
         os_strncpy(root->network_name, user.network_name, IOC_NETWORK_NAME_SZ);
         ioc_set_network_name(root);
     }
+   */
 
-    con->authentication_received = OS_TRUE;
-    return OSAL_SUCCESS;
+    // m_authentication_received = OS_TRUE;
+    return OSAL_COMPLETED;
 }
 
 
+#if 0
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
 /**
 ****************************************************************************************************
@@ -475,4 +491,6 @@ os_boolean ioc_is_network_authorized(
 }
 
 #endif
+#endif
 
+#endif

@@ -97,7 +97,7 @@ osalStatus ioc_connection_send(
     }
 
     /* We must send and receive authentication before sending anything else.
-       Controller needs to send athentication before device to allow
+       Controller needs to send authentication before device to allow
      * network name "*" to connect to automatically select the network.
      */
     if ((con->flags & IOC_CONNECT_UP) && !con->authentication_received)
@@ -774,7 +774,10 @@ static osalStatus ioc_write_to_stream(
   The ioc_generate_header() function generates framing header for the outgoing data messages.
   The generated header is different for serial and socket communications.
 
-  @param   con Pointer to the connection object.
+  @param   con Pointer to the connection object. If this is OS_NULL, frame number is set
+           to zero, and network connection (not serial) is assumeed. This option is
+           supported to alloc creating IOCOM frame header from ecom and switchbox with
+           the same function.
   @param   hdr Ponter to buffer where to store the generated binary header.
   @param   ptrs Pointers to structure into which to store pointers to binary header fields
            which need to be set or modfied later. Generates header length is also stored
@@ -803,12 +806,23 @@ void ioc_generate_header(
 
     flags = 0;
     os_memclear(ptrs, sizeof(iocSendHeaderPtrs));
-    is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
     p = (os_uchar*)hdr;
 
     /* FRAME_NR: Frame number is used to check that no frame is dropped.
      */
+#if IOC_DYNAMIC_MBLK_CODE
+    if (con) {
+        is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
+        *(p++) = con->frame_out.frame_nr;
+    }
+    else {
+        is_serial = OS_FALSE;
+        *(p++) = 0;
+    }
+#else
+    is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
     *(p++) = con->frame_out.frame_nr;
+#endif
 
     if (is_serial)
     {
@@ -858,6 +872,7 @@ void ioc_generate_header(
     *ptrs->flags = flags;
     ptrs->header_sz = (os_int)(p - (os_uchar*)hdr);
 }
+
 
 
 /**
