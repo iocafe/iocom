@@ -17,10 +17,6 @@
 
 /* Forward referred static functions.
  */
-osalStatus ioc_read_frame(
-    iocReadFrameState *p_rfs,
-    osalStream stream);
-
 static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
     os_uint mblk_id,
@@ -92,7 +88,6 @@ osalStatus ioc_connection_receive(
 #endif
 
     os_memclear(&rfs, sizeof(rfs));
-
     rfs.buf = (os_uchar*)con->frame_in.buf;
     rfs.n = con->frame_in.pos;
     rfs.is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
@@ -220,14 +215,15 @@ alldone:
 /**
 ****************************************************************************************************
 
-  @brief Receive data from connection.
-  @anchor ioc_connection_receive
+  @brief Receive one IOCOM frame from connection.
+  @anchor ioc_read_frame
 
-  The ioc_connection_receive() function
+  The ioc_read_frame() function tries to read one frame from IOCOM connection into buffer
+  (p_rfs)
 
-  @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if whole frame was received. OSAL_PENDING if nothing or
-           some data was received. Other values indicate broken connection error.
+  @param   p_rfs Pointer to parameter/output structure.
+  @param   stream OSAL stream to read from.
+  @return  OSAL_SUCCESS if as long as there is no errors, other return values indicate a failure.
 
 ****************************************************************************************************
 */
@@ -363,14 +359,6 @@ osalStatus ioc_read_frame(
 
         if (status)
         {
-            /* If this is late return for refused connection,
-               delay trying to reopen.
-             */
-            /* if (status == OSAL_STATUS_CONNECTION_REFUSED)
-            {
-                os_get_timer(&con->open_fail_timer);
-                con->open_fail_timer_set = OS_TRUE;
-            } */
             osal_trace_int("Reading stream failed, status=", status);
             return status;
         }

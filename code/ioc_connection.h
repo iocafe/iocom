@@ -237,6 +237,8 @@ typedef struct iocSendHeaderPtrs
 iocSendHeaderPtrs;
 
 
+/* Structure to pass data in and out of ioc_read_frame() function.
+ */
 typedef struct iocReadFrameState {
     os_int
         n,
@@ -822,6 +824,12 @@ osalStatus ioc_acknowledge_as_needed(
  */
 osalStatus ioc_connection_receive(
     iocConnection *con);
+
+/* Receive one IOCOM frame from connection.
+ */
+osalStatus ioc_read_frame(
+    iocReadFrameState *p_rfs,
+    osalStream stream);
 
 /* Get string from received message.
  */

@@ -22,9 +22,15 @@
 #if IOC_DYNAMIC_MBLK_CODE
 
 
+/* Forward referred static functions.
+ */
 static void icom_make_authentication_frame(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm);
+
+static osalStatus icom_switchbox_parse_authentication_frame(
+    iocSwitchboxAuthenticationFrameBuffer *abuf,
+    iocAuthenticationResults *results);
 
 
 /**
@@ -263,112 +269,77 @@ osalStatus icom_switchbox_process_authentication_frame(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results)
 {
-#if 0
-    iocUser user;
-    os_uchar *p, auth_flags;
-    osalStatus s;
-    // os_char tmp_password[IOC_PASSWORD_SZ];
-    os_char nbuf[OSAL_NBUF_SZ];
-    os_uint device_nr;
+    iocReadFrameState
+        rfs;
 
-    if (abuf->buf_pos < 10) {
+    osalStatus
+        status;
 
+#if OSAL_SERIAL_SUPPORT
+    os_ushort
+        crc;
+#endif
 
-    }
-    n = sizeof()
+    os_memclear(&rfs, sizeof(rfs));
+    rfs.buf = (os_uchar*)abuf->buf;
+    rfs.n = abuf->buf_pos;
+    // rfs.is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
+    rfs.frame_sz = IOC_MAX_AUTHENTICATION_FRAME_SZ;
 
-//     root = con->link.root;
-    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
-    auth_flags = (os_uchar)*(p++);
-
-    os_memclear(&user, sizeof(user));
-    user.flags = auth_flags;
-
-#if 0
-    /* If listening end of connection (server).
+    /* Read one received frame using IOCOM frame format.
      */
-    if (con->flags & IOC_LISTENER)
-    {
-        if (auth_flags & IOC_AUTH_CONNECT_UP)
+    rfs.frame_nr = 0;
+    status = ioc_read_frame(&rfs, stream);
+    if (status) {
+        /* If this is late return for refused connection,
+           delay trying to reopen.
+         */
+        /* if (status == OSAL_STATUS_CONNECTION_REFUSED)
         {
-            con->flags &= ~IOC_CONNECT_UP;
-        }
-        else
+            os_get_timer(&con->open_fail_timer);
+            con->open_fail_timer_set = OS_TRUE;
+        } */
+
+        return status;
+    }
+
+    /* If we received something, record time of receive and add to bytes received.
+     */
+    if (rfs.bytes_received) {
+        // os_get_timer(&con->last_receive);
+    }
+    abuf->buf_pos = rfs.n;
+
+    /* If we have not received whole frame, we need to wait.
+     */
+    if (rfs.n < rfs.needed)
+    {
+        return OSAL_PENDING;
+    }
+
+#if OSAL_SERIAL_SUPPORT
+    /* Get and verify check sum.
+     */
+    if (rfs.is_serial)
+    {
+        /* Get the checksum from the received data and clear the checksum position
+           in received data. The check sum must be zeroed, because those values
+           are zeroes when calculating check sum while sending.
+         */
+        crc = rfs.buf[1] | ((os_ushort)rfs.buf[2] << 8);
+        rfs.buf[1] = rfs.buf[2] = 0;
+
+        if (crc != os_checksum((os_char*)rfs.buf, rfs.needed, OS_NULL))
         {
-            if ((con->flags & IOC_CONNECT_UP) == 0)
-            {
-                con->flags |= IOC_CONNECT_UP;
-                ioc_add_con_to_global_mbinfo(con);
-            }
+            osal_trace("Checksum error");
+            return OSAL_STATUS_FAILED;
         }
     }
-    if (auth_flags & IOC_AUTH_CLOUD_CON)
-    {
-        con->flags |= IOC_CLOUD_CONNECTION;
-    }
-
-    if (auth_flags & IOC_AUTH_NO_CERT_CHAIN)
-    {
-        con->flags |= IOC_NO_CERT_CHAIN;
-    }
 #endif
 
-    s = ioc_msg_getstr(user.user_name, IOC_DEVICE_ID_SZ, &p);
-    if (s) return OSAL_STATUS_FAILED;
-
-    device_nr = ioc_msg_get_uint(&p,
-        auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
-        auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
-    if (device_nr)
-    {
-        osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
-        os_strncat(user.user_name, nbuf, IOC_DEVICE_ID_SZ);
-    }
-
-    s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
-    if (s) return OSAL_STATUS_FAILED;
-
-    /* Get password and hash it
+    /* Whole authentication frame successfully received, parse content.
      */
-/* #if OSAL_SECRET_SUPPORT
-    s = ioc_msg_getstr(tmp_password, IOC_PASSWORD_SZ, &p);
-    if (s) return s;
-    if (tmp_password[0])
-    {
-        osal_hash_password(user.password, tmp_password, IOC_PASSWORD_SZ);
-    }
-    else
-    {
-        os_strncpy(user.password, tmp_password, IOC_PASSWORD_SZ);
-    }
-#endif
-*/
-
-    /* Check user autorization.
-     */
-/*    if (root->authorization_func &&
-        (con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
-         == (IOC_LISTENER|IOC_SECURE_CONNECTION))
-    {
-        ioc_release_allowed_networks(&con->allowed_networks);
-        s = root->authorization_func(root, &con->allowed_networks,
-            &user, con->parameters, root->authorization_context);
-        if (s) return s;
-    }
-*/
-
-    /** If we are automatically setting for a device (root network name is "*" or ""
-     */
-/*     if (!os_strcmp(root->network_name, osal_str_asterisk) || root->network_name[0] == '\0')
-    {
-        os_strncpy(root->network_name, user.network_name, IOC_NETWORK_NAME_SZ);
-        ioc_set_network_name(root);
-    }
-   */
-
-    // m_authentication_received = OS_TRUE;
-#endif
-    return OSAL_COMPLETED;
+    return icom_switchbox_parse_authentication_frame(abuf, results);
 }
 
 
@@ -402,7 +373,6 @@ osalStatus icom_switchbox_process_authentication_frame(
 ****************************************************************************************************
 */
 static osalStatus icom_switchbox_parse_authentication_frame(
-    osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results)
 {
@@ -415,7 +385,6 @@ static osalStatus icom_switchbox_parse_authentication_frame(
 
     os_char data[IOC_SOCKET_FRAME_SZ];
 
-//     root = con->link.root;
     p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
 
@@ -504,7 +473,6 @@ static osalStatus icom_switchbox_parse_authentication_frame(
     }
    */
 
-    // m_authentication_received = OS_TRUE;
     return OSAL_COMPLETED;
 }
 
