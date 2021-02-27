@@ -384,9 +384,7 @@ static osalStatus icom_switchbox_parse_authentication_frame(
     os_char nbuf[OSAL_NBUF_SZ];
     os_uint device_nr;
 
-    os_char data[IOC_SOCKET_FRAME_SZ];
-
-    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
+    p = (os_uchar*)abuf->buf + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
 
     os_memclear(&user, sizeof(user));
