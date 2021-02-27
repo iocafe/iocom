@@ -53,6 +53,12 @@ void ioc_make_authentication_frame(
         *network_name,
         *user_name;
 
+#if IOC_AUTHENTICATION_CODE
+    os_char
+        user_name_buf[IOC_NAME_SZ],
+        *q;
+#endif
+
     const os_char
         *password;
 
@@ -84,7 +90,6 @@ void ioc_make_authentication_frame(
      */
     if (con->user_override[0] != '\0')
     {
-        os_char user_name_buf[IOC_NAME_SZ], *q;
         os_strncpy(user_name_buf, con->user_override, sizeof(user_name_buf));
         q = os_strchr(user_name_buf, '.');
         if (q) *q = '\0';

@@ -28,7 +28,8 @@
 
 #define IOC_MAX_AUTHENTICATION_FRAME_SZ 256
 
-typedef struct iocSwitchboxAuthenticationFrameBuffer {
+typedef struct iocSwitchboxAuthenticationFrameBuffer
+{
     os_char buf[IOC_MAX_AUTHENTICATION_FRAME_SZ];
     os_short buf_used;
     os_short buf_pos;
@@ -36,10 +37,11 @@ typedef struct iocSwitchboxAuthenticationFrameBuffer {
 iocSwitchboxAuthenticationFrameBuffer;
 
 
-typedef struct iocSwitchboxAuthenticationParameters {
-    os_char *network_name;
-    os_char *user_name;
-    os_char *password;
+typedef struct iocSwitchboxAuthenticationParameters
+{
+    const os_char *network_name;
+    const os_char *user_name;
+    const os_char *password;
 }
 iocSwitchboxAuthenticationParameters;
 

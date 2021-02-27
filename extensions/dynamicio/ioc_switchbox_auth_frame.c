@@ -132,6 +132,8 @@ static void icom_make_authentication_frame(
     os_ushort
         crc;
 
+    // os_char user_name_buf[IOC_NAME_SZ], *q;
+
     buf = abuf->buf;
 
     /* Generate IOCOM frame header.
@@ -157,7 +159,6 @@ static void icom_make_authentication_frame(
      */
     if (con->user_override[0] != '\0')
     {
-        os_char user_name_buf[IOC_NAME_SZ], *q;
         os_strncpy(user_name_buf, con->user_override, sizeof(user_name_buf));
         q = os_strchr(user_name_buf, '.');
         if (q) *q = '\0';
