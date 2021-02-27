@@ -237,6 +237,32 @@ typedef struct iocSendHeaderPtrs
 iocSendHeaderPtrs;
 
 
+typedef struct iocReadFrameState {
+    os_int
+        n,
+        needed,
+        frame_sz;
+
+    os_uint
+        bytes_received;
+
+    os_ushort
+        data_sz;
+
+    os_uchar
+        frame_nr;
+
+    os_boolean
+        is_serial;
+
+    os_uchar
+        flags,
+        extra_flags,
+        *buf; /* keep unsigned */
+}
+iocReadFrameState;
+
+
 /**
 ****************************************************************************************************
     Parameters for ioc_connect() function.

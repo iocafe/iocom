@@ -17,6 +17,10 @@
 
 /* Forward referred static functions.
  */
+osalStatus ioc_read_frame(
+    iocReadFrameState *p_rfs,
+    osalStream stream);
+
 static osalStatus ioc_process_received_data_frame(
     iocConnection *con,
     os_uint mblk_id,
@@ -55,21 +59,11 @@ static osalStatus ioc_store_data_frame(
 osalStatus ioc_connection_receive(
     iocConnection *con)
 {
+    iocReadFrameState
+        rfs;
+
     os_uchar
-        flags = 0,
-        extra_flags = 0,
-        *buf, /* keep unsigned */
         *p; /* keep unsigned */
-
-    os_boolean
-        is_serial;
-
-    os_int
-        n,
-        needed = 0;
-
-    os_ushort
-        data_sz = 0;
 
     os_uint
         mblk_id;
@@ -78,10 +72,7 @@ osalStatus ioc_connection_receive(
         addr;
 
     osalStatus
-        status = OSAL_STATUS_FAILED;
-
-    os_memsz
-        n_read;
+        status = OSAL_PENDING;
 
     os_ushort
         crc;
@@ -100,105 +91,259 @@ osalStatus ioc_connection_receive(
     ioc_lock(root);
 #endif
 
-    is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
+    os_memclear(&rfs, sizeof(rfs));
 
-    buf = (os_uchar*)con->frame_in.buf;
-    n = con->frame_in.pos;
+    rfs.buf = (os_uchar*)con->frame_in.buf;
+    rfs.n = con->frame_in.pos;
+    rfs.is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
+    rfs.frame_sz = rfs.is_serial ? IOC_SERIAL_FRAME_SZ : IOC_SOCKET_FRAME_SZ;
+
+    /* Read one received frame.
+     */
+    rfs.frame_nr = con->frame_in.frame_nr;
+    status = ioc_read_frame(&rfs, con->stream);
+    if (status) {
+        /* If this is late return for refused connection,
+           delay trying to reopen.
+         */
+        if (status == OSAL_STATUS_CONNECTION_REFUSED)
+        {
+            os_get_timer(&con->open_fail_timer);
+            con->open_fail_timer_set = OS_TRUE;
+        }
+
+        ioc_unlock(root);
+        return status;
+    }
+
+    /* If we received something, record time of receive and add to bytes received.
+     */
+    if (rfs.bytes_received) {
+        os_get_timer(&con->last_receive);
+        con->bytes_received += rfs.bytes_received;
+    }
+    con->frame_in.pos = rfs.n;
+
+    /* If we have not received whole frame, we need to wait.
+     */
+    if (rfs.n < rfs.needed)
+    {
+        ioc_unlock(root);
+        return OSAL_PENDING;
+    }
+
+    /* If this is acknowledge.
+     */
+    if (rfs.buf[0] == IOC_ACKNOWLEDGE)
+    {
+        con->processed_bytes = (os_uint)rfs.buf[1] | (((os_uint)rfs.buf[2]) << 8);
+        if (con->flags & IOC_SOCKET) {
+            con->processed_bytes |= (((os_uint)rfs.buf[3]) << 16);
+        }
+
+        osal_trace3_int("ACK received, in air=",
+            (con->bytes_sent - con->processed_bytes));
+
+        status = OSAL_SUCCESS;
+        goto alldone;
+    }
+
+#if OSAL_SERIAL_SUPPORT
+    /* Get and verify check sum.
+     */
+    if (rfs.is_serial)
+    {
+        /* Get the checksum from the received data and clear the checksum position
+           in received data. The check sum must be zeroed, because those values
+           are zeroes when calculating check sum while sending.
+         */
+        crc = rfs.buf[1] | ((os_ushort)rfs.buf[2] << 8);
+        rfs.buf[1] = rfs.buf[2] = 0;
+
+        if (crc != os_checksum((os_char*)rfs.buf, rfs.needed, OS_NULL))
+        {
+            ioc_unlock(root);
+            osal_trace("Checksum error");
+            return OSAL_STATUS_FAILED;
+        }
+    }
+#endif
+
+    /* MBLK: Memory block identifier, ADDR: Address within memory block.
+     */
+    p = rfs.buf + (rfs.is_serial ? 5 : 4);
+    if (rfs.extra_flags) p++;
+    mblk_id = ioc_msg_get_uint(&p, rfs.flags & IOC_MBLK_HAS_TWO_BYTES,
+        rfs.extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES);
+    addr = ioc_msg_get_uint(&p, rfs.flags & IOC_ADDR_HAS_TWO_BYTES,
+        rfs.extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES);
+
+    /* Save frame number to expect next. Notice that the frame count can
+        be zero only for the very first frame. never be zero again.
+     */
+    con->frame_in.frame_nr = rfs.buf[0] + 1u;
+    if (con->frame_in.frame_nr > IOC_MAX_FRAME_NR)
+    {
+        con->frame_in.frame_nr = 1;
+    }
+
+    /* Process the data frame.
+     */
+    if (rfs.flags & IOC_SYSTEM_FRAME) {
+        status = ioc_process_received_system_frame(con, mblk_id, (os_char*)p);
+    }
+    else {
+        status = ioc_process_received_data_frame(con, mblk_id, addr, (os_char*)p, rfs.data_sz, rfs.flags);
+    }
+
+alldone:
+
+    /* Ready to start next frame.
+     */
+    con->frame_in.pos = 0;
+
+    /* If this is not flagged connected, do it now.
+     */
+    if (!con->connected)
+    {
+        con->connected = OS_TRUE;
+        /* ioc_count_connected_streams(root, OS_FALSE); */
+        ioc_add_con_to_global_mbinfo(con);
+    }
+
+    ioc_unlock(root);
+    return status;
+}
+
+
+
+/**
+****************************************************************************************************
+
+  @brief Receive data from connection.
+  @anchor ioc_connection_receive
+
+  The ioc_connection_receive() function
+
+  @param   con Pointer to the connection object.
+  @return  OSAL_SUCCESS if whole frame was received. OSAL_PENDING if nothing or
+           some data was received. Other values indicate broken connection error.
+
+****************************************************************************************************
+*/
+osalStatus ioc_read_frame(
+    iocReadFrameState *p_rfs,
+    osalStream stream)
+{
+    iocReadFrameState
+        rfs;
+
+    osalStatus
+        status = OSAL_STATUS_FAILED;
+
+    os_memsz
+        n_read;
+
+#if OSAL_TRACE >= 3
+    os_char msg[64], nbuf[OSAL_NBUF_SZ];
+    os_int i;
+#endif
+
+    rfs = *p_rfs;
+    rfs.bytes_received = 0;
 
     do
     {
         /* How many bytes we need in frame buffer at minimum to complete a frame.
          */
 #if OSAL_SERIAL_SUPPORT
-        if (is_serial)
+        if (rfs.is_serial)
         {
             /* If we know the frame size
              */
-            if (buf[0] == IOC_ACKNOWLEDGE && n >= 1)
+            if (rfs.buf[0] == IOC_ACKNOWLEDGE && rfs.n >= 1)
             {
-                data_sz = 0;
-                needed = IOC_SERIAL_ACK_SIZE;
-                flags = 0;
+                rfs.data_sz = 0;
+                rfs.needed = IOC_SERIAL_ACK_SIZE;
+                rfs.flags = 0;
             }
-            else if (n >= 6)
+            else if (rfs.n >= 6)
             {
-                data_sz = buf[4];
-                needed = data_sz + 7;
-                flags = buf[3];
-                if (flags & IOC_EXTRA_FLAGS)
+                rfs.data_sz = rfs.buf[4];
+                rfs.needed = rfs.data_sz + 7;
+                rfs.flags = rfs.buf[3];
+                if (rfs.flags & IOC_EXTRA_FLAGS)
                 {
-                    extra_flags = buf[5];
-                    needed++;
+                    rfs.extra_flags = rfs.buf[5];
+                    rfs.needed++;
                 }
-                if (extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES) needed += 3;
-                else if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
-                if (extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES) needed += 3;
-                else if (flags & IOC_ADDR_HAS_TWO_BYTES) needed++;
+                if (rfs.extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES) rfs.needed += 3;
+                else if (rfs.flags & IOC_MBLK_HAS_TWO_BYTES) rfs.needed++;
+                if (rfs.extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES) rfs.needed += 3;
+                else if (rfs.flags & IOC_ADDR_HAS_TWO_BYTES) rfs.needed++;
 
-                if (needed > IOC_SERIAL_FRAME_SZ)
+                if (rfs.needed > rfs.frame_sz)
                 {
-                    ioc_unlock(root);
                     osal_trace("Too big serial frame");
                     return OSAL_STATUS_FAILED;
                 }
             }
-            else if (n >= 1)
+            else if (rfs.n >= 1)
             {
-                data_sz = 0xFFFF;
-                needed = 7;
-                flags = 0;
+                rfs.data_sz = 0xFFFF;
+                rfs.needed = 7;
+                rfs.flags = 0;
             }
             else
             {
-                data_sz = 0xFFFF;
-                needed = IOC_SERIAL_ACK_SIZE;
-                flags = 0;
+                rfs.data_sz = 0xFFFF;
+                rfs.needed = IOC_SERIAL_ACK_SIZE;
+                rfs.flags = 0;
             }
         }
 #endif
 
 #if OSAL_SOCKET_SUPPORT
-        if (!is_serial)
+        if (!rfs.is_serial)
         {
-            if (buf[0] == IOC_ACKNOWLEDGE && n >= 1)
+            if (rfs.buf[0] == IOC_ACKNOWLEDGE && rfs.n >= 1)
             {
-                data_sz = 0;
-                needed = IOC_SOCKET_ACK_SIZE;
-                flags = 0;
+                rfs.data_sz = 0;
+                rfs.needed = IOC_SOCKET_ACK_SIZE;
+                rfs.flags = 0;
             }
-            else if (n >= 5)
+            else if (rfs.n >= 5)
             {
-                data_sz = buf[2] | (((os_ushort)buf[3]) << 8);
-                needed = data_sz + 6;
-                flags = buf[1];
-                if (flags & IOC_EXTRA_FLAGS)
+                rfs.data_sz = rfs.buf[2] | (((os_ushort)rfs.buf[3]) << 8);
+                rfs.needed = rfs.data_sz + 6;
+                rfs.flags = rfs.buf[1];
+                if (rfs.flags & IOC_EXTRA_FLAGS)
                 {
-                    extra_flags = buf[4];
-                    needed++;
+                    rfs.extra_flags = rfs.buf[4];
+                    rfs.needed++;
                 }
-                if (extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES) needed  += 3;
-                else if (flags & IOC_MBLK_HAS_TWO_BYTES) needed++;
-                if (extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES) needed += 3;
-                else if (flags & IOC_ADDR_HAS_TWO_BYTES) needed++;
+                if (rfs.extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES) rfs.needed  += 3;
+                else if (rfs.flags & IOC_MBLK_HAS_TWO_BYTES) rfs.needed++;
+                if (rfs.extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES) rfs.needed += 3;
+                else if (rfs.flags & IOC_ADDR_HAS_TWO_BYTES) rfs.needed++;
 
-                if (needed > IOC_SOCKET_FRAME_SZ)
+                if (rfs.needed > rfs.frame_sz)
                 {
-                    ioc_unlock(root);
                     osal_trace("Too big socket frame");
                     return OSAL_STATUS_FAILED;
                 }
             }
-            else if (n >= 1)
+            else if (rfs.n >= 1)
             {
-                data_sz = 0xFFFF;
-                needed = 6;
-                flags = 0;
+                rfs.data_sz = 0xFFFF;
+                rfs.needed = 6;
+                rfs.flags = 0;
             }
             else
             {
-                data_sz = 0xFFFF;
-                needed = IOC_SOCKET_ACK_SIZE;
-                flags = 0;
+                rfs.data_sz = 0xFFFF;
+                rfs.needed = IOC_SOCKET_ACK_SIZE;
+                rfs.flags = 0;
             }
         }
 #endif
@@ -207,12 +352,12 @@ osalStatus ioc_connection_receive(
            with message zero length and no additional bytes (keep alives
            mostly).
          */
-        if (needed == n) break;
+        if (rfs.needed == rfs.n) break;
 
         status = osal_stream_read(
-            con->stream,
-            (os_char*)buf + n,
-            (os_memsz)needed - n,
+            stream,
+            (os_char*)rfs.buf + rfs.n,
+            (os_memsz)rfs.needed - rfs.n,
             &n_read,
             OSAL_STREAM_DEFAULT);
 
@@ -221,12 +366,11 @@ osalStatus ioc_connection_receive(
             /* If this is late return for refused connection,
                delay trying to reopen.
              */
-            if (status == OSAL_STATUS_CONNECTION_REFUSED)
+            /* if (status == OSAL_STATUS_CONNECTION_REFUSED)
             {
                 os_get_timer(&con->open_fail_timer);
                 con->open_fail_timer_set = OS_TRUE;
-            }
-            ioc_unlock(root);
+            } */
             osal_trace_int("Reading stream failed, status=", status);
             return status;
         }
@@ -253,24 +397,19 @@ osalStatus ioc_connection_receive(
             /* Add number of bytes read to current buffer position and
              * number of received bytes.
              */
-            n += (os_int)n_read;
-            con->bytes_received += (os_uint)n_read;
+            rfs.n += (os_int)n_read;
+            rfs.bytes_received += (os_uint)n_read;
 
-            /* Record time of receive.
-             */
-            os_get_timer(&con->last_receive);
-
-            if (n > 0)
+            if (rfs.n > 0)
             {
                 /* If we have received nonzero frame count from serial
                    communication , make sure that it is correct already here
                    before whole package is received. This speeds up
                    detecting many errors.
                  */
-                if (buf[0] != IOC_ACKNOWLEDGE &&
-                    buf[0] != con->frame_in.frame_nr)
+                if (rfs.buf[0] != IOC_ACKNOWLEDGE &&
+                    rfs.buf[0] != rfs.frame_nr)
                 {
-                    ioc_unlock(root);
                     osal_trace("Frame number error 1");
                     return OSAL_STATUS_FAILED;
                 }
@@ -281,100 +420,12 @@ osalStatus ioc_connection_receive(
            then loop back.
          */
     }
-    while (n == needed && data_sz == 0xFFFF);
+    while (rfs.n == rfs.needed && rfs.data_sz == 0xFFFF);
 
-    con->frame_in.pos = n;
-
-    /* If we have not received whole frame, we need to wait.
-     */
-    if (n < needed)
-    {
-        ioc_unlock(root);
-        return OSAL_PENDING;
-    }
-
-    /* If this is acknowledge.
-     */
-    if (buf[0] == IOC_ACKNOWLEDGE)
-    {
-        con->processed_bytes = (os_uint)buf[1] | (((os_uint)buf[2]) << 8);
-        if (con->flags & IOC_SOCKET) {
-            con->processed_bytes |= (((os_uint)buf[3]) << 16);
-        }
-
-        osal_trace3_int("ACK received, in air=",
-            (con->bytes_sent - con->processed_bytes));
-        goto alldone;
-    }
-
-#if OSAL_SERIAL_SUPPORT
-    /* Get and verify check sum.
-     */
-    if (is_serial)
-    {
-        /* Get the checksum from the received data and clear the checksum position
-           in received data. The check sum must be zeroed, because those values
-           are zeroes when calculating check sum while sending.
-         */
-        crc = buf[1] | ((os_ushort)buf[2] << 8);
-        buf[1] = buf[2] = 0;
-
-        if (crc != os_checksum((os_char*)buf, needed, OS_NULL))
-        {
-            ioc_unlock(root);
-            osal_trace("Checksum error");
-            return OSAL_STATUS_FAILED;
-        }
-    }
-#endif
-
-    /* MBLK: Memory block identifier, ADDR: Address within memory block.
-     */
-    p = buf + (is_serial ? 5 : 4);
-    if (extra_flags) p++;
-    mblk_id = ioc_msg_get_uint(&p, flags & IOC_MBLK_HAS_TWO_BYTES,
-        extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES);
-    addr = ioc_msg_get_uint(&p, flags & IOC_ADDR_HAS_TWO_BYTES,
-        extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES);
-
-    /* Save frame number to expect next. Notice that the frame count can
-        be zero only for the very first frame. never be zero again.
-     */
-    con->frame_in.frame_nr = buf[0] + 1u;
-    if (con->frame_in.frame_nr > IOC_MAX_FRAME_NR)
-    {
-        con->frame_in.frame_nr = 1;
-    }
-
-    /* Process the data frame.
-     */
-    if (flags & IOC_SYSTEM_FRAME)
-    {
-        status = ioc_process_received_system_frame(con, mblk_id, (os_char*)p);
-    }
-    else
-    {
-        status = ioc_process_received_data_frame(con, mblk_id, addr, (os_char*)p, data_sz, flags);
-    }
-
-alldone:
-
-    /* Ready to start next frame.
-     */
-    con->frame_in.pos = 0;
-
-    /* If this is not flagged connected, do it now.
-     */
-    if (!con->connected)
-    {
-        con->connected = OS_TRUE;
-        /* ioc_count_connected_streams(root, OS_FALSE); */
-        ioc_add_con_to_global_mbinfo(con);
-    }
-
-    ioc_unlock(root);
-    return status;
+    *p_rfs = rfs;
+    return OSAL_SUCCESS;
 }
+
 
 
 /**
