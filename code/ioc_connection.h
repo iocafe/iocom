@@ -22,6 +22,13 @@
 #define IOC_CONNECTION_H_
 #include "iocom.h"
 
+
+/**
+****************************************************************************************************
+    Connection related defines.
+****************************************************************************************************
+*/
+
 /** Frame sizes for socket and serial connections. These can never be modified, otherwise
  *  communication compatibility will break. Notice that socket frame size is not same as
  *  TCP frame size, signle tcp frame can hold multiple communication frames.
@@ -208,8 +215,11 @@ iocSystemFrameType;
  */
 #define IOC_MAX_FRAME_NR 200
 
-/* Pointers to modify generated header afterwards.
- */
+/**
+****************************************************************************************************
+    Structure pointers to set fields of the generated frame header afterwards.
+****************************************************************************************************
+*/
 typedef struct iocSendHeaderPtrs
 {
     /** Pointer to check sum in header
@@ -230,15 +240,18 @@ typedef struct iocSendHeaderPtrs
     os_uchar *data_sz_low;
     os_uchar *data_sz_high;
 
-    /* Header size in bytes.
+    /** Header size in bytes.
      */
     os_int header_sz;
 }
 iocSendHeaderPtrs;
 
 
-/* Structure to pass data in and out of ioc_read_frame() function.
- */
+/**
+****************************************************************************************************
+    Structure to pass data in and out of ioc_read_frame() function.
+****************************************************************************************************
+*/
 typedef struct iocReadFrameState {
     os_int
         n,
@@ -267,7 +280,7 @@ iocReadFrameState;
 
 /**
 ****************************************************************************************************
-    Root callback event enumeration, reason why the callback?
+    Connection callback event enumeration, reason why the callback?
 ****************************************************************************************************
 */
 typedef enum iocConnectionEvent

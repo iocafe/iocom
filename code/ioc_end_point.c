@@ -49,7 +49,7 @@ static void ioc_endpoint_thread(
   The ioc_initialize_end_point() function initializes a end_point. A end_point can always
   be allocated global variable. In this case pointer to memory to be initialized is given as
   argument and return value is the same pointer. If dynamic memory allocation is supported,
-  and the epoint argument is OS_NULL, the end_point object is allocated by the function.
+  and the epoint argument is OS_NULL, the end point object is allocated by the function.
 
   @param   epoint Pointer to static end_point structure, or OS_NULL to allocate end_point
            object dynamically.
@@ -128,10 +128,10 @@ iocEndPoint *ioc_initialize_end_point(
   @anchor ioc_release_end_point
 
   The ioc_release_end_point() function releases resources allocated for the end_point
-  object. Memory allocated for the end_point object is freed, if it was allocated by
+  object. Memory allocated for the end point object is freed, if it was allocated by
   ioc_initialize_end_point().
 
-  @param   epoint Pointer to the end_point object.
+  @param   epoint Pointer to the end point object.
   @return  None.
 
 ****************************************************************************************************
@@ -211,7 +211,7 @@ void ioc_release_end_point(
   The ioc_listen() function sets up listening socket end point. If IOC_CREATE_THREAD flag is
   given, the function created a new thread to run the end point.
 
-  @param   epoint Pointer to the end_point object.
+  @param   epoint Pointer to the end point object.
   @param   prm Parameter structure. Clear parameter structure using os_memclear() and
            set the members needed. Members:
            - parameters For example ":8817" or "127.0.0.1:8817" for TCP socket.
@@ -310,7 +310,7 @@ osalStatus ioc_listen(
   This function is either called from own thread (multithreading) or from commonioc_run()
   function (no multithreading).
 
-  @param   epoint Pointer to the end_point object.
+  @param   epoint Pointer to the end point object.
   @return  None.
 
 ****************************************************************************************************
@@ -351,7 +351,7 @@ void ioc_run_endpoint(
 
   ioc_lock() must be on when this function is called.
 
-  @param   epoint Pointer to the end_point object.
+  @param   epoint Pointer to the end point object.
   @return  OSAL_SUCCESS if no worker thread is running. OSAL_PENDING if there is .
 
 ****************************************************************************************************
@@ -384,7 +384,7 @@ osalStatus ioc_terminate_end_point_thread(
   The ioc_try_to_open_endpoint() function tries to open listening TCP socket. Do not try if
   f two secons have not passed since last failed open try.
 
-  @param   epoint Pointer to the end_point object.
+  @param   epoint Pointer to the end point object.
   @return  OSAL_SUCCESS if we have succesfully opened the listening TCP socket port. Other
            values indicate failure or delay.
 
@@ -420,6 +420,7 @@ static osalStatus ioc_try_to_open_endpoint(
      */
     epoint->open_fail_timer_set = OS_FALSE;
     epoint->try_accept_timer_set = OS_FALSE;
+    ioc_do_end_point_callback(epoint, IOC_END_POINT_LISTENING);
     osal_trace("end point: listening");
     return OSAL_SUCCESS;
 }
@@ -434,7 +435,7 @@ static osalStatus ioc_try_to_open_endpoint(
   The ioc_try_accept_new_sockets() function is accepts received TCP sockets. It is called repeatedly
   by ioc_run() and should not be called from application.
 
-  @param   epoint Pointer to the end_point object.
+  @param   epoint Pointer to the end point object.
   @return  Returns OSAL_SUCCESS if successful, regardless if new socket is accepted or not.
            Other return values indicate an error with listening socket (closed now).
            Even if when running out of connection pool, this function must return OSAL_SUCCESS.
@@ -495,6 +496,7 @@ static osalStatus ioc_try_accept_new_sockets(
             osal_debug_error("Listening socket broken");
             osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
             epoint->socket = OS_NULL;
+            ioc_do_end_point_callback(epoint, IOC_END_POINT_DROPPED);
             return status;
     }
 
@@ -513,7 +515,7 @@ static osalStatus ioc_try_accept_new_sockets(
   The ioc_establish_connection() function is called once incoming TCP socket is accepted.
   It creates connection object for the accepted socket.
 
-  @param   epoint Pointer to the end_point object.
+  @param   epoint Pointer to the end point object.
   @param   newsocket Accepted socket handle.
   @return  OSAL_SUCCESS if successful. OSAL_STATUS_FAILED if connection failed and needs to
            be closed. For example pool is given, but there is no space for the connection.
@@ -640,4 +642,62 @@ static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point
 }
 #endif
 
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+/**
+****************************************************************************************************
+
+  @brief Do callback to indicate that end point is now listening or dropped.
+  @anchor ioc_do_end_point_callback
+
+  The ioc_do_end_point_callback() function calls application's callback function for the
+  connection to indicate that end point is really listening or has been dropped (not typical).
+
+  @param   epoint Pointer to the end point object.
+  @param   event Either IOC_END_POINT_LISTENING or IOC_END_POINT_DROPPED.
+
+
+****************************************************************************************************
+*/
+void ioc_do_end_point_callback(
+    iocEndPoint *epoint,
+    iocEndPointEvent event)
+{
+    if (epoint->callback_func)
+    {
+        epoint->callback_func(epoint, event, epoint->callback_context);
+    }
+}
 #endif
+
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+/**
+****************************************************************************************************
+
+  @brief Set callback function for iocEndPoint object.
+  @anchor ioc_set_end_point_callback
+
+  The ioc_set_end_point_callback function sets callback function and context. The callback
+  can be used to inform the application that end point is really listening, and about dropped
+  end points.
+
+  @param   epoint Pointer to the end point object.
+  @param   func Pointer to a callback function. Set OS_NULL to remove a callback.
+  @param   context Application specific context pointer to be passed to the callback function.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_set_end_point_callback(
+    iocEndPoint *epoint,
+    ioc_end_point_callback func,
+    void *context)
+{
+    epoint->callback_func = func;
+    epoint->callback_context = context;
+}
+#endif
+
+#endif
+

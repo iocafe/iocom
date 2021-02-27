@@ -1229,6 +1229,8 @@ void ioc_do_connection_callback(
   can be used to inform the application about established and dropped connections.
 
   @param   con Pointer to the connection object.
+  @param   func Pointer to a callback function. Set OS_NULL to remove a callback.
+  @param   context Application specific context pointer to be passed to the callback function.
   @return  None.
 
 ****************************************************************************************************

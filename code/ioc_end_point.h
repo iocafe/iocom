@@ -21,6 +21,8 @@
 #define IOC_END_POINT_H_
 #include "iocom.h"
 
+struct iocEndPoint;
+
 /* Maximum parameter string length for end point.
  */
 #define IOC_END_POINT_PRMSTR_SZ 32
@@ -39,15 +41,37 @@ typedef struct
     /** Parameters For example ":8817" or "127.0.0.1:8817" for TCP socket.
      */
     const os_char *parameters;
-    
+
     /** Flags, bit fields:
         - IOC_SOCKET Connect with TCP socket (set always).
         - IOC_CREATE_THREAD Create thread to run end_point and create thread to run
           each accepted connection (multithread support needed).
      */
     os_short flags;
-} 
+}
 iocEndPointParams;
+
+/**
+****************************************************************************************************
+    End point callback event enumeration, reason why the callback?
+****************************************************************************************************
+*/
+typedef enum iocEndPointEvent
+{
+    IOC_END_POINT_LISTENING,
+    IOC_END_POINT_DROPPED
+}
+iocEndPointEvent;
+
+/**
+****************************************************************************************************
+    End point callback function type (listening port or end point dropped).
+****************************************************************************************************
+*/
+typedef void ioc_end_point_callback(
+    struct iocEndPoint *epoint,
+    iocEndPointEvent event,
+    void *context);
 
 /**
 ****************************************************************************************************
@@ -73,11 +97,7 @@ iocEndPointLink;
 
 /**
 ****************************************************************************************************
-
-  @name End point object structure.
-
-  X...
-
+    End point object structure.
 ****************************************************************************************************
 */
 typedef struct iocEndPoint
@@ -139,11 +159,22 @@ typedef struct iocEndPoint
     /** Flag indicating that the end_point structure was dynamically allocated.
      */
     os_boolean allocated;
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+    /** End point callback function.
+     */
+    ioc_end_point_callback *callback_func;
+
+    /** End point callback context.
+     */
+    void *callback_context;
+#endif
+
 }
 iocEndPoint;
 
 
-/** 
+/**
 ****************************************************************************************************
 
   @name Functions related to iocom root object
@@ -183,6 +214,25 @@ void ioc_run_endpoint(
  */
 osalStatus ioc_terminate_end_point_thread(
     iocEndPoint *epoint);
+#endif
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+/* Do callback to indicate that end point is now listening or dropped.
+ */
+void ioc_do_end_point_callback(
+    iocEndPoint *epoint,
+    iocEndPointEvent event);
+
+/* Set callback function for iocEndPoint object.
+ */
+void ioc_set_end_point_callback(
+    iocEndPoint *epoint,
+    ioc_end_point_callback func,
+    void *context);
+
+#else
+    #define ioc_do_end_point_callback(c,e)
+    #define ioc_set_end_point_callback(c,f,x)
 #endif
 
 /*@}*/
