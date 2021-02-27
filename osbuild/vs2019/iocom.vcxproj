@@ -47,6 +47,7 @@
     <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_stream.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_identifiers.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_remove_mblk_list.h" />
+    <ClInclude Include="..\..\extensions\dynamicio\ioc_switchbox_auth_frame.h" />
     <ClInclude Include="..\..\iocom.h" />
     <ClInclude Include="..\..\iocomx.h" />
   </ItemGroup>
@@ -80,6 +81,7 @@
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_stream.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_identifiers.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_remove_mblk_list.c" />
+    <ClCompile Include="..\..\extensions\dynamicio\ioc_switchbox_auth_frame.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

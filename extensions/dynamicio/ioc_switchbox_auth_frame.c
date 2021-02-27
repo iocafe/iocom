@@ -76,7 +76,7 @@ osalStatus icom_switchbox_send_authentication_frame(
         s = osal_stream_write(stream, abuf->buf, n, &n_written, OSAL_STREAM_DEFAULT);
         if (OSAL_IS_ERROR(s)) return s;
     }
-    abuf->buf_pos += n_written;
+    abuf->buf_pos += (os_short)n_written;
 
     s = osal_stream_flush(stream, OSAL_STREAM_DEFAULT);
     if (OSAL_IS_ERROR(s)) return s;
