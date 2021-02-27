@@ -228,6 +228,7 @@ typedef struct iocRoot
     osalMutex mutex;
 #endif
 
+#if IOC_ROOT_CALLBACK_SUPPORT
     /** Callback function pointer. OS_NULL if not used.
      */
     ioc_root_callback *callback_func;
@@ -235,6 +236,7 @@ typedef struct iocRoot
     /** Callback context for callback function. OS_NULL if not used.
      */
     void *callback_context;
+#endif
 
     /** Automatic device number, used if device number is 0
      */

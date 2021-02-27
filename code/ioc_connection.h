@@ -267,6 +267,30 @@ iocReadFrameState;
 
 /**
 ****************************************************************************************************
+    Root callback event enumeration, reason why the callback?
+****************************************************************************************************
+*/
+typedef enum iocConnectionEvent
+{
+    IOC_CONNECTION_ESTABLISHED,
+    IOC_CONNECTION_DROPPED
+}
+iocConnectionEvent;
+
+
+/**
+****************************************************************************************************
+    Connection callback function type (connection established or dropped).
+****************************************************************************************************
+*/
+typedef void ioc_connection_callback(
+    struct iocConnection *conf,
+    iocConnectionEvent event,
+    void *context);
+
+
+/**
+****************************************************************************************************
     Parameters for ioc_connect() function.
 ****************************************************************************************************
 */
@@ -514,14 +538,9 @@ typedef enum
 iocSerialCtrlChar;
 
 
-
 /**
 ****************************************************************************************************
-
-  @name Connection object structure.
-
-  X...
-
+    IOCOM connection structure.
 ****************************************************************************************************
 */
 typedef struct iocConnection
@@ -706,6 +725,16 @@ typedef struct iocConnection
      */
     iocDeleteMblkReqList del_mlk_req_list;
 #endif
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+    /** Connection callback function.
+     */
+    ioc_connection_callback *callback_func;
+
+    /** Connection callback context.
+     */
+    void *callback_context;
+#endif
 }
 iocConnection;
 
@@ -855,6 +884,26 @@ os_uint ioc_msg_get_uint(
  */
 osalStatus ioc_establish_serial_connection(
     iocConnection *con);
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+/* Do callback to indicate connect or disconnect.
+ */
+void ioc_do_connection_callback(
+    iocConnection *con,
+    iocConnectionEvent event);
+
+/* Set callback function for iocConnection object.
+ */
+void ioc_set_connection_callback(
+    iocConnection *con,
+    ioc_connection_callback func,
+    void *context);
+
+#else
+    #define ioc_do_connection_callback(c,e)
+    #define ioc_set_connection_callback(c,f,x)
+#endif
+
 /*@}*/
 
 #endif

@@ -202,6 +202,7 @@ alldone:
     if (!con->connected)
     {
         con->connected = OS_TRUE;
+        ioc_do_connection_callback(con, IOC_CONNECTION_ESTABLISHED);
         /* ioc_count_connected_streams(root, OS_FALSE); */
         ioc_add_con_to_global_mbinfo(con);
     }

@@ -726,6 +726,7 @@ failed:
         ioc_reset_connection_state(con);
         ioc_lock(root);
         con->connected = OS_FALSE;
+        ioc_do_connection_callback(con, IOC_CONNECTION_DROPPED);
         ioc_free_source_and_target_bufs(con);
         /* ioc_count_connected_streams(con->link.root, OS_TRUE); */
         ioc_mbinfo_con_is_closed(con);
@@ -958,8 +959,6 @@ void ioc_close_stream(
   @param   done Event to set when parameters have been copied to entry point
            functions own memory.
 
-  @return  None.
-
 ****************************************************************************************************
 */
 static void ioc_connection_thread(
@@ -1007,7 +1006,7 @@ static void ioc_connection_thread(
      */
     while (!con->worker.stop_thread && osal_go())
     {
-static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo connection\n"); ulledoo = 0;}
+// static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo connection\n"); ulledoo = 0;}
 
         /* If stream is not open, then connect it now. Do not try if two secons have not
            passed since last failed open try.
@@ -1160,9 +1159,9 @@ failed:
          */
         if (con->connected)
         {
-            con->connected = OS_FALSE;
-
             ioc_lock(root);
+            con->connected = OS_FALSE;
+            ioc_do_connection_callback(con, IOC_CONNECTION_DROPPED);
             ioc_free_source_and_target_bufs(con);
             ioc_unlock(root);
             ioc_mbinfo_con_is_closed(con);
@@ -1192,3 +1191,54 @@ failed:
 }
 #endif
 
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+/**
+****************************************************************************************************
+
+  @brief Do callback to indicate connect or disconnect.
+  @anchor ioc_do_connection_callback
+
+  The ioc_do_connection_callback() function calls application's callback function for the
+  connection to indicate that connection was established or disconnected.
+
+  @param   con Pointer to the connection object.
+  @param   event Either IOC_CONNECTION_ESTABLISHED or IOC_CONNECTION_DROPPED.
+
+****************************************************************************************************
+*/
+void ioc_do_connection_callback(
+    iocConnection *con,
+    iocConnectionEvent event)
+{
+    if (con->callback_func)
+    {
+        con->callback_func(con, event, con->callback_context);
+    }
+}
+#endif
+
+#if IOC_ROOT_CALLBACK_SUPPORT
+/**
+****************************************************************************************************
+
+  @brief Set callback function for iocConnection object.
+  @anchor ioc_set_connection_callback
+
+  The ioc_set_connection_callback function sets callback function and context. The callback
+  can be used to inform the application about established and dropped connections.
+
+  @param   con Pointer to the connection object.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_set_connection_callback(
+    iocConnection *con,
+    ioc_connection_callback func,
+    void *context)
+{
+    con->callback_func = func;
+    con->callback_context = context;
+}
+#endif
