@@ -80,7 +80,9 @@ osalStatus icom_switchbox_send_authentication_frame(
 
     s = osal_stream_flush(stream, OSAL_STREAM_DEFAULT);
     if (OSAL_IS_ERROR(s)) return s;
-    return abuf->buf_used > abuf->buf_pos ? OSAL_PENDING :  OSAL_COMPLETED;
+    if (abuf->buf_pos >= abuf->buf_used) return OSAL_COMPLETED;
+
+    return os_has_elapsed(&abuf->ti, 20000) ? OSAL_STATUS_FAILED : OSAL_PENDING;
 }
 
 
@@ -234,6 +236,7 @@ static void icom_make_authentication_frame(
 
     abuf->buf_used = used_bytes;
     abuf->buf_pos = 0;
+    os_get_timer(&abuf->ti);
 }
 
 
@@ -285,6 +288,9 @@ osalStatus icom_switchbox_process_authentication_frame(
     rfs.buf = (os_uchar*)abuf->buf;
     rfs.n = abuf->buf_pos;
     // rfs.is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
+    if (rfs.frame_sz == 0) {
+        os_get_timer(&abuf->ti);
+    }
     rfs.frame_sz = IOC_MAX_AUTHENTICATION_FRAME_SZ;
 
     /* Read one received frame using IOCOM frame format.
@@ -292,22 +298,13 @@ osalStatus icom_switchbox_process_authentication_frame(
     rfs.frame_nr = 0;
     status = ioc_read_frame(&rfs, stream);
     if (status) {
-        /* If this is late return for refused connection,
-           delay trying to reopen.
-         */
-        /* if (status == OSAL_STATUS_CONNECTION_REFUSED)
-        {
-            os_get_timer(&con->open_fail_timer);
-            con->open_fail_timer_set = OS_TRUE;
-        } */
-
         return status;
     }
 
     /* If we received something, record time of receive and add to bytes received.
      */
     if (rfs.bytes_received) {
-        // os_get_timer(&con->last_receive);
+        os_get_timer(&abuf->ti);
     }
     abuf->buf_pos = rfs.n;
 
@@ -315,7 +312,7 @@ osalStatus icom_switchbox_process_authentication_frame(
      */
     if (rfs.n < rfs.needed)
     {
-        return OSAL_PENDING;
+        return os_has_elapsed(&abuf->ti, 20000) ? OSAL_STATUS_FAILED : OSAL_PENDING;
     }
 
 #if OSAL_SERIAL_SUPPORT

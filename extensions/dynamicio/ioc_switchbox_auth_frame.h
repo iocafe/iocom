@@ -33,6 +33,7 @@ typedef struct iocSwitchboxAuthenticationFrameBuffer
     os_char buf[IOC_MAX_AUTHENTICATION_FRAME_SZ];
     os_short buf_used;
     os_short buf_pos;
+    os_timer ti;
 }
 iocSwitchboxAuthenticationFrameBuffer;
 
