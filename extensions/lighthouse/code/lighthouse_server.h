@@ -111,8 +111,7 @@ void ioc_initialize_lighthouse_server(
 /* Start end point information setup.
  */
 void ioc_lighthouse_start_endpoints(
-    LighthouseServer *c,
-    const os_char *nickname);
+    LighthouseServer *c);
 
 /* Add information about IOCOM protocol end points.
  */

@@ -94,15 +94,15 @@ void ioc_initialize_lighthouse_server(
   The function must be called after ioc_initialize_lighthouse_server() and before adding
   iocom end points ioc_lighthouse_add_iocom_endpoints.
 
+  The function uses global nickname of the device or process.
+
   @param   c Pointer to the light house server object structure.
-  @param   nickname Nickname for this process or device.
   @return  None.
 
 ****************************************************************************************************
 */
 void ioc_lighthouse_start_endpoints(
-    LighthouseServer *c,
-    const os_char *nickname)
+    LighthouseServer *c)
 {
     LighthouseServerOne *f;
     os_int i;
@@ -110,7 +110,7 @@ void ioc_lighthouse_start_endpoints(
     for (i = 0; i < LIGHTHOUSE_NRO_ADDR_FAMILIES; i++)
     {
         f = &c->f[i];
-        os_strncpy(f->msg.publish, nickname, LIGHTHOUSE_PUBLISH_SZ);
+        os_strncpy(f->msg.publish, osal_nickname(), LIGHTHOUSE_PUBLISH_SZ);
         f->msg.hdr.tls_port_nr_low = f->msg.hdr.tls_port_nr_high = 0;
         f->msg.hdr.tcp_port_nr_low = f->msg.hdr.tcp_port_nr_high = 0;
         f->is_configured = OS_FALSE;

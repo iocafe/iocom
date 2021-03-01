@@ -156,17 +156,10 @@ OSAL_C_HEADER_BEGINS
 #define IOC_RELAX_SECURITY OSAL_RELAX_SECURITY
 #endif
 
-/* Decide wether to include nick name generator
+/* Decide wether to include nick name generator.
  */
 #ifndef IOC_NICKGEN_SUPPORT
-  #if OSAL_MINIMALISTIC == 0
-    #if OSAL_SOCKET_SUPPORT
-      #define IOC_NICKGEN_SUPPORT 1
-    #endif
-  #endif
-#endif
-#ifndef IOC_NICKGEN_SUPPORT
-  #define IOC_NICKGEN_SUPPORT 0
+    #define IOC_NICKGEN_SUPPORT OSAL_NICKNAME_SUPPORT
 #endif
 
 /* Support root event callback unless this is minimalistic build

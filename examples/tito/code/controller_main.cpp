@@ -139,7 +139,7 @@ osalStatus osal_main(
        can be detected in network.
      */
     ioc_initialize_lighthouse_server(&lighthouse, 4000);
-    ioc_lighthouse_start_endpoints(&lighthouse, OS_NULL /* nickname */ );
+    ioc_lighthouse_start_endpoints(&lighthouse);
     ioc_lighthouse_add_iocom_endpoints(&lighthouse, device_id->publish, &lighthouse_info);
 
     /* Create tito main object and start listening for clients.
