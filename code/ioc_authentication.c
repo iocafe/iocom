@@ -287,8 +287,8 @@ osalStatus ioc_process_received_authentication_frame(
      */
     if (mblk_id >= IOC_MIN_FRAME_SZ && mblk_id <= IOC_MAX_FRAME_SZ)
     {
-        if (mblk_id < con->dst_frame_sz) {
-            con->dst_frame_sz = mblk_id;
+        if ((os_short)mblk_id < con->dst_frame_sz) {
+            con->dst_frame_sz = (os_short)mblk_id;
         }
     }
 
@@ -388,7 +388,7 @@ void ioc_add_allowed_network(
 
     /* Allocate (more) memory if needed.
      */
-    needed = (os_memsz)(count + 1) * sizeof(iocAllowedNetwork);
+    needed = (os_memsz)(count + (os_memsz)1) * sizeof(iocAllowedNetwork);
     if (needed > allowed_networks->bytes)
     {
         n = (iocAllowedNetwork*)os_malloc(needed, &bytes);
