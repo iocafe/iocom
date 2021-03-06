@@ -289,6 +289,8 @@ osalStatus ioc_process_received_authentication_frame(
     {
         if ((os_short)mblk_id < con->dst_frame_sz) {
             con->dst_frame_sz = (os_short)mblk_id;
+            con->max_in_air = IOC_SOCKET_MAX_IN_AIR(con->dst_frame_sz);
+            con->max_ack_in_air = IOC_SOCKET_MAX_ACK_IN_AIR(con->dst_frame_sz);
         }
     }
 
