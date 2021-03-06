@@ -91,7 +91,8 @@ osalStatus ioc_connection_receive(
     rfs.buf = (os_uchar*)con->frame_in.buf;
     rfs.n = con->frame_in.pos;
     rfs.is_serial = (os_boolean)((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SERIAL);
-    rfs.frame_sz = rfs.is_serial ? IOC_SERIAL_FRAME_SZ : IOC_SOCKET_FRAME_SZ;
+    /* WAS, changed  5.3.2011: rfs.frame_sz = rfs.is_serial ? IOC_SERIAL_FRAME_SZ : IOC_SOCKET_FRAME_SZ; */
+    rfs.frame_sz = con->frame_sz;
 
     /* Read one received frame.
      */

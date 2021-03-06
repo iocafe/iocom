@@ -300,6 +300,7 @@ void AbstractCamera::callback(
             }
 #endif
             /* Joke */
+#if 0
             static os_timer ti;
             static int poem_nr = 1;
             os_char nbuf[OSAL_NBUF_SZ], tmp[128];
@@ -325,7 +326,7 @@ void AbstractCamera::callback(
                 }
                 os_get_timer(&ti);
             }
-
+#endif
         }
     }
 }

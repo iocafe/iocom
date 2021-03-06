@@ -29,14 +29,28 @@
 ****************************************************************************************************
 */
 
+/* Frame size minimum and maximum limits (for checking validity of setting)
+ */
+#define IOC_MIN_FRAME_SZ 96
+#define IOC_MAX_FRAME_SZ 0x4000
+
 /** Frame sizes for socket and serial connections. These can never be modified, otherwise
  *  communication compatibility will break. Notice that socket frame size is not same as
  *  TCP frame size, signle tcp frame can hold multiple communication frames.
  */
 /*@{*/
 /* #define IOC_SOCKET_FRAME_SZ 464 *** This was the initial value. At 19.1.2021 testing performance with larger frame size */
-#define IOC_SOCKET_FRAME_SZ 1392
-#define IOC_SERIAL_FRAME_SZ 96
+#ifndef IOC_SOCKET_FRAME_SZ
+    #if OSAL_MICROCONTROLLER
+        #define IOC_SOCKET_FRAME_SZ 464
+        /* #define IOC_SOCKET_FRAME_SZ 1392 */
+    #else
+        #define IOC_SOCKET_FRAME_SZ 2784
+    #endif
+#endif
+#ifndef IOC_SERIAL_FRAME_SZ
+    #define IOC_SERIAL_FRAME_SZ 96
+#endif
 /*@}*/
 
 /* Acknowledgement/keep alive message size in bytes.
@@ -90,12 +104,12 @@
 /* Maximum data frame bytes that can be written.
  */
 #ifndef IOC_SOCKET_MAX_IN_AIR
-#define IOC_SOCKET_MAX_IN_AIR (44 * IOC_SOCKET_FRAME_SZ)
+#define IOC_SOCKET_MAX_IN_AIR(frame_sz) (44 * (frame_sz))
 #endif
 
 /* Maximum acknowledge bytes that can be written.
  */
-#define IOC_SOCKET_MAX_ACK_IN_AIR (IOC_SOCKET_MAX_IN_AIR + IOC_SOCKET_UNACKNOGLEDGED_LIMIT + IOC_SOCKET_NRO_ACKS_TO_RESEVE * IOC_SOCKET_ACK_SIZE)
+#define IOC_SOCKET_MAX_ACK_IN_AIR(frame_sz) (IOC_SOCKET_MAX_IN_AIR(frame_sz) + IOC_SOCKET_UNACKNOGLEDGED_LIMIT + IOC_SOCKET_NRO_ACKS_TO_RESEVE * IOC_SOCKET_ACK_SIZE)
 /*@}*/
 
 
@@ -585,7 +599,12 @@ typedef struct iocConnection
     /** Total frame size, constant for connection type. For example IOC_SOCKET_FRAME_SZ
         for socket communication.
      */
-    os_int frame_sz;
+    os_short frame_sz;
+
+    /** Maximum frame size to send. This is smaller of the two, frame size defined for
+        this device and frame size received within authentication frame.
+     */
+    os_short dst_frame_sz;
 
     /** Flow control: Maximum number of bytes in transit without being acknowledged (for data).
      */

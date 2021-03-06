@@ -234,7 +234,7 @@ static void ioc_make_data_frame(
         (os_uint)saved_start_addr);
 
     delta = sbuf->syncbuf.delta;
-    max_dst_bytes = con->frame_sz - ptrs.header_sz;
+    max_dst_bytes = con->dst_frame_sz - ptrs.header_sz; // DST_FRAME_SZ
     dst = con->frame_out.buf + ptrs.header_sz;
 
     /* Compress data from synchronized buffer. Save start addr in case

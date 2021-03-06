@@ -440,9 +440,9 @@ osalStatus ioc_connect(
     if (flags & IOC_SOCKET)
     {
         con->frame_sz = IOC_SOCKET_FRAME_SZ;
-        con->max_in_air = IOC_SOCKET_MAX_IN_AIR;
+        con->max_in_air = IOC_SOCKET_MAX_IN_AIR(con->frame_sz);
         con->unacknogledged_limit = IOC_SOCKET_UNACKNOGLEDGED_LIMIT;
-        con->max_ack_in_air = IOC_SOCKET_MAX_ACK_IN_AIR;
+        con->max_ack_in_air = IOC_SOCKET_MAX_ACK_IN_AIR(con->frame_sz);
 #if OSAL_SOCKET_SELECT_SUPPORT == 0
         flags |= IOC_DISABLE_SELECT;
 #endif
@@ -458,6 +458,7 @@ osalStatus ioc_connect(
 #endif
     }
     con->flags = flags;
+    con->dst_frame_sz = con->frame_sz;
 
 #if OSAL_SERIAL_SUPPORT
     con->sercon_state = OSAL_SERCON_STATE_INIT_1;

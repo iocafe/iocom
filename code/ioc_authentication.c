@@ -69,7 +69,7 @@ void ioc_make_authentication_frame(
 
     /* Set frame header.
      */
-    ioc_generate_header(con, con->frame_out.buf, &ptrs, 0, 0);
+    ioc_generate_header(con, con->frame_out.buf, &ptrs, con->frame_sz, 0);
 
     /* Generate frame content. Here we do not check for buffer overflow,
        we know (and trust) that it fits within one frame.
@@ -282,6 +282,15 @@ osalStatus ioc_process_received_authentication_frame(
     s = ioc_msg_getstr(user.password, IOC_PASSWORD_SZ, &p);
     if (s) return s;
 #endif
+
+    /* If other end limited frame size it can process.
+     */
+    if (mblk_id >= IOC_MIN_FRAME_SZ && mblk_id <= IOC_MAX_FRAME_SZ)
+    {
+        if (mblk_id < con->dst_frame_sz) {
+            con->dst_frame_sz = mblk_id;
+        }
+    }
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
     /* Check user autorization.
