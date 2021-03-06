@@ -43,9 +43,8 @@
 #ifndef IOC_SOCKET_FRAME_SZ
     #if OSAL_MICROCONTROLLER
         #define IOC_SOCKET_FRAME_SZ 464
-        /* #define IOC_SOCKET_FRAME_SZ 1392 */
     #else
-        #define IOC_SOCKET_FRAME_SZ 2784
+        #define IOC_SOCKET_FRAME_SZ 1392
     #endif
 #endif
 #ifndef IOC_SERIAL_FRAME_SZ
