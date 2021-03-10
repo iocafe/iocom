@@ -14,7 +14,7 @@
 ****************************************************************************************************
 */
 #include "devicedir.h"
-#if OS_CONTROL_CONSOLE_SUPPORT
+#if OSAL_CONTROL_CONSOLE_SUPPORT
 
 /* Forward referred static functions.
  */

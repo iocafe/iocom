@@ -18,7 +18,7 @@
 #define DEVICEDIR_SHARED_H_
 #include "devicedir.h"
 
-#if OS_CONTROL_CONSOLE_SUPPORT
+#if OSAL_CONTROL_CONSOLE_SUPPORT
     osalStatus io_device_console(iocRoot *root);
 #else
     #define io_device_console(r) (OSAL_SUCCESS)
