@@ -249,7 +249,7 @@ void ioc_set_iodevice_id(
     }
     else
     {
-        osal_get_password(root->password, IOC_PASSWORD_SZ);
+        osal_get_auto_password(root->password, IOC_PASSWORD_SZ);
     }
   #else
     os_strncpy(root->password, password, IOC_PASSWORD_SZ);

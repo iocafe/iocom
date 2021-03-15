@@ -111,9 +111,9 @@ PyObject *iocom_python_get_secret(
 PyObject *iocom_python_get_password(
     PyObject *self)
 {
-    os_char password[OSAL_SECRET_STR_SZ];
-    osal_get_password(password, OSAL_SECRET_STR_SZ);
-    return Py_BuildValue("s#", (char *)password, (int)OSAL_SECRET_STR_SZ);
+    os_char password[IOC_PASSWORD_SZ];
+    osal_get_auto_password(password, IOC_PASSWORD_SZ);
+    return Py_BuildValue("s#", (char *)password, (int)IOC_PASSWORD_SZ);
 }
 
 /* Hash password (run SHA-256 hash on password).
