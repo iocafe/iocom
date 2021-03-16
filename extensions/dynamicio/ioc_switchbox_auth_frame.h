@@ -54,7 +54,7 @@ iocAuthenticationResults;
 
 /* Send switchbox/ecom authentication frame to stream.
  */
-osalStatus icom_switchbox_send_authentication_frame(
+osalStatus ioc_send_switchbox_authentication_frame(
     osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm);

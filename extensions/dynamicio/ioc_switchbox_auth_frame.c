@@ -24,11 +24,11 @@
 
 /* Forward referred static functions.
  */
-static void icom_make_authentication_frame(
+static void ioc_make_switchbox_authentication_frame(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm);
 
-static osalStatus icom_switchbox_parse_authentication_frame(
+static osalStatus ioc_switchbox_parse_authentication_frame(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results);
 
@@ -37,9 +37,9 @@ static osalStatus icom_switchbox_parse_authentication_frame(
 ****************************************************************************************************
 
   @brief Send switchbox/ecom authentication frame to stream.
-  @anchor icom_switchbox_send_authentication_frame
+  @anchor ioc_send_switchbox_authentication_frame
 
-  If called with empty buffer, the icom_switchbox_send_authentication_frame() function
+  If called with empty buffer, the ioc_send_switchbox_authentication_frame() function
   generates outgoing data frame which contains information to authenticate the user, etc.
   This function needs to be called repeatedly (as triggered by select) until authentication
   frame is sent and the function returns OSAL_COMPLETED, or an error occurs.
@@ -59,7 +59,7 @@ static osalStatus icom_switchbox_parse_authentication_frame(
 
 ****************************************************************************************************
 */
-osalStatus icom_switchbox_send_authentication_frame(
+osalStatus ioc_send_switchbox_authentication_frame(
     osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm)
@@ -68,7 +68,7 @@ osalStatus icom_switchbox_send_authentication_frame(
     osalStatus s;
 
     if (abuf->buf_used == 0) {
-        icom_make_authentication_frame(abuf, prm);
+        ioc_make_switchbox_authentication_frame(abuf, prm);
     }
 
     n = abuf->buf_used - abuf->buf_pos;
@@ -90,10 +90,10 @@ osalStatus icom_switchbox_send_authentication_frame(
 ****************************************************************************************************
 
   @brief Generate authentication frame.
-  @anchor icom_make_authentication_frame icom_switchbox_send_authentication_frame
+  @anchor ioc_make_authentication_frame ioc_send_switchbox_authentication_frame
 
-  The icom_make_authentication_frame is a helper function to generate authentication frame within
-  It is called by the icom_switchbox_send_authentication_frame.
+  The ioc_make_switchbox_authentication_frame is a helper function to generate an authentication
+  frame. It is called by the ioc_send_switchbox_authentication_frame.
 
   @param   abuf Buffer structure for creating and sending the authentication frame. Zero this
            structure before calling this function the first time.
@@ -103,7 +103,7 @@ osalStatus icom_switchbox_send_authentication_frame(
 
 ****************************************************************************************************
 */
-static void icom_make_authentication_frame(
+static void ioc_make_switchbox_authentication_frame(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm)
 {
@@ -337,7 +337,7 @@ osalStatus icom_switchbox_process_authentication_frame(
 
     /* Whole authentication frame successfully received, parse content.
      */
-    return icom_switchbox_parse_authentication_frame(abuf, results);
+    return ioc_switchbox_parse_authentication_frame(abuf, results);
 }
 
 
@@ -370,7 +370,7 @@ osalStatus icom_switchbox_process_authentication_frame(
 
 ****************************************************************************************************
 */
-static osalStatus icom_switchbox_parse_authentication_frame(
+static osalStatus ioc_switchbox_parse_authentication_frame(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results)
 {
