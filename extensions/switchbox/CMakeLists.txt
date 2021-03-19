@@ -1,8 +1,8 @@
-# iocom/extensions/nodeconf/CmakeLists.txt - Cmake build for nodeconf library.
+# iocom/extensions/switchbox/CmakeLists.txt - Switchbox passtrough library.
 cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
-set(E_PROJECT "nodeconf")
+set(E_PROJECT "switchbox")
 project(${E_PROJECT})
 
 # include build environment setting common to all projects.

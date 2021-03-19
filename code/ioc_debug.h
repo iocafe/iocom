@@ -6,7 +6,7 @@
   @version 1.0
   @date    8.1.2020
 
-  Macros for making debug code more readable. If OSAL_DEBUG define is zero, empty macros will 
+  Macros for making debug code more readable. If OSAL_DEBUG define is zero, empty macros will
   be defined and do not generate any code.
 
   Debug identifier must be first item in the object structure. It is used to verify
@@ -27,11 +27,9 @@
 #if OSAL_DEBUG == 0
   #define IOC_DEBUG_ID
   #define IOC_SET_DEBUG_ID(o,c)
-
 #else
   #define IOC_DEBUG_ID os_char debug_id;
   #define IOC_SET_DEBUG_ID(o,c) (o)->debug_id = c;
-
 #endif
 
 #endif

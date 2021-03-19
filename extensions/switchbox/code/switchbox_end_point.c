@@ -1,13 +1,12 @@
 /**
 
-  @file    ioc_end_point.c
+  @file    switchbox_end_point.c
   @brief   End point object.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    8.1.2020
 
-  An end_point listens TCP socket for incoming connections and accepts these. Once a socket
-  connection is received, a iocConnection object is created for it to transfer the data.
+  An end_point listens TCP socket for incoming connections and accepts these.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -16,37 +15,33 @@
 
 ****************************************************************************************************
 */
-#include "iocom.h"
-#if OSAL_SOCKET_SUPPORT
-
+#include "switchbox.h"
 
 /* Forward referred static functions.
  */
-static osalStatus ioc_try_to_open_endpoint(
-    iocEndPoint *epoint);
+static osalStatus ioc_try_to_open_switchbox_endpoint(
+    switchboxEndPoint *epoint);
 
-static osalStatus ioc_try_accept_new_sockets(
-    iocEndPoint *epoint);
+static osalStatus ioc_try_accept_new_switchbox_sockets(
+    switchboxEndPoint *epoint);
 
-static osalStatus ioc_establish_connection(
-    iocEndPoint *epoint,
+static osalStatus ioc_establish_switchbox_connection(
+    switchboxEndPoint *epoint,
     osalStream newsocket,
     os_char *remote_ip_addr);
 
-#if OSAL_MULTITHREAD_SUPPORT
-static void ioc_endpoint_thread(
+static void ioc_switchbox_endpoint_thread(
     void *prm,
     osalEvent done);
-#endif
 
 
 /**
 ****************************************************************************************************
 
   @brief Initialize end_point.
-  @anchor ioc_initialize_end_point
+  @anchor ioc_initialize_switchbox_end_point
 
-  The ioc_initialize_end_point() function initializes a end_point. A end_point can always
+  The ioc_initialize_switchbox_end_point() function initializes a end_point. A end_point can always
   be allocated global variable. In this case pointer to memory to be initialized is given as
   argument and return value is the same pointer. If dynamic memory allocation is supported,
   and the epoint argument is OS_NULL, the end point object is allocated by the function.
@@ -58,33 +53,29 @@ static void ioc_endpoint_thread(
 
 ****************************************************************************************************
 */
-iocEndPoint *ioc_initialize_end_point(
-    iocEndPoint *epoint,
-    iocRoot *root)
+switchboxEndPoint *ioc_initialize_switchbox_end_point(
+    switchboxEndPoint *epoint,
+    switchboxRoot *root)
 {
-    /* Check that root object is valid pointer.
-     */
-    osal_debug_assert(root->debug_id == 'R');
-
     /* Synchronize.
      */
-    ioc_lock(root);
+    ioc_switchbox_lock(root);
 
     if (epoint == OS_NULL)
     {
-        epoint = (iocEndPoint*)ioc_malloc(root, sizeof(iocEndPoint), OS_NULL);
+        epoint = (switchboxEndPoint*)os_malloc(sizeof(switchboxEndPoint), OS_NULL);
         if (epoint == OS_NULL)
         {
-            ioc_unlock(root);
+            ioc_switchbox_unlock(root);
             return OS_NULL;
         }
 
-        os_memclear(epoint, sizeof(iocEndPoint));
+        os_memclear(epoint, sizeof(switchboxEndPoint));
         epoint->allocated = OS_TRUE;
     }
     else
     {
-        os_memclear(epoint, sizeof(iocEndPoint));
+        os_memclear(epoint, sizeof(switchboxEndPoint));
     }
 
     /* Save pointer to root object and join to linked list of end_points.
@@ -102,17 +93,11 @@ iocEndPoint *ioc_initialize_end_point(
     root->epoint.last = epoint;
 
 
-#if OSAL_MULTITHREAD_SUPPORT
     epoint->trig = osal_event_create();
-#endif
-
-    /* Mark end_point structure as initialized end_point object (for debugging).
-     */
-    IOC_SET_DEBUG_ID(epoint, 'E')
 
     /* End syncronization.
      */
-    ioc_unlock(root);
+    ioc_switchbox_unlock(root);
 
     /* Return pointer to initialized end_point.
      */
@@ -125,37 +110,33 @@ iocEndPoint *ioc_initialize_end_point(
 ****************************************************************************************************
 
   @brief Release end_point.
-  @anchor ioc_release_end_point
+  @anchor ioc_release_switchbox_end_point
 
-  The ioc_release_end_point() function releases resources allocated for the end_point
+  The ioc_release_switchbox_end_point() function releases resources allocated for the end_point
   object. Memory allocated for the end point object is freed, if it was allocated by
-  ioc_initialize_end_point().
+  ioc_initialize_switchbox_end_point().
 
   @param   epoint Pointer to the end point object.
   @return  None.
 
 ****************************************************************************************************
 */
-void ioc_release_end_point(
-    iocEndPoint *epoint)
+void ioc_release_switchbox_end_point(
+    switchboxEndPoint *epoint)
 {
-    iocRoot *root;
+    switchboxRoot *root;
     os_boolean allocated;
 
-    /* Check that epoint is valid pointer.
-     */
-    osal_debug_assert(epoint->debug_id == 'E');
-
-#if OSAL_MULTITHREAD_SUPPORT
     /* If we are running end point thread, stop it.
      */
-    while (ioc_terminate_end_point_thread(epoint)) os_timeslice();
-#endif
+    while (ioc_terminate_switchbox_end_point_thread(epoint)) {
+        os_timeslice();
+    }
 
     /* Synchronize.
      */
     root = epoint->link.root;
-    ioc_lock(root);
+    ioc_switchbox_lock(root);
 
     /* Remove end_point from linked list.
      */
@@ -176,27 +157,25 @@ void ioc_release_end_point(
         epoint->link.root->epoint.last = epoint->link.prev;
     }
 
-#if OSAL_MULTITHREAD_SUPPORT
     osal_event_delete(epoint->trig);
     epoint->trig = OS_NULL;
-#endif
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
        for primitive static allocation schema).
      */
     allocated = epoint->allocated;
-    os_memclear(epoint, sizeof(iocEndPoint));
+    os_memclear(epoint, sizeof(switchboxEndPoint));
 
     /* If memory for end point was allocated, release it.
      */
     if (allocated)
     {
-        ioc_free(root, epoint, sizeof(iocEndPoint));
+        os_free(epoint, sizeof(switchboxEndPoint));
     }
 
     /* End syncronization.
      */
-    ioc_unlock(root);
+    ioc_switchbox_unlock(root);
 
     osal_trace("end point: released");
 }
@@ -206,9 +185,9 @@ void ioc_release_end_point(
 ****************************************************************************************************
 
   @brief Start or prepare the end point to listen for TCP socket connections.
-  @anchor ioc_listen
+  @anchor ioc_switchbox_listen
 
-  The ioc_listen() function sets up listening socket end point. If IOC_CREATE_THREAD flag is
+  The ioc_switchbox_listen() function sets up listening socket end point. If IOC_CREATE_THREAD flag is
   given, the function created a new thread to run the end point.
 
   @param   epoint Pointer to the end point object.
@@ -223,17 +202,15 @@ void ioc_release_end_point(
 
 ****************************************************************************************************
 */
-osalStatus ioc_listen(
-    iocEndPoint *epoint,
-    iocEndPointParams *prm)
+osalStatus ioc_switchbox_listen(
+    switchboxEndPoint *epoint,
+    switchboxEndPointParams *prm)
 {
-    IOC_MT_ROOT_PTR;
+    switchboxRoot *root;
     os_short flags;
 
-    osal_debug_assert(epoint->debug_id == 'E');
-
-    ioc_set_mt_root(root, epoint->link.root);
-    ioc_lock(root);
+    root = epoint->link.root;
+    ioc_switchbox_lock(root);
 
     flags = prm->flags;
     if (prm->iface) if (prm->iface->iflags & OSAL_STREAM_IFLAG_SECURE)
@@ -242,13 +219,6 @@ osalStatus ioc_listen(
     }
     epoint->flags = flags;
     epoint->iface = prm->iface;
-
-#if OSAL_MULTITHREAD_SUPPORT==0
-    /* If we have no multithread support, make sure that
-       IOC_CREATE_THREAD flag is not given.
-     */
-    osal_debug_assert((flags & IOC_CREATE_THREAD) == 0);
-#endif
 
 #if OSAL_DEBUG
     if (os_strlen(prm->parameters) > IOC_END_POINT_PRMSTR_SZ)
@@ -260,14 +230,13 @@ osalStatus ioc_listen(
         epoint->parameters, IOC_END_POINT_PRMSTR_SZ,
         epoint->iface == OSAL_TLS_IFACE ? IOC_DEFAULT_TLS_PORT : IOC_DEFAULT_SOCKET_PORT);
 
-#if OSAL_MULTITHREAD_SUPPORT
     /* If we are already running end point thread, stop it. Wait until it has stopped.
      */
-    while (ioc_terminate_end_point_thread(epoint))
+    while (ioc_terminate_switchbox_end_point_thread(epoint))
     {
-        ioc_unlock(root);
+        ioc_switchbox_unlock(root);
         os_timeslice();
-        ioc_lock(root);
+        ioc_switchbox_lock(root);
     }
 
     /* If we want to run end point in separate thread.
@@ -288,12 +257,11 @@ osalStatus ioc_listen(
         opt.pin_to_core = OS_TRUE;
         opt.pin_to_core_nr = 0;
 
-        osal_thread_create(ioc_endpoint_thread, epoint,
+        osal_thread_create(ioc_switchbox_endpoint_thread, epoint,
             &opt, OSAL_THREAD_DETACHED);
     }
-#endif
 
-    ioc_unlock(root);
+    ioc_switchbox_unlock(root);
     return OSAL_SUCCESS;
 }
 
@@ -304,8 +272,7 @@ osalStatus ioc_listen(
   @brief Accept incoming TCP sockets.
   @anchor ioc_run_epoint
 
-  The ioc_run_epoint() function is accepts received TCP sockets. It is called repeatedly
-  by ioc_run() and should not be called from application.
+  The ioc_switchbox_run_endpoint() function is accepts received TCP sockets.
 
   This function is either called from own thread (multithreading) or from commonioc_run()
   function (no multithreading).
@@ -315,12 +282,10 @@ osalStatus ioc_listen(
 
 ****************************************************************************************************
 */
-void ioc_run_endpoint(
-    iocEndPoint *epoint)
+void ioc_switchbox_run_endpoint(
+    switchboxEndPoint *epoint)
 {
-    osal_debug_assert(epoint->debug_id == 'E');
-
-    /* Do nothing if ioc_listen() has not been called.
+    /* Do nothing if ioc_switchbox_listen() has not been called.
      */
     if (epoint->parameters[0] == '\0')
         return;
@@ -331,33 +296,32 @@ void ioc_run_endpoint(
      */
     if (epoint->socket == OS_NULL)
     {
-        if (ioc_try_to_open_endpoint(epoint)) return;
+        if (ioc_try_to_open_switchbox_endpoint(epoint)) return;
     }
 
     /* Try to accept a socket.
      */
-    ioc_try_accept_new_sockets(epoint);
+    ioc_try_accept_new_switchbox_sockets(epoint);
 }
 
 
-#if OSAL_MULTITHREAD_SUPPORT
 /**
 ****************************************************************************************************
 
   @brief Request to terminate end point worker thread.
 
-  The ioc_terminate_end_point_thread() function sets request to terminate worker thread, if
+  The ioc_terminate_switchbox_end_point_thread() function sets request to terminate worker thread, if
   one is running the end point.
 
-  ioc_lock() must be on when this function is called.
+  ioc_switchbox_lock() must be on when this function is called.
 
   @param   epoint Pointer to the end point object.
   @return  OSAL_SUCCESS if no worker thread is running. OSAL_PENDING if there is .
 
 ****************************************************************************************************
 */
-osalStatus ioc_terminate_end_point_thread(
-    iocEndPoint *epoint)
+osalStatus ioc_terminate_switchbox_end_point_thread(
+    switchboxEndPoint *epoint)
 {
     osalStatus
         status = OSAL_SUCCESS;
@@ -372,16 +336,15 @@ osalStatus ioc_terminate_end_point_thread(
     return status;
 }
 
-#endif
 
 
 /**
 ****************************************************************************************************
 
   @brief Try to open listening socket port.
-  @anchor ioc_try_to_open_endpoint
+  @anchor ioc_try_to_open_switchbox_endpoint
 
-  The ioc_try_to_open_endpoint() function tries to open listening TCP socket. Do not try if
+  The ioc_try_to_open_switchbox_endpoint() function tries to open listening TCP socket. Do not try if
   f two secons have not passed since last failed open try.
 
   @param   epoint Pointer to the end point object.
@@ -390,8 +353,8 @@ osalStatus ioc_terminate_end_point_thread(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_try_to_open_endpoint(
-    iocEndPoint *epoint)
+static osalStatus ioc_try_to_open_switchbox_endpoint(
+    switchboxEndPoint *epoint)
 {
     osalStatus
         status;
@@ -420,7 +383,6 @@ static osalStatus ioc_try_to_open_endpoint(
      */
     epoint->open_fail_timer_set = OS_FALSE;
     epoint->try_accept_timer_set = OS_FALSE;
-    ioc_do_end_point_callback(epoint, IOC_END_POINT_LISTENING);
     osal_trace("end point: listening");
     return OSAL_SUCCESS;
 }
@@ -430,9 +392,9 @@ static osalStatus ioc_try_to_open_endpoint(
 ****************************************************************************************************
 
   @brief Try to accept new incoming socket connection.
-  @anchor ioc_try_accept_new_sockets
+  @anchor ioc_try_accept_new_switchbox_sockets
 
-  The ioc_try_accept_new_sockets() function is accepts received TCP sockets. It is called repeatedly
+  The ioc_try_accept_new_switchbox_sockets() function is accepts received TCP sockets. It is called
   by ioc_run() and should not be called from application.
 
   @param   epoint Pointer to the end point object.
@@ -442,8 +404,8 @@ static osalStatus ioc_try_to_open_endpoint(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_try_accept_new_sockets(
-    iocEndPoint *epoint)
+static osalStatus ioc_try_accept_new_switchbox_sockets(
+    switchboxEndPoint *epoint)
 {
     osalStatus
         status;
@@ -456,7 +418,6 @@ static osalStatus ioc_try_accept_new_sockets(
     /* If two seconds have not passed since last failed try. We cannot delay here
      * if we are running with select, we would miss selected events.
      */
-#if OSAL_MULTITHREAD_SUPPORT
     if (!epoint->worker_thread_running)
     {
         if (epoint->try_accept_timer_set &&
@@ -464,12 +425,6 @@ static osalStatus ioc_try_accept_new_sockets(
         os_get_timer(&epoint->try_accept_timer);
         epoint->try_accept_timer_set = OS_TRUE;
     }
-#else
-    if (epoint->try_accept_timer_set &&
-        !os_has_elapsed(&epoint->try_accept_timer, 50)) return OSAL_SUCCESS;
-    os_get_timer(&epoint->try_accept_timer);
-    epoint->try_accept_timer_set = OS_TRUE;
-#endif
 
     /* Try to accept an incoming socket connection.
      */
@@ -483,7 +438,7 @@ static osalStatus ioc_try_accept_new_sockets(
             osal_debug_assert(newsocket != OS_NULL);
 
             osal_trace("end point: connection accepted");
-            if (!ioc_establish_connection(epoint, newsocket, remote_ip_addr)) break;
+            if (!ioc_establish_switchbox_connection(epoint, newsocket, remote_ip_addr)) break;
             osal_debug_error("Out of connection pool");
             osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
             epoint->socket = OS_NULL;
@@ -496,7 +451,6 @@ static osalStatus ioc_try_accept_new_sockets(
             osal_debug_error("Listening socket broken");
             osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
             epoint->socket = OS_NULL;
-            ioc_do_end_point_callback(epoint, IOC_END_POINT_DROPPED);
             return status;
     }
 
@@ -510,9 +464,9 @@ static osalStatus ioc_try_accept_new_sockets(
 ****************************************************************************************************
 
   @brief Try to accept new incoming socket connection.
-  @anchor ioc_establish_connection
+  @anchor ioc_establish_switchbox_connection
 
-  The ioc_establish_connection() function is called once incoming TCP socket is accepted.
+  The ioc_establish_switchbox_connection() function is called once incoming TCP socket is accepted.
   It creates connection object for the accepted socket.
 
   @param   epoint Pointer to the end point object.
@@ -522,39 +476,38 @@ static osalStatus ioc_try_accept_new_sockets(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_establish_connection(
-    iocEndPoint *epoint,
+static osalStatus ioc_establish_switchbox_connection(
+    switchboxEndPoint *epoint,
     osalStream newsocket,
     os_char *remote_ip_addr)
 {
-    iocConnection
+    switchboxServiceConnection
         *con;
 
-    iocConnectionParams
+    switchboxServiceConnectionParams
         conprm;
 
     /* If allocate connection structure either dynamically or from static pool and initialize it.
      */
-    con = ioc_initialize_connection(OS_NULL, epoint->link.root);
+    con = ioc_initialize_switchbox_service_connection(OS_NULL, epoint->link.root);
     if (con == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
 
     os_memclear(&conprm, sizeof(conprm));
     conprm.iface = newsocket->iface;
     conprm.parameters = remote_ip_addr;
     conprm.newsocket = newsocket;
-    conprm.flags = epoint->flags;
-    return ioc_connect(con, &conprm);
+    //conprm.flags = epoint->flags;
+    return ioc_switchbox_service_connect(con, &conprm);
 }
 
 
-#if OSAL_MULTITHREAD_SUPPORT
 /**
 ****************************************************************************************************
 
   @brief End point thread function.
-  @anchor ioc_endpoint_thread
+  @anchor ioc_switchbox_endpoint_thread
 
-  The ioc_endpoint_thread() function is worker thread to accept new incoming TCP sockets.
+  The ioc_switchbox_endpoint_thread() function is worker thread to accept new incoming TCP sockets.
 
   @param   prm Pointer to parameters for new thread, pointer to end point object.
   @param   done Event to set when parameters have been copied to entry point
@@ -564,39 +517,36 @@ static osalStatus ioc_establish_connection(
 
 ****************************************************************************************************
 */
-static void ioc_endpoint_thread(
+static void ioc_switchbox_endpoint_thread(
     void *prm,
     osalEvent done)
 {
-    iocEndPoint
+    switchboxEndPoint
         *epoint;
 
-#if OSAL_SOCKET_SELECT_SUPPORT
     osalSelectData
         selectdata;
 
     osalStatus
         status;
-#endif
 
     osal_trace("end point: worker thread created");
 
     /* Parameters point to end point object.
      */
-    epoint = (iocEndPoint*)prm;
+    epoint = (switchboxEndPoint*)prm;
 
     /* Let thread which created this one proceed.
      */
     osal_event_set(done);
 
-#if OSAL_SOCKET_SELECT_SUPPORT
     /* Run the end point.
      */
     while (!epoint->stop_worker_thread && osal_go())
     {
 static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point\n"); ulledoo = 0;}
 
-        ioc_run_endpoint(epoint);
+        ioc_switchbox_run_endpoint(epoint);
 
         if (epoint->socket && (epoint->flags & IOC_DISABLE_SELECT) == 0)
         {
@@ -621,15 +571,13 @@ static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point
         }
     }
 
-#else
     /* Run the end point.
      */
     while (!epoint->stop_worker_thread && osal_go())
     {
-        ioc_run_endpoint(epoint);
+        ioc_switchbox_run_endpoint(epoint);
         os_sleep(100);
     }
-#endif
 
     osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
     epoint->socket = OS_NULL;
@@ -640,64 +588,3 @@ static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point
 
     osal_trace("end point: worker thread exited");
 }
-#endif
-
-
-#if IOC_ROOT_CALLBACK_SUPPORT
-/**
-****************************************************************************************************
-
-  @brief Do callback to indicate that end point is now listening or dropped.
-  @anchor ioc_do_end_point_callback
-
-  The ioc_do_end_point_callback() function calls application's callback function for the
-  connection to indicate that end point is really listening or has been dropped (not typical).
-
-  @param   epoint Pointer to the end point object.
-  @param   event Either IOC_END_POINT_LISTENING or IOC_END_POINT_DROPPED.
-
-
-****************************************************************************************************
-*/
-void ioc_do_end_point_callback(
-    iocEndPoint *epoint,
-    iocEndPointEvent event)
-{
-    if (epoint->callback_func)
-    {
-        epoint->callback_func(epoint, event, epoint->callback_context);
-    }
-}
-#endif
-
-
-#if IOC_ROOT_CALLBACK_SUPPORT
-/**
-****************************************************************************************************
-
-  @brief Set callback function for iocEndPoint object.
-  @anchor ioc_set_end_point_callback
-
-  The ioc_set_end_point_callback function sets callback function and context. The callback
-  can be used to inform the application that end point is really listening, and about dropped
-  end points.
-
-  @param   epoint Pointer to the end point object.
-  @param   func Pointer to a callback function. Set OS_NULL to remove a callback.
-  @param   context Application specific context pointer to be passed to the callback function.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_set_end_point_callback(
-    iocEndPoint *epoint,
-    ioc_end_point_callback func,
-    void *context)
-{
-    epoint->callback_func = func;
-    epoint->callback_context = context;
-}
-#endif
-
-#endif
-
