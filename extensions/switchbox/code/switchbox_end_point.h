@@ -18,7 +18,7 @@
 #pragma once
 #ifndef SWITCHBOX_END_POINT_H_
 #define SWITCHBOX_END_POINT_H_
-#include "switchbox.h"
+#include "extensions/switchbox/switchbox.h"
 
 struct switchboxEndPoint;
 

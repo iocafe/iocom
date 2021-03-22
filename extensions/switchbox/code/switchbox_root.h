@@ -16,7 +16,7 @@
 #pragma once
 #ifndef SWITCHBOX_ROOT_H_
 #define SWITCHBOX_ROOT_H_
-#include "switchbox.h"
+#include "extensions/switchbox/switchbox.h"
 
 /* Structures which are defined later in headers.
  */
