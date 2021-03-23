@@ -34,6 +34,9 @@ static void ioc_switchbox_endpoint_thread(
     void *prm,
     osalEvent done);
 
+static void ioc_do_switchbox_end_point_callback(
+    switchboxEndPoint *epoint,
+    switchboxEndPointEvent event);
 
 /**
 ****************************************************************************************************
@@ -221,13 +224,13 @@ osalStatus ioc_switchbox_listen(
     epoint->iface = prm->iface;
 
 #if OSAL_DEBUG
-    if (os_strlen(prm->parameters) > IOC_END_POINT_PRMSTR_SZ)
+    if (os_strlen(prm->parameters) > SWITCHBOX_END_POINT_PRMSTR_SZ)
     {
-        osal_debug_error("Too long parameter string");
+        osal_debug_error("switchbox: Too long parameter string");
     }
 #endif
     osal_socket_embed_default_port(prm->parameters,
-        epoint->parameters, IOC_END_POINT_PRMSTR_SZ,
+        epoint->parameters, SWITCHBOX_END_POINT_PRMSTR_SZ,
         epoint->iface == OSAL_TLS_IFACE ? IOC_DEFAULT_TLS_PORT : IOC_DEFAULT_SOCKET_PORT);
 
     /* If we are already running end point thread, stop it. Wait until it has stopped.
@@ -383,6 +386,8 @@ static osalStatus ioc_try_to_open_switchbox_endpoint(
      */
     epoint->open_fail_timer_set = OS_FALSE;
     epoint->try_accept_timer_set = OS_FALSE;
+    ioc_do_switchbox_end_point_callback(epoint, SWITCHBOX_END_POINT_LISTENING);
+
     osal_trace("end point: listening");
     return OSAL_SUCCESS;
 }
@@ -451,6 +456,7 @@ static osalStatus ioc_try_accept_new_switchbox_sockets(
             osal_debug_error("Listening socket broken");
             osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
             epoint->socket = OS_NULL;
+            ioc_do_switchbox_end_point_callback(epoint, SWITCHBOX_END_POINT_DROPPED);
             return status;
     }
 
@@ -544,7 +550,7 @@ static void ioc_switchbox_endpoint_thread(
      */
     while (!epoint->stop_worker_thread && osal_go())
     {
-static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point\n"); ulledoo = 0;}
+static long ulledoo; if (++ulledoo > 0) {osal_debug_error("ulledoo end point\n"); ulledoo = 0;}
 
         ioc_switchbox_run_endpoint(epoint);
 
@@ -571,14 +577,6 @@ static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point
         }
     }
 
-    /* Run the end point.
-     */
-    while (!epoint->stop_worker_thread && osal_go())
-    {
-        ioc_switchbox_run_endpoint(epoint);
-        os_sleep(100);
-    }
-
     osal_stream_close(epoint->socket, OSAL_STREAM_DEFAULT);
     epoint->socket = OS_NULL;
 
@@ -587,4 +585,57 @@ static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point
     epoint->worker_thread_running = OS_FALSE;
 
     osal_trace("end point: worker thread exited");
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Do callback to indicate that end point is now listening or dropped.
+  @anchor ioc_do_switchbox_end_point_callback
+
+  The ioc_do_switchbox_end_point_callback() function calls application's callback function for
+  the connection to indicate that end point is really listening or has been dropped (not typical).
+
+  @param   epoint Pointer to the end point object.
+  @param   event Either IOC_END_POINT_LISTENING or IOC_END_POINT_DROPPED.
+
+
+****************************************************************************************************
+*/
+static void ioc_do_switchbox_end_point_callback(
+    switchboxEndPoint *epoint,
+    switchboxEndPointEvent event)
+{
+    if (epoint->callback_func)
+    {
+        epoint->callback_func(epoint, event, epoint->callback_context);
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Set callback function for switchboxEndPoint object.
+  @anchor ioc_set_switchbox_end_point_callback
+
+  The ioc_set_switchbox_end_point_callback function sets callback function and context. The callback
+  can be used to inform the application that end point is really listening, and about dropped
+  end points.
+
+  @param   epoint Pointer to the end point object.
+  @param   func Pointer to a callback function. Set OS_NULL to remove a callback.
+  @param   context Application specific context pointer to be passed to the callback function.
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_set_switchbox_end_point_callback(
+    switchboxEndPoint *epoint,
+    switchbox_end_point_callback func,
+    void *context)
+{
+    epoint->callback_func = func;
+    epoint->callback_context = context;
 }

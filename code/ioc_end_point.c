@@ -594,7 +594,7 @@ static void ioc_endpoint_thread(
      */
     while (!epoint->stop_worker_thread && osal_go())
     {
-static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point\n"); ulledoo = 0;}
+// static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo end point\n"); ulledoo = 0;}
 
         ioc_run_endpoint(epoint);
 

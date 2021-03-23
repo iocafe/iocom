@@ -24,7 +24,7 @@ struct switchboxEndPoint;
 
 /* Maximum parameter string length for end point.
  */
-#define IOC_END_POINT_PRMSTR_SZ 32
+#define SWITCHBOX_END_POINT_PRMSTR_SZ OSAL_IPADDR_AND_PORT_SZ
 
 /**
 ****************************************************************************************************
@@ -49,6 +49,29 @@ typedef struct
     os_short flags;
 }
 switchboxEndPointParams;
+
+
+/**
+****************************************************************************************************
+    End point callback event enumeration, reason why the callback?
+****************************************************************************************************
+*/
+typedef enum switchboxEndPointEvent
+{
+    SWITCHBOX_END_POINT_LISTENING,
+    SWITCHBOX_END_POINT_DROPPED
+}
+switchboxEndPointEvent;
+
+/**
+****************************************************************************************************
+    End point callback function type (listening port or end point dropped).
+****************************************************************************************************
+*/
+typedef void switchbox_end_point_callback(
+    struct switchboxEndPoint *epoint,
+    switchboxEndPointEvent event,
+    void *context);
 
 /**
 ****************************************************************************************************
@@ -89,7 +112,7 @@ typedef struct switchboxEndPoint
 
     /** Parameter string
      */
-    os_char parameters[IOC_END_POINT_PRMSTR_SZ];
+    os_char parameters[SWITCHBOX_END_POINT_PRMSTR_SZ];
 
     /** OSAL socket handle.
      */
@@ -121,6 +144,14 @@ typedef struct switchboxEndPoint
 
     os_boolean try_accept_timer_set;
     os_boolean open_fail_timer_set;
+
+    /** End point callback function.
+     */
+    switchbox_end_point_callback *callback_func;
+
+    /** End point callback context.
+     */
+    void *callback_context;
 
     /** This end point in root's linked list of end points.
      */
@@ -172,6 +203,13 @@ void ioc_switchbox_run_endpoint(
  */
 osalStatus ioc_terminate_switchbox_end_point_thread(
     switchboxEndPoint *epoint);
+
+/* Set callback function for the switchboxEndPoint object.
+ */
+void ioc_set_switchbox_end_point_callback(
+    switchboxEndPoint *epoint,
+    switchbox_end_point_callback func,
+    void *context);
 
 /*@}*/
 

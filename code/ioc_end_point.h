@@ -25,7 +25,7 @@ struct iocEndPoint;
 
 /* Maximum parameter string length for end point.
  */
-#define IOC_END_POINT_PRMSTR_SZ 32
+#define IOC_END_POINT_PRMSTR_SZ OSAL_IPADDR_AND_PORT_SZ
 
 /**
 ****************************************************************************************************
