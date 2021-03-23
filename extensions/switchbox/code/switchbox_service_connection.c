@@ -124,7 +124,7 @@ void ioc_release_switchbox_service_connection(
 
     /* If stream is open, close it.
      */
-    ioc_close_switchbox_service_stream(con);
+    // ioc_close_switchbox_service_stream(con);
 
     /* Remove connection from linked list.
      */
@@ -388,7 +388,7 @@ osalStatus ioc_run_switchbox_connection(
 failed:
 // osal_sysconsole_write("HEHE COM FAILED\n");
 
-    ioc_close_switchbox_service_stream(con);
+    // ioc_close_switchbox_service_stream(con);
     return OSAL_STATUS_FAILED;
 }
 
@@ -633,7 +633,7 @@ static void ioc_connection_thread(
         continue;
 
 failed:
-        ioc_close_switchbox_service_stream(con);
+        // ioc_close_switchbox_service_stream(con);
 
 break;
 

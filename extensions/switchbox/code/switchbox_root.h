@@ -122,8 +122,6 @@ void ioc_switchbox_lock(
 void ioc_switchbox_unlock(
     switchboxRoot *root);
 
-
-
 /*@}*/
 
 
