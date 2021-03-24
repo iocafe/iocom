@@ -509,7 +509,7 @@ static osalStatus ioc_try_accept_new_sockets(
 /**
 ****************************************************************************************************
 
-  @brief Try to accept new incoming socket connection.
+  @brief A socket has been accepted, establish connection.
   @anchor ioc_establish_connection
 
   The ioc_establish_connection() function is called once incoming TCP socket is accepted.
