@@ -6,6 +6,16 @@
   @version 1.0
   @date    8.1.2020
 
+  This handshake is used to pass "cloud network name" to clients and services connecting to
+  switchbox cloud server, and to request trusted sertificate from socket server. Same
+  handshake (usually 1 byte) is sent even when switchbox is used, this allows the same
+  clients to connect directly or trough switchbox server without modification.
+
+  Second function of this handshake is to allow client for trusted certificate from server.
+  This relates to pairing and autoconfiguring TLS security.
+
+  This is done after the TLS hanshaking, but before passing user login information to server.
+
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
   or distribute this file you indicate that you have read the license and understand and accept
@@ -16,16 +26,97 @@
 #include "iocom.h"
 
 
+/* Forward referred static functions.
+ */
+static osalStatus ioc_send_client_handshake_message(
+    iocHandshakeState *state,
+    ioc_hanshake_write_socket *write_socket_func,
+    void *write_socket_context);
+
+static osalStatus ioc_process_handshake_message(
+    iocHandshakeState *state,
+    ioc_hanshake_read_socket *read_socket_func,
+    void *read_socket_context);
+
+#if OSAL_TLS_SUPPORT
+static osalStatus ioc_send_trust_certificate(
+    iocHandshakeState *state,
+    ioc_hanshake_write_socket *write_socket_func,
+    void *write_socket_context,
+    ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
+    void *load_trust_certificate_context);
+
+static osalStatus ioc_process_trust_certificate(
+    iocHandshakeState *state,
+    ioc_hanshake_read_socket *read_socket_func,
+    void *read_socket_context,
+    ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
+    void *save_trust_certificate_context);
+#endif
+
+
 /**
 ****************************************************************************************************
 
-  @brief Make client handshake message (socket client only).
-  @anchor ioc_make_clent_handshake_message
+  @brief Initialize handshake state structure.
+  @anchor ioc_initialize_handshake_state
 
-  The ioc_make_clent_handshake_message() generates outgoing data frame which contains information
-  to authenticate this IO device, etc.
+  The ioc_initialize_handshake_state() function initializes handshake state structure for use
+  (mostly fills it with zeros).
 
-  #param   process_type IOC_HANDSHAKE_NETWORK_SERVICE indicates that this socket client is
+  @param   state Handshake state initialized by ioc_initialize_handshake_state().
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_initialize_handshake_state(
+    iocHandshakeState *state)
+{
+    os_memclear(state, sizeof(iocHandshakeState));
+    state->cert_sz = -1;
+}
+
+/**
+****************************************************************************************************
+
+  @brief Release memory allocated to maintain handshake state.
+  @anchor ioc_release_handshake_state
+
+  The ioc_release_handshake_state() function releases memory allocated for handshake state
+  (pointers in state structure).
+
+  @param   state Handshake state initialized by ioc_initialize_handshake_state().
+  @return  None.
+
+****************************************************************************************************
+*/
+void ioc_release_handshake_state(
+    iocHandshakeState *state)
+{
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_free(state->cloud_netname, state->cloud_netname_sz);
+#endif
+
+#if OSAL_TLS_SUPPORT
+    os_free(state->cert, state->cert_sz);
+#endif
+
+    os_memclear(state, sizeof(iocHandshakeState));
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Do client handshake (socket client only).
+  @anchor ioc_client_handshake
+
+  The ioc_client_handshake() does client end of handshaking. This function is called repeatedly
+  until it return OSAL_SUCCESS (0). If this function return OSAL_PENDING, the caller
+  should call flush on socket.
+
+  @param   state handshake state initialized by ioc_initialize_handshake_state().
+  @param   process_type IOC_HANDSHAKE_NETWORK_SERVICE indicates that this socket client is
            IO network service connecting to switchbox cloud server to share an end point.
            IOC_HANDSHAKE_CLIENT if this is an IO device or user interface application
            connecting to IO network service trough a cloud server.
@@ -37,73 +128,210 @@
            allows using this code with both iocom and ecom protocols.
   @param   write_socket_context Application specific context to pass to write_socket_func().
            Something like stream handle, etc.
+  @param   save_trust_certificate_func Function to save trust certificate, called once nonempty
+           trust certificate has been completely received.
+  @param   save_trust_certificate_context Application specific context to pass to
+           save_trust_certificate() function.
 
   @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
            an error (broken socket).
 
 ****************************************************************************************************
 */
-osalStatus ioc_make_clent_handshake_message(
-    iocHandshakeProcessType process_type,
+osalStatus ioc_client_handshake(
+    iocHandshakeState *state,
+    iocHandshakeClientType process_type,
     const os_char *cloud_netname,
     os_boolean request_trust_certificate,
+    ioc_hanshake_read_socket *read_socket_func,
+    void *read_socket_context,
     ioc_hanshake_write_socket *write_socket_func,
-    void *write_socket_context)
+    void *write_socket_context,
+    ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
+    void *save_trust_certificate_context)
 {
-    return OSAL_SUCCESS;
+    osalStatus s = OSAL_SUCCESS;
+    os_char len;
+
+    /* Send client handshake message (socket client side only).
+     */
+    if (!state->hand_shake_message_done)
+    {
+        state->client_type = (os_char)process_type;
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+        if (state->cloud_netname == OS_NULL) {
+            len = (os_char)os_strlen(cloud_netname);
+            if (len > 1) {
+                if (len > OSAL_NETWORK_NAME_SZ) {
+                    osal_debug_error_str("Too long cloud netname: ", cloud_netname);
+                    return OSAL_STATUS_FAILED;
+                }
+                state->cloud_netname_sz = len + IOC_HANDSHAKE_HDR_BYTES;
+                state->cloud_netname = os_malloc(state->cloud_netname_sz, OS_NULL);
+                if (state->cloud_netname == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+                os_memcpy(state->cloud_netname + IOC_HANDSHAKE_HDR_BYTES, cloud_netname, len);
+
+                state->cloud_netname[0] = (os_char)process_type | IOC_HANDSHAKE_HAS_NET_NAME_BIT;
+#if OSAL_TLS_SUPPORT
+                if (request_trust_certificate) {
+                    state->cloud_netname[0] |= IOC_HANDSHAKE_REQUEST_TRUST_CERTIFICATE_BIT;
+                }
+#endif
+                state->cloud_netname[1] = (os_char)len;
+            }
+        }
+#endif
+
+#if OSAL_TLS_SUPPORT
+        state->copy_trust_certificate = (os_boolean)request_trust_certificate;
+#endif
+
+        s = ioc_send_client_handshake_message(state, write_socket_func, write_socket_context);
+        if (s) {
+            return s;
+        }
+
+        state->hand_shake_message_done = OS_TRUE;
+    }
+
+#if OSAL_TLS_SUPPORT
+    if (request_trust_certificate) {
+        s = ioc_process_trust_certificate(state, read_socket_func, read_socket_context,
+            save_trust_certificate_func, save_trust_certificate_context);
+    }
+#endif
+
+    return s;
 }
 
 
 /**
 ****************************************************************************************************
 
-  @brief Process received client handshake (socket server only)
-  @anchor ioc_process_clent_handshake_message
+  @brief Do server handshake (socket server side only).
+  @anchor ioc_server_handshake
 
-  The ioc_process_clent_handshake_message() generates outgoing data frame which contains information
-  to authenticate this IO device, etc.
+  The ioc_server_handshake() does server end of handshaking. This function is called repeatedly
+  until it return OSAL_SUCCESS (0). If this function return OSAL_PENDING, the caller
+  should call flush on socket.
 
-  #param   process_type Pointer to integer where to store IOC_HANDSHAKE_NETWORK_SERVICE if
-           connecting socket is from IO network service. Or IOC_HANDSHAKE_CLIENT to indicate
-           an IO device or user interface application.
-  @param   cloud_netname Pointer to buffer where to store received network name used in cloud.
-  @param   cloud_netname_sz Size of cloud_netname buffer in bytes.
-  @param   trust_certificate_requested Set to OS_TRUE if socket client has requested trust
-           sertificate from this socket service. If set, something (at least an empty certificate)
-           must be sent.
+  @param   state handshake state initialized by ioc_initialize_handshake_state().
+  @param   process_type Server process type:
+           - IOC_HANDSHAKE_SWITCHBOX_ENDPOINT This is switchbox end of cloud connection.
+           - IOC_HANDSHAKE_REGULAR_ENDPOINT This is regular socket server side end of connection.
   @param   read_socket_func Pointer to socket read function.
   @param   read_socket_context Application specific context to pass to read_socket_func().
            Something like stream handle, etc.
+  @param   write_socket_func Pointer to socket write function. Using function pointer
+           allows using this code with both iocom and ecom protocols.
+  @param   write_socket_context Application specific context to pass to write_socket_func().
+           Something like stream handle, etc.
+  @param   load_trust_certificate_func Pointer to function to load trust certificate.
+  @param   load_trust_certificate_context Application specific context to pass to
+           load_trust_certificate() function.
 
   @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
            an error (broken socket).
 
 ****************************************************************************************************
 */
-osalStatus ioc_process_client_handshake_message(
-    iocHandshakeProcessType *process_type,
-    os_char *cloud_netname,
-    os_memsz cloud_netname_sz,
-    os_boolean *trust_certificate_requested,
+osalStatus ioc_server_handshake(
+    iocHandshakeState *state,
+    iocHandshakeServerType process_type,
     ioc_hanshake_read_socket *read_socket_func,
-    void *read_socket_context)
+    void *read_socket_context,
+    ioc_hanshake_write_socket *write_socket_func,
+    void *write_socket_context,
+    ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
+    void *load_trust_certificate_context)
 {
-    return OSAL_SUCCESS;
+    osalStatus s = OSAL_SUCCESS;
+
+    /* Send client handshake message (socket client side only).
+     */
+    if (!state->hand_shake_message_done)
+    {
+        state->server_type = (os_char)process_type;
+        s = ioc_process_handshake_message(state, read_socket_func, read_socket_context);
+        if (s) {
+            return s;
+        }
+
+        state->hand_shake_message_done = OS_TRUE;
+    }
+
+#if OSAL_TLS_SUPPORT
+    if (state->copy_trust_certificate) {
+        s = ioc_send_trust_certificate(state, write_socket_func, write_socket_context,
+            load_trust_certificate_func, load_trust_certificate_context);
+    }
+#endif
+
+    return s;
 }
+
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+/**
+****************************************************************************************************
+
+  @brief Find out is connected client network service a nwteork service or UI, etc. client.
+  @anchor ioc_get_handshake_client_type
+
+  The ioc_get_handshake_client_type() is called by switchbox to determine if:
+  - IOC_HANDSHAKE_NETWORK_SERVICE The connected client is network service'etc, which should be
+    made accessible though switchox cloud service.
+  - IOC_HANDSHAKE_CLIENT The connection is from network client and should be forwareded by
+    switchbox to service "cloud-netname".
+
+  @param   state handshake state initialized by ioc_initialize_handshake_state().
+  @return  Either IOC_HANDSHAKE_NETWORK_SERVICE or IOC_HANDSHAKE_CLIENT.
+
+****************************************************************************************************
+*/
+iocHandshakeClientType ioc_get_handshake_client_type(
+    iocHandshakeState *state)
+{
+    return state->client_type & IOC_HANDSHAKE_TYPE_MASK;
+}
+
+/**
+****************************************************************************************************
+
+  @brief Find out is cloud network name to share specified by socket client.
+  @anchor ioc_get_handshake_cloud_netname
+
+  The ioc_get_handshake_cloud_netname() is called by switchbox to get cloud networ name:
+  - IOC_HANDSHAKE_NETWORK_SERVICE The connected client is network service'etc, and
+    this is the name to use for it within switchbox.
+  - IOC_HANDSHAKE_CLIENT The connection is from network client and should be forwareded by
+    switchbox to service with this name.
+
+  @param   state handshake state initialized by ioc_initialize_handshake_state().
+  @return  Pointer to cloud network name string, or OS_NULL if none.
+
+****************************************************************************************************
+*/
+const os_char *ioc_get_handshake_cloud_netname(
+    iocHandshakeState *state)
+{
+    return state->cloud_netname;
+}
+#endif
 
 
 /**
 ****************************************************************************************************
 
-  @brief Send trust certificate to client (socket server only)
-  @anchor ioc_send_trust_certificate
+  @brief Make client handshake message (socket client only).
+  @anchor ioc_send_client_handshake_message
 
-  The ioc_send_trust_certificate() sends trust certificate to socket client. It is up to
-  socket client application to use or not use this certificate. If the sertificate is
-  requested (trust_certificate_requested is OS_TRUE), this function must be called.
+  The ioc_send_client_handshake_message() generates outgoing data frame which contains information
+  to authenticate this IO device, etc.
 
-  @param   cert Pointer to certificate.
-  @param   certsz Size of certificate in bytes.
+  @param   state Current handshake state.
+  @param   cloud_netname Name of IO network to service to publish (IOC_HANDSHAKE_NETWORK_SERVICE)
+           or connect to (IOC_HANDSHAKE_CLIENT).
   @param   write_socket_func Pointer to socket write function. Using function pointer
            allows using this code with both iocom and ecom protocols.
   @param   write_socket_context Application specific context to pass to write_socket_func().
@@ -114,16 +342,203 @@ osalStatus ioc_process_client_handshake_message(
 
 ****************************************************************************************************
 */
-osalStatus ioc_send_trust_certificate(
-    const os_char *cert,
-    os_memsz cert_sz,
+static osalStatus ioc_send_client_handshake_message(
+    iocHandshakeState *state,
     ioc_hanshake_write_socket *write_socket_func,
     void *write_socket_context)
 {
-    return OSAL_SUCCESS;
+    os_memsz n_written;
+    osalStatus s;
+    os_char n, one_byte_handshake;
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    if (state->cloud_netname) {
+        n = state->cloud_netname_sz - state->cloud_netname_pos;
+        if (n > 0) {
+            s = write_socket_func(state->cloud_netname + state->cloud_netname_pos,
+                n, &n_written, write_socket_context);
+            state->cloud_netname_pos += (os_char)n_written;
+        }
+        return (s == OSAL_SUCCESS && n_written < n) ? OSAL_PENDING : s;
+    }
+#endif
+
+    one_byte_handshake = state->client_type;
+#if OSAL_TLS_SUPPORT
+    if (state->copy_trust_certificate) {
+        one_byte_handshake |= IOC_HANDSHAKE_REQUEST_TRUST_CERTIFICATE_BIT;
+    }
+#endif
+    n = 1;
+    s = write_socket_func(&one_byte_handshake,
+        n, &n_written, write_socket_context);
+
+    if (s == OSAL_SUCCESS && n_written < n) {
+        s = OSAL_PENDING;
+    }
+
+    return s;
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Process received client handshake (socket server only)
+  @anchor ioc_process_handshake_message
+
+  The ioc_process_handshake_message() receives and parses handshake message from socket client
+  to socket server.
+
+  @param   state Current handshake state.
+  @param   read_socket_func Pointer to socket read function.
+  @param   read_socket_context Application specific context to pass to read_socket_func().
+           Something like stream handle, etc.
+
+  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
+           an error (broken socket).
+
+****************************************************************************************************
+*/
+static osalStatus ioc_process_handshake_message(
+    iocHandshakeState *state,
+    ioc_hanshake_read_socket *read_socket_func,
+    void *read_socket_context)
+{
+    os_memsz n_read;
+    osalStatus s;
+    os_char c, n, tmp[OSAL_NETWORK_NAME_SZ], *p;
+
+    if (state->cloud_netname_pos == 0)
+    {
+        s = read_socket_func(&c, 1, &n_read, read_socket_context);
+        state->client_type = c;
+        if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
+        if (s) return s;
+        if ((c & IOC_HANDSHAKE_TYPE_MASK) != IOC_HANDSHAKE_NETWORK_SERVICE &&
+            (c & IOC_HANDSHAKE_TYPE_MASK) != IOC_HANDSHAKE_CLIENT)
+        {
+            return OSAL_STATUS_FAILED;
+        }
+
+#if OSAL_TLS_SUPPORT
+        if (c & IOC_HANDSHAKE_REQUEST_TRUST_CERTIFICATE_BIT) {
+            state->copy_trust_certificate = OS_TRUE;
+        }
+#endif
+        state->cloud_netname_pos = 1;
+        if ((s & IOC_HANDSHAKE_HAS_NET_NAME_BIT) == 0) return OSAL_SUCCESS;
+    }
+
+    if (state->cloud_netname_pos == 1)
+    {
+        s = read_socket_func(&c, 1, &n_read, read_socket_context);
+        if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
+        if (s) return s;
+        if (c <= 0 || c > OSAL_NETWORK_NAME_SZ) {
+            return OSAL_STATUS_FAILED;
+        }
+        state->cloud_netname_sz = c;
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+        if (state->server_type == IOC_HANDSHAKE_SWITCHBOX_SERVER) {
+            state->cloud_netname = os_malloc(c, OS_NULL);
+            if (state->cloud_netname == OS_NULL) {
+                return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+            }
+        }
+        state->cloud_netname_pos = IOC_HANDSHAKE_HDR_BYTES;
+#endif
+    }
+
+    c = state->cloud_netname_pos - IOC_HANDSHAKE_HDR_BYTES;
+    n = state->cloud_netname_sz - c;
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    p = state->cloud_netname ? state->cloud_netname : tmp;
+#else
+    p = tmp;
+#endif
+    s = read_socket_func(p + c, n, &n_read, read_socket_context);
+    if (s == OSAL_SUCCESS) {
+        state->cloud_netname_pos += n_read;
+        return n_read >= n ? OSAL_SUCCESS : OSAL_PENDING;
+    }
+    return s;
+}
+
+
+#if OSAL_TLS_SUPPORT
+/**
+****************************************************************************************************
+
+  @brief Send trust certificate to client (socket server only)
+  @anchor ioc_send_trust_certificate
+
+  The ioc_send_trust_certificate() sends trust certificate to socket client. It is up to
+  socket client application to use or not use this certificate. If the sertificate is
+  requested (trust_certificate_requested is OS_TRUE), this function must be called.
+
+  @param   state Current handshake state.
+  @param   write_socket_func Pointer to socket write function. Using function pointer
+           allows using this code with both iocom and ecom protocols.
+  @param   write_socket_context Application specific context to pass to write_socket_func().
+           Something like stream handle, etc.
+  @param   load_trust_certificate_func Pointer to function to load trust certificate.
+  @param   load_trust_certificate_context Application specific context to pass to
+           load_trust_certificate() function.
+
+  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
+           an error (broken socket).
+
+****************************************************************************************************
+*/
+static osalStatus ioc_send_trust_certificate(
+    iocHandshakeState *state,
+    ioc_hanshake_write_socket *write_socket_func,
+    void *write_socket_context,
+    ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
+    void *load_trust_certificate_context)
+{
+    os_memsz n_written;
+    osalStatus s;
+    os_ushort cert_sz, n;
+
+    /* If we have not tried to load the certificate.
+     */
+    if (state->cert_sz < 0)
+    {
+        state->cert_sz = 0;
+
+        /* Get certificate size in bytes.
+         */
+        cert_sz = load_trust_certificate_func(OS_NULL, 0, load_trust_certificate_context);
+        if (cert_sz > 0) {
+            state->cert = (os_uchar*)os_malloc(cert_sz + 2, OS_NULL);
+            if (state->cert == OS_NULL) return OSAL_STATUS_FAILED;
+            state->cert_sz = cert_sz + 2;
+            load_trust_certificate_func((os_char*)state->cert + 2, cert_sz,
+                load_trust_certificate_context);
+            state->cert[0] = (os_uchar)cert_sz;
+            state->cert[1] = (os_uchar)(cert_sz >> 8);
+        }
+        else {
+            osal_debug_error("No trusted certificate to send");
+        }
+    }
+
+    n = state->cert_sz - state->cert_pos;
+    s = write_socket_func((os_char*)state->cert + state->cert_pos,
+        n, &n_written, write_socket_context);
+    if (s) return s;
+
+    state->cert_pos += (os_ushort)n_written;
+    return n_written >= n ? OSAL_SUCCESS : OSAL_PENDING;
+}
+#endif
+
+
+#if OSAL_TLS_SUPPORT
 /**
 ****************************************************************************************************
 
@@ -133,6 +548,7 @@ osalStatus ioc_send_trust_certificate(
   The ioc_process_trust_certificate() receive trust certificate and call save_trust_certificate_func
   to save it.
 
+  @param   state Current handshake state.
   @param   read_socket_func Pointer to socket read function.
   @param   read_socket_context Application specific context to pass to read_socket_func().
            Something like stream handle, etc.
@@ -146,474 +562,15 @@ osalStatus ioc_send_trust_certificate(
 
 ****************************************************************************************************
 */
-osalStatus ioc_process_trust_certificate(
+static osalStatus ioc_process_trust_certificate(
+    iocHandshakeState *state,
     ioc_hanshake_read_socket *read_socket_func,
     void *read_socket_context,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context)
 {
+
     return OSAL_SUCCESS;
 }
-
-
-#if 0
-void ioc_make_authentication_frame(
-    iocConnection *con)
-{
-    iocRoot
-        *root;
-
-    iocSendHeaderPtrs
-        ptrs;
-
-    os_uchar
-        *p,
-        *auth_flags_ptr,
-        flags,
-        *start;
-
-    os_char
-        *network_name,
-        *user_name;
-
-#if IOC_AUTHENTICATION_CODE
-    os_char
-        user_name_buf[IOC_NAME_SZ],
-        *q;
-#endif
-
-    const os_char
-        *password;
-
-    os_int
-        device_nr;
-
-    root = con->link.root;
-
-    /* Set frame header.
-     */
-    ioc_generate_header(con, con->frame_out.buf, &ptrs, con->frame_sz, 0);
-
-    /* Generate frame content. Here we do not check for buffer overflow,
-       we know (and trust) that it fits within one frame.
-     */
-    p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
-    *(p++) = IOC_AUTHENTICATION_DATA;
-    flags = 0;
-    auth_flags_ptr = p;
-    *(p++) = 0;
-
-    network_name = root->network_name;
-    user_name = root->device_name;
-    device_nr = root->device_nr;
-
-#if IOC_AUTHENTICATION_CODE
-    /* If we have user name, we use it instead of device name. User name
-       may have also network name, like ispy.cafenet.
-     */
-    if (con->user_override[0] != '\0')
-    {
-        os_strncpy(user_name_buf, con->user_override, sizeof(user_name_buf));
-        q = os_strchr(user_name_buf, '.');
-        if (q) *q = '\0';
-        device_nr = 0;
-        q = os_strchr(con->user_override, '.');
-        if (q) network_name = q + 1;
-    }
-#endif
-
-    ioc_msg_setstr(user_name, &p);
-    ioc_msg_set_uint(device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0,
-        &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
-    ioc_msg_setstr(network_name, &p);
-
-    password = osal_str_empty;
-#if IOC_AUTHENTICATION_CODE
-    if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION)) == IOC_SECURE_CONNECTION)
-    {
-        /* If we have password given by user
-         */
-        if (con->password_override[0] != '\0')
-        {
-            password = con->password_override;
-        }
-        else
-        {
-            password = root->password;
-        }
-        /* If we do not have client certificate chain, set flag to indicate it.
-         */
-        if (osal_get_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0))
-        {
-            flags |= IOC_AUTH_NO_CERT_CHAIN;
-        }
-    }
-#endif
-    ioc_msg_setstr(password, &p);
-
-    /* Set connect up and bidirectional flags.
-     */
-    if (con->flags & IOC_CONNECT_UP)
-    {
-        flags |= IOC_AUTH_CONNECT_UP;
-    }
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-    if (con->flags & IOC_BIDIRECTIONAL_MBLKS)
-    {
-        flags |= IOC_AUTH_BIDIRECTIONAL_COM;
-    }
-#endif
-    if (con->flags & IOC_CLOUD_CONNECTION)
-    {
-        flags |= IOC_AUTH_CLOUD_CON;
-    }
-
-    *auth_flags_ptr = flags;
-
-    /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
-       if transmission is blocked by flow control.
-     */
-    if (ioc_finish_frame(con, &ptrs, start, p))
-        return;
-
-    con->authentication_sent = OS_TRUE;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Process complete authentication data frame received from socket or serial port.
-  @anchor ioc_process_received_authentication_frame
-
-  The ioc_process_received_authentication_frame() function is called once a complete system frame
-  containing authentication data for a device has been received. The authentication data
-  identifies the device (device name, number and network name), optionally identifies the user
-  with user name and can have password for the connection.
-  If user authentication is enabled (by ioc_enable_user_authentication() function), the
-  user is authenticated.
-
-  The secondary task of authentication frame is to inform server side of the accepted connection
-  is upwards or downwards in IO device hierarchy.
-
-  @param   con Pointer to the connection object.
-  @param   mblk_id Memory block identifier in this end.
-  @param   data Received data, can be compressed and delta encoded, check flags.
-
-  @return  OSAL_SUCCESS if succesfull. Other values indicate unauthenticated device or user,
-           or a corrupted frame.
-
-****************************************************************************************************
-*/
-osalStatus ioc_process_received_authentication_frame(
-    struct iocConnection *con,
-    os_uint mblk_id,
-    os_char *data)
-{
-    iocUser user;
-    iocRoot *root;
-    os_uchar *p, auth_flags;
-    osalStatus s;
-#if OSAL_SECRET_SUPPORT
-    os_char tmp_password[IOC_PASSWORD_SZ];
-#endif
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    os_char nbuf[OSAL_NBUF_SZ];
-    os_uint device_nr;
-#endif
-
-    root = con->link.root;
-    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
-    auth_flags = (os_uchar)*(p++);
-
-    os_memclear(&user, sizeof(user));
-    user.flags = auth_flags;
-
-    /* If listening end of connection (server).
-     */
-    if (con->flags & IOC_LISTENER)
-    {
-        if (auth_flags & IOC_AUTH_CONNECT_UP)
-        {
-            con->flags &= ~IOC_CONNECT_UP;
-        }
-        else
-        {
-            if ((con->flags & IOC_CONNECT_UP) == 0)
-            {
-                con->flags |= IOC_CONNECT_UP;
-                ioc_add_con_to_global_mbinfo(con);
-            }
-        }
-
-#if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (auth_flags & IOC_AUTH_BIDIRECTIONAL_COM)
-        {
-            con->flags |= IOC_BIDIRECTIONAL_MBLKS;
-        }
-        else
-        {
-            con->flags &= ~IOC_BIDIRECTIONAL_MBLKS;
-        }
-#endif
-    }
-    if (auth_flags & IOC_AUTH_CLOUD_CON)
-    {
-        con->flags |= IOC_CLOUD_CONNECTION;
-    }
-
-    if (auth_flags & IOC_AUTH_NO_CERT_CHAIN)
-    {
-        con->flags |= IOC_NO_CERT_CHAIN;
-    }
-
-    s = ioc_msg_getstr(user.user_name, IOC_DEVICE_ID_SZ, &p);
-    if (s) return s;
-
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    device_nr = ioc_msg_get_uint(&p,
-        auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
-        auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
-    if (device_nr)
-    {
-        osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
-        os_strncat(user.user_name, nbuf, IOC_DEVICE_ID_SZ);
-    }
-#else
-    ioc_msg_get_uint(&p,
-        auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
-        auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
-#endif
-
-    s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
-    if (s) return s;
-
-    /* Get password and hash it
-     */
-#if OSAL_SECRET_SUPPORT
-    s = ioc_msg_getstr(tmp_password, IOC_PASSWORD_SZ, &p);
-    if (s) return s;
-    if (tmp_password[0])
-    {
-        osal_hash_password(user.password, tmp_password, IOC_PASSWORD_SZ);
-    }
-    else
-    {
-        os_strncpy(user.password, tmp_password, IOC_PASSWORD_SZ);
-    }
-#else
-    s = ioc_msg_getstr(user.password, IOC_PASSWORD_SZ, &p);
-    if (s) return s;
-#endif
-
-    /* If other end limited frame size it can process.
-     */
-    if (mblk_id >= IOC_MIN_FRAME_SZ && mblk_id <= IOC_MAX_FRAME_SZ)
-    {
-        if ((os_short)mblk_id < con->dst_frame_sz) {
-            con->dst_frame_sz = (os_short)mblk_id;
-            con->max_in_air = IOC_SOCKET_MAX_IN_AIR(con->dst_frame_sz);
-            con->max_ack_in_air = IOC_SOCKET_MAX_ACK_IN_AIR(con->dst_frame_sz);
-        }
-    }
-
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    /* Check user autorization.
-     */
-    if (root->authorization_func &&
-        (con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
-         == (IOC_LISTENER|IOC_SECURE_CONNECTION))
-    {
-        ioc_release_allowed_networks(&con->allowed_networks);
-        s = root->authorization_func(root, &con->allowed_networks,
-            &user, con->parameters, root->authorization_context);
-        if (s) return s;
-    }
-#endif // IOC_FULL_AUTHENTICATION
-
-    /** If we are automatically setting for a device (root network name is "*" or ""
-     */
-    if (!os_strcmp(root->network_name, osal_str_asterisk) || root->network_name[0] == '\0')
-    {
-        os_strncpy(root->network_name, user.network_name, IOC_NETWORK_NAME_SZ);
-        ioc_set_network_name(root);
-    }
-
-    con->authentication_received = OS_TRUE;
-    return OSAL_SUCCESS;
-}
-
-
-#if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-/**
-****************************************************************************************************
-
-  @brief Enable user authentication (set authentication callback function).
-  @anchor ioc_enable_user_authentication
-
-  The ioc_enable_user_authentication() function stores authentication function pointer for
-  iocom library to use. This enables user/device authentication and authorization for
-  the iocom.
-
-  @param   root Pointer to iocom root object.
-  @param   func Pointer to authentication function. Authentication function needs to check
-           if user/device can connect and which IO networks it can access. Set ioc_authorize
-           here to use default ioserver extension library authentication.
-  @param   contect Pointer to pass to authentication callback. Can be used to pass any
-           application data to the callback. Set OS_NULL if not needed.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_enable_user_authentication(
-    struct iocRoot *root,
-    ioc_authorize_user_func *func,
-    void *context)
-{
-    root->authorization_func = func;
-    root->authorization_context = context;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Add a network to allowed networks structure
-  @anchor ioc_add_allowed_network
-
-  The ioc_add_allowed_network() function adds an allowed network to allowed networks structure
-
-  @param   allowed_networks Allowed networks structure.
-  @param   network_name Network name to add.
-  @param   flags Flags (privileges, etc) to store for the network
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_add_allowed_network(
-    iocAllowedNetworkConf *allowed_networks,
-    const os_char *network_name,
-    os_ushort flags)
-{
-    iocAllowedNetwork *n;
-    os_memsz needed, bytes;
-    os_int count, i;
-
-    /* If we already got this network, just "or" the flags in.
-     */
-    count  = allowed_networks->n_networs;
-    for (i = 0; i < count; i++)
-    {
-        if (!os_strcmp(network_name, allowed_networks->network[i].network_name))
-        {
-            allowed_networks->network[i].flags |= flags;
-            return;
-        }
-    }
-
-    /* Allocate (more) memory if needed.
-     */
-    needed = (os_memsz)(count + (os_memsz)1) * sizeof(iocAllowedNetwork);
-    if (needed > allowed_networks->bytes)
-    {
-        n = (iocAllowedNetwork*)os_malloc(needed, &bytes);
-        if (n == OS_NULL) return;
-        os_memclear(n, bytes);
-        if (allowed_networks->network)
-        {
-            os_memcpy(n, allowed_networks->network,
-                count * sizeof(iocAllowedNetwork));
-            os_free(allowed_networks->network, allowed_networks->bytes);
-        }
-        allowed_networks->network = n;
-        allowed_networks->bytes = bytes;
-    }
-
-    /* Store name and flags of the added network and increment number of networks.
-     */
-    n = allowed_networks->network + allowed_networks->n_networs++;
-    os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
-    n->flags = flags;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Release allowed networks structure set up by ioc_authorize_user_func()
-  @anchor ioc_release_allowed_networks
-
-  The ioc_release_allowed_networks() function frees memory reserved for allowed network
-  array, allocated by the authentication function.
-
-  @param   allowed_networks Allowed networks structure containing pointer to allocated data.
-           after this call the structure is clear enough for reuse.
-  @return  None.
-
-****************************************************************************************************
-*/
-void ioc_release_allowed_networks(
-    iocAllowedNetworkConf *allowed_networks)
-{
-    if (allowed_networks->network)
-    {
-        os_free(allowed_networks->network, allowed_networks->bytes);
-        os_memclear(allowed_networks, sizeof(iocAllowedNetworkConf));
-    }
-}
-
-/**
-****************************************************************************************************
-
-  @brief Check if network is authorized for a connection.
-  @anchor ioc_is_network_authorized
-
-  The ioc_is_network_authorized() function checks if network name given as argument is in list
-  of allowed networks.
-
-  @param   con Connection structure pointer.
-  @param   flags Required privileges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrarot.
-  @return  OS_TRUE if network is authorized to proceed, OS_FALSE if not.
-
-****************************************************************************************************
-*/
-os_boolean ioc_is_network_authorized(
-    struct iocConnection *con,
-    os_char *network_name,
-    os_ushort flags)
-{
-#if IOC_RELAX_SECURITY
-    return OS_TRUE;
-#else
-    iocAllowedNetwork *networks;
-    os_int count, i;
-
-    /* If security is not on, anything is fine.
-     */
-    if (con->link.root->authorization_func == OS_NULL) return OS_TRUE;
-    if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
-         != (IOC_LISTENER|IOC_SECURE_CONNECTION)) return OS_TRUE;
-
-    /* If we already got this network, just "or" the flags in.
-     */
-    networks = con->allowed_networks.network;
-    count = con->allowed_networks.n_networs;
-    for (i = 0; i < count; i++)
-    {
-        if (!os_strcmp(network_name, networks[i].network_name))
-        {
-            if (flags & IOC_AUTH_ADMINISTRATOR)
-                return (networks[i].flags & IOC_AUTH_ADMINISTRATOR)
-                    ? OS_TRUE : OS_FALSE;
-
-            return OS_TRUE;
-        }
-    }
-    return OS_FALSE;
-#endif
-}
-#endif
-
-
 #endif
 

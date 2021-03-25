@@ -19,16 +19,86 @@
 #include "iocom.h"
 #if OSAL_SOCKET_SUPPORT
 
+
+/**
+****************************************************************************************************
+  Defines and structures.
+****************************************************************************************************
+*/
+
 /** IOC_HANDSHAKE_NETWORK_SERVICE indicates that this socket client is IO network service
     connecting to cloud server to share an end point.
     IOC_HANDSHAKE_CLIENT is that this is an IO device or user interface application
-    connecting to IO network service trough a cloud server.
+    connecting to IO network service either directly or trough a cloud server.
  */
-typedef enum iocHandshakeProcessType {
-    IOC_HANDSHAKE_NETWORK_SERVICE = 0x61,
-    IOC_HANDSHAKE_CLIENT = 0x62
+typedef enum iocHandshakeClientType {
+    IOC_HANDSHAKE_NETWORK_SERVICE = 0x12,
+    IOC_HANDSHAKE_CLIENT = 0x13
 }
-iocHandshakeProcessType;
+iocHandshakeClientType;
+
+/** IOC_HANDSHAKE_SWITCHBOX_ENDPOINT This is switchbox end of cloud connection.
+    IOC_HANDSHAKE_REGULAR_ENDPOINT This is regular socket server side end of connection.
+ */
+typedef enum iocHandshakeServerType
+{
+    IOC_HANDSHAKE_SWITCHBOX_SERVER = 0x14,
+    IOC_HANDSHAKE_REGULAR_SERVER = 0x15
+}
+iocHandshakeServerType;
+
+#define IOC_HANDSHAKE_HDR_BYTES 2
+#define IOC_HANDSHAKE_REQUEST_TRUST_CERTIFICATE_BIT 0x80
+#define IOC_HANDSHAKE_HAS_NET_NAME_BIT 0x40
+#define IOC_HANDSHAKE_TYPE_MASK 0x3F
+
+/* Current client handshake state.
+ */
+typedef struct iocHandshakeState
+{
+    /** Socket client type, see enum iocHandshakeClientType, may contain IOC_HANDSHAKE_HAS_NET_NAME_BIT
+       or IOC_HANDSHAKE_REQUEST_TRUST_CERTIFICATE_BIT.
+     */
+    os_char client_type;
+
+    /** Socket server type, see enum iocHandshakeServerType.
+     */
+    os_char server_type;
+
+    /** Handshake message has been dealt with, certificate may follow.
+     */
+    os_boolean hand_shake_message_done;
+
+#if OSAL_TLS_SUPPORT
+    os_boolean copy_trust_certificate;
+#endif
+
+    /** Current read/write position in cloud_netname, offset IOC_HANDSHAKE_HDR_BYTES.
+     */
+    os_char cloud_netname_pos;
+
+    /** Size of network name, bytes. In client includes header, in server not.
+     */
+    os_char cloud_netname_sz;
+
+#if OSAL_DYNAMIC_MEMORY_ALLOCATION
+    os_char *cloud_netname;
+#endif
+
+#if OSAL_TLS_SUPPORT
+    os_uchar *cert;
+    os_ushort cert_sz;
+    os_ushort cert_pos;
+#endif
+}
+iocHandshakeState;
+
+
+/**
+****************************************************************************************************
+  Functions type definitions to access socket and server certificate.
+****************************************************************************************************
+*/
 
 /* Write data to socket.
  */
@@ -36,7 +106,6 @@ typedef osalStatus ioc_hanshake_write_socket(
     const os_char *buf,
     os_memsz n,
     os_memsz *n_written,
-    os_int flags,
     void *context);
 
 /* Read data from socket.
@@ -45,7 +114,6 @@ typedef osalStatus ioc_hanshake_read_socket(
     os_char *buf,
     os_memsz n,
     os_memsz *n_read,
-    os_int flags,
     void *context);
 
 /* Save received certificate (client only).
@@ -55,51 +123,65 @@ typedef void ioc_hanshake_save_trust_certificate(
     os_memsz cert_sz,
     void *context);
 
+/* Load certificate (server only).
+ */
+typedef os_memsz ioc_hanshake_load_trust_certificate(
+    const os_char *cert_buf,
+    os_memsz cert_buf_sz,
+    void *context);
 
 
 /**
 ****************************************************************************************************
-  Function for sending/receiving switchbox network selection and trusted certificate.
+  Functions for sending/receiving switchbox network selection and trusted certificate.
 ****************************************************************************************************
- */
-/*@{*/
+*/
 
-/* Make client handshake message (socket client side only).
+/* Initialize handshake state structure.
  */
-osalStatus ioc_make_clent_handshake_message(
-    iocHandshakeProcessType process_type,
+void ioc_initialize_handshake_state(
+    iocHandshakeState *hs_state);
+
+/* Release memory allocated to maintain handshake state.
+ */
+void ioc_release_handshake_state(
+    iocHandshakeState *hs_state);
+
+/* Do client handshake (socket client only).
+ */
+osalStatus ioc_client_handshake(
+    iocHandshakeState *state,
+    iocHandshakeClientType process_type,
     const os_char *cloud_netname,
     os_boolean request_trust_certificate,
-    ioc_hanshake_write_socket *write_socket_func,
-    void *write_socket_context);
-
-/* Process received client handshake (only server side of the socket)
- */
-osalStatus ioc_process_clent_handshake_message(
-    iocHandshakeProcessType *process_type,
-    os_char *cloud_netname,
-    os_memsz cloud_netname_sz,
-    os_boolean *trust_certificate_requested,
-    ioc_hanshake_read_socket *read_socket_func,
-    void *read_socket_context);
-
-/* Send trust certificate to client (only server side of the socket)
- */
-osalStatus ioc_send_trust_certificate(
-    const os_char *cert,
-    os_memsz cert_sz,
-    ioc_hanshake_write_socket *write_socket_func,
-    void *write_socket_context);
-
-/* Receive and save trusted certificate (socket client side only)
- */
-osalStatus ioc_process_trust_certificate(
     ioc_hanshake_read_socket *read_socket_func,
     void *read_socket_context,
+    ioc_hanshake_write_socket *write_socket_func,
+    void *write_socket_context,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context);
 
-/*@}*/
+/* Do server handshake (socket server side only).
+ */
+osalStatus ioc_server_handshake(
+    iocHandshakeState *state,
+    iocHandshakeServerType process_type,
+    ioc_hanshake_read_socket *read_socket_func,
+    void *read_socket_context,
+    ioc_hanshake_write_socket *write_socket_func,
+    void *write_socket_context,
+    ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
+    void *load_trust_certificate_context);
+
+/* Get client type after ioc_server_handshake() has been completed.
+ */
+iocHandshakeClientType ioc_get_handshake_client_type(
+    iocHandshakeState *state);
+
+/* Get network name to use in cloud after server handshake.
+ */
+const os_char *ioc_get_handshake_cloud_netname(
+    iocHandshakeState *state);
 
 #endif
 #endif
