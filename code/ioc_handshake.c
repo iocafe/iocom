@@ -24,7 +24,7 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
-
+#if OSAL_SOCKET_SUPPORT
 
 /* Forward referred static functions.
  */
@@ -64,6 +64,9 @@ static osalStatus ioc_process_trust_certificate(
   The ioc_initialize_handshake_state() function initializes handshake state structure for use
   (mostly fills it with zeros).
 
+  This function must not be called on handshake structure which is already initialized,
+  except if ioc_release_handshake_state has been called.
+
   @param   state Handshake state initialized by ioc_initialize_handshake_state().
   @return  None.
 
@@ -85,6 +88,9 @@ void ioc_initialize_handshake_state(
 
   The ioc_release_handshake_state() function releases memory allocated for handshake state
   (pointers in state structure).
+
+  This function can be called on any initialized handshake structure, even if it has been
+  released before.
 
   @param   state Handshake state initialized by ioc_initialize_handshake_state().
   @return  None.
@@ -611,3 +617,4 @@ static osalStatus ioc_process_trust_certificate(
 }
 #endif
 
+#endif

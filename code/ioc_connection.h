@@ -709,6 +709,16 @@ typedef struct iocConnection
      */
     os_int auto_device_nr;
 
+#if OSAL_SOCKET_SUPPORT
+    /** Handshake state structure (switbox cloud net name and copying trust certificate).
+     */
+    iocHandshakeState handshake;
+
+    /** First handshake successfully completed after connect.
+     */
+    os_boolean handshake_ready;
+#endif
+
     /** Authentication data sent to connection flag. We must send and receive authentication
         data before sending anything else.
      */

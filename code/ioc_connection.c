@@ -101,6 +101,13 @@ iocConnection *ioc_initialize_connection(
     }
     root->con.last = con;
 
+    /* Initialize hand shake structure.
+     */
+#if OSAL_SOCKET_SUPPORT
+    ioc_initialize_handshake_state(&con->handshake);
+    con->handshake_ready = OS_FALSE;
+#endif
+
     /* Initialize the "remove memory block request" list root structure to as empty list.
      */
 #if IOC_DYNAMIC_MBLK_CODE
@@ -202,6 +209,11 @@ void ioc_release_connection(
     ioc_release_remove_mblk_req_list(con);
 #endif
 
+    /* Initialize hand shake structure.
+     */
+#if OSAL_SOCKET_SUPPORT
+    ioc_release_handshake_state(&con->handshake);
+#endif
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
        for primitive static allocation schema). Save allocated flag before memclear.
      */
@@ -656,6 +668,17 @@ osalStatus ioc_run_connection(
     silence_ms = IOC_SOCKET_SILENCE_MS;
 #endif
 
+    /* Handle first hansshake for sockets.
+     */
+#if OSAL_SOCKET_SUPPORT
+    if ((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SOCKET)
+    {
+        status = ioc_first_handshake(con);
+        if (status == OSAL_PENDING) return OSAL_SUCCESS;
+        if (status) goto failed;
+    }
+#endif
+
     /* How ever fast we write, we cannot block here.
      */
     os_get_timer(&tnow);
@@ -709,7 +732,7 @@ osalStatus ioc_run_connection(
      */
     if (con->stream)
     {
-        osal_stream_flush(con->stream, 0);
+        osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
     }
 
 // osal_sysconsole_write("HEHE COM OK\n");
@@ -877,6 +900,14 @@ void ioc_reset_connection_state(
      */
     con->authentication_sent = OS_FALSE;
     con->authentication_received = OS_FALSE;
+
+    /* Reset hand shake structure.
+     */
+#if OSAL_SOCKET_SUPPORT
+    ioc_release_handshake_state(&con->handshake);
+    ioc_initialize_handshake_state(&con->handshake);
+    con->handshake_ready = OS_FALSE;
+#endif
 
     /* Clear flow control variables.
      */
@@ -1091,6 +1122,17 @@ static void ioc_connection_thread(
         }
 #endif
 
+#if OSAL_SOCKET_SUPPORT
+        /* First hansshake for sockets.
+         */
+        if (!is_serial)
+        {
+            status = ioc_first_handshake(con);
+            if (status == OSAL_PENDING) continue;
+            if (status) goto failed;
+        }
+#endif
+
         /* Receive and send in loop as long as we can without waiting.
            How ever fast we write, we cannot block here (count=32) !
          */
@@ -1148,7 +1190,7 @@ static void ioc_connection_thread(
          */
         if (con->stream)
         {
-            osal_stream_flush(con->stream, 0);
+            osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
         }
 
         continue;
@@ -1219,6 +1261,7 @@ void ioc_do_connection_callback(
 }
 #endif
 
+
 #if IOC_ROOT_CALLBACK_SUPPORT
 /**
 ****************************************************************************************************
@@ -1245,3 +1288,5 @@ void ioc_set_connection_callback(
     con->callback_context = context;
 }
 #endif
+
+

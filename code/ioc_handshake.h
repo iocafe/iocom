@@ -52,7 +52,7 @@ iocHandshakeServerType;
 #define IOC_HANDSHAKE_HAS_NET_NAME_BIT 0x40
 #define IOC_HANDSHAKE_TYPE_MASK 0x3F
 
-/* Current client handshake state.
+/** Current handshake state.
  */
 typedef struct iocHandshakeState
 {

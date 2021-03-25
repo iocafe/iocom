@@ -378,7 +378,7 @@ osalStatus ioc_run_switchbox_connection(
      */
     if (con->stream)
     {
-        osal_stream_flush(con->stream, 0);
+        osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
     }
 
 // osal_sysconsole_write("HEHE COM OK\n");
@@ -627,7 +627,7 @@ static void ioc_connection_thread(
          */
         if (con->stream)
         {
-            osal_stream_flush(con->stream, 0);
+            osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
         }
 
         continue;

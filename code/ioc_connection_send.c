@@ -59,6 +59,7 @@ osalStatus ioc_connection_send(
     osalStatus
         status = OSAL_PENDING;
 
+
     ioc_set_mt_root(root, con->link.root);
     ioc_lock(root);
 
@@ -524,7 +525,7 @@ osalStatus ioc_send_acknowledge(
      */
     if (con->stream)
     {
-        osal_stream_flush(con->stream, 0);
+        osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
     }
 
     ioc_unlock(root);

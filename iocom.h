@@ -199,13 +199,14 @@ OSAL_C_HEADER_BEGINS
 #if IOC_DYNAMIC_MBLK_CODE
   #include "extensions/dynamicio/ioc_remove_mblk_list.h"
 #endif
+#include "code/ioc_handshake.h"
+#include "code/ioc_handshake_iocom.h"
 #include "code/ioc_connection.h"
 #include "code/ioc_end_point.h"
 #include "code/ioc_source_buffer.h"
 #include "code/ioc_target_buffer.h"
 #include "code/ioc_compress.h"
 #include "code/ioc_memory.h"
-#include "code/ioc_handshake.h"
 #include "code/ioc_brick.h"
 #include "code/ioc_parameters.h"
 #include "code/ioc_ioboard.h"
