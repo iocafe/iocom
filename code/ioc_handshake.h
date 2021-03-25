@@ -119,14 +119,14 @@ typedef osalStatus ioc_hanshake_read_socket(
 /* Save received certificate (client only).
  */
 typedef void ioc_hanshake_save_trust_certificate(
-    const os_char *cert,
+    const os_uchar *cert,
     os_memsz cert_sz,
     void *context);
 
 /* Load certificate (server only).
  */
 typedef os_memsz ioc_hanshake_load_trust_certificate(
-    const os_char *cert_buf,
+    const os_uchar *cert_buf,
     os_memsz cert_buf_sz,
     void *context);
 

@@ -73,8 +73,9 @@ void ioc_initialize_handshake_state(
     iocHandshakeState *state)
 {
     os_memclear(state, sizeof(iocHandshakeState));
-    state->cert_sz = -1;
+    state->cert_sz = 0xFFFF;
 }
+
 
 /**
 ****************************************************************************************************
@@ -503,10 +504,11 @@ static osalStatus ioc_send_trust_certificate(
     os_memsz n_written;
     osalStatus s;
     os_ushort cert_sz, n;
+    static const os_char doublezero[2] = {0,0};
 
     /* If we have not tried to load the certificate.
      */
-    if (state->cert_sz < 0)
+    if (state->cert_sz == 0xFFFF)
     {
         state->cert_sz = 0;
 
@@ -517,7 +519,7 @@ static osalStatus ioc_send_trust_certificate(
             state->cert = (os_uchar*)os_malloc(cert_sz + 2, OS_NULL);
             if (state->cert == OS_NULL) return OSAL_STATUS_FAILED;
             state->cert_sz = cert_sz + 2;
-            load_trust_certificate_func((os_char*)state->cert + 2, cert_sz,
+            load_trust_certificate_func(state->cert + 2, cert_sz,
                 load_trust_certificate_context);
             state->cert[0] = (os_uchar)cert_sz;
             state->cert[1] = (os_uchar)(cert_sz >> 8);
@@ -527,11 +529,16 @@ static osalStatus ioc_send_trust_certificate(
         }
     }
 
-    n = state->cert_sz - state->cert_pos;
-    s = write_socket_func((os_char*)state->cert + state->cert_pos,
-        n, &n_written, write_socket_context);
+    if (state->cert_sz >= 2) {
+        n = state->cert_sz - state->cert_pos;
+        s = write_socket_func((os_char*)state->cert + state->cert_pos,
+            n, &n_written, write_socket_context);
+    }
+    else {
+        n = 2 - state->cert_pos;
+        s = write_socket_func(doublezero, n, &n_written, write_socket_context);
+    }
     if (s) return s;
-
     state->cert_pos += (os_ushort)n_written;
     return n_written >= n ? OSAL_SUCCESS : OSAL_PENDING;
 }
@@ -569,7 +576,37 @@ static osalStatus ioc_process_trust_certificate(
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context)
 {
+    os_memsz n_read;
+    osalStatus s;
+    os_ushort cert_pos, n;
+    os_uchar c;
 
+    while (state->cert_pos < 2) {
+        s = read_socket_func((os_char*)&c, 1, &n_read, read_socket_context);
+         if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
+        if (s) return s;
+        state->cert_sz = (state->cert_pos ? (((os_ushort)c) << 8) : c);
+        state->cert_pos++;
+    }
+
+    if (state->cert_sz == 0) {
+        osal_debug_error("Empty trusted certificate received");
+        return OSAL_SUCCESS;
+    }
+    if (state->cert == OS_NULL) {
+        state->cert = (os_uchar*)os_malloc(state->cert_sz, OS_NULL);
+        if (state->cert == OS_NULL) return OSAL_STATUS_FAILED;
+    }
+    cert_pos = (state->cert_pos - 2);
+    n = state->cert_sz - cert_pos;
+    s = read_socket_func((os_char*)state->cert + cert_pos, n, &n_read, read_socket_context);
+    if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
+    if (s) return s;
+
+    state->cert_pos += (os_ushort)n_read;
+    if (n_read < n) return OSAL_PENDING;
+
+    save_trust_certificate_func(state->cert, state->cert_sz, save_trust_certificate_context);
     return OSAL_SUCCESS;
 }
 #endif
