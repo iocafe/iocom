@@ -434,7 +434,7 @@ static osalStatus ioc_process_handshake_message(
         }
 #endif
         state->cloud_netname_pos = 1;
-        if ((s & IOC_HANDSHAKE_HAS_NET_NAME_BIT) == 0) return OSAL_SUCCESS;
+        if ((c & IOC_HANDSHAKE_HAS_NET_NAME_BIT) == 0) return OSAL_SUCCESS;
     }
 
     if (state->cloud_netname_pos == 1)

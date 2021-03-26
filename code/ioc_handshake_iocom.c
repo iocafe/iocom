@@ -25,8 +25,8 @@ static osalStatus ioc_write_iocom_socket(
     os_memsz *n_written,
     void *context)
 {
-    *n_written = 0;
-    return OSAL_STATUS_FAILED;
+    iocConnection *con = (iocConnection*)context;
+    return osal_stream_write(con->stream, buf, n, n_written, OSAL_STREAM_DEFAULT);
 }
 
 /* Read data from socket.
@@ -37,8 +37,8 @@ static osalStatus ioc_read_iocom_socket(
     os_memsz *n_read,
     void *context)
 {
-    *n_read = 0;
-    return OSAL_STATUS_FAILED;
+    iocConnection *con = (iocConnection*)context;
+    return osal_stream_read(con->stream, buf, n, n_read, OSAL_STREAM_DEFAULT);
 }
 
 /* Save received certificate (client only).
