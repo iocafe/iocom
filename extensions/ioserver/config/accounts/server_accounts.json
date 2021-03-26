@@ -3,7 +3,7 @@
 		"title": "Default user accounts",
 
 		"accounts": [{
-				"user": "ispy*",
+				"user": "root*",
 				"password": "pass",
 				"privileges": "admin"
 			}

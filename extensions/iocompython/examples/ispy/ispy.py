@@ -1,11 +1,11 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.clock import Clock 
+from kivy.clock import Clock
 
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 
-from myactionbar import MyActionBar 
+from myactionbar import MyActionBar
 from myconnectdialog import MyConnectDialog
 from panel_wait import WaitPanel
 from panel_memory_blocks import MemoryBlockPanel
@@ -58,14 +58,14 @@ class MainApp(App):
             else:
                 self.ioc_root = Root('ispy', device_nr=9000, network_name='cafenet')
                 self.ioc_root.queue_events()
-                    
+
                 if transport_flag == 'serial':
                     self.ioc_epoint = EndPoint(self.ioc_root, parameters=parameters, flags=transport_flag + ',dynamic')
                 else:
                     self.ioc_epoint = EndPoint(self.ioc_root, flags=transport_flag + ',dynamic')
 
         self.set_displayed_page(None, 'wait')
-        self.start_mytimer() 
+        self.start_mytimer()
 
     def disconnect(self):
         if self.ioc_root != None:
@@ -101,7 +101,7 @@ class MainApp(App):
 
                     self.set_displayed_page(self.ioc_selected_device, None)
                     self.my_action_bar.add_my_device(device_path)
-            
+
             # Device disconnected
             if event == 'device_disconnected':
                 a = self.ioc_devices.get(device_path, None)
@@ -110,27 +110,27 @@ class MainApp(App):
                     self.my_action_bar.remove_my_device(device_path)
                     self.set_displayed_page(None, None)
 
-    def mytimer_tick(self, interval): 
+    def mytimer_tick(self, interval):
         self.ioc_root.receive("*")
         self.check_iocom_events()
         for d in self.ioc_devices:
             self.ioc_devices[d].run()
         if self.my_view:
-            self.my_view.run()            
+            self.my_view.run()
         self.ioc_root.send("*")
- 
-    def start_mytimer(self): 
-        Clock.schedule_interval(self.mytimer_tick, 1.0 / 30) 
-  
-    def stop_mytimer(self): 
-        Clock.unschedule(self.mytimer_tick) 
+
+    def start_mytimer(self):
+        Clock.schedule_interval(self.mytimer_tick, 1.0 / 30)
+
+    def stop_mytimer(self):
+        Clock.unschedule(self.mytimer_tick)
 
     # kivy gui build
     def build(self):
         self.title = 'i-spy'
         self.root = BoxLayout(orientation='vertical')
         self.my_widget_home = self.root
-        
+
         action_bar = MyActionBar()
         action_bar.bind (on_button_press=self.button_press)
         self.my_action_bar = action_bar
@@ -225,7 +225,7 @@ class MainApp(App):
         button_text = args[0]
         if button_text == 'close':
             self.disconnect()
-            self.stop()        
+            self.stop()
 
         if button_text == 'disconnect':
             self.disconnect()

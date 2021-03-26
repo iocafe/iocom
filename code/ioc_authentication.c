@@ -55,7 +55,7 @@ void ioc_make_authentication_frame(
 
 #if IOC_AUTHENTICATION_CODE
     os_char
-        user_name_buf[IOC_NAME_SZ],
+        user_name_buf[IOC_NAME_SZ + OSAL_NETWORK_NAME_SZ],
         *q;
 #endif
 
@@ -86,7 +86,7 @@ void ioc_make_authentication_frame(
 
 #if IOC_AUTHENTICATION_CODE
     /* If we have user name, we use it instead of device name. User name
-       may have also network name, like ispy.cafenet.
+       may have also network name, like root.cafenet.
      */
     if (con->user_override[0] != '\0')
     {
@@ -96,6 +96,7 @@ void ioc_make_authentication_frame(
         device_nr = 0;
         q = os_strchr(con->user_override, '.');
         if (q) network_name = q + 1;
+        user_name = user_name_buf;
     }
 #endif
 

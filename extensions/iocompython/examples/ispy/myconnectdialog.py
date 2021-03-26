@@ -14,7 +14,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.metrics import dp
 from kivy.uix.textinput import TextInput
-from kivy.uix.widget import Widget            
+from kivy.uix.widget import Widget
 
 # This JSON defines entries we want to appear in our App configuration screen
 json = '''
@@ -96,7 +96,7 @@ class SettingButtons(SettingItem):
         kw = kwargs.copy()
         kw.pop('buttons', None)
         super(SettingItem, self).__init__(**kw)
-        
+
         for aButton in kwargs["buttons"]:
             oButton=Button(text=aButton['title'], font_size= '15sp')
             oButton.ID=aButton['id']
@@ -114,19 +114,19 @@ class SettingButtons(SettingItem):
 class MyConnectDialog(SettingsWithNoMenu):
     def __init__(self, **kwargs):
         super(MyConnectDialog, self).__init__(**kwargs)
-        
+
         self.register_type('buttons', SettingButtons)
         self.register_event_type('on_connect')
 
         config = ConfigParser()
         config.setdefaults('common', {'conf_role': 'SERVER', 'conf_transport': 'TLS', 'conf_ip': '192.168.1.220', 'conf_serport': 'COM1'})
-        config.setdefaults('client', {'conf_user': 'ispy.cafenet', 'conf_cert_chain': 'myhome-bundle.crt'})
+        config.setdefaults('client', {'conf_user': 'root.cafenet', 'conf_cert_chain': 'myhome-bundle.crt'})
         config.setdefaults('server', {'conf_serv_cert': 'rootca.crt', 'conf_serv_key': 'secret/rootca.key'})
         self.myconfig = config;
         try:
             config.read("i-spy.myconfig");
         except:
-            print("No i-spy.myconfig")        
+            print("No i-spy.myconfig")
         self.add_json_panel('IO device connect', config, data=json)
 
     def delete(self):
@@ -161,7 +161,7 @@ class MyConnectDialog(SettingsWithNoMenu):
 
         # create the text input widgets for user name and password
         user_name_input = TextInput(
-            text=self.myconfig.get('client', 'conf_user'), font_size='24sp', multiline=False, write_tab=False, 
+            text=self.myconfig.get('client', 'conf_user'), font_size='24sp', multiline=False, write_tab=False,
             size_hint_y=None, height='42sp')
         self.user_name_input = user_name_input
         password_input = TextInput(

@@ -588,7 +588,7 @@ typedef struct iocConnection
 #if IOC_AUTHENTICATION_CODE
     /** User name to overide device name. Empty string to use device name and number.
      */
-    os_char user_override[IOC_NAME_SZ];
+    os_char user_override[IOC_NAME_SZ + OSAL_NETWORK_NAME_SZ];
 
     /** Password to overide device default password. Empty string to use device password.
      */

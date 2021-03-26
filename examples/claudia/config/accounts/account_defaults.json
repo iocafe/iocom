@@ -1,19 +1,19 @@
 {
-	"accounts": {
-		"title": "Default user accounts",
+    "accounts": {
+        "title": "Default user accounts",
 
-		"accounts": [{
-				"user": "ispy*",
-				"password": "pass",
-				"privileges": "admin"
-			},
-			{
+        "accounts": [{
+                "user": "root*",
+                "password": "pass",
+                "privileges": "admin"
+            },
+            {
                                 "user": "frank*.cafenet",
-				"password": "pass",
-				"privileges": "server"
-			}
-		],
+                "password": "pass",
+                "privileges": "server"
+            }
+        ],
 
         "whitelist": []
-	}
+    }
 }
