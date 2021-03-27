@@ -51,6 +51,7 @@ iocHandshakeServerType;
 #define IOC_HANDSHAKE_REQUEST_TRUST_CERTIFICATE_BIT 0x80
 #define IOC_HANDSHAKE_HAS_NET_NAME_BIT 0x40
 #define IOC_HANDSHAKE_TYPE_MASK 0x3F
+#define IOC_HANDSHAKE_SECURE_MARK_BYTE 0x5B
 
 /** Current handshake state.
  */
@@ -71,6 +72,7 @@ typedef struct iocHandshakeState
 
 #if OSAL_TLS_SUPPORT
     os_boolean copy_trust_certificate;
+    os_boolean mark_byte_done;
 #endif
 
     /** Current read/write position in cloud_netname, offset IOC_HANDSHAKE_HDR_BYTES.

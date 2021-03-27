@@ -43,11 +43,17 @@ static osalStatus ioc_send_trust_certificate(
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context);
 
+static osalStatus ioc_send_byte_to_secure_TLS(
+    osalStream stream);
+
 static osalStatus ioc_process_trust_certificate(
     iocHandshakeState *state,
     osalStream stream,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context);
+
+static osalStatus ioc_process_TLS_secured_byte(
+    osalStream stream);
 #endif
 
 
@@ -153,6 +159,25 @@ osalStatus ioc_client_handshake(
     osalStatus s = OSAL_SUCCESS;
     os_char len;
 
+#if OSAL_TLS_SUPPORT
+    if (stream->iface->iflags & OSAL_STREAM_IFLAG_SECURE)
+    {
+        if (!state->mark_byte_done) {
+            s = ioc_process_TLS_secured_byte(stream);
+            if (s) {
+                return s;
+            }
+            state->mark_byte_done = OS_TRUE;
+        }
+
+        /* HERE WE NEED TO ASK FROM SOCKET STREAM WAS CERTIFICATE VALIDATION SUCCESS.
+         * IF NOT, WE REQUEST a copy of CA certificate from server.
+         if (!ioc_tls_certificate_approved(stream))
+             request_trust_certificate = OS_TRUE;
+         */
+    }
+    #endif
+
     /* Send client handshake message (socket client side only).
      */
     if (!state->hand_shake_message_done)
@@ -237,6 +262,21 @@ osalStatus ioc_server_handshake(
     void *load_trust_certificate_context)
 {
     osalStatus s = OSAL_SUCCESS;
+
+#if OSAL_TLS_SUPPORT
+    /* If we are using TLS security, but did not send certificate back, send one
+       byte to client. Socket client waits for this byte to ensure that underlying
+       TLS handshake is completed to decide if it needs to request for CA
+       certificate.
+     */
+    if (!state->mark_byte_done && (stream->iface->iflags & OSAL_STREAM_IFLAG_SECURE)) {
+        s = ioc_send_byte_to_secure_TLS(stream);
+        if (s) {
+            return s;
+        }
+        state->mark_byte_done = OS_TRUE;
+    }
+#endif
 
     /* Send client handshake message (socket client side only).
      */
@@ -528,6 +568,38 @@ static osalStatus ioc_send_trust_certificate(
 /**
 ****************************************************************************************************
 
+  @brief Send a byte to socket client to wait for to know that TLS handshake is done.
+  @anchor ioc_send_byte_to_secure_TLS
+
+  The ioc_send_byte_to_secure_TLS() sends a byte to socket client. If we are using TLS security,
+  but did not send certificate back, send one byte to client. Socket client waits for this byte
+  to ensure that underlying TLS handshake is completed before this client side of handshake
+  completes.
+
+  @param   stream OSAL socket.
+  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
+           an error (broken socket).
+
+****************************************************************************************************
+*/
+static osalStatus ioc_send_byte_to_secure_TLS(
+    osalStream stream)
+{
+    os_memsz n_written;
+    osalStatus s;
+    static const os_char markbyte = IOC_HANDSHAKE_SECURE_MARK_BYTE;
+
+    s = osal_stream_write(stream, &markbyte, 1, &n_written, OSAL_STREAM_DEFAULT);
+    if (s) return s;
+    return n_written == 1 ? OSAL_SUCCESS : OSAL_PENDING;
+}
+#endif
+
+
+#if OSAL_TLS_SUPPORT
+/**
+****************************************************************************************************
+
   @brief Receive and save trusted certificate (socket client only)
   @anchor ioc_process_trust_certificate
 
@@ -584,6 +656,43 @@ static osalStatus ioc_process_trust_certificate(
 
     if (save_trust_certificate_func) {
         save_trust_certificate_func(state->cert, state->cert_sz, save_trust_certificate_context);
+    }
+    return OSAL_SUCCESS;
+}
+#endif
+
+
+#if OSAL_TLS_SUPPORT
+/**
+****************************************************************************************************
+
+  @brief Read a byte from socket server which can be received only when TLS is secured.
+  @anchor ioc_process_TLS_secured_byte
+
+  The ioc_process_TLS_secured_byte() is called by socket client to wait for first dummy
+  Socket client waits for this byte to ensure that underlying TLS handshake is completed
+  before proceeding.
+
+  @param   stream OSAL socket.
+  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
+           an error (broken socket).
+
+****************************************************************************************************
+*/
+static osalStatus ioc_process_TLS_secured_byte(
+    osalStream stream)
+{
+    os_memsz n_read;
+    osalStatus s;
+    os_char markbyte = 0;
+
+    s = osal_stream_read(stream, &markbyte, 1, &n_read, OSAL_STREAM_DEFAULT);
+    if (s) return s;
+    if (n_read != 1) return OSAL_PENDING;
+
+    if (markbyte != IOC_HANDSHAKE_SECURE_MARK_BYTE) {
+        osal_debug_error("Unexpected data received from TLS socket");
+        return OSAL_STATUS_FAILED;
     }
     return OSAL_SUCCESS;
 }
