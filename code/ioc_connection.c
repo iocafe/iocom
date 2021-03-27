@@ -905,7 +905,6 @@ void ioc_reset_connection_state(
      */
 #if OSAL_SOCKET_SUPPORT
     ioc_release_handshake_state(&con->handshake);
-    ioc_initialize_handshake_state(&con->handshake);
     con->handshake_ready = OS_FALSE;
 #endif
 

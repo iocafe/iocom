@@ -61,7 +61,7 @@ static osalStatus ioc_process_trust_certificate(
   (mostly fills it with zeros).
 
   This function must not be called on handshake structure which is already initialized,
-  except if ioc_release_handshake_state has been called.
+  use ioc_release_handshake_state to reinitialize handshake structure.
 
   @param   state Handshake state initialized by ioc_initialize_handshake_state().
   @return  None.
@@ -86,7 +86,7 @@ void ioc_initialize_handshake_state(
   (pointers in state structure).
 
   This function can be called on any initialized handshake structure, even if it has been
-  released before.
+  released before. It leaves the handshake structure in initailized empty "ready to use" state.
 
   @param   state Handshake state initialized by ioc_initialize_handshake_state().
   @return  None.
@@ -104,7 +104,10 @@ void ioc_release_handshake_state(
     os_free(state->cert, state->cert_sz);
 #endif
 
+    /* Same as initialize, important: This ready to use also after release.
+     */
     os_memclear(state, sizeof(iocHandshakeState));
+    state->cert_sz = 0xFFFF;
 }
 
 
@@ -488,18 +491,20 @@ static osalStatus ioc_send_trust_certificate(
 
         /* Get certificate size in bytes.
          */
-        cert_sz = load_trust_certificate_func(OS_NULL, 0, load_trust_certificate_context);
-        if (cert_sz > 0) {
-            state->cert = (os_uchar*)os_malloc(cert_sz + 2, OS_NULL);
-            if (state->cert == OS_NULL) return OSAL_STATUS_FAILED;
-            state->cert_sz = cert_sz + 2;
-            load_trust_certificate_func(state->cert + 2, cert_sz,
-                load_trust_certificate_context);
-            state->cert[0] = (os_uchar)cert_sz;
-            state->cert[1] = (os_uchar)(cert_sz >> 8);
-        }
-        else {
-            osal_debug_error("No trusted certificate to send");
+        if (load_trust_certificate_func) {
+            cert_sz = load_trust_certificate_func(OS_NULL, 0, load_trust_certificate_context);
+            if (cert_sz > 0) {
+                state->cert = (os_uchar*)os_malloc(cert_sz + 2, OS_NULL);
+                if (state->cert == OS_NULL) return OSAL_STATUS_FAILED;
+                state->cert_sz = cert_sz + 2;
+                load_trust_certificate_func(state->cert + 2, cert_sz,
+                    load_trust_certificate_context);
+                state->cert[0] = (os_uchar)cert_sz;
+                state->cert[1] = (os_uchar)(cert_sz >> 8);
+            }
+            else {
+                osal_debug_error("No CA certificate to send");
+            }
         }
     }
 
@@ -561,7 +566,7 @@ static osalStatus ioc_process_trust_certificate(
     }
 
     if (state->cert_sz == 0) {
-        osal_debug_error("Empty trusted certificate received");
+        osal_debug_error("Empty CA certificate received");
         return OSAL_SUCCESS;
     }
     if (state->cert == OS_NULL) {
@@ -577,7 +582,9 @@ static osalStatus ioc_process_trust_certificate(
     state->cert_pos += (os_ushort)n_read;
     if (n_read < n) return OSAL_PENDING;
 
-    save_trust_certificate_func(state->cert, state->cert_sz, save_trust_certificate_context);
+    if (save_trust_certificate_func) {
+        save_trust_certificate_func(state->cert, state->cert_sz, save_trust_certificate_context);
+    }
     return OSAL_SUCCESS;
 }
 #endif
