@@ -97,7 +97,7 @@ osalStatus ioc_connection_receive(
     /* Read one received frame.
      */
     rfs.frame_nr = con->frame_in.frame_nr;
-    status = ioc_read_frame(&rfs, con->stream);
+    status = ioc_read_frame(&rfs, OS_NULL, con->stream);
     if (status) {
         /* If this is late return for refused connection,
            delay trying to reopen.
@@ -224,6 +224,11 @@ alldone:
   (p_rfs)
 
   @param   p_rfs Pointer to parameter/output structure.
+  @param   read_func Pointer to stream read function. Set OS_NULL if read_context is
+           direct stream pointer.
+  @param   read_context Application specific context pointer to pass to read_func.
+           Or if read_func is OS_NULL, the this is stream pointer.
+
   @param   stream OSAL stream to read from.
   @return  OSAL_SUCCESS if as long as there is no errors, other return values indicate a failure.
 
@@ -231,7 +236,8 @@ alldone:
 */
 osalStatus ioc_read_frame(
     iocReadFrameState *p_rfs,
-    osalStream stream)
+    osal_stream_read_func read_func,
+    void *read_context)
 {
     iocReadFrameState
         rfs;
@@ -352,12 +358,31 @@ osalStatus ioc_read_frame(
          */
         if (rfs.needed == rfs.n) break;
 
+#if OSAL_MINIMALISTIC
         status = osal_stream_read(
             stream,
             (os_char*)rfs.buf + rfs.n,
             (os_memsz)rfs.needed - rfs.n,
             &n_read,
             OSAL_STREAM_DEFAULT);
+
+#else
+    if (read_func) {
+        status = read_func(
+            (os_char*)rfs.buf + rfs.n,
+            (os_memsz)rfs.needed - rfs.n,
+            &n_read,
+            read_context);
+    }
+    else {
+        status = osal_stream_read(
+            read_context,
+            (os_char*)rfs.buf + rfs.n,
+            (os_memsz)rfs.needed - rfs.n,
+            &n_read,
+            OSAL_STREAM_DEFAULT);
+    }
+#endif
 
         if (status)
         {

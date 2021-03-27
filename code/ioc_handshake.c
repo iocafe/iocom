@@ -30,25 +30,25 @@
  */
 static osalStatus ioc_send_client_handshake_message(
     iocHandshakeState *state,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context);
 
 static osalStatus ioc_process_handshake_message(
     iocHandshakeState *state,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context);
 
 #if OSAL_TLS_SUPPORT
 static osalStatus ioc_send_trust_certificate(
     iocHandshakeState *state,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context);
 
 static osalStatus ioc_process_trust_certificate(
     iocHandshakeState *state,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context);
@@ -150,9 +150,9 @@ osalStatus ioc_client_handshake(
     iocHandshakeClientType process_type,
     const os_char *cloud_netname,
     os_boolean request_trust_certificate,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context)
@@ -245,9 +245,9 @@ osalStatus ioc_client_handshake(
 osalStatus ioc_server_handshake(
     iocHandshakeState *state,
     iocHandshakeServerType process_type,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context)
@@ -351,7 +351,7 @@ const os_char *ioc_get_handshake_cloud_netname(
 */
 static osalStatus ioc_send_client_handshake_message(
     iocHandshakeState *state,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context)
 {
     os_memsz n_written;
@@ -409,7 +409,7 @@ static osalStatus ioc_send_client_handshake_message(
 */
 static osalStatus ioc_process_handshake_message(
     iocHandshakeState *state,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context)
 {
     os_memsz n_read;
@@ -502,7 +502,7 @@ static osalStatus ioc_process_handshake_message(
 */
 static osalStatus ioc_send_trust_certificate(
     iocHandshakeState *state,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context)
@@ -577,7 +577,7 @@ static osalStatus ioc_send_trust_certificate(
 */
 static osalStatus ioc_process_trust_certificate(
     iocHandshakeState *state,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context)

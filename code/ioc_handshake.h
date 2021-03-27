@@ -100,22 +100,6 @@ iocHandshakeState;
 ****************************************************************************************************
 */
 
-/* Write data to socket.
- */
-typedef osalStatus ioc_hanshake_write_socket(
-    const os_char *buf,
-    os_memsz n,
-    os_memsz *n_written,
-    void *context);
-
-/* Read data from socket.
- */
-typedef osalStatus ioc_hanshake_read_socket(
-    os_char *buf,
-    os_memsz n,
-    os_memsz *n_read,
-    void *context);
-
 /* Save received certificate (client only).
  */
 typedef void ioc_hanshake_save_trust_certificate(
@@ -154,9 +138,9 @@ osalStatus ioc_client_handshake(
     iocHandshakeClientType process_type,
     const os_char *cloud_netname,
     os_boolean request_trust_certificate,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context);
@@ -166,9 +150,9 @@ osalStatus ioc_client_handshake(
 osalStatus ioc_server_handshake(
     iocHandshakeState *state,
     iocHandshakeServerType process_type,
-    ioc_hanshake_read_socket *read_socket_func,
+    osal_stream_read_func *read_socket_func,
     void *read_socket_context,
-    ioc_hanshake_write_socket *write_socket_func,
+    osal_stream_write_func *write_socket_func,
     void *write_socket_context,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context);

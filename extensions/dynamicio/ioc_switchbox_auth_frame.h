@@ -25,8 +25,13 @@
 
 #if IOC_DYNAMIC_MBLK_CODE
 
+/**
+****************************************************************************************************
+  Defines and structures.
+****************************************************************************************************
+*/
 
-#define IOC_MAX_AUTHENTICATION_FRAME_SZ 256
+#define IOC_MAX_AUTHENTICATION_FRAME_SZ 128
 
 typedef struct iocSwitchboxAuthenticationFrameBuffer
 {
@@ -52,17 +57,26 @@ typedef struct iocAuthenticationResults {
 }
 iocAuthenticationResults;
 
+
+/**
+****************************************************************************************************
+  Functions for sending and processing authentication frames.
+****************************************************************************************************
+*/
+
 /* Send switchbox/ecom authentication frame to stream.
  */
 osalStatus ioc_send_switchbox_authentication_frame(
-    osalStream stream,
+    osal_stream_write_func write_func,
+    void *write_context,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm);
 
 /* Receive and process swtchbox/ecom authentication frame from stream.
  */
 osalStatus icom_switchbox_process_authentication_frame(
-    osalStream stream,
+    osal_stream_read_func read_func,
+    void *read_context,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results);
 
