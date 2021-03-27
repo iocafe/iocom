@@ -899,8 +899,7 @@ osalStatus ioc_connection_receive(
  */
 osalStatus ioc_read_frame(
     iocReadFrameState *p_rfs,
-    osal_stream_read_func read_func,
-    void *read_context);
+    osalStream stream);
 
 /* Get string from received message.
  */

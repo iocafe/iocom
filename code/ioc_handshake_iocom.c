@@ -17,30 +17,6 @@
 #if OSAL_SOCKET_SUPPORT
 
 
-/* Write data to socket.
- */
-static osalStatus ioc_write_iocom_socket(
-    const os_char *buf,
-    os_memsz n,
-    os_memsz *n_written,
-    void *context)
-{
-    iocConnection *con = (iocConnection*)context;
-    return osal_stream_write(con->stream, buf, n, n_written, OSAL_STREAM_DEFAULT);
-}
-
-/* Read data from socket.
- */
-static osalStatus ioc_read_iocom_socket(
-    os_char *buf,
-    os_memsz n,
-    os_memsz *n_read,
-    void *context)
-{
-    iocConnection *con = (iocConnection*)context;
-    return osal_stream_read(con->stream, buf, n, n_read, OSAL_STREAM_DEFAULT);
-}
-
 /* Save received certificate (client only).
  */
 static void ioc_save_iocom_trust_certificate(
@@ -91,8 +67,7 @@ os_boolean cert_match = OS_TRUE;
              */
             if (con->flags & IOC_LISTENER) {
                 s = ioc_server_handshake(&con->handshake, IOC_HANDSHAKE_REGULAR_SERVER,
-                    ioc_read_iocom_socket, con,
-                    ioc_write_iocom_socket, con,
+                    con->stream,
                     ioc_load_iocom_trust_certificate, con);
             }
 
@@ -100,8 +75,7 @@ os_boolean cert_match = OS_TRUE;
              */
             else {
                 s = ioc_client_handshake(&con->handshake, IOC_HANDSHAKE_CLIENT, "kepuli", !cert_match,
-                    ioc_read_iocom_socket, con,
-                    ioc_write_iocom_socket, con,
+                    con->stream,
                     ioc_save_iocom_trust_certificate, con);
 
                 if (s == OSAL_SUCCESS && !cert_match) {

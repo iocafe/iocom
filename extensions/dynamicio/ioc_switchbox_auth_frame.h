@@ -67,16 +67,14 @@ iocAuthenticationResults;
 /* Send switchbox/ecom authentication frame to stream.
  */
 osalStatus ioc_send_switchbox_authentication_frame(
-    osal_stream_write_func write_func,
-    void *write_context,
+    osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm);
 
 /* Receive and process swtchbox/ecom authentication frame from stream.
  */
 osalStatus icom_switchbox_process_authentication_frame(
-    osal_stream_read_func read_func,
-    void *read_context,
+    osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results);
 

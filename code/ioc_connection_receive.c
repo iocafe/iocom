@@ -97,7 +97,7 @@ osalStatus ioc_connection_receive(
     /* Read one received frame.
      */
     rfs.frame_nr = con->frame_in.frame_nr;
-    status = ioc_read_frame(&rfs, OS_NULL, con->stream);
+    status = ioc_read_frame(&rfs, con->stream);
     if (status) {
         /* If this is late return for refused connection,
            delay trying to reopen.
@@ -236,8 +236,7 @@ alldone:
 */
 osalStatus ioc_read_frame(
     iocReadFrameState *p_rfs,
-    osal_stream_read_func read_func,
-    void *read_context)
+    osalStream stream)
 {
     iocReadFrameState
         rfs;
@@ -358,31 +357,12 @@ osalStatus ioc_read_frame(
          */
         if (rfs.needed == rfs.n) break;
 
-#if OSAL_MINIMALISTIC
         status = osal_stream_read(
             stream,
             (os_char*)rfs.buf + rfs.n,
             (os_memsz)rfs.needed - rfs.n,
             &n_read,
             OSAL_STREAM_DEFAULT);
-
-#else
-    if (read_func) {
-        status = read_func(
-            (os_char*)rfs.buf + rfs.n,
-            (os_memsz)rfs.needed - rfs.n,
-            &n_read,
-            read_context);
-    }
-    else {
-        status = osal_stream_read(
-            read_context,
-            (os_char*)rfs.buf + rfs.n,
-            (os_memsz)rfs.needed - rfs.n,
-            &n_read,
-            OSAL_STREAM_DEFAULT);
-    }
-#endif
 
         if (status)
         {

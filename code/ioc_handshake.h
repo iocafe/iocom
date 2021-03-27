@@ -138,10 +138,7 @@ osalStatus ioc_client_handshake(
     iocHandshakeClientType process_type,
     const os_char *cloud_netname,
     os_boolean request_trust_certificate,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context,
+    osalStream stream,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context);
 
@@ -150,10 +147,7 @@ osalStatus ioc_client_handshake(
 osalStatus ioc_server_handshake(
     iocHandshakeState *state,
     iocHandshakeServerType process_type,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context,
+    osalStream stream,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context);
 

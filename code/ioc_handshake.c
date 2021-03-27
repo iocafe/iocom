@@ -30,26 +30,22 @@
  */
 static osalStatus ioc_send_client_handshake_message(
     iocHandshakeState *state,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context);
+    osalStream stream);
 
 static osalStatus ioc_process_handshake_message(
     iocHandshakeState *state,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context);
+    osalStream stream);
 
 #if OSAL_TLS_SUPPORT
 static osalStatus ioc_send_trust_certificate(
     iocHandshakeState *state,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context,
+    osalStream stream,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context);
 
 static osalStatus ioc_process_trust_certificate(
     iocHandshakeState *state,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context,
+    osalStream stream,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context);
 #endif
@@ -131,10 +127,7 @@ void ioc_release_handshake_state(
            or connect to (IOC_HANDSHAKE_CLIENT).
   @param   request_trust_certificate Set OS_TRUE to request switchbox cloud service to send
            trust certificate back. If OS_FALSE, no message from cloud server is expected.
-  @param   write_socket_func Pointer to socket write function. Using function pointer
-           allows using this code with both iocom and ecom protocols.
-  @param   write_socket_context Application specific context to pass to write_socket_func().
-           Something like stream handle, etc.
+  @param   stream OSAL socket.
   @param   save_trust_certificate_func Function to save trust certificate, called once nonempty
            trust certificate has been completely received.
   @param   save_trust_certificate_context Application specific context to pass to
@@ -150,10 +143,7 @@ osalStatus ioc_client_handshake(
     iocHandshakeClientType process_type,
     const os_char *cloud_netname,
     os_boolean request_trust_certificate,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context,
+    osalStream stream,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context)
 {
@@ -193,7 +183,7 @@ osalStatus ioc_client_handshake(
         state->copy_trust_certificate = (os_boolean)request_trust_certificate;
 #endif
 
-        s = ioc_send_client_handshake_message(state, write_socket_func, write_socket_context);
+        s = ioc_send_client_handshake_message(state, stream);
         if (s) {
             return s;
         }
@@ -203,7 +193,7 @@ osalStatus ioc_client_handshake(
 
 #if OSAL_TLS_SUPPORT
     if (request_trust_certificate) {
-        s = ioc_process_trust_certificate(state, read_socket_func, read_socket_context,
+        s = ioc_process_trust_certificate(state, stream,
             save_trust_certificate_func, save_trust_certificate_context);
     }
 #endif
@@ -226,13 +216,7 @@ osalStatus ioc_client_handshake(
   @param   process_type Server process type:
            - IOC_HANDSHAKE_SWITCHBOX_ENDPOINT This is switchbox end of cloud connection.
            - IOC_HANDSHAKE_REGULAR_ENDPOINT This is regular socket server side end of connection.
-  @param   read_socket_func Pointer to socket read function.
-  @param   read_socket_context Application specific context to pass to read_socket_func().
-           Something like stream handle, etc.
-  @param   write_socket_func Pointer to socket write function. Using function pointer
-           allows using this code with both iocom and ecom protocols.
-  @param   write_socket_context Application specific context to pass to write_socket_func().
-           Something like stream handle, etc.
+  @param   stream OSAL socket.
   @param   load_trust_certificate_func Pointer to function to load trust certificate.
   @param   load_trust_certificate_context Application specific context to pass to
            load_trust_certificate() function.
@@ -245,10 +229,7 @@ osalStatus ioc_client_handshake(
 osalStatus ioc_server_handshake(
     iocHandshakeState *state,
     iocHandshakeServerType process_type,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context,
+    osalStream stream,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context)
 {
@@ -259,7 +240,7 @@ osalStatus ioc_server_handshake(
     if (!state->hand_shake_message_done)
     {
         state->server_type = (os_char)process_type;
-        s = ioc_process_handshake_message(state, read_socket_func, read_socket_context);
+        s = ioc_process_handshake_message(state, stream);
         if (s) {
             return s;
         }
@@ -269,7 +250,7 @@ osalStatus ioc_server_handshake(
 
 #if OSAL_TLS_SUPPORT
     if (state->copy_trust_certificate) {
-        s = ioc_send_trust_certificate(state, write_socket_func, write_socket_context,
+        s = ioc_send_trust_certificate(state, stream,
             load_trust_certificate_func, load_trust_certificate_context);
     }
 #endif
@@ -337,12 +318,7 @@ const os_char *ioc_get_handshake_cloud_netname(
   to authenticate this IO device, etc.
 
   @param   state Current handshake state.
-  @param   cloud_netname Name of IO network to service to publish (IOC_HANDSHAKE_NETWORK_SERVICE)
-           or connect to (IOC_HANDSHAKE_CLIENT).
-  @param   write_socket_func Pointer to socket write function. Using function pointer
-           allows using this code with both iocom and ecom protocols.
-  @param   write_socket_context Application specific context to pass to write_socket_func().
-           Something like stream handle, etc.
+  @param   stream OSAL socket.
 
   @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
            an error (broken socket).
@@ -351,8 +327,7 @@ const os_char *ioc_get_handshake_cloud_netname(
 */
 static osalStatus ioc_send_client_handshake_message(
     iocHandshakeState *state,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context)
+    osalStream stream)
 {
     os_memsz n_written;
     osalStatus s;
@@ -362,8 +337,8 @@ static osalStatus ioc_send_client_handshake_message(
     if (state->cloud_netname) {
         n = state->cloud_netname_sz - state->cloud_netname_pos;
         if (n > 0) {
-            s = write_socket_func(state->cloud_netname + state->cloud_netname_pos,
-                n, &n_written, write_socket_context);
+            s = osal_stream_write(stream, state->cloud_netname + state->cloud_netname_pos,
+                n, &n_written, OSAL_STREAM_DEFAULT);
             state->cloud_netname_pos += (os_char)n_written;
         }
         return (s == OSAL_SUCCESS && n_written < n) ? OSAL_PENDING : s;
@@ -377,8 +352,8 @@ static osalStatus ioc_send_client_handshake_message(
     }
 #endif
     n = 1;
-    s = write_socket_func(&one_byte_handshake,
-        n, &n_written, write_socket_context);
+    s = osal_stream_write(stream, &one_byte_handshake,
+        n, &n_written, OSAL_STREAM_DEFAULT);
 
     if (s == OSAL_SUCCESS && n_written < n) {
         s = OSAL_PENDING;
@@ -398,9 +373,7 @@ static osalStatus ioc_send_client_handshake_message(
   to socket server.
 
   @param   state Current handshake state.
-  @param   read_socket_func Pointer to socket read function.
-  @param   read_socket_context Application specific context to pass to read_socket_func().
-           Something like stream handle, etc.
+  @param   stream OSAL socket.
 
   @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
            an error (broken socket).
@@ -409,8 +382,7 @@ static osalStatus ioc_send_client_handshake_message(
 */
 static osalStatus ioc_process_handshake_message(
     iocHandshakeState *state,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context)
+    osalStream stream)
 {
     os_memsz n_read;
     osalStatus s;
@@ -418,7 +390,7 @@ static osalStatus ioc_process_handshake_message(
 
     if (state->cloud_netname_pos == 0)
     {
-        s = read_socket_func(&c, 1, &n_read, read_socket_context);
+        s = osal_stream_read(stream, &c, 1, &n_read, OSAL_STREAM_DEFAULT);
         state->client_type = c;
         if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
         if (s) return s;
@@ -439,7 +411,7 @@ static osalStatus ioc_process_handshake_message(
 
     if (state->cloud_netname_pos == 1)
     {
-        s = read_socket_func(&c, 1, &n_read, read_socket_context);
+        s = osal_stream_read(stream, &c, 1, &n_read, OSAL_STREAM_DEFAULT);
         if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
         if (s) return s;
         if (c <= 0 || c > OSAL_NETWORK_NAME_SZ) {
@@ -466,7 +438,7 @@ static osalStatus ioc_process_handshake_message(
 #else
     p = tmp;
 #endif
-    s = read_socket_func(p + c, n, &n_read, read_socket_context);
+    s = osal_stream_read(stream, p + c, n, &n_read, OSAL_STREAM_DEFAULT);
     if (s == OSAL_SUCCESS) {
         state->cloud_netname_pos += n_read;
         return n_read >= n ? OSAL_SUCCESS : OSAL_PENDING;
@@ -487,10 +459,7 @@ static osalStatus ioc_process_handshake_message(
   requested (trust_certificate_requested is OS_TRUE), this function must be called.
 
   @param   state Current handshake state.
-  @param   write_socket_func Pointer to socket write function. Using function pointer
-           allows using this code with both iocom and ecom protocols.
-  @param   write_socket_context Application specific context to pass to write_socket_func().
-           Something like stream handle, etc.
+  @param   stream OSAL socket.
   @param   load_trust_certificate_func Pointer to function to load trust certificate.
   @param   load_trust_certificate_context Application specific context to pass to
            load_trust_certificate() function.
@@ -502,8 +471,7 @@ static osalStatus ioc_process_handshake_message(
 */
 static osalStatus ioc_send_trust_certificate(
     iocHandshakeState *state,
-    osal_stream_write_func *write_socket_func,
-    void *write_socket_context,
+    osalStream stream,
     ioc_hanshake_load_trust_certificate *load_trust_certificate_func,
     void *load_trust_certificate_context)
 {
@@ -537,12 +505,12 @@ static osalStatus ioc_send_trust_certificate(
 
     if (state->cert_sz >= 2) {
         n = state->cert_sz - state->cert_pos;
-        s = write_socket_func((os_char*)state->cert + state->cert_pos,
-            n, &n_written, write_socket_context);
+        s = osal_stream_write(stream, (os_char*)state->cert + state->cert_pos,
+            n, &n_written, OSAL_STREAM_DEFAULT);
     }
     else {
         n = 2 - state->cert_pos;
-        s = write_socket_func(doublezero, n, &n_written, write_socket_context);
+        s = osal_stream_write(stream, doublezero, n, &n_written, OSAL_STREAM_DEFAULT);
     }
     if (s) return s;
     state->cert_pos += (os_ushort)n_written;
@@ -562,9 +530,7 @@ static osalStatus ioc_send_trust_certificate(
   to save it.
 
   @param   state Current handshake state.
-  @param   read_socket_func Pointer to socket read function.
-  @param   read_socket_context Application specific context to pass to read_socket_func().
-           Something like stream handle, etc.
+  @param   stream OSAL socket.
   @param   save_trust_certificate_func Function to save trust certificate, called once nonempty
            trust certificate has been completely received.
   @param   save_trust_certificate_context Application specific context to pass to
@@ -577,8 +543,7 @@ static osalStatus ioc_send_trust_certificate(
 */
 static osalStatus ioc_process_trust_certificate(
     iocHandshakeState *state,
-    osal_stream_read_func *read_socket_func,
-    void *read_socket_context,
+    osalStream stream,
     ioc_hanshake_save_trust_certificate *save_trust_certificate_func,
     void *save_trust_certificate_context)
 {
@@ -588,7 +553,7 @@ static osalStatus ioc_process_trust_certificate(
     os_uchar c;
 
     while (state->cert_pos < 2) {
-        s = read_socket_func((os_char*)&c, 1, &n_read, read_socket_context);
+        s = osal_stream_read(stream, (os_char*)&c, 1, &n_read, OSAL_STREAM_DEFAULT);
          if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
         if (s) return s;
         state->cert_sz = (state->cert_pos ? (((os_ushort)c) << 8) : c);
@@ -605,7 +570,7 @@ static osalStatus ioc_process_trust_certificate(
     }
     cert_pos = (state->cert_pos - 2);
     n = state->cert_sz - cert_pos;
-    s = read_socket_func((os_char*)state->cert + cert_pos, n, &n_read, read_socket_context);
+    s = osal_stream_read(stream, (os_char*)state->cert + cert_pos, n, &n_read, OSAL_STREAM_DEFAULT);
     if (s == OSAL_SUCCESS && n_read <= 0) return OSAL_PENDING;
     if (s) return s;
 

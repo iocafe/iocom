@@ -49,8 +49,7 @@ static osalStatus ioc_switchbox_parse_authentication_frame(
 
   Stream must be called after calling this function.
 
-  @param   write_func Pointer to stream write function.
-  @param   write_context Application specific context pointer to pass to write_func.
+  @param   stream OSAL stream structure.
   @param   abuf Buffer structure for creating and sending the authentication frame. Zero this
            structure before calling this function the first time.
   @param   prm Data to place within for authentication frame. This must be set when the function
@@ -64,8 +63,7 @@ static osalStatus ioc_switchbox_parse_authentication_frame(
 ****************************************************************************************************
 */
 osalStatus ioc_send_switchbox_authentication_frame(
-    osal_stream_write_func write_func,
-    void *write_context,
+    osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm)
 {
@@ -78,7 +76,7 @@ osalStatus ioc_send_switchbox_authentication_frame(
 
     n = abuf->buf_used - abuf->buf_pos;
     if (n > 0) {
-        s = write_func(abuf->buf, n, &n_written, write_context);
+        s = osal_stream_write(stream, abuf->buf, n, &n_written, OSAL_STREAM_DEFAULT);
         if (OSAL_IS_ERROR(s)) return s;
     }
     abuf->buf_pos += (os_short)n_written;
@@ -263,10 +261,7 @@ static void ioc_make_switchbox_authentication_frame(
   OSAL_COMPLETED once authentication
   frame is sent.
 
-  @param   read_func Pointer to stream read function. Set OS_NULL if read_context is
-           direct stream pointer.
-  @param   read_context Application specific context pointer to pass to read_func.
-           Or if read_func is OS_NULL, the this is stream pointer.
+  @param   stream OSAL stream structure.
 
   @return  OSAL_COMPLETED Authentication frame has been received and processed.
            OSAL_PENDING Authentication frame not yet send, but no error thus far.
@@ -275,8 +270,7 @@ static void ioc_make_switchbox_authentication_frame(
 ****************************************************************************************************
 */
 osalStatus icom_switchbox_process_authentication_frame(
-    osal_stream_read_func read_func,
-    void *read_context,
+    osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results)
 {
@@ -302,7 +296,7 @@ osalStatus icom_switchbox_process_authentication_frame(
     /* Read one received frame using IOCOM frame format.
      */
     rfs.frame_nr = 0;
-    status = ioc_read_frame(&rfs, read_func, read_context);
+    status = ioc_read_frame(&rfs, stream);
     if (status) {
         return status;
     }
