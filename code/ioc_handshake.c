@@ -504,6 +504,7 @@ static osalStatus ioc_process_handshake_message(
   @param   state Current handshake state.
   @param   stream OSAL socket.
   @param   load_trust_certificate_func Pointer to function to load trust certificate.
+           If not needed, set OS_NULL.
   @param   load_trust_certificate_context Application specific context to pass to
            load_trust_certificate() function.
 
@@ -609,7 +610,7 @@ static osalStatus ioc_send_byte_to_secure_TLS(
   @param   state Current handshake state.
   @param   stream OSAL socket.
   @param   save_trust_certificate_func Function to save trust certificate, called once nonempty
-           trust certificate has been completely received.
+           trust certificate has been completely received. If not needed, set OS_NULL.
   @param   save_trust_certificate_context Application specific context to pass to
            save_trust_certificate() function.
 
