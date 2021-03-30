@@ -161,7 +161,7 @@ static osalStream ioc_switchbox_socket_open(
     /* Get host name or numeric IP address and TCP port number from parameters.
      */
     s = osal_socket_get_ip_and_port(parameters, iface_addr_bin, sizeof(iface_addr_bin),
-        &port_nr, &is_ipv6, flags, IOC_DEFAULT_SWITCHBOX_PORT);
+        &port_nr, &is_ipv6, flags, IOC_DEFAULT_IOCOM_SWITCHBOX_SOCKET_PORT);
     if (s)
     {
         if (status) *status = s;
