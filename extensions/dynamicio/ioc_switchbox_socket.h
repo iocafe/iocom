@@ -27,14 +27,8 @@
  */
 extern OS_CONST_H osalStreamInterface ioc_switchbox_socket_iface;
 
-/* Default socket port number for SWITCHBOX.
+/* Default socket port number for SWITCHBOX. Only TLS can be used with switchbox.
  */
-#define IOC_DEFAULT_IOCOM_SWITCHBOX_SOCKET_PORT 6362
-#define IOC_DEFAULT_IOCOM_SWITCHBOX_SOCKET_PORT_STR "6362"
-
-#define IOC_DEFAULT_ECOM_SWITCHBOX_SOCKET_PORT 6363
-#define IOC_DEFAULT_ECOM_SWITCHBOX_SOCKET_PORT_STR "6363"
-
 #define IOC_DEFAULT_IOCOM_SWITCHBOX_TLS_PORT 6362
 #define IOC_DEFAULT_IOCOM_SWITCHBOX_TLS_PORT_STR "6372"
 
