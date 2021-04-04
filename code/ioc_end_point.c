@@ -103,7 +103,7 @@ iocEndPoint *ioc_initialize_end_point(
 
 
 #if OSAL_MULTITHREAD_SUPPORT
-    epoint->trig = osal_event_create();
+    epoint->trig = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
 #endif
 
     /* Mark end_point structure as initialized end_point object (for debugging).

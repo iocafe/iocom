@@ -549,7 +549,7 @@ osalStatus ioc_connect(
      */
     if (flags & IOC_CREATE_THREAD)
     {
-        con->worker.trig = osal_event_create();
+        con->worker.trig = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
         con->worker.thread_running = OS_TRUE;
         con->worker.stop_thread = OS_FALSE;
 
