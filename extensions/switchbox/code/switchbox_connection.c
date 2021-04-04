@@ -1,6 +1,6 @@
 /**
 
-  @file    switchbox_service_connection.c
+  @file    switchbox_connection.c
   @brief   Switchbox connection object.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -28,9 +28,9 @@ static void ioc_connection_thread(
 ****************************************************************************************************
 
   @brief Initialize connection.
-  @anchor ioc_initialize_switchbox_service_connection
+  @anchor ioc_initialize_switchbox_connection
 
-  The ioc_initialize_switchbox_service_connection() function initializes a connection. A connection can always
+  The ioc_initialize_switchbox_connection() function initializes a connection. A connection can always
   be allocated global variable. In this case pointer to memory to be initialized is given as
   argument and return value is the same pointer. If  the con argument is OS_NULL, memory for
   the connection object is allocated by the function.
@@ -43,8 +43,8 @@ static void ioc_connection_thread(
 
 ****************************************************************************************************
 */
-switchboxServiceConnection *ioc_initialize_switchbox_service_connection(
-    switchboxServiceConnection *con,
+switchboxConnection *ioc_initialize_switchbox_connection(
+    switchboxConnection *con,
     switchboxRoot *root)
 {
     /* Synchronize.
@@ -53,19 +53,19 @@ switchboxServiceConnection *ioc_initialize_switchbox_service_connection(
 
     if (con == OS_NULL)
     {
-        con = (switchboxServiceConnection*)os_malloc(sizeof(switchboxServiceConnection), OS_NULL);
+        con = (switchboxConnection*)os_malloc(sizeof(switchboxConnection), OS_NULL);
         if (con == OS_NULL)
         {
             ioc_switchbox_unlock(root);
             return OS_NULL;
         }
 
-        os_memclear(con, sizeof(switchboxServiceConnection));
+        os_memclear(con, sizeof(switchboxConnection));
         con->allocated = OS_TRUE;
     }
     else
     {
-        os_memclear(con, sizeof(switchboxServiceConnection));
+        os_memclear(con, sizeof(switchboxConnection));
     }
 
     /* Save pointer to root object and join to linked list of connections.
@@ -97,19 +97,19 @@ switchboxServiceConnection *ioc_initialize_switchbox_service_connection(
 ****************************************************************************************************
 
   @brief Release connection.
-  @anchor ioc_release_switchbox_service_connection
+  @anchor ioc_release_switchbox_connection
 
-  The ioc_release_switchbox_service_connection() function releases resources allocated for the connection
+  The ioc_release_switchbox_connection() function releases resources allocated for the connection
   object. Memory allocated for the connection object is freed, if it was allocated by
-  ioc_initialize_switchbox_service_connection().
+  ioc_initialize_switchbox_connection().
 
   @param   con Pointer to the connection object.
   @return  None.
 
 ****************************************************************************************************
 */
-void ioc_release_switchbox_service_connection(
-    switchboxServiceConnection *con)
+void ioc_release_switchbox_connection(
+    switchboxConnection *con)
 {
     switchboxRoot
         *root;
@@ -156,11 +156,11 @@ void ioc_release_switchbox_service_connection(
        for primitive static allocation schema). Save allocated flag before memclear.
      */
     allocated = con->allocated;
-    os_memclear(con, sizeof(switchboxServiceConnection));
+    os_memclear(con, sizeof(switchboxConnection));
 
     if (allocated)
     {
-        os_free(con, sizeof(switchboxServiceConnection));
+        os_free(con, sizeof(switchboxConnection));
     }
 
     /* End syncronization.
@@ -200,8 +200,8 @@ void ioc_release_switchbox_service_connection(
 ****************************************************************************************************
 */
 osalStatus ioc_switchbox_service_connect(
-    switchboxServiceConnection *con,
-    switchboxServiceConnectionParams *prm)
+    switchboxConnection *con,
+    switchboxConnectionParams *prm)
 {
     switchboxRoot *root;
 
@@ -212,7 +212,7 @@ osalStatus ioc_switchbox_service_connect(
 
     /* If we are already running connection, stop it. Wait until it has stopped.
      */
-    while (ioc_terminate_switchbox_service_connection_thread(con))
+    while (ioc_terminate_switchbox_connection_thread(con))
     {
         ioc_switchbox_unlock(root);
         os_timeslice();
@@ -232,7 +232,7 @@ osalStatus ioc_switchbox_service_connect(
 
         /* Reset connection state
          */
-        ioc_reset_switchbox_service_connection(con);
+        ioc_reset_switchbox_connection(con);
     }
 
     /* If we want to run end point in separate thread.
@@ -271,7 +271,7 @@ osalStatus ioc_switchbox_service_connect(
 ****************************************************************************************************
 */
 osalStatus ioc_run_switchbox_connection(
-    switchboxServiceConnection *con)
+    switchboxConnection *con)
 {
 //    switchboxRoot *root;
     os_timer tnow;
@@ -320,7 +320,7 @@ osalStatus ioc_run_switchbox_connection(
 
         /* Success, reset connection state.
          */
-        ioc_reset_switchbox_service_connection(con);
+        ioc_reset_switchbox_connection(con);
         return OSAL_SUCCESS;
     }
 #endif
@@ -397,9 +397,9 @@ failed:
 ****************************************************************************************************
 
   @brief Request to terminate connection worker thread.
-  @anchor ioc_terminate_switchbox_service_connection_thread
+  @anchor ioc_terminate_switchbox_connection_thread
 
-  The ioc_terminate_switchbox_service_connection_thread() function sets request to terminate worker thread, if
+  The ioc_terminate_switchbox_connection_thread() function sets request to terminate worker thread, if
   one is running the end point.
 
   ioc_switchbox_lock() must be on when this function is called.
@@ -410,8 +410,8 @@ failed:
 
 ****************************************************************************************************
 */
-osalStatus ioc_terminate_switchbox_service_connection_thread(
-    switchboxServiceConnection *con)
+osalStatus ioc_terminate_switchbox_connection_thread(
+    switchboxConnection *con)
 {
     osalStatus
         status = OSAL_SUCCESS;
@@ -431,9 +431,9 @@ osalStatus ioc_terminate_switchbox_service_connection_thread(
 ****************************************************************************************************
 
   @brief Reset connection state to start from beginning
-  @anchor ioc_reset_switchbox_service_connection
+  @anchor ioc_reset_switchbox_connection
 
-  The ioc_reset_switchbox_service_connection() function resets connection state and connected
+  The ioc_reset_switchbox_connection() function resets connection state and connected
   source and destination buffers.
 
   @param   con Pointer to the connection object.
@@ -441,8 +441,8 @@ osalStatus ioc_terminate_switchbox_service_connection_thread(
 
 ****************************************************************************************************
 */
-void ioc_reset_switchbox_service_connection(
-    switchboxServiceConnection *con)
+void ioc_reset_switchbox_connection(
+    switchboxConnection *con)
 {
     os_timer tnow;
 
@@ -474,7 +474,7 @@ static void ioc_connection_thread(
     osalEvent done)
 {
     switchboxRoot *root;
-    switchboxServiceConnection *con;
+    switchboxConnection *con;
 //    const os_char *parameters;
 //    osalStatus status;
     osalSelectData selectdata;
@@ -483,7 +483,7 @@ static void ioc_connection_thread(
 
     /* Parameters point to the connection object.
      */
-    con = (switchboxServiceConnection*)prm;
+    con = (switchboxConnection*)prm;
     root = con->link.root;
 
     /* Let thread which created this one proceed.
@@ -550,7 +550,7 @@ static void ioc_connection_thread(
 
             /* Reset connection state
              */
-            ioc_reset_switchbox_service_connection(con);
+            ioc_reset_switchbox_connection(con);
         }
 
         if (con->flags & IOC_DISABLE_SELECT)
@@ -647,7 +647,7 @@ break;
     con->worker.trig = OS_NULL;
     con->worker.thread_running = OS_FALSE;
 
-    ioc_release_switchbox_service_connection(con);
+    ioc_release_switchbox_connection(con);
     ioc_switchbox_unlock(root);
 
     osal_trace("connection: worker thread exited");

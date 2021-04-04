@@ -62,7 +62,7 @@ void ioc_initialize_switchbox_root(
 void ioc_release_switchbox_root(
     switchboxRoot *root)
 {
-    switchboxServiceConnection
+    switchboxConnection
         *con;
 
     osalStatus
@@ -102,7 +102,7 @@ void ioc_release_switchbox_root(
              con;
              con = con->link.next)
         {
-            status |= ioc_terminate_switchbox_service_connection_thread(con);
+            status |= ioc_terminate_switchbox_connection_thread(con);
         }
         if (status == OSAL_SUCCESS) break;
 
@@ -122,7 +122,7 @@ void ioc_release_switchbox_root(
      */
     while (root->con.first)
     {
-        ioc_release_switchbox_service_connection(root->con.first);
+        ioc_release_switchbox_connection(root->con.first);
     }
 
     /* End syncronization.
@@ -196,7 +196,7 @@ void ioc_switchbox_unlock(
 void ioc_run(
     switchboxRoot *root)
 {
-    switchboxServiceConnection
+    switchboxConnection
         *con,
         *next_con;
 
@@ -238,7 +238,7 @@ void ioc_run(
 
         if (status && con->flags & IOC_CLOSE_CONNECTION_ON_ERROR)
         {
-            ioc_release_switchbox_service_connection(con);
+            ioc_release_switchbox_connection(con);
         }
     }
 

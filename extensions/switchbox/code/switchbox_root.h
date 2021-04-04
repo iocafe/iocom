@@ -20,7 +20,7 @@
 
 /* Structures which are defined later in headers.
  */
-struct switchboxServiceConnection;
+struct switchboxConnection;
 struct switchboxEndPoint;
 
 
@@ -33,13 +33,13 @@ typedef struct
 {
     /** Pointer to the first connection in linked list.
      */
-    struct switchboxServiceConnection *first;
+    struct switchboxConnection *first;
 
     /** Pointer to the last connection in linked list.
      */
-    struct switchboxServiceConnection *last;
+    struct switchboxConnection *last;
 }
-switchboxServiceConnectionList;
+switchboxConnectionList;
 
 
 /**
@@ -79,7 +79,7 @@ typedef struct switchboxRoot
 
     /** Linked list of root's connections.
      */
-    switchboxServiceConnectionList con;
+    switchboxConnectionList con;
 
     /** Linked list of root's end points.
      */

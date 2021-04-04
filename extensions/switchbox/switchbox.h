@@ -28,7 +28,7 @@ OSAL_C_HEADER_BEGINS
  */
 #include "code/switchbox_root.h"
 #include "code/switchbox_end_point.h"
-#include "code/switchbox_service_connection.h"
+#include "code/switchbox_connection.h"
 
 /* If C++ compilation, end the undecorated code.
  */

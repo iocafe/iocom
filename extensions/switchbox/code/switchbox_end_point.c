@@ -95,7 +95,6 @@ switchboxEndPoint *ioc_initialize_switchbox_end_point(
     }
     root->epoint.last = epoint;
 
-
     epoint->trig = osal_event_create();
 
     /* End syncronization.
@@ -487,15 +486,15 @@ static osalStatus ioc_establish_switchbox_connection(
     osalStream newsocket,
     os_char *remote_ip_addr)
 {
-    switchboxServiceConnection
+    switchboxConnection
         *con;
 
-    switchboxServiceConnectionParams
+    switchboxConnectionParams
         conprm;
 
     /* If allocate connection structure either dynamically or from static pool and initialize it.
      */
-    con = ioc_initialize_switchbox_service_connection(OS_NULL, epoint->link.root);
+    con = ioc_initialize_switchbox_connection(OS_NULL, epoint->link.root);
     if (con == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
 
     os_memclear(&conprm, sizeof(conprm));
