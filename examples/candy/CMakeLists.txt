@@ -52,7 +52,7 @@ endif()
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
 
-# Add used libraries.
+# Add include paths for used libraries.
 include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
 include_directories("$ENV{E_ROOT}/iocom/extensions/deviceinfo")

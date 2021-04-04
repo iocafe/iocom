@@ -95,7 +95,7 @@ switchboxEndPoint *ioc_initialize_switchbox_end_point(
     }
     root->epoint.last = epoint;
 
-    epoint->trig = osal_event_create();
+    epoint->trig = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
 
     /* End syncronization.
      */

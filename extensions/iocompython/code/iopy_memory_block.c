@@ -347,7 +347,7 @@ static PyObject *MemoryBlock_set_param(
 {
     const char *param_name = OS_NULL;
     int param_value = 0;
-    iocMemoryBlockParamIx param_ix;
+    // iocMemoryBlockParamIx param_ix;
 
     if (!PyArg_ParseTuple(args, "si", &param_name, &param_value))
     {

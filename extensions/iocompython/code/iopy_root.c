@@ -362,7 +362,7 @@ static PyObject *Root_initialize_event_queue(
         return NULL;
     }
 
-    event = osal_event_create();
+    event = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
     self->queue_event = event;
 
     flags = 0;
@@ -553,7 +553,7 @@ static PyObject *Root_set_mblk_param(
     const char *mblk_path = NULL;
     const char *param_name = OS_NULL;
     int param_value = 0;
-    iocMemoryBlockParamIx param_ix;
+    // iocMemoryBlockParamIx param_ix;
 
     Root *root;
 

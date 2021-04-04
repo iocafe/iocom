@@ -428,7 +428,7 @@ void AbstractCamera::start_thread()
 {
     if (m_started) return;
 
-    m_event = osal_event_create();
+    m_event = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
 
     /* Start running test_sequence for this IO device network in own thread.
      */

@@ -237,7 +237,7 @@ osalStatus ioc_switchbox_service_connect(
 
     /* If we want to run end point in separate thread.
      */
-    con->worker.trig = osal_event_create();
+    con->worker.trig = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
     con->worker.thread_running = OS_TRUE;
     con->worker.stop_thread = OS_FALSE;
 

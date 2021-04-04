@@ -383,8 +383,8 @@ static osalStatus ioc_send_client_handshake_message(
             s = osal_stream_write(stream, state->cloud_netname + state->cloud_netname_pos,
                 n, &n_written, OSAL_STREAM_DEFAULT);
             state->cloud_netname_pos += (os_char)n_written;
+            return (s == OSAL_SUCCESS && n_written < n) ? OSAL_PENDING : s;
         }
-        return (s == OSAL_SUCCESS && n_written < n) ? OSAL_PENDING : s;
     }
 #endif
 
