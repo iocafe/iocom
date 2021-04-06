@@ -248,8 +248,6 @@ void osal_main_cleanup(
     delete app_root_obj;
 
     ioc_release_root(&iocom_root);
-    osal_tls_shutdown();
-    osal_serial_shutdown();
 }
 
 

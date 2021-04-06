@@ -401,7 +401,6 @@ void osal_main_cleanup(
 #endif
 
     ioboard_end_communication();
-    osal_socket_shutdown();
 
 #if PINS_CAMERA
     PINS_CAMERA_IFACE.close(&pins_camera);

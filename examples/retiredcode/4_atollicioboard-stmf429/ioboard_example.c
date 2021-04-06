@@ -22,9 +22,9 @@
     define. Set connection parameters according to used environment in prm.socket_con_str or
     in prm.serial_con_str. See code below.
 
-  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used, 
+  Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
-  or distribute this file you indicate that you have read the license and understand and accept 
+  or distribute this file you indicate that you have read the license and understand and accept
   it fully.
 
 ****************************************************************************************************
@@ -61,8 +61,8 @@
    software in PC computer.
  */
 static os_char
-    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS, 
-		IOBOARD_EXPORT_MBLK_SZ, IOBOARD_IMPORT_MBLK_SZ)];
+    ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
+        IOBOARD_EXPORT_MBLK_SZ, IOBOARD_IMPORT_MBLK_SZ)];
 
 typedef struct
 {
@@ -176,8 +176,8 @@ osalStatus osal_main(
          */
         ioc_run(&ioboard_root);
 
-        /* If we receive a "command" as 16 bit value in address 2. The command could start 
-           some operation of IO board. The command is eached back in address 2 to allow 
+        /* If we receive a "command" as 16 bit value in address 2. The command could start
+           some operation of IO board. The command is eached back in address 2 to allow
            controller to know that command has been regognized.
          */
         command = ioc_getp_short(&ioboard_imp, 2);
@@ -202,8 +202,6 @@ osalStatus osal_main(
        only by turning or power or by microcontroller reset.
      */
     ioboard_end_communication();
-    osal_socket_shutdown();
-    osal_serial_shutdown();
     return 0;
 }
 

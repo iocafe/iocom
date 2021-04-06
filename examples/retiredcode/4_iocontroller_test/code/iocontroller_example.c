@@ -330,16 +330,6 @@ void osal_main_cleanup(
     /* End IO board communication, clean up and finsh with the socket and serial port libraries.
      */
     ioc_release_root(&root);
-
-#if MY_TRANSPORT==EXAMPLE_USE_TCP_SOCKET
-    osal_socket_shutdown();
-#endif
-#if MY_TRANSPORT==EXAMPLE_USE_TLS_SOCKET
-    osal_tls_shutdown();
-#endif
-#if MY_TRANSPORT==EXAMPLE_USE_SERIAL_PORT
-    osal_serial_shutdown();
-#endif
 }
 
 

@@ -219,22 +219,6 @@ void iocom_python_release(void)
 {
     if (--module_init_count) return;
 
-#if OSAL_TLS_SUPPORT
-    osal_tls_shutdown();
-#else
-  #if OSAL_SOCKET_SUPPORT
-    osal_socket_shutdown();
-  #endif
-#endif
-
-#if OSAL_SERIAL_SUPPORT
-    osal_serial_shutdown();
-#endif
-
-#if OSAL_BLUETOOTH_SUPPORT
-    osal_bluetooth_shutdown();
-#endif
-
     osal_shutdown();
 }
 

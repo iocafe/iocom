@@ -291,8 +291,6 @@ void osal_main_cleanup(
     void *app_context)
 {
     ioboard_end_communication();
-    osal_socket_shutdown();
-    osal_serial_shutdown();
 }
 
 

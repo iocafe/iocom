@@ -19,7 +19,7 @@
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SERIAL
 #include "uno.h"
 
-/* Do we want this test code to control IO though PINS API? 
+/* Do we want this test code to control IO though PINS API?
    PINS API is portability wrapper, which here maps to Arduino IO functions. PINS API is
    optional, the regular Arduino IO functions can be used as well. Include pins/unoboard
    in platformio.ini to build with pins library, or pins/generic to build without it.
@@ -35,7 +35,7 @@
  */
 #define IOBOARD_MAX_CONNECTIONS 1
 
-/* Use static memory pool. 
+/* Use static memory pool.
  */
 static os_char
     ioboard_pool[IOBOARD_POOL_SIZE(IOBOARD_CTRL_CON, IOBOARD_MAX_CONNECTIONS,
@@ -64,7 +64,7 @@ osalStatus osal_main(
     OSAL_UNUSED(argv);
 
     /* We use quiet mode. Since Arduino UNO has only one serial port, we need it for
-       communication. We cannot have any trace, etc. prints to serial port. 
+       communication. We cannot have any trace, etc. prints to serial port.
      */
 #if OSAL_MINIMALISTIC
     osal_quiet(OS_TRUE);
@@ -74,7 +74,7 @@ osalStatus osal_main(
     /* Setup IO pins.
      */
      pins_setup(&pins_hdr, PINS_DEFAULT);
-#endif     
+#endif
 
     osal_serial_initialize();
 
@@ -126,7 +126,7 @@ osalStatus osal_main(
 
   @brief Loop function, called repeatedly.
 
-  The osal_loop() function maintains communication, reads IO pins and runs the IO device 
+  The osal_loop() function maintains communication, reads IO pins and runs the IO device
   functionality.
 
   @param   app_context Void pointer, to pass application context structure, etc.
@@ -200,7 +200,7 @@ osalStatus osal_loop(
   @brief Finished with the application, clean up.
 
   The osal_main_cleanup() function ends IO board communication, cleans up and finshes with the
-  socket and serial port libraries. On real IO device we may not need to take care about this, 
+  socket and serial port libraries. On real IO device we may not need to take care about this,
   since these are often shut down only by turning or power or by microcontroller reset.
 
   @param   app_context Void pointer, to pass application context structure, etc.
@@ -214,7 +214,6 @@ void osal_main_cleanup(
     OSAL_UNUSED(app_context);
 
     ioboard_end_communication();
-    osal_serial_shutdown();
 }
 
 
@@ -259,5 +258,5 @@ void ioboard_callback(
     OSAL_UNUSED(start_addr);
     OSAL_UNUSED(end_addr);
     OSAL_UNUSED(flags);
-#endif    
+#endif
 }

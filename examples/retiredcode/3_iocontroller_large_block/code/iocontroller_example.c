@@ -102,7 +102,6 @@ osalStatus osal_main(
     /* End IO board communication, clean up and finsh with the socket library.
      */
     ioc_release_root(&root);
-    osal_socket_shutdown();
     return 0;
 }
 

@@ -451,11 +451,6 @@ void osal_main_cleanup(
 #endif
 
     ioboard_end_communication();
-#if IOBOARD_CTRL_CON & IOBOARD_CTRL_IS_TLS
-    osal_tls_shutdown();
-#else
-    osal_socket_shutdown();
-#endif
 
 #if PINS_CAMERA
     PINS_CAMERA_IFACE.close(&pins_camera);

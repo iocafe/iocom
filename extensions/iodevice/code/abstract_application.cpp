@@ -160,9 +160,7 @@ void AbstractApplication::application_cleanup()
     /* Release any memory allocated for node configuration.
     */
     ioc_release_node_config(&m_nodeconf);
-
     ioc_release_root(&m_root);
-    osal_tls_shutdown();
 }
 
 
