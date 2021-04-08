@@ -230,7 +230,7 @@ osalStatus ioc_switchbox_listen(
 #endif
     osal_socket_embed_default_port(prm->parameters,
         epoint->parameters, SWITCHBOX_END_POINT_PRMSTR_SZ,
-        epoint->iface == OSAL_TLS_IFACE ? IOC_DEFAULT_TLS_PORT : IOC_DEFAULT_SOCKET_PORT);
+        prm->default_port);
 
     /* If we are already running end point thread, stop it. Wait until it has stopped.
      */

@@ -47,6 +47,10 @@ typedef struct
           each accepted connection (multithread support needed).
      */
     os_short flags;
+
+    /** Default TCP port to listen, if parameters do not specify it '*', etc.
+     */
+    os_int default_port;
 }
 switchboxEndPointParams;
 
