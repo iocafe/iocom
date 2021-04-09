@@ -29,7 +29,7 @@
 
 /**
 ****************************************************************************************************
-    Parameters for ioc_switchbox_service_connect() function.
+    Parameters for ioc_switchbox_connect() function.
 ****************************************************************************************************
 */
 typedef struct switchboxConnectionParams
@@ -104,7 +104,7 @@ switchboxConnectionLink;
 */
 typedef struct switchboxConnection
 {
-    /** Flags as given to ioc_switchbox_service_connect(): define IOC_SOCKET, IOC_CLOSE_CONNECTION_ON_ERROR
+    /** Flags as given to ioc_switchbox_connect(): define IOC_SOCKET, IOC_CLOSE_CONNECTION_ON_ERROR
         IOC_CONNECT_UP...
      */
     // os_short flags;
@@ -138,6 +138,14 @@ typedef struct switchboxConnection
      */
     switchboxConnectionLink link;
 
+    /** Handshake state structure (switbox cloud net name and copying trust certificate).
+     */
+    iocHandshakeState handshake;
+
+    /** First handshake successfully completed after connect.
+     */
+    os_boolean handshake_ready;
+
     /** Authentication data sent to connection flag. We must send and receive authentication
         data before sending anything else.
      */
@@ -151,10 +159,6 @@ typedef struct switchboxConnection
         means that one message has been successfully received.
      */
     // os_boolean connected;
-
-    /** Flag indicating that the connection structure was dynamically allocated.
-     */
-    os_boolean allocated;
 
     /** The allowed_networks is structure set up by user authentication to hold list of networks
         which can be accessed trough the connection and privileges for each network. Must be released
@@ -181,7 +185,6 @@ switchboxConnection;
 /* Initialize connection object.
  */
 switchboxConnection *ioc_initialize_switchbox_connection(
-    switchboxConnection *con,
     switchboxRoot *root);
 
 /* Release connection object.
@@ -196,14 +199,9 @@ void ioc_close_switchbox_service_stream(
 
 /* Start or prepare the connection.
  */
-osalStatus ioc_switchbox_service_connect(
+osalStatus ioc_switchbox_connect(
     switchboxConnection *con,
     switchboxConnectionParams *prm);
-
-/* Connect and move data.
- */
-osalStatus ioc_run_switchbox_connection(
-    switchboxConnection *con);
 
 /* Request to terminate connection worker thread.
  */

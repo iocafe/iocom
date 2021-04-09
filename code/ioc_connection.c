@@ -209,11 +209,12 @@ void ioc_release_connection(
     ioc_release_remove_mblk_req_list(con);
 #endif
 
-    /* Initialize hand shake structure.
+    /* Release hand shake structure.
      */
 #if OSAL_SOCKET_SUPPORT
     ioc_release_handshake_state(&con->handshake);
 #endif
+
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
        for primitive static allocation schema). Save allocated flag before memclear.
      */
@@ -1033,7 +1034,7 @@ static void ioc_connection_thread(
     }
     os_memclear(&selectdata, sizeof(selectdata));
 
-    /* Run the end point.
+    /* Run the connection.
      */
     while (!con->worker.stop_thread && osal_go())
     {
@@ -1122,7 +1123,7 @@ static void ioc_connection_thread(
 #endif
 
 #if OSAL_SOCKET_SUPPORT
-        /* First hansshake for sockets.
+        /* First handshake for sockets.
          */
         if (!is_serial)
         {

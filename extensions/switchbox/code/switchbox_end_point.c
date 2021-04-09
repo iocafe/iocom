@@ -494,7 +494,7 @@ static osalStatus ioc_establish_switchbox_connection(
 
     /* If allocate connection structure either dynamically or from static pool and initialize it.
      */
-    con = ioc_initialize_switchbox_connection(OS_NULL, epoint->link.root);
+    con = ioc_initialize_switchbox_connection(epoint->link.root);
     if (con == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
 
     os_memclear(&conprm, sizeof(conprm));
@@ -502,7 +502,7 @@ static osalStatus ioc_establish_switchbox_connection(
     conprm.parameters = remote_ip_addr;
     conprm.newsocket = newsocket;
     //conprm.flags = epoint->flags;
-    return ioc_switchbox_service_connect(con, &conprm);
+    return ioc_switchbox_connect(con, &conprm);
 }
 
 

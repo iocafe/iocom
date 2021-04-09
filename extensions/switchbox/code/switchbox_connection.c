@@ -19,9 +19,12 @@
 /* Forward referred static functions.
  */
 
-static void ioc_connection_thread(
+static void ioc_switchbox_connection_thread(
     void *prm,
     osalEvent done);
+
+static osalStatus ioc_switchbox_first_handshake(
+    switchboxConnection *con);
 
 
 /**
@@ -44,29 +47,22 @@ static void ioc_connection_thread(
 ****************************************************************************************************
 */
 switchboxConnection *ioc_initialize_switchbox_connection(
-    switchboxConnection *con,
     switchboxRoot *root)
 {
+    switchboxConnection *con;
+
     /* Synchronize.
      */
     ioc_switchbox_lock(root);
 
+    con = (switchboxConnection*)os_malloc(sizeof(switchboxConnection), OS_NULL);
     if (con == OS_NULL)
     {
-        con = (switchboxConnection*)os_malloc(sizeof(switchboxConnection), OS_NULL);
-        if (con == OS_NULL)
-        {
-            ioc_switchbox_unlock(root);
-            return OS_NULL;
-        }
+        ioc_switchbox_unlock(root);
+        return OS_NULL;
+    }
 
-        os_memclear(con, sizeof(switchboxConnection));
-        con->allocated = OS_TRUE;
-    }
-    else
-    {
-        os_memclear(con, sizeof(switchboxConnection));
-    }
+    os_memclear(con, sizeof(switchboxConnection));
 
     /* Save pointer to root object and join to linked list of connections.
      */
@@ -81,6 +77,9 @@ switchboxConnection *ioc_initialize_switchbox_connection(
         root->con.first = con;
     }
     root->con.last = con;
+
+    ioc_initialize_handshake_state(&con->handshake);
+    con->handshake_ready = OS_FALSE;
 
     /* End syncronization.
      */
@@ -114,9 +113,6 @@ void ioc_release_switchbox_connection(
     switchboxRoot
         *root;
 
-    os_boolean
-        allocated;
-
     /* Synchronize.
      */
     root = con->link.root;
@@ -145,6 +141,9 @@ void ioc_release_switchbox_connection(
         con->link.root->con.last = con->link.prev;
     }
 
+    /* Release hand shake structure.
+     */
+    ioc_release_handshake_state(&con->handshake);
 
     /* Release memory allocated for allowed_networks.
      */
@@ -152,16 +151,7 @@ void ioc_release_switchbox_connection(
     ioc_release_allowed_networks(&con->allowed_networks);
 #endif */
 
-    /* Clear allocated memory indicate that is no longer initialized (for debugging and
-       for primitive static allocation schema). Save allocated flag before memclear.
-     */
-    allocated = con->allocated;
-    os_memclear(con, sizeof(switchboxConnection));
-
-    if (allocated)
-    {
-        os_free(con, sizeof(switchboxConnection));
-    }
+    os_free(con, sizeof(switchboxConnection));
 
     /* End syncronization.
      */
@@ -175,9 +165,9 @@ void ioc_release_switchbox_connection(
 ****************************************************************************************************
 
   @brief Start or prepare the connection.
-  @anchor ioc_switchbox_service_connect
+  @anchor ioc_switchbox_connect
 
-  The ioc_switchbox_service_connect() function sets up for socket or serial connection. Actual socket
+  The ioc_switchbox_connect() function sets up for socket or serial connection. Actual socket
   or serial port is opened when connection runs.
 
   @param   con Pointer to the connection object.
@@ -199,7 +189,7 @@ void ioc_release_switchbox_connection(
 
 ****************************************************************************************************
 */
-osalStatus ioc_switchbox_service_connect(
+osalStatus ioc_switchbox_connect(
     switchboxConnection *con,
     switchboxConnectionParams *prm)
 {
@@ -218,7 +208,6 @@ osalStatus ioc_switchbox_service_connect(
         os_timeslice();
         ioc_switchbox_lock(root);
     }
-
 
 //     os_strncpy(con->parameters, prm->parameters, IOC_CONNECTION_PRMSTR_SZ);
 
@@ -247,149 +236,11 @@ osalStatus ioc_switchbox_service_connect(
     opt.pin_to_core = OS_TRUE;
     opt.pin_to_core_nr = 0;
 
-    osal_thread_create(ioc_connection_thread, con,
+    osal_thread_create(ioc_switchbox_connection_thread, con,
         &opt, OSAL_THREAD_DETACHED);
 
     ioc_switchbox_unlock(root);
     return OSAL_SUCCESS;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Connect and move data.
-  @anchor ioc_run_switchbox_connection
-
-  The ioc_run_switchbox_connection() function is connects and moves data trough TCP socket or serial
-  communication link.
-
-  @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if all is running fine. Other return values indicate that the
-           connection has broken.
-
-****************************************************************************************************
-*/
-osalStatus ioc_run_switchbox_connection(
-    switchboxConnection *con)
-{
-//    switchboxRoot *root;
-    os_timer tnow;
-    os_int silence_ms; // , count;
-
-//    root = con->link.root;
-
-    /* If stream is not open, then connect it now. Do not try if if two secons have not
-       passed since last failed open try.
-     */
-#if 0
-    if (con->stream == OS_NULL)
-    {
-        /* Do nothing if ioc_switchbox_service_connect() has not been called.
-         */
-        parameters = con->parameters;
-        if (parameters[0] == '\0') {
-            return OSAL_SUCCESS;
-        }
-
-        /* If we have no connect to address or it is "*": If we have the lighthouse
-           functionality check if we have received the information by UDP broadcast.
-           If we got it, try it. Otherwise we can do nothing.
-         */
-        if (parameters[0] == '\0' || !os_strcmp(parameters, osal_str_asterisk))
-        {
-            if (con->lighthouse_func == OS_NULL) return OSAL_SUCCESS;
-            status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
-                con->link.root->network_name, con->flags, connectstr, sizeof(connectstr));
-            if (OSAL_IS_ERROR(status)) {
-                con->ip_from_lighthouse[0] = '\0';
-                return OSAL_SUCCESS;
-            }
-            os_strncpy(con->ip_from_lighthouse, connectstr, OSAL_IPADDR_AND_PORT_SZ);
-            parameters = connectstr;
-
-            /* Here we may want to used some connection number instead of 0
-             */
-            osal_set_network_state_str(OSAL_NS_LIGHTHOUSE_CONNECT_TO, 0, connectstr);
-        }
-
-        /* Try connecting the transport.
-         */
-        if (status == OSAL_PENDING) return OSAL_SUCCESS;
-        if (status) return status;
-
-        /* Success, reset connection state.
-         */
-        ioc_reset_switchbox_connection(con);
-        return OSAL_SUCCESS;
-    }
-#endif
-
-    /* Select timing for socket or serial port.
-     */
-    silence_ms = IOC_SOCKET_SILENCE_MS;
-
-    /* How ever fast we write, we cannot block here.
-     */
-    os_get_timer(&tnow);
-//     count = 32;
-#if 0
-    while (count--)
-    {
-        /* Receive as much data as we can.
-         */
-        while (osal_go())
-        {
-            status = ioc_connection_receive(con);
-            if (status == OSAL_PENDING)
-            {
-                break;
-            }
-            if (status)
-            {
-                goto failed;
-            }
-        }
-
-        /* Send one frame to connection
-         */
-        status = ioc_connection_send(con);
-        if (status == OSAL_PENDING)
-        {
-            break;
-        }
-        if (status)
-        {
-            goto failed;
-        }
-    }
-#endif
-
-    /* If too much time elapsed sice last receive.
-     */
-    if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
-    {
-        osal_trace2("line is silent, closing connection");
-        goto failed;
-    }
-
-
-    /* Flush data to the connection.
-     */
-    if (con->stream)
-    {
-        osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
-    }
-
-// osal_sysconsole_write("HEHE COM OK\n");
-
-    return OSAL_SUCCESS;
-
-failed:
-// osal_sysconsole_write("HEHE COM FAILED\n");
-
-    // ioc_close_switchbox_service_stream(con);
-    return OSAL_STATUS_FAILED;
 }
 
 
@@ -446,6 +297,11 @@ void ioc_reset_switchbox_connection(
 {
     os_timer tnow;
 
+    /* Reset hand shake structure.
+     */
+    ioc_release_handshake_state(&con->handshake);
+    con->handshake_ready = OS_FALSE;
+
     /* Initialize timers.
      */
     os_get_timer(&tnow);
@@ -458,9 +314,9 @@ void ioc_reset_switchbox_connection(
 ****************************************************************************************************
 
   @brief Connection worker thread function.
-  @anchor ioc_connection_thread
+  @anchor ioc_switchbox_connection_thread
 
-  The ioc_connection_thread() function is worker thread to connect a socket (optional) and
+  The ioc_switchbox_connection_thread() function is worker thread to connect a socket (optional) and
   transfer data trough it.
 
   @param   prm Pointer to parameters for new thread, pointer to end point object.
@@ -469,14 +325,14 @@ void ioc_reset_switchbox_connection(
 
 ****************************************************************************************************
 */
-static void ioc_connection_thread(
+static void ioc_switchbox_connection_thread(
     void *prm,
     osalEvent done)
 {
     switchboxRoot *root;
     switchboxConnection *con;
 //    const os_char *parameters;
-//    osalStatus status;
+    osalStatus status;
     osalSelectData selectdata;
     os_timer tnow;
     os_int silence_ms, count;
@@ -499,7 +355,7 @@ static void ioc_connection_thread(
     silence_ms = IOC_SOCKET_SILENCE_MS;
     os_memclear(&selectdata, sizeof(selectdata));
 
-    /* Run the end point.
+    /* Run the connection.
      */
     while (!con->worker.stop_thread && osal_go())
     {
@@ -508,74 +364,27 @@ static void ioc_connection_thread(
         /* If stream is not open, then connect it now. Do not try if two secons have not
            passed since last failed open try.
          */
-#if 0
-        if (con->stream == OS_NULL)
-        {
-            parameters = con->parameters;
 
-            /* If we have no connect to address or it is "*": If we have the lighthouse
-               functionality check if we have received the information by UDP broadcast.
-               If we got it, try it. Otherwise we can do nothing.
-             */
-            if (parameters[0] == '\0' || !os_strcmp(parameters, osal_str_asterisk))
-            {
-                if (con->lighthouse_func == OS_NULL) goto failed;
-                os_char connectstr[OSAL_IPADDR_AND_PORT_SZ];
-                status = con->lighthouse_func(con->lighthouse, LIGHTHOUSE_GET_CONNECT_STR,
-                    con->link.root->network_name, con->flags,
-                    connectstr, sizeof(connectstr));
+        status = osal_stream_select(&con->stream, 1, con->worker.trig,
+            &selectdata, IOC_SOCKET_CHECK_TIMEOUTS_MS, OSAL_STREAM_DEFAULT);
 
-                os_strncpy(con->ip_from_lighthouse, connectstr, OSAL_IPADDR_AND_PORT_SZ);
-                if (OSAL_IS_ERROR(status)) goto failed;
-                parameters = connectstr;
-
-                /* Here we may want to used some connection number instead of 0
-                 */
-                osal_set_network_state_str(OSAL_NS_LIGHTHOUSE_CONNECT_TO, 0, connectstr);
-            }
-
-            /* Try connecting the transport.
-             */
-//            status = ioc_try_to_connect(con, parameters);
-            if (status == OSAL_PENDING)
-            {
-                os_timeslice();
-                goto failed;
-            }
-            if (status)
-            {
-                osal_trace("stream connect try failed");
-                goto failed;
-            }
-
-            /* Reset connection state
-             */
-            ioc_reset_switchbox_connection(con);
-        }
-
-        if (con->flags & IOC_DISABLE_SELECT)
+        if (status == OSAL_STATUS_NOT_SUPPORTED)
         {
             os_timeslice();
         }
-        else
+
+        else if (status)
         {
-            status = osal_stream_select(&con->stream, 1, con->worker.trig,
-                &selectdata, check_timeouts_ms, OSAL_STREAM_DEFAULT);
-
-            if (status == OSAL_STATUS_NOT_SUPPORTED)
-            {
-                os_timeslice();
-            }
-
-            else if (status)
-            {
-                osal_debug_error("osal_stream_select failed");
-                goto failed;
-            }
+            osal_debug_error("osal_stream_select failed");
+            goto failed;
         }
         os_get_timer(&tnow);
 
-#endif
+        /* First hand shake for socket connections.
+         */
+        status = ioc_switchbox_first_handshake(con);
+        if (status == OSAL_PENDING) continue;
+        if (status) goto failed;
 
         /* Receive and send in loop as long as we can without waiting.
            How ever fast we write, we cannot block here (count=32) !
@@ -625,8 +434,7 @@ static void ioc_connection_thread(
 
         /* Flush data to the connection.
          */
-        if (con->stream)
-        {
+        if (con->stream) {
             osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
         }
 
@@ -650,7 +458,53 @@ break;
     ioc_release_switchbox_connection(con);
     ioc_switchbox_unlock(root);
 
-    osal_trace("connection: worker thread exited");
+    osal_trace("switchbox: worker thread exited");
+}
+
+/* Load certificate (server only).
+ */
+static os_memsz ioc_switchbox_load_iocom_trust_certificate(
+    const os_uchar *cert_buf,
+    os_memsz cert_buf_sz,
+    void *context)
+{
+    return 0;
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Do first handshake for the connection (only sockets).
+  @anchor ioc_first_handshake
+
+  Socket handshake for switchbox cloud network name and trusted certificate copy
+
+  @param   con Pointer to the connection object.
+  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
+           an error (broken socket).
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_first_handshake(
+    switchboxConnection *con)
+{
+    osalStatus s;
+
+    if (!con->handshake_ready)
+    {
+        s = ioc_server_handshake(&con->handshake, IOC_HANDSHAKE_SWITCHBOX_SERVER,
+            con->stream, ioc_switchbox_load_iocom_trust_certificate, con);
+
+        osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
+
+        if (s) {
+            return s;
+        }
+
+        ioc_release_handshake_state(&con->handshake);
+        con->handshake_ready = OS_TRUE;
+    }
+
+    return OSAL_SUCCESS;
+}
