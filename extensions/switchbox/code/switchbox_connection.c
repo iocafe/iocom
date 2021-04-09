@@ -18,12 +18,20 @@
 
 /* Forward referred static functions.
  */
-
 static void ioc_switchbox_connection_thread(
     void *prm,
     osalEvent done);
 
+static void ioc_switchbox_close_stream(
+    switchboxConnection *con);
+
 static osalStatus ioc_switchbox_first_handshake(
+    switchboxConnection *con);
+
+static osalStatus ioc_switchbox_setup_service_connection(
+    switchboxConnection *con);
+
+static osalStatus ioc_switchbox_setup_client_connection(
     switchboxConnection *con);
 
 
@@ -120,7 +128,7 @@ void ioc_release_switchbox_connection(
 
     /* If stream is open, close it.
      */
-    // ioc_close_switchbox_service_stream(con);
+    ioc_switchbox_close_stream(con);
 
     /* Remove connection from linked list.
      */
@@ -313,6 +321,33 @@ void ioc_reset_switchbox_connection(
 /**
 ****************************************************************************************************
 
+  @brief Close underlying socket or serial port.
+  @anchor ioc_close_stream
+
+  The ioc_close_stream() function closes the communication stream. For serial communication it
+  clears the d
+  source and destination buffers.
+
+  @param   con Pointer to the connection object.
+  @return  None.
+
+****************************************************************************************************
+*/
+static void ioc_switchbox_close_stream(
+    switchboxConnection *con)
+{
+    if (con->stream)
+    {
+        osal_trace2("stream closed");
+        osal_stream_close(con->stream, OSAL_STREAM_DEFAULT);
+        con->stream = OS_NULL;
+    }
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Connection worker thread function.
   @anchor ioc_switchbox_connection_thread
 
@@ -376,15 +411,19 @@ static void ioc_switchbox_connection_thread(
         else if (status)
         {
             osal_debug_error("osal_stream_select failed");
-            goto failed;
+            break;
         }
         os_get_timer(&tnow);
 
         /* First hand shake for socket connections.
          */
         status = ioc_switchbox_first_handshake(con);
-        if (status == OSAL_PENDING) continue;
-        if (status) goto failed;
+        if (status == OSAL_PENDING) {
+            continue;
+        }
+        if (status) {
+            break;
+        }
 
         /* Receive and send in loop as long as we can without waiting.
            How ever fast we write, we cannot block here (count=32) !
@@ -429,7 +468,7 @@ static void ioc_switchbox_connection_thread(
         if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
         {
             osal_trace("line is silent, closing connection");
-            goto failed;
+            break;
         }
 
         /* Flush data to the connection.
@@ -437,16 +476,11 @@ static void ioc_switchbox_connection_thread(
         if (con->stream) {
             osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
         }
-
-        continue;
-
-failed:
-        // ioc_close_switchbox_service_stream(con);
-
-break;
-
-        os_timeslice();
     }
+
+    /* Closing connection, close first the stream.
+     */
+    ioc_switchbox_close_stream(con);
 
     /* Delete trigger event and mark that this thread is no longer running.
      */
@@ -489,7 +523,7 @@ static os_memsz ioc_switchbox_load_iocom_trust_certificate(
 static osalStatus ioc_switchbox_first_handshake(
     switchboxConnection *con)
 {
-    osalStatus s;
+    osalStatus s = OSAL_SUCCESS;
 
     if (!con->handshake_ready)
     {
@@ -502,9 +536,51 @@ static osalStatus ioc_switchbox_first_handshake(
             return s;
         }
 
+        switch (ioc_get_handshake_client_type(&con->handshake))
+        {
+            case IOC_HANDSHAKE_NETWORK_SERVICE:
+                s = ioc_switchbox_setup_service_connection(con);
+                break;
+
+            case IOC_HANDSHAKE_CLIENT:
+                s = ioc_switchbox_setup_client_connection(con);
+                break;
+
+            default:
+                s = OSAL_STATUS_FAILED;
+                osal_debug_error("switchbox: unknown incoming connection type");
+                break;
+        }
+
         ioc_release_handshake_state(&con->handshake);
         con->handshake_ready = OS_TRUE;
     }
 
-    return OSAL_SUCCESS;
+    return s;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief X
+
+  Xy
+
+  @param   con Pointer to the connection object.
+  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
+           an error (broken socket).
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_setup_service_connection(
+    switchboxConnection *con)
+{
+    return OSAL_STATUS_FAILED;
+}
+
+static osalStatus ioc_switchbox_setup_client_connection(
+    switchboxConnection *con)
+{
+    return OSAL_STATUS_FAILED;
 }

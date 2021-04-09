@@ -99,19 +99,59 @@ switchboxConnectionLink;
 
 /**
 ****************************************************************************************************
+    Service connection uses this structure to hold linked list of client connections.
+****************************************************************************************************
+*/
+typedef struct switchboxClientList
+{
+    /** Pointer to the next first client connection with same network name.
+     */
+    struct switchboxConnection *first;
+
+    /** Pointer to the previous client connection with same network name.
+     */
+    struct switchboxConnection *last;
+}
+switchboxClientList;
+
+
+/**
+****************************************************************************************************
+    Linked list of client connection with same network name, for one service connection.
+****************************************************************************************************
+*/
+typedef struct switchboxClientLink
+{
+    /** Pointer to the root object.
+     */
+    struct switchboxConnection *service_connection;
+
+    /** Pointer to the next connection in linked list.
+     */
+    struct switchboxConnection *next;
+
+    /** Pointer to the previous connection in linked list.
+     */
+    struct switchboxConnection *prev;
+}
+switchboxClientLink;
+
+
+/**
+****************************************************************************************************
     IOCOM connection structure.
 ****************************************************************************************************
 */
 typedef struct switchboxConnection
 {
-    /** Flags as given to ioc_switchbox_connect(): define IOC_SOCKET, IOC_CLOSE_CONNECTION_ON_ERROR
-        IOC_CONNECT_UP...
+    /** Service or client connection? OS_TRUE if this is connection to service,
+        OS_FALSE if connection to client.
      */
-    // os_short flags;
+    os_boolean is_service_connection;
 
-    /** Parameter string
+    /** Network name. Empty string = any network.
      */
-    // os_char parameters[IOC_CONNECTION_PRMSTR_SZ];
+    os_char network_name[IOC_NETWORK_NAME_SZ];
 
     /** OSAL stream handle (socket or serial port).
      */
@@ -121,6 +161,18 @@ typedef struct switchboxConnection
         or OSAL_TLS_IFACE.
      */
     const osalStreamInterface *iface;
+
+    /* Chaining connection with same network name (same service) together.
+     */
+    union {
+        switchboxClientList list;   /* Service connection holds head of the list */
+        switchboxClientLink clink;  /* Client connections link together */
+    }
+    ionetworkchain;
+
+    /** This connection in root's linked list of connections.
+     */
+    switchboxConnectionLink link;
 
     /** Timer of the last successful receive.
      */
@@ -134,10 +186,6 @@ typedef struct switchboxConnection
      */
     switchboxConnectionWorkerThread worker;
 
-    /** This connection in root's linked list of connections.
-     */
-    switchboxConnectionLink link;
-
     /** Handshake state structure (switbox cloud net name and copying trust certificate).
      */
     iocHandshakeState handshake;
@@ -145,6 +193,7 @@ typedef struct switchboxConnection
     /** First handshake successfully completed after connect.
      */
     os_boolean handshake_ready;
+
 
     /** Authentication data sent to connection flag. We must send and receive authentication
         data before sending anything else.

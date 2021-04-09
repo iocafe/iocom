@@ -278,7 +278,7 @@ osalStatus ioc_server_handshake(
     }
 #endif
 
-    /* Send client handshake message (socket client side only).
+    /* Process client handshake message.
      */
     if (!state->hand_shake_message_done)
     {
