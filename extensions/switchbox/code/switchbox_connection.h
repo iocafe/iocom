@@ -198,11 +198,16 @@ typedef struct switchboxConnection
     /** Authentication data sent to connection flag. We must send and receive authentication
         data before sending anything else.
      */
-    // os_boolean authentication_sent;
+    os_boolean authentication_sent;
 
     /** Authentication data received from connection flag.
      */
-    // os_boolean authentication_received;
+    os_boolean authentication_received;
+
+    /* Buffer for received authentication data.
+     */
+    iocSwitchboxAuthenticationFrameBuffer *auth_send_buf;
+    iocSwitchboxAuthenticationFrameBuffer *auth_recv_buf;
 
     /** Flag indicating that stream is connected. Connected
         means that one message has been successfully received.

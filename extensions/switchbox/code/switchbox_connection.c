@@ -25,7 +25,7 @@ static void ioc_switchbox_connection_thread(
 static void ioc_switchbox_close_stream(
     switchboxConnection *con);
 
-static osalStatus ioc_switchbox_first_handshake(
+static osalStatus ioc_switchbox_handshake_and_authentication(
     switchboxConnection *con);
 
 static osalStatus ioc_switchbox_setup_service_connection(
@@ -159,11 +159,16 @@ void ioc_release_switchbox_connection(
      */
     ioc_release_handshake_state(&con->handshake);
 
-    /* Release memory allocated for allowed_networks.
+    /* Release authentication buffers, if any.
      */
-/* #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    ioc_release_allowed_networks(&con->allowed_networks);
-#endif */
+    if (con->auth_send_buf) {
+        os_free(con->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+        con->auth_send_buf = OS_NULL;
+    }
+    if (con->auth_recv_buf) {
+        os_free(con->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+        con->auth_recv_buf = OS_NULL;
+    }
 
     os_free(con, sizeof(switchboxConnection));
 
@@ -315,6 +320,8 @@ void ioc_reset_switchbox_connection(
      */
     ioc_release_handshake_state(&con->handshake);
     con->handshake_ready = OS_FALSE;
+    con->authentication_sent = OS_FALSE;
+    con->authentication_received = OS_FALSE;
 
     /* Initialize timers.
      */
@@ -423,7 +430,7 @@ static void ioc_switchbox_connection_thread(
 
         /* First hand shake for socket connections.
          */
-        status = ioc_switchbox_first_handshake(con);
+        status = ioc_switchbox_handshake_and_authentication(con);
         if (status == OSAL_PENDING) {
             continue;
         }
@@ -527,10 +534,17 @@ static os_memsz ioc_switchbox_load_iocom_trust_certificate(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_switchbox_first_handshake(
+static osalStatus ioc_switchbox_handshake_and_authentication(
     switchboxConnection *con)
 {
-    osalStatus s = OSAL_SUCCESS;
+    osalStatus s;
+    iocHandshakeClientType htype;
+
+    if (con->handshake_ready && (!con->is_service_connection ||
+        (con->authentication_received && con->authentication_sent) ))
+    {
+        return OSAL_SUCCESS;
+    }
 
     if (!con->handshake_ready)
     {
@@ -550,25 +564,91 @@ static osalStatus ioc_switchbox_first_handshake(
             osal_debug_error("switchbox: incoming connection without network name");
             return OSAL_STATUS_FAILED;
         }
+        con->handshake_ready = OS_TRUE;
+    }
 
-        switch (ioc_get_handshake_client_type(&con->handshake))
-        {
-            case IOC_HANDSHAKE_NETWORK_SERVICE:
-                s = ioc_switchbox_setup_service_connection(con);
-                break;
+    htype = ioc_get_handshake_client_type(&con->handshake);
 
-            case IOC_HANDSHAKE_CLIENT:
-                s = ioc_switchbox_setup_client_connection(con);
-                break;
+    /* If this is service connection, handle authentication. For client connections, handling authentication belongs
+       to the IO network service.
+     */
+    if (htype == IOC_HANDSHAKE_NETWORK_SERVICE)
+    {
+        /* Service connection: We need to receive authentication frame.
+         */
+        if (!con->authentication_received) {
+            if (con->auth_recv_buf == OS_NULL) {
+                con->auth_recv_buf = (iocSwitchboxAuthenticationFrameBuffer*)
+                    os_malloc(sizeof(iocSwitchboxAuthenticationFrameBuffer), OS_NULL);
+                os_memclear(con->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+            }
 
-            default:
-                s = OSAL_STATUS_FAILED;
-                osal_debug_error("switchbox: unknown incoming connection type");
-                break;
+            iocAuthenticationResults results;
+            s = icom_switchbox_process_authentication_frame(con->stream, con->auth_recv_buf, &results);
+            if (s == OSAL_COMPLETED) {
+                os_free(con->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+                con->auth_recv_buf = OS_NULL;
+                con->authentication_received = OS_TRUE;
+            }
+            else if (s != OSAL_PENDING) {
+                osal_debug_error("eConnection: Valid authentication frame was not received");
+                return OSAL_STATUS_FAILED;
+            }
         }
 
-        ioc_release_handshake_state(&con->handshake);
-        con->handshake_ready = OS_TRUE;
+        /* Service connection: We need to send responce(s).
+         */
+        if (!con->authentication_sent)
+        {
+            iocSwitchboxAuthenticationParameters prm;
+            os_memclear(&prm, sizeof(prm));
+
+            if (con->auth_send_buf == OS_NULL) {
+                con->auth_send_buf = (iocSwitchboxAuthenticationFrameBuffer*)
+                    os_malloc(sizeof(iocSwitchboxAuthenticationFrameBuffer), OS_NULL);
+                os_memclear(con->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+
+                prm.network_name = "sb";
+                prm.user_name = "srv";
+                prm.password = "pw";
+            }
+
+            s = ioc_send_switchbox_authentication_frame(con->stream, con->auth_send_buf, &prm);
+            if (s == OSAL_COMPLETED) {
+                os_free(con->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+                con->auth_send_buf = OS_NULL;
+                con->authentication_sent = OS_TRUE;
+                osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
+            }
+            else if (s != OSAL_PENDING) {
+                osal_debug_error("eConnection: Failed to send authentication frame");
+                return OSAL_STATUS_FAILED;
+            }
+        }
+
+        if (!con->authentication_sent ||
+            !con->authentication_received)
+        {
+            os_timeslice();
+            osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
+            return OSAL_PENDING;
+        }
+    }
+
+    switch (htype)
+    {
+        case IOC_HANDSHAKE_NETWORK_SERVICE:
+            s = ioc_switchbox_setup_service_connection(con);
+            break;
+
+        case IOC_HANDSHAKE_CLIENT:
+            s = ioc_switchbox_setup_client_connection(con);
+            break;
+
+        default:
+            s = OSAL_STATUS_FAILED;
+            osal_debug_error("switchbox: unknown incoming connection type");
+            break;
     }
 
     return s;
