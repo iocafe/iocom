@@ -122,6 +122,12 @@ void ioc_switchbox_lock(
 void ioc_switchbox_unlock(
     switchboxRoot *root);
 
+/* Find service connection by network name.
+ */
+struct switchboxConnection *ioc_switchbox_find_service_connection(
+    switchboxRoot *root,
+    const os_char *network_name);
+
 /*@}*/
 
 

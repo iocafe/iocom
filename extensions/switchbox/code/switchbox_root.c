@@ -176,3 +176,35 @@ void ioc_switchbox_unlock(
 {
     osal_mutex_unlock(root->mutex);
 }
+
+
+/**
+****************************************************************************************************
+
+  @brief Find service connection by network name.
+  @anchor ioc_switchbox_find_service_connection
+
+  Note: ioc_switchbox_lock must be on when calling this function.
+
+  @param   root Pointer to the root structure.
+  @param   network_name Network name to search for.
+  @return  Pointer to service connection object, or OS_NULL if none found.
+
+****************************************************************************************************
+*/
+struct switchboxConnection *ioc_switchbox_find_service_connection(
+    switchboxRoot *root,
+    const os_char *network_name)
+{
+    switchboxConnection *con;
+
+    for (con = root->con.first; con; con = con->link.next)
+    {
+        if (!con->is_service_connection) continue;
+        if (!os_strcmp(network_name, con->network_name)) {
+            return con;
+        }
+    }
+
+    return OS_NULL;
+}

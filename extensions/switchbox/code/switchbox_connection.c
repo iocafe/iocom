@@ -34,6 +34,13 @@ static osalStatus ioc_switchbox_setup_service_connection(
 static osalStatus ioc_switchbox_setup_client_connection(
     switchboxConnection *con);
 
+static void ioc_switchbox_link_connection(
+    switchboxConnection *con,
+    switchboxConnection *scon);
+
+static void ioc_switchbox_unlink_connection(
+    switchboxConnection *con);
+
 
 /**
 ****************************************************************************************************
@@ -69,7 +76,6 @@ switchboxConnection *ioc_initialize_switchbox_connection(
         ioc_switchbox_unlock(root);
         return OS_NULL;
     }
-
     os_memclear(con, sizeof(switchboxConnection));
 
     /* Save pointer to root object and join to linked list of connections.
@@ -482,9 +488,10 @@ static void ioc_switchbox_connection_thread(
      */
     ioc_switchbox_close_stream(con);
 
-    /* Delete trigger event and mark that this thread is no longer running.
+    /* Unlink connection, delete trigger event and mark that this thread is no longer running.
      */
     ioc_switchbox_lock(root);
+    ioc_switchbox_unlink_connection(con);
     osal_event_delete(con->worker.trig);
     con->worker.trig = OS_NULL;
     con->worker.thread_running = OS_FALSE;
@@ -536,6 +543,14 @@ static osalStatus ioc_switchbox_first_handshake(
             return s;
         }
 
+        os_strncpy(con->network_name,
+            ioc_get_handshake_cloud_netname(&con->handshake), IOC_NETWORK_NAME_SZ);
+
+        if (con->network_name[0] == '\0') {
+            osal_debug_error("switchbox: incoming connection without network name");
+            return OSAL_STATUS_FAILED;
+        }
+
         switch (ioc_get_handshake_client_type(&con->handshake))
         {
             case IOC_HANDSHAKE_NETWORK_SERVICE:
@@ -576,11 +591,140 @@ static osalStatus ioc_switchbox_first_handshake(
 static osalStatus ioc_switchbox_setup_service_connection(
     switchboxConnection *con)
 {
-    return OSAL_STATUS_FAILED;
+    switchboxRoot *root;
+    switchboxConnection *scon;
+    osalStatus s = OSAL_STATUS_FAILED;;
+
+    root = con->link.root;
+    ioc_switchbox_lock(root);
+
+    /* If we have service connection with this name, kill it and fail for now.
+     */
+    scon = ioc_switchbox_find_service_connection(root, con->network_name);
+    if (scon) {
+        con->worker.stop_thread = OS_TRUE;
+        osal_event_set(con->worker.trig);
+        osal_debug_error_str("switchbox: service already connected, killing ", con->network_name);
+        goto getout;
+    }
+
+    con->is_service_connection = OS_TRUE;
+    s = OSAL_SUCCESS;
+
+getout:
+    ioc_switchbox_unlock(root);
+    return s;
 }
 
 static osalStatus ioc_switchbox_setup_client_connection(
     switchboxConnection *con)
 {
-    return OSAL_STATUS_FAILED;
+    switchboxRoot *root;
+    switchboxConnection *scon;
+    osalStatus s = OSAL_STATUS_FAILED;;
+
+    root = con->link.root;
+    ioc_switchbox_lock(root);
+
+    /* If we have no service connection with this name, we fail.
+     */
+    scon = ioc_switchbox_find_service_connection(root, con->network_name);
+    if (scon == OS_NULL) {
+        osal_debug_error_str("switchbox: no service connection for ", con->network_name);
+        goto getout;
+    }
+
+    /* Join client connection to list of service connection.
+     */
+    ioc_switchbox_link_connection(con, scon);
+    s = OSAL_SUCCESS;
+
+getout:
+    ioc_switchbox_unlock(root);
+    return s;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Add a client connection to service connection's linked list.
+
+  Note: ioc_switchbox_lock must be on when this function is called.
+
+  @param   con Pointer to the client connection object.
+  @param   scon Pointer to the service connection object.
+
+****************************************************************************************************
+*/
+static void ioc_switchbox_link_connection(
+    switchboxConnection *con,
+    switchboxConnection *scon)
+{
+    osal_debug_assert(scon->is_service_connection);
+
+    con->list.clink.prev = scon->list.head.last;
+    con->list.clink.next = OS_NULL;
+    con->list.clink.scon = scon;
+
+    if (scon->list.head.last) {
+        scon->list.head.last->list.clink.next = con;
+    }
+    else {
+        scon->list.head.first = con;
+    }
+    scon->list.head.last = con;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Remove connection from service connection's linked list.
+
+  If con is service connection, all client connections are unlinked and requested to terminate.
+
+  Note: ioc_switchbox_lock must be on when this function is called.
+
+  @param   con Pointer to the connection object to unlink. Can be service or client connection.
+
+****************************************************************************************************
+*/
+static void ioc_switchbox_unlink_connection(
+    switchboxConnection *con)
+{
+    switchboxConnection *c, *next_c, *scon;
+
+    /* con is service connection.
+     */
+    if (con->is_service_connection) {
+        for (c = con->list.head.first; c; c = next_c) {
+            next_c = c->list.clink.next;
+            c->worker.stop_thread = OS_TRUE;
+            osal_event_set(c->worker.trig);
+            c->list.clink.next = c->list.clink.prev = c->list.clink.scon = OS_NULL;
+        }
+        con->list.head.first = con->list.head.last = OS_NULL;
+    }
+
+    /* con is client connection.
+     */
+    else {
+        scon = con->list.clink.scon;
+        if (scon) {
+            if (con->list.clink.prev) {
+                con->list.clink.prev->list.clink.next = con->list.clink.next;
+            }
+            else {
+                scon->list.head.first = con->list.clink.next;
+            }
+            if (con->list.clink.next) {
+                con->list.clink.next->list.clink.prev = con->list.clink.prev;
+            }
+            else {
+                scon->list.head.last = con->list.clink.prev;
+            }
+            con->list.clink.next = con->list.clink.prev = con->list.clink.scon = OS_NULL;
+        }
+    }
 }

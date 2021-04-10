@@ -124,7 +124,7 @@ typedef struct switchboxClientLink
 {
     /** Pointer to the root object.
      */
-    struct switchboxConnection *service_connection;
+    struct switchboxConnection *scon;
 
     /** Pointer to the next connection in linked list.
      */
@@ -165,10 +165,10 @@ typedef struct switchboxConnection
     /* Chaining connection with same network name (same service) together.
      */
     union {
-        switchboxClientList list;   /* Service connection holds head of the list */
+        switchboxClientList head;   /* Service connection holds head of the list */
         switchboxClientLink clink;  /* Client connections link together */
     }
-    ionetworkchain;
+    list;
 
     /** This connection in root's linked list of connections.
      */
