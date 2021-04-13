@@ -122,7 +122,7 @@ switchboxClientList;
 */
 typedef struct switchboxClientLink
 {
-    /** Pointer to the root object.
+    /** Pointer to the service connection.
      */
     struct switchboxConnection *scon;
 
@@ -149,6 +149,11 @@ typedef struct switchboxConnection
      */
     os_boolean is_service_connection;
 
+    /** Client identifier, a number from 1 to 0xFFFF which uniquely identifies client connection.
+        Zero for serice connections.
+     */
+    os_ushort client_id;
+
     /** Network name. Empty string = any network.
      */
     os_char network_name[IOC_NETWORK_NAME_SZ];
@@ -162,7 +167,7 @@ typedef struct switchboxConnection
      */
     const osalStreamInterface *iface;
 
-    /* Chaining connection with same network name (same service) together.
+    /** Chain of connection with same network name (same service).
      */
     union {
         switchboxClientList head;   /* Service connection holds head of the list */
@@ -194,7 +199,6 @@ typedef struct switchboxConnection
      */
     os_boolean handshake_ready;
 
-
     /** Authentication data sent to connection flag. We must send and receive authentication
         data before sending anything else.
      */
@@ -204,21 +208,10 @@ typedef struct switchboxConnection
      */
     os_boolean authentication_received;
 
-    /* Buffer for received authentication data.
+    /** Buffers for received authentication data.
      */
     iocSwitchboxAuthenticationFrameBuffer *auth_send_buf;
     iocSwitchboxAuthenticationFrameBuffer *auth_recv_buf;
-
-    /** Flag indicating that stream is connected. Connected
-        means that one message has been successfully received.
-     */
-    // os_boolean connected;
-
-    /** The allowed_networks is structure set up by user authentication to hold list of networks
-        which can be accessed trough the connection and privileges for each network. Must be released
-        by ioc_release_allowed_networks().
-     */
-//     iocAllowedNetworkConf allowed_networks;
 }
 switchboxConnection;
 

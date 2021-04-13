@@ -215,6 +215,13 @@ void ioc_release_connection(
     ioc_release_handshake_state(&con->handshake);
 #endif
 
+#if OSAL_MULTITHREAD_SUPPORT
+    if (con->worker.trig) {
+        osal_event_delete(con->worker.trig);
+        con->worker.trig = OS_NULL;
+    }
+#endif
+
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
        for primitive static allocation schema). Save allocated flag before memclear.
      */
@@ -550,7 +557,9 @@ osalStatus ioc_connect(
      */
     if (flags & IOC_CREATE_THREAD)
     {
-        con->worker.trig = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
+        if (con->worker.trig == OS_NULL) {
+            con->worker.trig = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
+        }
         con->worker.thread_running = OS_TRUE;
         con->worker.stop_thread = OS_FALSE;
 
@@ -785,16 +794,16 @@ osalStatus ioc_terminate_connection_thread(
     iocConnection *con)
 {
     osalStatus
-        status = OSAL_SUCCESS;
+        s = OSAL_SUCCESS;
 
-    if (con->worker.thread_running)
+    if (con->worker.thread_running && con->worker.trig)
     {
         con->worker.stop_thread = OS_TRUE;
-        if (con->worker.trig) osal_event_set(con->worker.trig);
-        status = OSAL_PENDING;
+        osal_event_set(con->worker.trig);
+        s = OSAL_PENDING;
     }
 
-    return status;
+    return s;
 }
 #endif
 
@@ -1217,18 +1226,15 @@ failed:
         os_timeslice();
     }
 
-    /* Delete trigger event and mark that this thread is no longer running.
+    /* Mark that this thread is no longer running.
      */
-    ioc_lock(root);
-    osal_event_delete(con->worker.trig);
-    con->worker.trig = OS_NULL;
     con->worker.thread_running = OS_FALSE;
 
-    if (con->flags & IOC_CLOSE_CONNECTION_ON_ERROR)
-    {
+    /* Release connection, if we need to do this when the thread exists.
+     */
+    if (con->flags & IOC_CLOSE_CONNECTION_ON_ERROR) {
         ioc_release_connection(con);
     }
-    ioc_unlock(root);
 
     osal_trace("connection: worker thread exited");
 }

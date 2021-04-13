@@ -14,13 +14,55 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
-#if IOC_DYNAMIC_MBLK_CODE && OSAL_TLS_SUPPORT
+#if IOC_SWITCHBOX_SUPPORT
+
+struct switchboxSocket;
+
+/**
+****************************************************************************************************
+    Linked list of switchbox client sockets for one switchbox end point socket.
+****************************************************************************************************
+*/
+typedef struct switchboxSocketLink
+{
+    /** Pointer to the end point socket.
+     */
+    struct switchboxSocket *scon;
+
+    /** Pointer to the next client socket in linked list.
+     */
+    struct switchboxSocket *next;
+
+    /** Pointer to the previous client socket in linked list.
+     */
+    struct switchboxSocket *prev;
+}
+switchboxSocketLink;
+
+/**
+****************************************************************************************************
+    Service socket object uses this structure to hold linked list of client socket objects.
+****************************************************************************************************
+*/
+typedef struct switchboxSocketList
+{
+    /** Pointer to the next first client socket object.
+     */
+    struct switchboxSocket *first;
+
+    /** Pointer to the previous client socket object.
+     */
+    struct switchboxSocket *last;
+}
+switchboxSocketList;
 
 
-/** Linux specific socket data structure. OSAL functions cast their own stream structure
-    pointers to osalStream pointers.
- */
-typedef struct osalSwitchboxSocket
+/**
+****************************************************************************************************
+    Switchbox socket structure.
+****************************************************************************************************
+*/
+typedef struct switchboxSocket
 {
     /** A stream structure must start with this generic stream header structure, which contains
         parameters common to every stream.
@@ -35,6 +77,24 @@ typedef struct osalSwitchboxSocket
         function.
      */
     os_int open_flags;
+
+    /** True if this is end point object, which connects to the switchbox service.
+     */
+    os_boolean is_service_socket;
+
+    os_boolean handshake_ready;
+    os_boolean authentication_received;
+    os_boolean authentication_sent;
+
+
+    /** Handshake state structure (switbox cloud net name and copying trust certificate).
+     */
+    iocHandshakeState handshake;
+
+    /** Authentication buffers.
+     */
+    iocSwitchboxAuthenticationFrameBuffer *auth_recv_buf;
+    iocSwitchboxAuthenticationFrameBuffer *auth_send_buf;
 
     /** Ring buffer, OS_NULL if not used.
      */
@@ -54,22 +114,41 @@ typedef struct osalSwitchboxSocket
 
     /** Linked list of swichbox socket objects sharing one TLS switchbox connection.
      */
-    struct osalSwitchboxSocket *next, *prev;
+    union {
+        switchboxSocketList head;   /* Service connection holds head of the list */
+        switchboxSocketLink clink;  /* Client connections link together */
+    }
+    list;
 }
-osalSwitchboxSocket;
+switchboxSocket;
 
 
 /* Prototypes for forward referred static functions.
  */
 static osalStatus ioc_switchbox_socket_write2(
-    osalSwitchboxSocket *thiso,
+    switchboxSocket *thiso,
     const os_char *buf,
     os_memsz n,
     os_memsz *n_written,
     os_int flags);
 
-static osalStatus ioc_switchbox_socket_setup_ring_buffer(
-    osalSwitchboxSocket *thiso);
+/* static osalStatus ioc_switchbox_socket_setup_ring_buffer(
+    switchboxSocket *thiso); */
+
+static void ioc_switchbox_socket_link(
+    switchboxSocket *thiso,
+    switchboxSocket *ssock);
+
+static void ioc_switchbox_socket_unlink(
+    switchboxSocket *thiso);
+
+static osalStatus ioc_switchbox_socket_handshake(
+    switchboxSocket *thiso);
+
+static void ioc_save_switchbox_trust_certificate(
+    const os_uchar *cert,
+    os_memsz cert_sz,
+    void *context);
 
 
 /**
@@ -122,7 +201,7 @@ static osalStream ioc_switchbox_socket_open(
     osalStatus *status,
     os_int flags)
 {
-    osalSwitchboxSocket *thiso = OS_NULL;
+    switchboxSocket *thiso = OS_NULL;
     osalStream switchbox_stream;
 
     /* Open shared connection.
@@ -134,7 +213,7 @@ static osalStream ioc_switchbox_socket_open(
 
     /* Allocate and clear stream structure.
      */
-    thiso = (osalSwitchboxSocket*)os_malloc(sizeof(osalSwitchboxSocket), OS_NULL);
+    thiso = (switchboxSocket*)os_malloc(sizeof(switchboxSocket), OS_NULL);
     if (thiso == OS_NULL)
     {
         if (status) {
@@ -143,13 +222,16 @@ static osalStream ioc_switchbox_socket_open(
         osal_stream_close(switchbox_stream, OSAL_STREAM_DEFAULT);
         return OS_NULL;
     }
-    os_memclear(thiso, sizeof(osalSwitchboxSocket));
+    os_memclear(thiso, sizeof(switchboxSocket));
 
     /* Save flags, interface pointer and steam.
      */
     thiso->open_flags = flags;
+    thiso->is_service_socket = OS_TRUE;
     thiso->hdr.iface = &ioc_switchbox_socket_iface;
     thiso->switchbox_stream = switchbox_stream;
+
+    ioc_initialize_handshake_state(&thiso->handshake);
 
     /* Success.
      */
@@ -179,7 +261,7 @@ static void ioc_switchbox_socket_close(
     osalStream stream,
     os_int flags)
 {
-    osalSwitchboxSocket *thiso;
+    switchboxSocket *thiso;
     OSAL_UNUSED(flags);
 
     /* If called with NULL argument, do nothing.
@@ -188,7 +270,7 @@ static void ioc_switchbox_socket_close(
 
     /* Cast stream pointer.
      */
-    thiso = (osalSwitchboxSocket*)stream;
+    thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
     /* Send disconnect message.
@@ -197,15 +279,8 @@ static void ioc_switchbox_socket_close(
     /* Detach form chain, synchronization necessary.
      */
     os_lock();
-    if (thiso->next) {
-        thiso->next->prev = thiso->prev;
-    }
-    if (thiso->prev) {
-        thiso->prev->next = thiso->next;
-    }
-    thiso->next = thiso->prev = OS_NULL;
+    ioc_switchbox_socket_unlink(thiso);
     os_unlock();
-
 
     if (thiso->switchbox_stream) {
         osal_stream_close(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
@@ -213,11 +288,14 @@ static void ioc_switchbox_socket_close(
     }
     thiso->hdr.iface = OS_NULL;
 
-    /* Free ring buffer, if any, memory allocated for socket structure
-       and decrement socket count.
+
+    /* Free hand shake state, ring buffer and memory allocated for socket structure.
      */
+    ioc_release_handshake_state(&thiso->handshake);
+    os_free(thiso->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+    os_free(thiso->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
     os_free(thiso->buf, thiso->buf_sz);
-    os_free(thiso, sizeof(osalSwitchboxSocket));
+    os_free(thiso, sizeof(switchboxSocket));
 }
 
 
@@ -253,75 +331,75 @@ static osalStream ioc_switchbox_socket_accept(
     osalStatus *status,
     os_int flags)
 {
-    osalSwitchboxSocket *thiso, *newsocket = OS_NULL;
+    switchboxSocket *thiso, *newsocket;
+    osalStatus s;
 
-    if (stream)
-    {
-        /* Cast stream pointer to switchbox socket structure pointer.
-         */
-        thiso = (osalSwitchboxSocket*)stream;
-        osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
+    if (remote_ip_addr) {
+        *remote_ip_addr = '\0';
+    }
+
+    if (stream == OS_NULL) {
+        if (status) *status = OSAL_STATUS_FAILED;
+        return OS_NULL;
+    }
+    thiso = (switchboxSocket*)stream;
+
+    s = ioc_switchbox_socket_handshake(thiso);
+    if (s) {
+        if (status) *status = (s == OSAL_PENDING) ? OSAL_NO_NEW_CONNECTION : s;
+        return OS_NULL;
+    }
+
+    /* Cast stream pointer to switchbox socket structure pointer.
+     */
+    osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
 #if 0
-        /* If no new connection, do nothing more.
-         */
-        if (new_handle == -1)
-        {
-            if (status) *status = OSAL_NO_NEW_CONNECTION;
-            return OS_NULL;
-        }
-
-        /* Set socket reuse, blocking mode, and nagle.
-         */
-        if (flags == OSAL_STREAM_DEFAULT) {
-            flags = thiso->open_flags;
-        }
-
-        /* Allocate and clear socket structure.
-         */
-        newsocket = (osalSwitchboxSocket*)os_malloc(sizeof(osalSwitchboxSocket), OS_NULL);
-        if (newsocket == OS_NULL)
-        {
-            // close(new_handle);
-            if (status) *status = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
-            return OS_NULL;
-        }
-        os_memclear(newsocket, sizeof(osalSwitchboxSocket));
-
-        if (flags & OSAL_STREAM_TCP_NODELAY) {
-            ioc_switchbox_socket_setup_ring_buffer(thiso);
-        }
-
-        /* Save open flags.
-         */
-        newsocket->open_flags = flags;
-
-
-        /* Save interface pointer.
-         */
-        newsocket->hdr.iface = &ioc_switchbox_socket_iface;
-
-        /* Success set status code and cast socket structure pointer to stream pointer
-           and return it.
-         */
-        osal_trace2("socket accepted");
-        if (status) *status = OSAL_SUCCESS;
-#endif
-        return (osalStream)newsocket;
-    }
-
-    /* Opt out on error. If we got far enough to allocate the socket structure.
-       Close the event handle (if any) and free memory allocated  for the socket structure.
+    /* If no new connection, do nothing more.
      */
-    if (newsocket)
+    if (new_handle == -1)
     {
-        os_free(newsocket, sizeof(osalSwitchboxSocket));
+        if (status) *status = OSAL_NO_NEW_CONNECTION;
+        return OS_NULL;
+    }
+#endif
+
+    /* Set socket reuse, blocking mode, and nagle.
+     */
+    if (flags == OSAL_STREAM_DEFAULT) {
+        flags = thiso->open_flags;
     }
 
-    /* Set status code and return NULL pointer.
+    /* Allocate and clear socket structure.
      */
-    if (status) *status = OSAL_STATUS_FAILED;
-    return OS_NULL;
+    newsocket = (switchboxSocket*)os_malloc(sizeof(switchboxSocket), OS_NULL);
+    if (newsocket == OS_NULL)
+    {
+        // close(new_handle);
+        if (status) *status = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+        return OS_NULL;
+    }
+    os_memclear(newsocket, sizeof(switchboxSocket));
+
+#if 0
+    if (flags & OSAL_STREAM_TCP_NODELAY) {
+        ioc_switchbox_socket_setup_ring_buffer(newsocket);
+    }
+#endif
+
+    newsocket->hdr.iface = &ioc_switchbox_socket_iface;
+    newsocket->open_flags = flags;
+
+    os_lock();
+    ioc_switchbox_socket_link(newsocket, thiso);
+    os_unlock();
+
+    /* Success set status code and cast socket structure pointer to stream pointer
+       and return it.
+     */
+    osal_trace2("socket accepted");
+    if (status) *status = OSAL_SUCCESS;
+    return (osalStream)newsocket;
 }
 
 
@@ -350,7 +428,7 @@ static osalStatus ioc_switchbox_socket_flush(
     osalStream stream,
     os_int flags)
 {
-    osalSwitchboxSocket *thiso;
+    switchboxSocket *thiso;
     os_char *buf;
     os_memsz nwr;
     os_int head, tail, wrnow, buf_sz;
@@ -358,7 +436,7 @@ static osalStatus ioc_switchbox_socket_flush(
 
     if (stream)
     {
-        thiso = (osalSwitchboxSocket*)stream;
+        thiso = (switchboxSocket*)stream;
         head = thiso->head;
         tail = thiso->tail;
 
@@ -439,7 +517,7 @@ getout:
 ****************************************************************************************************
 */
 static osalStatus ioc_switchbox_socket_write2(
-    osalSwitchboxSocket *thiso,
+    switchboxSocket *thiso,
     const os_char *buf,
     os_memsz n,
     os_memsz *n_written,
@@ -542,7 +620,7 @@ static osalStatus ioc_switchbox_socket_write(
     os_int flags)
 {
     int count, wrnow;
-    osalSwitchboxSocket *thiso;
+    switchboxSocket *thiso;
     osalStatus status;
     os_char *rbuf;
     os_int head, tail, buf_sz, nexthead;
@@ -553,7 +631,7 @@ static osalStatus ioc_switchbox_socket_write(
     {
         /* Cast stream pointer to socket structure pointer.
          */
-        thiso = (osalSwitchboxSocket*)stream;
+        thiso = (switchboxSocket*)stream;
         osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
         /* Check for errorneous arguments.
@@ -684,7 +762,7 @@ static osalStatus ioc_switchbox_socket_read(
     os_memsz *n_read,
     os_int flags)
 {
-    // osalSwitchboxSocket *thiso;
+    // switchboxSocket *thiso;
     // os_int handle, rval;
     osalStatus status;
     OSAL_UNUSED(flags);
@@ -695,7 +773,7 @@ static osalStatus ioc_switchbox_socket_read(
     {
         /* Cast stream pointer to socket structure pointer, get operating system's socket handle.
          */
-        thiso = (osalSwitchboxSocket*)stream;
+        thiso = (switchboxSocket*)stream;
         osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
         handle = thiso->handle;
 
@@ -801,15 +879,24 @@ static osalStatus ioc_switchbox_socket_select(
     os_int timeout_ms,
     os_int flags)
 {
-//     osalSwitchboxSocket *thiso;
-   //  os_int i, handle, socket_nr, maxfd, pipefd, rval;
+    switchboxSocket *thiso;
+    os_int i; // , handle, socket_nr, maxfd, pipefd, rval;
     OSAL_UNUSED(flags);
 
     os_memclear(selectdata, sizeof(osalSelectData));
-#if 0
-    if (nstreams < 1 || nstreams > IOC_SWITCHBOX_SOCKET_SELECT_MAX)
+
+    if (nstreams < 1 || nstreams > OSAL_SOCKET_SELECT_MAX)
         return OSAL_STATUS_FAILED;
 
+    for (i = 0; i < nstreams; i++) {
+        thiso = (switchboxSocket*)streams[i];
+        if (!thiso->handshake_ready || !thiso->authentication_received || !thiso->authentication_sent) {
+            os_timeslice();
+            return OSAL_SUCCESS;
+        }
+    }
+
+#if 0
     FD_ZERO(&rdset);
     FD_ZERO(&wrset);
     FD_ZERO(&exset);
@@ -817,7 +904,7 @@ static osalStatus ioc_switchbox_socket_select(
     maxfd = 0;
     for (i = 0; i < nstreams; i++)
     {
-        thiso = (osalSwitchboxSocket*)streams[i];
+        thiso = (switchboxSocket*)streams[i];
         if (thiso)
         {
             osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
@@ -873,7 +960,7 @@ static osalStatus ioc_switchbox_socket_select(
      */
     for (socket_nr = 0; socket_nr < nstreams; socket_nr++)
     {
-        thiso = (osalSwitchboxSocket*)streams[socket_nr];
+        thiso = (switchboxSocket*)streams[socket_nr];
         if (thiso)
         {
             handle = thiso->handle;
@@ -908,6 +995,220 @@ static osalStatus ioc_switchbox_socket_select(
 /**
 ****************************************************************************************************
 
+  @brief Add a client socket object to service socket object's linked list.
+
+  Note: os_lock must be on when this function is called.
+
+  @param   thiso Pointer to the client socket object.
+  @param   ssock Pointer to the service socket object.
+
+****************************************************************************************************
+*/
+static void ioc_switchbox_socket_link(
+    switchboxSocket *thiso,
+    switchboxSocket *ssock)
+{
+    osal_debug_assert(ssock->is_service_socket);
+
+    /* Join to list of client connections for the server connection.
+     */
+    thiso->list.clink.prev = ssock->list.head.last;
+    thiso->list.clink.next = OS_NULL;
+    thiso->list.clink.scon = ssock;
+    if (ssock->list.head.last) {
+        ssock->list.head.last->list.clink.next = thiso;
+    }
+    else {
+        ssock->list.head.first = thiso;
+    }
+    ssock->list.head.last = thiso;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Remove from service socket's linked list.
+
+  If thiso is service socket, all client sockets are unlinked and requested to terminate.
+
+  Note: os_lock must be on when this function is called.
+
+  @param   thiso Pointer to the switchbox socket object to unlink. Can be service or client socket.
+
+****************************************************************************************************
+*/
+static void ioc_switchbox_socket_unlink(
+    switchboxSocket *thiso)
+{
+    switchboxSocket *c, *next_c, *scon;
+
+    /* thiso is service connection.
+     */
+    if (thiso->is_service_socket) {
+        for (c = thiso->list.head.first; c; c = next_c) {
+            next_c = c->list.clink.next;
+         //   c->worker.stop_thread = OS_TRUE; XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+         //   osal_event_set(c->worker.trig);
+            c->list.clink.next = c->list.clink.prev = c->list.clink.scon = OS_NULL;
+        }
+        thiso->list.head.first = thiso->list.head.last = OS_NULL;
+    }
+
+    /* thiso is client connection.
+     */
+    else {
+        scon = thiso->list.clink.scon;
+        if (scon) {
+            if (thiso->list.clink.prev) {
+                thiso->list.clink.prev->list.clink.next = thiso->list.clink.next;
+            }
+            else {
+                scon->list.head.first = thiso->list.clink.next;
+            }
+            if (thiso->list.clink.next) {
+                thiso->list.clink.next->list.clink.prev = thiso->list.clink.prev;
+            }
+            else {
+                scon->list.head.last = thiso->list.clink.prev;
+            }
+            thiso->list.clink.next = thiso->list.clink.prev = thiso->list.clink.scon = OS_NULL;
+        }
+    }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Do first handshake for to connect to switchbox.
+  @anchor ioc_first_handshake
+
+  @param   thiso Pointer to the client socket service.
+  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
+           an error (broken socket).
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_socket_handshake(
+    switchboxSocket *thiso)
+{
+    osalStatus s;
+
+os_boolean cert_match = OS_TRUE;
+
+    if (thiso->handshake_ready && thiso->authentication_received && thiso->authentication_sent) {
+        return OSAL_SUCCESS;
+    }
+
+    if (!thiso->handshake_ready)
+    {
+        s = ioc_client_handshake(&thiso->handshake, IOC_HANDSHAKE_NETWORK_SERVICE,
+            "kepuli", !cert_match, thiso->switchbox_stream,
+            ioc_save_switchbox_trust_certificate, thiso);
+
+        osal_stream_flush(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
+
+        if (s) {
+            return s;
+        }
+
+        thiso->handshake_ready = OS_TRUE;
+    }
+
+    /* Service connection: We need to receive authentication frame.
+     */
+    if (!thiso->authentication_received) {
+        if (thiso->auth_recv_buf == OS_NULL) {
+            thiso->auth_recv_buf = (iocSwitchboxAuthenticationFrameBuffer*)
+                os_malloc(sizeof(iocSwitchboxAuthenticationFrameBuffer), OS_NULL);
+            os_memclear(thiso->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+        }
+
+        iocAuthenticationResults results;
+        s = icom_switchbox_process_authentication_frame(thiso->switchbox_stream, thiso->auth_recv_buf, &results);
+        if (s == OSAL_COMPLETED) {
+            os_free(thiso->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+            thiso->auth_recv_buf = OS_NULL;
+            thiso->authentication_received = OS_TRUE;
+        }
+        else if (s != OSAL_PENDING) {
+            osal_debug_error("eConnection: Valid authentication frame was not received");
+            return OSAL_STATUS_FAILED;
+        }
+    }
+
+    /* Service connection: We need to send responce(s).
+     */
+    if (!thiso->authentication_sent)
+    {
+        iocSwitchboxAuthenticationParameters prm;
+        os_memclear(&prm, sizeof(prm));
+
+        if (thiso->auth_send_buf == OS_NULL) {
+            thiso->auth_send_buf = (iocSwitchboxAuthenticationFrameBuffer*)
+                os_malloc(sizeof(iocSwitchboxAuthenticationFrameBuffer), OS_NULL);
+            os_memclear(thiso->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+
+            prm.network_name = "sb";
+            prm.user_name = "srv";
+            prm.password = "pw";
+        }
+
+        s = ioc_send_switchbox_authentication_frame(thiso->switchbox_stream, thiso->auth_send_buf, &prm);
+        if (s == OSAL_COMPLETED) {
+            os_free(thiso->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
+            thiso->auth_send_buf = OS_NULL;
+            thiso->authentication_sent = OS_TRUE;
+            osal_stream_flush(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
+        }
+        else if (s != OSAL_PENDING) {
+            osal_debug_error("eConnection: Failed to send authentication frame");
+            return OSAL_STATUS_FAILED;
+        }
+    }
+
+    osal_stream_flush(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
+
+    if (!thiso->authentication_sent ||
+        !thiso->authentication_received)
+    {
+        os_timeslice();
+        return OSAL_PENDING;
+    }
+
+    /* switch (htype)
+    {
+        case IOC_HANDSHAKE_NETWORK_SERVICE:
+            s = ioc_switchbox_setup_service_connection(thiso);
+            break;
+
+        case IOC_HANDSHAKE_CLIENT:
+            s = ioc_switchbox_setup_client_connection(thiso);
+            break;
+
+        default:
+            s = OSAL_STATUS_FAILED;
+            osal_debug_error("switchbox: unknown incoming connection type");
+            break;
+    } */
+
+    return s;
+}
+
+
+/* Save received certificate (client only).
+ */
+static void ioc_save_switchbox_trust_certificate(
+    const os_uchar *cert,
+    os_memsz cert_sz,
+    void *context)
+{
+}
+
+/**
+****************************************************************************************************
+
   @brief Set up ring buffer for sends.
   @anchor ioc_switchbox_socket_setup_ring_buffer
 
@@ -921,8 +1222,9 @@ static osalStatus ioc_switchbox_socket_select(
 
 ****************************************************************************************************
 */
+#if 0
 static osalStatus ioc_switchbox_socket_setup_ring_buffer(
-    osalSwitchboxSocket *thiso)
+    switchboxSocket *thiso)
 {
     os_memsz buf_sz;
 
@@ -931,6 +1233,7 @@ static osalStatus ioc_switchbox_socket_setup_ring_buffer(
     thiso->buf_sz = (os_int)buf_sz;
     return thiso->buf ? OSAL_SUCCESS : OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
 }
+#endif
 
 
 /** Stream interface for OSAL sockets. This is structure osalStreamInterface filled with

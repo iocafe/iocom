@@ -103,6 +103,13 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+/* Support for switchbox socket to connect up and for switchbox authentication.
+ * Switchbox is TLS based, default to OSAL_TLS_SUPPORT.
+ */
+#ifndef IOC_SWITCHBOX_SUPPORT
+#define IOC_SWITCHBOX_SUPPORT OSAL_TLS_SUPPORT
+#endif
+
 
 /* Support for bidirectional memory blocks.
  */
@@ -213,6 +220,8 @@ OSAL_C_HEADER_BEGINS
 #if IOC_NICKGEN_SUPPORT
 #include "code/ioc_nickgen.h"
 #endif
+#include "code/ioc_switchbox_auth_frame.h"
+#include "code/ioc_switchbox_socket.h"
 
 /* If C++ compilation, end the undecorated code.
  */

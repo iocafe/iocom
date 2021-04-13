@@ -38,8 +38,6 @@ OSAL_C_HEADER_BEGINS
 #include "extensions/dynamicio/ioc_dyn_mblk_list.h"
 #include "extensions/dynamicio/ioc_dyn_queue.h"
 #include "extensions/dynamicio/ioc_dyn_stream.h"
-#include "extensions/dynamicio/ioc_switchbox_auth_frame.h"
-#include "extensions/dynamicio/ioc_switchbox_socket.h"
 #endif
 
 /* If C++ compilation, end the undecorated code.

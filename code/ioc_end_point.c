@@ -362,7 +362,7 @@ osalStatus ioc_terminate_end_point_thread(
     osalStatus
         status = OSAL_SUCCESS;
 
-    if (epoint->worker_thread_running)
+    if (epoint->worker_thread_running && epoint->trig)
     {
         epoint->stop_worker_thread = OS_TRUE;
         if (epoint->trig) osal_event_set(epoint->trig);

@@ -77,6 +77,10 @@ typedef struct switchboxRoot
      */
     osalMutex mutex;
 
+    /** Counter for new client identifiers.
+     */
+    os_ushort current_client_id;
+
     /** Linked list of root's connections.
      */
     switchboxConnectionList con;
@@ -127,6 +131,11 @@ void ioc_switchbox_unlock(
 struct switchboxConnection *ioc_switchbox_find_service_connection(
     switchboxRoot *root,
     const os_char *network_name);
+
+/* Get new unique client id.
+ */
+os_ushort ioc_new_switchbox_client_id(
+    switchboxRoot *root);
 
 /*@}*/
 

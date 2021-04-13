@@ -21,7 +21,7 @@
 #ifndef IOC_SWITCHBOX_SOCKET_H_
 #define IOC_SWITCHBOX_SOCKET_H_
 #include "iocom.h"
-#if IOC_DYNAMIC_MBLK_CODE && OSAL_TLS_SUPPORT
+#if IOC_SWITCHBOX_SUPPORT
 
 /** Stream interface structure for sockets.
  */

@@ -208,3 +208,46 @@ struct switchboxConnection *ioc_switchbox_find_service_connection(
 
     return OS_NULL;
 }
+
+/**
+****************************************************************************************************
+
+  @brief Get new unique client id.
+  @anchor ioc_switchbox_find_service_connection
+
+  Function returns unique client id by incrementing current_client_id until it finds unused
+  client id.
+
+  Note: The function uses synchronization lock, so lock state can be on or off when calling
+  this function.
+
+  @param   root Pointer to the switchbox root structure.
+  @return  Unique (unused) client ID.
+
+****************************************************************************************************
+*/
+os_ushort ioc_new_switchbox_client_id(
+    switchboxRoot *root)
+{
+    switchboxConnection *con;
+    os_ushort client_id;
+
+    ioc_switchbox_lock(root);
+    client_id = root->current_client_id;
+
+    do {
+        client_id++;
+        if (client_id == 0) client_id++;
+
+        for (con = root->con.first; con; con = con->link.next) {
+            if (!con->is_service_connection) {
+                if (con->client_id == client_id) break;
+            }
+        }
+
+    } while (con);
+
+    root->current_client_id = client_id;
+    ioc_switchbox_unlock(root);
+    return client_id;
+}

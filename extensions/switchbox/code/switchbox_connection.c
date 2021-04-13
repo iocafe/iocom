@@ -658,13 +658,12 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
 /**
 ****************************************************************************************************
 
-  @brief X
+  @brief Setup a connection to IO service.
 
   Xy
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
-           an error (broken socket).
+  @return  OSAL_SUCCESS if successfull, other return values indicate a failue.
 
 ****************************************************************************************************
 */
@@ -696,6 +695,19 @@ getout:
     return s;
 }
 
+
+/**
+****************************************************************************************************
+
+  @brief Setup a connection to client.
+
+  Xy
+
+  @param   con Pointer to the connection object.
+  @return  OSAL_SUCCESS if successfull, other return values indicate a failue.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_switchbox_setup_client_connection(
     switchboxConnection *con)
 {
@@ -713,6 +725,10 @@ static osalStatus ioc_switchbox_setup_client_connection(
         osal_debug_error_str("switchbox: no service connection for ", con->network_name);
         goto getout;
     }
+
+    /* Set client identifier.
+     */
+    con->client_id = ioc_new_switchbox_client_id(con->link.root);
 
     /* Join client connection to list of service connection.
      */
@@ -743,10 +759,11 @@ static void ioc_switchbox_link_connection(
 {
     osal_debug_assert(scon->is_service_connection);
 
+    /* Join to list of client connections for the server connection.
+     */
     con->list.clink.prev = scon->list.head.last;
     con->list.clink.next = OS_NULL;
     con->list.clink.scon = scon;
-
     if (scon->list.head.last) {
         scon->list.head.last->list.clink.next = con;
     }

@@ -19,7 +19,7 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
-#if IOC_DYNAMIC_MBLK_CODE
+#if IOC_SWITCHBOX_SUPPORT
 
 
 /* Forward referred static functions.
