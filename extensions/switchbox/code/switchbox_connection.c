@@ -672,22 +672,23 @@ static osalStatus ioc_switchbox_setup_service_connection(
 {
     switchboxRoot *root;
     switchboxConnection *scon;
-    osalStatus s = OSAL_STATUS_FAILED;;
+    osalStatus s = OSAL_STATUS_FAILED;
 
     root = con->link.root;
     ioc_switchbox_lock(root);
 
+    con->is_service_connection = OS_TRUE;
+
     /* If we have service connection with this name, kill it and fail for now.
      */
-    scon = ioc_switchbox_find_service_connection(root, con->network_name);
+    scon = ioc_switchbox_find_service_connection(root, con->network_name, con);
     if (scon) {
-        con->worker.stop_thread = OS_TRUE;
-        osal_event_set(con->worker.trig);
-        osal_debug_error_str("switchbox: service already connected, killing ", con->network_name);
+        scon->worker.stop_thread = OS_TRUE;
+        osal_event_set(scon->worker.trig);
+        osal_debug_error_str("switchbox: service already connected, killing ", scon->network_name);
         goto getout;
     }
 
-    con->is_service_connection = OS_TRUE;
     s = OSAL_SUCCESS;
 
 getout:
@@ -720,7 +721,7 @@ static osalStatus ioc_switchbox_setup_client_connection(
 
     /* If we have no service connection with this name, we fail.
      */
-    scon = ioc_switchbox_find_service_connection(root, con->network_name);
+    scon = ioc_switchbox_find_service_connection(root, con->network_name, OS_NULL);
     if (scon == OS_NULL) {
         osal_debug_error_str("switchbox: no service connection for ", con->network_name);
         goto getout;

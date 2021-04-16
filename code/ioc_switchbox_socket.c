@@ -206,7 +206,8 @@ static osalStream ioc_switchbox_socket_open(
 
     /* Open shared connection.
      */
-    switchbox_stream = osal_stream_open(OSAL_TLS_IFACE, parameters, option, status, flags);
+    switchbox_stream = osal_stream_open(OSAL_TLS_IFACE, parameters, option,
+        status, OSAL_STREAM_CONNECT);
     if (switchbox_stream == OS_NULL) {
         return OS_NULL;
     }
@@ -350,6 +351,9 @@ static osalStream ioc_switchbox_socket_accept(
         return OS_NULL;
     }
 
+*status = OSAL_NO_NEW_CONNECTION;
+return OS_NULL
+;
     /* Cast stream pointer to switchbox socket structure pointer.
      */
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
@@ -369,6 +373,7 @@ static osalStream ioc_switchbox_socket_accept(
     if (flags == OSAL_STREAM_DEFAULT) {
         flags = thiso->open_flags;
     }
+
 
     /* Allocate and clear socket structure.
      */
@@ -830,6 +835,7 @@ static osalStatus ioc_switchbox_socket_read(
 #endif
 
     status = OSAL_STATUS_FAILED;
+    status = OSAL_SUCCESS;
 
 // getout:
     osal_trace2("socket read failed");
@@ -1193,7 +1199,7 @@ os_boolean cert_match = OS_TRUE;
             break;
     } */
 
-    return s;
+    return OSAL_SUCCESS;
 }
 
 

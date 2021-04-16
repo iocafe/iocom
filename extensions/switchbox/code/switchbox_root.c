@@ -188,19 +188,22 @@ void ioc_switchbox_unlock(
 
   @param   root Pointer to the root structure.
   @param   network_name Network name to search for.
+  @param   exclude_con Pointer to connection being added, excluded from search. OS_NULL if
+           adding client connection.
   @return  Pointer to service connection object, or OS_NULL if none found.
 
 ****************************************************************************************************
 */
 struct switchboxConnection *ioc_switchbox_find_service_connection(
     switchboxRoot *root,
-    const os_char *network_name)
+    const os_char *network_name,
+    struct switchboxConnection *exclude_con)
 {
     switchboxConnection *con;
 
     for (con = root->con.first; con; con = con->link.next)
     {
-        if (!con->is_service_connection) continue;
+        if (!con->is_service_connection || con == exclude_con) continue;
         if (!os_strcmp(network_name, con->network_name)) {
             return con;
         }

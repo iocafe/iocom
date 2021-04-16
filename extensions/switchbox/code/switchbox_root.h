@@ -130,7 +130,8 @@ void ioc_switchbox_unlock(
  */
 struct switchboxConnection *ioc_switchbox_find_service_connection(
     switchboxRoot *root,
-    const os_char *network_name);
+    const os_char *network_name,
+    struct switchboxConnection *exclude_con);
 
 /* Get new unique client id.
  */
