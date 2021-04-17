@@ -56,7 +56,6 @@ typedef struct switchboxSocketList
 }
 switchboxSocketList;
 
-
 /**
 ****************************************************************************************************
     Switchbox socket structure.
@@ -104,6 +103,11 @@ typedef struct switchboxSocket
      */
     osalRingBuf outgoing;
 
+    /** Stream has broken flag, OSAL_SUCCESS as long as all is fine, other values
+        indicate an error.
+     */
+    osalStatus status;
+
     /** Linked list of swichbox socket objects sharing one TLS switchbox connection.
      */
     union {
@@ -117,13 +121,6 @@ switchboxSocket;
 
 /* Prototypes for forward referred static functions.
  */
-static osalStatus ioc_switchbox_socket_write2(
-    switchboxSocket *thiso,
-    const os_char *buf,
-    os_memsz n,
-    os_memsz *n_written,
-    os_int flags);
-
 /* static osalStatus ioc_switchbox_socket_setup_ring_buffer(
     switchboxSocket *thiso); */
 
@@ -366,7 +363,6 @@ return OS_NULL
         flags = thiso->open_flags;
     }
 
-
     /* Allocate and clear socket structure.
      */
     newsocket = (switchboxSocket*)os_malloc(sizeof(switchboxSocket), OS_NULL);
@@ -425,167 +421,24 @@ static osalStatus ioc_switchbox_socket_flush(
     osalStream stream,
     os_int flags)
 {
-#if 0
     switchboxSocket *thiso;
-    os_char *buf;
-    os_memsz nwr;
-    os_int head, tail, wrnow, buf_sz;
-    osalStatus status;
-
-    if (stream)
-    {
-        thiso = (switchboxSocket*)stream;
-        head = thiso->head;
-        tail = thiso->tail;
-
-        if (head != tail)
-        {
-            buf = thiso->buf;
-            buf_sz = thiso->buf_sz;
-
-            /* Never split to two TCP packets.
-             */
-            if (head < tail && head)
-            {
-                /* tmpbuf = alloca(buf_sz); */
-                os_char tmpbuf[buf_sz];
-                wrnow = buf_sz - tail;
-                os_memcpy(tmpbuf, buf + tail, wrnow);
-                os_memcpy(tmpbuf + wrnow, buf, head);
-                tail = 0;
-                head += wrnow;
-                os_memcpy(buf, tmpbuf, head);
-            }
-
-            if (head < tail)
-            {
-                wrnow = buf_sz - tail;
-
-                status = ioc_switchbox_socket_write2(thiso, buf + tail, wrnow, &nwr, flags);
-                if (status) goto getout;
-                if (nwr == wrnow) tail = 0;
-                else tail += (os_int)nwr;
-            }
-
-            if (head > tail)
-            {
-                wrnow = head - tail;
-
-                status = ioc_switchbox_socket_write2(thiso, buf + tail, wrnow, &nwr, flags);
-                if (status) goto getout;
-                tail += (os_int)nwr;
-            }
-
-            if (tail == head)
-            {
-                tail = head = 0;
-            }
-
-            thiso->head = head;
-            thiso->tail = tail;
-        }
-    }
-#endif
-    return OSAL_SUCCESS;
-
-// getout:
-//    return status;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Write data to socket.
-  @anchor ioc_switchbox_socket_write
-
-  The ioc_switchbox_socket_write() function writes up to n bytes of data from buffer to socket.
-
-  @param   stream Stream pointer representing the socket.
-  @param   buf Pointer to the beginning of data to place into the socket.
-  @param   n Maximum number of bytes to write.
-  @param   n_written Pointer to integer into which the function stores the number of bytes
-           actually written to socket,  which may be less than n if there is not enough space
-           left in the socket. If the function fails n_written is set to zero.
-  @param   flags Flags for the function.
-           See @ref osalStreamFlags "Flags for Stream Functions" for full list of flags.
-  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error. See @ref osalStatus "OSAL function return codes" for full list.
-
-****************************************************************************************************
-*/
-static osalStatus ioc_switchbox_socket_write2(
-    switchboxSocket *thiso,
-    const os_char *buf,
-    os_memsz n,
-    os_memsz *n_written,
-    os_int flags)
-{
-    os_int rval;
-    osalStatus status;
     OSAL_UNUSED(flags);
 
-    /* Check for errorneous arguments.
-     */
-    if (n < 0 || buf == OS_NULL)
-    {
-        status = OSAL_STATUS_FAILED;
-        goto getout;
+    if (stream == OS_NULL) {
+        return OSAL_STATUS_FAILED;
+    }
+    thiso = (switchboxSocket*)stream;
+    osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
+
+    if (thiso->status) {
+        return thiso->status;
     }
 
-    /* If nothing to write.
-     */
-    if (n == 0)
-    {
-        status = OSAL_SUCCESS;
-        goto getout;
-    }
-#if 0
-    /* get operating system's socket handle.
-     */
-    handle = thiso->handle;
+    os_lock();
+    // move data from outgoing ring buffer to "end point" shared connection ring buffer.
+    os_unlock();
 
-    rval = send(handle, buf, (int)n, MSG_NOSIGNAL);
-
-    if (rval < 0)
-    {
-        /* This matches with net_sockets.c
-         */
-        switch (errno)
-        {
-            case EWOULDBLOCK:
-            case EINPROGRESS:
-            case EINTR:
-                break;
-
-            case ECONNREFUSED:
-                status = OSAL_STATUS_CONNECTION_REFUSED;
-                goto getout;
-
-            case ECONNRESET:
-            case EPIPE:
-                status = OSAL_STATUS_CONNECTION_RESET;
-                goto getout;
-
-            default:
-                status = OSAL_STATUS_FAILED;
-                goto getout;
-        }
-
-        rval = 0;
-    }
-
-    thiso->write2_blocked = (os_boolean)(rval != n);
-#endif
-
-rval = OSAL_SUCCESS;
-    osal_resource_monitor_update(OSAL_RMON_TX_TCP, rval);
-    *n_written = rval;
     return OSAL_SUCCESS;
-
-getout:
-    *n_written = 0;
-    return status;
 }
 
 
@@ -617,120 +470,48 @@ static osalStatus ioc_switchbox_socket_write(
     os_memsz *n_written,
     os_int flags)
 {
-    // int count, wrnow;
     switchboxSocket *thiso;
-    osalStatus status;
-    // os_char *rbuf;
-    // os_int head, tail, buf_sz, nexthead;
-    //os_memsz nwr;
-    //os_boolean all_not_flushed;
+    os_memsz total;
+    os_int count;
+    osalStatus s;
+    OSAL_UNUSED(flags);
 
-    if (stream)
+    if (stream == OS_NULL) {
+        s = OSAL_STATUS_FAILED;
+        goto getout;
+    }
+    thiso = (switchboxSocket*)stream;
+    osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
+
+    total = 0;
+    while (n > 0)
     {
-        /* Cast stream pointer to socket structure pointer.
-         */
-        thiso = (switchboxSocket*)stream;
-        osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
-
-        /* Check for errorneous arguments.
-         */
-        if (n < 0 || buf == OS_NULL)
-        {
-            status = OSAL_STATUS_FAILED;
+        if (thiso->status) {
+            s = thiso->status;
             goto getout;
         }
 
-        /* Special case. Writing 0 bytes will trigger write callback by worker thread.
-         */
-        if (n == 0)
-        {
-            status = OSAL_SUCCESS;
-            goto getout;
+        count = osal_ringbuf_put(&thiso->outgoing, buf, n);
+        total += count;
+        if (count == n) {
+            break;
         }
+        n -= count;
+        buf += count;
 
-#if 0
-        if (thiso->buf)
-        {
-            rbuf = thiso->buf;
-            buf_sz = thiso->buf_sz;
-            head = thiso->head;
-            tail = thiso->tail;
-            all_not_flushed = OS_FALSE;
-            count = 0;
+        ioc_switchbox_socket_flush(stream, OSAL_STREAM_DEFAULT);
 
-            while (OS_TRUE)
-            {
-                while (n > 0)
-                {
-                    nexthead = head + 1;
-                    if (nexthead >= buf_sz) nexthead = 0;
-                    if (nexthead == tail) break;
-                    rbuf[head] = *(buf++);
-                    head = nexthead;
-                    n--;
-                    count++;
-                }
-
-                if (n == 0 || all_not_flushed)
-                {
-                    break;
-                }
-
-                /* Never split to two TCP packets.
-                 */
-                if (head < tail && head)
-                {
-                    os_char tmpbuf[buf_sz];
-                    wrnow = buf_sz - tail;
-                    os_memcpy(tmpbuf, rbuf + tail, wrnow);
-                    os_memcpy(tmpbuf + wrnow, rbuf, head);
-                    tail = 0;
-                    head += wrnow;
-                    os_memcpy(rbuf, tmpbuf, head);
-                }
-
-                if (head < tail)
-                {
-                    wrnow = buf_sz - tail;
-                    status = ioc_switchbox_socket_write2(thiso, rbuf+tail, wrnow, &nwr, flags);
-                    if (status) goto getout;
-                    if (nwr == wrnow) tail = 0;
-                    else tail += (os_int)nwr;
-                }
-
-                if (head > tail)
-                {
-                    wrnow = head - tail;
-                    status = ioc_switchbox_socket_write2(thiso, rbuf+tail, wrnow, &nwr, flags);
-                    if (status) goto getout;
-                    tail += (os_int)nwr;
-                }
-
-                if (tail == head)
-                {
-                    tail = head = 0;
-                }
-                else
-                {
-                    all_not_flushed = OS_TRUE;
-                }
-            }
-
-            thiso->head = head;
-            thiso->tail = tail;
-            *n_written = count;
-            return OSAL_SUCCESS;
+        if (osal_ringbuf_is_full(&thiso->outgoing)) {
+            break;
         }
-
-        return ioc_switchbox_socket_write2(thiso, buf, n, n_written, flags);
-#endif
     }
 
-    status = OSAL_STATUS_FAILED;
+    *n_written = total;
+    return OSAL_SUCCESS;
 
 getout:
     *n_written = 0;
-    return status;
+    return s;
 }
 
 
@@ -763,80 +544,51 @@ static osalStatus ioc_switchbox_socket_read(
     os_memsz *n_read,
     os_int flags)
 {
-    // switchboxSocket *thiso;
-    // os_int handle, rval;
-    osalStatus status;
+    switchboxSocket *thiso;
+    os_memsz total;
+    os_int count;
+    osalStatus s;
     OSAL_UNUSED(flags);
 
-#if 0
+    if (stream == OS_NULL) {
+        s = OSAL_STATUS_FAILED;
+        goto getout;
+    }
+    thiso = (switchboxSocket*)stream;
+    osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
-    if (stream)
+    total = 0;
+    while (n > 0)
     {
-        /* Cast stream pointer to socket structure pointer, get operating system's socket handle.
-         */
-        thiso = (switchboxSocket*)stream;
-        osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
-        handle = thiso->handle;
-
-        /* Check for errorneous arguments.
-         */
-        if (n < 0 || buf == OS_NULL)
-        {
-            status = OSAL_STATUS_FAILED;
+        if (thiso->status) {
+            s = thiso->status;
             goto getout;
         }
 
-        rval = recv(handle, buf, (int)n, MSG_NOSIGNAL);
-
-        /* If other end has gracefylly closed.
-         */
-        if (rval == 0)
-        {
-            osal_trace2("socket gracefully closed");
-            *n_read = 0;
-            return OSAL_STATUS_STREAM_CLOSED;
+        count = osal_ringbuf_get(&thiso->incoming, buf, n);
+        total += count;
+        if (count == n) {
+            break;
         }
+        n -= count;
+        buf += count;
 
-        if (rval == -1)
-        {
-            /* This matches with net_sockets.c
-             */
-            switch (errno)
-            {
-                case EWOULDBLOCK:
-                case EINPROGRESS:
-                case EINTR:
-                    break;
+        os_lock();
+        // move data from "end point" incoming ring buffer
+        os_unlock();
 
-                case ECONNREFUSED:
-                    status = OSAL_STATUS_CONNECTION_REFUSED;
-                    goto getout;
-
-                case ECONNRESET:
-                case EPIPE:
-                    status = OSAL_STATUS_CONNECTION_RESET;
-                    goto getout;
-
-                default:
-                    status = OSAL_STATUS_FAILED;
-                    goto getout;
-            }
-            rval = 0;
+        if (osal_ringbuf_is_empty(&thiso->incoming)) {
+            break;
         }
-
-        osal_resource_monitor_update(OSAL_RMON_RX_TCP, rval);
-        *n_read = rval;
-        return OSAL_SUCCESS;
     }
-#endif
 
-    status = OSAL_STATUS_FAILED;
-    status = OSAL_SUCCESS;
+    *n_read = total;
+    return OSAL_SUCCESS;
 
-// getout:
-    osal_trace2("socket read failed");
+getout:
+    osal_trace2("switchbox socket read failed");
     *n_read = 0;
-    return status;
+    return s;
 }
 
 
@@ -1178,22 +930,6 @@ os_boolean cert_match = OS_TRUE;
         os_timeslice();
         return OSAL_PENDING;
     }
-
-    /* switch (htype)
-    {
-        case IOC_HANDSHAKE_NETWORK_SERVICE:
-            s = ioc_switchbox_setup_service_connection(thiso);
-            break;
-
-        case IOC_HANDSHAKE_CLIENT:
-            s = ioc_switchbox_setup_client_connection(thiso);
-            break;
-
-        default:
-            s = OSAL_STATUS_FAILED;
-            osal_debug_error("switchbox: unknown incoming connection type");
-            break;
-    } */
 
     return OSAL_SUCCESS;
 }
