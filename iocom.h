@@ -222,6 +222,7 @@ OSAL_C_HEADER_BEGINS
 #endif
 #include "code/ioc_switchbox_auth_frame.h"
 #include "code/ioc_switchbox_socket.h"
+#include "code/ioc_switchbox_util.h"
 
 /* If C++ compilation, end the undecorated code.
  */

@@ -170,6 +170,8 @@ void ioc_release_switchbox_connection(
         con->auth_recv_buf = OS_NULL;
     }
 
+    os_free(con->incoming.buf, con->incoming.buf_sz);
+    os_free(con->outgoing.buf, con->outgoing.buf_sz);
     os_free(con, sizeof(switchboxConnection));
 
     /* End syncronization.

@@ -212,6 +212,14 @@ typedef struct switchboxConnection
      */
     iocSwitchboxAuthenticationFrameBuffer *auth_send_buf;
     iocSwitchboxAuthenticationFrameBuffer *auth_recv_buf;
+
+    /** Ring buffer for incoming data.
+     */
+    osalRingBuf incoming;
+
+    /** Ring buffer for outgoing data.
+     */
+    osalRingBuf outgoing;
 }
 switchboxConnection;
 

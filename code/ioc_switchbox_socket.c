@@ -96,21 +96,13 @@ typedef struct switchboxSocket
     iocSwitchboxAuthenticationFrameBuffer *auth_recv_buf;
     iocSwitchboxAuthenticationFrameBuffer *auth_send_buf;
 
-    /** Ring buffer, OS_NULL if not used.
+    /** Ring buffer for incoming data.
      */
-    os_char *buf;
+    osalRingBuf incoming;
 
-    /** Buffer size in bytes.
+    /** Ring buffer for outgoing data.
      */
-    os_int buf_sz;
-
-    /** Head index. Position in buffer to which next byte is to be written. Range 0 ... buf_sz-1.
-     */
-    os_int head;
-
-    /** Tail index. Position in buffer from which next byte is to be read. Range 0 ... buf_sz-1.
-     */
-    os_int tail;
+    osalRingBuf outgoing;
 
     /** Linked list of swichbox socket objects sharing one TLS switchbox connection.
      */
@@ -289,13 +281,13 @@ static void ioc_switchbox_socket_close(
     }
     thiso->hdr.iface = OS_NULL;
 
-
     /* Free hand shake state, ring buffer and memory allocated for socket structure.
      */
     ioc_release_handshake_state(&thiso->handshake);
     os_free(thiso->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
     os_free(thiso->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
-    os_free(thiso->buf, thiso->buf_sz);
+    os_free(thiso->incoming.buf, thiso->incoming.buf_sz);
+    os_free(thiso->outgoing.buf, thiso->outgoing.buf_sz);
     os_free(thiso, sizeof(switchboxSocket));
 }
 
@@ -433,6 +425,7 @@ static osalStatus ioc_switchbox_socket_flush(
     osalStream stream,
     os_int flags)
 {
+#if 0
     switchboxSocket *thiso;
     os_char *buf;
     os_memsz nwr;
@@ -492,11 +485,11 @@ static osalStatus ioc_switchbox_socket_flush(
             thiso->tail = tail;
         }
     }
-
+#endif
     return OSAL_SUCCESS;
 
-getout:
-    return status;
+// getout:
+//    return status;
 }
 
 
@@ -624,13 +617,13 @@ static osalStatus ioc_switchbox_socket_write(
     os_memsz *n_written,
     os_int flags)
 {
-    int count, wrnow;
+    // int count, wrnow;
     switchboxSocket *thiso;
     osalStatus status;
-    os_char *rbuf;
-    os_int head, tail, buf_sz, nexthead;
-    os_memsz nwr;
-    os_boolean all_not_flushed;
+    // os_char *rbuf;
+    // os_int head, tail, buf_sz, nexthead;
+    //os_memsz nwr;
+    //os_boolean all_not_flushed;
 
     if (stream)
     {
@@ -655,6 +648,7 @@ static osalStatus ioc_switchbox_socket_write(
             goto getout;
         }
 
+#if 0
         if (thiso->buf)
         {
             rbuf = thiso->buf;
@@ -729,7 +723,9 @@ static osalStatus ioc_switchbox_socket_write(
         }
 
         return ioc_switchbox_socket_write2(thiso, buf, n, n_written, flags);
+#endif
     }
+
     status = OSAL_STATUS_FAILED;
 
 getout:
