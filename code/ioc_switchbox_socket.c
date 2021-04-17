@@ -85,7 +85,6 @@ typedef struct switchboxSocket
     os_boolean authentication_received;
     os_boolean authentication_sent;
 
-
     /** Handshake state structure (switbox cloud net name and copying trust certificate).
      */
     iocHandshakeState handshake;
@@ -121,8 +120,11 @@ switchboxSocket;
 
 /* Prototypes for forward referred static functions.
  */
-/* static osalStatus ioc_switchbox_socket_setup_ring_buffer(
-    switchboxSocket *thiso); */
+static osalStatus ioc_switchbox_socket_push(
+    switchboxSocket *thiso);
+
+static osalStatus ioc_switchbox_socket_setup_ring_buffer(
+    switchboxSocket *thiso);
 
 static void ioc_switchbox_socket_link(
     switchboxSocket *thiso,
@@ -374,11 +376,14 @@ return OS_NULL
     }
     os_memclear(newsocket, sizeof(switchboxSocket));
 
-#if 0
-    if (flags & OSAL_STREAM_TCP_NODELAY) {
-        ioc_switchbox_socket_setup_ring_buffer(newsocket);
+    s = ioc_switchbox_socket_setup_ring_buffer(newsocket);
+    if (s) {
+        if (status) {
+            *status = s;
+        }
+        os_free(newsocket, sizeof(switchboxSocket));
+        return OS_NULL;
     }
-#endif
 
     newsocket->hdr.iface = &ioc_switchbox_socket_iface;
     newsocket->open_flags = flags;
@@ -422,6 +427,7 @@ static osalStatus ioc_switchbox_socket_flush(
     os_int flags)
 {
     switchboxSocket *thiso;
+    osalStatus s;
     OSAL_UNUSED(flags);
 
     if (stream == OS_NULL) {
@@ -434,6 +440,33 @@ static osalStatus ioc_switchbox_socket_flush(
         return thiso->status;
     }
 
+    s = ioc_switchbox_socket_push(thiso);
+
+    // Trig shared connection to send
+    // os_lock();
+    // os_unlock();
+
+    return s;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Move outgoing data to shared connection.
+  @anchor ioc_switchbox_socket_push
+
+  The ioc_switchbox_socket_push() function...
+
+  @param   thiso Stream pointer representing the socket.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
+           indicate an error.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_socket_push(
+    switchboxSocket *thiso)
+{
     os_lock();
     // move data from outgoing ring buffer to "end point" shared connection ring buffer.
     os_unlock();
@@ -499,7 +532,8 @@ static osalStatus ioc_switchbox_socket_write(
         n -= count;
         buf += count;
 
-        ioc_switchbox_socket_flush(stream, OSAL_STREAM_DEFAULT);
+        s = ioc_switchbox_socket_push(thiso);
+        if (s) goto getout;
 
         if (osal_ringbuf_is_full(&thiso->outgoing)) {
             break;
@@ -610,13 +644,11 @@ getout:
   @param   n_streams Number of stream pointers in "streams" array.
   @param   evnt Custom event to interrupt the select. OS_NULL if not needed.
   @param   selectdata Pointer to structure to fill in with information why select call
-           returned. The "stream_nr" member is stream number which triggered the return,
-           or OSAL_STREAM_NR_CUSTOM_EVENT if return was triggered by custom evenet given
-           as argument. The "errorcode" member is OSAL_SUCCESS if all is fine. Other
-           values indicate an error (broken or closed socket, etc). The "eventflags"
-           member is planned to to show reason for return. So far value of eventflags
-           is not well defined and is different for different operating systems, so
-           it should not be relied on.
+           returned. The "stream_nr" member is stream number which triggered the return:
+           0 = first stream, 1 = second stream... Or one of OSAL_STREAM_NR_CUSTOM_EVENT,
+           OSAL_STREAM_NR_TIMEOUT_EVENT or OSAL_STREAM_NR_UNKNOWN_EVENT. These indicate
+           that event was triggered, wait timeout, and that stream implementation did
+           not provide reason.
   @param   timeout_ms Maximum time to wait in select, ms. If zero, timeout is not used (infinite).
   @param   flags Ignored, set OSAL_STREAM_DEFAULT (0).
   @return  If successful, the function returns OSAL_SUCCESS (0) and the selectdata tells which
@@ -960,18 +992,29 @@ static void ioc_save_switchbox_trust_certificate(
 
 ****************************************************************************************************
 */
-#if 0
 static osalStatus ioc_switchbox_socket_setup_ring_buffer(
     switchboxSocket *thiso)
 {
-    os_memsz buf_sz;
+    os_memsz sz, buf_sz;
 
-    /* 16768 selected for TCP sockets */
-    thiso->buf = (os_char*)os_malloc(16768, &buf_sz);
-    thiso->buf_sz = (os_int)buf_sz;
-    return thiso->buf ? OSAL_SUCCESS : OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    os_memclear(&thiso->incoming, sizeof(osalRingBuf));
+    sz = 3000;
+    thiso->incoming.buf = (os_char*)os_malloc(sz, &buf_sz);
+    thiso->incoming.buf_sz = (os_int)buf_sz;
+    if (thiso->incoming.buf == OS_NULL) {
+        return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    }
+
+    os_memclear(&thiso->outgoing, sizeof(osalRingBuf));
+    sz = 3000;
+    thiso->outgoing.buf = (os_char*)os_malloc(sz, &buf_sz);
+    thiso->outgoing.buf_sz = (os_int)buf_sz;
+    if (thiso->outgoing.buf == OS_NULL) {
+        os_free(thiso->incoming.buf, thiso->incoming.buf_sz);
+        return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    }
+    return OSAL_SUCCESS;
 }
-#endif
 
 
 /** Stream interface for OSAL sockets. This is structure osalStreamInterface filled with
