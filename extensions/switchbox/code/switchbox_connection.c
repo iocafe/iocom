@@ -40,6 +40,9 @@ static osalStatus ioc_switchbox_read_socket(
 static osalStatus ioc_switchbox_setup_client_connection(
     switchboxConnection *con);
 
+static osalStatus ioc_switchbox_server_run(
+    switchboxConnection *con);
+
 static void ioc_switchbox_link_connection(
     switchboxConnection *con,
     switchboxConnection *scon);
@@ -859,6 +862,46 @@ static osalStatus ioc_switchbox_read_socket(
     }
 
     con->incoming.head = head;
+    return OSAL_SUCCESS;
+}
+
+
+static osalStatus ioc_switchbox_server_run(
+    switchboxConnection *con)
+{
+    switchboxRoot
+        *root;
+
+    /* Receive data from shared socket
+     */
+
+    /* Synchronize.
+     */
+    root = con->link.root;
+    ioc_switchbox_lock(root);
+
+
+    // loop trough client connections
+
+        // if unsent "new connection", add message to shared outgoing buffer
+
+
+
+    // loop trough client connections
+
+        // if "new connection sent"
+            // if client has unsent data, send it
+
+    // ioc_switchbox_unlock(root);
+
+    /* Send data to shared socket
+     */
+
+    /* If something done, set event to come here again quickly
+     */
+
+
+    ioc_switchbox_unlock(root);
     return OSAL_SUCCESS;
 }
 
