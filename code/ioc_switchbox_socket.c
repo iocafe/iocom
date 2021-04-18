@@ -136,6 +136,12 @@ static void ioc_switchbox_socket_unlink(
 static osalStatus ioc_switchbox_socket_handshake(
     switchboxSocket *thiso);
 
+static osalStatus ioc_write_to_shared_switchbox_socket(
+    switchboxSocket *thiso);
+
+static osalStatus ioc_read_from_shared_switchbox_socket(
+    switchboxSocket *thiso);
+
 static void ioc_save_switchbox_trust_certificate(
     const os_uchar *cert,
     os_memsz cert_sz,
@@ -435,6 +441,7 @@ static osalStatus ioc_switchbox_socket_flush(
     }
     thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
+    osal_debug_assert(!thiso->is_service_socket);
 
     if (thiso->status) {
         return thiso->status;
@@ -515,6 +522,7 @@ static osalStatus ioc_switchbox_socket_write(
     }
     thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
+    osal_debug_assert(!thiso->is_service_socket);
 
     total = 0;
     while (n > 0)
@@ -567,7 +575,7 @@ getout:
   @param   flags Flags for the function, use OSAL_STREAM_DEFAULT (0) for default operation.
 
   @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error. See @ref osalStatus "OSAL function return codes" for full list.
+           indicate an error.
 
 ****************************************************************************************************
 */
@@ -590,6 +598,7 @@ static osalStatus ioc_switchbox_socket_read(
     }
     thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
+    osal_debug_assert(!thiso->is_service_socket);
 
     total = 0;
     while (n > 0)
@@ -963,6 +972,120 @@ os_boolean cert_match = OS_TRUE;
         return OSAL_PENDING;
     }
 
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Write data to shared socket connected to switchbox.
+  @anchor ioc_write_to_shared_switchbox_socket
+
+  Service socket only: Write data from outgoing ring buffer to shared socket.
+
+  @param   thiso Stream pointer representing the listening socket.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
+           indicate an error.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_write_to_shared_switchbox_socket(
+    switchboxSocket *thiso)
+{
+    os_memsz n_written;
+    os_int n, tail;
+    osalStatus s;
+
+    osal_debug_assert(thiso->is_service_socket);
+    if (osal_ringbuf_is_empty(&thiso->outgoing)) {
+        return OSAL_SUCCESS;
+    }
+
+    tail = thiso->outgoing.tail;
+    n = osal_ringbuf_continuous_bytes(&thiso->outgoing);
+    s = osal_socket_write(thiso->switchbox_stream, thiso->outgoing.buf + tail,
+        n, &n_written, OSAL_STREAM_DEFAULT);
+    if (s) {
+        return s;
+    }
+    if (n_written == 0) {
+        return OSAL_SUCCESS;
+    }
+    tail += (os_int)n_written;
+    if (tail >= thiso->outgoing.buf_sz) {
+        tail = 0;
+
+        n = thiso->outgoing.head;
+        if (n) {
+            s = osal_socket_write(thiso->switchbox_stream, thiso->outgoing.buf + tail,
+                n, &n_written, OSAL_STREAM_DEFAULT);
+            if (s) {
+                return s;
+            }
+
+            tail += (os_int)n_written;
+        }
+    }
+
+    thiso->outgoing.tail = tail;
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Read data from shared socket connected to switchbox.
+  @anchor ioc_read_from_shared_switchbox_socket
+
+  Service socket only: Read data from shared socket to incoming ring buffer.
+
+  @param   thiso Stream pointer representing the listening socket.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
+           indicate an error.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_read_from_shared_switchbox_socket(
+    switchboxSocket *thiso)
+{
+    os_memsz n_read;
+    os_int n, head;
+    osalStatus s;
+
+    osal_debug_assert(thiso->is_service_socket);
+    if (osal_ringbuf_is_full(&thiso->incoming)) {
+        return OSAL_SUCCESS;
+    }
+
+    head = thiso->incoming.head;
+    n = osal_ringbuf_continuous_space(&thiso->incoming);
+    s = osal_socket_read(thiso->switchbox_stream, thiso->incoming.buf + head,
+        n, &n_read, OSAL_STREAM_DEFAULT);
+    if (s) {
+        return s;
+    }
+    if (n_read == 0) {
+        return OSAL_SUCCESS;
+    }
+    head += (os_int)n_read;
+    if (head >= thiso->incoming.buf_sz) {
+        head = 0;
+
+        n = thiso->incoming.tail - 1;
+        if (n > 0) {
+            s = osal_socket_read(thiso->switchbox_stream, thiso->incoming.buf + head,
+                n, &n_read, OSAL_STREAM_DEFAULT);
+            if (s) {
+                return s;
+            }
+
+            head += (os_int)n_read;
+        }
+    }
+
+    thiso->incoming.head = head;
     return OSAL_SUCCESS;
 }
 

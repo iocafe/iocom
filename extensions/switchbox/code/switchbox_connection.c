@@ -31,6 +31,12 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
 static osalStatus ioc_switchbox_setup_service_connection(
     switchboxConnection *con);
 
+static osalStatus ioc_switchbox_write_socket(
+    switchboxConnection *con);
+
+static osalStatus ioc_switchbox_read_socket(
+    switchboxConnection *con);
+
 static osalStatus ioc_switchbox_setup_client_connection(
     switchboxConnection *con);
 
@@ -699,6 +705,7 @@ getout:
 }
 
 
+
 /**
 ****************************************************************************************************
 
@@ -741,6 +748,118 @@ static osalStatus ioc_switchbox_setup_client_connection(
 getout:
     ioc_switchbox_unlock(root);
     return s;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Write data to switchbox socket.
+  @anchor ioc_switchbox_write_socket
+
+  Write data from outgoing ring buffer to socket.
+
+  @param   thiso Stream pointer representing the listening socket.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
+           indicate an error.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_write_socket(
+    switchboxConnection *con)
+{
+    os_memsz n_written;
+    os_int n, tail;
+    osalStatus s;
+
+    if (osal_ringbuf_is_empty(&con->outgoing)) {
+        return OSAL_SUCCESS;
+    }
+
+    tail = con->outgoing.tail;
+    n = osal_ringbuf_continuous_bytes(&con->outgoing);
+    s = osal_socket_write(con->stream, con->outgoing.buf + tail,
+        n, &n_written, OSAL_STREAM_DEFAULT);
+    if (s) {
+        return s;
+    }
+    if (n_written == 0) {
+        return OSAL_SUCCESS;
+    }
+    tail += (os_int)n_written;
+    if (tail >= con->outgoing.buf_sz) {
+        tail = 0;
+
+        n = con->outgoing.head;
+        if (n) {
+            s = osal_socket_write(con->stream, con->outgoing.buf + tail,
+                n, &n_written, OSAL_STREAM_DEFAULT);
+            if (s) {
+                return s;
+            }
+
+            tail += (os_int)n_written;
+        }
+    }
+
+    con->outgoing.tail = tail;
+    return OSAL_SUCCESS;
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Read data from switchbox socket.
+  @anchor ioc_switchbox_read_socket
+
+  Read data from socket to incoming ring buffer.
+
+  @param   thiso Stream pointer representing the listening socket.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
+           indicate an error.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_read_socket(
+    switchboxConnection *con)
+{
+    os_memsz n_read;
+    os_int n, head;
+    osalStatus s;
+
+    if (osal_ringbuf_is_full(&con->incoming)) {
+        return OSAL_SUCCESS;
+    }
+
+    head = con->incoming.head;
+    n = osal_ringbuf_continuous_space(&con->incoming);
+    s = osal_socket_read(con->stream, con->incoming.buf + head,
+        n, &n_read, OSAL_STREAM_DEFAULT);
+    if (s) {
+        return s;
+    }
+    if (n_read == 0) {
+        return OSAL_SUCCESS;
+    }
+    head += (os_int)n_read;
+    if (head >= con->incoming.buf_sz) {
+        head = 0;
+
+        n = con->incoming.tail - 1;
+        if (n > 0) {
+            s = osal_socket_read(con->stream, con->incoming.buf + head,
+                n, &n_read, OSAL_STREAM_DEFAULT);
+            if (s) {
+                return s;
+            }
+
+            head += (os_int)n_read;
+        }
+    }
+
+    con->incoming.head = head;
+    return OSAL_SUCCESS;
 }
 
 
