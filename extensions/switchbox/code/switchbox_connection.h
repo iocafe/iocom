@@ -208,6 +208,10 @@ typedef struct switchboxConnection
      */
     os_boolean authentication_received;
 
+    /** "new connection" message sent for client connection.
+     */
+    os_boolean new_connection_msg_sent;
+
     /** Buffers for received authentication data.
      */
     iocSwitchboxAuthenticationFrameBuffer *auth_send_buf;
@@ -220,6 +224,12 @@ typedef struct switchboxConnection
     /** Ring buffer for outgoing data.
      */
     osalRingBuf outgoing;
+
+    /** Server connection: Current client connection index. This is used to give
+        turns to clients if data is created faster than it is passed trough the
+        shared socket.
+     */
+    os_int current_connection_ix;
 }
 switchboxConnection;
 

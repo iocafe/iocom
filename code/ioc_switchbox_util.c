@@ -16,17 +16,6 @@
 #include "iocom.h"
 #if IOC_SWITCHBOX_SUPPORT
 
-typedef enum iocSwitboxMsgHeader {
-    SBOX_HDR_CLIENT_ID_0 = 0,
-    SBOX_HDR_CLIENT_ID_1,
-    SBOX_HDR_DATA_LEN_0,
-    SBOX_HDR_DATA_LEN_1,
-    SBOX_HDR_DATA_LEN_2,
-    SBOX_HDR_DATA_LEN_3,
-    SBOX_HDR_SIZE
-}
-iocSwitboxMsgHeader;
-
 /* Get message header (client id and data length from ring buffer if it contains message.
    @return  OSAL_SUCCESS if message header succesfully read from ring buffer. If there
             is not enough data in, the function returns OSAL_PENDING.

@@ -19,6 +19,23 @@
 #include "iocom.h"
 #if IOC_SWITCHBOX_SUPPORT
 
+typedef enum iocSwitboxMsgHeader {
+    SBOX_HDR_CLIENT_ID_0 = 0,
+    SBOX_HDR_CLIENT_ID_1,
+    SBOX_HDR_DATA_LEN_0,
+    SBOX_HDR_DATA_LEN_1,
+    SBOX_HDR_DATA_LEN_2,
+    SBOX_HDR_DATA_LEN_3,
+    SBOX_HDR_SIZE
+}
+iocSwitboxMsgHeader;
+
+/* Control coders in shared stream message header.
+ */
+#define IOC_SWITCHBOX_NEW_CONNECTION -1
+#define IOC_SWITCHBOX_CONNECTION_DROPPED -2
+
+
 /* Get message header from ring buffer (get client id and data length if whole header is in buffer).
  */
 osalStatus ioc_switchbox_get_msg_header_from_ringbuf(

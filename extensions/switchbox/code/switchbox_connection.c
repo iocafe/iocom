@@ -40,8 +40,11 @@ static osalStatus ioc_switchbox_read_socket(
 static osalStatus ioc_switchbox_setup_client_connection(
     switchboxConnection *con);
 
-static osalStatus ioc_switchbox_server_run(
-    switchboxConnection *con);
+static osalStatus ioc_switchbox_service_con_run(
+    switchboxConnection *scon);
+
+static osalStatus ioc_switchbox_client_run(
+    switchboxConnection *ccon);
 
 static void ioc_switchbox_link_connection(
     switchboxConnection *con,
@@ -390,11 +393,10 @@ static void ioc_switchbox_connection_thread(
 {
     switchboxRoot *root;
     switchboxConnection *con;
-//    const os_char *parameters;
-    osalStatus status;
+    osalStatus s;
     osalSelectData selectdata;
     os_timer tnow;
-    os_int silence_ms, count;
+    os_int silence_ms;
 
     /* Parameters point to the connection object.
      */
@@ -418,21 +420,21 @@ static void ioc_switchbox_connection_thread(
      */
     while (!con->worker.stop_thread && osal_go())
     {
-// static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo connection\n"); ulledoo = 0;}
+// static long ulledoo; if (++ulledoo > 109) {osal_debug_error("ulledoo connection\n"); ulledoo = 0;}
 
         /* If stream is not open, then connect it now. Do not try if two secons have not
            passed since last failed open try.
          */
 
-        status = osal_stream_select(&con->stream, 1, con->worker.trig,
+        s = osal_stream_select(&con->stream, 1, con->worker.trig,
             &selectdata, IOC_SOCKET_CHECK_TIMEOUTS_MS, OSAL_STREAM_DEFAULT);
 
-        if (status == OSAL_STATUS_NOT_SUPPORTED)
+        if (s == OSAL_STATUS_NOT_SUPPORTED)
         {
             os_timeslice();
         }
 
-        else if (status)
+        else if (s)
         {
             osal_debug_error("osal_stream_select failed");
             break;
@@ -441,50 +443,28 @@ static void ioc_switchbox_connection_thread(
 
         /* First hand shake for socket connections.
          */
-        status = ioc_switchbox_handshake_and_authentication(con);
-        if (status == OSAL_PENDING) {
+        s = ioc_switchbox_handshake_and_authentication(con);
+        if (s == OSAL_PENDING) {
             continue;
         }
-        if (status) {
+        if (s) {
             break;
         }
 
-        /* Receive and send in loop as long as we can without waiting.
-           How ever fast we write, we cannot block here (count=32) !
+        /* Run the connection.
          */
-        count = 32;
-        while (count--)
-        {
-            while (osal_go())
-            {
-                /* Try receiving data from the connection.
-                 */
-                /* status = ioc_connection_receive(con);
-                if (status == OSAL_PENDING)
-                {
-                    break;
-                }
-                if (status)
-                {
-                    goto failed;
-                } */
-
-                /* Record timer of last successful receive.
-                 */
-                con->last_receive = tnow;
+        if (con->is_service_connection) {
+            do {
+                s = ioc_switchbox_service_con_run(con);
             }
-
-            /* Try sending data though the connection.
-             */
-            /* status = ioc_connection_send(con);
-            if (status == OSAL_PENDING)
-            {
-                break;
-            }
-            if (status)
-            {
-                goto failed;
-            } */
+            while (s == OSAL_WORK_DONE && !con->worker.stop_thread && osal_go());
+        }
+        else {
+            s = ioc_switchbox_client_run(con);
+        }
+        if (OSAL_IS_ERROR(s)) {
+            osal_debug_error_int("switchbox run error: ", s);
+            break;
         }
 
         /* If too much time elapsed sice last receive?
@@ -492,7 +472,7 @@ static void ioc_switchbox_connection_thread(
         if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
         {
             osal_trace("line is silent, closing connection");
-            break;
+            // break;
         }
 
         /* Flush data to the connection.
@@ -580,8 +560,8 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
 
     htype = ioc_get_handshake_client_type(&con->handshake);
 
-    /* If this is service connection, handle authentication. For client connections, handling authentication belongs
-       to the IO network service.
+    /* If this is service connection, handle authentication. For client connections,
+       handling authentication belongs to the IO network service.
      */
     if (htype == IOC_HANDSHAKE_NETWORK_SERVICE)
     {
@@ -708,7 +688,6 @@ getout:
 }
 
 
-
 /**
 ****************************************************************************************************
 
@@ -763,8 +742,9 @@ getout:
   Write data from outgoing ring buffer to socket.
 
   @param   thiso Stream pointer representing the listening socket.
-  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
+           no data was written, value OSAL_WORK_DONE that some data was written. All other
+           nonzero values indicate a broken socket.
 
 ****************************************************************************************************
 */
@@ -805,8 +785,11 @@ static osalStatus ioc_switchbox_write_socket(
         }
     }
 
+    if (con->outgoing.tail == tail) {
+        return OSAL_SUCCESS;
+    }
     con->outgoing.tail = tail;
-    return OSAL_SUCCESS;
+    return OSAL_WORK_DONE;
 }
 
 
@@ -819,8 +802,9 @@ static osalStatus ioc_switchbox_write_socket(
   Read data from socket to incoming ring buffer.
 
   @param   thiso Stream pointer representing the listening socket.
-  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
+           no new data was read, value OSAL_WORK_DONE that data was read. All other nonzero
+           values indicate a broken socket.
 
 ****************************************************************************************************
 */
@@ -861,13 +845,152 @@ static osalStatus ioc_switchbox_read_socket(
         }
     }
 
+    if (con->incoming.head == head) {
+        return OSAL_SUCCESS;
+    }
     con->incoming.head = head;
-    return OSAL_SUCCESS;
+    return OSAL_WORK_DONE;
 }
 
 
-static osalStatus ioc_switchbox_server_run(
-    switchboxConnection *con)
+
+/**
+****************************************************************************************************
+
+  @brief Read data from switchbox socket.
+  @anchor ioc_switchbox_read_socket
+
+  Read data from socket to incoming ring buffer.
+
+  @param   thiso Stream pointer representing the listening socket.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
+           no new data was read, value OSAL_WORK_DONE that data was read. All other nonzero
+           values indicate a broken socket.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_service_con_run(
+    switchboxConnection *scon)
+{
+    switchboxRoot *root;
+    switchboxConnection *c, *current_c, *next_c;
+    os_int i, outbuf_space, bytes;
+    osalStatus s;
+    os_boolean work_done = OS_FALSE;
+
+    /* Receive data from shared socket
+     */
+    s = ioc_switchbox_read_socket(scon);
+    if (s == OSAL_WORK_DONE) {
+        work_done = OS_TRUE;
+    }
+    else if (OSAL_IS_ERROR(s)) {
+        return s;
+    }
+
+    /* Synchronize.
+     */
+    root = scon->link.root;
+    ioc_switchbox_lock(root);
+
+    /* loop trough client connections to generate new connection messages.
+     * and find current client connection.
+     */
+    current_c = OS_NULL;
+    scon->current_connection_ix++;
+    for (c = scon->list.head.first, i = 0; c; c = c->list.clink.next, i++)
+    {
+        if (!c->new_connection_msg_sent) {
+            s = ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing, c->client_id, IOC_SWITCHBOX_NEW_CONNECTION);
+            if (s != OSAL_SUCCESS) {
+                continue;
+            }
+            c->new_connection_msg_sent = OS_TRUE;
+            work_done = OS_TRUE;
+        }
+
+        if (i == scon->current_connection_ix) {
+            current_c = c;
+        }
+    }
+    if (current_c == OS_NULL) {
+        for (c = scon->list.head.first; c; c = c->list.clink.next) {
+            if (c->new_connection_msg_sent) {
+                scon->current_connection_ix = 0;
+                current_c = c;
+                break;
+            }
+        }
+    }
+
+    /* loop trough client connections to read data from clients.
+     */
+    if (current_c) {
+        c = current_c;
+        do {
+            /* If we do not have space in outgoing buffer for header + one byte,
+               waste no time here.
+             */
+            outbuf_space = osal_ringbuf_space(&scon->outgoing);
+            if (outbuf_space < SBOX_HDR_SIZE + 1) continue;
+
+            next_c = c->list.clink.next;
+            if (next_c == OS_NULL) {
+                next_c = scon->list.head.first;
+            }
+
+            if (!c->new_connection_msg_sent) {
+                goto nextcon;
+            }
+
+            if (osal_ringbuf_is_empty(&c->incoming)) {
+                goto nextcon;
+            }
+
+            bytes = osal_ringbuf_bytes(&c->incoming);
+            if (bytes > outbuf_space - SBOX_HDR_SIZE) {
+                bytes = outbuf_space - SBOX_HDR_SIZE;
+            }
+            ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing, c->client_id, bytes);
+            ioc_switchbox_ringbuf_move(&scon->outgoing, &c->incoming, bytes);
+            work_done = OS_TRUE;
+
+nextcon:
+            c = next_c;
+        }
+        while (c != current_c);
+    }
+
+    /* move data from shared socket to client connections.
+     */
+    // If we have no data bytes to move, see if we have message header
+
+
+    // If we have data bytes to move, move data
+
+    // loop trough client connections
+
+
+    /* If something done, set event to come here again quickly
+     */
+    ioc_switchbox_unlock(root);
+
+    /* Send data to shared socket
+     */
+    s = ioc_switchbox_write_socket(scon);
+    if (s == OSAL_WORK_DONE) {
+        work_done = OS_TRUE;
+    }
+    else if (OSAL_IS_ERROR(s)) {
+        return s;
+    }
+
+    return work_done ? OSAL_WORK_DONE : OSAL_SUCCESS;
+}
+
+
+static osalStatus ioc_switchbox_client_run(
+    switchboxConnection *ccon)
 {
     switchboxRoot
         *root;
@@ -877,13 +1000,10 @@ static osalStatus ioc_switchbox_server_run(
 
     /* Synchronize.
      */
-    root = con->link.root;
+    root = ccon->link.root;
     ioc_switchbox_lock(root);
 
 
-    // loop trough client connections
-
-        // if unsent "new connection", add message to shared outgoing buffer
 
 
 
@@ -904,7 +1024,6 @@ static osalStatus ioc_switchbox_server_run(
     ioc_switchbox_unlock(root);
     return OSAL_SUCCESS;
 }
-
 
 /**
 ****************************************************************************************************
