@@ -79,7 +79,12 @@ typedef struct switchboxSocket
 
     /** True if this is end point object, which connects to the switchbox service.
      */
-    os_boolean is_service_socket;
+    os_boolean is_shared_socket;
+
+    /** Client identifier, a number from 1 to 0xFFFF which uniquely identifies client
+        connection. Zero for shared socket.
+     */
+    os_ushort client_id;
 
     os_boolean handshake_ready;
     os_boolean authentication_received;
@@ -114,6 +119,28 @@ typedef struct switchboxSocket
         switchboxSocketLink clink;  /* Client connections link together */
     }
     list;
+
+    /** Triggering thread select: Event given as argument to select, OS_NULL if
+        not within select call or no event was given. os_lock() must be on to access.
+     */
+    osalEvent select_event;
+
+    /** Triggering thread select: Memorized trig when thread was triggered while not
+        within select.
+     */
+    volatile os_boolean trig_select;
+
+    /** Shared socket: Invidual socket index to get data from first. This shares
+        bandwith between individual connections, if data is generated faster than
+        what can be written to shared connection.
+     */
+    os_int current_individual_socket_ix;
+
+    /** Shared socket: Message header received, now expecting "incoming_bytes" of data
+        for "incoming_client_id". incoming_bytes == 0 if expecting message header.
+     */
+    os_int incoming_bytes;
+    os_ushort incoming_client_id;
 }
 switchboxSocket;
 
@@ -126,6 +153,9 @@ static osalStatus ioc_switchbox_socket_push(
 static osalStatus ioc_switchbox_socket_setup_ring_buffer(
     switchboxSocket *thiso);
 
+static void ioc_switchbox_set_select_event(
+    switchboxSocket *thiso);
+
 static void ioc_switchbox_socket_link(
     switchboxSocket *thiso,
     switchboxSocket *ssock);
@@ -134,6 +164,9 @@ static void ioc_switchbox_socket_unlink(
     switchboxSocket *thiso);
 
 static osalStatus ioc_switchbox_socket_handshake(
+    switchboxSocket *thiso);
+
+static osalStatus ioc_switchbox_run_shared_socket(
     switchboxSocket *thiso);
 
 static osalStatus ioc_write_to_shared_switchbox_socket(
@@ -225,7 +258,7 @@ static osalStream ioc_switchbox_socket_open(
     /* Save flags, interface pointer and steam.
      */
     thiso->open_flags = flags;
-    thiso->is_service_socket = OS_TRUE;
+    thiso->is_shared_socket = OS_TRUE;
     thiso->hdr.iface = &ioc_switchbox_socket_iface;
     thiso->switchbox_stream = switchbox_stream;
 
@@ -341,6 +374,7 @@ static osalStream ioc_switchbox_socket_accept(
         return OS_NULL;
     }
     thiso = (switchboxSocket*)stream;
+    osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
     s = ioc_switchbox_socket_handshake(thiso);
     if (s) {
@@ -348,22 +382,14 @@ static osalStream ioc_switchbox_socket_accept(
         return OS_NULL;
     }
 
+    s = ioc_switchbox_run_shared_socket(thiso);
+
 *status = OSAL_NO_NEW_CONNECTION;
-return OS_NULL
-;
+return OS_NULL;
+
     /* Cast stream pointer to switchbox socket structure pointer.
      */
-    osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
-#if 0
-    /* If no new connection, do nothing more.
-     */
-    if (new_handle == -1)
-    {
-        if (status) *status = OSAL_NO_NEW_CONNECTION;
-        return OS_NULL;
-    }
-#endif
 
     /* Set socket reuse, blocking mode, and nagle.
      */
@@ -441,7 +467,7 @@ static osalStatus ioc_switchbox_socket_flush(
     }
     thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
-    osal_debug_assert(!thiso->is_service_socket);
+    osal_debug_assert(!thiso->is_shared_socket);
 
     if (thiso->status) {
         return thiso->status;
@@ -522,7 +548,7 @@ static osalStatus ioc_switchbox_socket_write(
     }
     thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
-    osal_debug_assert(!thiso->is_service_socket);
+    osal_debug_assert(!thiso->is_shared_socket);
 
     total = 0;
     while (n > 0)
@@ -598,7 +624,7 @@ static osalStatus ioc_switchbox_socket_read(
     }
     thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
-    osal_debug_assert(!thiso->is_service_socket);
+    osal_debug_assert(!thiso->is_shared_socket);
 
     total = 0;
     while (n > 0)
@@ -648,9 +674,10 @@ getout:
   read end to readfds. When the other thread wants to interrupt the select() just write a byte
   to it, then consume it afterward.
 
-  @param   streams Array of streams to wait for. These must be serial ports, no mixing
-           of different stream types is supported.
-  @param   n_streams Number of stream pointers in "streams" array.
+  @param   streams Array of streams to wait for. For switchbox this must be array of exactly
+           one swithbox socket.
+           types cannot be mixed in select.
+  @param   n_streams This must be always 1 for the swithbox stream.
   @param   evnt Custom event to interrupt the select. OS_NULL if not needed.
   @param   selectdata Pointer to structure to fill in with information why select call
            returned. The "stream_nr" member is stream number which triggered the return:
@@ -675,117 +702,80 @@ static osalStatus ioc_switchbox_socket_select(
     os_int flags)
 {
     switchboxSocket *thiso;
-    os_int i; // , handle, socket_nr, maxfd, pipefd, rval;
     OSAL_UNUSED(flags);
 
     os_memclear(selectdata, sizeof(osalSelectData));
 
-    if (nstreams < 1 || nstreams > OSAL_SOCKET_SELECT_MAX)
+    if (nstreams != 1) {
         return OSAL_STATUS_FAILED;
+    }
 
-    for (i = 0; i < nstreams; i++) {
-        thiso = (switchboxSocket*)streams[i];
+    /* Is this shared service socket or individual one.
+     */
+    thiso = (switchboxSocket*)streams[0];
+    osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
+
+    /* Lock is necessary even this is atomic variable set, because the thread which triggers
+     * this must get this pointer and set event within lock.
+     */
+    if (evnt) {
+        os_lock();
+        thiso->select_event = evnt;
+        if (thiso->trig_select) {
+            thiso->trig_select = OS_FALSE;
+            osal_event_set(evnt);
+        }
+        os_unlock();
+    }
+
+    if (thiso->is_shared_socket) {
         if (!thiso->handshake_ready || !thiso->authentication_received || !thiso->authentication_sent) {
             os_timeslice();
             return OSAL_SUCCESS;
         }
     }
 
-#if 0
-    FD_ZERO(&rdset);
-    FD_ZERO(&wrset);
-    FD_ZERO(&exset);
+    if (evnt) {
+        osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE);
 
-    maxfd = 0;
-    for (i = 0; i < nstreams; i++)
-    {
-        thiso = (switchboxSocket*)streams[i];
-        if (thiso)
-        {
-            osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
-            handle = thiso->handle;
-
-            FD_SET(handle, &rdset);
-            thiso->wrset_enabled = OS_FALSE;
-            if (thiso->write2_blocked /* || !thiso->connected */)
-            {
-                FD_SET(handle, &wrset);
-                thiso->wrset_enabled = OS_TRUE;
-            }
-            FD_SET(handle, &exset);
-            if (handle > maxfd) maxfd = handle;
-        }
+        os_lock();
+        thiso->select_event = OS_NULL;
+        os_unlock();
+    }
+    else {
+        os_timeslice();
     }
 
-    pipefd = -1;
-    if (evnt)
-    {
-        pipefd = osal_event_pipefd(evnt);
-        if (pipefd > maxfd) maxfd = pipefd;
-        FD_SET(pipefd, &rdset);
-    }
+    // selectdata->stream_nr = socket_nr;
 
-    to = NULL;
-    if (timeout_ms)
-    {
-        timeout.tv_sec = (time_t)(timeout_ms / 1000);
-        timeout.tv_nsec	= (long)((timeout_ms % 1000) * 1000000);
-        to = &timeout;
-    }
-
-    rval = pselect(maxfd+1, &rdset, &wrset, &exset, to, NULL);
-    if (rval <= 0)
-    {
-        if (rval == 0)
-        {
-            selectdata->stream_nr = OSAL_STREAM_NR_TIMEOUT_EVENT;
-            return OSAL_SUCCESS;
-        }
-    }
-
-    if (pipefd >= 0) if (FD_ISSET(pipefd, &rdset))
-    {
-        osal_event_clearpipe(evnt);
-
-        selectdata->stream_nr = OSAL_STREAM_NR_CUSTOM_EVENT;
-        return OSAL_SUCCESS;
-    }
-
-    /* Find out socket number
-     */
-    for (socket_nr = 0; socket_nr < nstreams; socket_nr++)
-    {
-        thiso = (switchboxSocket*)streams[socket_nr];
-        if (thiso)
-        {
-            handle = thiso->handle;
-
-            if (FD_ISSET (handle, &exset)) {
-                break;
-            }
-
-            if (FD_ISSET (handle, &rdset)) {
-                break;
-            }
-
-            if (thiso->wrset_enabled) {
-                if (FD_ISSET (handle, &wrset)) {
-                    break;
-                }
-            }
-        }
-    }
-
-    if (socket_nr == nstreams)
-    {
-        socket_nr = OSAL_STREAM_NR_UNKNOWN_EVENT;
-    }
-
-    selectdata->stream_nr = socket_nr;
-#endif
     return OSAL_SUCCESS;
 }
 
+/**
+****************************************************************************************************
+
+  @brief Set select event.
+
+  If select is ongoing, the function sets select event. The function sets trig_select variable
+  to mark that select is imminent.
+
+  Note: Use of os_lock() within the function is important.
+
+  @param   thiso Pointer to the client socket object.
+  @param   ssock Pointer to the service socket object.
+
+****************************************************************************************************
+*/
+static void ioc_switchbox_set_select_event(
+    switchboxSocket *thiso)
+{
+    os_lock();
+    thiso->trig_select = OS_TRUE;
+    if (thiso->select_event) {
+        osal_event_set(thiso->select_event);
+    }
+    os_unlock();
+}
 
 /**
 ****************************************************************************************************
@@ -803,7 +793,7 @@ static void ioc_switchbox_socket_link(
     switchboxSocket *thiso,
     switchboxSocket *ssock)
 {
-    osal_debug_assert(ssock->is_service_socket);
+    osal_debug_assert(ssock->is_shared_socket);
 
     /* Join to list of client connections for the server connection.
      */
@@ -840,7 +830,7 @@ static void ioc_switchbox_socket_unlink(
 
     /* thiso is service connection.
      */
-    if (thiso->is_service_socket) {
+    if (thiso->is_shared_socket) {
         for (c = thiso->list.head.first; c; c = next_c) {
             next_c = c->list.clink.next;
          //   c->worker.stop_thread = OS_TRUE; XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -979,14 +969,195 @@ os_boolean cert_match = OS_TRUE;
 /**
 ****************************************************************************************************
 
+  @brief Read and write shared socket and move data.
+
+  Receives data from client socket to incoming buffer and sends data from outgoing buffer to
+  client socket.
+
+  @param   thiso Pointer to the shared socket structure.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
+           nothing was done, value OSAL_WORK_DONE that work was done and more work may
+           be there to do. All other nonzero values indicate a broken socket.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_run_shared_socket(
+    switchboxSocket *thiso)
+{
+    switchboxSocket *c, *current_c, *next_c;
+    os_int i, outbuf_space, bytes;
+    osalStatus s;
+    os_boolean work_done = OS_FALSE;
+    os_short client_id;
+
+    /* Receive data from shared socket
+     */
+    s = ioc_read_from_shared_switchbox_socket(thiso);
+    if (s == OSAL_WORK_DONE) {
+        work_done = OS_TRUE;
+    }
+    else if (OSAL_IS_ERROR(s)) {
+        return s;
+    }
+
+    /* Synchronize.
+     */
+    os_lock();
+
+    /* Loop trough to find individual socket in turn to serve first.
+     */
+    current_c = OS_NULL;
+    thiso->current_individual_socket_ix++;
+    for (c = thiso->list.head.first, i = 0; c; c = c->list.clink.next, i++)
+    {
+        if (i == thiso->current_individual_socket_ix) {
+            current_c = c;
+        }
+    }
+    if (current_c == OS_NULL) {
+        current_c = thiso->list.head.first;
+    }
+
+    /* Loop trough client connections to read the data.
+     */
+    if (current_c) {
+        c = current_c;
+        do {
+            /* If we do not have space in outgoing buffer for header + one byte,
+               waste no time here.
+             */
+            outbuf_space = osal_ringbuf_space(&thiso->outgoing);
+            if (outbuf_space < SBOX_HDR_SIZE + 1) continue;
+
+            next_c = c->list.clink.next;
+            if (next_c == OS_NULL) {
+                next_c = thiso->list.head.first;
+            }
+
+            if (osal_ringbuf_is_empty(&c->incoming)) {
+                goto nextcon;
+            }
+
+            bytes = osal_ringbuf_bytes(&c->incoming);
+            if (bytes > outbuf_space - SBOX_HDR_SIZE) {
+                bytes = outbuf_space - SBOX_HDR_SIZE;
+            }
+            ioc_switchbox_store_msg_header_to_ringbuf(&thiso->outgoing, c->client_id, bytes);
+            ioc_switchbox_ringbuf_move(&thiso->outgoing, &c->incoming, bytes);
+            work_done = OS_TRUE;
+            ioc_switchbox_set_select_event(c);
+nextcon:
+            c = next_c;
+        }
+        while (c != current_c);
+    }
+
+    /* Move data from shared socket to client connections. If we have no data bytes to move
+       from incoming shared socket, see first if we have message header.
+     */
+    if (thiso->incoming_bytes == 0) {
+        s = ioc_switchbox_get_msg_header_from_ringbuf(&thiso->incoming, &client_id, &bytes);
+        if (s == OSAL_SUCCESS) {
+            if (bytes > 0) {
+                thiso->incoming_client_id = client_id;
+                thiso->incoming_bytes = bytes;
+            }
+            else switch(bytes) {
+                case IOC_SWITCHBOX_CONNECTION_DROPPED:
+                    for (c = thiso->list.head.first; c; c = c->list.clink.next)
+                    {
+                        if (c->client_id == thiso->incoming_client_id) {
+                            // c->worker.stop_thread = OS_TRUE;
+                            // c->connection_dropped_message_done = OS_TRUE;
+                            ioc_switchbox_set_select_event(c);
+                        }
+                    }
+                    break;
+
+                default:
+                    osal_debug_error_int("service con received unknown command ", bytes);
+                    break;
+
+            }
+            work_done = OS_TRUE;
+        }
+    }
+
+    /* If we have data bytes to move, do it.
+     */
+    if (thiso->incoming_bytes) {
+        current_c = OS_NULL;
+        for (c = thiso->list.head.first; c; c = c->list.clink.next)
+        {
+            if (c->client_id == thiso->incoming_client_id) {
+                current_c = c;
+                break;
+            }
+        }
+
+        bytes = osal_ringbuf_bytes(&thiso->incoming);
+        if (thiso->incoming_bytes < bytes) {
+            bytes = thiso->incoming_bytes;
+        }
+        if (current_c) {
+            i = osal_ringbuf_space(&current_c->outgoing);
+            if (i < bytes) {
+                bytes = i;
+            }
+            if (bytes) {
+                ioc_switchbox_ringbuf_move(&current_c->outgoing, &thiso->incoming, bytes);
+                thiso->incoming_bytes -= bytes;
+                work_done = OS_TRUE;
+                ioc_switchbox_set_select_event(current_c);
+            }
+        }
+        else if (bytes) {
+            /* Client connection dropped, drop received bytes away.
+             */
+            ioc_switchbox_ringbuf_skip_data(&thiso->incoming, bytes);
+
+            thiso->incoming_bytes -= bytes;
+            if (thiso->incoming_bytes == 0) {
+                ioc_switchbox_store_msg_header_to_ringbuf(&thiso->outgoing,
+                    thiso->incoming_client_id, IOC_SWITCHBOX_CONNECTION_DROPPED);
+            }
+
+            work_done = OS_TRUE;
+        }
+    }
+
+    /* If something done, set event to come here again quickly.
+     */
+    os_unlock();
+
+    /* Send data to shared socket
+     */
+    s = ioc_write_to_shared_switchbox_socket(thiso);
+    if (s == OSAL_WORK_DONE) {
+        work_done = OS_TRUE;
+    }
+    else if (OSAL_IS_ERROR(s)) {
+        return s;
+    }
+
+    return work_done ? OSAL_WORK_DONE : OSAL_SUCCESS;
+}
+
+
+
+
+/**
+****************************************************************************************************
+
   @brief Write data to shared socket connected to switchbox.
   @anchor ioc_write_to_shared_switchbox_socket
 
   Service socket only: Write data from outgoing ring buffer to shared socket.
 
   @param   thiso Stream pointer representing the listening socket.
-  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
+           no data was written, value OSAL_WORK_DONE that some data was written. All other
+           nonzero values indicate a broken socket.
 
 ****************************************************************************************************
 */
@@ -997,7 +1168,7 @@ static osalStatus ioc_write_to_shared_switchbox_socket(
     os_int n, tail;
     osalStatus s;
 
-    osal_debug_assert(thiso->is_service_socket);
+    osal_debug_assert(thiso->is_shared_socket);
     if (osal_ringbuf_is_empty(&thiso->outgoing)) {
         return OSAL_SUCCESS;
     }
@@ -1028,8 +1199,11 @@ static osalStatus ioc_write_to_shared_switchbox_socket(
         }
     }
 
+    if (thiso->outgoing.tail == tail) {
+        return OSAL_SUCCESS;
+    }
     thiso->outgoing.tail = tail;
-    return OSAL_SUCCESS;
+    return OSAL_WORK_DONE;
 }
 
 
@@ -1042,8 +1216,9 @@ static osalStatus ioc_write_to_shared_switchbox_socket(
   Service socket only: Read data from shared socket to incoming ring buffer.
 
   @param   thiso Stream pointer representing the listening socket.
-  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
+           nothing was done. Value OSAL_WORK_DONE is work was done and more work may
+           be there to do. All other nonzero values indicate a broken socket.
 
 ****************************************************************************************************
 */
@@ -1054,7 +1229,7 @@ static osalStatus ioc_read_from_shared_switchbox_socket(
     os_int n, head;
     osalStatus s;
 
-    osal_debug_assert(thiso->is_service_socket);
+    osal_debug_assert(thiso->is_shared_socket);
     if (osal_ringbuf_is_full(&thiso->incoming)) {
         return OSAL_SUCCESS;
     }
@@ -1085,8 +1260,12 @@ static osalStatus ioc_read_from_shared_switchbox_socket(
         }
     }
 
+    if (thiso->incoming.head == head) {
+        return OSAL_SUCCESS;
+    }
+
     thiso->incoming.head = head;
-    return OSAL_SUCCESS;
+    return OSAL_WORK_DONE;
 }
 
 

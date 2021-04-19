@@ -392,7 +392,7 @@ static void ioc_switchbox_connection_thread(
     osalEvent done)
 {
     switchboxRoot *root;
-    switchboxConnection *con;
+    switchboxConnection *con, *scon;
     osalStatus s;
     osalSelectData selectdata;
     os_timer tnow;
@@ -489,6 +489,18 @@ static void ioc_switchbox_connection_thread(
     /* Unlink connection, delete trigger event and mark that this thread is no longer running.
      */
     ioc_switchbox_lock(root);
+    if (!con->is_service_connection && con->new_connection_msg_sent && !con->connection_dropped_message_done)
+    {
+        scon = con->list.clink.scon;
+        if (scon) {
+            s = ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing,
+                con->client_id, IOC_SWITCHBOX_CONNECTION_DROPPED);
+            if (s == OSAL_SUCCESS) {
+                con->connection_dropped_message_done = OS_TRUE;
+            }
+        }
+    }
+
     ioc_switchbox_unlink_connection(con);
     osal_event_delete(con->worker.trig);
     con->worker.trig = OS_NULL;
@@ -863,7 +875,7 @@ static osalStatus ioc_switchbox_read_socket(
 
   @param   scon Pointer to the service connection object.
   @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
-           nothing was done, value OSAL_WORK_DONE that work was done and more work may
+           nothing was done. Value OSAL_WORK_DONE is work was done and more work may
            be there to do. All other nonzero values indicate a broken socket.
 
 ****************************************************************************************************
@@ -969,8 +981,27 @@ nextcon:
     if (scon->incoming_bytes == 0) {
         s = ioc_switchbox_get_msg_header_from_ringbuf(&scon->incoming, &client_id, &bytes);
         if (s == OSAL_SUCCESS) {
-            scon->incoming_client_id = client_id;
-            scon->incoming_bytes = bytes;
+            if (bytes > 0) {
+                scon->incoming_client_id = client_id;
+                scon->incoming_bytes = bytes;
+            }
+            else switch(bytes) {
+                case IOC_SWITCHBOX_CONNECTION_DROPPED:
+                    for (c = scon->list.head.first; c; c = c->list.clink.next)
+                    {
+                        if (c->new_connection_msg_sent && c->client_id == scon->incoming_client_id) {
+                            c->worker.stop_thread = OS_TRUE;
+                            c->connection_dropped_message_done = OS_TRUE;
+                            osal_event_set(c->worker.trig);
+                        }
+                    }
+                    break;
+
+                default:
+                    osal_debug_error_int("service con received unknown command ", bytes);
+                    break;
+
+            }
             work_done = OS_TRUE;
         }
     }
@@ -979,7 +1010,7 @@ nextcon:
      */
     if (scon->incoming_bytes) {
         current_c = OS_NULL;
-        for (c = scon->list.head.first, i = 0; c; c = c->list.clink.next, i++)
+        for (c = scon->list.head.first; c; c = c->list.clink.next)
         {
             if (c->new_connection_msg_sent && c->client_id == scon->incoming_client_id) {
                 current_c = c;
@@ -998,6 +1029,7 @@ nextcon:
             }
             if (bytes) {
                 ioc_switchbox_ringbuf_move(&current_c->outgoing, &scon->incoming, bytes);
+                scon->incoming_bytes -= bytes;
                 work_done = OS_TRUE;
                 osal_event_set(current_c->worker.trig);
             }
@@ -1006,6 +1038,13 @@ nextcon:
             /* Client connection dropped, drop received bytes away.
              */
             ioc_switchbox_ringbuf_skip_data(&scon->incoming, bytes);
+
+            scon->incoming_bytes -= bytes;
+            if (scon->incoming_bytes == 0) {
+                ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing,
+                    scon->incoming_client_id, IOC_SWITCHBOX_CONNECTION_DROPPED);
+            }
+
             work_done = OS_TRUE;
         }
     }

@@ -150,7 +150,7 @@ typedef struct switchboxConnection
     os_boolean is_service_connection;
 
     /** Client identifier, a number from 1 to 0xFFFF which uniquely identifies client connection.
-        Zero for serice connections.
+        Zero for shared service connection.
      */
     os_ushort client_id;
 
@@ -211,6 +211,10 @@ typedef struct switchboxConnection
     /** "new connection" message sent for client connection.
      */
     os_boolean new_connection_msg_sent;
+
+    /** "connection dropped" message sent or received for client.
+     */
+    os_boolean connection_dropped_message_done;
 
     /** Buffers for received authentication data.
      */
