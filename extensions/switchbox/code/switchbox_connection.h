@@ -225,11 +225,17 @@ typedef struct switchboxConnection
      */
     osalRingBuf outgoing;
 
-    /** Server connection: Current client connection index. This is used to give
+    /** Service connection: Current client connection index. This is used to give
         turns to clients if data is created faster than it is passed trough the
         shared socket.
      */
     os_int current_connection_ix;
+
+    /** Service connection: Message header received, now expecting "incoming_bytes" of data
+        for "incoming_client_id". incoming_bytes == 0 if expecting message header.
+     */
+    os_int incoming_bytes;
+    os_ushort incoming_client_id;
 }
 switchboxConnection;
 

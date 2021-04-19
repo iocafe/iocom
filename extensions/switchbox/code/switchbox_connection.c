@@ -857,15 +857,15 @@ static osalStatus ioc_switchbox_read_socket(
 /**
 ****************************************************************************************************
 
-  @brief Read data from switchbox socket.
-  @anchor ioc_switchbox_read_socket
+  @brief Read and write shared service socket and move data to/from client connections.
 
-  Read data from socket to incoming ring buffer.
+  Receives data from client socket to incoming buffer and sends data from outgoing buffer to
+  client socket. If data is moved, service connection thread may have something to do, trig it.
 
-  @param   thiso Stream pointer representing the listening socket.
+  @param   scon Pointer to the service connection object.
   @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
-           no new data was read, value OSAL_WORK_DONE that data was read. All other nonzero
-           values indicate a broken socket.
+           nothing was done, value OSAL_WORK_DONE that work was done and more work may
+           be there to do. All other nonzero values indicate a broken socket.
 
 ****************************************************************************************************
 */
@@ -877,6 +877,7 @@ static osalStatus ioc_switchbox_service_con_run(
     os_int i, outbuf_space, bytes;
     osalStatus s;
     os_boolean work_done = OS_FALSE;
+    os_short client_id;
 
     /* Receive data from shared socket
      */
@@ -893,7 +894,7 @@ static osalStatus ioc_switchbox_service_con_run(
     root = scon->link.root;
     ioc_switchbox_lock(root);
 
-    /* loop trough client connections to generate new connection messages.
+    /* Loop trough client connections to generate new connection messages.
      * and find current client connection.
      */
     current_c = OS_NULL;
@@ -901,7 +902,9 @@ static osalStatus ioc_switchbox_service_con_run(
     for (c = scon->list.head.first, i = 0; c; c = c->list.clink.next, i++)
     {
         if (!c->new_connection_msg_sent) {
-            s = ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing, c->client_id, IOC_SWITCHBOX_NEW_CONNECTION);
+            s = ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing,
+                c->client_id, IOC_SWITCHBOX_NEW_CONNECTION);
+
             if (s != OSAL_SUCCESS) {
                 continue;
             }
@@ -923,7 +926,7 @@ static osalStatus ioc_switchbox_service_con_run(
         }
     }
 
-    /* loop trough client connections to read data from clients.
+    /* Loop trough client connections to read the data.
      */
     if (current_c) {
         c = current_c;
@@ -954,22 +957,58 @@ static osalStatus ioc_switchbox_service_con_run(
             ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing, c->client_id, bytes);
             ioc_switchbox_ringbuf_move(&scon->outgoing, &c->incoming, bytes);
             work_done = OS_TRUE;
-
+            osal_event_set(c->worker.trig);
 nextcon:
             c = next_c;
         }
         while (c != current_c);
     }
 
-    /* move data from shared socket to client connections.
+    /* Move data from shared socket to client connections.
+       If we have no data bytes to move from incoming shared socket, see if we have message header
      */
-    // If we have no data bytes to move, see if we have message header
+    if (scon->incoming_bytes == 0) {
+        s = ioc_switchbox_get_msg_header_from_ringbuf(&scon->incoming, &client_id, &bytes);
+        if (s == OSAL_SUCCESS) {
+            scon->incoming_client_id = client_id;
+            scon->incoming_bytes = bytes;
+            work_done = OS_TRUE;
+        }
+    }
 
+    /* If we have data bytes to move, do it.
+     */
+    if (scon->incoming_bytes) {
+        current_c = OS_NULL;
+        for (c = scon->list.head.first, i = 0; c; c = c->list.clink.next, i++)
+        {
+            if (c->new_connection_msg_sent && c->client_id == scon->incoming_client_id) {
+                current_c = c;
+                break;
+            }
+        }
 
-    // If we have data bytes to move, move data
-
-    // loop trough client connections
-
+        bytes = osal_ringbuf_bytes(&scon->incoming);
+        if (scon->incoming_bytes < bytes) {
+            bytes = scon->incoming_bytes;
+        }
+        if (current_c) {
+            i = osal_ringbuf_space(&current_c->outgoing);
+            if (i < bytes) {
+                bytes = i;
+            }
+            if (bytes) {
+                ioc_switchbox_ringbuf_move(&current_c->outgoing, &scon->incoming, bytes);
+                work_done = OS_TRUE;
+                osal_event_set(current_c->worker.trig);
+            }
+        }
+        else if (bytes) {
+            /* client connection dropped, drop received bytes away */
+            ioc_switchbox_ringbuf_skip_data(&scon->incoming, bytes);
+            work_done = OS_TRUE;
+        }
+    }
 
     /* If something done, set event to come here again quickly
      */
@@ -989,41 +1028,64 @@ nextcon:
 }
 
 
+/**
+****************************************************************************************************
+
+  @brief Read and write client socket.
+
+  Receives data from client socket to incoming buffer and sends data from outgoing buffer to
+  client socket. If data is moved, service connection thread may have something to do, trig it.
+
+  @param   ccon Pointer to the client connection object.
+  @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
+           nothing was done, value OSAL_WORK_DONE that work was done and more work may
+           be there to do. All other nonzero values indicate a broken socket.
+
+****************************************************************************************************
+*/
 static osalStatus ioc_switchbox_client_run(
     switchboxConnection *ccon)
 {
-    switchboxRoot
-        *root;
+    switchboxRoot *root;
+    switchboxConnection *scon;
+    osalStatus s;
+    os_boolean work_done = OS_FALSE;
 
-    /* Receive data from shared socket
+    /* Receive data from client socket.
      */
+    s = ioc_switchbox_read_socket(ccon);
+    if (s == OSAL_WORK_DONE) {
+        work_done = OS_TRUE;
+    }
+    else if (OSAL_IS_ERROR(s)) {
+        return s;
+    }
 
-    /* Synchronize.
+    /* Send data to client socket.
      */
-    root = ccon->link.root;
-    ioc_switchbox_lock(root);
+    s = ioc_switchbox_write_socket(ccon);
+    if (s == OSAL_WORK_DONE) {
+        work_done = OS_TRUE;
+    }
+    else if (OSAL_IS_ERROR(s)) {
+        return s;
+    }
 
-
-
-
-
-    // loop trough client connections
-
-        // if "new connection sent"
-            // if client has unsent data, send it
-
-    // ioc_switchbox_unlock(root);
-
-    /* Send data to shared socket
+    /* If we received or sent data, trig service connection thread.
      */
+    if (work_done) {
+        root = ccon->link.root;
+        ioc_switchbox_lock(root);
+        scon = ccon->list.clink.scon;
+        if (scon) {
+            osal_event_set(scon->worker.trig);
+        }
+        ioc_switchbox_unlock(root);
+    }
 
-    /* If something done, set event to come here again quickly
-     */
-
-
-    ioc_switchbox_unlock(root);
-    return OSAL_SUCCESS;
+    return work_done ? OSAL_WORK_DONE : OSAL_SUCCESS;
 }
+
 
 /**
 ****************************************************************************************************
