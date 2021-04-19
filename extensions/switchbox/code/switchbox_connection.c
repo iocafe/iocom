@@ -853,7 +853,6 @@ static osalStatus ioc_switchbox_read_socket(
 }
 
 
-
 /**
 ****************************************************************************************************
 
@@ -1004,13 +1003,14 @@ nextcon:
             }
         }
         else if (bytes) {
-            /* client connection dropped, drop received bytes away */
+            /* Client connection dropped, drop received bytes away.
+             */
             ioc_switchbox_ringbuf_skip_data(&scon->incoming, bytes);
             work_done = OS_TRUE;
         }
     }
 
-    /* If something done, set event to come here again quickly
+    /* If something done, set event to come here again quickly.
      */
     ioc_switchbox_unlock(root);
 

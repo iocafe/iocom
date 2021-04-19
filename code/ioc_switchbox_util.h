@@ -36,14 +36,14 @@ iocSwitboxMsgHeader;
 #define IOC_SWITCHBOX_CONNECTION_DROPPED -2
 
 
-/* Get message header from ring buffer (get client id and data length if whole header is in buffer).
+/* Get message header from ring buffer (get client id and data length).
  */
 osalStatus ioc_switchbox_get_msg_header_from_ringbuf(
     osalRingBuf *r,
     os_short *client_id,
     os_int *data_len);
 
-/* Save message header to ring buffer .
+/* Store message header into ring buffer.
  */
 osalStatus ioc_switchbox_store_msg_header_to_ringbuf(
     osalRingBuf *r,
