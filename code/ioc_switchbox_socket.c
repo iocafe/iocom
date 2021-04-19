@@ -702,6 +702,8 @@ static osalStatus ioc_switchbox_socket_select(
     os_int flags)
 {
     switchboxSocket *thiso;
+    osalSelectData myselectdata;
+    osalStatus s;
     OSAL_UNUSED(flags);
 
     os_memclear(selectdata, sizeof(osalSelectData));
@@ -733,17 +735,25 @@ static osalStatus ioc_switchbox_socket_select(
             os_timeslice();
             return OSAL_SUCCESS;
         }
+
+        s = osal_stream_select(&thiso->switchbox_stream, 1, evnt, &myselectdata,
+            timeout_ms, OSAL_STREAM_DEFAULT);
+        if (OSAL_IS_ERROR(s)) {
+            return s;
+        }
     }
 
-    if (evnt) {
-        osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE);
-
-        os_lock();
-        thiso->select_event = OS_NULL;
-        os_unlock();
-    }
     else {
-        os_timeslice();
+        if (evnt) {
+            osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE);
+
+            os_lock();
+            thiso->select_event = OS_NULL;
+            os_unlock();
+        }
+        else {
+            os_timeslice();
+        }
     }
 
     // selectdata->stream_nr = socket_nr;
