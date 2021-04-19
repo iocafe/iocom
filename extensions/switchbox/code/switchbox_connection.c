@@ -963,8 +963,8 @@ nextcon:
         while (c != current_c);
     }
 
-    /* Move data from shared socket to client connections.
-       If we have no data bytes to move from incoming shared socket, see if we have message header
+    /* Move data from shared socket to client connections. If we have no data bytes to move
+       from incoming shared socket, see first if we have message header.
      */
     if (scon->incoming_bytes == 0) {
         s = ioc_switchbox_get_msg_header_from_ringbuf(&scon->incoming, &client_id, &bytes);
