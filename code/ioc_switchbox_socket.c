@@ -163,11 +163,12 @@ static void ioc_switchbox_socket_link(
 static void ioc_switchbox_socket_unlink(
     switchboxSocket *thiso);
 
-static osalStatus ioc_switchbox_socket_handshake(
+static osalStatus ioc_switchbox_shared_socket_handshake(
     switchboxSocket *thiso);
 
 static osalStatus ioc_switchbox_run_shared_socket(
-    switchboxSocket *thiso);
+    switchboxSocket *thiso,
+    switchboxSocket **newsocket);
 
 static osalStatus ioc_write_to_shared_switchbox_socket(
     switchboxSocket *thiso);
@@ -380,37 +381,33 @@ static osalStream ioc_switchbox_socket_accept(
     thiso = (switchboxSocket*)stream;
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
-    s = ioc_switchbox_socket_handshake(thiso);
+    s = ioc_switchbox_shared_socket_handshake(thiso);
     if (s) {
         if (status) *status = (s == OSAL_PENDING) ? OSAL_NO_NEW_CONNECTION : s;
         return OS_NULL;
     }
 
-    s = ioc_switchbox_run_shared_socket(thiso);
+    s = ioc_switchbox_run_shared_socket(thiso, &newsocket);
+    switch (s) {
+        case OSAL_SUCCESS:
+            break;
 
-*status = OSAL_NO_NEW_CONNECTION;
-return OS_NULL;
+        case OSAL_WORK_DONE:
+            ioc_switchbox_set_select_event(thiso);
+            break;
 
-    /* Cast stream pointer to switchbox socket structure pointer.
-     */
-
-
-    /* Set socket reuse, blocking mode, and nagle.
-     */
-    if (flags == OSAL_STREAM_DEFAULT) {
-        flags = thiso->open_flags;
+        default:
+            if (OSAL_IS_ERROR(s)) {
+                if (status) *status = s;
+                return OS_NULL;
+            }
+            break;
     }
 
-    /* Allocate and clear socket structure.
-     */
-    newsocket = (switchboxSocket*)os_malloc(sizeof(switchboxSocket), OS_NULL);
-    if (newsocket == OS_NULL)
-    {
-        // close(new_handle);
-        if (status) *status = OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    if (newsocket == OS_NULL) {
+        *status = OSAL_NO_NEW_CONNECTION;
         return OS_NULL;
     }
-    os_memclear(newsocket, sizeof(switchboxSocket));
 
     s = ioc_switchbox_socket_setup_ring_buffer(newsocket);
     if (s) {
@@ -422,7 +419,7 @@ return OS_NULL;
     }
 
     newsocket->hdr.iface = &ioc_switchbox_socket_iface;
-    newsocket->open_flags = flags;
+    newsocket->open_flags = flags == OSAL_STREAM_DEFAULT ? thiso->open_flags : flags;
 
     os_lock();
     ioc_switchbox_socket_link(newsocket, thiso);
@@ -431,7 +428,7 @@ return OS_NULL;
     /* Success set status code and cast socket structure pointer to stream pointer
        and return it.
      */
-    osal_trace2("socket accepted");
+    osal_trace2("switchbox socket accepted");
     if (status) *status = OSAL_SUCCESS;
     return (osalStream)newsocket;
 }
@@ -889,7 +886,7 @@ static void ioc_switchbox_socket_unlink(
 
 ****************************************************************************************************
 */
-static osalStatus ioc_switchbox_socket_handshake(
+static osalStatus ioc_switchbox_shared_socket_handshake(
     switchboxSocket *thiso)
 {
     osalStatus s;
@@ -915,7 +912,7 @@ os_boolean cert_match = OS_TRUE;
         thiso->handshake_ready = OS_TRUE;
     }
 
-    /* Service connection: We need to receive authentication frame.
+    /* We need to receive authentication frame.
      */
     if (!thiso->authentication_received) {
         if (thiso->auth_recv_buf == OS_NULL) {
@@ -991,18 +988,22 @@ os_boolean cert_match = OS_TRUE;
   @param   thiso Pointer to the shared socket structure.
   @return  Function status code. Value OSAL_SUCCESS (0) indicates that there is no error but
            nothing was done, value OSAL_WORK_DONE that work was done and more work may
-           be there to do. All other nonzero values indicate a broken socket.
+           be there to do. All other nonzero values indicate a broken socket or other error.
 
 ****************************************************************************************************
 */
 static osalStatus ioc_switchbox_run_shared_socket(
-    switchboxSocket *thiso)
+    switchboxSocket *thiso,
+    switchboxSocket **newsocket)
 {
     switchboxSocket *c, *current_c, *next_c;
+    switchboxSocket *news;
     os_int i, outbuf_space, bytes;
     osalStatus s;
     os_boolean work_done = OS_FALSE;
     os_short client_id;
+
+    *newsocket = OS_NULL;
 
     /* Receive data from shared socket
      */
@@ -1077,6 +1078,16 @@ nextcon:
                 thiso->incoming_bytes = bytes;
             }
             else switch(bytes) {
+                case IOC_SWITCHBOX_NEW_CONNECTION:
+                    news = (switchboxSocket*)os_malloc(sizeof(switchboxSocket), OS_NULL);
+                    if (news == OS_NULL) {
+                        os_unlock();
+                        return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+                    }
+                    os_memclear(news, sizeof(switchboxSocket));
+                    *newsocket = news;
+                    break;
+
                 case IOC_SWITCHBOX_CONNECTION_DROPPED:
                     for (c = thiso->list.head.first; c; c = c->list.clink.next)
                     {
@@ -1151,6 +1162,10 @@ nextcon:
         work_done = OS_TRUE;
     }
     else if (OSAL_IS_ERROR(s)) {
+        if (*newsocket) {
+            os_free(*newsocket, sizeof(switchboxSocket));
+        }
+        *newsocket = OS_NULL;
         return s;
     }
 
@@ -1292,10 +1307,11 @@ static void ioc_save_switchbox_trust_certificate(
 {
 }
 
+
 /**
 ****************************************************************************************************
 
-  @brief Set up ring buffer for sends.
+  @brief Set up ring buffers for outgoing and incoming data.
   @anchor ioc_switchbox_socket_setup_ring_buffer
 
   The ring buffer is used to control sending of TCP packets. Writes are first collected to

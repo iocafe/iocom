@@ -53,6 +53,9 @@ static void ioc_switchbox_link_connection(
 static void ioc_switchbox_unlink_connection(
     switchboxConnection *con);
 
+static osalStatus ioc_switchbox_setup_ring_buffer(
+    switchboxConnection *con);
+
 
 /**
 ****************************************************************************************************
@@ -402,6 +405,8 @@ static void ioc_switchbox_connection_thread(
      */
     con = (switchboxConnection*)prm;
     root = con->link.root;
+
+    ioc_switchbox_setup_ring_buffer(con);
 
     /* Let thread which created this one proceed.
      */
@@ -773,7 +778,7 @@ static osalStatus ioc_switchbox_write_socket(
 
     tail = con->outgoing.tail;
     n = osal_ringbuf_continuous_bytes(&con->outgoing);
-    s = osal_socket_write(con->stream, con->outgoing.buf + tail,
+    s = osal_stream_write(con->stream, con->outgoing.buf + tail,
         n, &n_written, OSAL_STREAM_DEFAULT);
     if (s) {
         return s;
@@ -787,7 +792,7 @@ static osalStatus ioc_switchbox_write_socket(
 
         n = con->outgoing.head;
         if (n) {
-            s = osal_socket_write(con->stream, con->outgoing.buf + tail,
+            s = osal_stream_write(con->stream, con->outgoing.buf + tail,
                 n, &n_written, OSAL_STREAM_DEFAULT);
             if (s) {
                 return s;
@@ -833,7 +838,7 @@ static osalStatus ioc_switchbox_read_socket(
 
     head = con->incoming.head;
     n = osal_ringbuf_continuous_space(&con->incoming);
-    s = osal_socket_read(con->stream, con->incoming.buf + head,
+    s = osal_stream_read(con->stream, con->incoming.buf + head,
         n, &n_read, OSAL_STREAM_DEFAULT);
     if (s) {
         return s;
@@ -847,7 +852,7 @@ static osalStatus ioc_switchbox_read_socket(
 
         n = con->incoming.tail - 1;
         if (n > 0) {
-            s = osal_socket_read(con->stream, con->incoming.buf + head,
+            s = osal_stream_read(con->stream, con->incoming.buf + head,
                 n, &n_read, OSAL_STREAM_DEFAULT);
             if (s) {
                 return s;
@@ -1209,4 +1214,44 @@ static void ioc_switchbox_unlink_connection(
             con->list.clink.next = con->list.clink.prev = con->list.clink.scon = OS_NULL;
         }
     }
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Set up ring buffers for outgoing and incoming data.
+  @anchor ioc_switchbox_setup_ring_buffer
+
+  The ring buffer is used to control sending of TCP packets. Writes are first collected to
+  the ring buffer and then flushed.
+
+  @param   con Pointer to the client connection object.
+  @return  OSAL_SUCCESS if all is fine, OSAL_STATUS_MEMORY_ALLOCATION_FAILED if memory
+           allocation failed.
+
+****************************************************************************************************
+*/
+static osalStatus ioc_switchbox_setup_ring_buffer(
+    switchboxConnection *con)
+{
+    os_memsz sz, buf_sz;
+
+    os_memclear(&con->incoming, sizeof(osalRingBuf));
+    sz = 3000;
+    con->incoming.buf = (os_char*)os_malloc(sz, &buf_sz);
+    con->incoming.buf_sz = (os_int)buf_sz;
+    if (con->incoming.buf == OS_NULL) {
+        return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    }
+
+    os_memclear(&con->outgoing, sizeof(osalRingBuf));
+    sz = 3000;
+    con->outgoing.buf = (os_char*)os_malloc(sz, &buf_sz);
+    con->outgoing.buf_sz = (os_int)buf_sz;
+    if (con->outgoing.buf == OS_NULL) {
+        os_free(con->incoming.buf, con->incoming.buf_sz);
+        return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    }
+    return OSAL_SUCCESS;
 }

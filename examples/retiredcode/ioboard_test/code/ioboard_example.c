@@ -144,7 +144,7 @@ osalStatus osal_main(
     wifi[1].wifi_net_name = "bean24";
     wifi[1].wifi_net_password = "mysecret";
 
-    /* Initialize the underlying transport library. Never call boath osal_socket_initialize()
+    /* Initialize the underlying transport library. Never call both osal_socket_initialize()
        and osal_tls_initialize(). These use the same underlying library.
        Set up iface to point correct transport interface and set parameters to configure it.
        Set also flags for communication protocol.
