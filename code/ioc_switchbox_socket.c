@@ -236,6 +236,7 @@ static osalStream ioc_switchbox_socket_open(
 {
     switchboxSocket *thiso = OS_NULL;
     osalStream switchbox_stream;
+    osalStatus s;
 
     osal_debug_assert(flags & OSAL_STREAM_LISTEN);
 
@@ -266,6 +267,15 @@ static osalStream ioc_switchbox_socket_open(
     thiso->is_shared_socket = OS_TRUE;
     thiso->hdr.iface = &ioc_switchbox_socket_iface;
     thiso->switchbox_stream = switchbox_stream;
+
+    s = ioc_switchbox_socket_setup_ring_buffer(thiso);
+    if (s) {
+        if (status) {
+            *status = s;
+        }
+        os_free(thiso, sizeof(switchboxSocket));
+        return OS_NULL;
+    }
 
     ioc_initialize_handshake_state(&thiso->handshake);
 

@@ -491,8 +491,6 @@ static void ioc_switchbox_connection_thread(
      */
     ioc_switchbox_close_stream(con);
 
-    /* Unlink connection, delete trigger event and mark that this thread is no longer running.
-     */
     ioc_switchbox_lock(root);
     if (!con->is_service_connection && con->new_connection_msg_sent && !con->connection_dropped_message_done)
     {
@@ -506,6 +504,8 @@ static void ioc_switchbox_connection_thread(
         }
     }
 
+    /* Unlink connection, delete trigger event and mark that this thread is no longer running.
+     */
     ioc_switchbox_unlink_connection(con);
     osal_event_delete(con->worker.trig);
     con->worker.trig = OS_NULL;
