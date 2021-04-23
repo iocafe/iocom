@@ -187,16 +187,18 @@ static void ioc_save_switchbox_trust_certificate(
   @brief Open a socket.
   @anchor ioc_switchbox_socket_open
 
-  The ioc_switchbox_socket_open() function opens a socket. The socket can be either listening TCP
-  socket, connecting TCP socket or UDP multicast socket.
+  The ioc_switchbox_socket_open() function opens listening end point at switchbox service.
+  The function connects TLS socket to switchbox service and transfers commands and data
+  trough it.
 
-  @param  parameters SwitchboxSocket parameters, a list string or direct value.
+  @param  parameters IP address and optionally port of switchbox service to connect to.
+  SwitchboxSocket parameters, a list string or direct value.
           Address and port to connect to, or interface and port to listen for.
           SwitchboxSocket IP address and port can be specified either as value of "addr" item
           or directly in parameter sstring. For example "192.168.1.55:20" or "localhost:12345"
           specify IPv4 addressed. If only port number is specified, which is often
           useful for listening socket, for example ":12345".
-          IPv4 address is automatically recognized from numeric address like
+          IPv6 address is automatically recognized from numeric address like
           "2001:0db8:85a3:0000:0000:8a2e:0370:7334", but not when address is specified as string
           nor for empty IP specifying only port to listen. Use brackets around IP address
           to mark IPv6 address, for example "[localhost]:12345", or "[]:12345" for empty IP.
@@ -233,6 +235,8 @@ static osalStream ioc_switchbox_socket_open(
 {
     switchboxSocket *thiso = OS_NULL;
     osalStream switchbox_stream;
+
+    osal_debug_assert(flags & OSAL_STREAM_LISTEN);
 
     /* Open shared connection.
      */
@@ -1185,7 +1189,7 @@ static osalStatus ioc_write_to_shared_switchbox_socket(
 
     tail = thiso->outgoing.tail;
     n = osal_ringbuf_continuous_bytes(&thiso->outgoing);
-    s = osal_socket_write(thiso->switchbox_stream, thiso->outgoing.buf + tail,
+    s = osal_stream_write(thiso->switchbox_stream, thiso->outgoing.buf + tail,
         n, &n_written, OSAL_STREAM_DEFAULT);
     if (s) {
         return s;
@@ -1199,7 +1203,7 @@ static osalStatus ioc_write_to_shared_switchbox_socket(
 
         n = thiso->outgoing.head;
         if (n) {
-            s = osal_socket_write(thiso->switchbox_stream, thiso->outgoing.buf + tail,
+            s = osal_stream_write(thiso->switchbox_stream, thiso->outgoing.buf + tail,
                 n, &n_written, OSAL_STREAM_DEFAULT);
             if (s) {
                 return s;
@@ -1246,7 +1250,7 @@ static osalStatus ioc_read_from_shared_switchbox_socket(
 
     head = thiso->incoming.head;
     n = osal_ringbuf_continuous_space(&thiso->incoming);
-    s = osal_socket_read(thiso->switchbox_stream, thiso->incoming.buf + head,
+    s = osal_stream_read(thiso->switchbox_stream, thiso->incoming.buf + head,
         n, &n_read, OSAL_STREAM_DEFAULT);
     if (s) {
         return s;
@@ -1260,7 +1264,7 @@ static osalStatus ioc_read_from_shared_switchbox_socket(
 
         n = thiso->incoming.tail - 1;
         if (n > 0) {
-            s = osal_socket_read(thiso->switchbox_stream, thiso->incoming.buf + head,
+            s = osal_stream_read(thiso->switchbox_stream, thiso->incoming.buf + head,
                 n, &n_read, OSAL_STREAM_DEFAULT);
             if (s) {
                 return s;
