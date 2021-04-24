@@ -130,6 +130,10 @@ typedef struct switchboxSocket
      */
     volatile os_boolean trig_select;
 
+    /** Flush writes to shared socket.
+     */
+    volatile os_boolean flush_writes;
+
     /** Shared socket: Invidual socket index to get data from first. This shares
         bandwith between individual connections, if data is generated faster than
         what can be written to shared connection.
@@ -147,14 +151,15 @@ switchboxSocket;
 
 /* Prototypes for forward referred static functions.
  */
-static osalStatus ioc_switchbox_socket_push(
-    switchboxSocket *thiso);
-
 static osalStatus ioc_switchbox_socket_setup_ring_buffer(
     switchboxSocket *thiso);
 
 static void ioc_switchbox_set_select_event(
     switchboxSocket *thiso);
+
+static void ioc_switchbox_set_shared_select_event(
+    switchboxSocket *thiso,
+    os_boolean flush_writes);
 
 static void ioc_switchbox_socket_link(
     switchboxSocket *thiso,
@@ -470,7 +475,6 @@ static osalStatus ioc_switchbox_socket_flush(
     os_int flags)
 {
     switchboxSocket *thiso;
-    osalStatus s;
     OSAL_UNUSED(flags);
 
     if (stream == OS_NULL) {
@@ -480,40 +484,11 @@ static osalStatus ioc_switchbox_socket_flush(
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
     osal_debug_assert(!thiso->is_shared_socket);
 
+    ioc_switchbox_set_shared_select_event(thiso, OS_TRUE);
+
     if (thiso->status) {
         return thiso->status;
     }
-
-    s = ioc_switchbox_socket_push(thiso);
-
-    // Trig shared connection to send
-    // os_lock();
-    // os_unlock();
-
-    return s;
-}
-
-
-/**
-****************************************************************************************************
-
-  @brief Move outgoing data to shared connection.
-  @anchor ioc_switchbox_socket_push
-
-  The ioc_switchbox_socket_push() function...
-
-  @param   thiso Stream pointer representing the socket.
-  @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error.
-
-****************************************************************************************************
-*/
-static osalStatus ioc_switchbox_socket_push(
-    switchboxSocket *thiso)
-{
-    os_lock();
-    // move data from outgoing ring buffer to "end point" shared connection ring buffer.
-    os_unlock();
 
     return OSAL_SUCCESS;
 }
@@ -577,9 +552,7 @@ static osalStatus ioc_switchbox_socket_write(
         n -= count;
         buf += count;
 
-        s = ioc_switchbox_socket_push(thiso);
-        if (s) goto getout;
-
+        ioc_switchbox_set_shared_select_event(thiso, OS_FALSE);
         if (osal_ringbuf_is_full(&thiso->outgoing)) {
             break;
         }
@@ -772,6 +745,7 @@ static osalStatus ioc_switchbox_socket_select(
     return OSAL_SUCCESS;
 }
 
+
 /**
 ****************************************************************************************************
 
@@ -783,7 +757,6 @@ static osalStatus ioc_switchbox_socket_select(
   Note: Use of os_lock() within the function is important.
 
   @param   thiso Pointer to the client socket object.
-  @param   ssock Pointer to the service socket object.
 
 ****************************************************************************************************
 */
@@ -794,6 +767,50 @@ static void ioc_switchbox_set_select_event(
     thiso->trig_select = OS_TRUE;
     if (thiso->select_event) {
         osal_event_set(thiso->select_event);
+    }
+    os_unlock();
+}
+
+
+/**
+****************************************************************************************************
+
+  @brief Set shared select event.
+
+  Called by individual switchbox socket to set shared socket event.
+
+  Note: Use of os_lock() within the function is important.
+
+  @param   thiso Pointer to the client socket object.
+  @param   flush_writes Actually flush writes from ring buffer to socket
+
+****************************************************************************************************
+*/
+static void ioc_switchbox_set_shared_select_event(
+    switchboxSocket *thiso,
+    os_boolean flush_writes)
+{
+    switchboxSocket *shared;
+
+    osal_debug_assert(!thiso->is_shared_socket);
+
+    os_lock();
+    shared = thiso->list.clink.scon;
+    if (shared) {
+        /* flush_writes = 1: this function is called by flush(), it should trigger the thread only
+           if we have something in ring buffer to write.
+           flush_writes = 0: this function is called by write(), it should trigger shared thread
+           always, but regardless if there is anything in outgoing buffer.
+         */
+        // if (!osal_ringbuf_is_empty(&shared->outgoing) || !flush_writes) {
+            shared->trig_select = OS_TRUE;
+            if (flush_writes) {
+                shared->flush_writes = flush_writes;
+            }
+            if (shared->select_event) {
+                osal_event_set(shared->select_event);
+            }
+        // }
     }
     os_unlock();
 }
@@ -1177,6 +1194,11 @@ nextcon:
         }
         *newsocket = OS_NULL;
         return s;
+    }
+
+    if (thiso->flush_writes) {
+        thiso->flush_writes = OS_FALSE;
+        osal_stream_flush(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
     }
 
     return work_done ? OSAL_WORK_DONE : OSAL_SUCCESS;

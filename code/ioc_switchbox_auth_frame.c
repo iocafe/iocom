@@ -274,11 +274,9 @@ osalStatus icom_switchbox_process_authentication_frame(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results)
 {
-    iocReadFrameState
-        rfs;
+    iocReadFrameState rfs;
 
-    osalStatus
-        status;
+    osalStatus status;
 
 #if OSAL_SERIAL_SUPPORT
     os_ushort
@@ -288,14 +286,14 @@ osalStatus icom_switchbox_process_authentication_frame(
     os_memclear(&rfs, sizeof(rfs));
     rfs.buf = (os_uchar*)abuf->buf;
     rfs.n = abuf->buf_pos;
-    if (rfs.frame_sz == 0) {
+    rfs.frame_sz = IOC_MAX_AUTHENTICATION_FRAME_SZ;
+    if (abuf->ti == 0) {
+        // rfs.needed = 5;
         os_get_timer(&abuf->ti);
     }
-    rfs.frame_sz = IOC_MAX_AUTHENTICATION_FRAME_SZ;
 
     /* Read one received frame using IOCOM frame format.
      */
-    rfs.frame_nr = 0;
     status = ioc_read_frame(&rfs, stream);
     if (status) {
         return status;
@@ -306,7 +304,7 @@ osalStatus icom_switchbox_process_authentication_frame(
     if (rfs.bytes_received) {
         os_get_timer(&abuf->ti);
     }
-    abuf->buf_pos = rfs.n;
+    // abuf->buf_pos = rfs.n;
 
     /* If we have not received whole frame, we need to wait.
      */
@@ -334,6 +332,7 @@ osalStatus icom_switchbox_process_authentication_frame(
         }
     }
 #endif
+
 
     /* Whole authentication frame successfully received, parse content.
      */

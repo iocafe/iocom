@@ -116,7 +116,7 @@ switchboxConnection *ioc_initialize_switchbox_connection(
 
     /* Return pointer to initialized connection.
      */
-    osal_trace("connection: initialized");
+    osal_trace("switchbox: connection initialized");
     return con;
 }
 
@@ -185,6 +185,9 @@ void ioc_release_switchbox_connection(
         con->auth_recv_buf = OS_NULL;
     }
 
+    osal_trace_str(con->is_service_connection ? "switchbox service released: "
+        : "switchbox client released: ", con->network_name);
+
     os_free(con->incoming.buf, con->incoming.buf_sz);
     os_free(con->outgoing.buf, con->outgoing.buf_sz);
     os_free(con, sizeof(switchboxConnection));
@@ -192,7 +195,6 @@ void ioc_release_switchbox_connection(
     /* End syncronization.
      */
     ioc_switchbox_unlock(root);
-    osal_trace("connection: released");
 }
 
 
@@ -368,9 +370,9 @@ static void ioc_switchbox_close_stream(
 {
     if (con->stream)
     {
-        osal_trace2("stream closed");
         osal_stream_close(con->stream, OSAL_STREAM_DEFAULT);
         con->stream = OS_NULL;
+        osal_trace2("switchbox socket closed");
     }
 }
 
@@ -427,10 +429,6 @@ static void ioc_switchbox_connection_thread(
     {
 // static long ulledoo; if (++ulledoo > 109) {osal_debug_error("ulledoo connection\n"); ulledoo = 0;}
 
-        /* If stream is not open, then connect it now. Do not try if two secons have not
-           passed since last failed open try.
-         */
-
         s = osal_stream_select(&con->stream, 1, con->worker.trig,
             &selectdata, IOC_SOCKET_CHECK_TIMEOUTS_MS, OSAL_STREAM_DEFAULT);
 
@@ -476,7 +474,7 @@ static void ioc_switchbox_connection_thread(
          */
         if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
         {
-            osal_trace("line is silent, closing connection");
+            osal_trace("line is silent");
             // break;
         }
 
@@ -546,7 +544,6 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
     switchboxConnection *con)
 {
     osalStatus s;
-    iocHandshakeClientType htype;
 
     if (con->handshake_ready && (!con->is_service_connection ||
         (con->authentication_received && con->authentication_sent) ))
@@ -572,15 +569,30 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
             osal_debug_error("switchbox: incoming connection without network name");
             return OSAL_STATUS_FAILED;
         }
+
+
+        switch (ioc_get_handshake_client_type(&con->handshake))
+        {
+            case IOC_HANDSHAKE_NETWORK_SERVICE:
+                con->is_service_connection = OS_TRUE;
+                break;
+
+            case IOC_HANDSHAKE_CLIENT:
+                break;
+
+            default:
+                osal_debug_error("switchbox: unknown incoming connection type");
+                return OSAL_STATUS_FAILED;
+        }
+
         con->handshake_ready = OS_TRUE;
     }
 
-    htype = ioc_get_handshake_client_type(&con->handshake);
 
     /* If this is service connection, handle authentication. For client connections,
        handling authentication belongs to the IO network service.
      */
-    if (htype == IOC_HANDSHAKE_NETWORK_SERVICE)
+    if (con->is_service_connection)
     {
         /* Service connection: We need to receive authentication frame.
          */
@@ -643,20 +655,11 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
         }
     }
 
-    switch (htype)
-    {
-        case IOC_HANDSHAKE_NETWORK_SERVICE:
-            s = ioc_switchbox_setup_service_connection(con);
-            break;
-
-        case IOC_HANDSHAKE_CLIENT:
-            s = ioc_switchbox_setup_client_connection(con);
-            break;
-
-        default:
-            s = OSAL_STATUS_FAILED;
-            osal_debug_error("switchbox: unknown incoming connection type");
-            break;
+    if (con->is_service_connection) {
+        s = ioc_switchbox_setup_service_connection(con);
+    }
+    else {
+        s = ioc_switchbox_setup_client_connection(con);
     }
 
     return s;
@@ -680,12 +683,9 @@ static osalStatus ioc_switchbox_setup_service_connection(
 {
     switchboxRoot *root;
     switchboxConnection *scon;
-    osalStatus s = OSAL_STATUS_FAILED;
 
     root = con->link.root;
     ioc_switchbox_lock(root);
-
-    con->is_service_connection = OS_TRUE;
 
     /* If we have service connection with this name, kill it and fail for now.
      */
@@ -694,14 +694,13 @@ static osalStatus ioc_switchbox_setup_service_connection(
         scon->worker.stop_thread = OS_TRUE;
         osal_event_set(scon->worker.trig);
         osal_debug_error_str("switchbox: service already connected, killing ", scon->network_name);
-        goto getout;
+        ioc_switchbox_unlock(root);
+        return OSAL_STATUS_FAILED;
     }
 
-    s = OSAL_SUCCESS;
-
-getout:
     ioc_switchbox_unlock(root);
-    return s;
+    osal_trace_str("new switchbox service: ", con->network_name);
+    return OSAL_SUCCESS;
 }
 
 
