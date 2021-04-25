@@ -1010,7 +1010,6 @@ static void ioc_connection_thread(
     iocConnection *con;
     const os_char *parameters;
     osalStatus status;
-    osalSelectData selectdata;
     os_timer tnow;
     os_int check_timeouts_ms, silence_ms, count;
     os_boolean is_serial;
@@ -1041,7 +1040,6 @@ static void ioc_connection_thread(
         silence_ms = IOC_SOCKET_SILENCE_MS;
         check_timeouts_ms = IOC_SOCKET_CHECK_TIMEOUTS_MS;
     }
-    os_memclear(&selectdata, sizeof(selectdata));
 
     /* Run the connection.
      */
@@ -1105,7 +1103,7 @@ static void ioc_connection_thread(
         else
         {
             status = osal_stream_select(&con->stream, 1, con->worker.trig,
-                &selectdata, check_timeouts_ms, OSAL_STREAM_DEFAULT);
+                check_timeouts_ms, OSAL_STREAM_DEFAULT);
 
             if (status == OSAL_STATUS_NOT_SUPPORTED)
             {

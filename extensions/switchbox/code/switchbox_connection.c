@@ -399,7 +399,6 @@ static void ioc_switchbox_connection_thread(
     switchboxRoot *root;
     switchboxConnection *con, *scon;
     osalStatus s;
-    osalSelectData selectdata;
     os_timer tnow;
     os_int silence_ms;
 
@@ -421,7 +420,6 @@ static void ioc_switchbox_connection_thread(
        sockets to detect partically received frames.
      */
     silence_ms = IOC_SOCKET_SILENCE_MS;
-    os_memclear(&selectdata, sizeof(selectdata));
 
     /* Run the connection.
      */
@@ -430,7 +428,7 @@ static void ioc_switchbox_connection_thread(
 // static long ulledoo; if (++ulledoo > 109) {osal_debug_error("ulledoo connection\n"); ulledoo = 0;}
 
         s = osal_stream_select(&con->stream, 1, con->worker.trig,
-            &selectdata, IOC_SOCKET_CHECK_TIMEOUTS_MS, OSAL_STREAM_DEFAULT);
+            IOC_SOCKET_CHECK_TIMEOUTS_MS, OSAL_STREAM_DEFAULT);
 
         if (s == OSAL_STATUS_NOT_SUPPORTED)
         {

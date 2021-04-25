@@ -178,7 +178,6 @@ osalStatus ioc_run_lighthouse_client(
     os_boolean is_tls;
 #if OSAL_SOCKET_SELECT_SUPPORT
     osalStream streams[1];
-    osalSelectData selectdata;
 #endif
     LightHouseClientCallbackData callbackdata;
 
@@ -405,7 +404,7 @@ goon:
     if (trigger) {
 #if OSAL_SOCKET_SELECT_SUPPORT
         streams[0] = c->udp_socket;
-        if (osal_stream_select(streams, 1, trigger, &selectdata,
+        if (osal_stream_select(streams, 1, trigger,
             0, OSAL_STREAM_DEFAULT) == OSAL_STATUS_NOT_SUPPORTED)
         {
             return OSAL_STATUS_NOT_SUPPORTED;

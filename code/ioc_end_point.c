@@ -568,15 +568,10 @@ static void ioc_endpoint_thread(
     void *prm,
     osalEvent done)
 {
-    iocEndPoint
-        *epoint;
+    iocEndPoint *epoint;
 
 #if OSAL_SOCKET_SELECT_SUPPORT
-    osalSelectData
-        selectdata;
-
-    osalStatus
-        status;
+    osalStatus status;
 #endif
 
     osal_trace("end point: worker thread created");
@@ -601,7 +596,7 @@ static void ioc_endpoint_thread(
         if (epoint->socket && (epoint->flags & IOC_DISABLE_SELECT) == 0)
         {
             status = osal_stream_select(&epoint->socket, 1, epoint->trig,
-                &selectdata, 0, OSAL_STREAM_DEFAULT);
+                0, OSAL_STREAM_DEFAULT);
 
             if (status == OSAL_STATUS_NOT_SUPPORTED)
             {

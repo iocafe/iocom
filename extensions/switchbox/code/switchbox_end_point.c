@@ -529,9 +529,6 @@ static void ioc_switchbox_endpoint_thread(
     switchboxEndPoint
         *epoint;
 
-    osalSelectData
-        selectdata;
-
     osalStatus
         status;
 
@@ -556,7 +553,7 @@ static long ulledoo; if (++ulledoo > 0) {osal_debug_error("ulledoo end point\n")
         if (epoint->socket && (epoint->flags & IOC_DISABLE_SELECT) == 0)
         {
             status = osal_stream_select(&epoint->socket, 1, epoint->trig,
-                &selectdata, 0, OSAL_STREAM_DEFAULT);
+                0, OSAL_STREAM_DEFAULT);
 
             if (status == OSAL_STATUS_NOT_SUPPORTED)
             {

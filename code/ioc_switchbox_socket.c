@@ -644,17 +644,10 @@ getout:
            types cannot be mixed in select.
   @param   n_streams This must be always 1 for the swithbox stream.
   @param   evnt Custom event to interrupt the select. OS_NULL if not needed.
-  @param   selectdata Pointer to structure to fill in with information why select call
-           returned. The "stream_nr" member is stream number which triggered the return:
-           0 = first stream, 1 = second stream... Or one of OSAL_STREAM_NR_CUSTOM_EVENT,
-           OSAL_STREAM_NR_TIMEOUT_EVENT or OSAL_STREAM_NR_UNKNOWN_EVENT. These indicate
-           that event was triggered, wait timeout, and that stream implementation did
-           not provide reason.
   @param   timeout_ms Maximum time to wait in select, ms. If zero, timeout is not used (infinite).
   @param   flags Ignored, set OSAL_STREAM_DEFAULT (0).
-  @return  If successful, the function returns OSAL_SUCCESS (0) and the selectdata tells which
-           socket or event triggered the thread to continue. Other return values indicate an error.
-           See @ref osalStatus "OSAL function return codes" for full list.
+  @return  If successful, the function returns OSAL_SUCCESS (0). Other return values indicate an
+           error.
 
 ****************************************************************************************************
 */
@@ -662,15 +655,12 @@ static osalStatus ioc_switchbox_socket_select(
     osalStream *streams,
     os_int nstreams,
     osalEvent evnt,
-    osalSelectData *selectdata,
     os_int timeout_ms,
     os_int flags)
 {
     switchboxSocket *thiso;
     osalStatus s;
     OSAL_UNUSED(flags);
-
-    os_memclear(selectdata, sizeof(osalSelectData));
 
     if (nstreams != 1) {
         return OSAL_STATUS_FAILED;
@@ -696,19 +686,14 @@ static osalStatus ioc_switchbox_socket_select(
      */
     if (thiso->is_shared_socket)
     {
-        s = osal_stream_select(&thiso->switchbox_stream, 1, evnt, selectdata,
+        s = osal_stream_select(&thiso->switchbox_stream, 1, evnt,
             timeout_ms, OSAL_STREAM_DEFAULT);
     }
     else
     {
         if (evnt) {
-            if (osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE) == OSAL_STATUS_TIMEOUT)
-            {
-                selectdata->stream_nr = OSAL_STREAM_NR_TIMEOUT_EVENT;
-            }
-            else {
-                selectdata->stream_nr = 0;
-            }
+            osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE);
+            /* if (osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE) == OSAL_STATUS_TIMEOUT) */
         }
         else {
             os_timeslice();
