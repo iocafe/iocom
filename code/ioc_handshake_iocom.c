@@ -66,9 +66,18 @@ os_boolean cert_match = OS_TRUE;
             /* Server side socket ?
              */
             if (con->flags & IOC_LISTENER) {
+#if IOC_SWITCHBOX_SUPPORT
+                if (con->stream->iface == IOC_SWITCHBOX_SOCKET_IFACE) {
+                    s = OSAL_SUCCESS;
+                }
+                else {
+                    s = ioc_server_handshake(&con->handshake, IOC_HANDSHAKE_REGULAR_SERVER,
+                        con->stream, ioc_load_iocom_trust_certificate, con);
+                }
+#else
                 s = ioc_server_handshake(&con->handshake, IOC_HANDSHAKE_REGULAR_SERVER,
-                    con->stream,
-                    ioc_load_iocom_trust_certificate, con);
+                    con->stream, ioc_load_iocom_trust_certificate, con);
+#endif
             }
 
             /* Otherwise client side socket.

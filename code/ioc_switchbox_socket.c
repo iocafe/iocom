@@ -72,8 +72,8 @@ typedef struct switchboxSocket
      */
     osalStream switchbox_stream;
 
-    /** Stream open flags. Flags which were given to ioc_switchbox_socket_open() or ioc_switchbox_socket_accept()
-        function.
+    /** Stream open flags. Flags which were given to ioc_switchbox_socket_open() or
+        ioc_switchbox_socket_accept() function.
      */
     os_int open_flags;
 
@@ -90,7 +90,7 @@ typedef struct switchboxSocket
     os_boolean authentication_received;
     os_boolean authentication_sent;
 
-    os_boolean emulated_mark_byte_done;
+    // os_boolean emulated_mark_byte_done;
 
     /** Handshake state structure (switbox cloud net name and copying trust certificate).
      */
@@ -168,9 +168,6 @@ static void ioc_switchbox_socket_link(
     switchboxSocket *ssock);
 
 static void ioc_switchbox_socket_unlink(
-    switchboxSocket *thiso);
-
-static void ioc_generate_emulated_client_handshake_message(
     switchboxSocket *thiso);
 
 static osalStatus ioc_switchbox_shared_socket_handshake(
@@ -441,7 +438,7 @@ static osalStream ioc_switchbox_socket_accept(
     newsocket->hdr.iface = &ioc_switchbox_socket_iface;
     newsocket->open_flags = flags == OSAL_STREAM_DEFAULT ? thiso->open_flags : flags;
 
-    ioc_generate_emulated_client_handshake_message(newsocket);
+//    ioc_generate_emulated_client_handshake_message(newsocket);
 
     os_lock();
     ioc_switchbox_socket_link(newsocket, thiso);
@@ -530,7 +527,6 @@ static osalStatus ioc_switchbox_socket_write(
     os_int flags)
 {
     switchboxSocket *thiso;
-    os_memsz total;
     os_int count;
     osalStatus s;
     OSAL_UNUSED(flags);
@@ -543,40 +539,20 @@ static osalStatus ioc_switchbox_socket_write(
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
     osal_debug_assert(!thiso->is_shared_socket);
 
-    total = 0;
-
-    /* Emulate receiving client mark byte.
-     */
-    if (!thiso->emulated_mark_byte_done && n) {
-        osal_debug_assert(*buf == IOC_HANDSHAKE_SECURE_MARK_BYTE);
-        buf++;
-        n--;
-        total++;
-        thiso->emulated_mark_byte_done = OS_TRUE;
+    if (thiso->status) {
+        s = thiso->status;
+        goto getout;
     }
 
-    while (n > 0)
-    {
-        if (thiso->status) {
-            s = thiso->status;
-            goto getout;
-        }
-
+    count = 0;
+    if (n > 0) {
         count = osal_ringbuf_put(&thiso->incoming, buf, n);
-        total += count;
-        if (count == n) {
-            break;
-        }
-        n -= count;
-        buf += count;
-
-        ioc_switchbox_set_shared_select_event(thiso, OS_FALSE);
-        if (osal_ringbuf_is_full(&thiso->incoming)) {
-            break;
+        if (count) {
+            ioc_switchbox_set_shared_select_event(thiso, OS_FALSE);
         }
     }
 
-    *n_written = total;
+    *n_written = count;
     return OSAL_SUCCESS;
 
 getout:
@@ -615,7 +591,6 @@ static osalStatus ioc_switchbox_socket_read(
     os_int flags)
 {
     switchboxSocket *thiso;
-    os_memsz total;
     os_int count;
     osalStatus s;
     OSAL_UNUSED(flags);
@@ -628,32 +603,20 @@ static osalStatus ioc_switchbox_socket_read(
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
     osal_debug_assert(!thiso->is_shared_socket);
 
-    total = 0;
-    while (n > 0)
-    {
-        if (thiso->status) {
-            s = thiso->status;
-            goto getout;
-        }
+    if (thiso->status) {
+        s = thiso->status;
+        goto getout;
+    }
 
+    count = 0;
+    if (n > 0) {
         count = osal_ringbuf_get(&thiso->outgoing, buf, n);
-        total += count;
-        if (count == n) {
-            break;
-        }
-        n -= count;
-        buf += count;
-
-        os_lock();
-        // move data from "end point" incoming ring buffer
-        os_unlock();
-
-        if (osal_ringbuf_is_empty(&thiso->outgoing)) {
-            break;
+        if (count) {
+            ioc_switchbox_set_shared_select_event(thiso, OS_FALSE);
         }
     }
 
-    *n_read = total;
+    *n_read = count;
     return OSAL_SUCCESS;
 
 getout:
@@ -731,17 +694,13 @@ static osalStatus ioc_switchbox_socket_select(
 
     /* Is this shared service socket or individual emulated one.
      */
-    if (thiso->is_shared_socket) {
-        /* if (!thiso->handshake_ready || !thiso->authentication_received || !thiso->authentication_sent) {
-            os_timeslice();
-            goto getout;
-        } */
-
+    if (thiso->is_shared_socket)
+    {
         s = osal_stream_select(&thiso->switchbox_stream, 1, evnt, selectdata,
             timeout_ms, OSAL_STREAM_DEFAULT);
     }
-
-    else {
+    else
+    {
         if (evnt) {
             if (osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE) == OSAL_STATUS_TIMEOUT)
             {
@@ -893,8 +852,8 @@ static void ioc_switchbox_socket_unlink(
     if (thiso->is_shared_socket) {
         for (c = thiso->list.head.first; c; c = next_c) {
             next_c = c->list.clink.next;
-         //   c->worker.stop_thread = OS_TRUE; XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-         //   osal_event_set(c->worker.trig);
+            c->status = OSAL_STATUS_STREAM_CLOSED;
+            ioc_switchbox_set_select_event(c);
             c->list.clink.next = c->list.clink.prev = c->list.clink.scon = OS_NULL;
         }
         thiso->list.head.first = thiso->list.head.last = OS_NULL;
@@ -937,12 +896,12 @@ static void ioc_switchbox_socket_unlink(
 
 ****************************************************************************************************
 */
-static void ioc_generate_emulated_client_handshake_message(
+/* static void ioc_generate_emulated_client_handshake_message(
     switchboxSocket *thiso)
 {
     const os_char one_byte_handshake = IOC_HANDSHAKE_CLIENT;
     osal_ringbuf_put(&thiso->outgoing, &one_byte_handshake, 1);
-}
+} */
 
 
 /**
@@ -1158,6 +1117,7 @@ nextcon:
                         return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
                     }
                     os_memclear(news, sizeof(switchboxSocket));
+                    news->client_id = client_id;
                     *newsocket = news;
                     break;
 
