@@ -1125,8 +1125,7 @@ nextcon:
                     for (c = thiso->list.head.first; c; c = c->list.clink.next)
                     {
                         if (c->client_id == thiso->incoming_client_id) {
-                            // c->worker.stop_thread = OS_TRUE;
-                            // c->connection_dropped_message_done = OS_TRUE;
+                            c->status = OSAL_STATUS_STREAM_CLOSED;
                             ioc_switchbox_set_select_event(c);
                         }
                     }

@@ -263,6 +263,13 @@ osalStatus ioc_server_handshake(
 {
     osalStatus s = OSAL_SUCCESS;
 
+#if IOC_SWITCHBOX_SUPPORT
+    if (stream->iface == IOC_SWITCHBOX_SOCKET_IFACE) {
+        state->mark_byte_done = OS_TRUE;
+        return OSAL_SUCCESS;
+    }
+#endif
+
 #if OSAL_TLS_SUPPORT
     /* If we are using TLS security, but did not send certificate back, send one
        byte to client. Socket client waits for this byte to ensure that underlying
