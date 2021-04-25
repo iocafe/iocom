@@ -90,6 +90,8 @@ typedef struct switchboxSocket
     os_boolean authentication_received;
     os_boolean authentication_sent;
 
+    os_boolean emulated_mark_byte_done;
+
     /** Handshake state structure (switbox cloud net name and copying trust certificate).
      */
     iocHandshakeState handshake;
@@ -166,6 +168,9 @@ static void ioc_switchbox_socket_link(
     switchboxSocket *ssock);
 
 static void ioc_switchbox_socket_unlink(
+    switchboxSocket *thiso);
+
+static void ioc_generate_emulated_client_handshake_message(
     switchboxSocket *thiso);
 
 static osalStatus ioc_switchbox_shared_socket_handshake(
@@ -436,6 +441,8 @@ static osalStream ioc_switchbox_socket_accept(
     newsocket->hdr.iface = &ioc_switchbox_socket_iface;
     newsocket->open_flags = flags == OSAL_STREAM_DEFAULT ? thiso->open_flags : flags;
 
+    ioc_generate_emulated_client_handshake_message(newsocket);
+
     os_lock();
     ioc_switchbox_socket_link(newsocket, thiso);
     os_unlock();
@@ -537,6 +544,17 @@ static osalStatus ioc_switchbox_socket_write(
     osal_debug_assert(!thiso->is_shared_socket);
 
     total = 0;
+
+    /* Emulate receiving client mark byte.
+     */
+    if (!thiso->emulated_mark_byte_done && n) {
+        osal_debug_assert(*buf == IOC_HANDSHAKE_SECURE_MARK_BYTE);
+        buf++;
+        n--;
+        total++;
+        thiso->emulated_mark_byte_done = OS_TRUE;
+    }
+
     while (n > 0)
     {
         if (thiso->status) {
@@ -544,7 +562,7 @@ static osalStatus ioc_switchbox_socket_write(
             goto getout;
         }
 
-        count = osal_ringbuf_put(&thiso->outgoing, buf, n);
+        count = osal_ringbuf_put(&thiso->incoming, buf, n);
         total += count;
         if (count == n) {
             break;
@@ -553,7 +571,7 @@ static osalStatus ioc_switchbox_socket_write(
         buf += count;
 
         ioc_switchbox_set_shared_select_event(thiso, OS_FALSE);
-        if (osal_ringbuf_is_full(&thiso->outgoing)) {
+        if (osal_ringbuf_is_full(&thiso->incoming)) {
             break;
         }
     }
@@ -618,7 +636,7 @@ static osalStatus ioc_switchbox_socket_read(
             goto getout;
         }
 
-        count = osal_ringbuf_get(&thiso->incoming, buf, n);
+        count = osal_ringbuf_get(&thiso->outgoing, buf, n);
         total += count;
         if (count == n) {
             break;
@@ -630,7 +648,7 @@ static osalStatus ioc_switchbox_socket_read(
         // move data from "end point" incoming ring buffer
         os_unlock();
 
-        if (osal_ringbuf_is_empty(&thiso->incoming)) {
+        if (osal_ringbuf_is_empty(&thiso->outgoing)) {
             break;
         }
     }
@@ -686,7 +704,6 @@ static osalStatus ioc_switchbox_socket_select(
     os_int flags)
 {
     switchboxSocket *thiso;
-    osalSelectData myselectdata;
     osalStatus s;
     OSAL_UNUSED(flags);
 
@@ -696,15 +713,13 @@ static osalStatus ioc_switchbox_socket_select(
         return OSAL_STATUS_FAILED;
     }
 
-    /* Is this shared service socket or individual one.
-     */
     thiso = (switchboxSocket*)streams[0];
     osal_debug_assert(thiso->hdr.iface == &ioc_switchbox_socket_iface);
 
-    /* Lock is necessary even this is atomic variable set, because the thread which triggers
-     * this must get this pointer and set event within lock.
-     */
     if (evnt) {
+        /* Lock is necessary even this is atomic variable set, because the thread which triggers
+         * this must get this pointer and set event within lock.
+         */
         os_lock();
         thiso->select_event = evnt;
         if (thiso->trig_select) {
@@ -714,35 +729,42 @@ static osalStatus ioc_switchbox_socket_select(
         os_unlock();
     }
 
+    /* Is this shared service socket or individual emulated one.
+     */
     if (thiso->is_shared_socket) {
-        if (!thiso->handshake_ready || !thiso->authentication_received || !thiso->authentication_sent) {
+        /* if (!thiso->handshake_ready || !thiso->authentication_received || !thiso->authentication_sent) {
             os_timeslice();
-            return OSAL_SUCCESS;
-        }
+            goto getout;
+        } */
 
-        s = osal_stream_select(&thiso->switchbox_stream, 1, evnt, &myselectdata,
+        s = osal_stream_select(&thiso->switchbox_stream, 1, evnt, selectdata,
             timeout_ms, OSAL_STREAM_DEFAULT);
-        if (OSAL_IS_ERROR(s)) {
-            return s;
-        }
     }
 
     else {
         if (evnt) {
-            osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE);
-
-            os_lock();
-            thiso->select_event = OS_NULL;
-            os_unlock();
+            if (osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE) == OSAL_STATUS_TIMEOUT)
+            {
+                selectdata->stream_nr = OSAL_STREAM_NR_TIMEOUT_EVENT;
+            }
+            else {
+                selectdata->stream_nr = 0;
+            }
         }
         else {
             os_timeslice();
         }
+
+        s = OSAL_SUCCESS;
     }
 
-    // selectdata->stream_nr = socket_nr;
+    if (evnt) {
+        os_lock();
+        thiso->select_event = OS_NULL;
+        os_unlock();
+    }
 
-    return OSAL_SUCCESS;
+    return s;
 }
 
 
@@ -904,6 +926,28 @@ static void ioc_switchbox_socket_unlink(
 /**
 ****************************************************************************************************
 
+  @brief Make client handshake message (socket client only).
+  @anchor ioc_send_client_handshake_message
+
+  The ioc_generate_emulated_client_handshake_message() generates locally data to emulate a received
+  handshare message. The function ioc_send_client_handshake_message() generates real client
+  end hansshake message, this just empty framing without switchbox information to fill in.
+
+  @param   thiso Pointer to the invidual emulated socket structure.
+
+****************************************************************************************************
+*/
+static void ioc_generate_emulated_client_handshake_message(
+    switchboxSocket *thiso)
+{
+    const os_char one_byte_handshake = IOC_HANDSHAKE_CLIENT;
+    osal_ringbuf_put(&thiso->outgoing, &one_byte_handshake, 1);
+}
+
+
+/**
+****************************************************************************************************
+
   @brief Do first handshake for to connect to switchbox.
   @anchor ioc_first_handshake
 
@@ -1004,6 +1048,8 @@ os_boolean cert_match = OS_TRUE;
 }
 
 
+
+
 /**
 ****************************************************************************************************
 
@@ -1060,7 +1106,7 @@ static osalStatus ioc_switchbox_run_shared_socket(
         current_c = thiso->list.head.first;
     }
 
-    /* Loop trough client connections to read the data.
+    /* Loop trough individual emulated sockets to move data to shared socket.
      */
     if (current_c) {
         c = current_c;

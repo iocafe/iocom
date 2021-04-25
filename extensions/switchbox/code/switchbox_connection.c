@@ -474,7 +474,7 @@ static void ioc_switchbox_connection_thread(
          */
         if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
         {
-            osal_trace("line is silent");
+            // osal_trace("line is silent");
             // break;
         }
 
@@ -721,7 +721,7 @@ static osalStatus ioc_switchbox_setup_client_connection(
 {
     switchboxRoot *root;
     switchboxConnection *scon;
-    osalStatus s = OSAL_STATUS_FAILED;;
+    osalStatus s = OSAL_STATUS_FAILED;
 
     root = con->link.root;
     ioc_switchbox_lock(root);
@@ -927,14 +927,14 @@ static osalStatus ioc_switchbox_service_con_run(
             work_done = OS_TRUE;
         }
 
-        if (i == scon->current_connection_ix) {
+        if (scon->current_connection_ix >= i && current_c == OS_NULL) {
             current_c = c;
         }
     }
     if (current_c == OS_NULL) {
-        for (c = scon->list.head.first; c; c = c->list.clink.next) {
+        for (c = scon->list.head.first, i = 0; c; c = c->list.clink.next, i++) {
             if (c->new_connection_msg_sent) {
-                scon->current_connection_ix = 0;
+                scon->current_connection_ix = i;
                 current_c = c;
                 break;
             }

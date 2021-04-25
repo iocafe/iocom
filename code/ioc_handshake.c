@@ -358,7 +358,7 @@ const os_char *ioc_get_handshake_cloud_netname(
   @anchor ioc_send_client_handshake_message
 
   The ioc_send_client_handshake_message() generates outgoing data frame which contains information
-  to authenticate this IO device, etc.
+  to select IO device trough switchbox, and optionally request copy of trusted certificate.
 
   @param   state Current handshake state.
   @param   stream OSAL socket.

@@ -57,9 +57,9 @@ osalStatus ioc_switchbox_get_msg_header_from_ringbuf(
         ((os_ushort)buf[SBOX_HDR_CLIENT_ID_1]) << 8);
 
     u = (os_uint)buf[SBOX_HDR_DATA_LEN_0];
-    u |= (((os_uint)buf[SBOX_HDR_DATA_LEN_1]) < 8);
-    u |= (((os_uint)buf[SBOX_HDR_DATA_LEN_2]) < 16);
-    u |= (((os_uint)buf[SBOX_HDR_DATA_LEN_3]) < 24);
+    u |= (((os_uint)buf[SBOX_HDR_DATA_LEN_1]) << 8);
+    u |= (((os_uint)buf[SBOX_HDR_DATA_LEN_2]) << 16);
+    u |= (((os_uint)buf[SBOX_HDR_DATA_LEN_3]) << 24);
 
     *data_len = (os_int)u;
     return OSAL_SUCCESS;
