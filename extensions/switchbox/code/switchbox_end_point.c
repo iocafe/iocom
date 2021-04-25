@@ -553,7 +553,7 @@ static long ulledoo; if (++ulledoo > 0) {osal_debug_error("ulledoo end point\n")
         if (epoint->socket && (epoint->flags & IOC_DISABLE_SELECT) == 0)
         {
             status = osal_stream_select(&epoint->socket, 1, epoint->trig,
-                0, OSAL_STREAM_DEFAULT);
+                OSAL_INFINITE, OSAL_STREAM_DEFAULT);
 
             if (status == OSAL_STATUS_NOT_SUPPORTED)
             {

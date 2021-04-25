@@ -438,8 +438,6 @@ static osalStream ioc_switchbox_socket_accept(
     newsocket->hdr.iface = &ioc_switchbox_socket_iface;
     newsocket->open_flags = flags == OSAL_STREAM_DEFAULT ? thiso->open_flags : flags;
 
-//    ioc_generate_emulated_client_handshake_message(newsocket);
-
     os_lock();
     ioc_switchbox_socket_link(newsocket, thiso);
     os_unlock();
@@ -644,7 +642,8 @@ getout:
            types cannot be mixed in select.
   @param   n_streams This must be always 1 for the swithbox stream.
   @param   evnt Custom event to interrupt the select. OS_NULL if not needed.
-  @param   timeout_ms Maximum time to wait in select, ms. If zero, timeout is not used (infinite).
+  @param   timeout_ms Maximum time to wait, ms. Function will return after this time even
+           there is no socket or custom event. Set OSAL_INFINITE (-1) to disable the timeout.
   @param   flags Ignored, set OSAL_STREAM_DEFAULT (0).
   @return  If successful, the function returns OSAL_SUCCESS (0). Other return values indicate an
            error.
@@ -692,8 +691,7 @@ static osalStatus ioc_switchbox_socket_select(
     else
     {
         if (evnt) {
-            osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE);
-            /* if (osal_event_wait(evnt, timeout_ms ? timeout_ms : OSAL_EVENT_INFINITE) == OSAL_STATUS_TIMEOUT) */
+            osal_event_wait(evnt, timeout_ms);
         }
         else {
             os_timeslice();
@@ -865,28 +863,6 @@ static void ioc_switchbox_socket_unlink(
         }
     }
 }
-
-
-/**
-****************************************************************************************************
-
-  @brief Make client handshake message (socket client only).
-  @anchor ioc_send_client_handshake_message
-
-  The ioc_generate_emulated_client_handshake_message() generates locally data to emulate a received
-  handshare message. The function ioc_send_client_handshake_message() generates real client
-  end hansshake message, this just empty framing without switchbox information to fill in.
-
-  @param   thiso Pointer to the invidual emulated socket structure.
-
-****************************************************************************************************
-*/
-/* static void ioc_generate_emulated_client_handshake_message(
-    switchboxSocket *thiso)
-{
-    const os_char one_byte_handshake = IOC_HANDSHAKE_CLIENT;
-    osal_ringbuf_put(&thiso->outgoing, &one_byte_handshake, 1);
-} */
 
 
 /**

@@ -731,6 +731,10 @@ static osalStatus ioc_switchbox_setup_client_connection(
         osal_debug_error_str("switchbox: no service connection for ", con->network_name);
         goto getout;
     }
+    if (!scon->authentication_sent || !scon->authentication_received) {
+        osal_debug_error_str("switchbox: service connection not ready ", con->network_name);
+        goto getout;
+    }
 
     /* Set client identifier.
      */

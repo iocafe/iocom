@@ -405,7 +405,7 @@ goon:
 #if OSAL_SOCKET_SELECT_SUPPORT
         streams[0] = c->udp_socket;
         if (osal_stream_select(streams, 1, trigger,
-            0, OSAL_STREAM_DEFAULT) == OSAL_STATUS_NOT_SUPPORTED)
+            OSAL_INFINITE, OSAL_STREAM_DEFAULT) == OSAL_STATUS_NOT_SUPPORTED)
         {
             return OSAL_STATUS_NOT_SUPPORTED;
         }
