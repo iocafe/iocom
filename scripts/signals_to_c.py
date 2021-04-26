@@ -1,4 +1,4 @@
-# signals-to_c.py 8.1.2020/pekka
+# signals-to_c.py 26.4.2021/pekka
 # Converts communication signal map written in JSON to C source and header files.
 import json
 import os

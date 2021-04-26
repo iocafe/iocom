@@ -4,7 +4,7 @@
   @brief   Handshake for switchbox network selection and for copying trusted certificate.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   This handshake is used to pass "cloud network name" to clients and services connecting to
   switchbox cloud server, and to request trusted sertificate from socket server. Same

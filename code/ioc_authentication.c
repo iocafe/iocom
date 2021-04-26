@@ -4,7 +4,7 @@
   @brief   Device/user authentication.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   Low level of user authentication and authorization. Handles serialization of authentication
   frames over connection and on server (IOC_FULL_AUTHENTICATION) works as interface between

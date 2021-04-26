@@ -4,7 +4,7 @@
   @brief   Service discovery using UDP multicasts (client).
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    18.2.2020
+  @date    26.4.2021
 
   The lighthouse client can be used by an IO device to detect controller in local area
   network. It monitors for UDP multicasts sent by server and collects network information.

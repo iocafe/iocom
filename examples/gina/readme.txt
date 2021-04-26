@@ -1,4 +1,4 @@
-notes 8.1.2020/pekka
+notes 26.4.2021/pekka
 Gina - full featured IO board. 
 Gina is generic IO board example, features can be turned on and off by defines.
 

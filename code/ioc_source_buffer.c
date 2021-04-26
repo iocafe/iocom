@@ -4,7 +4,7 @@
   @brief   Source transfer buffers.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   Transfer buffer binds a memory block and connection object together. It buffers changes
   to be sent through the connection.

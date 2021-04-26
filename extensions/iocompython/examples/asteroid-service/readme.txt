@@ -1,5 +1,5 @@
 asteroid-client-pyglet
-notes 8.1.2020/pekka
+notes 26.4.2021/pekka
 
 This is simple multiplayer asteroid game client to demonstrate dynamic IOCOM use in client - server environment.
 

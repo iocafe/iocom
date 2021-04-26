@@ -4,7 +4,7 @@
   @brief   IO board example 4_ioboard_test.
   @author  Pekka Lehtikoski
   @version 1.1
-  @date    8.1.2020
+  @date    26.4.2021
 
   The 4_ioboard_test example demonstrates basic IO board with network communication.
   Implementation doesn't use dynamic memory allocation or multithreading, thus it should run on

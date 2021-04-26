@@ -4,7 +4,7 @@
   @brief   Main iocom header file.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   Main iocom library base header file. If further includes rest of base iocom headers.
   If dynamic extensions for server side or Python API are needed, include "iocomx.h" header

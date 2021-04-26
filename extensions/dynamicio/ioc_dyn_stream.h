@@ -4,7 +4,7 @@
   @brief   Dynamic streamed data transfer API.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   This is interface to ioc_streamer function to implement typical functionality easier
   in environment where use dynamic memory allocation is feasible. This interface is

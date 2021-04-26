@@ -4,7 +4,7 @@
   @brief   IO board example 3_ioboard_large_block.
   @author  Pekka Lehtikoski
   @version 1.1
-  @date    8.1.2020
+  @date    26.4.2021
 
   3_ioboard_large_block example is to test IO board communication performance with large
   block transfers. I use it with wireshark to make sure that TCP_NODELAY/TCP_CORK options

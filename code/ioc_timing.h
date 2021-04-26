@@ -4,7 +4,7 @@
   @brief   Timing default defines.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   This file defines default timing constants. These defines may be overridden in compiler
   settings. Customize the timeouts only if you have a good reason to do so, bad timing parameters

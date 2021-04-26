@@ -4,7 +4,7 @@
   @brief   IO board example "device info".
   @author  Pekka Lehtikoski
   @version 1.1
-  @date    8.1.2020
+  @date    26.4.2021
 
   ioboard2 example demonstrates how an IO device can publish static device information
   to controllers. This example implementation doesn't use dynamic memory allocation or

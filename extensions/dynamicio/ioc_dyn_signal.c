@@ -4,7 +4,7 @@
   @brief   Dynamically maintain IO network objects.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   The dynamic signal is extended signal structure, which is part of dynamic IO network
   information.

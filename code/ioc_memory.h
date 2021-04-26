@@ -4,9 +4,9 @@
   @brief   Memory allocation.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
-  A static memory buffer can be as memory pool for the ioal library. The ioc_set_memory_pool() 
+  A static memory buffer can be as memory pool for the ioal library. The ioc_set_memory_pool()
   function stores buffer pointer within the iocRoot structure.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,

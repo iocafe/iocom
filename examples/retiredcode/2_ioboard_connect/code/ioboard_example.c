@@ -4,7 +4,7 @@
   @brief   IO board example 2.
   @author  Pekka Lehtikoski
   @version 1.2
-  @date    8.1.2020
+  @date    26.4.2021
 
   ioboard2 example demonstrates basic IO board with network communication. This example is
   kept minimalistic. An IO board typically has one memory block for the inputs and the one

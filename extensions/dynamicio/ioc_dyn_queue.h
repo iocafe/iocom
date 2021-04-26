@@ -4,7 +4,7 @@
   @brief   Dynamically maintain IO network objects.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   Queue network and device connect/disconnects and other events for application. Once
   application calls ioc_initialize_event_queue to start processing queued data, it must 

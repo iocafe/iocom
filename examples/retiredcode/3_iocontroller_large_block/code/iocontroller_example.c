@@ -4,7 +4,7 @@
   @brief   IO controller example "3_iocontroller_large_block".
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   The 3_iocontroller_large_block is controller part to run with 3_ioboard_large_block example
   to test IO board performance with large block transfers.

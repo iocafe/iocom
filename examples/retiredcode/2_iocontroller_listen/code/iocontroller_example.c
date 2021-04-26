@@ -4,7 +4,7 @@
   @brief   IO controller example "iocontroller-listen".
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   iocontroller-listen example demonstrates a controller which listens TCP socket port for
   connections. The example relies on multithreading (IOC_CREATE_THREAD flag) and dynamic

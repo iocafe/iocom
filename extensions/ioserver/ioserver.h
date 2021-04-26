@@ -4,7 +4,7 @@
   @brief   Extension library for implementing server with authentication and authorization.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   The ioserver is optional extension library for implementing server. This should be sufficient
   for simple secure servers as is, or as starting point for implementing your own authentication

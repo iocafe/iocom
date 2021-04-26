@@ -4,7 +4,7 @@
   @brief   Memory block handle object.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   Handles are used instead of direct pointers to enable deleting memory blocks fron other thread
   than one using them. The same handle class could be used for other purposes.

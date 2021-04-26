@@ -5,7 +5,7 @@
   @brief   Device/user authentication for switchbox and ecom.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   Low level handling of authentication frames for ecom and switchbox communication. The base
   iocom library contains it's own authentication frame related code, this implementation is

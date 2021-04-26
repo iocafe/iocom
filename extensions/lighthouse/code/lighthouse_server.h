@@ -4,7 +4,7 @@
   @brief   Service discovery using UDP multicasts (server).
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    18.2.2020
+  @date    26.4.2021
 
   The server, or controller, sends periodic UDP multicasts. This allows clients in same network
   to locate the controller without pre configured address.

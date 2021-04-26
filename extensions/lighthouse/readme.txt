@@ -1,5 +1,5 @@
 lighthouse library - discover services in network using UDP multicasts 
-18.2.2020 / pekka
+26.4.2021 / pekka
 
 * Server sends UDP multicasts periodically (once per 4 seconds or so). 
 * Clients listens for these - server's address is IP from which the multicast was received.

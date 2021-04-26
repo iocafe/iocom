@@ -4,7 +4,7 @@
   @brief   Structres and functions related to brick transfer.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    10.4.2020
+  @date    26.4.2021
 
   A brick is name for a block of data, like a video frame, to be streamed as one piece over
   ring buffer.

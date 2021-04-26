@@ -4,7 +4,7 @@
   @brief   Stream class to route an IO sevice end point to switchbox cloud server.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   SwitchboxSocket speficic function prototypes and definitions to implement OSAL stream API for sockets.
   OSAL stream API is abstraction which makes streams (including sockets) look similar to upper

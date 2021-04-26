@@ -4,7 +4,7 @@
   @brief   Python wrapper for the IOCOM library.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   See https://www.hardikp.com/2017/12/30/python-cpp/
   

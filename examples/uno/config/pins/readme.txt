@@ -1,5 +1,5 @@
 pins directory for mapping IO pin names to different micro-controller board setupss
-8.1.2020/pekka
+26.4.2021/pekka
 
 Directories
 - generic: HW name used here for building without pins library.

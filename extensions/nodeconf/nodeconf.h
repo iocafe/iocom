@@ -4,7 +4,7 @@
   @brief   Data structures, defines and functions for managing network node configuration and security.
   @author  Pekka Lehtikoski
   @version 1.0
-  @date    8.1.2020
+  @date    26.4.2021
 
   The nodeconf library provides data structure for storing IO network node configuration, and functions
   for accessing, modifying and saving/loading it.
