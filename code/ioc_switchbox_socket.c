@@ -215,7 +215,6 @@ static void ioc_save_switchbox_trust_certificate(
 
   @param  status Pointer to integer into which to store the function status code. Value
           OSAL_SUCCESS (0) indicates success and all nonzero values indicate an error.
-          See @ref osalStatus "OSAL function return codes" for full list.
           This parameter can be OS_NULL, if no status code is needed.
 
   @param  flags Flags for creating the socket. Bit fields, combination of:
@@ -368,7 +367,6 @@ static void ioc_switchbox_socket_close(
            OSAL_SUCCESS (0) indicates that new connection was successfully accepted.
            The value OSAL_NO_NEW_CONNECTION indicates that no new incoming
            connection, was accepted.  All other nonzero values indicate an error,
-           See @ref osalStatus "OSAL function return codes" for full list.
            This parameter can be OS_NULL, if no status code is needed.
   @param   flags Flags for creating the socket. Define OSAL_STREAM_DEFAULT for normal operation.
            See @ref osalStreamFlags "Flags for Stream Functions" for full list of flags.
@@ -468,7 +466,7 @@ static osalStream ioc_switchbox_socket_accept(
   @param   flags Often OSAL_STREAM_DEFAULT. See @ref osalStreamFlags "Flags for Stream Functions"
            for full list of flags.
   @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error. See @ref osalStatus "OSAL function return codes" for full list.
+           indicate an error.
 
 ****************************************************************************************************
 */
@@ -513,7 +511,7 @@ static osalStatus ioc_switchbox_socket_flush(
   @param   flags Flags for the function.
            See @ref osalStreamFlags "Flags for Stream Functions" for full list of flags.
   @return  Function status code. Value OSAL_SUCCESS (0) indicates success and all nonzero values
-           indicate an error. See @ref osalStatus "OSAL function return codes" for full list.
+           indicate an error.
 
 ****************************************************************************************************
 */
