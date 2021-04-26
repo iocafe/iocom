@@ -751,7 +751,7 @@ osalStatus ioc_run_brick_send(
             b->stream = stream;
 
             if (b->timeout_ms) {
-                osal_stream_set_parameter(b->stream, OSAL_STREAM_WRITE_TIMEOUT_MS, b->timeout_ms);
+                ((iocStreamer*)stream)->write_timeout_ms = b->timeout_ms;
             }
         }
 
@@ -1212,7 +1212,7 @@ osalStatus ioc_run_brick_receive(
             return OSAL_STATUS_FAILED;
         }
         if (b->timeout_ms) {
-            osal_stream_set_parameter(b->stream, OSAL_STREAM_READ_TIMEOUT_MS, b->timeout_ms);
+            ((iocStreamer*)b->stream)->read_timeout_ms = b->timeout_ms;
         }
         b->pos = 0;
     }

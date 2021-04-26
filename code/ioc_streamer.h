@@ -173,6 +173,9 @@ typedef struct iocStreamer
     /** Cumulative checksum.
      */
     os_ushort checksum;
+
+    os_int read_timeout_ms;
+    os_int write_timeout_ms;
 }
 iocStreamer;
 
@@ -288,12 +291,6 @@ osalStatus ioc_streamer_read(
     os_memsz n,
     os_memsz *n_read,
     os_int flags);
-
-/* Get streamer parameter.
- */
-os_long ioc_streamer_get_parameter(
-    osalStream stream,
-    osalStreamParameterIx parameter_ix);
 
 /** Modes for ioc_set_streamer_error()
  */

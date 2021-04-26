@@ -1359,10 +1359,6 @@ OS_CONST osalStreamInterface ioc_switchbox_socket_iface
     osal_stream_default_seek,
     ioc_switchbox_socket_write,
     ioc_switchbox_socket_read,
-    osal_stream_default_write_value,
-    osal_stream_default_read_value,
-    osal_stream_default_get_parameter,
-    osal_stream_default_set_parameter,
     ioc_switchbox_socket_select,
     OS_NULL,
     OS_NULL};

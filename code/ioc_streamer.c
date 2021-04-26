@@ -148,8 +148,8 @@ osalStream ioc_streamer_open(
     prm = (iocStreamerParams*)option;
     streamer->prm = (iocStreamerParams*)option;
     streamer->hdr.iface = &ioc_streamer_iface;
-    streamer->hdr.read_timeout_ms = IOC_STREAMER_TIMEOUT;
-    streamer->hdr.write_timeout_ms = IOC_STREAMER_TIMEOUT;
+    streamer->read_timeout_ms = IOC_STREAMER_TIMEOUT;
+    streamer->write_timeout_ms = IOC_STREAMER_TIMEOUT;
     streamer->flags = flags;
     streamer->used = OS_TRUE;
     streamer->step = IOC_SSTEP_INITIALIZED;
@@ -574,7 +574,7 @@ static osalStatus ioc_streamer_device_write(
                 }
                 else
                 {
-                    timeout_ms = streamer->hdr.write_timeout_ms;
+                    timeout_ms = streamer->write_timeout_ms;
                     if (timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
                     {
                         osal_trace3("Streamer timeout");
@@ -751,7 +751,7 @@ static osalStatus ioc_streamer_device_read(
              */
             if (cmd == IOC_STREAM_RUNNING)
             {
-                timeout_ms = streamer->hdr.read_timeout_ms;
+                timeout_ms = streamer->read_timeout_ms;
                 if (!nbytes && timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
                 {
                     osal_trace3("IOC_SSTEP_FAILED, receiving data timed out");
@@ -928,7 +928,7 @@ static osalStatus ioc_streamer_controller_write(
             }
             if (n == 0)
             {
-                timeout_ms = streamer->hdr.write_timeout_ms;
+                timeout_ms = streamer->write_timeout_ms;
                 if (timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
                 {
                     osal_trace3("Streamer timeout");
@@ -1110,7 +1110,7 @@ static osalStatus ioc_streamer_controller_read(
              */
             if (state == IOC_STREAM_RUNNING)
             {
-                timeout_ms = streamer->hdr.read_timeout_ms;
+                timeout_ms = streamer->read_timeout_ms;
                 if (!nbytes && timeout_ms > 0 && os_has_elapsed(&streamer->mytimer, timeout_ms))
                 {
                     osal_trace3("Streamer timeout");
@@ -1327,85 +1327,6 @@ static os_int ioc_streamer_write_internal(
 
     return nbytes;
 }
-
-
-/**
-****************************************************************************************************
-
-  @brief Get streamer parameter value.
-  @anchor ioc_streamer_get_parameter
-
-  The ioc_streamer_get_parameter() function gets a parameter value.
-
-  @param   stream Stream pointer representing the serial.
-  @param   parameter_ix Index of parameter to get. OSAL_STREAM_TX_AVAILABLE to get
-           how much empty space there is in write buffer.
-           See @ref osalStreamParameterIx "stream parameter enumeration" for the list.
-
-           - OSAL_STREAM_TX_AVAILABLE: Get how many bytes can fit into outgoing buffer. -1 If no
-             connection or other error.
-           - OSAL_STREAM_RX_AVAILABLE: Get how many bytes there are in incomingbuffer. -1 If
-             no connection or other error.
-
-  @return  Parameter value.
-
-****************************************************************************************************
-*/
-os_long ioc_streamer_get_parameter(
-    osalStream stream,
-    osalStreamParameterIx parameter_ix)
-{
-    iocStreamer *streamer;
-    iocStreamerSignals *signals;
-    os_int buf_sz, head, tail, space_available, buffered_bytes;
-    os_boolean is_device;
-    os_char state_bits;
-
-    /* if (parameter_ix == OSAL_STREAM_TX_AVAILABLE)
-    {
-        if (stream == OS_NULL) return 0;
-        streamer = (iocStreamer*)stream;
-        is_device = streamer->prm->is_device;
-        signals = is_device ? &streamer->prm->frd : &streamer->prm->tod;
-
-        buf_sz = signals->buf->n;
-        tail = (os_int)ioc_get_ext(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
-
-        if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
-        {
-            return -1;
-        }
-
-        buffered_bytes = streamer->head - tail;
-        if (buffered_bytes < 0) buffered_bytes += buf_sz;
-        space_available = buf_sz - buffered_bytes - 1;
-        return space_available;
-    }
-
-    if (parameter_ix == OSAL_STREAM_RX_AVAILABLE)
-    {
-        if (stream == OS_NULL) return 0;
-        streamer = (iocStreamer*)stream;
-        is_device = streamer->prm->is_device;
-        signals = is_device ? &streamer->prm->tod : &streamer->prm->frd;
-
-        buf_sz = signals->buf->n;
-        head = (os_int)ioc_get_ext(signals->head, &state_bits, IOC_SIGNAL_DEFAULT);
-
-        if ((state_bits & OSAL_STATE_CONNECTED) == 0 || head < 0 || head >= buf_sz)
-        {
-            return -1;
-        }
-
-        buffered_bytes = head - streamer->tail;
-        if (buffered_bytes < 0) buffered_bytes += buf_sz;
-        return buffered_bytes;
-    } */
-
-    return osal_stream_default_get_parameter(stream, parameter_ix);
-}
-
-
 
 
 /**
@@ -1945,10 +1866,6 @@ const osalStreamInterface ioc_streamer_iface
     osal_stream_default_seek,
     ioc_streamer_write,
     ioc_streamer_read,
-    osal_stream_default_write_value,
-    osal_stream_default_read_value,
-    ioc_streamer_get_parameter,
-    osal_stream_default_set_parameter,
     osal_stream_default_select,
     OS_NULL,
     OS_NULL};
