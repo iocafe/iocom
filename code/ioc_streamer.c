@@ -82,6 +82,9 @@ static void ioc_ctrl_stream_from_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
 
+static os_long ioc_streamer_tx_available(
+    osalStream stream);
+
 static void ioc_ctrl_stream_to_device(
     iocControlStreamState *ctrl,
     iocStreamerParams *params);
@@ -1358,7 +1361,7 @@ os_long ioc_streamer_get_parameter(
     os_boolean is_device;
     os_char state_bits;
 
-    if (parameter_ix == OSAL_STREAM_TX_AVAILABLE)
+    /* if (parameter_ix == OSAL_STREAM_TX_AVAILABLE)
     {
         if (stream == OS_NULL) return 0;
         streamer = (iocStreamer*)stream;
@@ -1397,10 +1400,12 @@ os_long ioc_streamer_get_parameter(
         buffered_bytes = head - streamer->tail;
         if (buffered_bytes < 0) buffered_bytes += buf_sz;
         return buffered_bytes;
-    }
+    } */
 
     return osal_stream_default_get_parameter(stream, parameter_ix);
 }
+
+
 
 
 /**
@@ -1668,7 +1673,7 @@ osalStatus ioc_run_control_stream(
 /**
 ****************************************************************************************************
 
-  @brief Move data from IO device tp controller.
+  @brief Move data from IO device to controller.
   @anchor ioc_ctrl_stream_from_device
 
   This code is used in IO device. The function is called repeatedly to run data transfer
@@ -1699,7 +1704,7 @@ static void ioc_ctrl_stream_from_device(
 
     if (ctrl->fdr_persistent || ctrl->transferring_default_config)
     {
-        bytes = ioc_streamer_get_parameter(ctrl->frd, OSAL_STREAM_TX_AVAILABLE);
+        bytes = ioc_streamer_tx_available(ctrl->frd);
         while (OS_TRUE)
         {
             if (bytes <= 0) {
@@ -1786,6 +1791,35 @@ static void ioc_ctrl_stream_from_device(
     ioc_set_streamer_error(ctrl->frd, OSAL_COMPLETED, IOC_STREAMER_MODE_COMPLETED);
     ioc_streamer_close(ctrl->frd, OSAL_STREAM_DEFAULT);
     ctrl->frd = OS_NULL;
+}
+
+
+static os_long ioc_streamer_tx_available(
+    osalStream stream)
+{
+    iocStreamer *streamer;
+    iocStreamerSignals *signals;
+    os_int buf_sz, tail, space_available, buffered_bytes;
+    os_boolean is_device;
+    os_char state_bits;
+
+    if (stream == OS_NULL) return 0;
+    streamer = (iocStreamer*)stream;
+    is_device = streamer->prm->is_device;
+    signals = is_device ? &streamer->prm->frd : &streamer->prm->tod;
+
+    buf_sz = signals->buf->n;
+    tail = (os_int)ioc_get_ext(signals->tail, &state_bits, IOC_SIGNAL_DEFAULT);
+
+    if ((state_bits & OSAL_STATE_CONNECTED) == 0 || tail < 0 || tail >= buf_sz)
+    {
+        return -1;
+    }
+
+    buffered_bytes = streamer->head - tail;
+    if (buffered_bytes < 0) buffered_bytes += buf_sz;
+    space_available = buf_sz - buffered_bytes - 1;
+    return space_available;
 }
 
 
