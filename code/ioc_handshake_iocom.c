@@ -83,8 +83,8 @@ os_boolean cert_match = OS_TRUE;
             /* Otherwise client side socket.
              */
             else {
-                s = ioc_client_handshake(&con->handshake, IOC_HANDSHAKE_CLIENT, "kepuli", !cert_match,
-                    con->stream,
+                s = ioc_client_handshake(&con->handshake, IOC_HANDSHAKE_CLIENT,
+                    con->link.root->network_name, !cert_match, con->stream,
                     ioc_save_iocom_trust_certificate, con);
 
                 if (s == OSAL_SUCCESS && !cert_match) {

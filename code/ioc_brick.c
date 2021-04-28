@@ -955,7 +955,7 @@ static osalStatus ioc_receive_ring_brick_data(
 
         b->buf_sz = (os_memsz)ioc_get_brick_hdr_int(first.hdr.buf_sz, IOC_BRICK_BYTES_SZ);
 
-        alloc_sz = b->buf_sz | 0x0FFF;;
+        alloc_sz = b->buf_sz | 0x0FFF;
         if (b->buf == OS_NULL || alloc_sz > b->buf_alloc_sz)
         {
             if (b->buf) {

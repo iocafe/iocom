@@ -40,6 +40,17 @@ extern OS_CONST_H osalStreamInterface ioc_switchbox_socket_iface;
  */
 #define IOC_SWITCHBOX_SOCKET_IFACE &ioc_switchbox_socket_iface
 
+/* Switchbox socket options.
+ */
+typedef struct iocSwitchboxSocketOptions {
+    /** Name to use for publishing end point in the cloud, Max
+        OSAL_NETWORK_NAME_SZ characters.
+     */
+    os_char *network_name;
+}
+iocSwitchboxSocketOptions;
 
+#else
+#define IOC_SWITCHBOX_SOCKET_IFACE OS_NULL
 #endif
 #endif

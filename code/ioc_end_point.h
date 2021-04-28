@@ -170,6 +170,11 @@ typedef struct iocEndPoint
     void *callback_context;
 #endif
 
+#if IOC_SWITCHBOX_SUPPORT
+    /** Name to use for publishing end point in the cloud, Max
+     */
+    os_char cloud_name[OSAL_NETWORK_NAME_SZ];
+#endif
 }
 iocEndPoint;
 
@@ -197,6 +202,14 @@ iocEndPoint *ioc_initialize_end_point(
  */
 void ioc_release_end_point(
     iocEndPoint *epoint);
+
+#if IOC_SWITCHBOX_SUPPORT
+/* Set name for end point to be published by switchbox cloud service.
+ */
+iocEndPoint *ioc_set_endpoint_cloud_name(
+    iocEndPoint *epoint,
+    const os_char *cloud_name);
+#endif
 
 /* Start or prepare the end point to listen for TCP socket connections.
  */

@@ -204,7 +204,7 @@ getout:
   @anchor ioc_streamer_close
 
   The ioc_streamer_close() function closes a streamer port, earlier opened by the ioc_streamer_open()
-  function. All resource related to the streamer port are freed. Any attemp to use the streamer after
+  function. All resource related to the streamer port are freed. Any attempt to use the streamer after
   this call may result in crash.
 
   @param   stream Stream handle. After this call stream

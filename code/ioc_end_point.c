@@ -201,6 +201,16 @@ void ioc_release_end_point(
     osal_trace("end point: released");
 }
 
+#if IOC_SWITCHBOX_SUPPORT
+/* Set name for end point to be published by switchbox cloud service.
+ */
+iocEndPoint *ioc_set_endpoint_cloud_name(
+    iocEndPoint *epoint,
+    const os_char *cloud_name)
+{
+    os_strncpy(epoint->cloud_name, cloud_name, OSAL_NETWORK_NAME_SZ);
+}
+#endif
 
 /**
 ****************************************************************************************************
@@ -393,8 +403,9 @@ osalStatus ioc_terminate_end_point_thread(
 static osalStatus ioc_try_to_open_endpoint(
     iocEndPoint *epoint)
 {
-    osalStatus
-        status;
+    osalStatus status;
+    void *option = OS_NULL;
+    iocSwitchboxSocketOptions sbox_options;
 
     /* If two seconds have not passed since last failed try.
      */
@@ -404,9 +415,20 @@ static osalStatus ioc_try_to_open_endpoint(
         }
     }
 
+#if IOC_SWITCHBOX_SUPPORT
+    if (epoint->iface == IOC_SWITCHBOX_SOCKET_IFACE) {
+        os_memclear(&sbox_options, sizeof(sbox_options));
+        sbox_options.network_name = epoint->link.root->network_name;
+        if (epoint->cloud_name[0] != '\0') {
+            sbox_options.network_name = epoint->cloud_name;
+        }
+        option = &sbox_options;
+   }
+#endif
+
     /* Try to open listening socket port.
      */
-    epoint->socket = osal_stream_open(epoint->iface, epoint->parameters, OS_NULL, &status,
+    epoint->socket = osal_stream_open(epoint->iface, epoint->parameters, option, &status,
         OSAL_STREAM_LISTEN /* |OSAL_STREAM_NO_REUSEADDR */);
     if (epoint->socket == OS_NULL)
     {

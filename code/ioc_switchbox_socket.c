@@ -77,6 +77,10 @@ typedef struct switchboxSocket
      */
     os_int open_flags;
 
+    /** Name to use for publishing end point in the cloud.
+     */
+    os_char network_name[OSAL_NETWORK_NAME_SZ];
+
     /** True if this is end point object, which connects to the switchbox service.
      */
     os_boolean is_shared_socket;
@@ -89,8 +93,6 @@ typedef struct switchboxSocket
     os_boolean handshake_ready;
     os_boolean authentication_received;
     os_boolean authentication_sent;
-
-    // os_boolean emulated_mark_byte_done;
 
     /** Handshake state structure (switbox cloud net name and copying trust certificate).
      */
@@ -211,22 +213,20 @@ static void ioc_save_switchbox_trust_certificate(
           nor for empty IP specifying only port to listen. Use brackets around IP address
           to mark IPv6 address, for example "[localhost]:12345", or "[]:12345" for empty IP.
 
-  @param  option Not used for sockets, set OS_NULL.
+  @param  option Switchbox socket only, pointer to iocSwitchboxSocketOptions parameter structure.
+          Contains network name used to publish the end point by switchbox service in cloud.
+          AND LATER CALLBACK TO SAVE TRUSTED CERTIFICATE.
 
   @param  status Pointer to integer into which to store the function status code. Value
           OSAL_SUCCESS (0) indicates success and all nonzero values indicate an error.
           This parameter can be OS_NULL, if no status code is needed.
 
   @param  flags Flags for creating the socket. Bit fields, combination of:
-          - OSAL_STREAM_CONNECT: Connect to specified socket port at specified IP address.
-          - OSAL_STREAM_LISTEN: Open a socket to listen for incoming connections.
-          - OSAL_STREAM_MULTICAST: Open a UDP multicast socket. Can be combined
-            with OSAL_STREAM_LISTEN to listen for multicasts.
+          - OSAL_STREAM_LISTEN: Must be set for switchbox socket.
           - OSAL_STREAM_NO_SELECT: Open socket without select functionality.
           - OSAL_STREAM_SELECT: Open serial with select functionality.
           - OSAL_STREAM_TCP_NODELAY: Disable Nagle's algorithm on TCP socket. If this flag is set,
             ioc_switchbox_socket_flush() must be called to actually transfer data.
-          - OSAL_STREAM_NO_REUSEADDR: Disable reusability of the socket descriptor.
 
           See @ref osalStreamFlags "Flags for Stream Functions" for full list of stream flags.
 
@@ -244,11 +244,13 @@ static osalStream ioc_switchbox_socket_open(
     osalStream switchbox_stream;
     osalStatus s;
 
-    osal_debug_assert(flags & OSAL_STREAM_LISTEN);
+    osal_debug_assert(flags & OSAL_STREAM_LISTEN);  /* This switchbox socket code is used only
+                                                       to listen forwarded end point */
+    osal_debug_assert(option != OS_NULL);           /* The end point must be named to publish it */
 
     /* Open shared connection.
      */
-    switchbox_stream = osal_stream_open(OSAL_TLS_IFACE, parameters, option,
+    switchbox_stream = osal_stream_open(OSAL_TLS_IFACE, parameters, OS_NULL,
         status, OSAL_STREAM_CONNECT);
     if (switchbox_stream == OS_NULL) {
         return OS_NULL;
@@ -273,7 +275,10 @@ static osalStream ioc_switchbox_socket_open(
     thiso->is_shared_socket = OS_TRUE;
     thiso->hdr.iface = &ioc_switchbox_socket_iface;
     thiso->switchbox_stream = switchbox_stream;
-
+    if (option) {
+        os_strncpy(thiso->network_name,
+            ((iocSwitchboxSocketOptions*)option)->network_name, OSAL_NETWORK_NAME_SZ);
+    }
     s = ioc_switchbox_socket_setup_ring_buffer(thiso);
     if (s) {
         if (status) {
@@ -298,9 +303,9 @@ static osalStream ioc_switchbox_socket_open(
   @brief Close socket.
   @anchor ioc_switchbox_socket_close
 
-  The ioc_switchbox_socket_close() function closes a socket, which was opened by ioc_switchbox_socket_open()
-  or osal_stream_accept() function. All resource related to the socket are freed. Any attemp
-  to use the socket after this call may result in crash.
+  The ioc_switchbox_socket_close() function closes a socket, which was opened by
+  ioc_switchbox_socket_open() or osal_stream_accept() function. All resource related to
+  the socket are freed. Any attempt to use the socket after this call may result in crash.
 
   @param   stream Stream pointer representing the socket. After this call stream pointer will
            point to invalid memory location.
@@ -867,7 +872,7 @@ static void ioc_switchbox_socket_unlink(
 ****************************************************************************************************
 
   @brief Do first handshake for to connect to switchbox.
-  @anchor ioc_first_handshake
+  @anchor ioc_switchbox_shared_socket_handshake
 
   @param   thiso Pointer to the client socket service.
   @return  OSAL_SUCCESS if ready, OSAL_PENDING while not yet completed. Other values indicate
@@ -889,7 +894,7 @@ os_boolean cert_match = OS_TRUE;
     if (!thiso->handshake_ready)
     {
         s = ioc_client_handshake(&thiso->handshake, IOC_HANDSHAKE_NETWORK_SERVICE,
-            "kepuli", !cert_match, thiso->switchbox_stream,
+            thiso->network_name, !cert_match, thiso->switchbox_stream,
             ioc_save_switchbox_trust_certificate, thiso);
 
         osal_stream_flush(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
