@@ -149,6 +149,10 @@ typedef struct switchboxSocket
      */
     os_int incoming_bytes;
     os_ushort incoming_client_id;
+
+    /** Shared socket: Work done timer, to send keep alive message.
+     */
+    os_timer work_timer;
 }
 switchboxSocket;
 
@@ -292,6 +296,7 @@ static osalStream ioc_switchbox_socket_open(
 
     /* Success.
      */
+    os_get_timer(&thiso->work_timer);
     if (status) *status = OSAL_SUCCESS;
     return (osalStream)thiso;
 }
@@ -1095,6 +1100,10 @@ nextcon:
                     }
                     break;
 
+                case IOC_SWITCHBOX_KEEPALIVE:
+                    osal_trace("switchbox keepalive received");
+                    break;
+
                 default:
                     osal_debug_error_int("service con received unknown command ", bytes);
                     break;
@@ -1147,6 +1156,14 @@ nextcon:
         }
     }
 
+    if (!work_done) if (osal_ringbuf_is_empty(&thiso->outgoing)) {
+        if (os_has_elapsed(&thiso->work_timer, IOC_SOCKET_KEEPALIVE_MS)) {
+            ioc_switchbox_store_msg_header_to_ringbuf(&thiso->outgoing,
+                0, IOC_SWITCHBOX_KEEPALIVE);
+            work_done = OS_TRUE;
+        }
+    }
+
     /* If something done, set event to come here again quickly.
      */
     os_unlock();
@@ -1156,6 +1173,7 @@ nextcon:
     s = ioc_write_to_shared_switchbox_socket(thiso);
     if (s == OSAL_WORK_DONE) {
         work_done = OS_TRUE;
+        os_get_timer(&thiso->work_timer);
     }
     else if (OSAL_IS_ERROR(s)) {
         if (*newsocket) {
@@ -1172,8 +1190,6 @@ nextcon:
 
     return work_done ? OSAL_WORK_DONE : OSAL_SUCCESS;
 }
-
-
 
 
 /**

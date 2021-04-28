@@ -34,7 +34,7 @@ iocSwitboxMsgHeader;
  */
 #define IOC_SWITCHBOX_NEW_CONNECTION -1
 #define IOC_SWITCHBOX_CONNECTION_DROPPED -2
-
+#define IOC_SWITCHBOX_KEEPALIVE -3
 
 /* Get message header from ring buffer (get client id and data length).
  */

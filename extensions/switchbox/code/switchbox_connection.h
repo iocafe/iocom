@@ -179,14 +179,6 @@ typedef struct switchboxConnection
      */
     switchboxConnectionLink link;
 
-    /** Timer of the last successful receive.
-     */
-    os_timer last_receive;
-
-    /** Timer of the last successful send.
-     */
-    os_timer last_send;
-
     /** Worker thread specific member variables.
      */
     switchboxConnectionWorkerThread worker;
@@ -240,6 +232,10 @@ typedef struct switchboxConnection
      */
     os_int incoming_bytes;
     os_ushort incoming_client_id;
+
+    /** Service connection: Work done timer, to send keep alive message.
+     */
+    os_timer work_timer;
 }
 switchboxConnection;
 

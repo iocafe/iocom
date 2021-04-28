@@ -333,20 +333,10 @@ osalStatus ioc_terminate_switchbox_connection_thread(
 void ioc_reset_switchbox_connection(
     switchboxConnection *con)
 {
-    os_timer tnow;
-
-    /* Reset hand shake structure.
-     */
     ioc_release_handshake_state(&con->handshake);
     con->handshake_ready = OS_FALSE;
     con->authentication_sent = OS_FALSE;
     con->authentication_received = OS_FALSE;
-
-    /* Initialize timers.
-     */
-    os_get_timer(&tnow);
-    con->last_receive = tnow;
-    con->last_send = tnow;
 }
 
 
@@ -399,8 +389,6 @@ static void ioc_switchbox_connection_thread(
     switchboxRoot *root;
     switchboxConnection *con, *scon;
     osalStatus s;
-    os_timer tnow;
-    os_int silence_ms;
 
     /* Parameters point to the connection object.
      */
@@ -414,12 +402,6 @@ static void ioc_switchbox_connection_thread(
     osal_event_set(done);
 
     osal_trace("connection: worker thread started");
-
-    /* Select of time interval how often to check for timeouts, etc.
-       Serial connections need to be monitored much more often than
-       sockets to detect partically received frames.
-     */
-    silence_ms = IOC_SOCKET_SILENCE_MS;
 
     /* Run the connection.
      */
@@ -440,7 +422,6 @@ static void ioc_switchbox_connection_thread(
             osal_debug_error("osal_stream_select failed");
             break;
         }
-        os_get_timer(&tnow);
 
         /* First hand shake for socket connections.
          */
@@ -466,14 +447,6 @@ static void ioc_switchbox_connection_thread(
         if (OSAL_IS_ERROR(s)) {
             osal_debug_error_int("switchbox run error: ", s);
             break;
-        }
-
-        /* If too much time elapsed sice last receive?
-         */
-        if (os_has_elapsed_since(&con->last_receive, &tnow, silence_ms))
-        {
-            // osal_trace("line is silent");
-            // break;
         }
 
         /* Flush data to the connection.
@@ -698,6 +671,7 @@ static osalStatus ioc_switchbox_setup_service_connection(
 
     ioc_switchbox_unlock(root);
     osal_trace_str("new switchbox service: ", con->network_name);
+    os_get_timer(&con->work_timer);
     return OSAL_SUCCESS;
 }
 
@@ -1003,6 +977,10 @@ nextcon:
                     }
                     break;
 
+                case IOC_SWITCHBOX_KEEPALIVE:
+                    osal_trace("switchbox keepalive received");
+                    break;
+
                 default:
                     osal_debug_error_int("service con received unknown command ", bytes);
                     break;
@@ -1055,6 +1033,14 @@ nextcon:
         }
     }
 
+    if (!work_done) if (osal_ringbuf_is_empty(&scon->outgoing)) {
+        if (os_has_elapsed(&scon->work_timer, IOC_SOCKET_KEEPALIVE_MS)) {
+            ioc_switchbox_store_msg_header_to_ringbuf(&scon->outgoing,
+                0, IOC_SWITCHBOX_KEEPALIVE);
+            work_done = OS_TRUE;
+        }
+    }
+
     /* If something done, set event to come here again quickly.
      */
     ioc_switchbox_unlock(root);
@@ -1064,6 +1050,7 @@ nextcon:
     s = ioc_switchbox_write_socket(scon);
     if (s == OSAL_WORK_DONE) {
         work_done = OS_TRUE;
+        os_get_timer(&scon->work_timer);
     }
     else if (OSAL_IS_ERROR(s)) {
         return s;
