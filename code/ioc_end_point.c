@@ -201,16 +201,6 @@ void ioc_release_end_point(
     osal_trace("end point: released");
 }
 
-#if IOC_SWITCHBOX_SUPPORT
-/* Set name for end point to be published by switchbox cloud service.
- */
-iocEndPoint *ioc_set_endpoint_cloud_name(
-    iocEndPoint *epoint,
-    const os_char *cloud_name)
-{
-    os_strncpy(epoint->cloud_name, cloud_name, OSAL_NETWORK_NAME_SZ);
-}
-#endif
 
 /**
 ****************************************************************************************************
@@ -252,6 +242,12 @@ osalStatus ioc_listen(
     }
     epoint->flags = flags;
     epoint->iface = prm->iface;
+
+#if IOC_SWITCHBOX_SUPPORT
+    /* Set name for end point to be published by switchbox cloud service.
+     */
+    os_strncpy(epoint->cloud_name, prm->cloud_name, OSAL_NETWORK_NAME_SZ);
+#endif
 
 #if OSAL_MULTITHREAD_SUPPORT==0
     /* If we have no multithread support, make sure that

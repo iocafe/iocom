@@ -498,6 +498,10 @@ osalStatus ioc_connect(
     os_strncpy(con->password_override, prm->password_override, IOC_PASSWORD_SZ);
 #endif
 
+#if IOC_SWITCHBOX_SUPPORT
+    os_strncpy(con->cloud_name, prm->cloud_name, OSAL_NETWORK_NAME_SZ);
+#endif
+
 #if OSAL_SOCKET_SUPPORT
     con->lighthouse_func = prm->lighthouse_func;
     con->lighthouse = prm->lighthouse;

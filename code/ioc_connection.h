@@ -341,6 +341,12 @@ typedef struct iocConnectionParams
     const os_char *password_override;
 #endif
 
+#if IOC_SWITCHBOX_SUPPORT
+    /** Name for end point to publish in switchbox cloud.
+     */
+    const os_char *cloud_name;
+#endif
+
     /** If socket connection is accepted by listening end point, this is
         the socket handle. Otherwise this argument needs to be OS_NULL.
      */
@@ -593,6 +599,12 @@ typedef struct iocConnection
     /** Password to overide device default password. Empty string to use device password.
      */
     os_char password_override[IOC_PASSWORD_SZ];
+#endif
+
+#if IOC_SWITCHBOX_SUPPORT
+    /** Name to use for publishing end point in the cloud, Max
+     */
+    os_char cloud_name[OSAL_NETWORK_NAME_SZ];
 #endif
 
     /** Total frame size, constant for connection type. For example IOC_SOCKET_FRAME_SZ

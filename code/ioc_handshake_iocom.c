@@ -56,6 +56,7 @@ osalStatus ioc_first_handshake(
     struct iocConnection *con)
 {
     osalStatus s;
+    const os_char *cloud_name;
 
 os_boolean cert_match = OS_TRUE;
 
@@ -83,8 +84,14 @@ os_boolean cert_match = OS_TRUE;
             /* Otherwise client side socket.
              */
             else {
+                cloud_name = con->link.root->network_name;
+#if IOC_SWITCHBOX_SUPPORT
+                if (con->cloud_name[0] != '\0' && os_strcmp(con->cloud_name, "*")) {
+                    cloud_name = con->cloud_name;
+               }
+#endif
                 s = ioc_client_handshake(&con->handshake, IOC_HANDSHAKE_CLIENT,
-                    con->link.root->network_name, !cert_match, con->stream,
+                    cloud_name, !cert_match, con->stream,
                     ioc_save_iocom_trust_certificate, con);
 
                 if (s == OSAL_SUCCESS && !cert_match) {

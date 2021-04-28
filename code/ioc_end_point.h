@@ -42,6 +42,12 @@ typedef struct
      */
     const os_char *parameters;
 
+#if IOC_SWITCHBOX_SUPPORT
+    /** Name for end point to publish in switchbox cloud.
+     */
+    const os_char *cloud_name;
+#endif
+
     /** Flags, bit fields:
         - IOC_SOCKET Connect with TCP socket (set always).
         - IOC_CREATE_THREAD Create thread to run end_point and create thread to run
@@ -202,14 +208,6 @@ iocEndPoint *ioc_initialize_end_point(
  */
 void ioc_release_end_point(
     iocEndPoint *epoint);
-
-#if IOC_SWITCHBOX_SUPPORT
-/* Set name for end point to be published by switchbox cloud service.
- */
-iocEndPoint *ioc_set_endpoint_cloud_name(
-    iocEndPoint *epoint,
-    const os_char *cloud_name);
-#endif
 
 /* Start or prepare the end point to listen for TCP socket connections.
  */
