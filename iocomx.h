@@ -25,7 +25,7 @@
  */
 #include "iocom.h"
 
-/* If C++ compilation, all functions, etc. from this point on in included headers are
+/* If C++ compilation, all functions, etc. from this point on included headers are
    plain C and must be left undecorated.
  */
 OSAL_C_HEADER_BEGINS
