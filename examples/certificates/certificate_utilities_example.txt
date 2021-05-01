@@ -1,0 +1,4 @@
+certificate utilities
+notes 1.5.2021/pekka
+
+Example/unit test code for certificate utilities. The certificate utilities are used by automatic security setup.
