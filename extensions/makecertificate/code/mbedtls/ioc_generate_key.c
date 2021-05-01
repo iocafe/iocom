@@ -1,6 +1,6 @@
 /**
 
-  @file    make_root_certificate.c
+  @file    ioc_generate_key.c
   @brief   Key generation.
   @version 1.0
   @date    26.2.2020
@@ -217,7 +217,7 @@ static int write_private_key( mbedtls_pk_context *key, const char *output_file )
     return( 0 );
 }
 
-int main( int argc, char *argv[] )
+int xxxxmain( int argc, char *argv[] )
 {
     int ret = 1;
     int exit_code = MBEDTLS_EXIT_FAILURE;

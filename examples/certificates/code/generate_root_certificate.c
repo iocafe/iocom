@@ -1,7 +1,7 @@
 /**
 
-  @file    eosal/examples/ecollection/code/osal_detached_thread_example.c
-  @brief   Example code, create detached thread.
+  @file    iocom/examples/certificates/generate_root_certificate.c
+  @brief   Example for creating self signed root certificate and private key.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021
@@ -14,7 +14,7 @@
 ****************************************************************************************************
 */
 #include "eosal.h"
-#include "osal_example_collection_main.h"
+#include "certificates_example_main.h"
 
 /** Parameter structure for creating new thread.
  */

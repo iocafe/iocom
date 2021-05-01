@@ -22,7 +22,7 @@ set(E_APPLIBS "devicedir${E_POSTFIX};gazerbeam${E_POSTFIX};deviceinfo${E_POSTFIX
 if ($ENV{E_OSVER} MATCHES "pi")
   set(E_APPLIBS "${E_APPLIBS};pigpio;raspicam;rt")
 endif()
-set(E_APPLIBS "${E_APPLIBS};$ENV{OSAL_TLS_APP_LIBS}")
+# set(E_APPLIBS "${E_APPLIBS};$ENV{OSAL_TLS_APP_LIBS}")
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")

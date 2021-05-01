@@ -1,7 +1,7 @@
 /**
 
-  @file    eosal/examples/ecollection/code/osal_example_collection_main.h
-  @brief   Test code/example collection.
+  @file    iocom/examples/certificates/certificates_example_main.h
+  @brief   Example and unit tests for certificate utilities.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021

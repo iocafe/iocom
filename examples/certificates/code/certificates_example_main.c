@@ -1,13 +1,10 @@
 /**
 
-  @file    eosal/examples/ecollection/code/osal_example_collection_main.c
-  @brief   Example code about threads.
+  @file    iocom/examples/certificates/certificates_example_main.c
+  @brief   Example and unit tests for certificate utilities.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021
-
-  Main function for set of example. Multiple simple examples/tests have been packed in this
-  project to avoid creating many projets.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the eosal and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -17,7 +14,7 @@
 ****************************************************************************************************
 */
 #include "eosal.h"
-#include "osal_example_collection_main.h"
+#include "certificates_example_main.h"
 
 /* If needed for the operating system, EOSAL_C_MAIN macro generates the actual C main() function.
  */
