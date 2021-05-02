@@ -226,13 +226,14 @@ void ioc_generate_key(void)
     mbedtls_mpi N, P, Q, D, E, DP, DQ, QP;
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
+       const char *pers = "gen_key";
 // #if defined(MBEDTLS_ECP_C)
 //    const mbedtls_ecp_curve_info *curve_info;
 // #endif
     iocKeyOptions opt;
 
     /*
-     * Set to sane values
+     * Set to sane values 
      */
 
     mbedtls_mpi_init( &N ); mbedtls_mpi_init( &P ); mbedtls_mpi_init( &Q );
@@ -275,7 +276,7 @@ void ioc_generate_key(void)
     }
     */
 
-#if 0
+#if 1
     mbedtls_printf( "\n  . Seeding the random number generator..." );
     fflush( stdout );
 

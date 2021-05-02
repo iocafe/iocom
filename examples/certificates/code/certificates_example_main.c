@@ -37,7 +37,11 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    // os_sleep(7000);
+    osalSecurityConfig security_prm;
+    os_memclear(&security_prm, sizeof(security_prm));
+
+    osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &security_prm);
+
     // osal_detached_thread_example();
      ioc_generate_key();
     // return osal_int64_test(argc, argv);
