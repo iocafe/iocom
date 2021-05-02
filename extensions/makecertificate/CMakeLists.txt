@@ -19,6 +19,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
 set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 
 # Add include paths.
+include_directories("${BACKBONE}")
 # include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 

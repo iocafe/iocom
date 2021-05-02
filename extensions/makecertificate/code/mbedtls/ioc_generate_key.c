@@ -39,9 +39,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define mbedtls_printf          printf
-#define mbedtls_exit            exit
-#define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
-#define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
+// #define mbedtls_exit            exit
+// #define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
+// #define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
 #endif /* MBEDTLS_PLATFORM_C */
 
 #if defined(MBEDTLS_PK_WRITE_C) && defined(MBEDTLS_FS_IO) && \
@@ -63,6 +63,30 @@
 
 #define DEV_RANDOM_THRESHOLD        32
 
+#define FORMAT_PEM              0
+#define FORMAT_DER              1
+
+#define DFL_TYPE                MBEDTLS_PK_RSA      // MBEDTLS_PK_RSA or MBEDTLS_PK_ECKEY
+#define DFL_RSA_KEYSIZE         4096                // Key size bytes, for example 1024 or 4096 
+#define DFL_FILENAME            "keyfile.key"
+#define DFL_FORMAT              FORMAT_PEM          // FORMAT_PEM or FORMAT_DER
+#define DFL_USE_DEV_RANDOM      0
+
+
+/*
+ * global options
+ */
+typedef struct iocKeyOptions
+{
+    int type;                   /* the type of key to generate          */
+    int rsa_keysize;            /* length of key in bits                */
+    int ec_curve;               /* curve identifier for EC keys         */
+    const char *filename;       /* filename of the key file             */
+    int format;                 /* the output format to use             */
+    int use_dev_random;         /* use /dev/random as entropy source    */
+} iocKeyOptions;
+
+
 /**
 ****************************************************************************************************
 
@@ -76,9 +100,6 @@
 
 ****************************************************************************************************
 */
-void ioc_make_root_certificate()
-{
-}
 
 
 
@@ -131,14 +152,7 @@ int dev_random_entropy_poll( void *data, unsigned char *output,
 #define USAGE_DEV_RANDOM ""
 #endif /* !_WIN32 && MBEDTLS_FS_IO */
 
-#define FORMAT_PEM              0
-#define FORMAT_DER              1
 
-#define DFL_TYPE                MBEDTLS_PK_RSA
-#define DFL_RSA_KEYSIZE         4096
-#define DFL_FILENAME            "keyfile.key"
-#define DFL_FORMAT              FORMAT_PEM
-#define DFL_USE_DEV_RANDOM      0
 
 #define USAGE \
     "\n usage: gen_key param=<>...\n"                   \
@@ -154,31 +168,16 @@ int dev_random_entropy_poll( void *data, unsigned char *output,
 #if !defined(MBEDTLS_PK_WRITE_C) || !defined(MBEDTLS_PEM_WRITE_C) || \
     !defined(MBEDTLS_FS_IO) || !defined(MBEDTLS_ENTROPY_C) || \
     !defined(MBEDTLS_CTR_DRBG_C)
-int main( void )
-{
-    mbedtls_printf( "MBEDTLS_PK_WRITE_C and/or MBEDTLS_FS_IO and/or "
-            "MBEDTLS_ENTROPY_C and/or MBEDTLS_CTR_DRBG_C and/or "
-            "MBEDTLS_PEM_WRITE_C"
+#error "MBEDTLS_PK_WRITE_C and/or MBEDTLS_FS_IO and/or " \
+            "MBEDTLS_ENTROPY_C and/or MBEDTLS_CTR_DRBG_C and/or " \
+            "MBEDTLS_PEM_WRITE_C" \
             "not defined.\n" );
-    mbedtls_exit( 0 );
-}
-#else
+#endif
 
 
-/*
- * global options
- */
-struct options
-{
-    int type;                   /* the type of key to generate          */
-    int rsa_keysize;            /* length of key in bits                */
-    int ec_curve;               /* curve identifier for EC keys         */
-    const char *filename;       /* filename of the key file             */
-    int format;                 /* the output format to use             */
-    int use_dev_random;         /* use /dev/random as entropy source    */
-} opt;
-
-static int write_private_key( mbedtls_pk_context *key, const char *output_file )
+static int write_private_key( 
+    mbedtls_pk_context *key, 
+    iocKeyOptions *opt)
 {
     int ret;
     FILE *f;
@@ -187,7 +186,7 @@ static int write_private_key( mbedtls_pk_context *key, const char *output_file )
     size_t len = 0;
 
     memset(output_buf, 0, 16000);
-    if( opt.format == FORMAT_PEM )
+    if( opt->format == FORMAT_PEM )
     {
         if( ( ret = mbedtls_pk_write_key_pem( key, output_buf, 16000 ) ) != 0 )
             return( ret );
@@ -203,7 +202,7 @@ static int write_private_key( mbedtls_pk_context *key, const char *output_file )
         c = output_buf + sizeof(output_buf) - len;
     }
 
-    if( ( f = fopen( output_file, "wb" ) ) == NULL )
+    if( ( f = fopen(opt->filename, "wb" ) ) == NULL )
         return( -1 );
 
     if( fwrite( c, 1, len, f ) != len )
@@ -217,21 +216,20 @@ static int write_private_key( mbedtls_pk_context *key, const char *output_file )
     return( 0 );
 }
 
-int xxxxmain( int argc, char *argv[] )
+
+void ioc_generate_key(void)
 {
     int ret = 1;
     int exit_code = MBEDTLS_EXIT_FAILURE;
     mbedtls_pk_context key;
     char buf[1024];
-    int i;
-    char *p, *q;
     mbedtls_mpi N, P, Q, D, E, DP, DQ, QP;
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
-    const char *pers = "gen_key";
-#if defined(MBEDTLS_ECP_C)
-    const mbedtls_ecp_curve_info *curve_info;
-#endif
+// #if defined(MBEDTLS_ECP_C)
+//    const mbedtls_ecp_curve_info *curve_info;
+// #endif
+    iocKeyOptions opt;
 
     /*
      * Set to sane values
@@ -245,20 +243,7 @@ int xxxxmain( int argc, char *argv[] )
     mbedtls_ctr_drbg_init( &ctr_drbg );
     memset( buf, 0, sizeof( buf ) );
 
-    if( argc == 0 )
-    {
-    usage:
-        mbedtls_printf( USAGE );
-#if defined(MBEDTLS_ECP_C)
-        mbedtls_printf( " available ec_curve values:\n" );
-        curve_info = mbedtls_ecp_curve_list();
-        mbedtls_printf( "    %s (default)\n", curve_info->name );
-        while( ( ++curve_info )->name != NULL )
-            mbedtls_printf( "    %s\n", curve_info->name );
-#endif /* MBEDTLS_ECP_C */
-        goto exit;
-    }
-
+    os_memclear(&opt, sizeof(opt));
     opt.type                = DFL_TYPE;
     opt.rsa_keysize         = DFL_RSA_KEYSIZE;
     opt.ec_curve            = DFL_EC_CURVE;
@@ -266,40 +251,11 @@ int xxxxmain( int argc, char *argv[] )
     opt.format              = DFL_FORMAT;
     opt.use_dev_random      = DFL_USE_DEV_RANDOM;
 
-    for( i = 1; i < argc; i++ )
-    {
-        p = argv[i];
-        if( ( q = strchr( p, '=' ) ) == NULL )
-            goto usage;
-        *q++ = '\0';
 
-        if( strcmp( p, "type" ) == 0 )
-        {
-            if( strcmp( q, "rsa" ) == 0 )
-                opt.type = MBEDTLS_PK_RSA;
-            else if( strcmp( q, "ec" ) == 0 )
-                opt.type = MBEDTLS_PK_ECKEY;
-            else
-                goto usage;
-        }
-        else if( strcmp( p, "format" ) == 0 )
-        {
-            if( strcmp( q, "pem" ) == 0 )
-                opt.format = FORMAT_PEM;
-            else if( strcmp( q, "der" ) == 0 )
-                opt.format = FORMAT_DER;
-            else
-                goto usage;
-        }
-        else if( strcmp( p, "rsa_keysize" ) == 0 )
-        {
-            opt.rsa_keysize = atoi( q );
-            if( opt.rsa_keysize < 1024 ||
-                opt.rsa_keysize > MBEDTLS_MPI_MAX_BITS )
-                goto usage;
-        }
+
+/* 
 #if defined(MBEDTLS_ECP_C)
-        else if( strcmp( p, "ec_curve" ) == 0 )
+        if( strcmp( p, "ec_curve" ) == 0 )
         {
             if( ( curve_info = mbedtls_ecp_curve_info_from_name( q ) ) == NULL )
                 goto usage;
@@ -317,7 +273,9 @@ int xxxxmain( int argc, char *argv[] )
         else
             goto usage;
     }
+    */
 
+#if 0
     mbedtls_printf( "\n  . Seeding the random number generator..." );
     fflush( stdout );
 
@@ -345,11 +303,12 @@ int xxxxmain( int argc, char *argv[] )
         mbedtls_printf( " failed\n  ! mbedtls_ctr_drbg_seed returned -0x%04x\n", (unsigned int) -ret );
         goto exit;
     }
+#endif
 
     /*
      * 1.1. Generate the key
      */
-    mbedtls_printf( "\n  . Generating the private key ..." );
+    osal_trace( "\n  . Generating the private key ..." );
     fflush( stdout );
 
     if( ( ret = mbedtls_pk_setup( &key,
@@ -394,7 +353,7 @@ int xxxxmain( int argc, char *argv[] )
     /*
      * 1.2 Print the key
      */
-    mbedtls_printf( " ok\n  . Key information:\n" );
+    osal_trace( " ok\n  . Key information:\n" );
 
 #if defined(MBEDTLS_RSA_C)
     if( mbedtls_pk_get_type( &key ) == MBEDTLS_PK_RSA )
@@ -404,7 +363,7 @@ int xxxxmain( int argc, char *argv[] )
         if( ( ret = mbedtls_rsa_export    ( rsa, &N, &P, &Q, &D, &E ) ) != 0 ||
             ( ret = mbedtls_rsa_export_crt( rsa, &DP, &DQ, &QP ) )      != 0 )
         {
-            mbedtls_printf( " failed\n  ! could not export RSA parameters\n\n" );
+            osal_trace(" failed\n  ! could not export RSA parameters\n\n");
             goto exit;
         }
 
@@ -436,21 +395,21 @@ int xxxxmain( int argc, char *argv[] )
     /*
      * 1.3 Export key
      */
-    mbedtls_printf( "  . Writing key to file..." );
+    osal_trace( "  . Writing key to file..." );
 
-    if( ( ret = write_private_key( &key, opt.filename ) ) != 0 )
+    if( ( ret = write_private_key( &key, &opt) ) != 0 )
     {
-        mbedtls_printf( " failed\n" );
+        osal_trace( " failed\n" );
         goto exit;
     }
 
-    mbedtls_printf( " ok\n" );
+    osal_trace( " ok\n" );
 
     exit_code = MBEDTLS_EXIT_SUCCESS;
 
 exit:
 
-    if( exit_code != MBEDTLS_EXIT_SUCCESS )
+    if (exit_code != MBEDTLS_EXIT_SUCCESS)
     {
 #ifdef MBEDTLS_ERROR_C
         mbedtls_strerror( ret, buf, sizeof( buf ) );
@@ -468,15 +427,7 @@ exit:
     mbedtls_ctr_drbg_free( &ctr_drbg );
     mbedtls_entropy_free( &entropy );
 
-#if defined(_WIN32)
-    mbedtls_printf( "  + Press Enter to exit this program.\n" );
-    fflush( stdout ); getchar();
-#endif
-
-    mbedtls_exit( exit_code );
 }
-#endif /* MBEDTLS_PK_WRITE_C && MBEDTLS_PEM_WRITE_C && MBEDTLS_FS_IO &&
-        * MBEDTLS_ENTROPY_C && MBEDTLS_CTR_DRBG_C */
 
 
 #endif

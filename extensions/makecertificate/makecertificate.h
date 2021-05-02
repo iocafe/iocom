@@ -23,7 +23,7 @@
  */
 OSAL_C_HEADER_BEGINS
 
-#include "code/common/make_certificate.h"
+#include "code/common/ioc_make_certificate.h"
 
 /* If C++ compilation, end the undecorated code.
  */

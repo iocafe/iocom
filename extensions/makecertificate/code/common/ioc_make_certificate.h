@@ -19,4 +19,7 @@
 #include "makecertificate.h"
 
 
+void ioc_generate_key(void);
+
+
 #endif

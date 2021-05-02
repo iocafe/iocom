@@ -13,7 +13,6 @@
 
 ****************************************************************************************************
 */
-#include "eosal.h"
 #include "certificates_example_main.h"
 
 /* If needed for the operating system, EOSAL_C_MAIN macro generates the actual C main() function.
@@ -39,8 +38,8 @@ osalStatus osal_main(
     os_char *argv[])
 {
     // os_sleep(7000);
-    osal_detached_thread_example();
-    // osal_attached_thread_example();
+    // osal_detached_thread_example();
+     ioc_generate_key();
     // return osal_int64_test(argc, argv);
     // return osal_intser_test(argc, argv);
     // return osal_json_compress_test(argc, argv);
