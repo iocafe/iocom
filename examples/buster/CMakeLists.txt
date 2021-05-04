@@ -19,7 +19,6 @@ endif()
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
-add_subdirectory($ENV{E_ROOT}/eosal/dependencies/eosal_jpeg "${CMAKE_CURRENT_BINARY_DIR}/eosal/dependencies/eosal_jpeg")
 add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
 add_subdirectory($ENV{E_ROOT}/pins "${CMAKE_CURRENT_BINARY_DIR}/pins")
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/nodeconf "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/nodeconf")
