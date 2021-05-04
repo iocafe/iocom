@@ -7,68 +7,36 @@
 
   Copyright The Mbed TLS Contributors
   SPDX-License-Identifier: Apache-2.0
- 
+
   Licensed under the Apache License, Version 2.0 (the "License"); you may
   not use this file except in compliance with the License.
   You may obtain a copy of the License at
- 
+
   http://www.apache.org/licenses/LICENSE-2.0
- 
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
-   
-  Adapted for use with iocom library 2021 by Pekka Lehtikoski. .
+
+  Adapted for use with iocom library 2021 by Pekka Lehtikoski. This file contains code to create
+  RSA keys only.
 
 ****************************************************************************************************
 */
 #include "makecertificate.h"
 #if OSAL_TLS_SUPPORT==OSAL_TLS_MBED_WRAPPER
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "extensions/tls/mbedtls/osal_mbedtls.h"
 
-#if defined(MBEDTLS_PLATFORM_C)
-#include "mbedtls/platform.h"
-#else
-#include <stdio.h>
-#include <stdlib.h>
-#define mbedtls_printf          printf
-// #define mbedtls_exit            exit
-// #define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
-// #define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
-#endif /* MBEDTLS_PLATFORM_C */
-
-#if defined(MBEDTLS_PK_WRITE_C) && defined(MBEDTLS_FS_IO) && \
-    defined(MBEDTLS_ENTROPY_C) && defined(MBEDTLS_CTR_DRBG_C)
-#include "mbedtls/error.h"
-#include "mbedtls/pk.h"
-#include "mbedtls/ecdsa.h"
-#include "mbedtls/rsa.h"
-#include "mbedtls/error.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#if !defined(_WIN32)
-#include <unistd.h>
-
-#define DEV_RANDOM_THRESHOLD        32
 
 #define FORMAT_PEM              0
 #define FORMAT_DER              1
 
 #define DFL_TYPE                MBEDTLS_PK_RSA      // MBEDTLS_PK_RSA or MBEDTLS_PK_ECKEY
-#define DFL_RSA_KEYSIZE         4096                // Key size bytes, for example 1024 or 4096 
-#define DFL_FILENAME            "keyfile.key"
+#define DFL_RSA_KEYSIZE         4096                // Key size bytes, for example 1024 or 4096
+#define DFL_FILENAME            "keyfile.pem"
 #define DFL_FORMAT              FORMAT_PEM          // FORMAT_PEM or FORMAT_DER
 #define DFL_USE_DEV_RANDOM      0
 
@@ -80,90 +48,11 @@ typedef struct iocKeyOptions
 {
     int type;                   /* the type of key to generate          */
     int rsa_keysize;            /* length of key in bits                */
-    int ec_curve;               /* curve identifier for EC keys         */
     const char *filename;       /* filename of the key file             */
     int format;                 /* the output format to use             */
     int use_dev_random;         /* use /dev/random as entropy source    */
 } iocKeyOptions;
 
-
-/**
-****************************************************************************************************
-
-  @brief X
-
-  X
-
-  @param   X
-
-  @return  None.
-
-****************************************************************************************************
-*/
-
-
-
-int dev_random_entropy_poll( void *data, unsigned char *output,
-                             size_t len, size_t *olen )
-{
-    FILE *file;
-    size_t ret, left = len;
-    unsigned char *p = output;
-    ((void) data);
-
-    *olen = 0;
-
-    file = fopen( "/dev/random", "rb" );
-    if( file == NULL )
-        return( MBEDTLS_ERR_ENTROPY_SOURCE_FAILED );
-
-    while( left > 0 )
-    {
-        /* /dev/random can return much less than requested. If so, try again */
-        ret = fread( p, 1, left, file );
-        if( ret == 0 && ferror( file ) )
-        {
-            fclose( file );
-            return( MBEDTLS_ERR_ENTROPY_SOURCE_FAILED );
-        }
-
-        p += ret;
-        left -= ret;
-        sleep( 1 );
-    }
-    fclose( file );
-    *olen = len;
-
-    return( 0 );
-}
-#endif /* !_WIN32 */
-#endif
-
-#if defined(MBEDTLS_ECP_C)
-#define DFL_EC_CURVE            mbedtls_ecp_curve_list()->grp_id
-#else
-#define DFL_EC_CURVE            0
-#endif
-
-#if !defined(_WIN32) && defined(MBEDTLS_FS_IO)
-#define USAGE_DEV_RANDOM \
-    "    use_dev_random=0|1    default: 0\n"
-#else
-#define USAGE_DEV_RANDOM ""
-#endif /* !_WIN32 && MBEDTLS_FS_IO */
-
-
-
-#define USAGE \
-    "\n usage: gen_key param=<>...\n"                   \
-    "\n acceptable parameters:\n"                       \
-    "    type=rsa|ec           default: rsa\n"          \
-    "    rsa_keysize=%%d        default: 4096\n"        \
-    "    ec_curve=%%s           see below\n"            \
-    "    filename=%%s           default: keyfile.key\n" \
-    "    format=pem|der        default: pem\n"          \
-    USAGE_DEV_RANDOM                                    \
-    "\n"
 
 #if !defined(MBEDTLS_PK_WRITE_C) || !defined(MBEDTLS_PEM_WRITE_C) || \
     !defined(MBEDTLS_FS_IO) || !defined(MBEDTLS_ENTROPY_C) || \
@@ -175,8 +64,8 @@ int dev_random_entropy_poll( void *data, unsigned char *output,
 #endif
 
 
-static int write_private_key( 
-    mbedtls_pk_context *key, 
+static int write_private_key(
+    mbedtls_pk_context *key,
     iocKeyOptions *opt)
 {
     int ret;
@@ -223,178 +112,40 @@ void ioc_generate_key(void)
     int exit_code = MBEDTLS_EXIT_FAILURE;
     mbedtls_pk_context key;
     char buf[1024];
-    mbedtls_mpi N, P, Q, D, E, DP, DQ, QP;
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
-       const char *pers = "gen_key";
-// #if defined(MBEDTLS_ECP_C)
-//    const mbedtls_ecp_curve_info *curve_info;
-// #endif
     iocKeyOptions opt;
-
-    /*
-     * Set to sane values 
-     */
-
-    mbedtls_mpi_init( &N ); mbedtls_mpi_init( &P ); mbedtls_mpi_init( &Q );
-    mbedtls_mpi_init( &D ); mbedtls_mpi_init( &E ); mbedtls_mpi_init( &DP );
-    mbedtls_mpi_init( &DQ ); mbedtls_mpi_init( &QP );
+    osalTLS *t;
+    t = osal_global->tls;
 
     mbedtls_pk_init( &key );
-    mbedtls_ctr_drbg_init( &ctr_drbg );
+    // mbedtls_ctr_drbg_init( &ctr_drbg );
     memset( buf, 0, sizeof( buf ) );
 
     os_memclear(&opt, sizeof(opt));
     opt.type                = DFL_TYPE;
     opt.rsa_keysize         = DFL_RSA_KEYSIZE;
-    opt.ec_curve            = DFL_EC_CURVE;
     opt.filename            = DFL_FILENAME;
     opt.format              = DFL_FORMAT;
     opt.use_dev_random      = DFL_USE_DEV_RANDOM;
 
-
-
-/* 
-#if defined(MBEDTLS_ECP_C)
-        if( strcmp( p, "ec_curve" ) == 0 )
-        {
-            if( ( curve_info = mbedtls_ecp_curve_info_from_name( q ) ) == NULL )
-                goto usage;
-            opt.ec_curve = curve_info->grp_id;
-        }
-#endif
-        else if( strcmp( p, "filename" ) == 0 )
-            opt.filename = q;
-        else if( strcmp( p, "use_dev_random" ) == 0 )
-        {
-            opt.use_dev_random = atoi( q );
-            if( opt.use_dev_random < 0 || opt.use_dev_random > 1 )
-                goto usage;
-        }
-        else
-            goto usage;
-    }
-    */
-
-#if 1
-    mbedtls_printf( "\n  . Seeding the random number generator..." );
-    fflush( stdout );
-
-    mbedtls_entropy_init( &entropy );
-#if !defined(_WIN32) && defined(MBEDTLS_FS_IO)
-    if( opt.use_dev_random )
-    {
-        if( ( ret = mbedtls_entropy_add_source( &entropy, dev_random_entropy_poll,
-                                        NULL, DEV_RANDOM_THRESHOLD,
-                                        MBEDTLS_ENTROPY_SOURCE_STRONG ) ) != 0 )
-        {
-            mbedtls_printf( " failed\n  ! mbedtls_entropy_add_source returned -0x%04x\n", (unsigned int) -ret );
-            goto exit;
-        }
-
-        mbedtls_printf("\n    Using /dev/random, so can take a long time! " );
-        fflush( stdout );
-    }
-#endif /* !_WIN32 && MBEDTLS_FS_IO */
-
-    if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
-                               (const unsigned char *) pers,
-                               strlen( pers ) ) ) != 0 )
-    {
-        mbedtls_printf( " failed\n  ! mbedtls_ctr_drbg_seed returned -0x%04x\n", (unsigned int) -ret );
-        goto exit;
-    }
-#endif
-
-    /*
-     * 1.1. Generate the key
+    /* Generate the key
      */
     osal_trace( "\n  . Generating the private key ..." );
     fflush( stdout );
 
-    if( ( ret = mbedtls_pk_setup( &key,
-            mbedtls_pk_info_from_type( (mbedtls_pk_type_t) opt.type ) ) ) != 0 )
-    {
-        mbedtls_printf( " failed\n  !  mbedtls_pk_setup returned -0x%04x", (unsigned int) -ret );
+    ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type( (mbedtls_pk_type_t) opt.type));
+    if (ret) {
+        osal_debug_error_int("generate_key failed! mbedtls_pk_setup:", ret);
         goto exit;
     }
 
-#if defined(MBEDTLS_RSA_C) && defined(MBEDTLS_GENPRIME)
-    if( opt.type == MBEDTLS_PK_RSA )
-    {
-        ret = mbedtls_rsa_gen_key( mbedtls_pk_rsa( key ), mbedtls_ctr_drbg_random, &ctr_drbg,
-                                   opt.rsa_keysize, 65537 );
-        if( ret != 0 )
-        {
-            mbedtls_printf( " failed\n  !  mbedtls_rsa_gen_key returned -0x%04x", (unsigned int) -ret );
-            goto exit;
-        }
-    }
-    else
-#endif /* MBEDTLS_RSA_C */
-#if defined(MBEDTLS_ECP_C)
-    if( opt.type == MBEDTLS_PK_ECKEY )
-    {
-        ret = mbedtls_ecp_gen_key( (mbedtls_ecp_group_id) opt.ec_curve,
-                                   mbedtls_pk_ec( key ),
-                                   mbedtls_ctr_drbg_random, &ctr_drbg );
-        if( ret != 0 )
-        {
-            mbedtls_printf( " failed\n  !  mbedtls_ecp_gen_key returned -0x%04x", (unsigned int) -ret );
-            goto exit;
-        }
-    }
-    else
-#endif /* MBEDTLS_ECP_C */
-    {
-        mbedtls_printf( " failed\n  !  key type not supported\n" );
+    ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &t->ctr_drbg,
+                               opt.rsa_keysize, 65537);
+    if (ret) {
+        osal_debug_error_int("generate_key failed! mbedtls_rsa_gen_key:", ret);
         goto exit;
     }
 
-    /*
-     * 1.2 Print the key
-     */
-    osal_trace( " ok\n  . Key information:\n" );
-
-#if defined(MBEDTLS_RSA_C)
-    if( mbedtls_pk_get_type( &key ) == MBEDTLS_PK_RSA )
-    {
-        mbedtls_rsa_context *rsa = mbedtls_pk_rsa( key );
-
-        if( ( ret = mbedtls_rsa_export    ( rsa, &N, &P, &Q, &D, &E ) ) != 0 ||
-            ( ret = mbedtls_rsa_export_crt( rsa, &DP, &DQ, &QP ) )      != 0 )
-        {
-            osal_trace(" failed\n  ! could not export RSA parameters\n\n");
-            goto exit;
-        }
-
-        mbedtls_mpi_write_file( "N:  ",  &N,  16, NULL );
-        mbedtls_mpi_write_file( "E:  ",  &E,  16, NULL );
-        mbedtls_mpi_write_file( "D:  ",  &D,  16, NULL );
-        mbedtls_mpi_write_file( "P:  ",  &P,  16, NULL );
-        mbedtls_mpi_write_file( "Q:  ",  &Q,  16, NULL );
-        mbedtls_mpi_write_file( "DP: ",  &DP, 16, NULL );
-        mbedtls_mpi_write_file( "DQ:  ", &DQ, 16, NULL );
-        mbedtls_mpi_write_file( "QP:  ", &QP, 16, NULL );
-    }
-    else
-#endif
-#if defined(MBEDTLS_ECP_C)
-    if( mbedtls_pk_get_type( &key ) == MBEDTLS_PK_ECKEY )
-    {
-        mbedtls_ecp_keypair *ecp = mbedtls_pk_ec( key );
-        mbedtls_printf( "curve: %s\n",
-                mbedtls_ecp_curve_info_from_grp_id( ecp->grp.id )->name );
-        mbedtls_mpi_write_file( "X_Q:   ", &ecp->Q.X, 16, NULL );
-        mbedtls_mpi_write_file( "Y_Q:   ", &ecp->Q.Y, 16, NULL );
-        mbedtls_mpi_write_file( "D:     ", &ecp->d  , 16, NULL );
-    }
-    else
-#endif
-        mbedtls_printf("  ! key type not supported\n");
-
-    /*
-     * 1.3 Export key
+    /* Export key
      */
     osal_trace( "  . Writing key to file..." );
 
@@ -410,24 +161,15 @@ void ioc_generate_key(void)
 
 exit:
 
+#ifdef MBEDTLS_ERROR_C
     if (exit_code != MBEDTLS_EXIT_SUCCESS)
     {
-#ifdef MBEDTLS_ERROR_C
-        mbedtls_strerror( ret, buf, sizeof( buf ) );
-        mbedtls_printf( " - %s\n", buf );
-#else
-        mbedtls_printf("\n");
-#endif
+        mbedtls_strerror(ret, buf, sizeof(buf));
+        osal_debug_error_str("generate_key failed: ", buf);
     }
+#endif
 
-    mbedtls_mpi_free( &N ); mbedtls_mpi_free( &P ); mbedtls_mpi_free( &Q );
-    mbedtls_mpi_free( &D ); mbedtls_mpi_free( &E ); mbedtls_mpi_free( &DP );
-    mbedtls_mpi_free( &DQ ); mbedtls_mpi_free( &QP );
-
-    mbedtls_pk_free( &key );
-    mbedtls_ctr_drbg_free( &ctr_drbg );
-    mbedtls_entropy_free( &entropy );
-
+    mbedtls_pk_free(&key);
 }
 
 
