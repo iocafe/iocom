@@ -42,17 +42,8 @@ osalStatus osal_main(
 
     osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &security_prm);
 
-    // osal_detached_thread_example();
-     ioc_generate_key();
-    // return osal_int64_test(argc, argv);
-    // return osal_intser_test(argc, argv);
-    // return osal_json_compress_test(argc, argv);
-    // return osal_rand_test(argc, argv);
-    // return osal_float_int_conv_test(argc, argv);
-    // return osal_password_test(argc, argv);
-    // return osal_persistent_test(argc, argv);
-    // return osal_timer_test(argc, argv);
-    // return osal_type_test(argc, argv);
+    //  ioc_generate_key();
+    my_generate_root_certificate();
 
     return OSAL_SUCCESS;
 }

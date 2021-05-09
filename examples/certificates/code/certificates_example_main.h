@@ -17,6 +17,5 @@
 #include "makecertificate.h"
 
 
-void osal_detached_thread_example(void);
 
-
+void my_generate_root_certificate(void);
