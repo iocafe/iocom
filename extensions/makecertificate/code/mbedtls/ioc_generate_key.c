@@ -34,7 +34,7 @@
 
 
 #define DFL_TYPE                MBEDTLS_PK_RSA      // MBEDTLS_PK_RSA or MBEDTLS_PK_ECKEY
-#define DFL_RSA_KEYSIZE         2048                // Key size, for example 1024 or 4096
+#define DFL_RSA_KEYSIZE         2048                // Key size, for example 1024, 2048 or 4096
 
 
 #if !defined(MBEDTLS_PK_WRITE_C) || !defined(MBEDTLS_PEM_WRITE_C) || \
