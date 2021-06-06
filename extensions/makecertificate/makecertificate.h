@@ -25,6 +25,10 @@ OSAL_C_HEADER_BEGINS
 
 #include "code/common/ioc_make_certificate.h"
 
+#if OSAL_TLS_SUPPORT==OSAL_TLS_MBED_WRAPPER
+#include "code/mbedtls/ioc_mbedtls_certificate.h"
+#endif
+
 /* If C++ compilation, end the undecorated code.
  */
 OSAL_C_HEADER_ENDS

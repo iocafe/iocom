@@ -1,6 +1,6 @@
 /**
 
-  @file    make_root_certificate.c
+  @file    ioc_make_root_certificate.c
   @brief   Make root certificate using MbedTLS.
   @author  Pekka Lehtikoski
   @version 1.0

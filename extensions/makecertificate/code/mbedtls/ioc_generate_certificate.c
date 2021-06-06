@@ -27,8 +27,6 @@
 #include "makecertificate.h"
 #if OSAL_TLS_SUPPORT==OSAL_TLS_MBED_WRAPPER
 
-#include "extensions/tls/mbedtls/osal_mbedtls.h"
-
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/x509_csr.h"
 #include "mbedtls/md.h"
@@ -270,6 +268,7 @@ osalStatus ioc_generate_certificate(
 #endif
     mbedtls_x509write_cert crt;
     mbedtls_mpi serial;
+    osalStatus s;
 
     osalTLS *t;
     t = osal_global->tls;
@@ -290,6 +289,7 @@ osalStatus ioc_generate_certificate(
 
     os_memcpy(&opt, popt, sizeof(opt));
     os_memclear(&opt_md, sizeof(opt_md));
+    if (opt.issuer_key_type == 0) opt.issuer_key_type = OS_PBNR_SERVER_KEY;
     if (opt.issuer_crt == OS_NULL) opt.issuer_crt      = DFL_ISSUER_CRT;
     if (opt.request_file == OS_NULL) opt.request_file  = DFL_REQUEST_FILE;
     if (opt.subject_key == OS_NULL) opt.subject_key    = DFL_SUBJECT_KEY;
@@ -618,13 +618,19 @@ osalStatus ioc_generate_certificate(
     mbedtls_printf( "  . Loading the issuer key ..." );
     fflush( stdout );
 
-    ret = mbedtls_pk_parse_keyfile( &loaded_issuer_key, opt.issuer_key, opt.issuer_pwd );
+    s = ioc_load_key(&loaded_issuer_key, opt.issuer_key_type);
+    if (s) {
+        goto exit;
+    }
+
+    /* ret = mbedtls_pk_parse_keyfile( &loaded_issuer_key, opt.issuer_key, opt.issuer_pwd );
     if (ret != 0) {
         mbedtls_strerror(ret, buf, sizeof(buf));
         mbedtls_printf( " failed\n  !  mbedtls_pk_parse_keyfile "
                         "returned -x%02x - %s\n\n", -ret, buf );
         goto exit;
     }
+    */
 
     // Check if key and issuer certificate match
     //

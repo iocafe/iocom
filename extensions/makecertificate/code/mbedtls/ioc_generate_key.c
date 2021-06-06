@@ -30,9 +30,6 @@
 #include "makecertificate.h"
 #if OSAL_TLS_SUPPORT==OSAL_TLS_MBED_WRAPPER
 
-#include "extensions/tls/mbedtls/osal_mbedtls.h"
-
-
 #define DFL_TYPE                MBEDTLS_PK_RSA      // MBEDTLS_PK_RSA or MBEDTLS_PK_ECKEY
 #define DFL_RSA_KEYSIZE         2048                // Key size, for example 1024, 2048 or 4096
 
@@ -50,13 +47,13 @@
 /**
 ****************************************************************************************************
 
-  @brief Generate new RSA key.
+  @brief Save RSA key to persistent storage.
   @anchor write_private_key
 
   Save RSA key into persisten block (can be a file, EEPROM, etc).
 
   @param   opt Pointer to "options" structure. The key_type member must be either
-           OS_PBNR_SERVER_KEY or OS_PBNR_ROOT_KEY.
+           OS_PBNR_SERVER_KEY or OS_PBNR_ROOT_KEY (persistent block number).
            If der_format is set, the key is saved in DER format. If not set, key is saved as PEM.
 
   @return  OSAL_SUCCESS if key was successfully generated and saved. Other return values
@@ -69,32 +66,51 @@ static osalStatus write_private_key(
     iocKeyOptions *opt)
 {
     int ret;
-    unsigned char output_buf[8000];
-    unsigned char *c = output_buf;
-    size_t len = 0;
+    os_char *output_buf, *c;
+    os_memsz output_buf_sz;
+    size_t len;
+    osalStatus s;
 
-    os_memclear(output_buf, sizeof(output_buf));
+    /* Buffer is dynamically allocated to limit stack use (micro-controllers)
+     */
+    output_buf = os_malloc(3 * opt->rsa_keysize/2 + 200, &output_buf_sz);
+    if (output_buf == OS_NULL) {
+        return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
+    }
+
+    os_memclear(output_buf, output_buf_sz);
     if (!opt->der_format)
     {
-        ret = mbedtls_pk_write_key_pem(key, output_buf, sizeof(output_buf));
+        ret = mbedtls_pk_write_key_pem(key, (unsigned char*)output_buf, output_buf_sz);
         if (ret) {
-            return OSAL_STATUS_OUT_OF_BUFFER;
+            goto failed;
         }
 
-        len = strlen((char*)output_buf); // SHOULD TERMINATING '\0' CHARACTER BE SAVED?
+        /* Includes terminating '\0' character in length.
+         */
+        len = os_strlen(output_buf); // CHECK SHOULD TERMINATING '\0' CHARACTER BE SAVED? NOW SAVED.
     }
     else
     {
-        ret = mbedtls_pk_write_key_der(key, output_buf, sizeof(output_buf));
+        ret = mbedtls_pk_write_key_der(key, (unsigned char*)output_buf, output_buf_sz);
         if (ret < 0) {
-            return OSAL_STATUS_OUT_OF_BUFFER;
+            goto failed;
         }
 
         len = ret;
-        c = output_buf + sizeof(output_buf) - len;
+        c = output_buf + output_buf_sz - len;
     }
 
-    return os_save_persistent(opt->key_type, (os_char*)c, len, OS_FALSE);
+    s = os_save_persistent(opt->key_type, c, len, OS_FALSE);
+    os_free(output_buf, output_buf_sz);
+    return s;
+
+failed:
+    os_memclear(output_buf, output_buf_sz);
+    mbedtls_strerror(ret, output_buf, output_buf_sz);
+    osal_debug_error_str("mbedtls_pk_write_key_? failed: ", output_buf);
+    os_free(output_buf, output_buf_sz);
+    return OSAL_STATUS_FAILED;
 }
 
 
@@ -146,7 +162,7 @@ osalStatus ioc_generate_key(
 
     /* Generate the key
      */
-    osal_trace( "\n  . Generating the private key ..." );
+    osal_trace( "Generating the private RSA key" );
     fflush( stdout );
 
     ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(DFL_TYPE));
@@ -164,15 +180,13 @@ osalStatus ioc_generate_key(
 
     /* Export key
      */
-    osal_trace( "  . Writing key to file..." );
+    osal_trace("Writing key to persistent storage");
 
     s = write_private_key(&key, &opt);
     if (s) {
-        osal_trace( " failed\n" );
+        osal_trace("Failed");
         goto exit;
     }
-
-    osal_trace( " ok\n" );
 
     s = OSAL_SUCCESS;
 
@@ -180,7 +194,7 @@ exit:
 
 #ifdef MBEDTLS_ERROR_C
     if (OSAL_IS_ERROR(s)) {
-        char buf[1024];
+        os_char buf[1024];
         os_memclear(buf, sizeof(buf));
         mbedtls_strerror(ret, buf, sizeof(buf));
         osal_debug_error_str("generate_key failed: ", buf);

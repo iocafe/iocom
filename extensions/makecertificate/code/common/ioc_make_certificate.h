@@ -1,6 +1,6 @@
 /**
 
-  @file    make_certificate.h
+  @file    ioc_make_certificate.h
   @brief   Making root and cerver certificates.
   @author  Pekka Lehtikoski
   @version 1.0
@@ -38,6 +38,7 @@ iocKeyOptions;
 
 typedef struct iocCertificateOptions
 {
+    osPersistentBlockNr issuer_key_type;  /* OS_PBNR_SERVER_KEY or OS_PBNR_ROOT_KEY. */
     const os_char *issuer_crt;     /* filename of the issuer certificate   */
     const os_char *request_file;   /* filename of the certificate request  */
     const os_char *subject_key;    /* filename of the subject key file     */
@@ -63,7 +64,8 @@ typedef struct iocCertificateOptions
 iocCertificateOptions;
 
 
-
+/* Generate a new RSA key.
+ */
 osalStatus ioc_generate_key(
     iocKeyOptions *popt);
 

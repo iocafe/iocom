@@ -28,6 +28,7 @@ void my_generate_root_certificate(void)
 
     opt.selfsign = OS_TRUE;               /* selfsign the certificate             */
     opt.is_ca = OS_TRUE;                  /* is a CA certificate                  */
+    opt.issuer_key_type = OS_PBNR_ROOT_KEY;
 
     ioc_generate_certificate(&opt);
 }
