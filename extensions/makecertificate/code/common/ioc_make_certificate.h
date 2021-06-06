@@ -19,6 +19,23 @@
 #include "makecertificate.h"
 
 
+typedef struct iocKeyOptions
+{
+    /* Either OS_PBNR_SERVER_KEY or OS_PBNR_ROOT_KEY.
+     */
+    osPersistentBlockNr key_type;
+
+    /* Length of key in bits. If zero defaults to 2048.
+     */
+    os_short rsa_keysize;
+
+    /* The output format to use: If FALSE saves key in PEM format. if TRUE,
+       then DER format */
+    os_boolean der_format;
+}
+iocKeyOptions;
+
+
 typedef struct iocCertificateOptions
 {
     const os_char *issuer_crt;     /* filename of the issuer certificate   */
@@ -47,7 +64,8 @@ iocCertificateOptions;
 
 
 
-void ioc_generate_key(void);
+osalStatus ioc_generate_key(
+    iocKeyOptions *popt);
 
 osalStatus ioc_generate_certificate(
     iocCertificateOptions *popt);

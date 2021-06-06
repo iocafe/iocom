@@ -16,6 +16,5 @@
 #include "eosalx.h"
 #include "makecertificate.h"
 
-
-
+void my_generate_root_key(void);
 void my_generate_root_certificate(void);

@@ -42,7 +42,7 @@ osalStatus osal_main(
 
     osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &security_prm);
 
-    ioc_generate_key();
+    my_generate_root_key();
     // my_generate_root_certificate();
 
     return OSAL_SUCCESS;
