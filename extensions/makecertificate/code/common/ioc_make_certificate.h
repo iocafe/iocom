@@ -45,11 +45,12 @@ typedef struct iocCertificateOptions
      */
     osPersistentBlockNr cert_type;
 
-    /* Process identification.
+    /* Process and network identification to be used for subject and issuer
+       names in certificate.
      */
     os_char *process_name;
     os_int process_nr;
-    os_char *io_network_name;
+    os_char *network_name;
 
     const os_char *issuer_crt;     /* filename of the issuer certificate   */
     const os_char *request_file;   /* filename of the certificate request  */

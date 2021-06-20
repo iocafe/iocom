@@ -142,10 +142,10 @@ exit:
 #define DFL_SUBJECT_PWD         ""
 #define DFL_ISSUER_PWD          ""
 #define DFL_OUTPUT_FILENAME     "cert.crt"
-#define DFL_SUBJECT_NAME        "CN=Cert,O=mbed TLS,C=UK"
-#define DFL_ISSUER_NAME         "CN=CA,O=mbed TLS,C=UK"
+// #define DFL_SUBJECT_NAME        "CN=Cert,O=mbed TLS,C=UK"
+// #define DFL_ISSUER_NAME         "CN=CA,O=mbed TLS,C=UK"
 #define DFL_NOT_BEFORE          "20210101000000"
-#define DFL_NOT_AFTER           "20501231235959"
+#define DFL_NOT_AFTER           "22501231235959"
 #define DFL_SERIAL              "1"
 #define DFL_MAX_PATHLEN         -1
 #define DFL_KEY_USAGE           0
@@ -316,17 +316,18 @@ osalStatus ioc_generate_certificate(
     if (opt.subject_pwd == OS_NULL) opt.subject_pwd    = DFL_SUBJECT_PWD;
     if (opt.issuer_pwd == OS_NULL) opt.issuer_pwd      = DFL_ISSUER_PWD;
     if (opt.output_file == OS_NULL) opt.output_file    = DFL_OUTPUT_FILENAME;
-    if (opt.subject_name == OS_NULL) {
+
+    if (opt.subject_name == OS_NULL)
+    {
         os_strncpy(subject_name_buf, "CN=", sizeof(subject_name_buf));
-        // opt.subject_name    = DFL_subject_name;
-        os_strncat(subject_name_buf, opt.process_name ? opt.process_name : "unknown", sizeof(subject_name_buf));
+        os_strncat(subject_name_buf, opt.process_name ? opt.process_name : "*", sizeof(subject_name_buf));
         if (opt.process_nr) {
             osal_int_to_str(nbuf, sizeof(nbuf), opt.process_nr);
             os_strncat(subject_name_buf, nbuf, sizeof(subject_name_buf));
         }
-        if (opt.io_network_name) {
+        if (opt.network_name) {
             os_strncat(subject_name_buf, ".", sizeof(subject_name_buf));
-            os_strncat(subject_name_buf, opt.io_network_name, sizeof(subject_name_buf));
+            os_strncat(subject_name_buf, opt.network_name, sizeof(subject_name_buf));
         }
         opt.subject_name = subject_name_buf;
 
@@ -339,12 +340,11 @@ osalStatus ioc_generate_certificate(
 #ifdef OSAL_TLS_COUNTRY
         os_strncat(subject_name_buf, ",C=" OSAL_TLS_COUNTRY, sizeof(subject_name_buf));
 #else
-        os_strncat(subject_name_buf, ",C=US", sizeof(subject_name_buf));
+        os_strncat(subject_name_buf, ",C=FJ", sizeof(subject_name_buf));
 #endif
     }
 
     if (opt.issuer_name == OS_NULL) {
-        opt.issuer_name = DFL_ISSUER_NAME;
         opt.issuer_name = opt.subject_name;
     }
 

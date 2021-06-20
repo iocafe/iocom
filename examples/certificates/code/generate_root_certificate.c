@@ -33,7 +33,7 @@ void my_generate_root_certificate(void)
 
     opt.process_name = "example";
     opt.process_nr = 3;
-    opt.io_network_name = "cafenet";
+    opt.network_name = "cafenet";
     // opt.nickname = osal_nickname();
 
     ioc_generate_certificate(&opt);
