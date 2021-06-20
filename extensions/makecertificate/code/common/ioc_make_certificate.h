@@ -38,7 +38,19 @@ iocKeyOptions;
 
 typedef struct iocCertificateOptions
 {
-    osPersistentBlockNr issuer_key_type;  /* OS_PBNR_SERVER_KEY or OS_PBNR_ROOT_KEY. */
+    /* OS_PBNR_SERVER_KEY or OS_PBNR_ROOT_KEY. */
+    osPersistentBlockNr issuer_key_type;
+
+    /* Either OS_PBNR_ROOT_CERT or OS_PBNR_SERVER_CERT.
+     */
+    osPersistentBlockNr cert_type;
+
+    /* Process identification.
+     */
+    os_char *process_name;
+    os_int process_nr;
+    os_char *io_network_name;
+
     const os_char *issuer_crt;     /* filename of the issuer certificate   */
     const os_char *request_file;   /* filename of the certificate request  */
     const os_char *subject_key;    /* filename of the subject key file     */

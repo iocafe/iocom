@@ -37,12 +37,23 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
+    osPersistentParams persistentprm;
     osalSecurityConfig security_prm;
     os_memclear(&security_prm, sizeof(security_prm));
 
+    /* Initialize persistent storage
+     */
+    os_memclear(&persistentprm, sizeof(persistentprm));
+    persistentprm.subdirectory = "exampledata";
+    os_persistent_initialze(&persistentprm);
+
+    /* Initialize TLS library.
+     */
     osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &security_prm);
 
-    // my_generate_root_key();
+    /* Call real example functionality.
+     */
+    my_generate_root_key();
     my_generate_root_certificate();
 
     return OSAL_SUCCESS;

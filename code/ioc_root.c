@@ -226,7 +226,7 @@ void ioc_release_root(
   @param   root Pointer to root structure.
   @param   device_name Device name to set. OS_NULL to clear network name.
   @param   device_nr Device number to set. Zero to clear.
-  @param   password password for the device.
+  @param   password password for the device. Set "*" to use generate password automatically.
   @param   network_name Network name to set. OS_NULL to clear network name.
   @return  None.
 

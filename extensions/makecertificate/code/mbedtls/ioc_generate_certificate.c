@@ -218,35 +218,52 @@ exit:
 
 
 
-int write_certificate( mbedtls_x509write_cert *crt, const char *output_file,
-                       int (*f_rng)(void *, unsigned char *, size_t),
-                       void *p_rng )
+osalStatus ioc_write_certificate(
+    mbedtls_x509write_cert *crt, // const char *output_file,
+    iocCertificateOptions *opt,
+    int (*f_rng)(void *, unsigned char *, size_t),
+    void *p_rng)
 {
     int ret;
-    FILE *f;
-    unsigned char output_buf[4096];
-    size_t len = 0;
+//     FILE *f;
+    const os_memsz output_buf_sz = 4096;
+    os_char *output_buf;
+    size_t len;
+    osalStatus s;
 
-    memset( output_buf, 0, 4096 );
-    if( ( ret = mbedtls_x509write_crt_pem( crt, output_buf, 4096,
-                                           f_rng, p_rng ) ) < 0 )
-        return( ret );
+    output_buf = os_malloc(output_buf_sz, OS_NULL);
+    os_memclear(output_buf, output_buf_sz);
+    ret = mbedtls_x509write_crt_pem(crt, (unsigned char*)output_buf, output_buf_sz, f_rng, p_rng);
+    if (ret < 0) {
+        goto failed;
+    }
 
-    len = strlen( (char *) output_buf );
+    /* Includes terminating '\0' character in length.
+     */
+    len = os_strlen(output_buf); // CHECK SHOULD TERMINATING '\0' CHARACTER BE SAVED? NOW SAVED.
 
-    if( ( f = fopen( output_file, "w" ) ) == NULL )
+    /* if( ( f = fopen( output_file, "w" ) ) == NULL )
         return( -1 );
-
     if( fwrite( output_buf, 1, len, f ) != len )
     {
         fclose( f );
         return( -1 );
     }
-
     fclose( f );
+    return( 0 ); */
 
-    return( 0 );
+    s = os_save_persistent(opt->cert_type, output_buf, len, OS_FALSE);
+    os_free(output_buf, output_buf_sz);
+    return s;
+
+failed:
+    os_memclear(output_buf, output_buf_sz);
+    mbedtls_strerror(ret, output_buf, output_buf_sz);
+    osal_debug_error_str("mbedtls_x509write_crt_ failed: ", output_buf);
+    os_free(output_buf, output_buf_sz);
+    return OSAL_STATUS_FAILED;
 }
+
 
 osalStatus ioc_generate_certificate(
     iocCertificateOptions *popt)
@@ -259,6 +276,8 @@ osalStatus ioc_generate_certificate(
                 *subject_key = &loaded_subject_key;
     char buf[1024];
     char issuer_name[256];
+    char subject_name_buf[128];
+    os_char nbuf[OSAL_NBUF_SZ];
     iocCertificateOptions opt;
     mbedtls_md_type_t opt_md;       /* Hash used for signing                */
 
@@ -297,8 +316,38 @@ osalStatus ioc_generate_certificate(
     if (opt.subject_pwd == OS_NULL) opt.subject_pwd    = DFL_SUBJECT_PWD;
     if (opt.issuer_pwd == OS_NULL) opt.issuer_pwd      = DFL_ISSUER_PWD;
     if (opt.output_file == OS_NULL) opt.output_file    = DFL_OUTPUT_FILENAME;
-    if (opt.subject_name == OS_NULL) opt.subject_name  = DFL_SUBJECT_NAME;
-    if (opt.issuer_name == OS_NULL) opt.issuer_name    = DFL_ISSUER_NAME;
+    if (opt.subject_name == OS_NULL) {
+        os_strncpy(subject_name_buf, "CN=", sizeof(subject_name_buf));
+        // opt.subject_name    = DFL_subject_name;
+        os_strncat(subject_name_buf, opt.process_name ? opt.process_name : "unknown", sizeof(subject_name_buf));
+        if (opt.process_nr) {
+            osal_int_to_str(nbuf, sizeof(nbuf), opt.process_nr);
+            os_strncat(subject_name_buf, nbuf, sizeof(subject_name_buf));
+        }
+        if (opt.io_network_name) {
+            os_strncat(subject_name_buf, ".", sizeof(subject_name_buf));
+            os_strncat(subject_name_buf, opt.io_network_name, sizeof(subject_name_buf));
+        }
+        opt.subject_name = subject_name_buf;
+
+#ifdef OSAL_TLS_ORGANIZATION
+        os_strncat(subject_name_buf, ",O=" OSAL_TLS_ORGANIZATION, sizeof(subject_name_buf));
+#else
+        os_strncat(subject_name_buf, ",O=iocafe", sizeof(subject_name_buf));
+#endif
+
+#ifdef OSAL_TLS_COUNTRY
+        os_strncat(subject_name_buf, ",C=" OSAL_TLS_COUNTRY, sizeof(subject_name_buf));
+#else
+        os_strncat(subject_name_buf, ",C=US", sizeof(subject_name_buf));
+#endif
+    }
+
+    if (opt.issuer_name == OS_NULL) {
+        opt.issuer_name = DFL_ISSUER_NAME;
+        opt.issuer_name = opt.subject_name;
+    }
+
     if (opt.not_before == OS_NULL) opt.not_before      = DFL_NOT_BEFORE;
     if (opt.not_after == OS_NULL) opt.not_after        = DFL_NOT_AFTER;
     if (opt.serial == OS_NULL) opt.serial              = DFL_SERIAL;
@@ -801,12 +850,8 @@ osalStatus ioc_generate_certificate(
     mbedtls_printf( "  . Writing the certificate..." );
     fflush( stdout );
 
-    if( ( ret = write_certificate( &crt, opt.output_file,
-                                   mbedtls_ctr_drbg_random, &t->ctr_drbg ) ) != 0 )
-    {
-        mbedtls_strerror(ret, buf, sizeof(buf));
-        mbedtls_printf( " failed\n  !  write_certificate -0x%04x - %s\n\n",
-                        -ret, buf );
+    s = ioc_write_certificate(&crt, &opt, mbedtls_ctr_drbg_random, &t->ctr_drbg);
+    if (s) {
         goto exit;
     }
 

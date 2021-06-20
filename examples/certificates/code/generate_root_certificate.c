@@ -29,6 +29,12 @@ void my_generate_root_certificate(void)
     opt.selfsign = OS_TRUE;               /* selfsign the certificate             */
     opt.is_ca = OS_TRUE;                  /* is a CA certificate                  */
     opt.issuer_key_type = OS_PBNR_ROOT_KEY;
+    opt.cert_type = OS_PBNR_ROOT_CERT;
+
+    opt.process_name = "example";
+    opt.process_nr = 3;
+    opt.io_network_name = "cafenet";
+    // opt.nickname = osal_nickname();
 
     ioc_generate_certificate(&opt);
 }
