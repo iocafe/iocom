@@ -25,4 +25,10 @@ osalStatus ioc_load_key(
     mbedtls_pk_context *key,
     osPersistentBlockNr key_type);
 
+/* Load certificate from persistent storage.
+ */
+osalStatus ioc_load_certificate(
+    mbedtls_x509_crt *cert,
+    osPersistentBlockNr cert_type);
+
 #endif

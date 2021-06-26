@@ -196,7 +196,7 @@ osalStatus ioc_generate_certificate(
     mbedtls_pk_context *issuer_key = &loaded_issuer_key,
                 *subject_key = &loaded_subject_key;
     char buf[1024];
-    char issuer_name[256];
+    // char issuer_name_buf[128];
     char subject_name_buf[128];
     os_char nbuf[OSAL_NBUF_SZ];
     iocCertificateOptions opt;
@@ -204,6 +204,7 @@ osalStatus ioc_generate_certificate(
 
 #if defined(MBEDTLS_X509_CSR_PARSE_C)
     char subject_name[256];
+    char issuer_name[256];
     mbedtls_x509_csr csr;
 #endif
     mbedtls_x509write_cert crt;
@@ -216,16 +217,15 @@ osalStatus ioc_generate_certificate(
     /*
      * Set to sane values
      */
-    mbedtls_x509write_crt_init( &crt );
-    mbedtls_pk_init( &loaded_issuer_key );
-    mbedtls_pk_init( &loaded_subject_key );
-    mbedtls_mpi_init( &serial );
+    mbedtls_x509write_crt_init(&crt);
+    mbedtls_pk_init(&loaded_issuer_key);
+    mbedtls_pk_init(&loaded_subject_key);
+    mbedtls_mpi_init(&serial);
 #if defined(MBEDTLS_X509_CSR_PARSE_C)
-    mbedtls_x509_csr_init( &csr );
+    mbedtls_x509_csr_init(&csr);
 #endif
-    mbedtls_x509_crt_init( &issuer_crt );
-    memset( buf, 0, 1024 );
-
+    mbedtls_x509_crt_init(&issuer_crt);
+    os_memclear(buf, sizeof(buf));
 
     os_memcpy(&opt, popt, sizeof(opt));
     os_memclear(&opt_md, sizeof(opt_md));
@@ -241,6 +241,9 @@ osalStatus ioc_generate_certificate(
     if (opt.subject_name == OS_NULL)
     {
         os_strncpy(subject_name_buf, "CN=", sizeof(subject_name_buf));
+        if (opt.selfsign && opt.is_ca) {
+            os_strncat(subject_name_buf, "rootca.", sizeof(subject_name_buf));
+        }
         os_strncat(subject_name_buf, opt.process_name ? opt.process_name : "*", sizeof(subject_name_buf));
         if (opt.process_nr) {
             osal_int_to_str(nbuf, sizeof(nbuf), opt.process_nr);
@@ -479,8 +482,6 @@ osalStatus ioc_generate_certificate(
 #endif
 
 
-    mbedtls_printf( " ok\n" );
-
     // Parse serial to MPI
     //
     mbedtls_printf( "  . Reading serial number..." );
@@ -493,14 +494,11 @@ osalStatus ioc_generate_certificate(
         goto exit;
     }
 
-    mbedtls_printf( " ok\n" );
-
-    // Parse issuer certificate if present
-    //
+    /* Parse issuer certificate if present
+     */
     if( !opt.selfsign && strlen( opt.issuer_crt ) )
     {
-        /*
-         * 1.0.a. Load the certificates
+        /* 1.0.a. Load the certificates
          */
         mbedtls_printf( "  . Loading the issuer certificate ..." );
 
@@ -512,7 +510,7 @@ osalStatus ioc_generate_certificate(
             goto exit;
         }
 
-        ret = mbedtls_x509_dn_gets( issuer_name, sizeof(issuer_name),
+        ret = mbedtls_x509_dn_gets(issuer_name, sizeof(issuer_name),
                                  &issuer_crt.subject );
         if( ret < 0 )
         {
@@ -523,8 +521,6 @@ osalStatus ioc_generate_certificate(
         }
 
         opt.issuer_name = issuer_name;
-
-        mbedtls_printf( " ok\n" );
     }
 
 #if defined(MBEDTLS_X509_CSR_PARSE_C)
@@ -557,8 +553,6 @@ osalStatus ioc_generate_certificate(
 
         opt.subject_name = subject_name;
         subject_key = &csr.pk;
-
-        mbedtls_printf( " ok\n" );
     }
 #endif /* MBEDTLS_X509_CSR_PARSE_C */
 
@@ -570,7 +564,6 @@ osalStatus ioc_generate_certificate(
         if (s) {
             goto exit;
         }
-        mbedtls_printf( " ok\n" );
     }
 
     mbedtls_printf( "  . Loading the issuer key ..." );
@@ -600,8 +593,6 @@ osalStatus ioc_generate_certificate(
             goto exit;
         }
     }
-
-    mbedtls_printf( " ok\n" );
 
     if( opt.selfsign )
     {
@@ -654,8 +645,6 @@ osalStatus ioc_generate_certificate(
         goto exit;
     }
 
-    mbedtls_printf( " ok\n" );
-
     if( opt.version == MBEDTLS_X509_CRT_VERSION_3 &&
         opt.basic_constraints != 0 )
     {
@@ -670,8 +659,6 @@ osalStatus ioc_generate_certificate(
                             "returned -0x%04x - %s\n\n", -ret, buf );
             goto exit;
         }
-
-        mbedtls_printf( " ok\n" );
     }
 
 #if defined(MBEDTLS_SHA1_C)
@@ -689,8 +676,6 @@ osalStatus ioc_generate_certificate(
                             -ret, buf );
             goto exit;
         }
-
-        mbedtls_printf( " ok\n" );
     }
 
     if( opt.version == MBEDTLS_X509_CRT_VERSION_3 &&
@@ -707,8 +692,6 @@ osalStatus ioc_generate_certificate(
                             -ret, buf );
             goto exit;
         }
-
-        mbedtls_printf( " ok\n" );
     }
 #endif /* MBEDTLS_SHA1_C */
 
@@ -725,8 +708,6 @@ osalStatus ioc_generate_certificate(
                             "returned -0x%04x - %s\n\n", -ret, buf );
             goto exit;
         }
-
-        mbedtls_printf( " ok\n" );
     }
 
     if( opt.version == MBEDTLS_X509_CRT_VERSION_3 &&
@@ -742,8 +723,6 @@ osalStatus ioc_generate_certificate(
                             "returned -0x%04x - %s\n\n", -ret, buf );
             goto exit;
         }
-
-        mbedtls_printf( " ok\n" );
     }
 
     /*
@@ -755,8 +734,6 @@ osalStatus ioc_generate_certificate(
     if (s) {
         goto exit;
     }
-
-    mbedtls_printf( " ok\n" );
 
     exit_code = OSAL_SUCCESS;
 

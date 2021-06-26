@@ -358,8 +358,6 @@ osalStatus ioc_certificate_request(
         goto exit;
     }
 
-    mbedtls_printf( " ok\n" );
-
     /*
      * 1.1. Load the key
      */
@@ -375,8 +373,6 @@ osalStatus ioc_certificate_request(
 
     mbedtls_x509write_csr_set_key( &req, &key );
 
-    mbedtls_printf( " ok\n" );
-
     /*
      * 1.2. Writing the request
      */
@@ -388,8 +384,6 @@ osalStatus ioc_certificate_request(
         mbedtls_printf( " failed\n  !  write_certifcate_request %d", ret );
         goto exit;
     }
-
-    mbedtls_printf( " ok\n" );
 
     exit_code = OSAL_SUCCESS;
 
