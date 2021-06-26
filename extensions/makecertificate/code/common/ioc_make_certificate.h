@@ -38,12 +38,20 @@ iocKeyOptions;
 
 typedef struct iocCertificateOptions
 {
-    /* OS_PBNR_SERVER_KEY or OS_PBNR_ROOT_KEY. */
+    /* OS_PBNR_ROOT_KEY to sign certificate with root key, or
+       OS_PBNR_SERVER_KEY to sign with server key.
+     */
     osPersistentBlockNr issuer_key_type;
 
-    /* Either OS_PBNR_ROOT_CERT or OS_PBNR_SERVER_CERT.
+    /* Are we creating root or server certificate: Either OS_PBNR_ROOT_CERT
+       or OS_PBNR_SERVER_CERT.
      */
     osPersistentBlockNr cert_type;
+
+    /* By default OS_PBNR_SERVER_KEY, ignored if opt.selfsign is TRUE or
+       certificate request is being used.
+     */
+    osPersistentBlockNr subject_key_type;
 
     /* Process and network identification to be used for subject and issuer
        names in certificate.
@@ -54,7 +62,7 @@ typedef struct iocCertificateOptions
 
     const os_char *issuer_crt;     /* filename of the issuer certificate   */
     const os_char *request_file;   /* filename of the certificate request  */
-    const os_char *subject_key;    /* filename of the subject key file     */
+    // const os_char *subject_key;    /* filename of the subject key file     */
     const os_char *issuer_key;     /* filename of the issuer key file      */
     const os_char *subject_pwd;    /* password for the subject key file    */
     const os_char *issuer_pwd;     /* password for the issuer key file     */

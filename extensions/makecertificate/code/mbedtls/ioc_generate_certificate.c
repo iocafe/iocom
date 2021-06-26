@@ -70,7 +70,6 @@
 
 #define DFL_ISSUER_CRT          ""
 #define DFL_REQUEST_FILE        ""
-#define DFL_SUBJECT_KEY         "subject.key"
 #define DFL_ISSUER_KEY          "ca.key"
 #define DFL_SUBJECT_PWD         ""
 #define DFL_ISSUER_PWD          ""
@@ -158,7 +157,6 @@ osalStatus ioc_write_certificate(
     void *p_rng)
 {
     int ret;
-//     FILE *f;
     const os_memsz output_buf_sz = 4096;
     os_char *output_buf;
     size_t len;
@@ -174,16 +172,6 @@ osalStatus ioc_write_certificate(
     /* Includes terminating '\0' character in length.
      */
     len = os_strlen(output_buf); // CHECK SHOULD TERMINATING '\0' CHARACTER BE SAVED? NOW SAVED.
-
-    /* if( ( f = fopen( output_file, "w" ) ) == NULL )
-        return( -1 );
-    if( fwrite( output_buf, 1, len, f ) != len )
-    {
-        fclose( f );
-        return( -1 );
-    }
-    fclose( f );
-    return( 0 ); */
 
     s = os_save_persistent(opt->cert_type, output_buf, len, OS_FALSE);
     os_free(output_buf, output_buf_sz);
@@ -241,10 +229,10 @@ osalStatus ioc_generate_certificate(
 
     os_memcpy(&opt, popt, sizeof(opt));
     os_memclear(&opt_md, sizeof(opt_md));
-    if (opt.issuer_key_type == 0) opt.issuer_key_type = OS_PBNR_SERVER_KEY;
+    if (opt.issuer_key_type == 0) opt.issuer_key_type = OS_PBNR_ROOT_KEY;
     if (opt.issuer_crt == OS_NULL) opt.issuer_crt      = DFL_ISSUER_CRT;
     if (opt.request_file == OS_NULL) opt.request_file  = DFL_REQUEST_FILE;
-    if (opt.subject_key == OS_NULL) opt.subject_key    = DFL_SUBJECT_KEY;
+    if (opt.subject_key_type == OS_NULL) opt.subject_key_type = OS_PBNR_SERVER_KEY;
     if (opt.issuer_key == OS_NULL) opt.issuer_key      = DFL_ISSUER_KEY;
     if (opt.subject_pwd == OS_NULL) opt.subject_pwd    = DFL_SUBJECT_PWD;
     if (opt.issuer_pwd == OS_NULL) opt.issuer_pwd      = DFL_ISSUER_PWD;
@@ -496,7 +484,6 @@ osalStatus ioc_generate_certificate(
     // Parse serial to MPI
     //
     mbedtls_printf( "  . Reading serial number..." );
-    fflush( stdout );
 
     if( ( ret = mbedtls_mpi_read_string( &serial, 10, opt.serial ) ) != 0 )
     {
@@ -516,7 +503,6 @@ osalStatus ioc_generate_certificate(
          * 1.0.a. Load the certificates
          */
         mbedtls_printf( "  . Loading the issuer certificate ..." );
-        fflush( stdout );
 
         if( ( ret = mbedtls_x509_crt_parse_file( &issuer_crt, opt.issuer_crt ) ) != 0 )
         {
@@ -550,7 +536,6 @@ osalStatus ioc_generate_certificate(
          * 1.0.b. Load the CSR
          */
         mbedtls_printf( "  . Loading the certificate request ..." );
-        fflush( stdout );
 
         if( ( ret = mbedtls_x509_csr_parse_file( &csr, opt.request_file ) ) != 0 )
         {
@@ -581,24 +566,14 @@ osalStatus ioc_generate_certificate(
      */
     if( !opt.selfsign && !strlen( opt.request_file ) )
     {
-        mbedtls_printf( "  . Loading the subject key ..." );
-        fflush( stdout );
-
-        ret = mbedtls_pk_parse_keyfile( &loaded_subject_key, opt.subject_key,
-                                 opt.subject_pwd );
-        if( ret != 0 )
-        {
-            mbedtls_strerror(ret, buf, sizeof(buf));
-            mbedtls_printf( " failed\n  !  mbedtls_pk_parse_keyfile "
-                            "returned -0x%04x - %s\n\n", -ret, buf );
+        s = ioc_load_key(&loaded_subject_key, opt.subject_key_type);
+        if (s) {
             goto exit;
         }
-
         mbedtls_printf( " ok\n" );
     }
 
     mbedtls_printf( "  . Loading the issuer key ..." );
-    fflush( stdout );
 
     s = ioc_load_key(&loaded_issuer_key, opt.issuer_key_type);
     if (s) {
@@ -657,7 +632,6 @@ osalStatus ioc_generate_certificate(
     }
 
     mbedtls_printf( "  . Setting certificate values ..." );
-    fflush( stdout );
 
     mbedtls_x509write_crt_set_version( &crt, opt.version );
     mbedtls_x509write_crt_set_md_alg( &crt, opt_md );
@@ -686,7 +660,6 @@ osalStatus ioc_generate_certificate(
         opt.basic_constraints != 0 )
     {
         mbedtls_printf( "  . Adding the Basic Constraints extension ..." );
-        fflush( stdout );
 
         ret = mbedtls_x509write_crt_set_basic_constraints( &crt, opt.is_ca,
                                                            opt.max_pathlen );
@@ -706,7 +679,6 @@ osalStatus ioc_generate_certificate(
         opt.subject_identifier != 0 )
     {
         mbedtls_printf( "  . Adding the Subject Key Identifier ..." );
-        fflush( stdout );
 
         ret = mbedtls_x509write_crt_set_subject_key_identifier( &crt );
         if( ret != 0 )
@@ -725,7 +697,6 @@ osalStatus ioc_generate_certificate(
         opt.authority_identifier != 0 )
     {
         mbedtls_printf( "  . Adding the Authority Key Identifier ..." );
-        fflush( stdout );
 
         ret = mbedtls_x509write_crt_set_authority_key_identifier( &crt );
         if( ret != 0 )
@@ -745,7 +716,6 @@ osalStatus ioc_generate_certificate(
         opt.key_usage != 0 )
     {
         mbedtls_printf( "  . Adding the Key Usage extension ..." );
-        fflush( stdout );
 
         ret = mbedtls_x509write_crt_set_key_usage( &crt, opt.key_usage );
         if( ret != 0 )
@@ -763,7 +733,6 @@ osalStatus ioc_generate_certificate(
         opt.ns_cert_type != 0 )
     {
         mbedtls_printf( "  . Adding the NS Cert Type extension ..." );
-        fflush( stdout );
 
         ret = mbedtls_x509write_crt_set_ns_cert_type( &crt, opt.ns_cert_type );
         if( ret != 0 )
@@ -781,7 +750,6 @@ osalStatus ioc_generate_certificate(
      * 1.2. Writing the certificate
      */
     mbedtls_printf( "  . Writing the certificate..." );
-    fflush( stdout );
 
     s = ioc_write_certificate(&crt, &opt, mbedtls_ctr_drbg_random, &t->ctr_drbg);
     if (s) {

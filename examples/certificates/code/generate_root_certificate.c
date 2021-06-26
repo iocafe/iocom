@@ -1,7 +1,7 @@
 /**
 
   @file    iocom/examples/certificates/generate_root_certificate.c
-  @brief   Example for creating self signed root certificate and private key.
+  @brief   Example for creating self signed root certificate.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021

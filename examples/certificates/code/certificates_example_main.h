@@ -19,5 +19,6 @@
 osalStatus my_generate_root_key(void);
 osalStatus my_generate_root_certificate(void);
 osalStatus my_generate_server_key(void);
+osalStatus my_generate_own_server_certificate(void);
 osalStatus my_generate_certificate_request(void);
 

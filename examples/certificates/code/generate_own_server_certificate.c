@@ -1,7 +1,7 @@
 /**
 
-  @file    iocom/examples/certificates/generate_certificate_request.c
-  @brief   Example how a service should generate certificate request.
+  @file    iocom/examples/certificates/generate_own_server_certificate.c
+  @brief   Example for creating self signed server certificate.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021
@@ -17,17 +17,29 @@
 
 /*
 ****************************************************************************************************
-  Unit test code to create certificate request. The resulting certificate request stored as
-  persistent block OS_PBNR_CERTIFICATE_REQUEST. ????????????????????????????????????????????
+  Unit test code to create and sign own server certificate using locally stored root key
+  and certificate.
 ****************************************************************************************************
 */
-osalStatus my_generate_certificate_request(void)
+osalStatus my_generate_own_server_certificate(void)
 {
     osalStatus s;
-    iocCertificateRequestOptions opt;
+    iocCertificateOptions opt;
     os_memclear(&opt, sizeof(opt));
-    s = ioc_certificate_request(&opt);
-    osal_debug_error_status("my_generate_certificate_request failed: ", s);
+
+    // opt.selfsign = OS_TRUE;
+    // opt.is_ca = OS_TRUE;
+    opt.issuer_key_type = OS_PBNR_ROOT_KEY;
+    opt.cert_type = OS_PBNR_SERVER_CERT;
+    opt.subject_key_type = OS_PBNR_SERVER_KEY;
+
+    opt.process_name = "example";
+    opt.process_nr = 3;
+    opt.network_name = "cafenet";
+    // opt.nickname = osal_nickname();
+
+    s = ioc_generate_certificate(&opt);
+    osal_debug_error_status("my_generate_own_server_certificate failed: ", s);
     return s;
 }
 

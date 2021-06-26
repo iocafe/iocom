@@ -163,7 +163,6 @@ osalStatus ioc_generate_key(
     /* Generate the key
      */
     osal_trace( "Generating the private RSA key" );
-    fflush( stdout );
 
     ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(DFL_TYPE));
     if (ret) {

@@ -345,30 +345,12 @@ osalStatus ioc_certificate_request(
 
     if( opt.ns_cert_type || opt.force_ns_cert_type == 1 )
         mbedtls_x509write_csr_set_ns_cert_type( &req, opt.ns_cert_type );
-
-    /*
-     * 0. Seed the PRNG
-     */
-    mbedtls_printf( "  . Seeding the random number generator..." );
-    fflush( stdout );
-
-    mbedtls_entropy_init( &entropy );
-    if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
-                               (const unsigned char *) pers,
-                               strlen( pers ) ) ) != 0 )
-    {
-        mbedtls_printf( " failed\n  !  mbedtls_ctr_drbg_seed returned %d", ret );
-        goto exit;
-    }
-
-    mbedtls_printf( " ok\n" );
 #endif
 
     /*
      * 1.0. Check the subject name for validity
      */
     mbedtls_printf( "  . Checking subject name..." );
-    fflush( stdout );
 
     if( ( ret = mbedtls_x509write_csr_set_subject_name( &req, opt.subject_name ) ) != 0 )
     {
@@ -382,7 +364,6 @@ osalStatus ioc_certificate_request(
      * 1.1. Load the key
      */
     mbedtls_printf( "  . Loading the private key ..." );
-    fflush( stdout );
 
     ret = mbedtls_pk_parse_keyfile( &key, opt.filename, opt.password );
 
@@ -400,7 +381,6 @@ osalStatus ioc_certificate_request(
      * 1.2. Writing the request
      */
     mbedtls_printf( "  . Writing the certificate request ..." );
-    fflush( stdout );
 
     if( ( ret = write_certificate_request( &req, opt.output_file,
                                            mbedtls_ctr_drbg_random, &ctr_drbg ) ) != 0 )
@@ -429,11 +409,6 @@ exit:
     mbedtls_pk_free( &key );
     mbedtls_ctr_drbg_free( &ctr_drbg );
     mbedtls_entropy_free( &entropy );
-
-#if defined(_WIN32)
-    mbedtls_printf( "  + Press Enter to exit this program.\n" );
-    fflush( stdout ); getchar();
-#endif
 
     return( exit_code );
 }
