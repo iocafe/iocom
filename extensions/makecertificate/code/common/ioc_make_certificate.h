@@ -77,12 +77,34 @@ typedef struct iocCertificateOptions
 iocCertificateOptions;
 
 
+typedef struct iocCertificateRequestOptions
+{
+    const char *filename;       /* filename of the key file             */
+    const char *password;       /* password for the key file            */
+    int debug_level;            /* level of debugging                   */
+    const char *output_file;    /* where to store the constructed key file  */
+    const char *subject_name;   /* subject name for certificate request */
+    unsigned char key_usage;    /* key usage flags                      */
+    int force_key_usage;        /* Force adding the KeyUsage extension  */
+    unsigned char ns_cert_type; /* NS cert type                         */
+    int force_ns_cert_type;     /* Force adding NsCertType extension    */
+}
+iocCertificateRequestOptions;
+
+
 /* Generate a new RSA key.
  */
 osalStatus ioc_generate_key(
     iocKeyOptions *popt);
 
+/* Generate a certificate.
+ */
 osalStatus ioc_generate_certificate(
     iocCertificateOptions *popt);
+
+/* Create a certificate request.
+ */
+osalStatus ioc_certificate_request(
+    iocCertificateRequestOptions *popt);
 
 #endif

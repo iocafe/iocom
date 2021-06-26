@@ -40,73 +40,6 @@
 #error "MBEDTLS_* defines missing."
 #endif
 
-#if 0
-void ioc_generate_key(void)
-{
-    int ret = 1;
-    int exit_code = MBEDTLS_EXIT_FAILURE;
-    mbedtls_pk_context key;
-    char buf[1024];
-    iocKeyOptions opt;
-    osalTLS *t;
-    t = osal_global->tls;
-
-    mbedtls_pk_init( &key );
-    // mbedtls_ctr_drbg_init( &ctr_drbg );
-    memset( buf, 0, sizeof( buf ) );
-
-    os_memclear(&opt, sizeof(opt));
-    opt.type                = DFL_TYPE;
-    opt.rsa_keysize         = DFL_RSA_KEYSIZE;
-    opt.filename            = DFL_FILENAME;
-    opt.format              = DFL_FORMAT;
-    opt.use_dev_random      = DFL_USE_DEV_RANDOM;
-
-    /* Generate the key
-     */
-    osal_trace( "\n  . Generating the private key ..." );
-    fflush( stdout );
-
-    ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type( (mbedtls_pk_type_t) opt.type));
-    if (ret) {
-        osal_debug_error_int("generate_key failed! mbedtls_pk_setup:", ret);
-        goto exit;
-    }
-
-    ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &t->ctr_drbg,
-                               opt.rsa_keysize, 65537);
-    if (ret) {
-        osal_debug_error_int("generate_key failed! mbedtls_rsa_gen_key:", ret);
-        goto exit;
-    }
-
-    /* Export key
-     */
-    osal_trace( "  . Writing key to file..." );
-
-    if( ( ret = write_private_key( &key, &opt) ) != 0 )
-    {
-        osal_trace( " failed\n" );
-        goto exit;
-    }
-
-    osal_trace( " ok\n" );
-
-    exit_code = MBEDTLS_EXIT_SUCCESS;
-
-exit:
-
-#ifdef MBEDTLS_ERROR_C
-    if (exit_code != MBEDTLS_EXIT_SUCCESS)
-    {
-        mbedtls_strerror(ret, buf, sizeof(buf));
-        osal_debug_error_str("generate_key failed: ", buf);
-    }
-#endif
-
-    mbedtls_pk_free(&key);
-}
-#endif
 
 
 #if defined(MBEDTLS_PLATFORM_C)
@@ -264,12 +197,12 @@ failed:
     return OSAL_STATUS_FAILED;
 }
 
-
+// Generate a certificate
 osalStatus ioc_generate_certificate(
     iocCertificateOptions *popt)
 {
     int ret = 1;
-    int exit_code = MBEDTLS_EXIT_FAILURE;
+    osalStatus exit_code = OSAL_STATUS_FAILED;
     mbedtls_x509_crt issuer_crt;
     mbedtls_pk_context loaded_issuer_key, loaded_subject_key;
     mbedtls_pk_context *issuer_key = &loaded_issuer_key,
@@ -857,7 +790,7 @@ osalStatus ioc_generate_certificate(
 
     mbedtls_printf( " ok\n" );
 
-    exit_code = MBEDTLS_EXIT_SUCCESS;
+    exit_code = OSAL_SUCCESS;
 
 exit:
 #if defined(MBEDTLS_X509_CSR_PARSE_C)
@@ -868,7 +801,7 @@ exit:
     mbedtls_pk_free( &loaded_subject_key );
     mbedtls_pk_free( &loaded_issuer_key );
     mbedtls_mpi_free( &serial );
-    return( exit_code );
+    return exit_code;
 }
 
 #endif

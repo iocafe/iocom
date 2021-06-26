@@ -9,11 +9,12 @@ project(${E_PROJECT})
 include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
 # Select libraries to link with application.
-set(E_APPLIBS "makecertificate${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS}")
+# set(E_APPLIBS "makecertificate${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS}")
+set(E_APPLIBS "makecertificate${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS}")
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
-add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
+# add_subdirectory($ENV{E_ROOT}/iocom "${CMAKE_CURRENT_BINARY_DIR}/iocom")
 add_subdirectory($ENV{E_ROOT}/iocom/extensions/makecertificate "${CMAKE_CURRENT_BINARY_DIR}/iocom/extensions/makecertificate")
 
 # Set path to where to keep libraries.

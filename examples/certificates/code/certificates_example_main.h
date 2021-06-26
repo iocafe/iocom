@@ -16,5 +16,8 @@
 #include "eosalx.h"
 #include "makecertificate.h"
 
-void my_generate_root_key(void);
-void my_generate_root_certificate(void);
+osalStatus my_generate_root_key(void);
+osalStatus my_generate_root_certificate(void);
+osalStatus my_generate_server_key(void);
+osalStatus my_generate_certificate_request(void);
+

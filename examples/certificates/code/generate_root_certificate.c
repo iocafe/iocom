@@ -13,7 +13,6 @@
 
 ****************************************************************************************************
 */
-#include "eosal.h"
 #include "certificates_example_main.h"
 
 /*
@@ -21,8 +20,9 @@
   Unit test code to create root certificate.
 ****************************************************************************************************
 */
-void my_generate_root_certificate(void)
+osalStatus my_generate_root_certificate(void)
 {
+    osalStatus s;
     iocCertificateOptions opt;
     os_memclear(&opt, sizeof(opt));
 
@@ -36,6 +36,8 @@ void my_generate_root_certificate(void)
     opt.network_name = "cafenet";
     // opt.nickname = osal_nickname();
 
-    ioc_generate_certificate(&opt);
+    s = ioc_generate_certificate(&opt);
+    osal_debug_error_status("my_generate_root_certificate failed: ", s);
+    return s;
 }
 

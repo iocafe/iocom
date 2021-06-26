@@ -8,4 +8,6 @@ for communication has been done, so it cannot be tampered afterwards. It is on u
 Thus automated security setup doesn't secure identification initial connection, is uses self signed certificate. If client needs to be able to verify 
 that server is who it claims it is, it is necessary to use manually configured root certificate, and use it to sign server certificate.
 
+This library depends on eosal library. There is no iocom dependency, even the library is intended
+to be used with iocom.
 

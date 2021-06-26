@@ -1,7 +1,7 @@
 /**
 
-  @file    iocom/examples/certificates/generate_root_key.c
-  @brief   Example for creating private root key.
+  @file    iocom/examples/certificates/generate_certificate_request.c
+  @brief   Example how a service should generate certificate request.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021
@@ -17,19 +17,17 @@
 
 /*
 ****************************************************************************************************
-  Unit test code to create root key. The resulting key is stored as persistent
-  block OS_PBNR_ROOT_KEY.
+  Unit test code to create certificate request. The resulting certificate request stored as
+  persistent block OS_PBNR_CERTIFICATE_REQUEST.
 ****************************************************************************************************
 */
-osalStatus my_generate_root_key(void)
+osalStatus my_generate_certificate_request(void)
 {
     osalStatus s;
-    iocKeyOptions opt;
+    iocCertificateRequestOptions opt;
     os_memclear(&opt, sizeof(opt));
-    opt.key_type = OS_PBNR_ROOT_KEY;
-    opt.der_format = OS_TRUE;
-    s = ioc_generate_key(&opt);
-    osal_debug_error_status("my_generate_root_key failed: ", s);
+    s = ioc_certificate_request(&opt);
+    osal_debug_error_status("my_generate_certificate_request failed: ", s);
     return s;
 }
 

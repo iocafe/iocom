@@ -55,6 +55,8 @@ osalStatus osal_main(
      */
     my_generate_root_key();
     my_generate_root_certificate();
+    my_generate_server_key();
+    my_generate_certificate_request();
 
     return OSAL_SUCCESS;
 }
