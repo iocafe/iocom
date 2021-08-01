@@ -63,8 +63,6 @@ int main( void )
 #include <stdlib.h>
 #include <string.h>
 
-#define DFL_FILENAME            "keyfile.key"
-#define DFL_PASSWORD            NULL
 #define DFL_DEBUG_LEVEL         0
 #define DFL_OUTPUT_FILENAME     "cert.req"
 #define DFL_SUBJECT_NAME        "CN=Cert,O=mbed TLS,C=UK"
@@ -154,7 +152,6 @@ osalStatus ioc_certificate_request(
     mbedtls_x509write_csr req;
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
-    //const char *pers = "csr example app";
 
     if (popt) {
         os_memcpy(&opt, popt, sizeof(opt));
@@ -162,19 +159,12 @@ osalStatus ioc_certificate_request(
     else {
         os_memclear(&opt, sizeof(opt));
     }
-    // if (opt.issuer_key_type == 0) opt.issuer_key_type = OS_PBNR_SERVER_KEY;
-    // if (opt.issuer_crt == OS_NULL) opt.issuer_crt      = DFL_ISSUER_CRT;
 
-    /*
-     * Set to sane values
-     */
     mbedtls_x509write_csr_init( &req );
     mbedtls_pk_init( &key );
     mbedtls_ctr_drbg_init( &ctr_drbg );
     memset( buf, 0, sizeof( buf ) );
 
-    opt.filename            = DFL_FILENAME;
-    opt.password            = DFL_PASSWORD;
     opt.debug_level         = DFL_DEBUG_LEVEL;
     opt.output_file         = DFL_OUTPUT_FILENAME;
     opt.subject_name        = DFL_SUBJECT_NAME;
@@ -337,49 +327,42 @@ osalStatus ioc_certificate_request(
         else
             goto usage;
     }
+#endif
 
-    mbedtls_x509write_csr_set_md_alg( &req, MBEDTLS_MD_SHA256);
+    mbedtls_x509write_csr_set_md_alg(&req, MBEDTLS_MD_SHA256);
 
-    if( opt.key_usage || opt.force_key_usage == 1 )
-        mbedtls_x509write_csr_set_key_usage( &req, opt.key_usage );
+    if(opt.key_usage || opt.force_key_usage == 1)
+        mbedtls_x509write_csr_set_key_usage(&req, opt.key_usage);
 
     if( opt.ns_cert_type || opt.force_ns_cert_type == 1 )
         mbedtls_x509write_csr_set_ns_cert_type( &req, opt.ns_cert_type );
-#endif
 
-    /*
-     * 1.0. Check the subject name for validity
+    /* Check the subject name for validity
      */
-    mbedtls_printf( "  . Checking subject name..." );
-
-    if( ( ret = mbedtls_x509write_csr_set_subject_name( &req, opt.subject_name ) ) != 0 )
-    {
-        mbedtls_printf( " failed\n  !  mbedtls_x509write_csr_set_subject_name returned %d", ret );
+    ret = mbedtls_x509write_csr_set_subject_name(&req, opt.subject_name);
+    if (ret) {
+        osal_debug_error_int("mbedtls_x509write_csr_set_subject_name returned: ", ret);
         goto exit;
     }
 
-    /*
-     * 1.1. Load the key
+    /* Load the server key
      */
-    mbedtls_printf( "  . Loading the private key ..." );
+    exit_code = ioc_load_key(&key, OS_PBNR_SERVER_KEY);
+    if (exit_code) goto exit;
 
-    ret = mbedtls_pk_parse_keyfile( &key, opt.filename, opt.password );
-
+    /* ret = mbedtls_pk_parse_keyfile( &key, opt.filename, opt.password );
     if( ret != 0 )
     {
         mbedtls_printf( " failed\n  !  mbedtls_pk_parse_keyfile returned %d", ret );
         goto exit;
-    }
+    } */
 
     mbedtls_x509write_csr_set_key( &req, &key );
 
-    /*
-     * 1.2. Writing the request
+    /* Writing the request
      */
-    mbedtls_printf( "  . Writing the certificate request ..." );
-
     if( ( ret = write_certificate_request( &req, opt.output_file,
-                                           mbedtls_ctr_drbg_random, &ctr_drbg ) ) != 0 )
+        mbedtls_ctr_drbg_random, &ctr_drbg ) ) != 0 )
     {
         mbedtls_printf( " failed\n  !  write_certifcate_request %d", ret );
         goto exit;
@@ -389,7 +372,7 @@ osalStatus ioc_certificate_request(
 
 exit:
 
-    if( exit_code != OSAL_SUCCESS )
+    /* if (exit_code != OSAL_SUCCESS)
     {
 #ifdef MBEDTLS_ERROR_C
         mbedtls_strerror( ret, buf, sizeof( buf ) );
@@ -397,13 +380,13 @@ exit:
 #else
         mbedtls_printf("\n");
 #endif
-    }
+    } */
 
-    mbedtls_x509write_csr_free( &req );
-    mbedtls_pk_free( &key );
-    mbedtls_ctr_drbg_free( &ctr_drbg );
-    mbedtls_entropy_free( &entropy );
+    mbedtls_x509write_csr_free(&req);
+    mbedtls_pk_free(&key);
+    mbedtls_ctr_drbg_free(&ctr_drbg);
+    mbedtls_entropy_free(&entropy);
 
-    return( exit_code );
+    return exit_code;
 }
 #endif

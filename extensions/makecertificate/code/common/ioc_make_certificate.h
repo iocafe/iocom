@@ -87,8 +87,8 @@ iocCertificateOptions;
 
 typedef struct iocCertificateRequestOptions
 {
-    const char *filename;       /* filename of the key file             */
-    const char *password;       /* password for the key file            */
+//    const char *filename;       /* filename of the key file             */
+//    const char *password;       /* password for the key file            */
     int debug_level;            /* level of debugging                   */
     const char *output_file;    /* where to store the constructed key file  */
     const char *subject_name;   /* subject name for certificate request */
