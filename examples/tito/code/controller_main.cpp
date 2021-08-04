@@ -97,7 +97,9 @@ osalStatus osal_main(
     /* Setup IO pins.
      */
 #if PINS_LIBRARY
-    pins_setup(&pins_hdr, PINS_DEFAULT);
+    if (pins_setup(&pins_hdr, PINS_DEFAULT)) {
+        return OSAL_STATUS_FAILED;
+    }
 #endif
 
     /* Load device/network configuration and device/user account congiguration

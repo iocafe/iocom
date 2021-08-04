@@ -36,7 +36,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
 # Build C code from JSON configuration
-execute_process(COMMAND "$ENV{E_ROOT}/iocom/extensions/ioserver/scripts/config_to_c_code.py")
 if (WIN32)
   execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
 else()

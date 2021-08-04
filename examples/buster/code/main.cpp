@@ -52,7 +52,9 @@ osalStatus osal_main(
     os_int argc,
     os_char *argv[])
 {
-    app.start(argc, (const os_char**)argv);
+    if (app.start(argc, (const os_char**)argv)) {
+        return OSAL_STATUS_FAILED;
+    }
     osal_simulated_loop(OS_NULL);
     return OSAL_SUCCESS;
 }

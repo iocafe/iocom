@@ -22,13 +22,24 @@
 struct buster_t buster;
 
 
-void Application::start(os_int argc, const os_char *argv[])
+/**
+****************************************************************************************************
+
+  @brief Initialize and start the application.
+
+  @return  If successfull, the function returns OSAL_SUCCESS.
+           Other return values indicate an error.
+
+****************************************************************************************************
+*/
+osalStatus Application::start(os_int argc, const os_char *argv[])
 {
     AbstractAppParams aprm;
     iocBServerParams sprm;
     dinfoNodeConfSignals nc_sigs;
     dinfoSystemSpeSignals si_sigs;
     dinfoResMonSignals rm_sigs;
+    osalStatus s;
 
     /* Initialize IOCOM basics.
      */
@@ -41,7 +52,7 @@ void Application::start(os_int argc, const os_char *argv[])
 
     /* Call base class to set up the application.
      */
-    init_application_basics("buster", &aprm);
+    s = init_application_basics("buster", &aprm);
 
     /* Initialize signal structure for this device.
      */
@@ -67,7 +78,6 @@ void Application::start(os_int argc, const os_char *argv[])
     enable_communication_callback_1(&m_bmain.imp);
 
     /* ioc_add_callback(&m_bmain.imp, iocom_application_communication_callback, this); */
-
 
 // xxxxxxxxxx
     /* Initialize up device information.
@@ -134,6 +144,8 @@ void Application::start(os_int argc, const os_char *argv[])
     m_gamecontroller_alive = 0;
 
     m_test_seq1.start(this);
+
+    return s;
 }
 
 void Application::stop()

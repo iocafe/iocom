@@ -40,7 +40,7 @@ class Application : public AbstractApplication
 public:
     /* Functions to start, stop and thread function to run the application.
      */
-    void start(os_int argc, const os_char *argv[]);
+    osalStatus start(os_int argc, const os_char *argv[]);
     void stop();
     osalStatus run(os_timer *ti);
 

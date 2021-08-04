@@ -36,20 +36,22 @@ static void iocom_application_communication_callback_2(
 /**
 ****************************************************************************************************
 
-  @brief Constructor.
+  @brief Initialize application basic functionality.
 
   X...
 
-  @return  None.
+  @return  If successfull, the function returns OSAL_SUCCESS.
+           Other return values indicate an error.
 
 ****************************************************************************************************
 */
-void AbstractApplication::init_application_basics(
+osalStatus AbstractApplication::init_application_basics(
     const os_char *device_name,
     AbstractAppParams *prm)
 {
     osPersistentParams persistentprm;
     os_char buf4[4];
+    osalStatus s;
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific event handler callback by calling osal_set_net_event_handler().
@@ -81,7 +83,7 @@ void AbstractApplication::init_application_basics(
     /* Setup IO pins.
      */
     m_pins_header = prm->pins_header;
-    pins_setup(m_pins_header, PINS_DEFAULT);
+    s = pins_setup(m_pins_header, PINS_DEFAULT);
 
     /* Load device/network configuration and device/user account congiguration
        (persistent storage is typically either file system or micro-controller's flash).
@@ -113,6 +115,8 @@ void AbstractApplication::init_application_basics(
     m_security = ioc_get_security_conf(&m_nodeconf);
     osal_tls_initialize(m_nics->nic, m_nics->n_nics, m_wifis->wifi,
         m_wifis->n_wifi, m_security);
+
+    return s;
 }
 
 

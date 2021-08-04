@@ -73,7 +73,7 @@ osalStatus osal_main(
 #if IOBOARD_USE_PINS_IO
     /* Setup IO pins.
      */
-     pins_setup(&pins_hdr, PINS_DEFAULT);
+    pins_setup(&pins_hdr, PINS_DEFAULT);
 #endif
 
     osal_serial_initialize();

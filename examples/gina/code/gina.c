@@ -149,7 +149,9 @@ osalStatus osal_main(
 
     /* Setup IO pins.
      */
-    pins_setup(&pins_hdr, PINS_DEFAULT);
+    if (pins_setup(&pins_hdr, PINS_DEFAULT)) {
+        return OSAL_STATUS_FAILED;
+    }
 
     /* Load device configuration from peristant storage, or if not available use
        defaults compiled in this code (config/include/<hw>/<device_name>-network-defaults.c, etc).

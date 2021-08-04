@@ -39,7 +39,7 @@ namespace IoDevice
         virtual ~AbstractApplication() {};
 
         /* Member functions called from actual IO device application. */
-        void init_application_basics(
+        osalStatus init_application_basics(
             const os_char *device_name,
             AbstractAppParams *prm);
 
