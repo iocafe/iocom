@@ -115,7 +115,7 @@ void BlinkLedSequence::task()
     os_timer ti;
     while (!m_stop_thread && osal_go())
     {
-static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo blink\n"); ulledoo = 0;}
+// static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo blink\n"); ulledoo = 0;}
         os_get_timer(&ti);
         run(&ti);
         os_timeslice();

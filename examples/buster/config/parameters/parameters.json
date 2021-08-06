@@ -42,7 +42,8 @@
           {"name": "motor_power", "type": "boolean"},
           {"name": "led_morse", "type": "boolean"},
           {"name": "laser", "type": "boolean"},
-          {"name": "on", "type": "boolean", "init":1}
+          {"name": "on", "type": "boolean", "init":1},
+          {"name": "headlight", "type": "float", "min": 0, "max": 100}
         ]
       }
     ]
