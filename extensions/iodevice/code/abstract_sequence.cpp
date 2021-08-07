@@ -32,7 +32,6 @@ static void buster_test_sequence_thread_func(void *prm, osalEvent done);
 */
 AbstractSequence::AbstractSequence()
 {
-    m_event = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
     m_started = OS_FALSE;
 }
 
@@ -51,13 +50,14 @@ AbstractSequence::AbstractSequence()
 AbstractSequence::~AbstractSequence()
 {
     stop();
-    osal_event_delete(m_event);
 }
 
 
 void AbstractSequence::start(AbstractApplication *app)
 {
     if (m_started) return;
+
+    m_event = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
 
     /* Start running test_sequence for this IO device network in own thread.
      */
@@ -82,6 +82,8 @@ void AbstractSequence::stop()
     osal_thread_join(m_thread);
 #endif
     m_started = OS_FALSE;
+
+    osal_event_delete(m_event);
 }
 
 
