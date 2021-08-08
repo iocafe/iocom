@@ -38,6 +38,11 @@ public:
     os_boolean m_min_throttle_pressed;
     os_timer m_min_throttle_timer;
 
+    os_long m_set_max_throttle;
+    os_boolean m_set_max_throttle_state_bits;
+    os_boolean m_max_throttle_pressed;
+    os_timer m_max_throttle_timer;
+
     virtual void start(AbstractApplication *app);
     virtual void stop();
     virtual void run(os_timer *ti);

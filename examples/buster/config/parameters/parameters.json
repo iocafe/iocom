@@ -43,7 +43,7 @@
           {"name": "led_morse", "type": "boolean"},
           {"name": "laser", "type": "boolean"},
           {"name": "on", "type": "boolean", "init":1},
-          {"name": "headlight", "type": "float", "min": 0, "max": 100}
+          {"name": "throttle", "type": "float", "min": -100, "max": 100}
         ]
       }
     ]

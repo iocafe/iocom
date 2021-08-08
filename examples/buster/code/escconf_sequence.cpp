@@ -32,6 +32,11 @@ EscConfSequence::EscConfSequence() : AbstractSequence()
     m_set_min_throttle_state_bits = 0;
     m_min_throttle_pressed = OS_FALSE;
     m_min_throttle_timer = 0;
+
+    m_set_max_throttle = 0;
+    m_set_max_throttle_state_bits = 0;
+    m_max_throttle_pressed = OS_FALSE;
+    m_max_throttle_timer = 0;
 }
 
 
@@ -54,8 +59,13 @@ void EscConfSequence::start(AbstractApplication *app)
 {
     if (m_started) return;
 
+    m_set_min_throttle = 0;
+    m_set_min_throttle_state_bits = 0;
     m_min_throttle_pressed = OS_FALSE;
-    m_min_throttle_timer = 0;
+
+    m_set_max_throttle = 0;
+    m_set_max_throttle_state_bits = 0;
+    m_max_throttle_pressed = OS_FALSE;
 
     AbstractSequence::start(app);
 }
@@ -85,14 +95,15 @@ void EscConfSequence::run(os_timer *ti)
     os_long value;
     os_char state_bits;
 
-    value = ioc_get_ext(&buster.imp.set_min_throttle, &state_bits, IOC_SIGNAL_NO_TBUF_CHECK);
+    value = ioc_get_ext(&buster.imp.set_min_throttle, &state_bits, IOC_SIGNAL_DEFAULT);
     if (value != m_set_min_throttle || state_bits != m_set_min_throttle_state_bits) {
         m_set_min_throttle_state_bits = state_bits;
         m_set_min_throttle = value;
 
-        if (value && !m_min_throttle_pressed) {
+        if (value && !m_min_throttle_pressed && (state_bits & OSAL_STATE_CONNECTED)) {
             os_get_timer(&m_min_throttle_timer);
             m_min_throttle_pressed = OS_TRUE;
+            ioc_set_double(&buster.exp.throttle, -100);
         }
     }
 
@@ -103,13 +114,24 @@ void EscConfSequence::run(os_timer *ti)
         }
     }
 
-        /* Blink IO ping on gina1 and gina2 boards.
-         */
-//        ioc_set_ext(&minion1->imp.set_headlight, m_led_on, OSAL_STATE_CONNECTED);
+    value = ioc_get_ext(&buster.imp.set_max_throttle, &state_bits, IOC_SIGNAL_DEFAULT);
+    if (value != m_set_max_throttle || state_bits != m_set_max_throttle_state_bits) {
+        m_set_max_throttle_state_bits = state_bits;
+        m_set_max_throttle = value;
 
-        /* Blink also local output pin (if we got one).
-         */
-//        pin_set(&pins.outputs.led_builtin, m_led_on);
+        if (value && !m_max_throttle_pressed && (state_bits & OSAL_STATE_CONNECTED)) {
+            os_get_timer(&m_max_throttle_timer);
+            m_max_throttle_pressed = OS_TRUE;
+            ioc_set_double(&buster.exp.throttle, 100);
+        }
+    }
+
+    if (m_max_throttle_pressed) {
+        if (os_has_elapsed(&m_max_throttle_timer, 2000)) {
+            ioc_set(&buster.exp.max_throttle, OS_FALSE);
+            m_max_throttle_pressed = OS_FALSE;
+        }
+    }
 }
 
 

@@ -21,7 +21,7 @@
           {"name": "motor_power", "addr": 19},
           {"name": "fourth_smallout", "addr": 22},
           {"name": "left_dir", "addr": 23},
-          {"name": "right_dir", "addr": 24},                                                                
+          {"name": "right_dir", "addr": 24},
           {"name": "led_morse", "addr": 25},
           {"name": "electr_power", "addr": 26},
           {"name": "laser", "addr": 27}
@@ -37,7 +37,7 @@
       {
         "name": "pwm",
         "pins": [
-          {"name": "headlight", "addr": 1, "frequency": 60, "resolution": 12, "init": 0, "max": 4095},
+          {"name": "throttle", "addr": 1, "frequency": 60, "resolution": 12, "init": 340, "min": 100, "max": 580, "smin": -10000, "smax": 10000, "digs": 2},
           {"name": "left_wheel", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 340, "min": 100, "max": 580, "smin": -9000, "smax": 9000, "digs": 2},
           {"name": "right_wheel", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 340, "min": 100, "max": 580, "smin": -9000, "smax": 9000, "digs": 2},
           {"name": "right_motor", "device": "i2c.pwmboard", "addr": 4, "frequency": 60, "init": 0, "min": 0, "max": 2000, "smin": 0, "smax": 10000, "digs": 2},
