@@ -1,0 +1,18 @@
+{
+  "name": "buster",
+
+  "volatile":
+  {
+    "title": "esc config",
+    "groups": [
+      {
+        "name": "esc_config",
+        "parameters": [
+          {"name": "min_throttle", "type": "boolean"},
+          {"name": "max_throttle", "type": "boolean"}
+        ]
+      }
+    ]
+  }
+}
+

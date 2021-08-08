@@ -128,7 +128,7 @@ namespace IoDevice
 
         /* Camera control parameter has changed, camera on/off.
          */
-        os_boolean m_camera_on_or_off;
+        // os_boolean m_camera_on_or_off;
         os_boolean m_camera_is_on;
 
         /* Exported and imported memory blocks.

@@ -79,7 +79,6 @@ osalStatus Application::start(os_int argc, const os_char *argv[])
 
     /* ioc_add_callback(&m_bmain.imp, iocom_application_communication_callback, this); */
 
-// xxxxxxxxxx
     /* Initialize up device information.
      */
     DINFO_SET_COMMON_NET_CONF_SIGNALS_FOR_WIFI(nc_sigs, *m_signals);
@@ -92,8 +91,6 @@ osalStatus Application::start(os_int argc, const os_char *argv[])
      */
     ioc_initialize_buster_parameters(m_signals, OS_PBNR_CUST_A, OS_NULL);
     ioc_load_buster_parameters(m_signals);
-// xxxxxxxxxx
-
 
     /* Enable user authentication. Basic server pointer (m_bmain) is set as context, this
      * is needed to pass notifications (like "new device", or "wrong password") to server
@@ -116,15 +113,11 @@ osalStatus Application::start(os_int argc, const os_char *argv[])
      */
     connect_application();
 
-// xxxxxxxxxx
     /* Set up device information.
      */
     dinfo_set_node_conf(&m_dinfo_nc, m_device_id, m_connconf, m_nics, m_wifis, m_security);
     DINFO_SET_COMMON_SYSTEM_SPECS_SIGNALS(si_sigs, *m_signals);
     dinfo_set_system_specs(&si_sigs, BUSTER_HW);
-
-// xxxxxxxxx
-
 
     /* Publish IO networks hosted by frank, such as "cafenet" or "asteroidnet"
      */
@@ -143,7 +136,8 @@ osalStatus Application::start(os_int argc, const os_char *argv[])
     m_gamecontroller_timer = m_analogs_timer;
     m_gamecontroller_alive = 0;
 
-    m_test_seq1.start(this);
+    // m_test_seq1.start(this);
+    m_escconf_seq.start(this);
 
     return s;
 }
@@ -157,9 +151,13 @@ void Application::stop()
     m_camera1.close();
 #endif
 
-    m_test_seq1.stop();
+    m_escconf_seq.stop();
+    // m_test_seq1.stop();
     application_cleanup();
 }
+
+#define RUN_APPLICATION 1
+
 
 osalStatus Application::run(os_timer *ti)
 {
@@ -181,6 +179,8 @@ osalStatus Application::run(os_timer *ti)
 
     run_appplication_basics(ti);
 
+#if RUN_APPLICATION
+
 #if IOCOM_USE_MORSE
     /* Keep the morse code LED alive. These indicates boot issues, etc, to user.
      */
@@ -195,6 +195,7 @@ osalStatus Application::run(os_timer *ti)
     ioc_autosave_buster_parameters(m_signals);
     dinfo_run_node_conf(&m_dinfo_nc, ti);
     dinfo_run_resource_monitor(&m_dinfo_rm, ti);
+#endif
 
     ioc_send_all(&m_root);
     os_timeslice();
@@ -352,19 +353,21 @@ void Application::communication_callback_1(
 #if IOC_DEVICE_PARAMETER_SUPPORT
         else if (sig->flags & IOC_PFLAG_IS_PRM) {
             s = ioc_set_parameter_by_signal(sig, &pin_sig);
-            if (s == OSAL_COMPLETED) {
+
+            if (s == OSAL_COMPLETED) { /* COMPLETED means changed */
                 if (pin_sig) {
                     forward_signal_change_to_io_pin(pin_sig, IOC_SIGNAL_NO_TBUF_CHECK);
                 }
+
 #if PINS_CAMERA
                 if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
                     configuration_changed = OS_TRUE;
                 }
-                else {
+                /* else if (sig == buster.imp.s){
                     m_camera1.m_camera_on_or_off = OS_TRUE;
-                }
+                } */
 #endif
-            }
+           }
 
 #if IOCOM_USE_MORSE==2
             if (sig == &buster.imp.set_hlight_lvl) {
@@ -377,6 +380,7 @@ void Application::communication_callback_1(
 
         }
 #endif
+
         sig++;
     }
 

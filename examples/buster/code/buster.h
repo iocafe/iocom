@@ -43,6 +43,7 @@ using IoDevice::AbstractSequence;
 /* Include application headers.
  */
 #include "minion.h"
+#include "escconf_sequence.h"
 #include "blink_sequence.h"
 #include "camera.h"
 #include "application.h"

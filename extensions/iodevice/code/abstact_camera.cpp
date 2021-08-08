@@ -60,7 +60,8 @@ AbstractCamera::AbstractCamera()
     m_event = OS_NULL;
 #endif
     m_iface = OS_NULL;
-    m_camera_on_or_off = m_camera_is_on = OS_FALSE;
+    // m_camera_on_or_off = OS_FALSE;
+    m_camera_is_on = OS_FALSE;
     initialize_motion_detection(&m_motion);
     os_memclear(&m_motion_prm, sizeof(MotionDetectionParameters));
     m_motion_prm.min_interval_ms = 10;
@@ -196,7 +197,8 @@ void AbstractCamera::setup_camera(
     iface->open(&m_pins_camera, &camera_prm);
     configure();
 
-    m_camera_on_or_off = m_camera_is_on = OS_FALSE;
+    // m_camera_on_or_off = OS_FALSE;
+    m_camera_is_on = OS_FALSE;
 }
 
 

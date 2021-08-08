@@ -1,1 +1,1 @@
-{"merge": ["parameters.json"]}
+{"merge": ["parameters.json", "escconf.json"]}

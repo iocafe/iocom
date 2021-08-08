@@ -80,6 +80,7 @@ public:
     Minion m_minion1;
     minion_t *m_minion1_def;
 
+    EscConfSequence m_escconf_seq;
     BlinkLedSequence m_test_seq1;
 
 #if PINS_CAMERA
