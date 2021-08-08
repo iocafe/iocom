@@ -103,7 +103,8 @@ void EscConfSequence::run(os_timer *ti)
         if (value && !m_min_throttle_pressed && (state_bits & OSAL_STATE_CONNECTED)) {
             os_get_timer(&m_min_throttle_timer);
             m_min_throttle_pressed = OS_TRUE;
-            ioc_set_double(&buster.exp.throttle, -100);
+            // ioc_set_double(&buster.exp.throttle, -100);
+            pin_set_scaled(&pins.pwm.throttle, -100, PIN_FORWARD_TO_IOCOM);
         }
     }
 
@@ -122,7 +123,8 @@ void EscConfSequence::run(os_timer *ti)
         if (value && !m_max_throttle_pressed && (state_bits & OSAL_STATE_CONNECTED)) {
             os_get_timer(&m_max_throttle_timer);
             m_max_throttle_pressed = OS_TRUE;
-            ioc_set_double(&buster.exp.throttle, 100);
+            // ioc_set_double(&buster.exp.throttle, 100);
+            pin_set_scaled(&pins.pwm.throttle, 100, PIN_FORWARD_TO_IOCOM);
         }
     }
 
