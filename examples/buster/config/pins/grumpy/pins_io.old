@@ -37,7 +37,7 @@
       {
         "name": "pwm",
         "pins": [
-          {"name": "throttle", "addr": 1, "frequency": 60, "resolution": 12, "init": 3755, "min": 3995, "max": 3515, "smin": -10000, "smax": 10000, "digs": 2},
+          {"name": "throttle", "addr": 1, "frequency": 60, "resolution": 12, "init": 340, "min": 100, "max": 580, "smin": -10000, "smax": 10000, "digs": 2},
           {"name": "left_wheel", "device": "i2c.pwmboard", "addr": 0, "frequency": 60, "init": 340, "min": 100, "max": 580, "smin": -9000, "smax": 9000, "digs": 2},
           {"name": "right_wheel", "device": "i2c.pwmboard", "addr": 1, "frequency": 60, "init": 340, "min": 100, "max": 580, "smin": -9000, "smax": 9000, "digs": 2},
           {"name": "right_motor", "device": "i2c.pwmboard", "addr": 4, "frequency": 60, "init": 0, "min": 0, "max": 2000, "smin": 0, "smax": 10000, "digs": 2},
