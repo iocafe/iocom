@@ -326,7 +326,7 @@ void Application::communication_callback_1(
     os_int n_signals;
     osalStatus s;
 #if PINS_CAMERA
-    os_boolean configuration_changed = OS_FALSE;
+    // os_boolean configuration_changed = OS_FALSE;
 #endif
 
     /* If this memory block is not written by communication, no need to do anything.
@@ -360,9 +360,9 @@ void Application::communication_callback_1(
                 }
 
 #if PINS_CAMERA
-                if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
-                    configuration_changed = OS_TRUE;
-                }
+                // if (sig->flags & IOC_PFLAG_IS_PERSISTENT) {
+                //     configuration_changed = OS_TRUE;
+                // }
                 /* else if (sig == buster.imp.s){
                     m_camera1.m_camera_on_or_off = OS_TRUE;
                 } */
@@ -385,8 +385,8 @@ void Application::communication_callback_1(
     }
 
 #if PINS_CAMERA
-    if (configuration_changed) {
-        // ioboard_configure_camera();
-    }
+    /* if (configuration_changed) {
+        ioboard_configure_camera();
+    } */
 #endif
 }
