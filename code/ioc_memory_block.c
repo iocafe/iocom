@@ -902,12 +902,12 @@ void ioc_receive_nolock(
     iocMemoryBlock *mblk)
 {
     iocTargetBuffer *tbuf;
-    os_int start_addr, end_addr, i;
+    os_int start_addr, end_addr;
 #if IOC_BIDIRECTIONAL_MBLK_CODE
     iocSourceBuffer *sbuf;
     os_char *spos, *dpos;
     os_uchar *bits;
-    os_int bitsi;
+    os_int bitsi, i;
 #endif
 
     /* Ignore data, if we are receiving data into a static memory block?

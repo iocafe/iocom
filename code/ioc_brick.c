@@ -299,10 +299,13 @@ osalStatus ioc_compress_brick(
     iocBrickHdr *dhdr, dhdr_tmp;
     os_uchar *buf;
     os_memsz sz, buf_sz;
-    os_int quality, row_nbytes;
+    os_int quality;
     os_ushort checksum;
     os_boolean lock_on = OS_FALSE;
     osalStatus s = OSAL_SUCCESS;
+#if IOC_USE_JPEG_COMPRESSION
+    os_int row_nbytes;
+#endif
 
     buf = OS_NULL;
     buf_sz = 0;
