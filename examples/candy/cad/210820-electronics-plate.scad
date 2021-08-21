@@ -1,24 +1,28 @@
 include <210820-electronics-riser.scad>;
 include <210820-electronics-cross.scad>;
 
-module plate(xd=91.8,yd=62.0,extra=3.5, thick=1.5, holed=3.3) 
+module plate(xd=91.8,yd=62.0,extra=5.5, thick=2.5, holed=3.4) 
 {
     difference() {
         color ("blue") { cube([xd+2*extra,yd+2*extra,thick],center=true); }
        
         translate([0,0,-0.01]) union() {
             color ("black"){cube([xd-2*extra,yd-2*extra,thick+0.03],center=true); }
-            for (xx = [1:8]) {
-               translate([xx*5,yd/2+0.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
-               translate([-xx*5,yd/2+0.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
-               translate([xx*5,-yd/2-0.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
-               translate([-xx*5,-yd/2-0.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+            for (xx = [2:8]) {
+               translate([xx*5,yd/2+1.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+               translate([-xx*5,yd/2+1.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+               translate([xx*5,-yd/2-1.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+               translate([-xx*5,-yd/2-1.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
             }
-            for (yy = [1:5]) {
-               translate([xd/2+0.8,yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
-               translate([xd/2+0.8,-yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
-               translate([-xd/2-0.8,yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
-               translate([-xd/2-0.8,-yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+            for (yy = [2:4]) {
+               translate([xd/2+2.5,yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+	    }
+            for (yy = [2:3]) {
+               translate([xd/2+2.5,-yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+	    }
+            for (yy = [2:5]) {
+//               translate([-xd/2-2.5,y1y*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+               translate([-xd/2-2.5,-yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
             }
         }
     }

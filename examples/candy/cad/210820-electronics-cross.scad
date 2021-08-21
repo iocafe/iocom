@@ -1,4 +1,4 @@
-module cross(x=0,y=0,z=0,xd=91.8,yd=62.0,w=8,h=3,holed=3.5)
+module cross(x=0,y=0,z=0,xd=91.8,yd=62.0,w=8,h=5.0,holed=3.5)
 {
     translate([x,y,z]) {
         difference() {
@@ -8,11 +8,11 @@ module cross(x=0,y=0,z=0,xd=91.8,yd=62.0,w=8,h=3,holed=3.5)
             }
 
             union() {
-               for (xx = [0:8]) {
+               for (xx = [0:7]) {
                    translate([xx*5,0,0]) color ("red") {cylinder(h=h+0.02, d=holed, $fn=20,center=true); }
                    translate([-xx*5,0,0]) color ("red") {cylinder(h=h+0.02, d=holed, $fn=20,center=true); }
                }
-               for (yy = [1:5]) {
+               for (yy = [1:4]) {
                    translate([0,yy*5,0]) color ("red") {cylinder(h=h+0.02, d=holed, $fn=20,center=true); }
                    translate([0,-yy*5,0]) color ("red") {cylinder(h=h+0.02, d=holed, $fn=20,center=true); }
                }
