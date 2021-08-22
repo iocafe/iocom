@@ -1,4 +1,4 @@
-module switchfixture(x=0,y=0,z=0,lip=14,w=18,h=55,holed=12.2, holed=12.2,thick=4)
+module switchfixture(x=0,y=0,z=0,lip=14,w=18,h=55,holed=12.2,thick=4)
 {
     translate([x,y,z]) {
         
