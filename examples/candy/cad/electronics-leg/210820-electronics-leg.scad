@@ -12,5 +12,5 @@ zpos = -1;
 
 legprofile(xpos,ypos,zpos,52.8);
 
-legsupport(8,ypos,zpos,3.5);
-legsupport(38,ypos,zpos,3.5);
+legsupport(6.0,ypos,zpos,4.0);
+legsupport(40,ypos,zpos,4.0);

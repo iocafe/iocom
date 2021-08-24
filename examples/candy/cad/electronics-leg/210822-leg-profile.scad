@@ -13,10 +13,15 @@ module legprofile(x=0,y=0,z=0,l=40,r = 0)
             {
                 polygon(points=[[3,2.5],[0,12],[0,30],[-8,30],[-8,20],[-5,12],[-5,8],[-8,-2.512]]);
             }
+
             
-            for (zz = [0:9]) {
+            for (zz = [2:7]) {
                 translate([cent,movey-depth/2, zz*5-22.5]) rotate([90,0,0]) color ("red") {cylinder(h=depth+0.02, d=holed, $fn=20,center=true); }
             }
+
+            translate([cent,movey-depth/2, 0*5-22.5]) rotate([90,0,0]) color ("red") {cylinder(h=depth+0.02, d=holed, $fn=20,center=true); }
+
+            translate([cent,movey-depth/2, 9*5-22.5]) rotate([90,0,0]) color ("red") {cylinder(h=depth+0.02, d=holed, $fn=20,center=true); }
         }
     }
 }
