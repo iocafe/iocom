@@ -32,10 +32,10 @@
       {
         "name": "device_control",
         "parameters": [
-          {"name": "pwm1", "type": "uint", "max": 4095},
-          {"name": "pwm2", "type": "uint", "max": 4095},
-          {"name": "pwm3", "type": "uint", "max": 4095},
-          {"name": "pwm4", "type": "uint", "max": 4095},
+          {"name": "pwm1", "type": "float", "min": -90, "max": 90},
+          {"name": "pwm2", "type": "float", "min": -100, "max": 100},
+          {"name": "pwm3", "type": "float", "max": 4095},
+          {"name": "pwm4", "type": "float", "min": 0, "max": 100},
           {"name": "on", "type": "boolean", "init":1}
         ]
       }
