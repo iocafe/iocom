@@ -14,14 +14,14 @@ module plate(xd=91.8,yd=62.0,extra=5.5, thick=2.5, holed=3.4)
                translate([xx*5,-yd/2-1.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
                translate([-xx*5,-yd/2-1.8,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
             }
-            for (yy = [2:4]) {
+            for (yy = [2:3]) {
                translate([xd/2+2.5,yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
 	    }
-            for (yy = [2:3]) {
-               translate([xd/2+2.5,-yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+            for (yy = [1:2]) {
+               translate([xd/2+2.5,-yy*5-2.5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
 	    }
             for (yy = [2:5]) {
-//               translate([-xd/2-2.5,y1y*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
+               translate([-xd/2-2.5,yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
                translate([-xd/2-2.5,-yy*5,0.01]) color ("red") {cylinder(h=thick+0.02, d=holed, $fn=20,center=true); }
             }
         }

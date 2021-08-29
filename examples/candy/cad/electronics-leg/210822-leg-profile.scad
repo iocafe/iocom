@@ -11,7 +11,7 @@ module legprofile(x=0,y=0,z=0,l=40,r = 0)
             color("blue", 50) 
             linear_extrude(height = l, center = true, convexity = 10, twist = 0)
             {
-                polygon(points=[[3,2.5],[0,12],[0,30],[-8,30],[-8,20],[-5,12],[-5,8],[-8,-2.512]]);
+                polygon(points=[[3,2.5-1.70],[0,12],[0,30],[-8,30],[-8,20],[-5,12],[-5,8],[-8,-2.512-1.70]]);
             }
 
             

@@ -10,7 +10,7 @@ module legsupport(x=0,y=0,z=0,l=4,r = 25)
             color("yellow", 50) 
             linear_extrude(height = l, center = true, convexity = 10, twist = 0)
             {
-                polygon(points=[[3+p*cos(r),2.5+p*sin(r)],[24,30],[-32,30],[-21,19],[-19,14],[-20,6],[-8+q*cos(r),5-2.512+q*sin(r)],[-8+q*cos(r),-2.512+q*sin(r)]]);
+                polygon(points=[[3+p*cos(r),2.5-1.75+p*sin(r)],[24,30],[-32,30],[-21,19],[-19,14],[-20,6],[-8+q*cos(r),5-2.512+q*sin(r)],[-8+q*cos(r),-2.512+q*sin(r)-1.75]]);
             }
         }
 
