@@ -6,7 +6,7 @@
     }
    translate([0,6,0.5])cube([3,4,6]);
    translate([-4,6,5])cube([3,3,3]);}
-   translate([-2.5,7,7])color("orange") cube([.25, .25, 5],center=true);
-   translate([-2.5,7,6.5])rotate([0,-90,0])color("orange") cube([.25, .25, 5],center=true);
+   translate([-2.5,6.75,7])color("orange") cube([.5, .5, 5],center=true);
+   translate([-2.5,6.75,6.5])rotate([0,-90,0])color("orange") cube([.5, .5, 5],center=true);
     
     
