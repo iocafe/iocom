@@ -1,0 +1,31 @@
+{
+  "name": "iocom",
+  "version": "1.0.0",
+  "keywords": "communication, iocom",
+  "description": "iocom protocol",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/iocafe/iocom.git"
+  },
+  "frameworks": "arduino",
+  "platforms": [
+    "teensy", 
+    "stm32",
+    "esp32"
+  ],
+  
+  "build": {
+    "srcFilter": [
+      "+<code/*>",
+      "+<extensions/dynamicio/*>"
+    ],
+    "libLDFMode" : "chain"
+  },
+  
+  "dependencies": [
+    {
+        "name": "eosal"
+    }  
+  ]
+}
