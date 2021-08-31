@@ -1,0 +1,25 @@
+{
+  "name": "devicedir",
+  "version": "1.0.0",
+  "keywords": "debug iocom, console",
+  "description": "Debug console related functions",
+  "frameworks": "arduino",
+  "platforms": [
+    "teensy", 
+    "stm32",
+    "esp32"
+  ],
+  
+  "build": {
+    "srcFilter": [
+      "+<code/*>"
+    ],
+    "libLDFMode" : "chain"
+  },
+  
+  "dependencies": [
+    {
+      "name": "iocom"
+    }  
+  ]
+ }

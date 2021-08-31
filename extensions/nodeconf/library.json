@@ -1,0 +1,25 @@
+{
+  "name": "nodeconf",
+  "version": "1.0.0",
+  "keywords": "configuration, state",
+  "description": "access microcontrollers network, etc. configuration from application",
+  "frameworks": "arduino",
+  "platforms": [
+    "teensy", 
+    "stm32",
+    "esp32"
+  ],
+  
+  "build": {
+    "srcFilter": [
+      "+<code/*>"
+    ],
+    "libLDFMode" : "chain"
+  },
+  
+  "dependencies": [
+    {
+      "name": "iocom"
+    }  
+  ]
+ }

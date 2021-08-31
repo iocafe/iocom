@@ -1,0 +1,25 @@
+{
+  "name": "deviceinfo",
+  "version": "1.0.0",
+  "keywords": "configuration, state",
+  "description": "publish device configuration and state",
+  "frameworks": "arduino",
+  "platforms": [
+    "teensy", 
+    "stm32",
+    "esp32"
+  ],
+  
+  "build": {
+    "srcFilter": [
+      "+<code/*>"
+    ],
+    "libLDFMode" : "chain"
+  },
+  
+  "dependencies": [
+    {
+      "name": "iocom"
+    }  
+  ]
+ }
