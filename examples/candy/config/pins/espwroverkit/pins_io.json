@@ -1,0 +1,58 @@
+{
+  "io": [{
+    "name": "candy",
+    "title": "IO pin setup for the 'candy' camera application on 'espwroverkit' hardware",
+    "groups": [
+      {
+        "name": "inputs",
+        "pins": [
+          {"name": "gazerbeam", "addr": 25, "interrupt": 1}
+        ]
+      },
+      {
+        "name": "outputs",
+        "pins": [
+          {"name": "led_builtin", "addr": 33}
+        ]
+      },
+      {
+        "name": "pwm",
+        "pins": [
+          {"name": "pwm1", "timer": 2, "bank": 1, "addr": 2, "frequency": 60, "init": 308, "min": 205, "max": 410, "smin": -9000, "smax": 9000, "digs": 2},
+          {"name": "pwm2", "timer": 2, "bank": 2, "addr": 26, "frequency": 60, "resolution": 12, "init": 309, "min": 266, "max": 348, "smin": -10000, "smax": 10000, "digs": 2},
+          {"name": "pwm3", "timer": 2, "bank": 3, "addr": 27, "frequency": 60, "resolution": 12, "init": 200, "min": 4095, "max": 0, "smin": 0, "smax": 100, "digs": 0},
+          {"name": "pwm4", "timer": 1, "bank": 3, "addr": 28, "frequency": 5000, "resolution": 12, "init": 500, "max": 4095, "smin": 0, "smax": 1000, "digs": 1},
+          {"name": "led_morse", "timer": 1, "bank": 5, "addr": 4, "frequency": 5000, "resolution": 12, "init": 0, "max": 4095}
+        ]
+      },
+      {
+        "name": "cameras",
+        "pins": [
+          {"name": "camera"}
+        ]
+      },
+      {
+        "name": "debugger",
+        "pins": [
+            {"name": "AD1_TDI", "addr": 12},
+            {"name": "AD0_TCK", "addr": 13},
+            {"name": "AD3_TMS", "addr": 14},
+            {"name": "AD2_TDO", "addr": 15},
+            {"name": "U0_TXD", "addr": 1},
+            {"name": "U0_RXD", "addr": 3}
+          ]
+      },
+      {
+        "name": "devboard",
+        "pins": [
+            {"name": "DEV_SCK", "addr": 6},
+            {"name": "DEV_SDO", "addr": 7},
+            {"name": "DEV_SDI", "addr": 8},
+            {"name": "DEV_SHD", "addr": 9},
+            {"name": "DEV_SWP", "addr": 10},
+            {"name": "DEV_CSC", "addr": 11}
+          ]
+      }
+    ]
+  }]
+}

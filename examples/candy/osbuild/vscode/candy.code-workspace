@@ -17,6 +17,7 @@
 		"files.associations": {
 			"socket.h": "c",
 			"dhcp.h": "c"
-		}
+		},
+		"restructuredtext.syntaxHighlighting.disabled": true
 	}
 }
