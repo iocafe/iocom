@@ -12,21 +12,21 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "/tmp/candy_ioboard_tmp/esp-wrover-kit-arduino/firmware.elf",
-            "projectEnvName": "esp-wrover-kit-arduino",
+            "executable": "/tmp/candy_ioboard_tmp/esp-wrover-kit-espidf/firmware.elf",
+            "projectEnvName": "esp-wrover-kit-espidf",
             "toolchainBinDir": "/home/john/.platformio/packages/toolchain-xtensa32/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug (esp-wrover-kit-arduino)"
+                "task": "Pre-Debug (esp-wrover-kit-espidf)"
             }
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "/tmp/candy_ioboard_tmp/esp-wrover-kit-arduino/firmware.elf",
-            "projectEnvName": "esp-wrover-kit-arduino",
+            "executable": "/tmp/candy_ioboard_tmp/esp-wrover-kit-espidf/firmware.elf",
+            "projectEnvName": "esp-wrover-kit-espidf",
             "toolchainBinDir": "/home/john/.platformio/packages/toolchain-xtensa32/bin",
             "internalConsoleOptions": "openOnSessionStart"
         }

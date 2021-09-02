@@ -1,5 +1,9 @@
 # iocom/examples/candy/CmakeLists.txt - Cmake build for Candy Camera example.
+# CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.5)
+if("${IDF_TARGET}" STREQUAL "esp32")
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+endif()
 
 # Set project name (= project root folder name).
 set(E_PROJECT "candy")

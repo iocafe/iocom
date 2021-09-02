@@ -1,14 +1,36 @@
-#include <Arduino.h>
-#include <eosalx.h>
-#include <iocom.h>
-#include <devicedir.h>
-#include <pins.h>
-#include <FreeRTOS.h>
-
+#ifdef OSAL_ESPIDF_FRAMEWORK
 /*
-  candy_platformio.ino
+  main.c
   To build it within Visual Studio Code and PlatformIO.
  */
+
+// #include <Arduino.h>
+#include <eosal.h>
+#include <eosalx.h>
+// #include <iocom.h>
+//#include <devicedir.h>
+//#include <pins.h>
+//#include <FreeRTOS.h>
+
+
+#ifdef OSAL_ESPIDF_FRAMEWORK
+
+void app_main()
+{
+    osal_initialize(OSAL_INIT_DEFAULT);
+    osal_main(0, 0);
+
+    while (OS_TRUE) 
+    {
+        if (osal_loop(osal_application_context)) osal_reboot(0);
+
+        /* ESP-IDF 3.X/MELIFE test board : We cannot write too fast through WiFi, WiFi will lock up.
+        */
+        os_sleep(3);
+    }
+}
+
+#else
 
 /* The setup routine runs once when you press reset.
  */
@@ -34,3 +56,6 @@ void loop()
     os_sleep(3);
 #endif
 }
+
+#endif
+#endif

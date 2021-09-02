@@ -1,4 +1,4 @@
-notes 22.7.2020/pekka
+notes 22.8.2021/pekka
 Candy - camera IO board example.
 
 Camera as an IO device which connects to server trough TLS socket. Currently works with ESP32 camera, 
@@ -6,6 +6,9 @@ Raspberry PI camera and Windows USB camera.
 
 By default the application connects to any server which sends "lighthouse" multicasts. 
 Only DHCP configuration makes sense for WiFi camera, static IP interface configuration is disabled.
+
+Beewrap is the PCB to run ESP32 for this example
+
 
 ESP32 specific
 ***************
