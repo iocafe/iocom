@@ -34,7 +34,7 @@ typedef struct
 
     /** The authentication info was received from IP.
      */
-    const os_char *recieved_ip;
+    const os_char *received_ip;
 
     /** Pointer to allowed network list beging set up.
      */
@@ -94,7 +94,7 @@ static void ioc_authorize_parse_accounts(
 /**
 ****************************************************************************************************
 
-  @brief Check if the user connecting is a legimate one.
+  @brief Check if the user connecting is a legitimate one.
 
   The ioc_authorize() function checks if user is authorized to connect to this server
   and has root privileges. The function fills list of networks which can be connected.
@@ -107,7 +107,7 @@ static void ioc_authorize_parse_accounts(
   @param   contexe Pointer to extra implementation specific data, not used by this
            default implementation.
   @return  OSAL_SUCCESS if all is fine, value OSAL_STATUS_NO_ACCESS_RIGHT indicate
-           that user is not authenticated to connect (interprent other return values
+           that user is not authenticated to connect (interpret other return values
            as errors, these may be used in future).
 
 ****************************************************************************************************
@@ -311,7 +311,7 @@ static osalStatus ioc_authorize_process_block(
                  */
                 match = osal_pattern_match(state->checked_user_name, state->user_name, 0);
 
-                /* Check password, unless '*' in user accounts accepts any passowrd.
+                /* Check password, unless '*' in user accounts accepts any password.
                  */
                 if (match)
                 {
@@ -417,7 +417,7 @@ static os_boolean ioc_check_whitelist(
     s = osal_ip_from_str(last_ip, sizeof(last_ip), state->ip_end);
     if (s != OSAL_SUCCESS && s != OSAL_IS_IPV6) return OS_FALSE;
 
-    s = osal_ip_from_str(received_ip, sizeof(received_ip), state->recieved_ip);
+    s = osal_ip_from_str(received_ip, sizeof(received_ip), state->received_ip);
     if (s != OSAL_SUCCESS && s != OSAL_IS_IPV6) return OS_FALSE;
 
     if (ioc_compare_ip(received_ip, first_ip, sizeof(received_ip)) < 0) return OS_FALSE;
@@ -505,7 +505,7 @@ static void ioc_authorize_parse_accounts(
 
     os_memclear(&state, sizeof(state));
     state.user = user;
-    state.recieved_ip = ip;
+    state.received_ip = ip;
     state.checked_user_name = user_name;
     state.mblk_network_name = network_name;
     state.allowed_networks = allowed_networks;

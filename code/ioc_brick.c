@@ -19,7 +19,7 @@
 #include "iocom.h"
 #if IOC_STREAMER_SUPPORT
 
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
 #include "eosal_jpeg.h"
 #endif
 
@@ -278,7 +278,7 @@ void ioc_free_brick_buffer(
   @param  compression How to compress data, bit field. Set IOC_UNCOMPRESSED_BRICK (0) or
           IOC_NORMAL_JPEG.
   @return OSAL_SUCCESS (0) if brick is stored. OSAL_STATUS_OUT_OF_BUFFER if data data doesn't
-          firt into given buffer. Other values indicate an error.
+          first into given buffer. Other values indicate an error.
 
 ****************************************************************************************************
 */
@@ -303,7 +303,7 @@ osalStatus ioc_compress_brick(
     os_ushort checksum;
     os_boolean lock_on = OS_FALSE;
     osalStatus s = OSAL_SUCCESS;
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
     os_int row_nbytes;
 #endif
 
@@ -314,7 +314,7 @@ osalStatus ioc_compress_brick(
 
     if (compression == IOC_DEFAULT_COMPRESSION)
     {
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
         compression = IOC_JPEG;
 #else
         compression = hdr->compression;
@@ -355,7 +355,7 @@ osalStatus ioc_compress_brick(
 
         else
         {
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
             buf_sz = b->signals->buf->n - sizeof(iocBrickHdr);
             buf = (os_uchar*)os_malloc(buf_sz, OS_NULL);
             if (buf == OS_NULL)  {
@@ -497,7 +497,7 @@ osalStatus ioc_compress_brick_ring(
 
     if (compression == IOC_DEFAULT_COMPRESSION)
     {
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
         compression = IOC_JPEG;
 #else
         compression = hdr->compression;
@@ -530,7 +530,7 @@ osalStatus ioc_compress_brick_ring(
         else
         {
 
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
             quality = ioc_get_jpeg_compression_quality(b);
             row_nbytes = w * OSAL_BITMAP_BYTES_PER_PIX(format);
 
@@ -814,7 +814,7 @@ osalStatus ioc_run_brick_send(
   @anchor ioc_brick_set_receive
 
   @param   b Pointer to brick buffer
-  @param   enable OS_TRUE to enable reciving, OS_FALSE to disable it.
+  @param   enable OS_TRUE to enable receiving, OS_FALSE to disable it.
   @return  None.
 
 ****************************************************************************************************
@@ -859,10 +859,10 @@ os_ulong ioc_get_brick_hdr_int(
 /**
 ****************************************************************************************************
 
-  @brief Check that bhdr is legimate brick header.
+  @brief Check that bhdr is legitimate brick header.
   @anchor osal_validate_brick_header
 
-  Check that brick is valid. This is used enforce interoperbility of different implementations,
+  Check that brick is valid. This is used enforce interoperability of different implementations,
   so that bugs are detected and fixed.
 
   @param   bhdr Pointer to the brick header
@@ -1104,7 +1104,7 @@ failed:
   @brief Receive data into brick buffer.
   @anchor ioc_run_brick_receive
 
-  This function can be called repeatedly from loop to keep on receiveng data.
+  This function can be called repeatedly from loop to keep on receiving data.
 
   @param   b Pointer to brick buffer structure.
   @return  OSAL_SUCCESS all fine, but no complete brick received. OSAL_COMPLETED new brick
@@ -1235,7 +1235,7 @@ osalStatus ioc_run_brick_receive(
 /**
 ****************************************************************************************************
 
-  @brief Adjust compression quality used to send data t obrick buffer.
+  @brief Adjust compression quality used to send data to brick buffer.
   @anchor ioc_adjust_jpeg_compression_quality
 
   Compression results of an image are used to adjust JPEG compression quality so that the

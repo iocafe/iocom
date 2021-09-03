@@ -8,7 +8,7 @@ Connection netween IO network service in local LAN and switchbox service in clou
 IO device connecting to IO network trough cloud server
 - When a device can connect to IO network service trough cloud, it connects first to switchbox service.
 - This connection is normal IOCOM or ECOM connection, requested IO network is specified in authentication header. 
-- When switchbox server recives a socket connection, it checks if this IO network server with given network name
+- When switchbox server receives a socket connection, it checks if this IO network server with given network name
   is connected. If so, it generates a passtrough to it. 
 - Switchbox sends "new connection" message to IO server in local LAN. The IO server needs to create a iocom or exom connection object using switchbox stream class as transport.
 - Data from IO device passtrough is forwared "as is" trough switchbox.

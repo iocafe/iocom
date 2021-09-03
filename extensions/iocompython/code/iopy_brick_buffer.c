@@ -54,7 +54,7 @@
 */
 #include "iocompython.h"
 
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
 #include "eosal_jpeg.h"
 #endif
 
@@ -425,7 +425,7 @@ getout:
 /**
 ****************************************************************************************************
 
-  @brief Enable/disable reciving data.
+  @brief Enable/disable receiving data.
 
 ****************************************************************************************************
 */
@@ -482,7 +482,7 @@ static PyObject *BrickBuffer_get(
     os_int width, height;
     osalStatus s;
 
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
     osalJpegMallocContext alloc_context;
 #endif
 
@@ -543,7 +543,7 @@ static PyObject *BrickBuffer_get(
     {
         brick_data = PyBytes_FromStringAndSize((const char*)data, data_sz);
     }
-#if IOC_USE_JPEG_COMPRESSION
+#if OSAL_USE_JPEG_LIBRARY
     else if (compression & IOC_JPEG)
     {
         os_memclear(&alloc_context, sizeof(alloc_context));
@@ -603,7 +603,7 @@ static PyMemberDef BrickBuffer_members[] = {
 */
 static PyMethodDef BrickBuffer_methods[] = {
     {"delete", (PyCFunction)BrickBuffer_delete, METH_NOARGS, "Deletes IOCOM brick_buffer"},
-    {"set_receive", (PyCFunction)BrickBuffer_set_receive, METH_VARARGS|METH_KEYWORDS, "Enable/disable reciving data"},
+    {"set_receive", (PyCFunction)BrickBuffer_set_receive, METH_VARARGS|METH_KEYWORDS, "Enable/disable receiving data"},
     {"get", (PyCFunction)BrickBuffer_get, METH_VARARGS|METH_KEYWORDS, "Get buffered data brick"},
 //    {"set", (PyCFunction)BrickBuffer_set, METH_VARARGS|METH_KEYWORDS, "Store brick_buffer data"},
     {NULL, NULL, 0, NULL} /* Sentinel */

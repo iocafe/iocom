@@ -56,16 +56,6 @@ OSAL_C_HEADER_BEGINS
 #define IOC_RESIZE_MBLK_CODE OSAL_DYNAMIC_MEMORY_ALLOCATION
 #endif
 
-/* Do we want to enable JPEG compression for brick data transfers.
- */
-#ifndef IOC_USE_JPEG_COMPRESSION
-  #if OSAL_MICROCONTROLLER
-    #define IOC_USE_JPEG_COMPRESSION 0
-  #else
-    #define IOC_USE_JPEG_COMPRESSION 1
-  #endif
-#endif
-
 /* If we need streamer support?
  */
 #ifndef IOC_DEVICE_STREAMER
@@ -157,7 +147,7 @@ OSAL_C_HEADER_BEGINS
 #endif
 
 /* Security and testing is difficult with security on, define to turn much of it off.
-   By default iocom's define follows OSAL_RELAX_SECURITY in eosal.h.
+   By default iocom define IOC_RELAX_SECURITY follows OSAL_RELAX_SECURITY in eosal.h.
  */
 #ifndef IOC_RELAX_SECURITY
 #define IOC_RELAX_SECURITY OSAL_RELAX_SECURITY

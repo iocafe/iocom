@@ -228,7 +228,7 @@ os_ulong ioc_get_brick_hdr_int(
     os_uchar *data,
     os_int nro_bytes);
 
-/* Adjust compression quality used to send data t obrick buffer.
+/* Adjust compression quality used to send data to brick buffer.
  */
 void ioc_adjust_jpeg_compression_quality(
     iocBrickBuffer *b,
