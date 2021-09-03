@@ -4,7 +4,6 @@
   To build it within Visual Studio Code and PlatformIO.
  */
 
-// #include <Arduino.h>
 #include <eosal.h>
 #include <eosalx.h>
 // #include <iocom.h>
