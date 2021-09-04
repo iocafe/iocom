@@ -50,7 +50,7 @@ iocTypeConvUnion;
   @param   signal Pointer to array of signal structures. This holds memory address,
            state bits and data type for each signal.
   @param   vv Array where signal values and state bits are stored, n_signals elements.
-  @oaram   n_signals Number of elements in signals array.
+  @param   n_signals Number of elements in signals array.
   @param   flags IOC_SIGNAL_DEFAULT (0) for no flags. Following flags can be combined by or
            operator: IOC_SIGNAL_WRITE and IOC_SIGNAL_NO_THREAD_SYNC.
            Type flags here are ignored, since type is set for each signal separately in
@@ -361,7 +361,7 @@ os_char ioc_set_double_ext(
 
   @param   signal Pointer to signal structure. This holds memory address,  state bits and data
            type for the signal.
-  @oaram   state_bits Pointer to integer where to store state bits. OSAL_STATE_CONNECTED bit
+  @param   state_bits Pointer to integer where to store state bits. OSAL_STATE_CONNECTED bit
            indicates that we have the signal value. HW errors are indicated.
   @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_THREAD_SYNC disables
            thread synchronization (already done) and IOC_SIGNAL_NO_TBUF_CHECK disables
@@ -406,7 +406,7 @@ os_long ioc_get_ext(
 
   @param   signal Pointer to signal structure. This holds memory address,  state bits and data
            type for the signal.
-  @oaram   state_bits Pointer to integer where to store state bits. OSAL_STATE_CONNECTED bit
+  @param   state_bits Pointer to integer where to store state bits. OSAL_STATE_CONNECTED bit
            indicates that we have the signal value. HW errors are indicated.
   @param   flags IOC_SIGNAL_DEFAULT for default operation. IOC_SIGNAL_NO_THREAD_SYNC disables
            thread synchronization (already done) and IOC_SIGNAL_NO_TBUF_CHECK disables

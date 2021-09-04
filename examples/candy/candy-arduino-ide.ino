@@ -28,7 +28,7 @@ void loop()
 #ifdef ESP_PLATFORM
     /* ESP-IDF 3.X/MELIFE test board : We cannot write too fast through WiFi, WiFi will lock up.
      */
-    os_sleep(20);
+    osal_sleep(20);
 #endif
 }
 

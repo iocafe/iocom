@@ -90,7 +90,7 @@ osalStatus osal_main(
      */
     while (osal_go())
     {
-        os_sleep(1000);
+        osal_sleep(1000);
 
         os_strncpy(text, "callback count: ", sizeof(text));
         osal_int_to_str(nbuf, sizeof(nbuf), callback_count);

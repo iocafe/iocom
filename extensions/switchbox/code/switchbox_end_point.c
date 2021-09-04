@@ -557,7 +557,7 @@ static long ulledoo; if (++ulledoo > 0) {osal_debug_error("ulledoo end point\n")
 
             if (status == OSAL_STATUS_NOT_SUPPORTED)
             {
-                os_sleep(100);
+                osal_sleep(100);
             }
 
             else if (status)
@@ -569,7 +569,7 @@ static long ulledoo; if (++ulledoo > 0) {osal_debug_error("ulledoo end point\n")
         }
         else
         {
-            os_sleep(100);
+            osal_sleep(100);
         }
     }
 

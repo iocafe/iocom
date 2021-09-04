@@ -618,7 +618,7 @@ static void ioc_endpoint_thread(
 
             if (status == OSAL_STATUS_NOT_SUPPORTED)
             {
-                os_sleep(100);
+                osal_sleep(100);
             }
 
             else if (status)
@@ -630,7 +630,7 @@ static void ioc_endpoint_thread(
         }
         else
         {
-            os_sleep(100);
+            osal_sleep(100);
         }
     }
 
@@ -640,7 +640,7 @@ static void ioc_endpoint_thread(
     while (!epoint->stop_worker_thread && osal_go())
     {
         ioc_run_endpoint(epoint);
-        os_sleep(100);
+        osal_sleep(100);
     }
 #endif
 

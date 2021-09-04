@@ -54,10 +54,6 @@
 */
 #include "iocompython.h"
 
-#if OSAL_USE_JPEG_LIBRARY
-#include "eosal_jpeg.h"
-#endif
-
 /* Working state structure used to read data.
  */
 typedef struct

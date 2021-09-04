@@ -91,7 +91,7 @@ osalStatus osal_main(
     while (osal_go())
     {
         io_device_console(&root);
-        os_sleep(100);
+        osal_sleep(100);
     }
 
     /* End IO board communication, clean up and finsh with the socket library.

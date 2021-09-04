@@ -142,7 +142,7 @@ osalStatus osal_main(
 
     /* Allow a moment to power up (capacitors, etc)
      */
-    os_sleep(500);
+    osal_sleep(500);
 
     /* Setup error handling. Here we select to keep track of network state. We could also
        set application specific event handler callback by calling osal_set_net_event_handler().

@@ -155,7 +155,7 @@ void EscConfSequence::task()
 // static long ulledoo; if (++ulledoo > 10009) {osal_debug_error("ulledoo blink\n"); ulledoo = 0;}
         os_get_timer(&ti);
         run(&ti);
-        os_sleep(50);
+        osal_sleep(50);
     }
 }
 

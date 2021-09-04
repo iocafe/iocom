@@ -156,7 +156,7 @@ os_boolean ioc_is_lighthouse_used(
   @param   trigger To return always immediately, give 0 here. If event is given here,
            the funcion waits for event once all messages have been successfully processed.
            When the wait breaks, the runction returns OSAL_SUCCESS. If this function returns
-           OSAL_PENDING or error code, caller may want to call os_sleep() to save processor time.
+           OSAL_PENDING or error code, caller may want to call osal_sleep() to save processor time.
   @return  OSAL_SUCCESS or OSAL_PENDING if all is fine. Latter indicates that we are waiting
            for next time to try to open a socket. Other values indicate a network error.
 

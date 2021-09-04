@@ -30,6 +30,6 @@ void loop()
     /* ESP-IDF 3.X/MELIFE test board : We cannot run too fast, WiFi may lock up (unsure if this is power issue).
      */
 #ifdef ESP_PLATFORM
-    os_sleep(3);
+    osal_sleep(3);
 #endif
 }

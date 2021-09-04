@@ -407,13 +407,13 @@ static void iocontroller_spin_7_segment_delay(
     if (c->countdown > 0)
     {
         iocontroller_7_segment(&c->imp, --(c->countdown));
-        os_sleep(500);
+        osal_sleep(500);
     }
     else
     {
         if (++(c->spinner) > 7) c->spinner = 0;
         iocontroller_8_spinner(&c->imp, c->spinner);
-        os_sleep(c->slow ? 30 : 1);
+        osal_sleep(c->slow ? 30 : 1);
         if (c->count++ > (c->slow ? 100 : 2800))
         {
             c->count = 0;

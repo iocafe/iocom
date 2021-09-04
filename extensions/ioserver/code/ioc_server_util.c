@@ -67,7 +67,7 @@ void ioc_set_handle_to_signals(
   @param   default_block_nr If reading from persistent storage, this is default block
            number for the case when file name doesn't specify one.
   @param   dir Directory from where files are read, if using file system.
-  @oaram   file_name Specifies file name or persistent block number.
+  @param   file_name Specifies file name or persistent block number.
   @param   buf Where to store pointer to data buffer.
   @param   n_read Number of data bytes in buffer.
   @param   flags OS_FILE_NULL_CHAR to terminate buffer with NULL character.

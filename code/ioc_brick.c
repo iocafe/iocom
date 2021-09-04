@@ -19,11 +19,6 @@
 #include "iocom.h"
 #if IOC_STREAMER_SUPPORT
 
-#if OSAL_USE_JPEG_LIBRARY
-#include "eosal_jpeg.h"
-#endif
-
-
 /**
 ****************************************************************************************************
 
