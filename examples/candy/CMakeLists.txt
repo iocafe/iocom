@@ -13,9 +13,9 @@ project(${E_PROJECT})
 include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
 # Select hardware setup to use (IO pins, etc)
-if ($ENV{E_OS} MATCHES "esp32")
+if ($ENV{E_OS} STREQUAL "esp32")
   set(E_HW "espcam")
-elseif ($ENV{E_OSVER} MATCHES "pi")
+elseif ($ENV{E_OSVER} STREQUAL "pi")
   set(E_HW "picam")
 else()
   set(E_HW "pc")
@@ -23,10 +23,9 @@ endif()
 
 # Select libraries to link with application.
 set(E_APPLIBS "devicedir${E_POSTFIX};gazerbeam${E_POSTFIX};deviceinfo${E_POSTFIX};nodeconf${E_POSTFIX};lighthouse${E_POSTFIX};pins${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS}")
-if ($ENV{E_OSVER} MATCHES "pi")
+if ($ENV{E_OSVER} STREQUAL "pi")
   set(E_APPLIBS "${E_APPLIBS};pigpio;raspicam;rt")
 endif()
-# set(E_APPLIBS "${E_APPLIBS};$ENV{OSAL_TLS_APP_LIBS}")
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")

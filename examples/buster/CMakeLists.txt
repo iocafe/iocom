@@ -13,7 +13,7 @@ set(E_HW "grumpy")
 
 # Select libraries to link with application.
 set(E_APPLIBS "iodevice${E_POSTFIX};ioserver${E_POSTFIX};devicedir${E_POSTFIX};gazerbeam${E_POSTFIX};deviceinfo${E_POSTFIX};nodeconf${E_POSTFIX};lighthouse${E_POSTFIX};pins${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS}")
-if ($ENV{E_OSVER} MATCHES "pi")
+if ($ENV{E_OSVER} STREQUAL "pi")
   set(E_APPLIBS "${E_APPLIBS};pigpio;raspicam;rt")
 endif()
 
