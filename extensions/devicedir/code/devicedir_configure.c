@@ -32,7 +32,7 @@ static osalStatus devicedir_get_config_item(
 
   @param   message Received Gazebeam message.
   @param   message_sz Message size in bytes.
-  @return  OSAL_SUCCESS if field was succesfully set.
+  @return  OSAL_SUCCESS if field was successfully set.
            OSAL_NOTHING_TO_DO if field was unchanged.
 
 ****************************************************************************************************
@@ -100,7 +100,7 @@ osalStatus devicedir_save_config(
   @param   field_sz Size if field value buffer in bytes.
   @param   line_buf Line typed in by user from console.
 
-  @return  OSAL_SUCCESS if field was succesfully set.
+  @return  OSAL_SUCCESS if field was successfully set.
            OSAL_NOTHING_TO_DO if field was unchanged.
 
 ****************************************************************************************************

@@ -75,7 +75,7 @@ void gazerbeam_run_configurator(
 
   @param   message Received Gazebeam message.
   @param   message_sz Message size in bytes.
-  @return  OSAL_SUCCESS if field was succesfully set.
+  @return  OSAL_SUCCESS if field was successfully set.
            OSAL_NOTHING_TO_DO if field was unchanged.
            OSAL_STATUS_FAILED if field was not set in message.
 
@@ -178,7 +178,7 @@ osalStatus gazerbeam_save_config(
   @param   message Received Gazebeam message.
   @param   message_sz Message size in bytes.
   @param   flags Reserved for future, set GAZERBEAM_DEFAULT (0) for now.
-  @return  OSAL_SUCCESS if field was succesfully set.
+  @return  OSAL_SUCCESS if field was successfully set.
            OSAL_NOTHING_TO_DO if field was unchanged.
            OSAL_STATUS_FAILED if field was not set in message.
 

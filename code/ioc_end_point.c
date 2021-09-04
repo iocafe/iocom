@@ -391,7 +391,7 @@ osalStatus ioc_terminate_end_point_thread(
   f two secons have not passed since last failed open try.
 
   @param   epoint Pointer to the end point object.
-  @return  OSAL_SUCCESS if we have succesfully opened the listening TCP socket port. Other
+  @return  OSAL_SUCCESS if we have successfully opened the listening TCP socket port. Other
            values indicate failure or delay.
 
 ****************************************************************************************************

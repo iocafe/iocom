@@ -823,7 +823,7 @@ osalStatus ioc_terminate_connection_thread(
   returns OSAL_PENDING.
 
   @param   con Pointer to the connection object.
-  @return  OSAL_SUCCESS: Ssuccesfully opened the stream.
+  @return  OSAL_SUCCESS: Successfully opened the stream.
            OSAL_PENDING: Two seconds have not passed since last try, the fOthervalues indicate
            failure  or delay.
 

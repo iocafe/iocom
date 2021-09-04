@@ -29,7 +29,7 @@
   @param   select Persisent block number to load.
   @param   default_data Default content to store to memory block if loading fails.
   @param   default_data_sz Default content size in bytes.
-  @return  OSAL_COMPLETED: The memory block succesfully loaded from persistent storage.
+  @return  OSAL_COMPLETED: The memory block successfully loaded from persistent storage.
            OSAL_SUCCESS: Default data given as argument was used.
            Other return values indicate an error.
 

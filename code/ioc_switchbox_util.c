@@ -31,7 +31,7 @@
   @param   data_len Data length to follow in bytes, or control code like
            IOC_SWITCHBOX_NEW_CONNECTION or IOC_SWITCHBOX_CONNECTION_DROPPED.
 
-  @return  OSAL_SUCCESS if message header succesfully read from ring buffer. If there
+  @return  OSAL_SUCCESS if message header successfully read from ring buffer. If there
            is not enough data in, the function returns OSAL_PENDING. Other nonzero
            return values indicate corrupted message header.
 
@@ -81,7 +81,7 @@ osalStatus ioc_switchbox_get_msg_header_from_ringbuf(
   @param   data_len Data length to follow in bytes, or control code like
            IOC_SWITCHBOX_NEW_CONNECTION or IOC_SWITCHBOX_CONNECTION_DROPPED.
 
-  @return  OSAL_SUCCESS if message header succesfully stored to ring buffer. If there
+  @return  OSAL_SUCCESS if message header successfully stored to ring buffer. If there
            is not enough space in ring buffer, the function returns OSAL_PENDING.
 
 ****************************************************************************************************

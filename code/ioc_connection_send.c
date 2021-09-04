@@ -451,7 +451,7 @@ static void ioc_make_mblk_info_frame(
     if (ioc_finish_frame(con, &ptrs, start, p))
         return;
 
-    /* Memory block succesfully placed to frame out buffer, now we can forget about it.
+    /* Memory block successfully placed to frame out buffer, now we can forget about it.
      */
     ioc_mbinfo_sent(con, mblk);
 }
