@@ -1,16 +1,10 @@
 #ifdef OSAL_ESPIDF_FRAMEWORK
 /*
-  main.c
+  main-eso-idf.c, 5.9.2021/pekka
   To build it within Visual Studio Code and PlatformIO.
  */
-
 #include <eosal.h>
 #include <eosalx.h>
-// #include <iocom.h>
-//#include <devicedir.h>
-//#include <pins.h>
-//#include <FreeRTOS.h>
-
 
 #ifdef OSAL_ESPIDF_FRAMEWORK
 
