@@ -1,5 +1,5 @@
 # iocom
-The IOCOM C library implements communication between a IoT/IO devices and control computer over TCP network (TLS optional) or full duplex serial communication.
+The IOCOM C library implements communication between IoT/IO devices and control computer over TCP network (TLS optional) or full duplex serial communication.
 The iocom depends on eosal library for platform/operating system abstraction.
 
 7.2.2021 status: \

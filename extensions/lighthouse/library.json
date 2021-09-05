@@ -1,6 +1,6 @@
 {
-  "name": "gazerbeam",
-  "description": "configure microcontroller's wifi/network with blinking cell phone flashlight",
+  "name": "lighthouse",
+  "description": "Debug console related functions",
   "frameworks": [
     "arduino", 
     "espidf"
@@ -24,9 +24,6 @@
     },
     {
       "name": "iocom"
-    },
-    {
-      "name": "pins"
     }  
   ]
  }

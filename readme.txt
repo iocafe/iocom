@@ -1,7 +1,7 @@
 9.8.2021 / pekka
-The gazerbeam is small library to allow setting wifi network name (SSID) and password (PSK) using LED flash
-of Android phone, etc. The phone needs APP to blink configuration information, and the microcontroller has
-photodiode to receive the signal.
+The IOCOM C library implements communication between IoT/IO devices and control computer over 
+TCP network (TLS optional) or full duplex serial communication. The iocom depends on eosal 
+library for platform/operating system abstraction.
 
 Build files:
 - platformio.ini: PlatformIO build main configuration file.

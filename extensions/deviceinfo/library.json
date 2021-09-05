@@ -1,15 +1,16 @@
 {
   "name": "deviceinfo",
-  "version": "1.0.0",
-  "keywords": "configuration, state",
-  "description": "publish device configuration and state",
-  "frameworks": "arduino",
+  "description": "Provide HW information over IOCOM connection",
+  "frameworks": [
+    "arduino", 
+    "espidf"
+  ],
   "platforms": [
     "teensy", 
     "stm32",
-    "esp32"
+    "espressif32"
   ],
-  
+ 
   "build": {
     "srcFilter": [
       "+<code/*>"
@@ -19,7 +20,13 @@
   
   "dependencies": [
     {
+      "name": "eosal"
+    },
+    {
       "name": "iocom"
+    },
+    {
+      "name": "nodeconf"
     }  
   ]
  }

@@ -1,15 +1,16 @@
 {
   "name": "devicedir",
-  "version": "1.0.0",
-  "keywords": "debug iocom, console",
   "description": "Debug console related functions",
-  "frameworks": "arduino",
+  "frameworks": [
+    "arduino", 
+    "espidf"
+  ],
   "platforms": [
     "teensy", 
     "stm32",
-    "esp32"
+    "espressif32"
   ],
-  
+ 
   "build": {
     "srcFilter": [
       "+<code/*>"
@@ -18,6 +19,9 @@
   },
   
   "dependencies": [
+    {
+      "name": "eosal"
+    },
     {
       "name": "iocom"
     }  

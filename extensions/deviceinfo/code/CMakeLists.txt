@@ -1,4 +1,4 @@
-# candy/code/CmakeLists.txt, 4.9.2021/pekka
+# deviceinfo/code/CmakeLists.txt, 4.9.2021/pekka
 #
 # ESP-IDF build only: The second CMakeLists.txt in src_dir (code) sis responsible for controlling 
 # the build process of the component and its integration into the overall project. 
@@ -8,15 +8,15 @@
 cmake_minimum_required(VERSION 3.16.0)
 
 # Project name, development root folder, and name for operatig system.
-set(E_PROJECT "candy")
+set(E_PROJECT "deviceinfo")
 set(ENV{E_ROOT} "/coderoot")
 set(ENV{E_OS} "esp32")
 
 # Set path to source files.
-set(BACKBONE "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
+set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 
 # Add main headers.
-# set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/${E_PROJECT}.h")
+# set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
 
 # Add source files common to all operating systems.
 file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
@@ -25,8 +25,8 @@ file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
 # Merge the .c files as one list.
 set(srcs ${BB_CM_SOURCES})
 
-# The candy library depends on: 
-set(requires, "idf::eosal")
+# The deviceinfo library depends on: 
+set(requires, "idf::iocom")
 
-# Register candy as ESP-IDEF component.
+# Register deviceinfo as ESP-IDEF component.
 idf_component_register(SRCS "${srcs}" INCLUDE_DIRS "." REQUIRES "${requires}")

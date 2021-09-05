@@ -1,30 +1,47 @@
 # iocom/extensions/lighthouse/CmakeLists.txt - Cmake build for lighthouse library.
 cmake_minimum_required(VERSION 3.5)
 
+
 # Set project name (= project root folder name).
 set(E_PROJECT "lighthouse")
-project(${E_PROJECT})
 
-# include build environment setting common to all projects.
-include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
+if("${IDF_TARGET}" STREQUAL "esp32")
+  # ESP-IFD only: Include IDF project setup and declare the project.
+  include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+  project(${E_PROJECT})
 
-# Set path to where to keep libraries.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
+  # include build information common to all projects.
+  include(../../../eosal/osbuild/cmakedefs/eosal-defs-espidf.txt)
 
-# Set path to source files.
-set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
+  # Add include paths.
+  include_directories("$ENV{E_ROOT}/iocom")
+  include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 
-# Add include paths.
-include_directories("$ENV{E_ROOT}/iocom")
-include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
+else()
+  project(${E_PROJECT})
 
-# Add main headers.
-set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
+  # include build environment setting common to all projects.
+  include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
-# Add source files common to all operating systems.
-file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
-file(GLOB BB_CM_HEADERS "${BACKBONE}/*.h")
+  # Set path to directory where to keep libraries.
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
 
-# Generate the static library.
-add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_CM_HEADERS} ${BB_CM_SOURCES})
+  # Set path to source files.
+  set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
+
+  # Add include paths.
+  include_directories("$ENV{E_ROOT}/iocom")
+  include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
+
+  # Add main headers.
+  set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
+
+  # Add source files common to all operating systems.
+  file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
+  file(GLOB BB_CM_HEADERS "${BACKBONE}/*.h")
+
+  # Generate the static library.
+  add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_CM_HEADERS} ${BB_CM_SOURCES})
+
+endif()
