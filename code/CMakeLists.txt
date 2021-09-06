@@ -9,8 +9,8 @@ cmake_minimum_required(VERSION 3.16.0)
 
 # Project name, development root folder and iocom name for operatig system.
 set(E_PROJECT "iocom")
-set(ENV{E_ROOT} "/coderoot")
 set(ENV{E_OS} "esp32")
+include("${COMPONENT_PATH}/../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 # Set path to source files.
 set(BACKBONE "$ENV{E_ROOT}/${E_PROJECT}/code")

@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "candy")
+set(E_UP "../../../eosal/osbuild/cmakedefs")
+
+# Set build root environment variable E_ROOT
+include("${E_UP}/eosal-root-path.txt")
 
 if("${IDF_TARGET}" STREQUAL "esp32")
   # ESP-IFD only: Include IDF project setup and declare the project.
@@ -11,7 +15,7 @@ if("${IDF_TARGET}" STREQUAL "esp32")
   project(${E_PROJECT})
 
   # include build information common to all projects.
-  include(../../../eosal/osbuild/cmakedefs/eosal-defs-espidf.txt)
+  include("${E_UP}/eosal-defs-espidf.txt")
 
   # Add include paths.
   include_directories("$ENV{E_ROOT}/iocom")
@@ -27,7 +31,7 @@ else()
   project(${E_PROJECT})
 
   # include build environment setting common to all projects.
-  include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
+  include("${E_UP}/eosal-defs.txt")
 
   # Select hardware setup to use (IO pins, etc)
   if ($ENV{E_OS} STREQUAL "esp32")

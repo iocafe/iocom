@@ -6,7 +6,8 @@ set(E_PROJECT "claudia")
 project(${E_PROJECT})
 
 # include build information common to all projects.
-include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
+include("../../../eosal-root-path.txt")
+include("../../../eosal/osbuild/cmakedefs/eosal-defs.txt")
 
 # Build individual library projects. The devicedir library is here for development testing,
 # it allows to print IO node's state.

@@ -9,8 +9,8 @@ cmake_minimum_required(VERSION 3.5)
 
 # Project name, development root folder, and name for operatig system.
 set(E_PROJECT "deviceinfo")
-set(ENV{E_ROOT} "/coderoot")
 set(ENV{E_OS} "esp32")
+include("${COMPONENT_PATH}/../../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 # Set path to source files.
 set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")

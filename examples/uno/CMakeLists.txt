@@ -7,7 +7,8 @@ set(E_HW "unoboard")
 project(${E_PROJECT})
 
 # include build information common to all projects.
-include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
+include("../../../eosal-root-path.txt")
+include("../../../eosal/osbuild/cmakedefs/eosal-defs.txt")
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")
@@ -36,7 +37,7 @@ file(GLOB_RECURSE HEADERS "${E_SOURCE_PATH}/*.h")
 
 # Add source files.
 file(GLOB_RECURSE SOURCES "${E_SOURCE_PATH}/*.c" "${E_SOURCE_PATH}/*.cpp")
- 
+
 # Build executable. Set library folder and libraries to link with.
 link_directories($ENV{E_LIB})
 add_executable(${E_PROJECT}${E_POSTFIX} ${HEADERS} ${SOURCES})

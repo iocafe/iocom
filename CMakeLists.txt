@@ -3,20 +3,24 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "iocom")
+set(E_UP "../eosal/osbuild/cmakedefs")
+
+# Set build root environment variable E_ROOT
+include("${E_UP}/eosal-root-path.txt")
 
 if("${IDF_TARGET}" STREQUAL "esp32")
   # ESP-IFD only: Include IDF project setup and declare the project.
   include($ENV{IDF_PATH}/tools/cmake/project.cmake)
   project(${E_PROJECT})
 
-  # include build information common to all projects.
-  include(../eosal/osbuild/cmakedefs/eosal-defs-espidf.txt)
+  # include build information common to ESP-IDF projects.
+  include("${E_UP}/eosal-defs-espidf.txt")
 
 else()
   project(${E_PROJECT})
 
-  # include build environment setting common to all projects.
-  include(../eosal/osbuild/cmakedefs/eosal-defs.txt)
+  # include build information common to all projects.
+  include("${E_UP}/eosal-defs.txt")
 
   # Set path to where to keep libraries.
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
@@ -40,5 +44,5 @@ else()
 
   # Generate the static library.
   add_library(${E_PROJECT}${E_POSTFIX} STATIC ${MAIN_HEADERS} ${BB_HEADERS} ${EX_HEADERS} ${BB_SOURCES} ${EX_SOURCES})
-  
+
 endif()

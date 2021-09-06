@@ -6,7 +6,8 @@ set(E_PROJECT "minion")
 project(${E_PROJECT})
 
 # include build information common to all projects.
-include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
+include("../../../eosal-root-path.txt")
+include("../../../eosal/osbuild/cmakedefs/eosal-defs.txt")
 
 # Select hardware setup to use (IO pins, etc)
 if ($ENV{E_OS} STREQUAL "esp32")

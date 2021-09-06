@@ -4,9 +4,13 @@ cmake_minimum_required(VERSION 3.12)
 # Set project name (= project root folder name).
 set(E_PROJECT "iocompython")
 project(${E_PROJECT})
+set(E_UP "../../../eosal/osbuild/cmakedefs")
+
+# Set build root environment variable E_ROOT
+include("${E_UP}/eosal-root-path.txt")
 
 # include build environment setting common to all projects.
-include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
+include("${E_UP}/eosal-defs.txt")
 
 # Find python stuff. This sets a bunch of variables. We need Python 3.12 for this.
 find_package (Python3 COMPONENTS Interpreter Development)
