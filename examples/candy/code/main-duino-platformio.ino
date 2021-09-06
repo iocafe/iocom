@@ -1,13 +1,10 @@
 #include <Arduino.h>
 #include <eosalx.h>
-#include <iocom.h>
-#include <devicedir.h>
-#include <pins.h>
 #include <FreeRTOS.h>
 
 /*
-  candy_platformio.ino
-  To build it within Visual Studio Code and PlatformIO.
+  main-duino-platformio.ino
+  Entry point when building with Visual Studio Code, PlatformIO and Arduino Framework.
  */
 
 /* The setup routine runs once when you press reset.
@@ -26,9 +23,11 @@ void loop()
 {
     /* Forward loop call to osal_loop(). Reboot if osal_loop returns "no success".
      */
-    if (osal_loop(osal_application_context)) osal_reboot(0);
+    if (osal_loop(osal_application_context)) {
+        osal_reboot(0);
+    }
 
-    /* ESP-IDF 3.X/MELIFE test board : We cannot write too fast through WiFi, WiFi will lock up.
+    /* ESP32: Save some resources for other tasks.
      */
 #ifdef ESP_PLATFORM
     osal_sleep(3);

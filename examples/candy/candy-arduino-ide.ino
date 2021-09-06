@@ -3,9 +3,10 @@
 #include <eosalx.h>
 
 /*
-  4_ioboard_test.ino
-  Include a IO board test app to build it within Arduino IDE.
+  candy-arduino-ide.ino
+  Entry point when building with Arduino IDE.
  */
+
 
 /* The setup routine runs once when you press reset.
  */
@@ -26,12 +27,8 @@ void loop()
     if (osal_loop(osal_application_context)) osal_reboot(0);
 
 #ifdef ESP_PLATFORM
-    /* ESP-IDF 3.X/MELIFE test board : We cannot write too fast through WiFi, WiFi will lock up.
+    /* ESP32: Save some resources for other tasks.
      */
     osal_sleep(20);
 #endif
 }
-
-/* Include code for the application
- */
-#include "/coderoot/iocom/examples/ioboard_test/code/ioboard_example.c"
