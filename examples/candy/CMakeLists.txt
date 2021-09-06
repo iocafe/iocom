@@ -1,5 +1,5 @@
 # iocom/examples/candy/CmakeLists.txt - Cmake build for Candy Camera example.
-# cmake_minimum_required(), include($ENV{}.., and project() in this exact order for cmake to work correctly.
+# cmake_minimum_required(), include($ENV{}.., and project() need to be in this exact order for cmake to work correctly.
 cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
