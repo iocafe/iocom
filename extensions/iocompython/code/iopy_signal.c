@@ -435,7 +435,7 @@ static void Signal_set_sequence(
     double d;
     const os_char *str;
 
-    length = PySequence_Length(args);
+    length = (long)PySequence_Length(args);
     for(i = 0; i < length; i++)
     {
         a = PySequence_GetItem(args, i);

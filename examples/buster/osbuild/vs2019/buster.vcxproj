@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\code\blink_sequence.cpp" />
     <ClCompile Include="..\..\code\camera.cpp" />
     <ClCompile Include="..\..\code\config.c" />
+    <ClCompile Include="..\..\code\escconf_sequence.cpp" />
     <ClCompile Include="..\..\code\main.cpp" />
     <ClCompile Include="..\..\code\minion.cpp" />
   </ItemGroup>
@@ -31,6 +32,7 @@
     <ClInclude Include="..\..\code\blink_sequence.h" />
     <ClInclude Include="..\..\code\buster.h" />
     <ClInclude Include="..\..\code\camera.h" />
+    <ClInclude Include="..\..\code\escconf_sequence.h" />
     <ClInclude Include="..\..\code\minion.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

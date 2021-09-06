@@ -26,6 +26,8 @@
     <ClInclude Include="..\..\code\ioc_debug.h" />
     <ClInclude Include="..\..\code\ioc_end_point.h" />
     <ClInclude Include="..\..\code\ioc_handle.h" />
+    <ClInclude Include="..\..\code\ioc_handshake.h" />
+    <ClInclude Include="..\..\code\ioc_handshake_iocom.h" />
     <ClInclude Include="..\..\code\ioc_ioboard.h" />
     <ClInclude Include="..\..\code\ioc_memory.h" />
     <ClInclude Include="..\..\code\ioc_memory_block.h" />
@@ -37,6 +39,9 @@
     <ClInclude Include="..\..\code\ioc_signal_addr.h" />
     <ClInclude Include="..\..\code\ioc_source_buffer.h" />
     <ClInclude Include="..\..\code\ioc_streamer.h" />
+    <ClInclude Include="..\..\code\ioc_switchbox_auth_frame.h" />
+    <ClInclude Include="..\..\code\ioc_switchbox_socket.h" />
+    <ClInclude Include="..\..\code\ioc_switchbox_util.h" />
     <ClInclude Include="..\..\code\ioc_target_buffer.h" />
     <ClInclude Include="..\..\code\ioc_timing.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_mblk_list.h" />
@@ -47,7 +52,6 @@
     <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_stream.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_identifiers.h" />
     <ClInclude Include="..\..\extensions\dynamicio\ioc_remove_mblk_list.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_switchbox_auth_frame.h" />
     <ClInclude Include="..\..\iocom.h" />
     <ClInclude Include="..\..\iocomx.h" />
   </ItemGroup>
@@ -61,6 +65,8 @@
     <ClCompile Include="..\..\code\ioc_end_point.c" />
     <ClCompile Include="..\..\code\ioc_establish_serial_connection.c" />
     <ClCompile Include="..\..\code\ioc_handle.c" />
+    <ClCompile Include="..\..\code\ioc_handshake.c" />
+    <ClCompile Include="..\..\code\ioc_handshake_iocom.c" />
     <ClCompile Include="..\..\code\ioc_ioboard.c" />
     <ClCompile Include="..\..\code\ioc_memory.c" />
     <ClCompile Include="..\..\code\ioc_memory_block.c" />
@@ -72,6 +78,9 @@
     <ClCompile Include="..\..\code\ioc_signal_addr.c" />
     <ClCompile Include="..\..\code\ioc_source_buffer.c" />
     <ClCompile Include="..\..\code\ioc_streamer.c" />
+    <ClCompile Include="..\..\code\ioc_switchbox_auth_frame.c" />
+    <ClCompile Include="..\..\code\ioc_switchbox_socket.c" />
+    <ClCompile Include="..\..\code\ioc_switchbox_util.c" />
     <ClCompile Include="..\..\code\ioc_target_buffer.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_mblk_list.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_network.c" />
@@ -81,7 +90,6 @@
     <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_stream.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_identifiers.c" />
     <ClCompile Include="..\..\extensions\dynamicio\ioc_remove_mblk_list.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_switchbox_auth_frame.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

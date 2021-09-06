@@ -490,7 +490,7 @@ static osalStatus ioc_process_handshake_message(
 #endif
     s = osal_stream_read(stream, p + c, n, &n_read, OSAL_STREAM_DEFAULT);
     if (s == OSAL_SUCCESS) {
-        state->cloud_netname_pos += n_read;
+        state->cloud_netname_pos += (os_char)n_read;
         return n_read >= n ? OSAL_SUCCESS : OSAL_PENDING;
     }
     return s;
@@ -540,12 +540,12 @@ static osalStatus ioc_send_trust_certificate(
         /* Get certificate size in bytes.
          */
         if (load_trust_certificate_func) {
-            cert_sz = load_trust_certificate_func(OS_NULL, 0, load_trust_certificate_context);
+            cert_sz = (os_ushort)load_trust_certificate_func(OS_NULL, 0, load_trust_certificate_context);
             if (cert_sz > 0) {
-                state->cert = (os_uchar*)os_malloc(cert_sz + 2, OS_NULL);
+                state->cert = (os_uchar*)os_malloc(cert_sz + (os_memsz)2, OS_NULL);
                 if (state->cert == OS_NULL) return OSAL_STATUS_FAILED;
                 state->cert_sz = cert_sz + 2;
-                load_trust_certificate_func(state->cert + 2, cert_sz,
+                load_trust_certificate_func(state->cert + (os_memsz)2, cert_sz,
                     load_trust_certificate_context);
                 state->cert[0] = (os_uchar)cert_sz;
                 state->cert[1] = (os_uchar)(cert_sz >> 8);
@@ -635,7 +635,7 @@ static osalStatus ioc_process_trust_certificate(
     os_memsz n_read;
     osalStatus s;
     os_ushort cert_pos, n;
-    os_uchar c;
+    os_uchar c = 0;
 
     while (state->cert_pos < 2) {
         s = osal_stream_read(stream, (os_char*)&c, 1, &n_read, OSAL_STREAM_DEFAULT);

@@ -19,16 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\osal_example_collection_main.c" />
-    <ClCompile Include="..\..\code\osal_float_int_conv_test.c" />
-    <ClCompile Include="..\..\code\osal_int64_test.c" />
-    <ClCompile Include="..\..\code\osal_intser_test.c" />
-    <ClCompile Include="..\..\code\osal_json_compress_test.c" />
-    <ClCompile Include="..\..\code\osal_threads_example.c" />
-    <ClCompile Include="..\..\code\osal_threads_example_2.c" />
+    <ClCompile Include="..\..\code\certificates_example_main.c" />
+    <ClCompile Include="..\..\code\generate_certificate_request.c" />
+    <ClCompile Include="..\..\code\generate_own_server_certificate.c" />
+    <ClCompile Include="..\..\code\generate_root_certificate.c" />
+    <ClCompile Include="..\..\code\generate_root_key.c" />
+    <ClCompile Include="..\..\code\generate_server_key.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\osal_example_collection_main.h" />
+    <ClInclude Include="..\..\code\certificates_example_main.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

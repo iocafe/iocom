@@ -552,7 +552,7 @@ static osalStatus ioc_switchbox_socket_write(
 
     count = 0;
     if (n > 0) {
-        count = osal_ringbuf_put(&thiso->incoming, buf, n);
+        count = osal_ringbuf_put(&thiso->incoming, buf, (os_int)n);
         if (count) {
             ioc_switchbox_set_shared_select_event(thiso, OS_FALSE);
         }
@@ -616,7 +616,7 @@ static osalStatus ioc_switchbox_socket_read(
 
     count = 0;
     if (n > 0) {
-        count = osal_ringbuf_get(&thiso->outgoing, buf, n);
+        count = osal_ringbuf_get(&thiso->outgoing, buf, (os_int)n);
         if (count) {
             ioc_switchbox_set_shared_select_event(thiso, OS_FALSE);
         }
