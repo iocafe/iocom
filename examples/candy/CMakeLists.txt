@@ -17,6 +17,9 @@ if("${IDF_TARGET}" STREQUAL "esp32")
   # include build information common to all projects.
   include("${E_UP}/eosal-defs-espidf.txt")
 
+  # Build C code from JSON configuration
+  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+
   # Add include paths.
   include_directories("$ENV{E_ROOT}/iocom")
   include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
@@ -65,12 +68,8 @@ else()
   set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
   # Build C code from JSON configuration
-  if (WIN32)
-    execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-  else()
-    execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-  endif()
-
+  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+  
   # Include IO pin and communication signal configuration for this hardware.
   include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
   include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
