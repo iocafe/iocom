@@ -9,6 +9,7 @@ set(E_UP "../../../eosal/osbuild/cmakedefs")
 # Set build root environment variable E_ROOT
 include("${E_UP}/eosal-root-path.txt")
 
+# ESP32 microcontroller *****
 if("${IDF_TARGET}" STREQUAL "esp32")
   # ESP-IFD only: Include IDF project setup and declare the project.
   include($ENV{IDF_PATH}/tools/cmake/project.cmake)
@@ -18,18 +19,19 @@ if("${IDF_TARGET}" STREQUAL "esp32")
   include("${E_UP}/eosal-defs-espidf.txt")
 
   # Build C code from JSON configuration
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+#  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
 
   # Add include paths.
-  include_directories("$ENV{E_ROOT}/iocom")
-  include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
-  include_directories("$ENV{E_ROOT}/iocom/extensions/deviceinfo")
-  include_directories("$ENV{E_ROOT}/iocom/extensions/lighthouse")
-  include_directories("$ENV{E_ROOT}/iocom/extensions/gazerbeam")
-  include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
-  include_directories("$ENV{E_ROOT}/pins")
+#  include_directories("$ENV{E_ROOT}/iocom")
+#  include_directories("$ENV{E_ROOT}/iocom/extensions/nodeconf")
+#  include_directories("$ENV{E_ROOT}/iocom/extensions/deviceinfo")
+#  include_directories("$ENV{E_ROOT}/iocom/extensions/lighthouse")
+#  include_directories("$ENV{E_ROOT}/iocom/extensions/gazerbeam")
+#  include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
+#  include_directories("$ENV{E_ROOT}/pins")
 #  include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
 
+# Raspberry, Linux, Windows *****
 else()
   project(${E_PROJECT})
 
@@ -37,9 +39,7 @@ else()
   include("${E_UP}/eosal-defs.txt")
 
   # Select hardware setup to use (IO pins, etc)
-  if ($ENV{E_OS} STREQUAL "esp32")
-    set(E_HW "espcam")
-  elseif ($ENV{E_OSVER} STREQUAL "pi")
+  if ($ENV{E_OSVER} STREQUAL "pi")
     set(E_HW "picam")
   else()
     set(E_HW "pc")

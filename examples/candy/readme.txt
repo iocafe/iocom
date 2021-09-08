@@ -13,7 +13,7 @@ Beewrap is the PCB to run ESP32 for this example
 ESP32 specific
 ***************
 On ESP32 WiFi network and other connection settings can be configured either using "gazerbeam" library (Android phone's
-flash light) or throuhgh serial port. To use gazerbeam, the IO device must be either equipped with gazerbeam 
+flash light) or through serial port. To use gazerbeam, the IO device must be either equipped with gazerbeam 
 electronics to set wifi network name/password.
 
 Loading program to flash for the first time: 
