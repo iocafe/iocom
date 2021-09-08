@@ -71,7 +71,7 @@ static osalStatus ioc_switchbox_setup_ring_buffer(
   @param   con Pointer to static connection structure, or OS_NULL to allocate connection
            object dynamically or from pool.
   @param   root Pointer to the root object.
-  @return  Pointer to initialized connection object. OE_NULL if the function failed (memory
+  @return  Pointer to initialized connection object. OS_NULL if the function failed (memory
            allocation fails).
 
 ****************************************************************************************************

@@ -596,7 +596,7 @@ void ioc_memory_block_get_string_param(
   @param   buf Pointer to source data.
   @param   n Number of bytes to write.
   @param   flags: Bit fields.
-           - IOC_MBLK_STRING buf is string, determine length with oe_strlen and copy only
+           - IOC_MBLK_STRING buf is string, determine length with os_strlen and copy only
              string. If string is shorter than n, the rest is filled with zeroes.
              If string is longer than n, the string is truncated. The resulting string
              in memory block always terminated with '\0'.
