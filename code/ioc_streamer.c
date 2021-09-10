@@ -530,8 +530,7 @@ static osalStatus ioc_streamer_device_write(
             streamer->step = IOC_SSTEP_TRANSFER_DATA;
             os_get_timer(&streamer->mytimer);
             osal_trace3("IOC_SSTEP_TRANSFER_DATA (SEND)");
-            /* continues... */
-            __attribute__ ((fallthrough));
+            /* fall through */
 
         case IOC_SSTEP_TRANSFER_DATA:
             if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED) || flags & OSAL_STREAM_INTERRUPT)
@@ -714,8 +713,7 @@ static osalStatus ioc_streamer_device_read(
             streamer->step = IOC_SSTEP_TRANSFER_DATA;
             os_get_timer(&streamer->mytimer);
             osal_trace3("IOC_SSTEP_TRANSFER_DATA (RECEIVE)");
-            /* continues... */
-            __attribute__ ((fallthrough));
+            /* fall through */
 
         case IOC_SSTEP_TRANSFER_DATA:
             if ((cmd != IOC_STREAM_RUNNING && cmd != IOC_STREAM_COMPLETED) ||
@@ -896,8 +894,7 @@ static osalStatus ioc_streamer_controller_write(
             }
             streamer->step = IOC_SSTEP_TRANSFER_DATA;
             osal_trace3("IOC_SSTEP_TRANSFER_DATA (SEND)");
-            /* continues... */
-            __attribute__ ((fallthrough));
+            /* fall through */
 
         case IOC_SSTEP_TRANSFER_DATA:
             if (state != IOC_STREAM_RUNNING || flags & OSAL_STREAM_INTERRUPT)
@@ -1125,8 +1122,7 @@ static osalStatus ioc_streamer_controller_read(
             }
 
             streamer->step = IOC_SSTEP_TRANSFER_DONE;
-            /* continues ... */
-            __attribute__ ((fallthrough));
+            /* fall through */
 
         case IOC_SSTEP_TRANSFER_DONE:
             ioc_set(signals->cmd, IOC_STREAM_IDLE);

@@ -103,7 +103,7 @@ osalStatus osal_main(
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.subdirectory = device_name;
-    os_persistent_initialze(&persistentprm);
+    os_persistent_initialize(&persistentprm);
 
     /* Initialize communication root and dymanic structure data root objects.
      * This demo uses dynamic signal configuration.

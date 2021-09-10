@@ -141,7 +141,7 @@ osalStatus osal_main(
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.subdirectory = IOBOARD_DEVICE_NAME;
-    os_persistent_initialze(&persistentprm);
+    os_persistent_initialize(&persistentprm);
 
     /* If we are using devicedir for development testing, initialize.
      */

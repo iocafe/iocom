@@ -45,7 +45,7 @@ osalStatus osal_main(
      */
     os_memclear(&persistentprm, sizeof(persistentprm));
     persistentprm.subdirectory = "exampledata";
-    os_persistent_initialze(&persistentprm);
+    os_persistent_initialize(&persistentprm);
 
     /* Initialize TLS library.
      */

@@ -70,7 +70,7 @@ osalStatus AbstractApplication::init_application_basics(
         }
     }
 #endif
-    os_persistent_initialze(&persistentprm);
+    os_persistent_initialize(&persistentprm);
 
     /* Initialize communication root object.
      */
