@@ -63,7 +63,8 @@ void ioc_make_authentication_frame(
         *password;
 
     os_int
-        device_nr;
+        device_nr,
+        send_device_nr;
 
     root = con->link.root;
 
@@ -101,9 +102,10 @@ void ioc_make_authentication_frame(
 #endif
 
     ioc_msg_setstr(user_name, &p);
-    ioc_msg_set_uint(device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0,
+    send_device_nr = device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0;
+    ioc_msg_set_uint(send_device_nr,
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
-    if (device_nr == IOC_AUTO_DEVICE_NR && (con->flags & IOC_SOCKET)) {
+    if (send_device_nr == 0 && (con->flags & IOC_SOCKET)) {
 #if OSAL_SECRET_SUPPORT
         os_memcpy(p, osal_global->saved.unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
 #else
