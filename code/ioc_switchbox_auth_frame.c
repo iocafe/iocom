@@ -130,9 +130,9 @@ static void ioc_make_switchbox_authentication_frame(
         *password;
 
     os_int
+        send_device_nr,
         content_bytes,
         used_bytes;
-
 
     os_ushort
         crc;
@@ -173,8 +173,17 @@ static void ioc_make_switchbox_authentication_frame(
 #endif
 
     ioc_msg_setstr(user_name, &p);
-    ioc_msg_set_uint(0 /* device_nr */,
+    send_device_nr = 0;
+    ioc_msg_set_uint(send_device_nr,
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
+    if (send_device_nr == 0 /* switchbox always IOC_SOCKET */) {
+#if OSAL_SECRET_SUPPORT
+        os_memcpy(p, osal_global->saved.unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
+#else
+        os_memclear(p, OSAL_UNIQUE_ID_BIN_SZ);
+#endif
+        p += OSAL_UNIQUE_ID_BIN_SZ;
+    }
     ioc_msg_setstr(network_name, &p);
 
     password = osal_str_empty;
@@ -426,6 +435,11 @@ static osalStatus ioc_switchbox_parse_authentication_frame(
         osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
         os_strncat(user.user_name, nbuf, IOC_DEVICE_ID_SZ);
     }
+    else { /* Always IOC_SOCKET */
+        os_char unique_id_bin[OSAL_UNIQUE_ID_BIN_SZ];
+        os_memcpy(unique_id_bin, p, OSAL_UNIQUE_ID_BIN_SZ);
+        p += OSAL_UNIQUE_ID_BIN_SZ;
+    }
 
     s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
     if (s) return OSAL_STATUS_FAILED;
@@ -601,7 +615,7 @@ void ioc_release_allowed_networks(
   of allowed networks.
 
   @param   con Connection structure pointer.
-  @param   flags Required privileges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrarot.
+  @param   flags Required privileges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrator.
   @return  OS_TRUE if network is authorized to proceed, OS_FALSE if not.
 
 ****************************************************************************************************

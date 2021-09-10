@@ -1,7 +1,7 @@
 /**
 
   @file    ioc_compress.h
-  @brief   Frame data compression and uncomression.
+  @brief   Frame data compression and uncompression.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021
@@ -21,7 +21,7 @@
 /** 
 ****************************************************************************************************
 
-  @name Compression and uncomression functions
+  @name Compression and uncompression functions
 
   The ioc_compress() function compressess data from source buffer into destination buffer.
 

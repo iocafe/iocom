@@ -103,7 +103,7 @@ osalStatus ioc_establish_serial_connection(
                 /* If last character  received is CONNECT_REPLY character,
                    then send CONFIRM character and start wait for CONFIRM_REPLY.
                  */
-                if (n_read >= 1 && n_read < sizeof(buf))
+                if (n_read >= 1 && n_read < (os_memsz)sizeof(buf))
                     if (buf[n_read-1] == IOC_SERIAL_CONNECT_REPLY)
                 {
                     /* Send confirm character.
@@ -187,7 +187,7 @@ osalStatus ioc_establish_serial_connection(
                 /* If last character received is CONNECT character, then send
                    CONNECT_REPLY character and start wait for CONFIRM.
                  */
-                if (n_read >= 1 && n_read < sizeof(buf))
+                if (n_read >= 1 && n_read < (os_memsz)sizeof(buf))
                     if (buf[n_read-1] == IOC_SERIAL_CONNECT)
                 {
                     /* Send connect reply character.

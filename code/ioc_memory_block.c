@@ -1473,6 +1473,7 @@ void ioc_byte_ordered_copy(
 
     }
 #else
+    OSAL_UNUSED(type_sz);
     os_memcpy(buf, p, total_sz);
 #endif
 }

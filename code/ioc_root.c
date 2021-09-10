@@ -116,7 +116,6 @@ void ioc_release_root(
     root->callback_func = OS_NULL;
 #endif
 
-
 #if OSAL_MULTITHREAD_SUPPORT
 #if OSAL_SOCKET_SUPPORT
     /* Terminate all end point worker threads.

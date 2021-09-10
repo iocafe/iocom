@@ -1,7 +1,7 @@
 /**
 
   @file    ioc_compress.c
-  @brief   Frame data compression and uncomression.
+  @brief   Frame data compression and uncompression.
   @author  Pekka Lehtikoski
   @version 1.0
   @date    26.4.2021

@@ -395,7 +395,7 @@ void ioc_add_allowed_network(
 
     /* If we already got this network, just "or" the flags in.
      */
-    count  = allowed_networks->n_networs;
+    count  = allowed_networks->n_networks;
     for (i = 0; i < count; i++)
     {
         if (!os_strcmp(network_name, allowed_networks->network[i].network_name))
@@ -425,7 +425,7 @@ void ioc_add_allowed_network(
 
     /* Store name and flags of the added network and increment number of networks.
      */
-    n = allowed_networks->network + allowed_networks->n_networs++;
+    n = allowed_networks->network + allowed_networks->n_networks++;
     os_strncpy(n->network_name, network_name, IOC_NETWORK_NAME_SZ);
     n->flags = flags;
 }
@@ -466,7 +466,7 @@ void ioc_release_allowed_networks(
   of allowed networks.
 
   @param   con Connection structure pointer.
-  @param   flags Required privileges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrarot.
+  @param   flags Required privileges, 0 for normal user, IOC_AUTH_ADMINISTRATOR for administrator.
   @return  OS_TRUE if network is authorized to proceed, OS_FALSE if not.
 
 ****************************************************************************************************
@@ -491,7 +491,7 @@ os_boolean ioc_is_network_authorized(
     /* If we already got this network, just "or" the flags in.
      */
     networks = con->allowed_networks.network;
-    count = con->allowed_networks.n_networs;
+    count = con->allowed_networks.n_networks;
     for (i = 0; i < count; i++)
     {
         if (!os_strcmp(network_name, networks[i].network_name))

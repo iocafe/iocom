@@ -92,7 +92,7 @@ iocAllowedNetwork;
 typedef struct iocAllowedNetworkConf
 {
     iocAllowedNetwork *network;
-    os_int n_networs;
+    os_int n_networks;
 
     /** Number of bytes allocated for network array.
      */

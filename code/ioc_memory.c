@@ -135,7 +135,7 @@ os_char *ioc_malloc(
 
     /* We cannot allocate smaller memory blocks than free block size.
      */
-    osal_debug_assert(request_bytes >= sizeof(iocFreeBlk));
+    osal_debug_assert(request_bytes >= (os_memsz)sizeof(iocFreeBlk));
 
     /* If no static pool, use default memory allocation function.
      */
@@ -145,6 +145,8 @@ os_char *ioc_malloc(
         if (flags & IOC_PREFER_PSRAM) {
             return osal_psram_alloc(request_bytes, allocated_bytes);
         }
+#else
+        OSAL_UNUSED(flags);
 #endif
         return os_malloc(request_bytes, allocated_bytes);
     }
@@ -230,6 +232,8 @@ void ioc_free(
             osal_psram_free(memory_block, bytes);
             return;
         }
+#else
+        OSAL_UNUSED(flags);
 #endif
         os_free(memory_block, bytes);
         return;
@@ -237,7 +241,7 @@ void ioc_free(
 
     /* Make sure that free block information can fit. This limits minimum allocation size.
      */
-    osal_debug_assert(bytes >= sizeof(iocFreeBlk));
+    osal_debug_assert(bytes >= (os_memsz)sizeof(iocFreeBlk));
 
     /* Join the block to structure of free blocks. Try first block of same size.
      */

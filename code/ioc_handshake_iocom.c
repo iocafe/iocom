@@ -34,6 +34,7 @@ static os_memsz ioc_load_iocom_trust_certificate(
     os_memsz cert_buf_sz,
     void *context)
 {
+    OSAL_UNUSED(cert_buf);
     return 0;
 }
 
