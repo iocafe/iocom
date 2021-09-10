@@ -212,7 +212,7 @@ osalStatus ioc_process_received_authentication_frame(
 #endif
 
     root = con->link.root;
-    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
+    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSFRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
 
     os_memclear(&user, sizeof(user));

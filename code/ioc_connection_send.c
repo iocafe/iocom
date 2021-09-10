@@ -406,7 +406,7 @@ static void ioc_make_mblk_info_frame(
        we know (and trust) that it fits within one frame.
      */
     p = start = (os_uchar*)con->frame_out.buf + ptrs.header_sz;
-    *(p++) = IOC_SYSRAME_MBLK_INFO;
+    *(p++) = IOC_SYSFRAME_MBLK_INFO;
     iflags = p; /* version, for future additions (only 1 bit left for version) + flags */
     *(p++) = 0;
 

@@ -404,7 +404,7 @@ osalStatus ioc_process_received_mbinfo_frame(
         iflags,
         *p; /* keep as unsigned */
 
-    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSRAME_MBLK_INFO byte. */
+    p = (os_uchar*)data + 1; /* Skip system frame IOC_SYSFRAME_MBLK_INFO byte. */
     iflags = (os_uchar)*(p++);
     os_memclear(&mbinfo, sizeof(mbinfo));
     mbinfo.device_nr = ioc_msg_get_uint(&p,

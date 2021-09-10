@@ -533,7 +533,7 @@ static osalStatus ioc_process_received_system_frame(
     {
         /* Memory block information received.
          */
-        case IOC_SYSRAME_MBLK_INFO:
+        case IOC_SYSFRAME_MBLK_INFO:
             return ioc_process_received_mbinfo_frame(con, mblk_id, data);
 
         /* Device authentication data received.

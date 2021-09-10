@@ -208,7 +208,7 @@ iocTransportEnum;
  */
 typedef enum
 {
-    IOC_SYSRAME_MBLK_INFO = 1,
+    IOC_SYSFRAME_MBLK_INFO = 1,
     IOC_AUTHENTICATION_DATA = 2,
     IOC_REMOVE_MBLK_REQUEST = 3
 }
