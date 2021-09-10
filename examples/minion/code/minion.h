@@ -26,7 +26,7 @@
 
 struct pinsPhoto;
 
-/* Gazerbeamm library enables wifi configuration by Android phone's flash light. The library
+/* Gazerbeam library enables wifi configuration by Android phone's flash light. The library
    if used if "gazerbeam" input in pins_io.json.
  */
 #ifndef IOCOM_USE_GAZERBEAM

@@ -18,7 +18,7 @@
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_SOCKET
 #include "minion.h"
 
-/* Gazerbeamm enables wifi configuration by Android phone's flash light */
+/* Gazerbeam enables wifi configuration by Android phone's flash light */
 #if IOCOM_USE_GAZERBEAM
     #include "gazerbeam.h"
     static GazerbeamReceiver gazerbeam;

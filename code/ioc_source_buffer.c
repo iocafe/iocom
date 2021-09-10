@@ -68,7 +68,7 @@ iocSourceBuffer *ioc_initialize_source_buffer(
      */
     ioc_lock(root);
 
-    sbuf = (iocSourceBuffer*)ioc_malloc(root, sizeof(iocSourceBuffer), OS_NULL);
+    sbuf = (iocSourceBuffer*)ioc_malloc(root, sizeof(iocSourceBuffer), OS_NULL, IOC_DEFAULT_ALLOC);
     if (sbuf == OS_NULL)
     {
         ioc_unlock(root);
@@ -90,10 +90,10 @@ iocSourceBuffer *ioc_initialize_source_buffer(
         }
 #endif
 
-        sbuf->syncbuf.buf = ioc_malloc(root, 2 * (os_memsz)sbuf->syncbuf.nbytes, OS_NULL);
+        sbuf->syncbuf.buf = ioc_malloc(root, 2 * (os_memsz)sbuf->syncbuf.nbytes, OS_NULL, IOC_PREFER_PSRAM);
         if (sbuf->syncbuf.buf == OS_NULL)
         {
-            ioc_free(root, sbuf, sizeof(iocSourceBuffer));
+            ioc_free(root, sbuf, sizeof(iocSourceBuffer), IOC_DEFAULT_ALLOC);
             ioc_unlock(root);
             return OS_NULL;
         }
@@ -237,14 +237,14 @@ void ioc_release_source_buffer(
         sbuf->clink.con->sbuf.current = OS_NULL;
     }
 
-    ioc_free(root, sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes);
+    ioc_free(root, sbuf->syncbuf.buf, 2 * sbuf->syncbuf.nbytes, IOC_PREFER_PSRAM);
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging).
      */
 #if OSAL_DEBUG
     os_memclear(sbuf, sizeof(iocSourceBuffer));
 #endif
-    ioc_free(root, sbuf, sizeof(iocSourceBuffer));
+    ioc_free(root, sbuf, sizeof(iocSourceBuffer), IOC_DEFAULT_ALLOC);
 
     /* End syncronization.
      */

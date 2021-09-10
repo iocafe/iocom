@@ -294,12 +294,12 @@ osalStatus ioc_compress_brick(
     iocBrickHdr *dhdr, dhdr_tmp;
     os_uchar *buf;
     os_memsz sz, buf_sz;
-    os_int quality;
     os_ushort checksum;
     os_boolean lock_on = OS_FALSE;
     osalStatus s = OSAL_SUCCESS;
 #if OSAL_USE_JPEG_LIBRARY
     os_int row_nbytes;
+    os_int quality;
 #endif
 
     buf = OS_NULL;
@@ -321,23 +321,24 @@ osalStatus ioc_compress_brick(
     if (compression & IOC_JPEG)
     {
         /* If already compressed by camera (ESP32 cam already makes JPEG)
-            */
+         */
         if (hdr->compression & IOC_JPEG)
         {
-            quality = (hdr->compression & IOC_JPEG_QUALITY_MASK);
+            /* quality = (hdr->compression & IOC_JPEG_QUALITY_MASK);
             if (quality == 0) {
                 quality = ioc_get_jpeg_compression_quality(b);
-            }
+            } */
 
             if (data_sz + (os_memsz)sizeof(iocBrickHdr) > b->signals->buf->n) {
                 osal_debug_error("ioc_brick: buffer too small for JPEG");
                 s = OSAL_STATUS_OUT_OF_BUFFER;
-            }
-
-            ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, s, data_sz);
-            if (s) {
                 goto getout;
             }
+
+            /* ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, s, data_sz);
+            if (s) {
+                goto getout;
+            } */
 
             ioc_lock(b->root);
             lock_on = OS_TRUE;
@@ -507,11 +508,11 @@ osalStatus ioc_compress_brick_ring(
             */
         if (hdr->compression & IOC_JPEG)
         {
-            quality = (hdr->compression & IOC_JPEG_QUALITY_MASK);
+            /* quality = (hdr->compression & IOC_JPEG_QUALITY_MASK);
             if (quality == 0) {
                 quality = ioc_get_jpeg_compression_quality(b);
             }
-            ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, OSAL_SUCCESS, data_sz);
+            ioc_adjust_jpeg_compression_quality(b, format, w, h, quality, OSAL_SUCCESS, data_sz); */
 
             if (data_sz + (os_memsz)sizeof(iocBrickHdr) > buf_sz) {
                 osal_debug_error("ioc_brick: buffer too small for JPEG");
@@ -1261,12 +1262,12 @@ void ioc_adjust_jpeg_compression_quality(
     os_memsz compressed_sz)
 {
     const os_double adjust_rate = 0.2; /* How much to adjust quality per one call to this function 0 - 1.0 */
-    const os_double buffer_use_target = 0.80; /* Try to fill buffer up to 85% use */
+    const os_double buffer_use_target = 0.80; /* Try to fill buffer up to 80% use */
     const os_double compression_ratio_target = 0.05; /* Try to reduce bitmap size by 95% -> comressed size 5% of original */
     os_double ratio, calc_quality; //, lim , max_change;
     os_int max_sz, desired_sz, limit_sz;
 
-    /* If we failed, drop quality bu 30%.
+    /* If we failed, drop quality by 30%.
      */
     if (compression_status)
     {

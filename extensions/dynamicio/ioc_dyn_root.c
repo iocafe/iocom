@@ -520,10 +520,10 @@ static void ioc_resize_memory_block_by_info(
         {
             if (mblk->buf_allocated)
             {
-                newbuf = ioc_malloc(root, sz, OS_NULL);
+                newbuf = ioc_malloc(root, sz, OS_NULL, IOC_DEFAULT_ALLOC);
                 if (newbuf == OS_NULL) return;
                 os_memcpy(newbuf, mblk->buf, mblk->nbytes);
-                ioc_free(root, mblk->buf, mblk->nbytes);
+                ioc_free(root, mblk->buf, mblk->nbytes, IOC_DEFAULT_ALLOC);
                 mblk->buf = newbuf;
                 mblk->nbytes = sz;
             }

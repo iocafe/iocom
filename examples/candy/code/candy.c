@@ -19,7 +19,7 @@
 #define IOBOARD_CTRL_CON IOBOARD_CTRL_CONNECT_TLS
 #include "candy.h"
 
-/* Gazerbeamm enables wifi configuration by Android phone's flash light */
+/* Gazerbeam enables wifi configuration by Android phone's flash light */
 #if IOCOM_USE_GAZERBEAM
     #include "gazerbeam.h"
     static GazerbeamReceiver gazerbeam;
@@ -63,9 +63,13 @@ static dinfoResMonState dinfo_rm;
 /* Timer for sending */
 static os_timer send_timer;
 
-/* Memory pool. We use fixed size Pool. If the system has dynamic memory allocation, fixes
-   size memory pool will be allocate by initialization. This is preferrable so executable
-   size stays smaller. If we have no dynamic memory allocation, we just allocate a static pool.
+/* Memory pool. We need fixed size Pool. If the system has dynamic memory allocation, the
+   size memory pool can be allocate from heap at startup )ALLOCATE_STATIC_POOL define).
+   This is preferrable so executable size stays smaller and ESP32 imposes limits on
+   statically allocated RAM. If board has PSRAM, we may prefer to dynamically allocate 
+   memory as we go, to allow part of it to be allocated from PSRAM (ALLOCATE_ENABLE_PSRAM 
+   define).  
+   If we have no dynamic memory allocation, we just allocate a static pool.
    IOBOARD_MAX_CONNECTIONS is maximum number of sockets, etc, connections.
  */
 #define IOBOARD_MAX_CONNECTIONS 1
@@ -80,6 +84,7 @@ static os_timer send_timer;
         CANDY_DEXP_MBLK_SZ, CANDY_DIMP_MBLK_SZ))
 
 #define ALLOCATE_STATIC_POOL (OSAL_DYNAMIC_MEMORY_ALLOCATION == 0)
+#define ALLOCATE_ENABLE_PSRAM OSAL_PSRAM_SUPPORT
 
 #if ALLOCATE_STATIC_POOL
     static os_char ioboard_pool[MY_POOL_SZ];
@@ -216,8 +221,11 @@ osalStatus osal_main(
 
 #if ALLOCATE_STATIC_POOL
     prm.pool = ioboard_pool;
-#endif
     prm.pool_sz = MY_POOL_SZ;
+#endif
+#if ALLOCATE_ENABLE_PSRAM == 0
+    prm.pool_sz = MY_POOL_SZ;
+#endif    
     prm.device_info = ioapp_signals_config;
     prm.device_info_sz = sizeof(ioapp_signals_config);
     prm.conf_exp_mblk_sz = CANDY_CONF_EXP_MBLK_SZ;
@@ -581,18 +589,50 @@ static void ioboard_camera_callback(
     struct pinsPhoto *photo,
     void *context)
 {
+    iocBrickHdr *hdr;
+    os_int quality;
+    osalStatus s = OSAL_SUCCESS;
+    static os_boolean motion_detected;
     OSAL_UNUSED(context);
 
-    if (ioc_ready_for_new_brick(&video_output) && ioc_is_brick_connected(&video_output))
+    photo->iface->finalize_photo(photo);
+        
+    /* If already compressed by camera (ESP32 cam already makes JPEG)
+        */
+    hdr = photo->hdr;
+    if (hdr->compression & IOC_JPEG)
     {
-        photo->iface->finalize_photo(photo);
-        if (detect_motion(&motion, photo, &motion_prm, &motion_res) != OSAL_NOTHING_TO_DO)
+        quality = (hdr->compression & IOC_JPEG_QUALITY_MASK);
+        if (quality == 0) {
+            quality = ioc_get_jpeg_compression_quality(&video_output);
+        }
+
+        if (photo->data_sz + (os_memsz)sizeof(iocBrickHdr) > video_output.signals->buf->n) {
+            osal_debug_error("ioc_brick: buffer too small for JPEG");
+            s = OSAL_STATUS_OUT_OF_BUFFER;
+        }
+
+        ioc_adjust_jpeg_compression_quality(&video_output, photo->format,
+             photo->w, photo->h, quality, s, photo->data_sz);
+    }
+
+    if (detect_motion(&motion, photo, &motion_prm, &motion_res) != OSAL_NOTHING_TO_DO)
+    {
+        motion_detected = OS_TRUE;
+    }
+
+    if (motion_detected && s == OSAL_SUCCESS) {
+        if (ioc_ready_for_new_brick(&video_output) && ioc_is_brick_connected(&video_output))
         {
-            if (pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION) ==
-                OSAL_STATUS_OUT_OF_BUFFER)
-            {
+            s = pins_store_photo_as_brick(photo, &video_output, IOC_DEFAULT_COMPRESSION);
+            
+            if (s == OSAL_SUCCESS) {
+                motion_detected = OS_FALSE;
+            }
+            else if (s == OSAL_STATUS_OUT_OF_BUFFER) {
                 trigger_motion_detect(&motion);
             }
+
         }
     }
 }

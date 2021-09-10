@@ -72,7 +72,7 @@ iocConnection *ioc_initialize_connection(
 
     if (con == OS_NULL)
     {
-        con = (iocConnection*)ioc_malloc(root, sizeof(iocConnection), OS_NULL);
+        con = (iocConnection*)ioc_malloc(root, sizeof(iocConnection), OS_NULL, IOC_DEFAULT_ALLOC);
         if (con == OS_NULL)
         {
             ioc_unlock(root);
@@ -230,7 +230,7 @@ void ioc_release_connection(
 
     if (allocated)
     {
-        ioc_free(root, con, sizeof(iocConnection));
+        ioc_free(root, con, sizeof(iocConnection), IOC_DEFAULT_ALLOC);
     }
 
     /* End syncronization.
@@ -261,14 +261,14 @@ static void ioc_free_connection_bufs(
 
     if (con->frame_out.allocated)
     {
-        ioc_free(root, con->frame_out.buf, con->frame_sz);
+        ioc_free(root, con->frame_out.buf, con->frame_sz, IOC_DEFAULT_ALLOC);
         con->frame_out.allocated = OS_FALSE;
         con->frame_out.buf = OS_NULL;
     }
 
     if (con->frame_in.allocated)
     {
-        ioc_free(root, con->frame_in.buf, con->frame_sz);
+        ioc_free(root, con->frame_in.buf, con->frame_sz, IOC_DEFAULT_ALLOC);
         con->frame_in.allocated = OS_FALSE;
         con->frame_in.buf = OS_NULL;
     }
@@ -516,7 +516,7 @@ osalStatus ioc_connect(
     frame_out_buf = prm->frame_out_buf;
     if (frame_out_buf == OS_NULL)
     {
-        frame_out_buf = ioc_malloc(root, con->frame_sz, OS_NULL);
+        frame_out_buf = ioc_malloc(root, con->frame_sz, OS_NULL, IOC_DEFAULT_ALLOC);
         if (frame_out_buf == OS_NULL)
         {
             ioc_unlock(root);
@@ -532,7 +532,7 @@ osalStatus ioc_connect(
     frame_in_buf = prm->frame_in_buf;
     if (frame_in_buf == OS_NULL)
     {
-        frame_in_buf = ioc_malloc(root, con->frame_sz, OS_NULL);
+        frame_in_buf = ioc_malloc(root, con->frame_sz, OS_NULL, IOC_DEFAULT_ALLOC);
         if (frame_in_buf == OS_NULL)
         {
             ioc_free_connection_bufs(con);

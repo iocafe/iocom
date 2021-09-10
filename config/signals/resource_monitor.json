@@ -10,6 +10,7 @@
         "signals": [
           {"name": "rm_malloc", "type": "uint"},
           {"name": "rm_muse", "type": "uint"},
+          {"name": "rm_psalloc", "type": "uint"},
           {"name": "rm_threads", "type": "ushort"},
           {"name": "rm_events", "type": "ushort"},
           {"name": "rm_mutexes", "type": "ushort"},

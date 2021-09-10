@@ -80,7 +80,7 @@ osalStatus ioc_initialize_memory_block(
      */
     if (static_mblk == OS_NULL)
     {
-        mblk = (iocMemoryBlock*)ioc_malloc(root, sizeof(iocMemoryBlock), OS_NULL);
+        mblk = (iocMemoryBlock*)ioc_malloc(root, sizeof(iocMemoryBlock), OS_NULL, IOC_DEFAULT_ALLOC);
         if (mblk == OS_NULL)
         {
             ioc_unlock(root);
@@ -113,7 +113,7 @@ osalStatus ioc_initialize_memory_block(
 #endif
             nbytes = IOC_MIN_MBLK_SZ;
         }
-        buf = ioc_malloc(root, nbytes, OS_NULL);
+        buf = ioc_malloc(root, nbytes, OS_NULL, IOC_DEFAULT_ALLOC);
         mblk->buf_allocated = OS_TRUE;
     }
 
@@ -262,7 +262,7 @@ void ioc_release_memory_block(
      */
     if (mblk->buf_allocated)
     {
-        ioc_free(root, mblk->buf, mblk->nbytes);
+        ioc_free(root, mblk->buf, mblk->nbytes, IOC_DEFAULT_ALLOC);
     }
 
     /* Clear allocated memory indicate that is no longer initialized (for debugging and
@@ -273,7 +273,7 @@ void ioc_release_memory_block(
 
     if (allocated)
     {
-        ioc_free(root, mblk, sizeof(iocMemoryBlock));
+        ioc_free(root, mblk, sizeof(iocMemoryBlock), IOC_DEFAULT_ALLOC);
     }
 
     /* End syncronization.
@@ -1297,13 +1297,13 @@ osalStatus ioc_resize_mblk(
     }
 
     root = mblk->link.root;
-    newbuf = ioc_malloc(root, nbytes, OS_NULL);
+    newbuf = ioc_malloc(root, nbytes, OS_NULL, IOC_DEFAULT_ALLOC);
     if (newbuf == OS_NULL) return OSAL_STATUS_MEMORY_ALLOCATION_FAILED;
     os_memclear(newbuf + mblk->nbytes, nbytes - mblk->nbytes);
     if (mblk->buf)
     {
         os_memcpy(newbuf, mblk->buf, mblk->nbytes);
-        ioc_free(root, mblk->buf, mblk->nbytes);
+        ioc_free(root, mblk->buf, mblk->nbytes, IOC_DEFAULT_ALLOC);
     }
     mblk->buf = newbuf;
     mblk->nbytes = nbytes;

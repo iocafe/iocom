@@ -72,7 +72,7 @@ iocEndPoint *ioc_initialize_end_point(
 
     if (epoint == OS_NULL)
     {
-        epoint = (iocEndPoint*)ioc_malloc(root, sizeof(iocEndPoint), OS_NULL);
+        epoint = (iocEndPoint*)ioc_malloc(root, sizeof(iocEndPoint), OS_NULL, IOC_DEFAULT_ALLOC);
         if (epoint == OS_NULL)
         {
             ioc_unlock(root);
@@ -191,7 +191,7 @@ void ioc_release_end_point(
      */
     if (allocated)
     {
-        ioc_free(root, epoint, sizeof(iocEndPoint));
+        ioc_free(root, epoint, sizeof(iocEndPoint), IOC_DEFAULT_ALLOC);
     }
 
     /* End syncronization.

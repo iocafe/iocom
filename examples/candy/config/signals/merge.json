@@ -1,1 +1,1 @@
-{"merge": ["signals", "node_conf_wifi.json", "system_specs.json", "resource_monitor.json", "parameters-as-signals.json", "signals.json", "device_conf_signals_1k.json", "camera_flat24k_signals.json"]}
+{"merge": ["signals", "node_conf_wifi.json", "system_specs.json", "resource_monitor.json", "parameters-as-signals.json", "signals.json", "device_conf_signals_1k.json", "camera_flat64k_signals.json"]}

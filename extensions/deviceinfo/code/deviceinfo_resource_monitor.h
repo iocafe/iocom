@@ -26,6 +26,7 @@ typedef enum dinfoResMonSigEnum
 {
     IOC_DINFO_RM_MALLOC,
     IOC_DINFO_RM_MUSE,
+    IOC_DINFO_RM_PSALLOC,
     IOC_DINFO_RM_THREADS,
     IOC_DINFO_RM_EVENTS,
     IOC_DINFO_RM_MUTEXES,
@@ -83,6 +84,7 @@ dinfoResMonState;
     os_memclear(&sigs, sizeof(dinfoSystemSpecSigEnum)); \
     (sigs).sig[IOC_DINFO_RM_MALLOC] = &(staticsigs).exp.rm_malloc; \
     (sigs).sig[IOC_DINFO_RM_MUSE] = &(staticsigs).exp.rm_muse; \
+    (sigs).sig[IOC_DINFO_RM_PSALLOC] = &(staticsigs).exp.rm_psalloc; \
     (sigs).sig[IOC_DINFO_RM_THREADS] = &(staticsigs).exp.rm_threads; \
     (sigs).sig[IOC_DINFO_RM_EVENTS] = &(staticsigs).exp.rm_events; \
     (sigs).sig[IOC_DINFO_RM_MUTEXES] = &(staticsigs).exp.rm_mutexes; \

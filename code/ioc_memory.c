@@ -116,6 +116,10 @@ void ioc_release_memory_pool(
   @param   allocated_bytes Pointer to long integer into which to store the actual size of the
            allocated block (in bytes). The actual size is greater or equal to requested size.
            If actual size is not needed, this parameter can be set to OS_NULL.
+  @param   flags IOC_DEFAULT_ALLOC (0) for normal operation. Flag IOC_PREFER_PSRAM specifies
+           that memory is to be allocated from pseudo static RAM, if we have no pool and
+           PSRAM is available. If IOC_PREFER_PSRAM flag is given to ioc_malloc, it MUST
+           be given to corresponding IOC_FREE.
 
   @return  Pointer to the allocated memory block.
 
@@ -124,7 +128,8 @@ void ioc_release_memory_pool(
 os_char *ioc_malloc(
     iocRoot *root,
     os_memsz request_bytes,
-    os_memsz *allocated_bytes)
+    os_memsz *allocated_bytes,
+    os_int flags)
 {
     iocFreeBlk *b, *prevb, *r;
 
@@ -136,6 +141,11 @@ os_char *ioc_malloc(
      */
     if (root->pool == OS_NULL)
     {
+#if OSAL_PSRAM_SUPPORT
+        if (flags & IOC_PREFER_PSRAM) {
+            return osal_psram_alloc(request_bytes, allocated_bytes);
+        }
+#endif
         return os_malloc(request_bytes, allocated_bytes);
     }
 
@@ -193,6 +203,7 @@ alldone:
            the function does nothing.
   @param   bytes Size of memory block, either request_bytes given as argument or allocated_bytes
            returned by os_malloc() function.
+  @param   flags Give the same flags as were used to call ioc_malloc() to allocate the memory block.
 
   @return  None.
 
@@ -201,7 +212,8 @@ alldone:
 void ioc_free(
     iocRoot *root,
     void *memory_block,
-    os_memsz bytes)
+    os_memsz bytes,
+    os_int flags)
 {
     iocFreeBlk *b, *r;
 
@@ -213,6 +225,12 @@ void ioc_free(
      */
     if (root->pool == OS_NULL) 
     {
+#if OSAL_PSRAM_SUPPORT
+        if (flags & IOC_PREFER_PSRAM) {
+            osal_psram_free(memory_block, bytes);
+            return;
+        }
+#endif
         os_free(memory_block, bytes);
         return;
     }

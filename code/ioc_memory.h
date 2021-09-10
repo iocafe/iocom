@@ -21,6 +21,11 @@
 #define IOC_MEMORY_H_
 #include "iocom.h"
 
+/* FLags for ioc_malloc and ioc_free.
+ */
+#define IOC_DEFAULT_ALLOC 0
+#define IOC_PREFER_PSRAM 1
+
 /* Setup buffer to use as memory pool.
 */
 void ioc_set_memory_pool(
@@ -38,13 +43,15 @@ void ioc_release_memory_pool(
 os_char *ioc_malloc(
     iocRoot *root,
     os_memsz request_bytes,
-    os_memsz *allocated_bytes);
+    os_memsz *allocated_bytes,
+    os_int flags);
 
 /* Release a block of memory.
  */
 void ioc_free(
     iocRoot *root,
     void *memory_block,
-    os_memsz bytes);
+    os_memsz bytes,
+    os_int flags);
 
 #endif
