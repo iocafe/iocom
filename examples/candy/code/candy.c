@@ -598,7 +598,7 @@ static void ioboard_camera_callback(
     photo->iface->finalize_photo(photo);
         
     /* If already compressed by camera (ESP32 cam already makes JPEG)
-        */
+     */
     hdr = photo->hdr;
     if (hdr->compression & IOC_JPEG)
     {
@@ -632,7 +632,6 @@ static void ioboard_camera_callback(
             else if (s == OSAL_STATUS_OUT_OF_BUFFER) {
                 trigger_motion_detect(&motion);
             }
-
         }
     }
 }
