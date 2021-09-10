@@ -446,7 +446,7 @@ static osalStatus ioc_switchbox_parse_authentication_frame(
 #endif
 */
 
-    /* Check user autorization.
+    /* Check user authorization.
      */
 /*    if (root->authorization_func &&
         (con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))

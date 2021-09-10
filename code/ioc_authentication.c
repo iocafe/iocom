@@ -312,7 +312,7 @@ osalStatus ioc_process_received_authentication_frame(
     }
 
 #if IOC_AUTHENTICATION_CODE == IOC_FULL_AUTHENTICATION
-    /* Check user autorization.
+    /* Check user authorization.
      */
     if (root->authorization_func &&
         (con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION))
