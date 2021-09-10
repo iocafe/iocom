@@ -108,10 +108,10 @@ void ioc_make_authentication_frame(
         os_memcpy(p, osal_global->saved.unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
 #else
         os_memclear(p, OSAL_UNIQUE_ID_BIN_SZ);
-#endif        
+#endif
         p += OSAL_UNIQUE_ID_BIN_SZ;
     }
- 
+
     ioc_msg_setstr(network_name, &p);
 
     password = osal_str_empty;
@@ -266,17 +266,16 @@ osalStatus ioc_process_received_authentication_frame(
         osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
         os_strncat(user.user_name, nbuf, IOC_DEVICE_ID_SZ);
     }
-    else if (con->flags & IOC_SOCKET) {
-        os_char unique_id_bin[OSAL_UNIQUE_ID_BIN_SZ];
-        os_memcpy(unique_id_bin, p, OSAL_UNIQUE_ID_BIN_SZ);
-        p += OSAL_UNIQUE_ID_BIN_SZ;
-    }
-
 #else
     ioc_msg_get_uint(&p,
         auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
         auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
 #endif
+    if (device_nr == 0 && con->flags & IOC_SOCKET) {
+        os_char unique_id_bin[OSAL_UNIQUE_ID_BIN_SZ];
+        os_memcpy(unique_id_bin, p, OSAL_UNIQUE_ID_BIN_SZ);
+        p += OSAL_UNIQUE_ID_BIN_SZ;
+    }
 
     s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
     if (s) return s;
