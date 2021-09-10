@@ -187,7 +187,7 @@ void ioc_make_authentication_frame(
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate unauthenticated device or user,
+  @return  OSAL_SUCCESS if successfull. Other values indicate unauthenticated device or user,
            or a corrupted frame.
 
 ****************************************************************************************************

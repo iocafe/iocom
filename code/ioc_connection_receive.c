@@ -442,7 +442,7 @@ osalStatus ioc_read_frame(
   @param   flags Bits IOC_DELTA_ENCODED, IOC_COMPRESESSED and IOC_SYNC_COMPLETE are
            important here.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate corrupted frame.
+  @return  OSAL_SUCCESS if successfull. Other values indicate corrupted frame.
 
 ****************************************************************************************************
 */
@@ -520,7 +520,7 @@ static osalStatus ioc_process_received_data_frame(
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
+  @return  OSAL_SUCCESS if successfull. Other values indicate a corrupted frame.
 
 ****************************************************************************************************
 */
@@ -576,7 +576,7 @@ static osalStatus ioc_process_received_system_frame(
   @param   flags Bits IOC_DELTA_ENCODED, IOC_COMPRESESSED and IOC_SYNC_COMPLETE are
            important here.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate corrupted frame.
+  @return  OSAL_SUCCESS if successfull. Other values indicate corrupted frame.
 
 ****************************************************************************************************
 */

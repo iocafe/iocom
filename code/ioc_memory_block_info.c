@@ -389,7 +389,7 @@ void ioc_mbinfo_mblk_is_deleted(
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
+  @return  OSAL_SUCCESS if successfull. Other values indicate a corrupted frame.
 
 ****************************************************************************************************
 */

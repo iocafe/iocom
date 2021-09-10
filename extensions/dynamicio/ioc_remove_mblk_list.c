@@ -267,7 +267,7 @@ osalStatus ioc_make_remove_mblk_req_frame(
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-  @return  OSAL_SUCCESS if succesfull. Other values indicate a corrupted frame.
+  @return  OSAL_SUCCESS if successfull. Other values indicate a corrupted frame.
 
 ****************************************************************************************************
 */
