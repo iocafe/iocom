@@ -107,9 +107,7 @@ static os_uint ioc_get_reserved_autonr(
     d = &a->saved;
 
     if (!a->data_loaded) {
-        if (OSAL_IS_ERROR(ioc_load_autonr_data(d))) {
-            d->reserve_auto_device_nr = IOC_RESERVED_AUTO_DEVICE_NR_START;
-        }
+        ioc_load_autonr_data(d);
         a->data_loaded = OS_TRUE;
     }
 
@@ -127,21 +125,31 @@ static os_uint ioc_get_reserved_autonr(
     if (d->reserve_auto_device_nr < IOC_RESERVED_AUTO_DEVICE_NR_START ||
         d->reserve_auto_device_nr > IOC_AUTO_DEVICE_NR_START - 2)
     {
-        d->reserve_auto_device_nr = osal_rand(IOC_RESERVED_AUTO_DEVICE_NR_START, IOC_AUTO_DEVICE_NR_START - 2);
+        d->reserve_auto_device_nr = IOC_RESERVED_AUTO_DEVICE_NR_START;
     }
 
     /* Select which reservation table row to use. Start from smallest, normally reservations numbers
        are incremented (unless we flood whole reservation number space, which should not be possible).
+       Roll around is handled anyhow.
      */
     id = d->device_nr[0];
+    if (id < d->reserve_auto_device_nr) {
+        id += IOC_AUTO_DEVICE_NR_START;
+    }
     smallest_i = 0;
-    for (i = 1; i<IOC_NRO_SAVED_DEVICE_NRS; i++) {
-        if (d->device_nr[i] < id) {
+    for (i = 0; i<IOC_NRO_SAVED_DEVICE_NRS; i++) {
+        if (d->device_nr[i] >= d->reserve_auto_device_nr) {
+            if (d->device_nr[i] < id) {
+                smallest_i = i;
+                id = d->device_nr[i];
+            }
+        }
+        if (d->device_nr[i] + IOC_AUTO_DEVICE_NR_START < id) {
             smallest_i = i;
-            id = d->device_nr[i];
-            if (id == 0) break;
+            id = d->device_nr[i] + IOC_AUTO_DEVICE_NR_START;
         }
     }
+
     d->device_nr[smallest_i] = d->reserve_auto_device_nr++;
     os_memcpy(d->unique_id_bin[smallest_i], unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
 
