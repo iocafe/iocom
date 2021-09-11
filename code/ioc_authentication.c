@@ -99,7 +99,8 @@ void ioc_make_authentication_message(
         user_name = user_name_buf;
     }
 #endif
-
+    /* Set device/user name, device number and optionally the device's unqiue ID.
+     */
     ioc_msg_setstr(user_name, &p);
     send_device_nr = device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0;
     ioc_msg_set_uint(send_device_nr,
@@ -113,24 +114,24 @@ void ioc_make_authentication_message(
 #endif
     ioc_msg_setstr(network_name, &p);
 
+    /* If this is client end of a secured connection, send password.
+     */
     password = osal_str_empty;
 #if IOC_AUTHENTICATION_CODE
     if ((con->flags & (IOC_LISTENER|IOC_SECURE_CONNECTION)) == IOC_SECURE_CONNECTION)
     {
-        /* If we have password given by user
+        /* If we have user given password (override), then use it. Otherwise
+         * use device's password.
          */
-        if (con->password_override[0] != '\0')
-        {
+        if (con->password_override[0] != '\0') {
             password = con->password_override;
         }
-        else
-        {
+        else {
             password = root->password;
         }
         /* If we do not have client certificate chain, set flag to indicate it.
          */
-        if (osal_get_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0))
-        {
+        if (osal_get_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0)) {
             auth_flags |= IOC_AUTH_CERTIFICATE_REQUEST;
         }
     }
@@ -139,29 +140,32 @@ void ioc_make_authentication_message(
 
     /* Set connect up and bidirectional flags.
      */
-    if (con->flags & IOC_CONNECT_UP)
-    {
+    if (con->flags & IOC_CONNECT_UP) {
         auth_flags |= IOC_AUTH_CONNECT_UP;
     }
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-    if (con->flags & IOC_BIDIRECTIONAL_MBLKS)
-    {
+    if (con->flags & IOC_BIDIRECTIONAL_MBLKS) {
         auth_flags |= IOC_AUTH_BIDIRECTIONAL_COM;
     }
 #endif
-    if (con->flags & IOC_CLOUD_CONNECTION)
-    {
+    if (con->flags & IOC_CLOUD_CONNECTION) {
         auth_flags |= IOC_AUTH_CLOUD_CON;
     }
 
+    /* Set authentication flags.
+     */
     *auth_flags_ptr = auth_flags;
 
     /* Finish outgoing frame with data size, frame number, and optional checksum. Quit here
        if transmission is blocked by flow control.
      */
-    if (ioc_finish_frame(con, &ptrs, start, p))
+    if (ioc_finish_frame(con, &ptrs, start, p)) {
         return;
+    }
 
+    /* Mark that authentication message was successfully sent, and communication may proceed
+       to next step.
+     */
     con->authentication_sent = OS_TRUE;
 }
 
@@ -173,12 +177,11 @@ void ioc_make_authentication_message(
   @anchor ioc_process_received_authentication_message
 
   The ioc_process_received_authentication_message() function is called once an authentication
-  message has been received.
-  The authentication data identifies the device (device name, number and network name), optionally
-  user name and password for the connection.
+  message has been received. The authentication data identifies the device (device/user name,
+  number and network name), optionally user name and password for the connection.
   The user authentication can be enabled by calling ioc_enable_user_authentication() function.
 
-  The secondary task of authentication message is to inform server side of the accepted connection
+  Second task of authentication message is to inform server side of the accepted connection
   is upwards or downwards in IO device hierarchy.
 
   @param   con Pointer to the connection object.
@@ -218,37 +221,30 @@ osalStatus ioc_process_received_authentication_message(
      */
     if (con->flags & IOC_LISTENER)
     {
-        if (auth_flags & IOC_AUTH_CONNECT_UP)
-        {
+        if (auth_flags & IOC_AUTH_CONNECT_UP) {
             con->flags &= ~IOC_CONNECT_UP;
         }
-        else
-        {
-            if ((con->flags & IOC_CONNECT_UP) == 0)
-            {
+        else {
+            if ((con->flags & IOC_CONNECT_UP) == 0) {
                 con->flags |= IOC_CONNECT_UP;
                 ioc_add_con_to_global_mbinfo(con);
             }
         }
 
 #if IOC_BIDIRECTIONAL_MBLK_CODE
-        if (auth_flags & IOC_AUTH_BIDIRECTIONAL_COM)
-        {
+        if (auth_flags & IOC_AUTH_BIDIRECTIONAL_COM) {
             con->flags |= IOC_BIDIRECTIONAL_MBLKS;
         }
-        else
-        {
+        else {
             con->flags &= ~IOC_BIDIRECTIONAL_MBLKS;
         }
 #endif
     }
-    if (auth_flags & IOC_AUTH_CLOUD_CON)
-    {
+    if (auth_flags & IOC_AUTH_CLOUD_CON) {
         con->flags |= IOC_CLOUD_CONNECTION;
     }
 
-    if (auth_flags & IOC_AUTH_CERTIFICATE_REQUEST)
-    {
+    if (auth_flags & IOC_AUTH_CERTIFICATE_REQUEST) {
         con->flags |= IOC_NO_CERT_CHAIN;
     }
 
@@ -283,12 +279,10 @@ osalStatus ioc_process_received_authentication_message(
 #if OSAL_SECRET_SUPPORT
     s = ioc_msg_getstr(tmp_password, IOC_PASSWORD_SZ, &p);
     if (s) return s;
-    if (tmp_password[0])
-    {
+    if (tmp_password[0]) {
         osal_hash_password(user.password, tmp_password, IOC_PASSWORD_SZ);
     }
-    else
-    {
+    else {
         os_strncpy(user.password, tmp_password, IOC_PASSWORD_SZ);
     }
 #else
@@ -321,7 +315,7 @@ osalStatus ioc_process_received_authentication_message(
     }
 #endif
 
-    /** If we are automatically setting for a device (root network name is "*" or ""
+    /* If we are automatically setting for a device (root network name is "*" or "")
      */
     if (!os_strcmp(root->network_name, osal_str_asterisk) || root->network_name[0] == '\0')
     {
@@ -329,6 +323,9 @@ osalStatus ioc_process_received_authentication_message(
         ioc_set_network_name(root);
     }
 
+    /* Mark that authentication message was received and accepted, and communication may proceed
+       to next step.
+     */
     con->authentication_received = OS_TRUE;
     return OSAL_SUCCESS;
 }
