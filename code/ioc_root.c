@@ -59,7 +59,7 @@ void ioc_initialize_root(
     /* Start automatic device enumeration from 10001 and start unique memory block
        identifiers from 8.
      */
-    root->auto_device_nr = IOC_AUTO_DEVICE_NR + 1;
+    root->autonr.auto_device_nr = IOC_AUTO_DEVICE_NR_START + 1;
     root->next_unique_mblk_id = IOC_MIN_UNIQUE_ID;
 
     /* Mark root structure as initialized (for debugging).
@@ -499,60 +499,6 @@ void ioc_new_root_event(
 #endif
 }
 #endif
-
-
-/**
-****************************************************************************************************
-
-  @brief Create unique identifier for device.
-  @anchor ioc_get_unique_mblk_id
-
-  Some devices, like UI clients, games, etc, may not have device number associate with them
-  and return IOC_AUTO_DEVICE_NR as device number to controller. Controller uses this
-  function to assign unique device ID for the device.
-
-  ioc_lock() must be on before calling this function.
-
-  @param   root Pointer to the root object.
-  @param   unique_id_bin Unique ifentifier of remote device, OS_NULL if not available.
-  @return  Unique device identifier IOC_AUTO_DEVICE_NR + 1 .. 0xFFFFFFFF.
-
-****************************************************************************************************
-*/
-os_uint ioc_get_unique_device_id(
-    iocRoot *root,
-    os_uchar *unique_id_bin)
-{
-    iocConnection *con;
-    os_int id;
-    os_int count;
-
-    /* Just return next number
-     */
-    if (root->auto_device_nr)
-    {
-        return root->auto_device_nr++;
-    }
-
-    /* We run out of numbers. Strange, this can be possible only if special effort is
-       made for this to happen. Handle anyhow.
-     */
-    count = 100000;
-    while (count--)
-    {
-        id = (os_int)osal_rand(IOC_AUTO_DEVICE_NR + 1, 0x7FFFFFFFL);
-        for (con = root->con.first;
-             con;
-             con = con->link.next)
-        {
-            if (id == con->auto_device_nr) break;
-        }
-        if (con == OS_NULL) return id;
-    }
-
-    osal_debug_error("Out of numbers (devices)");
-    return 1;
-}
 
 
 /**

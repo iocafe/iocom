@@ -607,7 +607,10 @@ typedef struct iocConnection
     os_char cloud_name[OSAL_NETWORK_NAME_SZ];
 #endif
 
-#if OSAL_SECRET_SUPPORT
+#if IOC_AUTO_DEVICE_NR_SUPPORT
+    /** Remote device's unique device ID. This is used at controller end for automatic
+        client device enumeration to reassign the same device number after reconnecting it.
+     */
     os_uchar unique_id_bin[OSAL_UNIQUE_ID_BIN_SZ];
 #endif
 
@@ -723,7 +726,7 @@ typedef struct iocConnection
 
     /** Automatic device number, used if device number is 0
      */
-    os_int auto_device_nr;
+    os_uint auto_device_nr;
 
 #if OSAL_SOCKET_SUPPORT
     /** Handshake state structure (switbox cloud net name and copying trust certificate).

@@ -99,7 +99,7 @@ void ioc_make_authentication_message(
         user_name = user_name_buf;
     }
 #endif
-    /* Set device/user name, device number and optionally the device's unqiue ID.
+    /* Set device/user name, device number and optionally the device's unique ID.
      */
     ioc_msg_setstr(user_name, &p);
     send_device_nr = device_nr < IOC_AUTO_DEVICE_NR ? device_nr : 0;
@@ -268,7 +268,7 @@ osalStatus ioc_process_received_authentication_message(
         auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
 #endif
 
-#if OSAL_SECRET_SUPPORT
+#if IOC_AUTO_DEVICE_NR_SUPPORT
     if (auth_flags & IOC_AUTH_UNIQUE_ID) {
         os_memcpy(con->unique_id_bin, p, OSAL_UNIQUE_ID_BIN_SZ);
         p += OSAL_UNIQUE_ID_BIN_SZ;

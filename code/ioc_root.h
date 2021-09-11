@@ -49,15 +49,6 @@ struct iocEventQueue;
  */
 const extern os_char iocom_mod[];
 
-/** Start automatically given device numbers from IOC_AUTO_DEVICE_NR + 1. This can be changed by
-    compiler define, but communicating devices using automatic device numbers
-    must use the same define.
- */
-#ifndef IOC_AUTO_DEVICE_NR
-#define IOC_AUTO_DEVICE_NR 9000
-#endif
-#define IOC_TO_AUTO_DEVICE_NR (IOC_AUTO_DEVICE_NR-1)
-
 /** Flag for ioc_initialize_root() to use EOSAL system mutex for synchronization, instead
     of creating own one.
  */
@@ -238,9 +229,9 @@ typedef struct iocRoot
     void *callback_context;
 #endif
 
-    /** Automatic device number, used if device number is 0
+    /** Automatic device numbering state.
      */
-    os_uint auto_device_nr;
+    iocAutoDeviceNrState autonr;
 
     /** Next unique memory block identifier to reserve.
      */
@@ -345,13 +336,6 @@ void ioc_run(
 #else
     #define ioc_new_root_event(r,e,d,m,c)
 #endif
-
-
-/* Create unique identifier for device.
- */
-os_uint ioc_get_unique_device_id(
-    iocRoot *root,
-    os_uchar *unique_id_bin);
 
 /* Copy root's network name to memory blocks without name.
  */

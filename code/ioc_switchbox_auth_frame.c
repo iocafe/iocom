@@ -177,7 +177,7 @@ static void ioc_make_switchbox_authentication_message(
     ioc_msg_set_uint(send_device_nr,
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
 #if OSAL_SECRET_SUPPORT
-    if (send_device_nr == 0 /* switchbox always IOC_SOCKET */) {
+    if (send_device_nr == 0) {
         os_memcpy(p, osal_global->saved.unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
         flags |= IOC_AUTH_UNIQUE_ID;
         p += OSAL_UNIQUE_ID_BIN_SZ;

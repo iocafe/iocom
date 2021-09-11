@@ -93,6 +93,13 @@ OSAL_C_HEADER_BEGINS
   #endif
 #endif
 
+/* Controller side automatic device numbering support. By default disabled in
+   microcontrollers and enabled in bigger computers.
+ */
+#ifndef IOC_AUTO_DEVICE_NR_SUPPORT
+  #define IOC_AUTO_DEVICE_NR_SUPPORT (OSAL_MICROCONTROLLER==0)
+#endif
+
 /* Support for switchbox socket to connect up and for switchbox authentication.
  * Switchbox is TLS based, default to OSAL_TLS_SUPPORT.
  */
@@ -188,6 +195,7 @@ OSAL_C_HEADER_BEGINS
 #include "code/ioc_handle.h"
 #include "code/ioc_memory_block_info.h"
 #include "code/ioc_authentication.h"
+#include "code/ioc_auto_device_nr.h"
 #include "code/ioc_root.h"
 #include "code/ioc_memory_block.h"
 #include "code/ioc_signal.h"

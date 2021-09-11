@@ -440,10 +440,10 @@ osalStatus ioc_process_received_mbinfo_frame(
          */
         if (!con->auto_device_nr)
         {
-#if OSAL_SECRET_SUPPORT
-            con->auto_device_nr = ioc_get_unique_device_id(root, con->unique_id_bin);
+#if IOC_AUTO_DEVICE_NR_SUPPORT
+            con->auto_device_nr = ioc_get_automatic_device_nr(root, con->unique_id_bin);
 #else
-            con->auto_device_nr = ioc_get_unique_device_id(root, OS_NULL);
+            con->auto_device_nr = ioc_get_automatic_device_nr(root, OS_NULL);
 #endif
         }
         mbinfo.device_nr = con->auto_device_nr;
