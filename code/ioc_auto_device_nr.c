@@ -22,7 +22,7 @@ static os_uint ioc_get_reserved_autonr(
     os_uchar *unique_id_bin,
     iocAutoDeviceNrState *a);
 
-static void ioc_load_autonr_data(
+static osalStatus ioc_load_autonr_data(
     iocSavedAutoNrData *nr_data);
 
 static void ioc_save_autonr_data(
@@ -107,15 +107,16 @@ static os_uint ioc_get_reserved_autonr(
     d = &a->saved;
 
     if (!a->data_loaded) {
-        d->reserve_auto_device_nr = IOC_RESERVED_AUTO_DEVICE_NR_START;
-        ioc_load_autonr_data(d);
+        if (OSAL_IS_ERROR(ioc_load_autonr_data(d))) {
+            d->reserve_auto_device_nr = IOC_RESERVED_AUTO_DEVICE_NR_START;
+        }
         a->data_loaded = OS_TRUE;
     }
 
     /* Check if we already have reserved device number for this ID.
      */
     for (i = 0; i<IOC_NRO_SAVED_DEVICE_NRS; i++) {
-        if (os_memcmp(unique_id_bin, d->unique_id_bin[i], OSAL_UNIQUE_ID_BIN_SZ)) {
+        if (!os_memcmp(unique_id_bin, d->unique_id_bin[i], OSAL_UNIQUE_ID_BIN_SZ)) {
             return d->device_nr[i];
         }
     }
@@ -150,10 +151,10 @@ static os_uint ioc_get_reserved_autonr(
     return d->device_nr[smallest_i];
 }
 
-static void ioc_load_autonr_data(
+static osalStatus ioc_load_autonr_data(
     iocSavedAutoNrData *d)
 {
-    os_load_persistent(OS_PBNR_AUTONR_DATA, (os_char*)d, sizeof(iocSavedAutoNrData));
+    return os_load_persistent(OS_PBNR_AUTONR_DATA, (os_char*)d, sizeof(iocSavedAutoNrData));
 }
 
 static void ioc_save_autonr_data(
