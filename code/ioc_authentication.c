@@ -106,7 +106,9 @@ void ioc_make_authentication_message(
     ioc_msg_set_uint(send_device_nr,
         &p, &auth_flags, IOC_AUTH_DEVICE_NR_2_BYTES, &auth_flags, IOC_AUTH_DEVICE_NR_4_BYTES);
 #if OSAL_SECRET_SUPPORT
-    if (send_device_nr == 0 && (con->flags & IOC_SOCKET)) {
+    if (send_device_nr == 0 &&
+        (con->flags & (IOC_SOCKET|IOC_CONNECT_UP)) == (IOC_SOCKET|IOC_CONNECT_UP))
+    {
         os_memcpy(p, osal_global->saved.unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
         auth_flags |= IOC_AUTH_UNIQUE_ID;
         p += OSAL_UNIQUE_ID_BIN_SZ;
@@ -265,11 +267,20 @@ osalStatus ioc_process_received_authentication_message(
         auth_flags & IOC_AUTH_DEVICE_NR_2_BYTES,
         auth_flags & IOC_AUTH_DEVICE_NR_4_BYTES);
 #endif
+
+#if OSAL_SECRET_SUPPORT
     if (auth_flags & IOC_AUTH_UNIQUE_ID) {
-        os_char unique_id_bin[OSAL_UNIQUE_ID_BIN_SZ];
-        os_memcpy(unique_id_bin, p, OSAL_UNIQUE_ID_BIN_SZ);
+        os_memcpy(con->unique_id_bin, p, OSAL_UNIQUE_ID_BIN_SZ);
         p += OSAL_UNIQUE_ID_BIN_SZ;
     }
+    else {
+        os_memclear(con->unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
+    }
+#else
+    if (auth_flags & IOC_AUTH_UNIQUE_ID) {
+        p += OSAL_UNIQUE_ID_BIN_SZ;
+    }
+#endif
 
     s = ioc_msg_getstr(user.network_name, IOC_NETWORK_NAME_SZ, &p);
     if (s) return s;

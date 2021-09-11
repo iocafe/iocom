@@ -514,12 +514,14 @@ void ioc_new_root_event(
   ioc_lock() must be on before calling this function.
 
   @param   root Pointer to the root object.
+  @param   unique_id_bin Unique ifentifier of remote device, OS_NULL if not available.
   @return  Unique device identifier IOC_AUTO_DEVICE_NR + 1 .. 0xFFFFFFFF.
 
 ****************************************************************************************************
 */
 os_uint ioc_get_unique_device_id(
-    iocRoot *root)
+    iocRoot *root,
+    os_uchar *unique_id_bin)
 {
     iocConnection *con;
     os_int id;

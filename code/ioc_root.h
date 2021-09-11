@@ -350,7 +350,8 @@ void ioc_run(
 /* Create unique identifier for device.
  */
 os_uint ioc_get_unique_device_id(
-    iocRoot *root);
+    iocRoot *root,
+    os_uchar *unique_id_bin);
 
 /* Copy root's network name to memory blocks without name.
  */

@@ -607,6 +607,10 @@ typedef struct iocConnection
     os_char cloud_name[OSAL_NETWORK_NAME_SZ];
 #endif
 
+#if OSAL_SECRET_SUPPORT
+    os_uchar unique_id_bin[OSAL_UNIQUE_ID_BIN_SZ];
+#endif
+
     /** Total frame size, constant for connection type. For example IOC_SOCKET_FRAME_SZ
         for socket communication.
      */
