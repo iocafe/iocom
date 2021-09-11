@@ -613,7 +613,7 @@ typedef struct iocConnection
     os_short frame_sz;
 
     /** Maximum frame size to send. This is smaller of the two, frame size defined for
-        this device and frame size received within authentication frame.
+        this device and frame size received within authentication message.
      */
     os_short dst_frame_sz;
 

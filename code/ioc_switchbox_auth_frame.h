@@ -7,9 +7,9 @@
   @version 1.0
   @date    26.4.2021
 
-  Low level handling of authentication frames for ecom and switchbox communication. The base
-  iocom library contains it's own authentication frame related code, this implementation is
-  intended for switchbox and ecom, to use interchangable IOCOM compatible authentication frames.
+  Low level handling of authentication messages for ecom and switchbox communication. The base
+  iocom library contains it's own authentication message related code, this implementation is
+  intended for switchbox and ecom, to use interchangable IOCOM compatible authentication messages.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -60,20 +60,20 @@ iocAuthenticationResults;
 
 /**
 ****************************************************************************************************
-  Functions for sending and processing authentication frames.
+  Functions for sending and processing authentication messages.
 ****************************************************************************************************
 */
 
-/* Send switchbox/ecom authentication frame to stream.
+/* Send switchbox/ecom authentication message to stream.
  */
-osalStatus ioc_send_switchbox_authentication_frame(
+osalStatus ioc_send_switchbox_authentication_message(
     osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm);
 
-/* Receive and process swtchbox/ecom authentication frame from stream.
+/* Receive and process swtchbox/ecom authentication message from stream.
  */
-osalStatus icom_switchbox_process_authentication_frame(
+osalStatus icom_switchbox_process_authentication_message(
     osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results);

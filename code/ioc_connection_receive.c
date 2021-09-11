@@ -509,7 +509,7 @@ static osalStatus ioc_process_received_data_frame(
 
   The ioc_process_received_system_frame() function is called once a complete system frame is
   received. This function processes system frames like memory block information and device
-  authentication data frames.
+  authentication messages.
 
   ioc_lock() must be on before calling this function.
 
@@ -539,7 +539,7 @@ static osalStatus ioc_process_received_system_frame(
         /* Device authentication data received.
          */
         case IOC_AUTHENTICATION_DATA:
-            return ioc_process_received_authentication_frame(con, mblk_id, data);
+            return ioc_process_received_authentication_message(con, mblk_id, data);
 
 #if IOC_DYNAMIC_MBLK_CODE
         /* Remove memory block request.

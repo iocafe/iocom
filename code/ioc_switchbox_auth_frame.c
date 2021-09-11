@@ -7,9 +7,9 @@
   @version 1.0
   @date    26.4.2021
 
-  Low level handling of authentication frames for ecom and switchbox communication. The base
-  iocom library contains it's own authentication frame related code, this implementation is
-  intended for switchbox and ecom, to use interchangable IOCOM compatible authentication frames.
+  Low level handling of authentication messages for ecom and switchbox communication. The base
+  iocom library contains it's own authentication message related code, this implementation is
+  intended for switchbox and ecom, to use interchangable IOCOM compatible authentication messages.
 
   Copyright 2020 Pekka Lehtikoski. This file is part of the iocom project and shall only be used,
   modified, and distributed under the terms of the project licensing. By continuing to use, modify,
@@ -24,11 +24,11 @@
 
 /* Forward referred static functions.
  */
-static void ioc_make_switchbox_authentication_frame(
+static void ioc_make_switchbox_authentication_message(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm);
 
-static osalStatus ioc_switchbox_parse_authentication_frame(
+static osalStatus ioc_switchbox_parse_authentication_message(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results);
 
@@ -36,33 +36,33 @@ static osalStatus ioc_switchbox_parse_authentication_frame(
 /**
 ****************************************************************************************************
 
-  @brief Send switchbox/ecom authentication frame to stream.
-  @anchor ioc_send_switchbox_authentication_frame
+  @brief Send switchbox/ecom authentication message to stream.
+  @anchor ioc_send_switchbox_authentication_message
 
-  If called with empty buffer, the ioc_send_switchbox_authentication_frame() function
+  If called with empty buffer, the ioc_send_switchbox_authentication_message() function
   generates outgoing data frame which contains information to authenticate the user, etc.
   This function needs to be called repeatedly (as triggered by select) until authentication
   frame is sent and the function returns OSAL_COMPLETED, or an error occurs.
 
-  This authentication frame follows the IOCOM format, so  same switchbox process can handle
+  This authentication message follows the IOCOM format, so  same switchbox process can handle
   both IOCOM and ECOM protocols.
 
   Stream must be called after calling this function.
 
   @param   stream OSAL stream structure.
-  @param   abuf Buffer structure for creating and sending the authentication frame. Zero this
+  @param   abuf Buffer structure for creating and sending the authentication message. Zero this
            structure before calling this function the first time.
-  @param   prm Data to place within for authentication frame. This must be set when the function
+  @param   prm Data to place within for authentication message. This must be set when the function
            is called for the first time with empty abuf. For consequent calls, this parmeter
            is ignored.
 
-  @return  OSAL_COMPLETED Authentication frame has been completely sent.
-           OSAL_PENDING Authentication frame not yet send, but no error thus far.
+  @return  OSAL_COMPLETED Authentication message has been completely sent.
+           OSAL_PENDING Authentication message not yet send, but no error thus far.
            Other return values indicate an error.
 
 ****************************************************************************************************
 */
-osalStatus ioc_send_switchbox_authentication_frame(
+osalStatus ioc_send_switchbox_authentication_message(
     osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm)
@@ -71,7 +71,7 @@ osalStatus ioc_send_switchbox_authentication_frame(
     osalStatus s;
 
     if (abuf->buf_used == 0) {
-        ioc_make_switchbox_authentication_frame(abuf, prm);
+        ioc_make_switchbox_authentication_message(abuf, prm);
     }
 
     n = abuf->buf_used - abuf->buf_pos;
@@ -92,21 +92,21 @@ osalStatus ioc_send_switchbox_authentication_frame(
 /**
 ****************************************************************************************************
 
-  @brief Generate authentication frame.
-  @anchor ioc_make_authentication_frame ioc_send_switchbox_authentication_frame
+  @brief Generate authentication message.
+  @anchor ioc_make_authentication_message ioc_send_switchbox_authentication_message
 
-  The ioc_make_switchbox_authentication_frame is a helper function to generate an authentication
-  frame. It is called by the ioc_send_switchbox_authentication_frame.
+  The ioc_make_switchbox_authentication_message is a helper function to generate an authentication
+  frame. It is called by the ioc_send_switchbox_authentication_message.
 
-  @param   abuf Buffer structure for creating and sending the authentication frame. Zero this
+  @param   abuf Buffer structure for creating and sending the authentication message. Zero this
            structure before calling this function the first time.
-  @param   prm Data to place within for authentication frame. This must be set when the function
+  @param   prm Data to place within for authentication message. This must be set when the function
            is called for the first time with empty abuf. For consequent calls, this parmeter
            is ignored.
 
 ****************************************************************************************************
 */
-static void ioc_make_switchbox_authentication_frame(
+static void ioc_make_switchbox_authentication_message(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocSwitchboxAuthenticationParameters *prm)
 {
@@ -176,14 +176,13 @@ static void ioc_make_switchbox_authentication_frame(
     send_device_nr = 0;
     ioc_msg_set_uint(send_device_nr,
         &p, &flags, IOC_AUTH_DEVICE_NR_2_BYTES, &flags, IOC_AUTH_DEVICE_NR_4_BYTES);
-    if (send_device_nr == 0 /* switchbox always IOC_SOCKET */) {
 #if OSAL_SECRET_SUPPORT
+    if (send_device_nr == 0 /* switchbox always IOC_SOCKET */) {
         os_memcpy(p, osal_global->saved.unique_id_bin, OSAL_UNIQUE_ID_BIN_SZ);
-#else
-        os_memclear(p, OSAL_UNIQUE_ID_BIN_SZ);
-#endif
+        flags |= IOC_AUTH_UNIQUE_ID;
         p += OSAL_UNIQUE_ID_BIN_SZ;
     }
+#endif
     ioc_msg_setstr(network_name, &p);
 
     password = osal_str_empty;
@@ -205,7 +204,7 @@ static void ioc_make_switchbox_authentication_frame(
          */
         if (osal_get_network_state_int(OSAL_NS_NO_CERT_CHAIN, 0))
         {
-            flags |= IOC_AUTH_NO_CERT_CHAIN;
+            flags |= IOC_AUTH_CERTIFICATE_REQUEST;
         }
     }
 #endif
@@ -255,30 +254,30 @@ static void ioc_make_switchbox_authentication_frame(
 /**
 ****************************************************************************************************
 
-  @brief Receive and process swtchbox/ecom authentication frame from stream.
-  @anchor ecom_process_received_authentication_frame
+  @brief Receive and process swtchbox/ecom authentication message from stream.
+  @anchor ecom_process_received_authentication_message
 
-  The ecom_receive_authentication_frame() function is called once a complete system frame
+  The ecom_receive_authentication_message() function is called once a complete system frame
   containing authentication data for a device has been received. The authentication data
   identifies the device (device name, number and network name), optionally identifies the user
   with user name and can have password for the connection.
   If user authentication is enabled (by ioc_enable_user_authentication() function), the
   user is authenticated.
 
-  This call should be called repeatedly (as triggered by select) until authentication frame
+  This call should be called repeatedly (as triggered by select) until authentication message
   is completely received and processed, or an error occurs. The function will return
   OSAL_COMPLETED once authentication
   frame is sent.
 
   @param   stream OSAL stream structure.
 
-  @return  OSAL_COMPLETED Authentication frame has been received and processed.
-           OSAL_PENDING Authentication frame not yet send, but no error thus far.
+  @return  OSAL_COMPLETED Authentication message has been received and processed.
+           OSAL_PENDING Authentication message not yet send, but no error thus far.
            Other return values indicate an error.
 
 ****************************************************************************************************
 */
-osalStatus icom_switchbox_process_authentication_frame(
+osalStatus icom_switchbox_process_authentication_message(
     osalStream stream,
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results)
@@ -343,9 +342,9 @@ osalStatus icom_switchbox_process_authentication_frame(
 #endif
 
 
-    /* Whole authentication frame successfully received, parse content.
+    /* Whole authentication message successfully received, parse content.
      */
-    return ioc_switchbox_parse_authentication_frame(abuf, results);
+    return ioc_switchbox_parse_authentication_message(abuf, results);
 }
 
 
@@ -353,32 +352,32 @@ osalStatus icom_switchbox_process_authentication_frame(
 /**
 ****************************************************************************************************
 
-  @brief Receive and process swtchbox/ecom authentication frame from stream.
-  @anchor ecom_process_received_authentication_frame
+  @brief Receive and process swtchbox/ecom authentication message from stream.
+  @anchor ecom_process_received_authentication_message
 
-  The ecom_receive_authentication_frame() function is called once a complete system frame
+  The ecom_receive_authentication_message() function is called once a complete frame
   containing authentication data for a device has been received. The authentication data
   identifies the device (device name, number and network name), optionally identifies the user
   with user name and can have password for the connection.
+
   If user authentication is enabled (by ioc_enable_user_authentication() function), the
   user is authenticated.
 
-  This call should be called repeatedly (as triggered by select) until authentication frame
+  This call should be called repeatedly (as triggered by select) until authentication message
   is completely received and processed, or an error occurs. The function will return
-  OSAL_COMPLETED once authentication
-  frame is sent.
+  OSAL_COMPLETED once authentication message is sent.
 
   @param   con Pointer to the connection object.
   @param   mblk_id Memory block identifier in this end.
   @param   data Received data, can be compressed and delta encoded, check flags.
 
-  @return  OSAL_COMPLETED Authentication frame has been received and processed.
-           OSAL_PENDING Authentication frame not yet send, but no error thus far.
+  @return  OSAL_COMPLETED Authentication message has been received and processed.
+           OSAL_PENDING Authentication message not yet send, but no error thus far.
            Other return values indicate an error.
 
 ****************************************************************************************************
 */
-static osalStatus ioc_switchbox_parse_authentication_frame(
+static osalStatus ioc_switchbox_parse_authentication_message(
     iocSwitchboxAuthenticationFrameBuffer *abuf,
     iocAuthenticationResults *results)
 {
@@ -418,7 +417,7 @@ static osalStatus ioc_switchbox_parse_authentication_frame(
         con->flags |= IOC_CLOUD_CONNECTION;
     }
 
-    if (auth_flags & IOC_AUTH_NO_CERT_CHAIN)
+    if (auth_flags & IOC_AUTH_CERTIFICATE_REQUEST)
     {
         con->flags |= IOC_NO_CERT_CHAIN;
     }
@@ -435,7 +434,7 @@ static osalStatus ioc_switchbox_parse_authentication_frame(
         osal_int_to_str(nbuf, sizeof(nbuf), device_nr);
         os_strncat(user.user_name, nbuf, IOC_DEVICE_ID_SZ);
     }
-    else { /* Always IOC_SOCKET */
+    if (auth_flags & IOC_AUTH_UNIQUE_ID) {
         os_char unique_id_bin[OSAL_UNIQUE_ID_BIN_SZ];
         os_memcpy(unique_id_bin, p, OSAL_UNIQUE_ID_BIN_SZ);
         p += OSAL_UNIQUE_ID_BIN_SZ;

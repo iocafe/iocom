@@ -911,7 +911,7 @@ os_boolean cert_match = OS_TRUE;
         thiso->handshake_ready = OS_TRUE;
     }
 
-    /* We need to receive authentication frame.
+    /* We need to receive authentication message.
      */
     if (!thiso->authentication_received) {
         if (thiso->auth_recv_buf == OS_NULL) {
@@ -921,14 +921,14 @@ os_boolean cert_match = OS_TRUE;
         }
 
         iocAuthenticationResults results;
-        s = icom_switchbox_process_authentication_frame(thiso->switchbox_stream, thiso->auth_recv_buf, &results);
+        s = icom_switchbox_process_authentication_message(thiso->switchbox_stream, thiso->auth_recv_buf, &results);
         if (s == OSAL_COMPLETED) {
             os_free(thiso->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
             thiso->auth_recv_buf = OS_NULL;
             thiso->authentication_received = OS_TRUE;
         }
         else if (s != OSAL_PENDING) {
-            osal_debug_error("eConnection: Valid authentication frame was not received");
+            osal_debug_error("eConnection: Valid authentication message was not received");
             return OSAL_STATUS_FAILED;
         }
     }
@@ -950,7 +950,7 @@ os_boolean cert_match = OS_TRUE;
             prm.password = "pw";
         }
 
-        s = ioc_send_switchbox_authentication_frame(thiso->switchbox_stream, thiso->auth_send_buf, &prm);
+        s = ioc_send_switchbox_authentication_message(thiso->switchbox_stream, thiso->auth_send_buf, &prm);
         if (s == OSAL_COMPLETED) {
             os_free(thiso->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
             thiso->auth_send_buf = OS_NULL;
@@ -958,7 +958,7 @@ os_boolean cert_match = OS_TRUE;
             osal_stream_flush(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
         }
         else if (s != OSAL_PENDING) {
-            osal_debug_error("eConnection: Failed to send authentication frame");
+            osal_debug_error("eConnection: Failed to send authentication message");
             return OSAL_STATUS_FAILED;
         }
     }

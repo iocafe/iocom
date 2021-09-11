@@ -17,7 +17,7 @@ UPDATE THIS TEXT AND DOCUMENT, see /coderoot/iocafe-doc/source/extensions/switch
 
 NETWORK SELECTION REQUEST MUST BE SEPARATED FROM AUTHENTICATION FRAME TO WORK WITH SWITCHBOX.
 - Network selection is sent from only from socket client to server.
-- Authentication is sent both ways IOCOM: first from upper level in device hierarchy to lower, then lower to upper. This will not do with switchbox, because network selection in authentication frame is not available to select the IO service before IO service is connected.
+- Authentication is sent both ways IOCOM: first from upper level in device hierarchy to lower, then lower to upper. This will not do with switchbox, because network selection in authentication message is not available to select the IO service before IO service is connected.
 
 Automatic establishment of trust
 IF SERVER CERTIFICATE VERIFICATION FAILS IN CLIENT, CLIENT MUST BE ABLE TO ASK FOR SERVER, ETC, CERTIFICATE FROM SERVER. CURRENT IMPLEMENTATION WITH IOCOM USING BRICK TRANSFER TO GET THE CERTIFICATE IS NOT WORKING WITH SWITCBOX. IF SWITCHBOX IS USED, THIS WOULD GET IO NETWORK SERVER'S CERTIFICATE, WHILE WE NEED CLOUD SERVER'S CERTIFICATE.

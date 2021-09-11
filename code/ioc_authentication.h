@@ -28,16 +28,17 @@ struct iocConnection;
 
 /**
 ****************************************************************************************************
-  Flags in authentication frame and in iocAllowedNetwork structure.
+  Flags in authentication message and in iocAllowedNetwork structure.
 ****************************************************************************************************
 */
-#define IOC_AUTH_ADMINISTRATOR 1
-#define IOC_AUTH_NO_CERT_CHAIN 4
-#define IOC_AUTH_CLOUD_CON 8
-#define IOC_AUTH_CONNECT_UP 16
-#define IOC_AUTH_DEVICE_NR_2_BYTES 32
-#define IOC_AUTH_DEVICE_NR_4_BYTES 64
-#define IOC_AUTH_BIDIRECTIONAL_COM 128
+#define IOC_AUTH_ADMINISTRATOR 1            /* Client requires administrator priviliges. */
+#define IOC_AUTH_UNIQUE_ID 2                /* Authentication message contains unique device ID */
+#define IOC_AUTH_CERTIFICATE_REQUEST 4      /* Client request for a copy of server certificate. */
+#define IOC_AUTH_CLOUD_CON 8                /* This may be OBSOLETED */
+#define IOC_AUTH_CONNECT_UP 16              /* connecting upwards in device hierarchy (from device to server, etc). */
+#define IOC_AUTH_DEVICE_NR_2_BYTES 32       /* Two bytes needed for device number in this message. */
+#define IOC_AUTH_DEVICE_NR_4_BYTES 64       /* Four bytes needed for device number in this message. */
+#define IOC_AUTH_BIDIRECTIONAL_COM 128      /* Bidirectional memory blocks supported. This may be OBSOLETED. */
 
 /**
 ****************************************************************************************************
@@ -107,14 +108,14 @@ iocAllowedNetworkConf;
  */
 /*@{*/
 
-/* Make authentication data frame.
+/* Make authentication message.
  */
-void ioc_make_authentication_frame(
+void ioc_make_authentication_message(
     struct iocConnection *con);
 
-/* Process received authentication data frame.
+/* Process received authentication message.
  */
-osalStatus ioc_process_received_authentication_frame(
+osalStatus ioc_process_received_authentication_message(
     struct iocConnection *con,
     os_uint mblk_id,
     os_char *data);

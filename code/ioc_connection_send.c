@@ -107,7 +107,7 @@ osalStatus ioc_connection_send(
     }
     if (!con->authentication_sent)
     {
-        ioc_make_authentication_frame(con);
+        ioc_make_authentication_message(con);
         goto just_move_data;
     }
     if (!con->authentication_received)

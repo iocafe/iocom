@@ -565,7 +565,7 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
      */
     if (con->is_service_connection)
     {
-        /* Service connection: We need to receive authentication frame.
+        /* Service connection: We need to receive authentication message.
          */
         if (!con->authentication_received) {
             if (con->auth_recv_buf == OS_NULL) {
@@ -575,14 +575,14 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
             }
 
             iocAuthenticationResults results;
-            s = icom_switchbox_process_authentication_frame(con->stream, con->auth_recv_buf, &results);
+            s = icom_switchbox_process_authentication_message(con->stream, con->auth_recv_buf, &results);
             if (s == OSAL_COMPLETED) {
                 os_free(con->auth_recv_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
                 con->auth_recv_buf = OS_NULL;
                 con->authentication_received = OS_TRUE;
             }
             else if (s != OSAL_PENDING) {
-                osal_debug_error("eConnection: Valid authentication frame was not received");
+                osal_debug_error("eConnection: Valid authentication message was not received");
                 return OSAL_STATUS_FAILED;
             }
         }
@@ -604,7 +604,7 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
                 prm.password = "pw";
             }
 
-            s = ioc_send_switchbox_authentication_frame(con->stream, con->auth_send_buf, &prm);
+            s = ioc_send_switchbox_authentication_message(con->stream, con->auth_send_buf, &prm);
             if (s == OSAL_COMPLETED) {
                 os_free(con->auth_send_buf, sizeof(iocSwitchboxAuthenticationFrameBuffer));
                 con->auth_send_buf = OS_NULL;
@@ -612,7 +612,7 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
                 osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
             }
             else if (s != OSAL_PENDING) {
-                osal_debug_error("eConnection: Failed to send authentication frame");
+                osal_debug_error("eConnection: Failed to send authentication message");
                 return OSAL_STATUS_FAILED;
             }
         }
