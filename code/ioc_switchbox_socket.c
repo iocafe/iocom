@@ -928,7 +928,7 @@ os_boolean cert_match = OS_TRUE;
             thiso->authentication_received = OS_TRUE;
         }
         else if (s != OSAL_PENDING) {
-            osal_debug_error("eConnection: Valid authentication message was not received");
+            osal_debug_error("switchbox_socketConnection: Valid authentication message was not received");
             return OSAL_STATUS_FAILED;
         }
     }
@@ -958,7 +958,7 @@ os_boolean cert_match = OS_TRUE;
             osal_stream_flush(thiso->switchbox_stream, OSAL_STREAM_DEFAULT);
         }
         else if (s != OSAL_PENDING) {
-            osal_debug_error("eConnection: Failed to send authentication message");
+            osal_debug_error("switchbox_socket: Failed to send authentication message");
             return OSAL_STATUS_FAILED;
         }
     }

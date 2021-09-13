@@ -582,7 +582,7 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
                 con->authentication_received = OS_TRUE;
             }
             else if (s != OSAL_PENDING) {
-                osal_debug_error("eConnection: Valid authentication message was not received");
+                osal_debug_error("switchbox_connection: Valid authentication message was not received");
                 return OSAL_STATUS_FAILED;
             }
         }
@@ -612,7 +612,7 @@ static osalStatus ioc_switchbox_handshake_and_authentication(
                 osal_stream_flush(con->stream, OSAL_STREAM_DEFAULT);
             }
             else if (s != OSAL_PENDING) {
-                osal_debug_error("eConnection: Failed to send authentication message");
+                osal_debug_error("switchbox_connection: Failed to send authentication message");
                 return OSAL_STATUS_FAILED;
             }
         }

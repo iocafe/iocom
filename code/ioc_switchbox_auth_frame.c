@@ -29,7 +29,7 @@ static void ioc_make_switchbox_authentication_message(
     iocSwitchboxAuthenticationParameters *prm);
 
 static osalStatus ioc_switchbox_parse_authentication_message(
-    iocSwitchboxAuthenticationFrameBuffer *abuf,
+    os_uchar *buf,
     iocAuthenticationResults *results);
 
 
@@ -272,7 +272,7 @@ static void ioc_make_switchbox_authentication_message(
   @param   stream OSAL stream structure.
 
   @return  OSAL_COMPLETED Authentication message has been received and processed.
-           OSAL_PENDING Authentication message not yet send, but no error thus far.
+           OSAL_PENDING Authentication message not yet received, but no error thus far.
            Other return values indicate an error.
 
 ****************************************************************************************************
@@ -283,6 +283,13 @@ osalStatus icom_switchbox_process_authentication_message(
     iocAuthenticationResults *results)
 {
     iocReadFrameState rfs;
+    os_uchar *p;
+
+    os_uint
+        mblk_id;
+
+    os_uint
+        addr;
 
     osalStatus status;
 
@@ -312,7 +319,7 @@ osalStatus icom_switchbox_process_authentication_message(
     if (rfs.bytes_received) {
         os_get_timer(&abuf->ti);
     }
-    // abuf->buf_pos = rfs.n;
+    abuf->buf_pos = rfs.n;
 
     /* If we have not received whole frame, we need to wait.
      */
@@ -341,10 +348,16 @@ osalStatus icom_switchbox_process_authentication_message(
     }
 #endif
 
+    p = (os_uchar*)rfs.buf + (rfs.is_serial ? 5 : 4);
+    if (rfs.extra_flags) p++;
+    mblk_id = ioc_msg_get_uint(&p, rfs.flags & IOC_MBLK_HAS_TWO_BYTES,
+        rfs.extra_flags & IOC_EXTRA_MBLK_HAS_FOUR_BYTES);
+    addr = ioc_msg_get_uint(&p, rfs.flags & IOC_ADDR_HAS_TWO_BYTES,
+        rfs.extra_flags & IOC_EXTRA_ADDR_HAS_FOUR_BYTES);
 
     /* Whole authentication message successfully received, parse content.
      */
-    return ioc_switchbox_parse_authentication_message(abuf, results);
+    return ioc_switchbox_parse_authentication_message(p, results);
 }
 
 
@@ -378,7 +391,7 @@ osalStatus icom_switchbox_process_authentication_message(
 ****************************************************************************************************
 */
 static osalStatus ioc_switchbox_parse_authentication_message(
-    iocSwitchboxAuthenticationFrameBuffer *abuf,
+    os_uchar *buf,
     iocAuthenticationResults *results)
 {
     iocUser user;
@@ -388,7 +401,7 @@ static osalStatus ioc_switchbox_parse_authentication_message(
     os_char nbuf[OSAL_NBUF_SZ];
     os_uint device_nr;
 
-    p = (os_uchar*)abuf->buf + 1; /* Skip system frame IOC_SYSFRAME_MBLK_INFO byte. */
+    p = (os_uchar*)buf + 1; /* Skip system frame IOC_SYSFRAME_MBLK_INFO byte. */
     auth_flags = (os_uchar)*(p++);
 
     os_memclear(&user, sizeof(user));
