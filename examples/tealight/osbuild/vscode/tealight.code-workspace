@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../.."
+		},
+		{
+			"path": "../../../../../eosal"
+		},
+		{
+			"path": "../../../../../pins"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"socket.h": "c",
+			"dhcp.h": "c",
+			"*.tcc": "c"
+		},
+		"restructuredtext.syntaxHighlighting.disabled": true
+	}
+}
