@@ -1,4 +1,4 @@
-$fn=50;
+$fn=30;
 pcb_w = 166;
 pcb_h = 83;
 pcb_depth = 30.0;
@@ -6,14 +6,14 @@ box_w = 7.5 * 25.4;
 box_h = 4.0 * 25.4;
 box_depth = (2+1/8) * 25.4;
 // box_wall_thickness = 2;
-overlapx = 0.2;
+overlapx = 2.0;
 overlapy = 5.0;
 faceplate_thickness = 7;
 skew_angle = 10;
 skew_h = 3;
 skew_box_w = 40;
 cut_w = box_w - 40;
-cut_h = box_h - 35;
+cut_h = box_h - 38;
 cut_depth = 0.0;
 rounding = 2;
 holerounding = 1.0;
@@ -154,14 +154,14 @@ lcd_visible_h = 28.5;
 lcd_framed_w = lcd_pcb_w + 4;
 lcd_framed_h = lcd_pcb_h + 4;
 lcs_pox_x = 62;
-lcs_pox_y = -11.0;
+lcs_pox_y = -11.5;
 
 module lcdblock()
 {
     minkowski()
     {
         cube([lcd_framed_w,lcd_framed_h,faceplate_thickness-2*holerounding], center=true);
-        sphere(holehounding);
+        sphere(holerounding);
     }
 }
 
