@@ -6,13 +6,14 @@ box_w = 7.5 * 25.4;
 box_h = 4.0 * 25.4;
 box_depth = (2+1/8) * 25.4;
 // box_wall_thickness = 2;
-overlap = 1.0;
+overlapx = 0.2;
+overlapy = 5.0;
 faceplate_thickness = 7;
 skew_angle = 10;
 skew_h = 3;
 skew_box_w = 40;
-cut_w = box_w - 30;
-cut_h = box_h - 40;
+cut_w = box_w - 40;
+cut_h = box_h - 35;
 cut_depth = 0.0;
 rounding = 2;
 holerounding = 1.0;
@@ -107,11 +108,11 @@ module angularbaseblock()
 {
     difference() 
     {
-        cube([box_w + 2*overlap - 2*rounding, box_h + 2*overlap - 2*rounding, faceplate_thickness - 2*rounding], center=true);
-        translate([0,box_h/2+overlap,faceplate_thickness - skew_h - rounding]) rotate([-skew_angle,0,0]) cube([box_w + 2*overlap, skew_box_w, faceplate_thickness], center=true);
-        translate([0,-box_h/2-overlap,faceplate_thickness - skew_h - rounding]) rotate([skew_angle,0,0]) cube([box_w + 2*overlap, skew_box_w, faceplate_thickness], center=true);
-        translate([box_w/2+overlap,0,faceplate_thickness - skew_h - rounding]) rotate([0,skew_angle,0]) cube([skew_box_w, box_h + 2*overlap, faceplate_thickness], center=true);
-        translate([-box_w/2-overlap,0,faceplate_thickness - skew_h - rounding]) rotate([0,-skew_angle,0]) cube([skew_box_w, box_h + 2*overlap, faceplate_thickness], center=true);
+        cube([box_w + 2*overlapx - 2*rounding, box_h + 2*overlapy - 2*rounding, faceplate_thickness - 2*rounding], center=true);
+        translate([0,box_h/2+overlapy,faceplate_thickness - skew_h - rounding]) rotate([-skew_angle,0,0]) cube([box_w + 2*overlapx, skew_box_w, faceplate_thickness], center=true);
+        translate([0,-box_h/2-overlapy,faceplate_thickness - skew_h - rounding]) rotate([skew_angle,0,0]) cube([box_w + 2*overlapx, skew_box_w, faceplate_thickness], center=true);
+        translate([box_w/2+overlapx,0,faceplate_thickness - skew_h - rounding]) rotate([0,skew_angle,0]) cube([skew_box_w, box_h + 2*overlapy, faceplate_thickness], center=true);
+        translate([-box_w/2-overlapx,0,faceplate_thickness - skew_h - rounding]) rotate([0,-skew_angle,0]) cube([skew_box_w, box_h + 2*overlapy, faceplate_thickness], center=true);
     } 
 }
 
@@ -152,7 +153,7 @@ lcd_visible_w = 25.2;
 lcd_visible_h = 28.5;
 lcd_framed_w = lcd_pcb_w + 4;
 lcd_framed_h = lcd_pcb_h + 4;
-lcs_pox_x = 64;
+lcs_pox_x = 62;
 lcs_pox_y = -11.0;
 
 module lcdblock()
