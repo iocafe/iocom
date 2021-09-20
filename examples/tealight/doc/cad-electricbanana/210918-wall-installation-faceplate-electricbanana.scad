@@ -8,20 +8,20 @@ box_depth = (2+1/8) * 25.4;
 // box_wall_thickness = 2;
 overlapx = 2.0;
 overlapy = 5.0;
-faceplate_thickness = 7;
-skew_angle = 10;
-skew_h = 3;
+faceplate_thickness = 6;
+skew_angle = 7;
+skew_h = 2;
 skew_box_w = 40;
 cut_w = box_w - 40;
 cut_h = box_h - 38;
-cut_depth = 0.0;
+cut_depth = 0.3;
 rounding = 2;
 holerounding = 1.0;
 
 module screwhole()
 {
-    cylinder(1.5*faceplate_thickness, d=3.5, center=true);
-    translate([0,0,4+faceplate_thickness/2]) cylinder(faceplate_thickness, d=7.7, center=true);
+    cylinder(1.5*faceplate_thickness, d=3.7, center=true);
+    translate([0,0,2.5+faceplate_thickness/2]) cylinder(faceplate_thickness, d=7.7, center=true);
 }
 
 
@@ -188,7 +188,7 @@ module baseblockwithlcd()
             translate([lcs_pox_x, lcs_pox_y, faceplate_thickness/2]) cube([lcd_pcb_w, lcd_pcb_h, faceplate_thickness+0.1], center=true);
         }
 
-        translate([lcs_pox_x, lcs_pox_y, faceplate_thickness/2]) lcdblock_with_cuts();
+        translate([lcs_pox_x, lcs_pox_y, faceplate_thickness/2-cut_depth]) lcdblock_with_cuts();
     }
 }
 
@@ -204,7 +204,7 @@ module finalblock()
             translate([0, 0, 25]) cube([2*pcb_w, 2*pcb_h, 50], center=true);
         }
         translate([0, 0, faceplate_thickness-1.25]) linear_extrude(height = 0.6) {
-           translate([74.4,-32,0]) text(text = str(text, "iocafe"), font = font, size = 5, valign = "center", halign = "right");
+           translate([74.4,-30,0]) text(text = str(text, "iocafe"), font = font, size = 5, valign = "center", halign = "right");
            translate([-60.5,-35.5,0]) text(text = str(text, "electric banana"), font = font, size = 3, valign = "center", halign = "left");
         }
     }
