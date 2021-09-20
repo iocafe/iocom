@@ -194,10 +194,19 @@ module baseblockwithlcd()
 
 module finalblock()
 {
-    intersection()
-    {
-        translate([0, 0, -0.8]) baseblockwithlcd();
-        translate([0, 0, 25]) cube([2*pcb_w, 2*pcb_h, 50], center=true);
+    text = "";
+    font = "Liberation Sans";
+ 
+    difference() {
+        intersection()
+        {
+            translate([0, 0, -0.8]) baseblockwithlcd();
+            translate([0, 0, 25]) cube([2*pcb_w, 2*pcb_h, 50], center=true);
+        }
+        translate([0, 0, faceplate_thickness-1.25]) linear_extrude(height = 0.6) {
+           translate([74.4,-32,0]) text(text = str(text, "iocafe"), font = font, size = 5, valign = "center", halign = "right");
+           translate([-60.5,-35.5,0]) text(text = str(text, "electric banana"), font = font, size = 3, valign = "center", halign = "left");
+        }
     }
 }
 
