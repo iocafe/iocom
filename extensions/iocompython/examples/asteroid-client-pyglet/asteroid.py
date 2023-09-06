@@ -16,7 +16,7 @@ data = json2bin(signal_conf)
 info = MemoryBlock(root, 'up', 'info', nbytes=len(data))
 info.publish(data)
 # connection = Connection(root, "192.168.1.220", "tls,up")
-connection = Connection(root, "127.0.0.1", "tls,up")
+connection = Connection(root, "127.0.0.1", "socket,up")
 # connection = Connection(root, "3.135.236.95", "tls,up")
 
 # Setup Python access to exported IO signals. These pass user keyboard control to the asteroid service.

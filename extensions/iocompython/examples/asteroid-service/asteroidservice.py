@@ -12,7 +12,7 @@ def main():
     root = Root('asteroid',security='certfile=myhome.crt,keyfile=secret/myhome.key')
     root.queue_events()
     ioterminal.start(root)
-    epoint = EndPoint(root, flags='tls,dynamic')
+    epoint = EndPoint(root, flags='socket,dynamic')
     random.seed(time.time())
 
     while (ioterminal.run(root)):
