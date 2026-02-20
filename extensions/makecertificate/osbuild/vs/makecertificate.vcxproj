@@ -19,83 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\code\ioc_authentication.h" />
-    <ClInclude Include="..\..\code\ioc_auto_device_nr.h" />
-    <ClInclude Include="..\..\code\ioc_brick.h" />
-    <ClInclude Include="..\..\code\ioc_compress.h" />
-    <ClInclude Include="..\..\code\ioc_connection.h" />
-    <ClInclude Include="..\..\code\ioc_debug.h" />
-    <ClInclude Include="..\..\code\ioc_end_point.h" />
-    <ClInclude Include="..\..\code\ioc_handle.h" />
-    <ClInclude Include="..\..\code\ioc_handshake.h" />
-    <ClInclude Include="..\..\code\ioc_handshake_iocom.h" />
-    <ClInclude Include="..\..\code\ioc_ioboard.h" />
-    <ClInclude Include="..\..\code\ioc_memory.h" />
-    <ClInclude Include="..\..\code\ioc_memory_block.h" />
-    <ClInclude Include="..\..\code\ioc_memory_block_info.h" />
-    <ClInclude Include="..\..\code\ioc_nickgen.h" />
-    <ClInclude Include="..\..\code\ioc_parameters.h" />
-    <ClInclude Include="..\..\code\ioc_root.h" />
-    <ClInclude Include="..\..\code\ioc_signal.h" />
-    <ClInclude Include="..\..\code\ioc_signal_addr.h" />
-    <ClInclude Include="..\..\code\ioc_source_buffer.h" />
-    <ClInclude Include="..\..\code\ioc_streamer.h" />
-    <ClInclude Include="..\..\code\ioc_switchbox_auth_frame.h" />
-    <ClInclude Include="..\..\code\ioc_switchbox_socket.h" />
-    <ClInclude Include="..\..\code\ioc_switchbox_util.h" />
-    <ClInclude Include="..\..\code\ioc_target_buffer.h" />
-    <ClInclude Include="..\..\code\ioc_timing.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_mblk_list.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_network.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_queue.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_root.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_signal.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_dyn_stream.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_identifiers.h" />
-    <ClInclude Include="..\..\extensions\dynamicio\ioc_remove_mblk_list.h" />
-    <ClInclude Include="..\..\iocom.h" />
-    <ClInclude Include="..\..\iocomx.h" />
+    <ClInclude Include="..\..\code\lighthouse_client.h" />
+    <ClInclude Include="..\..\code\lighthouse_server.h" />
+    <ClInclude Include="..\..\lighthouse.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\ioc_authentication.c" />
-    <ClCompile Include="..\..\code\ioc_auto_device_nr.c" />
-    <ClCompile Include="..\..\code\ioc_brick.c" />
-    <ClCompile Include="..\..\code\ioc_compress.c" />
-    <ClCompile Include="..\..\code\ioc_connection.c" />
-    <ClCompile Include="..\..\code\ioc_connection_receive.c" />
-    <ClCompile Include="..\..\code\ioc_connection_send.c" />
-    <ClCompile Include="..\..\code\ioc_end_point.c" />
-    <ClCompile Include="..\..\code\ioc_establish_serial_connection.c" />
-    <ClCompile Include="..\..\code\ioc_handle.c" />
-    <ClCompile Include="..\..\code\ioc_handshake.c" />
-    <ClCompile Include="..\..\code\ioc_handshake_iocom.c" />
-    <ClCompile Include="..\..\code\ioc_ioboard.c" />
-    <ClCompile Include="..\..\code\ioc_memory.c" />
-    <ClCompile Include="..\..\code\ioc_memory_block.c" />
-    <ClCompile Include="..\..\code\ioc_memory_block_info.c" />
-    <ClCompile Include="..\..\code\ioc_nickgen.c" />
-    <ClCompile Include="..\..\code\ioc_parameters.c" />
-    <ClCompile Include="..\..\code\ioc_root.c" />
-    <ClCompile Include="..\..\code\ioc_signal.c" />
-    <ClCompile Include="..\..\code\ioc_signal_addr.c" />
-    <ClCompile Include="..\..\code\ioc_source_buffer.c" />
-    <ClCompile Include="..\..\code\ioc_streamer.c" />
-    <ClCompile Include="..\..\code\ioc_switchbox_auth_frame.c" />
-    <ClCompile Include="..\..\code\ioc_switchbox_socket.c" />
-    <ClCompile Include="..\..\code\ioc_switchbox_util.c" />
-    <ClCompile Include="..\..\code\ioc_target_buffer.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_mblk_list.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_network.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_queue.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_root.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_signal.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_dyn_stream.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_identifiers.c" />
-    <ClCompile Include="..\..\extensions\dynamicio\ioc_remove_mblk_list.c" />
+    <ClCompile Include="..\..\code\lighthouse_client.c" />
+    <ClCompile Include="..\..\code\lighthouse_server.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{19FB0104-F92B-4FF2-BD45-577449621E88}</ProjectGuid>
+    <ProjectGuid>{B30A5557-566E-4062-A585-80466FBA7A56}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>iocom</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
@@ -104,26 +38,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -134,23 +68,23 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\eosal\osbuild\vs\static-win32-library.props" />
-    <Import Project="..\..\..\eosal\osbuild\vs\debug-vs.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\static-win32-library.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\debug-vs.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\eosal\osbuild\vs\static-win32-library.props" />
-    <Import Project="..\..\..\eosal\osbuild\vs\release-vs.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\static-win32-library.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\release-vs.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\eosal\osbuild\vs\static-win64-library.props" />
-    <Import Project="..\..\..\eosal\osbuild\vs\debug-vs.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\static-win64-library.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\debug-vs.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\eosal\osbuild\vs\static-win64-library.props" />
-    <Import Project="..\..\..\eosal\osbuild\vs\release-vs.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\static-win64-library.props" />
+    <Import Project="..\..\..\..\..\eosal\osbuild\vs\release-vs.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -172,6 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -185,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -200,6 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -217,6 +154,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\coderoot\iocom\extensions\selectwifi\config\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
