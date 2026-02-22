@@ -14,8 +14,8 @@
 ****************************************************************************************************
 */
 #pragma once
-#ifndef MAKE_CERTIFICATE_H_
-#define MAKE_CERTIFICATE_H_
+#ifndef IOC_MAKE_CERTIFICATE_H_
+#define IOC_MAKE_CERTIFICATE_H_
 #include "makecertificate.h"
 
 

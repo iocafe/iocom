@@ -11,6 +11,8 @@ set(E_TLSLIB "mbedtls")
 set(E_UP "../../../eosal/osbuild/cmakedefs")
 include("${E_UP}/eosal-root-path.txt")
 
+
+
 if("${IDF_TARGET}" STREQUAL "esp32")
   # ESP-IFD only: Include IDF project setup and declare the project.
   include($ENV{IDF_PATH}/tools/cmake/project.cmake)
@@ -38,6 +40,7 @@ else()
 
   # Add include paths.
   include_directories("${BACKBONE}")
+  include_directories("$ENV{E_ROOT}/eosal")
   # include_directories("$ENV{E_ROOT}/iocom")
   include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 

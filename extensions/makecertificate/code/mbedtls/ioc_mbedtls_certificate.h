@@ -17,7 +17,7 @@
 #ifndef MBEDTLS_CERTIFICATE_H_
 #define MBEDTLS_CERTIFICATE_H_
 #include "makecertificate.h"
-#include "extensions/tls/mbedtls/osal_mbedtls.h"
+#include "extensions/tls/mbedtls/osal_mbedtls36.h"
 
 /* Load RSA key from persistent storage.
  */

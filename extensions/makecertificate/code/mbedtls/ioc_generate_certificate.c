@@ -586,7 +586,7 @@ osalStatus ioc_generate_certificate(
     //
     if( strlen( opt.issuer_crt ) )
     {
-        if( mbedtls_pk_check_pair( &issuer_crt.pk, issuer_key ) != 0 )
+        if( mbedtls_pk_check_pair( &issuer_crt.pk, issuer_key, NULL, NULL ) != 0 )
         {
             mbedtls_printf( " failed\n  !  issuer_key does not match "
                             "issuer certificate\n\n" );

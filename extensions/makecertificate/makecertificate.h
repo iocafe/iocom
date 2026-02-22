@@ -16,7 +16,7 @@
 #pragma once
 #ifndef MAKECERTIFICATE_H_
 #define MAKECERTIFICATE_H_
-#include "eosalx.h"
+#include "eosal.h"
 
 /* If C++ compilation, all functions, etc. from this point on included headers are
    plain C and must be left undecorated.
