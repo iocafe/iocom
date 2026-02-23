@@ -10,9 +10,16 @@ else:
     MYCODEROOT = '/coderoot'
 
 def runcmd(cmd):
-    stream = os.popen(cmd)
-    output = stream.read()
-    print(output)
+    try:
+        stream = os.popen(cmd)
+        output = stream.read()
+        exit_status = stream.close()
+
+        if exit_status is not None:
+            print ("make_linux_amd64_package.py: Command \'" + cmd + "\'failed with status " + str(exit_status))
+
+    except Exception as e:
+        print(f"make_linux_amd64_package.py: os.popen(\'" + cmd + "\') failed, exception:" + str(e))
 
 runcmd(MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/make_debian_package.py ' + MYCODEROOT + '/iocom/examples/minion -a minion -s linux -h amd64 -o iocafe -d "Minion camera application"')
 

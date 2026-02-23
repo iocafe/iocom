@@ -12,9 +12,18 @@ else:
 MYAPPCONFIG = MYCODEROOT + '/iocom/examples/minion/config'
 
 def runcmd(cmd):
-    stream = os.popen(cmd)
-    output = stream.read()
-    print(output)
+    try:
+        stream = os.popen(cmd)
+        output = stream.read()
+        exit_status = stream.close()
+
+        if exit_status is not None:
+            print ("minion,config_to_c_code.py: Command \'" + cmd + "\'failed with status " + str(exit_status))
+
+    except Exception as e:
+        print(f"minion,config_to_c_code.py: os.popen(\'" + cmd + "\') failed, exception:" + str(e))
+
+
 
 runcmd(MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG + ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON)
 

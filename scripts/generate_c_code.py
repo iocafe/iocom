@@ -85,7 +85,7 @@ def read_json(fname, confdir):
     if read_file:
         data = json.load(read_file)
         return data
-    print ("Reading JSON file " + path + " failed")
+    print ("oenerate_c_code.py: Reading JSON file " + path + " failed")
     return None
 
 def merge_jsons(default_file, confdir):
@@ -96,7 +96,7 @@ def merge_jsons(default_file, confdir):
     else:
         merge_list = merge_data.get('merge', None)
         if merge_list == None:
-            print("Merge data for '" + confdir + "' is erronous.")
+            print("oenerate_c_code.py: Merge data for '" + confdir + "' is erronous.")
             exit()
         rval = merge_list[0]
     rval, ext = os.path.splitext(rval)
@@ -108,7 +108,7 @@ def merge_jsons(default_file, confdir):
             if path == None:
                 if merge_data == None:
                     return None
-                print("File '" + f + "' not found for '" + confdir + "'.")
+                print("oenerate_c_code.py: File '" + f + "' not found for '" + confdir + "'.")
                 exit()
             cmd += ' ' + path
     cmd += ' -o ' + MYINTERMEDIATE + '/' + MYHW + '/' + rval + '-merged.json'
@@ -206,13 +206,7 @@ def mymakedir(path):
         pass
 
 def set_version():
-    if platform.system() == 'Windows':
-        MYPYTHON = 'python'
-        MYCODEROOT = 'c:/coderoot'
-    else:
-        MYPYTHON = 'python3'
-        MYCODEROOT = '/coderoot'
-        
+    global MYPYTHOM, MYCODEROOT
     cmd = MYPYTHON + ' ' + MYCODEROOT + '/eosal/scripts/set_version.py'
     runcmd(cmd)
 
@@ -267,11 +261,19 @@ def generate_c_for_io_application(confpath, coderoot, pythoncmd, slavedevices, s
             generate_c_for_hardware(slavedevices, server_flag, common_c_file)
 
 def runcmd(cmd):
-    stream = os.popen(cmd)
-    output = stream.read()
-    print(output)
+    try:
+        stream = os.popen(cmd)
+        output = stream.read()
+        exit_status = stream.close()
+
+        if exit_status is not None:
+            print ("generate_c_code.py: Command \'" + cmd + "\'failed with status " + str(exit_status))
+
+    except Exception as e:
+        print(f"generate_c_code.py: os.popen(\'" + cmd + "\') failed, exception:" + str(e))
 
 def mymain():
+    global MYPYTHON, MYCODEROOT
     n = len(sys.argv)
     sourcepaths = []
     conflibs = []
@@ -312,20 +314,35 @@ def mymain():
                 sourcepaths.append(sys.argv[i])
 
     if len(sourcepaths) < 1:
-        print("No source files")
+        print("oenerate_c_code.py: No source files")
         exit()
-#        sourcepaths.append('/coderoot/iocom/examples/candy/config')
-#        sourcepaths.append('/coderoot/iocom/examples/gina/config')
+
+        # sourcepaths.append('/coderoot/iocom/examples/candy/config')
+        # sourcepaths.append('/coderoot/iocom/examples/gina/config')
+
+        # 'python c:/coderoot/iocom/scripts/generate_c_code.py c:/coderoot/iocom/examples/buster/config -r c:/coderoot -p python -d c:/coderoot/iocom/examples/minion,grumpy -l c:/coderoot/iocom/extensions/ioserver -a controller-static'
+        # sourcepaths.append('/coderoot/iocom/examples/buster/config')
+        # slavedevices.append("c:/coderoot/iocom/examples/minion,grumpy")
+        # conflibs.append("c:/coderoot/iocom/extensions/ioserver")
+        # server_flag = "controller-static"
+    
+    if platform.system() == 'Windows':
+        MYPYTHON = 'python'
+        MYCODEROOT = 'c:/coderoot'
+    else:
+        MYPYTHON = 'python3'
+        MYCODEROOT = '/coderoot'
 
     # Set build version (date and time)
     set_version()
 
     # Run slave device and library configuration scripts
     for lib in conflibs:
-        runcmd(lib + '/scripts/config_to_c_code.py')
+        runcmd(MYPYTHON + " " + lib + '/scripts/config_to_c_code.py')
+
     for device in slavedevices:
         path_hw = device.split(',')
-        runcmd(path_hw[0] + '/scripts/config_to_c_code.py')
+        runcmd(MYPYTHON + " " + path_hw[0] + '/scripts/config_to_c_code.py')
 
     for confpath in sourcepaths:
         print("Processing path " + confpath)

@@ -12,9 +12,16 @@ else:
 MYAPPCONFIG = MYCODEROOT + '/iocom/extensions/ioserver/config'
 
 def runcmd(cmd):
-    stream = os.popen(cmd)
-    output = stream.read()
-    print(output)
+    try:
+        stream = os.popen(cmd)
+        output = stream.read()
+        exit_status = stream.close()
+
+        if exit_status is not None:
+            print ("ioserver,config_to_c_code.py: Command \'" + cmd + "\'failed with status " + str(exit_status))
+
+    except Exception as e:
+        print(f"ioserver,config_to_c_code.py: os.popen(\'" + cmd + "\') failed, exception:" + str(e))
 
 cmd = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG
 cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON
@@ -25,4 +32,4 @@ runcmd(cmd)
 print("*** Check that output files have been generated (error checks are imperfect).")
 print("*** You may need to recompile all C code since generated files in config/include folder are not in compiler dependencies.")
 print("*** For clean build delete contents of config/intermediate and config/include directories before running this script.")
-
+exit(None)

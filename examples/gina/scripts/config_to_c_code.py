@@ -12,9 +12,18 @@ else:
 MYAPPCONFIG = MYCODEROOT + '/iocom/examples/gina/config'
 
 def runcmd(cmd):
-    stream = os.popen(cmd)
-    output = stream.read()
-    print(output)
+    try:
+        stream = os.popen(cmd)
+        output = stream.read()
+        exit_status = stream.close()
+
+        if exit_status is not None:
+            print ("gina,config_to_c_code.py: Command \'" + cmd + "\'failed with status " + str(exit_status))
+
+    except Exception as e:
+        print(f"gina,config_to_c_code.py: os.popen(\'" + cmd + "\') failed, exception:" + str(e))
+
+
 
 cmd = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG + ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON
 runcmd(cmd)

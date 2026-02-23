@@ -16,10 +16,18 @@ MYSLAVEDEVICES = ' -d ' + MYCODEROOT + '/iocom/examples/minion,grumpy'
 MYCONFSCRIPTS = ' -l ' + MYCODEROOT + '/iocom/extensions/ioserver'
 
 def runcmd(cmd):
-    stream = os.popen(cmd)
-    output = stream.read()
-    print(output)
+    try:
+        stream = os.popen(cmd)
+        output = stream.read()
+        exit_status = stream.close()
 
+        if exit_status is not None:
+            print ("buster,config_to_c_code.py: Command \'" + cmd + "\'failed with status " + str(exit_status))
+
+    except Exception as e:
+        print(f"buster,config_to_c_code.py: os.popen(\'" + cmd + "\') failed, exception:" + str(e))
+
+    
 cmd = MYPYTHON + ' ' + MYCODEROOT + '/iocom/scripts/generate_c_code.py ' + MYAPPCONFIG
 cmd += ' -r ' + MYCODEROOT + ' -p ' + MYPYTHON
 cmd += MYSLAVEDEVICES + MYCONFSCRIPTS
