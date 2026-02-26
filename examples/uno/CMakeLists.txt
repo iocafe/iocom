@@ -3,12 +3,19 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "uno")
-set(E_HW "unoboard")
+set(E_UP "../../../eosal/osbuild/cmakedefs")
+
+# Set build root environment variable E_ROOT
+include("${E_UP}/eosal-root-path.txt")
+
+# Name this cmake project
 project(${E_PROJECT})
 
 # include build information common to all projects.
-include("../../../eosal-root-path.txt")
-include("../../../eosal/osbuild/cmakedefs/eosal-defs.txt")
+include("${E_UP}/eosal-defs.txt")
+
+# Set hardware (directory name in config, etc)
+set(E_HW "unoboard")
 
 # Build individual library projects.
 add_subdirectory($ENV{E_ROOT}/eosal "${CMAKE_CURRENT_BINARY_DIR}/eosal")

@@ -42,7 +42,7 @@ else()
   if ($ENV{E_OSVER} STREQUAL "pi")
     set(E_HW "picam")
   else()
-    set(E_HW "pc")
+    set(E_HW "electricbanana")
   endif()
 
   # Select libraries to link with application.

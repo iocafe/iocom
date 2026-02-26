@@ -33,7 +33,7 @@ static void tito_test_sequence_thread_func(void *prm, osalEvent done);
 AppSequence::AppSequence()
 {
 #if OSAL_MULTITHREAD_SUPPORT
-    m_event = osal_event_create();
+    m_event = osal_event_create(OSAL_EVENT_SET_AT_EXIT);
 #endif
     m_started = OS_FALSE;
 }

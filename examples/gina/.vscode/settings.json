@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "devicedir.h": "c"
-    }
+    },
+    "idf.currentSetup": "/home/pekka/esp/v5.5/esp-idf"
 }

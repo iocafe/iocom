@@ -35,7 +35,7 @@ if("${IDF_TARGET}" STREQUAL "esp32")
 else()
   project(${E_PROJECT})
 
-  # include build environment setting common to all projects.
+  # include build environment setting common to most projects.
   include("${E_UP}/eosal-defs.txt")
 
   # Select hardware setup to use (IO pins, etc)

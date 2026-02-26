@@ -3,11 +3,15 @@ cmake_minimum_required(VERSION 3.5)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "minion")
+set(E_UP "../../../eosal/osbuild/cmakedefs")
+
+# Set build root environment variable E_ROOT
+include("${E_UP}/eosal-root-path.txt")
+
 project(${E_PROJECT})
 
 # include build information common to all projects.
-include("../../../eosal-root-path.txt")
-include("../../../eosal/osbuild/cmakedefs/eosal-defs.txt")
+include("${E_UP}/eosal-defs.txt")
 
 # Select hardware setup to use (IO pins, etc)
 if ($ENV{E_OS} STREQUAL "esp32")
