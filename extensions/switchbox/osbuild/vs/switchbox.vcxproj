@@ -25,14 +25,13 @@
     <ClInclude Include="..\..\switchbox.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\code\switchbox_connection.c/>
+    <ClCompile Include="..\..\code\switchbox_connection.c" />
     <ClCompile Include="..\..\code\switchbox_end_point.c" />
     <ClCompile Include="..\..\code\switchbox_root.c" />
-    <ClCompile Include="..\..\code\switchbox_setup.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{62A767E9-9498-4094-9253-756A55B6C8F7}</ProjectGuid>
+    <ProjectGuid>{FE76EF7A-7822-4EC5-A7CE-05E5FA1AD2E7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>iocom</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
