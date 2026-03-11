@@ -2,7 +2,6 @@
   main-espidf-platformio.c, 5.9.2021/pekka
   Entry point when building with Visual Studio Code, PlatformIO and ESP-IDF framework.
  */
-#ifdef OSAL_ESPIDF_FRAMEWORK
 #include <eosal.h>
 #include <eosalx.h>
 
