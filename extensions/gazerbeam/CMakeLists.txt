@@ -1,5 +1,5 @@
 # iocom/extensions/gazerbeam/CmakeLists.txt, 4.9.2021/pekka - Cmake build for gazerbeam library.
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "gazerbeam")

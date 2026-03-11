@@ -1,5 +1,5 @@
 # iocom/extensions/lighthouse/CmakeLists.txt - Cmake build for lighthouse library.
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "lighthouse")

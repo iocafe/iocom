@@ -1,5 +1,5 @@
 # iocom/examples/frank/CmakeLists.txt - Cmake build for frank server application example, 26.4.2021/pekka.
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "frank")

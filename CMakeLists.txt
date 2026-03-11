@@ -1,5 +1,5 @@
 # iocom/CmakeLists.txt - Cmake build for IOCOM library, 5.9.2021/pekka.
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "iocom")
