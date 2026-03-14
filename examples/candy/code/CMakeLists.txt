@@ -28,5 +28,5 @@ set(srcs ${BB_CM_SOURCES})
 # The candy library depends on: 
 set(requires, "idf::eosal")
 
-# Register candy as ESP-IDEF component.
+# Register candy as ESP-IDF component.
 idf_component_register(SRCS "${srcs}" INCLUDE_DIRS "." REQUIRES "${requires}")

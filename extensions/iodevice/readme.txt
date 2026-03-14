@@ -1,4 +1,5 @@
-15.7.2020 / pekka
-iodevice is iocom extension library to publish device's network configuration and state, software versions,
-used operating system and hardware, and resource/performance counters.
+iodevice, notes 14.3.2026/pekka
+
+The iodevice is expertimental C++ wrapper for iocom application.
+THIS IS ONLY USED BY BUSTER EXAMPLE, DO NOT USE THIS. This library will change or die.
 

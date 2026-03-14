@@ -9,8 +9,8 @@
 # based on the name of the directory containing the CMakeLists.txt file. Here, a directory named 
 # devicedir_esp32 is treated as the component devicedir_esp32.
 #
-# Since devicedir code is placed in "code" and "extensions/dynamicio" folders for other build system, new directory 
-# devicedir_esp32 holds the CmakeList.txt which compiles files in code and extensions directories.
+# Since devicedir code is placed in "code" directory for the other build system, the new directory 
+# holds the CmakeList.txt, which compiles and registers the ESP-IDF component.
 #
 cmake_minimum_required(VERSION 3.12)
 
@@ -36,7 +36,7 @@ list(APPEND includes $ENV{E_ROOT}/iocom)
 # list(APPEND includes $ENV{E_ROOT}/iocom/extensions/${E_PROJECT})
 #list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/build/config")
 
-# Register eosal as ESP-IDEF component.
+# Register eosal as ESP-IDF component.
 idf_component_register(SRCS "${srcs}" 
     INCLUDE_DIRS "${includes}" 
     REQUIRES "${requires}" )

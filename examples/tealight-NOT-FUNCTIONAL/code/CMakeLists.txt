@@ -28,5 +28,5 @@ set(srcs ${BB_CM_SOURCES})
 # The tealight library depends on: 
 set(requires, "idf::eosal")
 
-# Register tealight as ESP-IDEF component.
+# Register tealight as ESP-IDF component.
 idf_component_register(SRCS "${srcs}" INCLUDE_DIRS "." REQUIRES "${requires}")

@@ -9,8 +9,8 @@
 # based on the name of the directory containing the CMakeLists.txt file. Here, a directory named 
 # deviceinfo_esp32 is treated as the component deviceinfo_esp32.
 #
-# Since deviceinfo code is placed in "code" and "extensions/dynamicio" folders for other build system, new directory 
-# deviceinfo_esp32 holds the CmakeList.txt which compiles files in code and extensions directories.
+# Since deviceinfo code is placed in "code" directory for the other build system, the new directory 
+# holds the CmakeList.txt, which compiles and registers the ESP-IDF component.
 #
 cmake_minimum_required(VERSION 3.12)
 
@@ -34,7 +34,7 @@ set(requires, "idf::eosal")
 set(includes $ENV{E_ROOT}/eosal)
 list(APPEND includes $ENV{E_ROOT}/iocom)
 
-# Register eosal as ESP-IDEF component.
+# Register eosal as ESP-IDF component.
 idf_component_register(SRCS "${srcs}" 
     INCLUDE_DIRS "${includes}" 
     REQUIRES "${requires}" )

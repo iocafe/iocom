@@ -1,32 +1,32 @@
-# iocom/extensions/lighthouse/CmakeLists.txt - Cmake build for lighthouse library.
+# lighthouse/CmakeLists.txt - Cmake build for lighthouse library, 14.3.2026/pekka.
 cmake_minimum_required(VERSION 3.12)
 
 # Set project name (= project root folder name).
 set(E_PROJECT "lighthouse")
-set(E_UP "../../../eosal/osbuild/cmakedefs")
 
 # Set build root environment variable E_ROOT
-include("${E_UP}/eosal-root-path.txt")
+include("../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
-if("${IDF_TARGET}" STREQUAL "esp32")
-  # ESP-IFD only: Include IDF project setup and declare the project.
+if (DEFINED ESP_PLATFORM)
+  # Include ESP-IDF build specific eosal settings for the top level cmake. 
+  include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-top-level-espidf-setup.txt")
+
+  # Enable dummy app_main for ESP-IDF build, so we can build eosal as executable ESP32 component. 
+  add_definitions(-DOSAL_DUMMY_ESP32_APP_MAIN)
+
+  # Include ESP-IDFbuild stuff. This will call the project() command and start the build process.
   include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+ 
+  # Name the project.
   project(${E_PROJECT})
-
-  # include build information common to ESP-IDF projects.
-  include("${E_UP}/eosal-defs-espidf.txt")
-
-  # Add include paths.
-  include_directories("$ENV{E_ROOT}/iocom")
-  include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 
 else()
   project(${E_PROJECT})
 
-  # include build information common to all projects.
-  include("${E_UP}/eosal-defs.txt")
+  # Include common setting for most of builds.
+  include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs.txt")
 
-  # Set path to directory where to keep libraries.
+  # Set path to where to keep libraries.
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{E_LIBOUT})
 
@@ -36,7 +36,7 @@ else()
   # Add include paths.
   include_directories("$ENV{E_ROOT}/iocom")
   include_directories("$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
-
+  
   # Add main headers.
   set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
 
