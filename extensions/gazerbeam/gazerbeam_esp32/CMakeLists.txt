@@ -22,7 +22,7 @@ set(E_PROJECT "gazerbeam")
 include("${COMPONENT_PATH}/../../osbuild/cmakedefs/eosal-root-path.txt")
 
 # Include ESP32 specific setting for build.
-include("${E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")
+include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")
 
 # List source files common to all operating systems. We do not need header files for now.
 file(GLOB srcs "${BACKBONE}/*.c")

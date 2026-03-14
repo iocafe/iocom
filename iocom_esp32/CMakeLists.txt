@@ -19,10 +19,10 @@ set(E_PROJECT "iocom")
 
 # Set E_ROOT environment variable to point to the project root folder. 
 # This is used in the CMakeLists.txt files to locate source files and include paths.
-include("${COMPONENT_PATH}/../osbuild/cmakedefs/eosal-root-path.txt")
+include("../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 # Include ESP32 specific setting for build.
-include("${COMPONENT_PATH}/../osbuild/cmakedefs/eosal-defs-espidf.txt")
+include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")
 
 # Set path to source files.
 set(BACKBONE "$ENV{E_ROOT}/${E_PROJECT}/code")
@@ -37,10 +37,11 @@ set(srcs ${BB_SOURCES})
 list(APPEND srcs ${EX_SOURCES})
 
 # The iocom library depends on: 
-set(requires, "idf::eosal")
+set(requires, "idf::eosal_esp32")
 
 # Set include paths
 set(includes $ENV{E_ROOT}/eosal)
+list(APPEND includes $ENV{E_ROOT}/iocom)
 # list(APPEND includes "$ENV{E_ROOT}/${E_PROJECT}/build/config")
 
 # Register eosal as ESP-IDF component.
