@@ -28,7 +28,7 @@ include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")
 file(GLOB srcs "${BACKBONE}/*.c")
 
 # The iocom library depends on: 
-set(requires, "idf::eosal")
+set(requires, "eosal")
 
 # Set include paths
 set(includes $ENV{E_ROOT}/eosal)
