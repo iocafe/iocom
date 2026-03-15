@@ -5,14 +5,26 @@ cmake_minimum_required(VERSION 3.12)
 set(E_PROJECT "buster")
 
 # Set build root environment variable E_ROOT.
-set(E_UP "../../../eosal/osbuild/cmakedefs")
-include("${E_UP}/eosal-root-path.txt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
+
+# Build C code from JSON configuration
+execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
 
 if (DEFINED ESP_PLATFORM)
   # Include ESP-IDF build specific eosal settings for the top level cmake. 
   include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-top-level-espidf-setup.txt")
 
   # Add project's code component directory
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/iocom_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/nodeconf/nodeconf_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/deviceinfo/deviceinfo_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/ioserver/ioserver_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/iodevice/iodevice_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/lighthouse/lighthouse_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/devicedir/devicedir_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/gazerbeam/gazerbeam_esp32")
+
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/pins/pins_esp32")
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
   # Include ESP-IDFbuild stuff. This will call the project() command and start the build process.
@@ -25,7 +37,7 @@ else()
   project(${E_PROJECT})
 
   # include build information common to all projects.
-  include("${E_UP}/eosal-defs.txt")
+  include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs.txt")
 
   # Select hardware setup to use (IO pins, etc)
   set(E_HW "grumpy")
@@ -53,9 +65,6 @@ else()
 
   # Set path to source files.
   set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
-
-  # Build C code from JSON configuration
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
 
   # Set include path for the project and for IO pin and communication signal configuration (for this hardware).
   include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")

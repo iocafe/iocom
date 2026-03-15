@@ -8,6 +8,9 @@ set(E_UP "../../../eosal/osbuild/cmakedefs")
 # Set build root environment variable E_ROOT
 include("${E_UP}/eosal-root-path.txt")
 
+# Build C code from JSON configuration
+execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+
 if("${IDF_TARGET}" STREQUAL "esp32")
   # ESP-IFD only: Include IDF project setup and declare the project.
   include($ENV{IDF_PATH}/tools/cmake/project.cmake)
@@ -38,9 +41,6 @@ else()
 
   # Set path to source files.
   set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
-
-  # Build C code from JSON configuration
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
 
   # Include communication signal configuration.
   include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")

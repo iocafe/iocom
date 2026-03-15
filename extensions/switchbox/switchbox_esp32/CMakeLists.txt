@@ -19,7 +19,7 @@ set(E_PROJECT "switchbox")
 
 # Set E_ROOT environment variable to point to the project root folder. 
 # This is used in the CMakeLists.txt files to locate source files and include paths.
-include("${COMPONENT_PATH}/../../osbuild/cmakedefs/eosal-root-path.txt")
+include("${COMPONENT_PATH}/../../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 # Include ESP32 specific setting for build.
 include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")

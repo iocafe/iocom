@@ -6,6 +6,9 @@ set(E_PROJECT "tito")
 set(E_HW "generic")
 project(${E_PROJECT})
 
+# Build C code from JSON configuration
+execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+
 # include build information common to all projects.
 include(../../../eosal/osbuild/cmakedefs/eosal-defs.txt)
 
@@ -26,13 +29,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 
 # Set path to source files.
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
-
-# Build C code from JSON configuration
-if (WIN32)
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-else()
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-endif()
 
 # Set include path for the project and for IO pin and communication signal configuration (for this hardware).
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")

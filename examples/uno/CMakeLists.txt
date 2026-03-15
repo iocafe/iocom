@@ -8,6 +8,9 @@ set(E_UP "../../../eosal/osbuild/cmakedefs")
 # Set build root environment variable E_ROOT
 include("${E_UP}/eosal-root-path.txt")
 
+# Build C code from JSON configuration
+execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+
 # Name this cmake project
 project(${E_PROJECT})
 
@@ -27,9 +30,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 
 # Set path to source files.
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
-
-# Build C code from JSON configuration
-execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
 
 # Include IO pin and communication signal configuration for this hardware.
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")

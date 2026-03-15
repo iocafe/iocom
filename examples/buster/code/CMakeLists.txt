@@ -10,6 +10,9 @@ cmake_minimum_required(VERSION 3.12)
 # Project name.
 set(E_PROJECT "buster")
 
+# Select hardware setup to use (IO pins, etc)
+set(E_HW "esphw")
+
 # Set root folder E_ROOT for the build OS (/coderoot or c:/coderoot).
 include("${COMPONENT_PATH}/../../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
@@ -21,6 +24,32 @@ file(GLOB srcs "${COMPONENT_PATH}/*.c" "${COMPONENT_PATH}/*.cpp")
 
 # This project depends on: 
 set(requires "eosal_esp32")
+list(APPEND requires "pins_esp32")
+list(APPEND requires "iocom_esp32")
+list(APPEND requires "nodeconf_esp32")
+list(APPEND requires "deviceinfo_esp32")
+list(APPEND requires "ioserver_esp32")
+list(APPEND requires "iodevice_esp32")
+list(APPEND requires "lighthouse_esp32")
+list(APPEND requires "devicedir_esp32")
+list(APPEND requires "gazerbeam_esp32")
+
+set(includes ".")
+list(APPEND includes "$ENV{E_ROOT}/eosal")
+list(APPEND includes "$ENV{E_ROOT}/pins")
+list(APPEND includes "$ENV{E_ROOT}/iocom")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/nodeconf")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/deviceinfo")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/ioserver")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/iodevice")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/lighthouse")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/devicedir")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/gazerbeam")
+# list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/buster")
+
+# Set include path for the project and for IO pin and communication signal configuration (for this hardware).
+list(APPEND includes "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
+list(APPEND includes "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/config/include/${E_HW}")
 
 # Register eosal as ESP-IDF component.
-idf_component_register(SRCS "${srcs}" REQUIRES "${requires}" )
+idf_component_register(SRCS "${srcs}" INCLUDE_DIRS "${includes}" REQUIRES "${requires}" )

@@ -22,6 +22,9 @@ else()
   set(E_HW "grumpy")
 endif()
 
+# Build C code from JSON configuration
+execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+
 set(E_APPLIBS "devicedir${E_POSTFIX};gazerbeam${E_POSTFIX};deviceinfo${E_POSTFIX};nodeconf${E_POSTFIX};lighthouse${E_POSTFIX};pins${E_POSTFIX};iocom${E_POSTFIX};$ENV{OSAL_TLS_APP_LIBS}")
 if ($ENV{E_OSVER} STREQUAL "pi")
   set(E_APPLIBS "${E_APPLIBS};pigpio;raspicam;rt")
@@ -43,13 +46,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 
 # Set path to source files.
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
-
-# Build C code from JSON configuration
-if (WIN32)
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-else()
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-endif()
 
 # Include IO pin and communication signal configuration for this hardware.
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")

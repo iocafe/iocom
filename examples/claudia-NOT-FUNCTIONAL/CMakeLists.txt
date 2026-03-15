@@ -5,8 +5,12 @@ cmake_minimum_required(VERSION 3.12)
 set(E_PROJECT "claudia")
 project(${E_PROJECT})
 
-# include build information common to all projects.
 include("../../../eosal-root-path.txt")
+
+# Build C code from JSON configuration
+execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
+
+# include build information common to all projects.
 include("../../../eosal/osbuild/cmakedefs/eosal-defs.txt")
 
 # Build individual library projects. The devicedir library is here for development testing,
@@ -25,12 +29,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $ENV{E_BIN})
 # Set path to source files.
 set(E_SOURCE_PATH "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
-# Build C code from JSON configuration
-if (WIN32)
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-else()
-  execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")
-endif()
 
 # Include paths to project and signal configuration.
 include_directories("$ENV{E_ROOT}/iocom/examples/${E_PROJECT}")
