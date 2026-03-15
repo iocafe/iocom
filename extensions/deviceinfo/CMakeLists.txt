@@ -12,7 +12,10 @@ if (DEFINED ESP_PLATFORM)
   include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-top-level-espidf-setup.txt")
 
   # Add project's code component directory.
-  list(APPEND EXTRA_COMPONENT_DIRS $ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/deviceinfo_esp32)
+  set(EXTRA_COMPONENT_DIRS ${E_MINIMAL_COMPONENT_DIRS})
+  list(APPEND EXTRA_COMPONENT_DIRS $ENV{E_ROOT}/iocom/iocom_esp32)
+  list(APPEND EXTRA_COMPONENT_DIRS $ENV{E_ROOT}/iocom/extensions/nodeconf/nodeconf_esp32)
+  list(APPEND EXTRA_COMPONENT_DIRS $ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}_esp32)
 
   # Enable dummy app_main for ESP-IDF build, so we can build eosal as executable ESP32 component. 
   add_definitions(-DOSAL_DUMMY_ESP32_APP_MAIN)

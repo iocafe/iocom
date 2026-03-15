@@ -19,6 +19,8 @@ if (DEFINED ESP_PLATFORM)
   set(EXTRA_COMPONENT_DIRS ${E_EXTRA_COMPONENT_DIRS})
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
   
+  message("XXXXXXXXXXXXXXXXXXXXXXXX ${EXTRA_COMPONENT_DIRS} xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+
   # Include ESP-IDFbuild stuff. This will call the project() command and start the build process.
   include($ENV{IDF_PATH}/tools/cmake/project.cmake)
  

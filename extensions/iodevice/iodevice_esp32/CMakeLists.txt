@@ -25,16 +25,29 @@ include("${COMPONENT_PATH}/../../../../eosal/osbuild/cmakedefs/eosal-root-path.t
 include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")
 
 # List source files common to all operating systems. We do not need header files for now.
-file(GLOB srcs "${BACKBONE}/*.c")
-file(GLOB srcs2 "${BACKBONE}/*.cpp")
-list(APPEND srcs ${srcs2})
+set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
+file(GLOB srcs "${BACKBONE}/*.c" "${BACKBONE}/*.cpp")
 
-# The iocom library depends on: 
-set(requires, "idf::eosal")
+# The component depends on: 
+set(requires "eosal_esp32")
+list(APPEND requires "iocom_esp32")
+list(APPEND requires "pins_esp32")
+list(APPEND requires "nodeconf_esp32")
+list(APPEND requires "ioserver_esp32")
+list(APPEND requires "lighthouse_esp32")
+list(APPEND requires "deviceinfo_esp32")
+list(APPEND requires "iocom_esp32")
 
 # Set include paths.
-set(includes $ENV{E_ROOT}/eosal)
-list(APPEND includes $ENV{E_ROOT}/iocom)
+set(includes "$ENV{E_ROOT}/eosal")
+list(APPEND includes "$ENV{E_ROOT}/iocom")
+list(APPEND includes "$ENV{E_ROOT}/pins")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/nodeconf")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/ioserver")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/lighthouse")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/deviceinfo")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/devicedir")
+list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
 
 # Register eosal as ESP-IDF component.
 idf_component_register(SRCS "${srcs}" 
