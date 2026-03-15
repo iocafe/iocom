@@ -5,7 +5,7 @@
 #include <eosal.h>
 #include <eosalx.h>
 
-/*void app_main()
+void app_main()
 {
     osal_initialize(OSAL_INIT_DEFAULT);
     osal_main(0, 0);
@@ -19,4 +19,3 @@
         osal_sleep(3);
     }
 }
-*/

@@ -10,6 +10,10 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/../eosal/osbuild/cmakedefs/eosal-root-path.
 if (DEFINED ESP_PLATFORM)
   # Include ESP-IDF build specific eosal settings for the top level cmake. 
   include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-top-level-espidf-setup.txt")
+
+  # Add necessary ESP32 component directories to the build system. This is needed
+  # for ESP-IDF build, so it can find the components and their CMakeLists.txt files.
+  set(EXTRA_COMPONENT_DIRS ${E_MINIMAL_COMPONENT_DIRS})
   list(APPEND EXTRA_COMPONENT_DIRS $ENV{E_ROOT}/iocom/iocom_esp32)
 
   # Enable dummy app_main for ESP-IDF build, so we can build eosal as executable ESP32 component. 

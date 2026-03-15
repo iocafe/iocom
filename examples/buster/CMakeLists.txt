@@ -14,17 +14,11 @@ if (DEFINED ESP_PLATFORM)
   # Include ESP-IDF build specific eosal settings for the top level cmake. 
   include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-top-level-espidf-setup.txt")
 
-  # Add project's code component directory
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/iocom_esp32")
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/nodeconf/nodeconf_esp32")
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/deviceinfo/deviceinfo_esp32")
+   # Add ESP32 component directories. This will make the components available
+  # for the project and also build them if needed.
+  set(EXTRA_COMPONENT_DIRS ${E_EXTRA_COMPONENT_DIRS})
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/ioserver/ioserver_esp32")
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/iodevice/iodevice_esp32")
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/lighthouse/lighthouse_esp32")
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/devicedir/devicedir_esp32")
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/gazerbeam/gazerbeam_esp32")
-
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/pins/pins_esp32")
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
   # Include ESP-IDFbuild stuff. This will call the project() command and start the build process.
