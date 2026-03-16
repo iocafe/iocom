@@ -29,9 +29,7 @@ file(GLOB srcs "${BACKBONE}/*.c" "${BACKBONE}/*.cpp")
 # This project depends on: 
 set(requires ${E_REQUIRES})
 
-
-message("XXXXXXXXXXXXXXXXXXXXXXXX ${requires} xxxxxxxxxxxxxxxxxxxxxxxxxx")
-
+# Include directories:
 set(includes ${E_INCLUDE_DIRS})
 
 # Set include path for the project and for IO pin and communication signal configuration (for this hardware).

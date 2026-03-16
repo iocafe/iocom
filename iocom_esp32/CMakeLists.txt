@@ -37,7 +37,7 @@ set(srcs ${BB_SOURCES})
 list(APPEND srcs ${EX_SOURCES})
 
 # The iocom library depends on: 
-set(requires, "idf::eosal_esp32")
+set(requires, "eosal_esp32")
 
 # Set include paths
 set(includes $ENV{E_ROOT}/eosal)
@@ -48,3 +48,6 @@ list(APPEND includes $ENV{E_ROOT}/iocom)
 idf_component_register(SRCS "${srcs}" 
     INCLUDE_DIRS "${includes}" 
     REQUIRES "${requires}" )
+
+# This results correct link order. 
+idf_component_optional_requires(PRIVATE eosal_esp32)
