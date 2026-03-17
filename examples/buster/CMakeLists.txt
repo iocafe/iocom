@@ -21,6 +21,17 @@ if (DEFINED ESP_PLATFORM)
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/iodevice/iodevice_esp32")
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
+  # Enable iocom dynamic memory block code. Buster example uses dynamic memory blocks 
+  # for storing configuration and state information, so this is needed. 
+  add_definitions(-DIOC_DYNAMIC_MBLK_CODE=1) 
+
+  # Buster also needs camera PINS_AI_THINKER_CAMERA (14), so define that as well. 
+  # This will be used in the code to select the correct pin configuration for the camera.
+  add_definitions(-DPINS_CAMERA=14) 
+
+  # Since Buster can be also server, it needs full athentication IOC_FULL_AUTHENTICATION (2). 
+  add_definitions(-DIOC_AUTHENTICATION_CODE=2) 
+
   # Include ESP-IDFbuild stuff. This will call the project() command and start the build process.
   include($ENV{IDF_PATH}/tools/cmake/project.cmake)
  

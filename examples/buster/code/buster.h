@@ -34,7 +34,9 @@
 #endif
 
 using IoDevice::AbstractApplication;
+#if PINS_CAMERA
 using IoDevice::AbstractCamera;
+#endif
 using IoDevice::AbstractAppParams;
 using IoDevice::AbstractSlaveDevice;
 using IoDevice::AbstractSequence;
