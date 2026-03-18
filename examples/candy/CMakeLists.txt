@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.12)
 set(E_PROJECT "candy")
 
 # Set build root environment variable E_ROOT.
-include("${CMAKE_CURRENT_SOURCE_DIR}/../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 # Build C code from JSON configuration.
 execute_process(COMMAND "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/scripts/config_to_c_code.py")

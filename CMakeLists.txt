@@ -5,25 +5,38 @@ cmake_minimum_required(VERSION 3.12)
 set(E_PROJECT "iocom")
 
 # Set build root environment variable E_ROOT
-include("${CMAKE_CURRENT_SOURCE_DIR}/../eosal/osbuild/cmakedefs/eosal-root-path.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 if (DEFINED ESP_PLATFORM)
-  # Include ESP-IDF build specific eosal settings for the top level cmake. 
-  include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-top-level-espidf-setup.txt")
+  # Include ESP32 specific setting for build.
+  include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")
 
-  # Add necessary ESP32 component directories to the build system. This is needed
-  # for ESP-IDF build, so it can find the components and their CMakeLists.txt files.
-  set(EXTRA_COMPONENT_DIRS ${E_MINIMAL_COMPONENT_DIRS})
-  list(APPEND EXTRA_COMPONENT_DIRS $ENV{E_ROOT}/iocom/iocom_esp32)
+  # Set path to source files.
+  set(BACKBONE "$ENV{E_ROOT}/${E_PROJECT}/code")
+  set(EXTENSIONS "$ENV{E_ROOT}/${E_PROJECT}/extensions")
 
-  # Enable dummy app_main for ESP-IDF build, so we can build eosal as executable ESP32 component. 
-  add_definitions(-DOSAL_DUMMY_ESP32_APP_MAIN)
+  # List source files common to all operating systems. We do not need header files for now.
+  file(GLOB BB_SOURCES "${BACKBONE}/*.c")
+  file(GLOB EX_SOURCES "${EXTENSIONS}/dynamicio/*.c")
 
-  # Include ESP-IDFbuild stuff. This will call the project() command and start the build process.
-  include($ENV{IDF_PATH}/tools/cmake/project.cmake)
- 
-  # Name the project.
-  project(${E_PROJECT})
+  # Merge the .c files as one list.
+  set(srcs ${BB_SOURCES})
+  list(APPEND srcs ${EX_SOURCES})
+
+  # The iocom library depends on: 
+  set(requires, "eosal")
+
+  # Set include paths
+  set(includes $ENV{E_ROOT}/eosal)
+  list(APPEND includes $ENV{E_ROOT}/iocom)
+
+  # Register eosal as ESP-IDF component.
+  idf_component_register(SRCS "${srcs}" 
+      INCLUDE_DIRS "${includes}" 
+      REQUIRES "${requires}" )
+
+  # This results correct link order. 
+  idf_component_optional_requires(PRIVATE eosal)
 
 else()
   project(${E_PROJECT})

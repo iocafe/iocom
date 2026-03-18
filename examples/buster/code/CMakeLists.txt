@@ -24,8 +24,8 @@ file(GLOB srcs "${COMPONENT_PATH}/*.c" "${COMPONENT_PATH}/*.cpp")
 
 # This project depends on: 
 set(requires ${E_REQUIRES})
-list(APPEND requires "ioserver_esp32")
-list(APPEND requires "iodevice_esp32")
+list(APPEND requires "ioserver")
+list(APPEND requires "iodevice")
 
 set(includes ${E_INCLUDE_DIRS})
 list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/ioserver")

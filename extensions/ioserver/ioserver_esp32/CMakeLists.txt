@@ -29,8 +29,8 @@ set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
 file(GLOB srcs "${BACKBONE}/*.c" "${BACKBONE}/*.cpp")
 
 # The component depends on: 
-set(requires "eosal_esp32")
-list(APPEND requires "iocom_esp32")
+set(requires "eosal")
+list(APPEND requires "iocom")
 
 # Set include paths.
 set(includes $ENV{E_ROOT}/eosal)

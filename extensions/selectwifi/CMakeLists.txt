@@ -5,23 +5,29 @@ cmake_minimum_required(VERSION 3.12)
 set(E_PROJECT "selectwifi")
 
 # Set build root environment variable E_ROOT
-include("${CMAKE_CURRENT_SOURCE_DIR}/../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/../../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 if (DEFINED ESP_PLATFORM)
-  # Include ESP-IDF build specific eosal settings for the top level cmake. 
-  include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-top-level-espidf-setup.txt")
+  # Include ESP32 specific setting for build.
+  include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs-espidf.txt")
 
-  # Add code component directories.
-  set(EXTRA_COMPONENT_DIRS ${E_EXTRA_COMPONENT_DIRS})
+  # List source files common to all operating systems. We do not need header files for now.
+  set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
+  file(GLOB srcs "${BACKBONE}/*.c")
 
-  # Enable dummy app_main for ESP-IDF build, so we can build eosal as executable ESP32 component. 
-  add_definitions(-DOSAL_DUMMY_ESP32_APP_MAIN)
+  # The component depends on: 
+  set(requires "eosal")
+  list(APPEND requires "iocom")
 
-  # Include ESP-IDFbuild stuff. This will call the project() command and start the build process.
-  include($ENV{IDF_PATH}/tools/cmake/project.cmake)
- 
-  # Name the project.
-  project(${E_PROJECT})
+  # Set include paths.
+  set(includes "$ENV{E_ROOT}/eosal")
+  list(APPEND includes "$ENV{E_ROOT}/iocom")
+  list(APPEND includes "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}")
+
+  # Register eosal as ESP-IDF component.
+  idf_component_register(SRCS "${srcs}" 
+      INCLUDE_DIRS "${includes}" 
+      REQUIRES "${requires}" )
 
 else()
   project(${E_PROJECT})

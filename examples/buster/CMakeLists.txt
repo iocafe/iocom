@@ -17,8 +17,8 @@ if (DEFINED ESP_PLATFORM)
    # Add ESP32 component directories. This will make the components available
   # for the project and also build them if needed.
   set(EXTRA_COMPONENT_DIRS ${E_EXTRA_COMPONENT_DIRS})
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/ioserver/ioserver_esp32")
-  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/iodevice/iodevice_esp32")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/ioserver")
+  list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/extensions/iodevice")
   list(APPEND EXTRA_COMPONENT_DIRS "$ENV{E_ROOT}/iocom/examples/${E_PROJECT}/code")
 
   # Enable iocom dynamic memory block code. Buster example uses dynamic memory blocks 
