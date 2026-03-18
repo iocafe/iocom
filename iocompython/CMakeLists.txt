@@ -4,13 +4,12 @@ cmake_minimum_required(VERSION 3.12)
 # Set project name (= project root folder name).
 set(E_PROJECT "iocompython")
 project(${E_PROJECT})
-set(E_UP "../../../eosal/osbuild/cmakedefs")
 
 # Set build root environment variable E_ROOT
-include("${E_UP}/eosal-root-path.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/../../eosal/osbuild/cmakedefs/eosal-root-path.txt")
 
 # include build environment setting common to all projects.
-include("${E_UP}/eosal-defs.txt")
+include("$ENV{E_ROOT}/eosal/osbuild/cmakedefs/eosal-defs.txt")
 
 # Find python stuff. This sets a bunch of variables. We need Python 3.12 for this.
 find_package (Python3 COMPONENTS Interpreter Development)
@@ -35,18 +34,18 @@ if (${E_POSTFIX} MATCHES "d")
 endif()
 
 # Set path to source files.
-set(BACKBONE "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/code")
+set(BACKBONE "$ENV{E_ROOT}/iocom/${E_PROJECT}/code")
 
 # Add include paths.
 include_directories("$ENV{E_ROOT}/iocom")
 include_directories("$ENV{E_ROOT}/iocom/extensions/devicedir")
-include_directories("$ENV{E_ROOT}/iocom/extensions/iocompython")
+include_directories("$ENV{E_ROOT}/iocom/iocompython")
 
 # Python include directories
 include_directories(${Python3_INCLUDE_DIRS})
 
 # Add main headers.
-set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/extensions/${E_PROJECT}/${E_PROJECT}.h")
+set(MAIN_HEADERS "$ENV{E_ROOT}/iocom/${E_PROJECT}/${E_PROJECT}.h")
 
 # Add source files common to all operating systems.
 file(GLOB BB_CM_SOURCES "${BACKBONE}/*.c")
