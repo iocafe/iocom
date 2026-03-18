@@ -66,6 +66,8 @@ CMakeCache.txt
 *.ninja*
 
 *.myconfig
+*.lock
+*.old
 
 .pio
 **/.vscode/.browse.c_cpp.db*
