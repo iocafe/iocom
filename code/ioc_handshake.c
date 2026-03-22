@@ -24,7 +24,7 @@
 ****************************************************************************************************
 */
 #include "iocom.h"
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
 
 /* Forward referred static functions.
  */

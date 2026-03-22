@@ -42,7 +42,7 @@ iocHandle
     ioboard_dexp;
 #endif
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
 static iocEndPoint
     *ioboard_epoint;
 #endif
@@ -202,7 +202,7 @@ void ioboard_start_communication(
     switch (prm->ctrl_type & IOBOARD_CTRL_BASIC_MASK)
     {
         default:
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
         case IOBOARD_CTRL_LISTEN_SOCKET:
             ioboard_epoint = ioc_initialize_end_point(OS_NULL, &ioboard_root);
 
@@ -232,7 +232,7 @@ void ioboard_start_communication(
             break;
 #endif
     }
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     conprm.lighthouse_func = prm->lighthouse_func;
     conprm.lighthouse = prm->lighthouse;
 #endif

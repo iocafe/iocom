@@ -58,7 +58,7 @@ osalStatus devicedir_get_json(
 
         case IO_DD_END_POINTS:
             label = "end points";
-#ifdef OSAL_SOCKET_SUPPORT
+#ifdef OSAL_ENABLE_NETWORK
             devicedir_end_points(root, list, flags);
 #endif
             s = OSAL_SUCCESS;

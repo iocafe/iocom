@@ -376,7 +376,7 @@ typedef struct iocConnectionParams
      */
     os_short flags;
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     /** Light house "run" function, used to get IP address to connect to by UDP multicast.
      */
     ioc_lighthouse_func *lighthouse_func;
@@ -728,7 +728,7 @@ typedef struct iocConnection
      */
     os_uint auto_device_nr;
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     /** Handshake state structure (switbox cloud net name and copying trust certificate).
      */
     iocHandshakeState handshake;
@@ -756,7 +756,7 @@ typedef struct iocConnection
      */
     os_boolean allocated;
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
 
     /** Light house "run" function, used to get IP address to connect to by UDP multicast.
      */

@@ -88,7 +88,7 @@ void devicedir_connections(
         devicedir_append_str_param(list, "iface", iface_name, OS_FALSE);
         devicedir_append_str_param(list, "param", con->parameters, OS_FALSE);
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
         if (con->ip_from_lighthouse[0] != '\0') {
             devicedir_append_str_param(list, "lighthouse", con->ip_from_lighthouse, OS_FALSE);
         }

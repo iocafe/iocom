@@ -123,7 +123,7 @@ static PyObject *EndPoint_new(
 
     else if (os_strstr(flags, "socket", OSAL_STRING_SEARCH_ITEM_NAME))
     {
-#ifdef OSAL_SOCKET_SUPPORT
+#ifdef OSAL_ENABLE_NETWORK
         epprm.flags |= IOC_SOCKET|IOC_CREATE_THREAD;
         epprm.iface = OSAL_SOCKET_IFACE;
 #else

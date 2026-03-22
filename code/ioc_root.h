@@ -170,7 +170,7 @@ typedef struct iocRoot
      */
     iocRootsConnectionList con;
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     /** Linked list of root's end points.
      */
     iocRootsEndPointList epoint;

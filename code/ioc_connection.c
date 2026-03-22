@@ -103,7 +103,7 @@ iocConnection *ioc_initialize_connection(
 
     /* Initialize hand shake structure.
      */
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     ioc_initialize_handshake_state(&con->handshake);
     con->handshake_ready = OS_FALSE;
 #endif
@@ -211,7 +211,7 @@ void ioc_release_connection(
 
     /* Release hand shake structure.
      */
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     ioc_release_handshake_state(&con->handshake);
 #endif
 
@@ -502,7 +502,7 @@ osalStatus ioc_connect(
     os_strncpy(con->cloud_name, prm->cloud_name, OSAL_NETWORK_NAME_SZ);
 #endif
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     con->lighthouse_func = prm->lighthouse_func;
     con->lighthouse = prm->lighthouse;
 #endif
@@ -608,7 +608,7 @@ osalStatus ioc_run_connection(
     osalStatus status;
     os_timer tnow;
     os_int silence_ms, count;
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     os_char connectstr[OSAL_HOST_BUF_SZ];
 #endif
 
@@ -626,7 +626,7 @@ osalStatus ioc_run_connection(
             return OSAL_SUCCESS;
         }
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
         /* If we have no connect to address or it is "*": If we have the lighthouse
            functionality check if we have received the information by UDP broadcast.
            If we got it, try it. Otherwise we can do nothing.
@@ -684,7 +684,7 @@ osalStatus ioc_run_connection(
 
     /* Handle first hansshake for sockets.
      */
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     if ((con->flags & (IOC_SOCKET|IOC_SERIAL)) == IOC_SOCKET)
     {
         status = ioc_first_handshake(con);
@@ -917,7 +917,7 @@ void ioc_reset_connection_state(
 
     /* Reset hand shake structure.
      */
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     ioc_release_handshake_state(&con->handshake);
     con->handshake_ready = OS_FALSE;
 #endif
@@ -1058,7 +1058,7 @@ static void ioc_connection_thread(
         {
             parameters = con->parameters;
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
             /* If we have no connect to address or it is "*": If we have the lighthouse
                functionality check if we have received the information by UDP broadcast.
                If we got it, try it. Otherwise we can do nothing.
@@ -1133,7 +1133,7 @@ static void ioc_connection_thread(
         }
 #endif
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
         /* First handshake for sockets.
          */
         if (!is_serial)

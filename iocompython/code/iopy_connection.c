@@ -126,7 +126,7 @@ static PyObject *Connection_new(
 
     else if (os_strstr(flags, "socket", OSAL_STRING_SEARCH_ITEM_NAME))
     {
-#ifdef OSAL_SOCKET_SUPPORT
+#ifdef OSAL_ENABLE_NETWORK
         prm.flags |= IOC_SOCKET|IOC_CREATE_THREAD;
         prm.iface = OSAL_SOCKET_IFACE;
 #else

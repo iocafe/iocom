@@ -17,7 +17,7 @@
 #ifndef IOC_HANDSHAKE_IOCOM_H_
 #define IOC_HANDSHAKE_IOCOM_H_
 #include "iocom.h"
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
 
 struct iocConnection;
 

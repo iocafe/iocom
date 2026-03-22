@@ -306,7 +306,7 @@ osalStatus ioc_read_frame(
         }
 #endif
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
         if (!rfs.is_serial)
         {
             if (rfs.buf[0] == IOC_ACKNOWLEDGE && rfs.n >= 1)

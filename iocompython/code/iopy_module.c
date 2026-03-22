@@ -142,7 +142,7 @@ void iocom_python_initialize(const char *security)
     }
     osal_tls_initialize(OS_NULL, 0, OS_NULL, 0, &secprm);
 #else
-  #if OSAL_SOCKET_SUPPORT
+  #if OSAL_ENABLE_NETWORK
     osal_socket_initialize(OS_NULL, 0);
   #endif
 #endif

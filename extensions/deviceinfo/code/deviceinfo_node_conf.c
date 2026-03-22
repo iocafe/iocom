@@ -183,7 +183,7 @@ void dinfo_set_node_conf(
 
 #if OSAL_SUPPORT_WIFI_NETWORK_CONF
     /* Wifi
-     * WE COULD IFDEF OSAL_WIFI_SUPPORT, ETC
+     * WE COULD IFDEF OSAL_ENABLE_WIFI, ETC
      */
     if (wifis) if (wifis->n_wifi >= 1)
     {
@@ -291,7 +291,7 @@ static void dinfo_nc_net_state_notification_handler(
     code = osal_network_state_to_morse_code(net_state);
     ioc_set(dinfo_nc->sigs.sig[IOC_DINFO_NC_STATUS], code);
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     /* IP address of the first NIC.
      */
     if (dinfo_nc->dhcp) {
@@ -332,7 +332,7 @@ static void dinfo_nc_net_state_notification_handler(
         }
     }
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     /* Connect to by lighhouse.
      */
     if (!dinfo_nc->connect_to_set) {

@@ -98,7 +98,7 @@ void ioc_release_root(
     osalStatus
         status;
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     iocEndPoint
         *epoint;
 #endif
@@ -117,7 +117,7 @@ void ioc_release_root(
 #endif
 
 #if OSAL_MULTITHREAD_SUPPORT
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     /* Terminate all end point worker threads.
      */
     while (OS_TRUE)
@@ -167,7 +167,7 @@ void ioc_release_root(
 
     /* Release all initialized end points.
      */
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     while (root->epoint.first)
     {
         ioc_release_end_point(root->epoint.first);
@@ -291,7 +291,7 @@ void ioc_run(
      */
     ioc_lock(root);
 
-#if OSAL_SOCKET_SUPPORT
+#if OSAL_ENABLE_NETWORK
     /* Run the end points.
      */
     iocEndPoint *epoint;
